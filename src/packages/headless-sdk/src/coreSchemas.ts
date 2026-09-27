@@ -1,10 +1,8 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/coreSchemas.ts` (verbatim en
- * estructura; `lazySchema` se importa del sustituto local — ver
- * `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no es
- * miembro del bun workspace y no puede resolver
- * `@claude-code-how-works/tool-registry/utils/lazySchema.js` ni su
- * equivalente `@thyrox/agent`).
+ * estructura; `lazySchema` se importa del original,
+ * `@thyrox/config/lazySchema`, en vez de
+ * `@claude-code-how-works/tool-registry/utils/lazySchema.js`).
  *
  * SDK Core Schemas - Zod schemas for serializable SDK data types.
  *
@@ -15,7 +13,7 @@
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import { lazySchema } from '@thyrox/config/lazySchema'
 import type { MessageParam } from '@anthropic-ai/sdk/resources'
 import type {
   BetaMessage,

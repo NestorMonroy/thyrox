@@ -29,6 +29,7 @@ CLEARED = (
     "mcp-runtime",
     "app-host",
     "server",
+    "headless-sdk",
 )
 
 

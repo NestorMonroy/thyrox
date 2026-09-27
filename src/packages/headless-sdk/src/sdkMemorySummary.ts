@@ -1,9 +1,6 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/sdkMemorySummary.ts`
- * (verbatim en estructura; `obsLogEvent` se importa del sustituto local —
- * ver `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no
- * es miembro del bun workspace y no puede resolver
- * `@claude-code-how-works/local-observability` ni su equivalente
+ * (verbatim en estructura; `obsLogEvent` se importa del original,
  * `@thyrox/local-observability`).
  *
  * SDK memory-summary telemetry — byte-for-byte port of ant v2.1.136
@@ -45,7 +42,7 @@
  *   - childPeakRss map            — per-kind aggregate
  *   - attribute providers         — bytes + entries for each registered tag
  */
-import { logEvent as obsLogEvent } from './internal/pendingCrossPackageDeps.ts'
+import { logEvent as obsLogEvent } from '@thyrox/local-observability'
 
 /**
  * Ant `uG1` — child-kind whitelist. Only these kinds get a

@@ -1,12 +1,9 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts`
- * (verbatim en aserciones; el mecanismo de captura cambia porque el puerto
- * no usa `@claude-code-how-works/local-observability` sino el sustituto
- * local — ver `../internal/pendingCrossPackageDeps.ts`. La fuente hace
- * `mock.module('@thyrox/local-observability', ...)`; aquí
- * se inyecta directamente con `setLogEventFn`, que es el mismo patrón DI
- * que `setGetCwdFn` de `@thyrox/storage` — sin mockear un import de
- * paquete.
+ * (verbatim en aserciones; el mecanismo de captura cambia: la fuente hace
+ * `mock.module('@thyrox/local-observability', ...)`; aquí se instala un
+ * logger en el sumidero del original con `installLocalObservability` —
+ * sin mockear un import de paquete).
  *
  * Tests para `sdkMemorySummary.ts` — corrección del puerto contra ant
  * v2.1.136 2144.js: `Cc_`/`vP9`/`mH8`/`pG1`/`UG1`/`hP9`/`xH8`/`uH8`.
@@ -34,13 +31,19 @@ import {
   expect,
   test,
 } from 'bun:test'
-import { setLogEventFn } from '../internal/pendingCrossPackageDeps.ts'
+import { getLocalObservability, installLocalObservability } from '@thyrox/local-observability'
 
 type EventPayload = Record<string, unknown>
 const events: { name: string; payload: EventPayload }[] = []
 
-setLogEventFn((name: string, payload?: EventPayload) => {
-  events.push({ name, payload: payload ?? {} })
+// Los eventos se capturan en el sumidero del original, no en un sustituto.
+installLocalObservability({
+  logger: {
+    ...getLocalObservability().logger,
+    event: (name: string, payload?: EventPayload) => {
+      events.push({ name, payload: payload ?? {} })
+    },
+  },
 })
 
 const mod = await import('../sdkMemorySummary.ts')

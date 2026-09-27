@@ -1,8 +1,7 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/controlSchemas.ts` (verbatim
- * en estructura; `lazySchema` se importa del sustituto local — ver
- * `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no es
- * miembro del bun workspace; el import de `coreSchemas.js` en la fuente es
+ * en estructura; `lazySchema` se importa del original,
+ * `@thyrox/config/lazySchema`; el import de `coreSchemas.js` en la fuente es
  * una auto-referencia al propio paquete por nombre y se porta como import
  * relativo, `./coreSchemas.ts` — es un módulo hermano del MISMO paquete).
  *
@@ -15,7 +14,7 @@
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import { lazySchema } from '@thyrox/config/lazySchema'
 import {
   AccountInfoSchema,
   AgentDefinitionSchema,
