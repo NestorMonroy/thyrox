@@ -1,0 +1,21 @@
+### literal /$bunfs/root/audio-capture.node
+chunk-et31535p.js FirstStatement Z0r [664,738)
+literal: 1 declaración(es) en 1 de 2138 chunk(s)
+### symbol chunk-z4sfgzqt.js r c v
+==== r: 1 definicion(es) de nivel superior
+---- chunk-z4sfgzqt.js function r [726,1070)
+function r(){if(i)return a;i=!0;let t="linux";if(t!=="darwin"&&t!=="linux"&&t!=="win32")return null;try{return a=Z0r(),a}catch{}let o=`x64-${t}`,u=(t==="linux"?[o,`${o}-musl`]:[o]).flatMap((n)=>[`./vendor/audio-capture/${n}/audio-capture.node`,`../audio-capture/${n}/audio-capture.node`]);for(let n of u)try{return a=Ce(n),a}catch{}return null}
+==== c: 1 definicion(es) de nivel superior
+---- chunk-z4sfgzqt.js function c [1070,1101)
+function c(){return r()!==null}
+==== v: 1 definicion(es) de nivel superior
+---- chunk-z4sfgzqt.js function v [1527,1640)
+function v(){let t=r();if(!t||!t.microphoneAuthorizationStatus)return 0;return t.microphoneAuthorizationStatus()}
+symbol: 3 de 3 nombre(s) resueltos
+### references chunk-z4sfgzqt.js v
+references: 0 uso(s) de v en 0 chunk(s), exportado como microphoneAuthorizationStatus (alcance medido: 2138 chunk(s))
+### symbol chunk-11jfjeh3.js f
+==== f: 1 definicion(es) de nivel superior
+---- chunk-11jfjeh3.js function f [2099,2351)
+function f(e){return e.audioNapiPromise??=(async()=>{let o=Date.now(),r=await import("/$bunfs/root/chunk-z4sfgzqt.js");return r.isNativeAudioAvailable(),e.audioNapi=r,t(`[voice] audio-capture-napi loaded in ${Date.now()-o}ms`),r})(),e.audioNapiPromise}
+symbol: 1 de 1 nombre(s) resueltos
