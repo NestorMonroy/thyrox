@@ -1,0 +1,7 @@
+(fail) SessionAffinitySelector: vinculación > el segundo turno hereda al primero, y el tercero al segundo [1.43ms]
+(fail) SessionAffinitySelector: vinculación > pasar a los dos identificadores conserva la vinculación: conversación primero [0.32ms]
+(fail) SessionAffinitySelector: subagentes > el subagente hereda la credencial del padre (por defecto) [0.42ms]
+(fail) SessionAffinitySelector: subagentes > el subagente hereda la credencial del padre (declarada) [0.23ms]
+(fail) SessionAffinitySelector: subagentes > el fallo de un subagente borra sólo su vinculación, no la del padre [0.37ms]
+ 55 pass
+ 5 fail

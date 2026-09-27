@@ -1,0 +1,3 @@
+(fail) hash de mensajes: vectores de prueba conocidos de Go > el corte a 100 es por bytes, también a mitad de una runa [0.55ms]
+ 59 pass
+ 1 fail

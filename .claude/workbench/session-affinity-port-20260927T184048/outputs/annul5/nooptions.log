@@ -1,0 +1,5 @@
+(fail) afinidad de sesión en el reenvío > la misma sesión vuelve a la misma credencial; otra sesión reparte [7.04ms]
+(fail) afinidad de sesión en el reenvío > el selector ve el cuerpo del cliente: la sesión del cuerpo vincula [5.02ms]
+(fail) afinidad de sesión en el reenvío > un fallo de la credencial libera la vinculación; uno de la petición la conserva [1.53ms]
+ 19 pass
+ 3 fail

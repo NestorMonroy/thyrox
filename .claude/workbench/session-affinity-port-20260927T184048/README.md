@@ -107,3 +107,57 @@ consumidores, y la jerarquía que el stub guardaba viaja en `SessionInfo`
 | mover a otra credencial sin conservar alias | 1 |
 | retirar un alias sin quitarlo de los supervivientes | 2 |
 | sin límite de una clave de caché de prompt | 1 |
+
+## Fase 4: `SessionAffinitySelector`
+
+`src/proxy/session/affinitySelector.ts`; prueba
+`__tests__/proxySessionAffinity.test.ts` (los casos de `selector_test.go`,
+`selector_subagent_affinity_test.go`, `selector_antigravity_subagent_test.go`,
+`session_affinity_lookup_test.go`, `session_affinity_metadata_test.go` y
+`session_affinity_priority_test.go` que no dependen del comparador LCP ni del
+`Manager`). Corrida primero con el módulo ausente, después en verde (61).
+
+Los hashes `msg:` se comparan con vectores de prueba conocidos producidos por
+`probes/msghash/main.go`, que copia verbatim `computeSessionHash` y
+`truncateString`: `outputs/msghash-known-answers.tsv`. Dos de los seis cortan
+un texto de más de 100 bytes, uno en frontera de carácter y otro a mitad de
+uno: el corte es por bytes, como `s[:100]` en Go.
+
+Los casos que en Go tocan `cache.entries[...].expiresAt` usan aquí el reloj
+inyectado: el alias de la conversación sigue vivo porque el tráfico del
+primario refresca todo el grupo, y `lookupAffinity` no refresca (tras 50 s de
+lecturas, la vinculación caduca a los 61 s igual).
+
+Una prueba que Go no tiene: revincular al padre no arrastra la vinculación
+del subagente. La de Go sobre alias de subagentes (`SubagentAliasIsolation`)
+no discrimina en ninguno de los dos lenguajes —`CompareAndDelete` sólo retira
+el alias pedido—; la revinculación sí, porque `SetAliases` fusiona el grupo.
+
+Cableado: `server.ts` pasa al selector las cabeceras y el cuerpo del cliente
+(con una metadata propia por upstream) e informa cada intento por
+`onResult`; un 4xx que no conmuta es de la petición y conserva la
+vinculación. `startServer.ts` gana `sessionAffinity` (apagada si no se
+declara, como `routing.session-affinity`) y `createSelector`.
+
+| Anulación (`probes/annul-cases4/`, selector) | Caen |
+|---|---|
+| corte por caracteres en vez de bytes | 1 |
+| sin herencia del respaldo | 5 |
+| sin `skipCooldown` | 1 |
+| el respaldo ve todos los niveles de prioridad | 1 |
+| sin filtro de peso positivo con el ponderado | 1 |
+| `lookupAffinity` con `getAndRefresh` | 1 |
+| el subagente vincula el alias del padre | 1 |
+
+| Anulación (`probes/annul-cases5/`, servidor) | Caen |
+|---|---|
+| `pick` sin cabeceras ni cuerpo | 3 |
+| sin `onResult` | 1 |
+| todo 4xx culpa a la credencial | 1 |
+
+Comprobación del paquete (`probes/phase4-checks.txt`, por `run-task-pool`):
+`tsc --noEmit` sin errores en `proxy/`, y 2220 pruebas en verde.
+
+Pendiente declarado en la cabecera del módulo: `pickLCP` y la mitad LCP de
+`onResult`/`lookupAffinity` (tarea #90), y el clasificador que decide
+`skipCooldown` (tarea #91).

@@ -9,6 +9,9 @@
  * A ese camino se suman el control de acceso de CLIProxyAPI
  * (`sdk/access/manager.go`, `./access.ts`) y, por upstream, el selector de
  * credenciales (`sdk/cliproxy/auth/selector.go`, `./credentialSelectors.ts`).
+ * El selector ve las cabeceras y el cuerpo del cliente —la afinidad por
+ * sesión (`./session/affinitySelector.ts`) saca de ahí la sesión— y recibe
+ * el desenlace de cada intento por `onResult`.
  *
  * CLIProxyAPI y la pasarela del ejecutable son referencias, no
  * dependencias: todo lo que aquí corre lo implementa thyrox. El servidor
@@ -82,6 +85,16 @@ export function errorResponse(status: number, type: string, message: string, req
   )
 }
 
+/**
+ * Si una respuesta que no conmuta culpa a la petición y no a la credencial:
+ * un 4xx de contenido deja la vinculación de sesión en su sitio. El
+ * clasificador completo es del conductor (`shouldSkipCredentialCooldown`).
+ * pendiente: sustituirlo por el clasificador de errores (tarea #91).
+ */
+function isRequestScoped(status: number): boolean {
+  return status >= 400 && status < 500 && !fallsOver(status)
+}
+
 /** Estados que hacen pasar al siguiente upstream (`Bv`). */
 function fallsOver(status: number): boolean {
   return status >= 500 || status === 429 || status === 401 || status === 403 || status === 404
@@ -142,9 +155,13 @@ async function forwardBody(
       continue
     }
     attempted = true
+    // Por upstream, una metadata propia: la afinidad escribe en ella su espacio de nombres.
+    const selection = { headers: request.headers, payload: body, metadata: {} }
+    const report = (success: boolean, skipCooldown = false) =>
+      config.selector.onResult?.({ authId: credential.id, provider: upstream.provider, model: resolved.model, success, skipCooldown, options: selection })
     let credential: ProxyCredential
     try {
-      credential = config.selector.pick(upstream.provider, resolved.model, config.credentials[upstream.name] ?? [])
+      credential = config.selector.pick(upstream.provider, resolved.model, config.credentials[upstream.name] ?? [], new Date(), selection)
     } catch (error) {
       reasons.push(`${upstream.name}: ${error instanceof Error ? error.message : String(error)}`)
       continue
@@ -160,6 +177,7 @@ async function forwardBody(
         headers: request.headers,
         signal: request.signal,
       })
+      report(response.status < 400, isRequestScoped(response.status))
       if (fallsOver(response.status)) {
         reasons.push(`${response.status} ${response.statusText}`)
         if (response.status === 501) { discard(notImplemented); notImplemented = response }
@@ -172,6 +190,8 @@ async function forwardBody(
       for (const kept of [notImplemented, rateLimited, unauthorized, notFound]) discard(kept)
       return response
     } catch (error) {
+      // Un cierre del cliente no es culpa de la credencial.
+      report(false, request.signal.aborted)
       reasons.push(error instanceof Error ? error.message : String(error))
     }
   }

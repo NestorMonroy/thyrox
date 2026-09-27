@@ -7,7 +7,8 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { AccessManager, createConfigApiKeyProvider } from '../src/proxy/access.ts'
-import { FillFirstSelector, type ProxyCredential } from '../src/proxy/credentialSelectors.ts'
+import { FillFirstSelector, type ProxyCredential, RoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
+import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
 import { createProxyHandler, SECURITY_HEADERS, type ForwardRequest } from '../src/proxy/server.ts'
 
 const KEY = 'sk-local-test'
@@ -140,5 +141,63 @@ describe('reenvío con conmutación (Bv)', () => {
 
   test('/v1/messages/count_tokens también es de inferencia', async () => {
     expect((await handlerWith({})(post({ model: 'mx' }, {}, '/v1/messages/count_tokens'))).status).toBe(200)
+  })
+})
+
+describe('afinidad de sesión en el reenvío', () => {
+  const single = { upstreams: [{ name: 'b', provider: 'anthropic' }], models: [{ id: 'mx', upstream_model: { b: 'mx-b' } }], auto_include_builtin_models: false }
+  const affinityHandler = (status: () => number, seen: ForwardRequest[], selector = new SessionAffinitySelector({ fallback: new RoundRobinSelector(), cleanup: false })) =>
+    createProxyHandler({
+      access: new AccessManager([createConfigApiKeyProvider([KEY])!]),
+      routing: single,
+      credentials: { b: [{ id: 'b1' }, { id: 'b2' }] },
+      selector,
+      forward: async request => {
+        seen.push(request)
+        return Response.json({ ok: true }, { status: status() })
+      },
+    })
+  const session = (id: string) => ({ 'x-session-id': id })
+  const lastCredential = (seen: ForwardRequest[]) => seen[seen.length - 1]!.credential.id
+
+  test('la misma sesión vuelve a la misma credencial; otra sesión reparte', async () => {
+    const seen: ForwardRequest[] = []
+    const handler = affinityHandler(() => 200, seen)
+    await handler(post({ model: 'mx' }, session('s1')))
+    const bound = lastCredential(seen)
+    await handler(post({ model: 'mx' }, session('s2')))
+    expect(lastCredential(seen)).not.toBe(bound)
+    for (let i = 0; i < 3; i++) {
+      await handler(post({ model: 'mx' }, session('s1')))
+      expect(lastCredential(seen)).toBe(bound)
+    }
+  })
+
+  test('el selector ve el cuerpo del cliente: la sesión del cuerpo vincula', async () => {
+    const seen: ForwardRequest[] = []
+    const handler = affinityHandler(() => 200, seen)
+    const body = { model: 'mx', metadata: { user_id: 'user_x_account__session_body-session' } }
+    await handler(post(body))
+    const bound = lastCredential(seen)
+    await handler(post({ model: 'mx', metadata: { user_id: 'user_x_account__session_other' } }))
+    for (let i = 0; i < 2; i++) {
+      await handler(post(body))
+      expect(lastCredential(seen)).toBe(bound)
+    }
+  })
+
+  test('un fallo de la credencial libera la vinculación; uno de la petición la conserva', async () => {
+    const seen: ForwardRequest[] = []
+    let status = 200
+    const selector = new SessionAffinitySelector({ fallback: new RoundRobinSelector(), cleanup: false })
+    const handler = affinityHandler(() => status, seen, selector)
+    await handler(post({ model: 'mx' }, session('s1')))
+    const bound = lastCredential(seen)
+    status = 400
+    await handler(post({ model: 'mx' }, session('s1')))
+    expect(selector.lookupAffinity('anthropic', 'mx-b', 'header:s1')).toEqual({ authId: bound, status: 'bound' })
+    status = 429
+    await handler(post({ model: 'mx' }, session('s1')))
+    expect(selector.lookupAffinity('anthropic', 'mx-b', 'header:s1')).toEqual({ authId: '', status: 'unbound' })
   })
 })

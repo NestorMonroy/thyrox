@@ -17,10 +17,11 @@
  * (429 y `Retry-After`).
  *
  * Divergencias declaradas, con su razón:
- * - `preferCodexWebsocketAuths` y la afinidad por sesión
- *   (`SessionAffinitySelector`) no se portan en este pase: son de Codex y de
- *   la vinculación de sesión, que thyrox aún no enruta. pendiente: portarlas
- *   con el servidor proxy (tarea #77), que es quien tiene sesión y proveedor.
+ * - `preferCodexWebsocketAuths` no se porta: prefiere credenciales con
+ *   websocket de Codex, un transporte que el proxy de thyrox no abre.
+ *   pendiente: portarlo cuando el proxy hable websocket con Codex.
+ * - La afinidad por sesión (`SessionAffinitySelector`) vive en
+ *   `session/affinitySelector.ts`, que envuelve a estos selectores.
  * - `ModelCooldownError` no lleva la causa aguas arriba: su resumen pasa por
  *   `ExtractUpstreamErrorSummary` y un saneador de ~20 expresiones que es
  *   otro módulo. pendiente: portarlo junto a los traductores (tarea #76).
@@ -30,6 +31,9 @@
  * - El contexto de Go (`prevalidatedAuthCandidatesKey`, el modelo de estado
  *   ponderado) no se porta: sin `context.Context`, quien llama pasa el modelo.
  */
+
+import type { SessionHeaders, SessionMetadata } from './session/info.ts'
+import type { JsonObject } from './session/payload.ts'
 
 export type QuotaState = { exceeded?: boolean; reason?: string; nextRecoverAt?: Date }
 
@@ -51,6 +55,14 @@ export type ProxyCredential = {
   modelStates?: Record<string, ModelState | undefined>
   attributes?: Record<string, string>
   metadata?: Record<string, unknown>
+}
+
+/** Lo que la petición aporta a la selección: la afinidad por sesión lo lee. */
+export type PickOptions = {
+  headers?: SessionHeaders
+  payload?: string | JsonObject
+  /** La metadata de ejecución; la afinidad escribe en ella sus claves. */
+  metadata?: SessionMetadata
 }
 
 export type BlockReason = 'none' | 'cooldown' | 'disabled' | 'other'
@@ -200,8 +212,13 @@ export function isAuthBlockedForModel(credential: ProxyCredential, model: string
   return availabilityBlock(!!credential.unavailable, quotaExceeded, credential.nextRetryAfter, quota.nextRecoverAt, now)
 }
 
-/** Las disponibles del nivel más alto, por id; o el error que corresponde. */
-export function availableCredentials(credentials: ProxyCredential[], provider: string, model: string, now: Date): ProxyCredential[] {
+/**
+ * Las disponibles, por id; o el error que corresponde. Por defecto, sólo las
+ * del nivel de prioridad más alto; con `acrossPriorities`, las de todos los
+ * niveles juntas, sin orden de prioridad: sirven para comprobar pertenencia o
+ * para pasarlas por `highestPriorityCredentials`, nunca como orden de elección.
+ */
+export function availableCredentials(credentials: ProxyCredential[], provider: string, model: string, now: Date, acrossPriorities = false): ProxyCredential[] {
   if (credentials.length === 0) throw new SelectorError('auth_not_found', 'no auth candidates')
   const byPriority = new Map<number, ProxyCredential[]>()
   let cooling = 0
@@ -225,8 +242,21 @@ export function availableCredentials(credentials: ProxyCredential[], provider: s
     }
     throw new SelectorError('auth_unavailable', 'no auth available')
   }
-  const best = Math.max(...byPriority.keys())
-  return [...byPriority.get(best)!].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+  const chosen = acrossPriorities ? [...byPriority.values()].flat() : [...byPriority.get(Math.max(...byPriority.keys()))!]
+  return chosen.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+}
+
+/** Las del nivel de prioridad más alto, en el orden de entrada. */
+export function highestPriorityCredentials(credentials: ProxyCredential[]): ProxyCredential[] {
+  if (credentials.length <= 1) return credentials
+  const best = Math.max(...credentials.map(authPriority))
+  const highest = credentials.filter(c => authPriority(c) === best)
+  return highest.length === credentials.length ? credentials : highest
+}
+
+/** Las de peso positivo: el round-robin ponderado no ve las de peso 0. */
+export function positiveWeightCredentials(credentials: ProxyCredential[]): ProxyCredential[] {
+  return credentials.filter(c => authWeight(c) > 0)
 }
 
 /** El índice del primer candidato con id posterior a `lastId`, con vuelta al principio. */
@@ -236,8 +266,21 @@ export function successorIndex(available: ProxyCredential[], lastId: string): nu
   return index === -1 ? 0 : index
 }
 
+/** El desenlace de una petición con la credencial elegida. */
+export type SelectionResult = {
+  authId: string
+  provider: string
+  model: string
+  success: boolean
+  /** La falla es de la petición, no de la credencial: las vinculaciones se conservan. */
+  skipCooldown?: boolean
+  options?: PickOptions
+}
+
 export interface CredentialSelector {
-  pick(provider: string, model: string, credentials: ProxyCredential[], now?: Date): ProxyCredential
+  pick(provider: string, model: string, credentials: ProxyCredential[], now?: Date, options?: PickOptions): ProxyCredential
+  /** Lo que el selector aprende del resultado; los que no guardan estado no lo implementan. */
+  onResult?(result: SelectionResult): void
 }
 
 export class FillFirstSelector implements CredentialSelector {
@@ -276,8 +319,7 @@ export class WeightedRoundRobinSelector implements CredentialSelector {
   constructor(private readonly maxKeys = DEFAULT_MAX_KEYS) {}
 
   pick(provider: string, model: string, credentials: ProxyCredential[], now = new Date()): ProxyCredential {
-    const positive = credentials.filter(c => authWeight(c) > 0)
-    const available = availableCredentials(positive, provider, model, now)
+    const available = availableCredentials(positiveWeightCredentials(credentials), provider, model, now)
     const key = `${provider}:${canonicalModelKey(model)}`
     if (!this.states.has(key) && this.states.size >= (this.maxKeys > 0 ? this.maxKeys : DEFAULT_MAX_KEYS)) {
       this.states = new Map()

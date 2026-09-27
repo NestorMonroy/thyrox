@@ -6,7 +6,9 @@
  * upstreams no salen de la máquina); nada aquí necesita thyrox.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { startProxyServer } from '../src/proxy/startServer.ts'
+import { createSelector, startProxyServer } from '../src/proxy/startServer.ts'
+import { FillFirstSelector, WeightedRoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
+import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
 import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
 
 const stops: (() => void)[] = []
@@ -90,5 +92,20 @@ describe('startProxyServer', () => {
 describe('startProxyServer sin claves locales', () => {
   test('rehúsa arrancar abierto: las credenciales del upstream quedarían al alcance de cualquier proceso', () => {
     expect(() => startProxyServer({ ...config('http://127.0.0.1:1'), accessKeys: [] })).toThrow(/clave/)
+  })
+})
+
+describe('createSelector', () => {
+  test('sin afinidad declarada, la estrategia tal cual', () => {
+    expect(createSelector('fill-first')).toBeInstanceOf(FillFirstSelector)
+    expect(createSelector('weighted-round-robin')).toBeInstanceOf(WeightedRoundRobinSelector)
+  })
+
+  test('con afinidad, la estrategia queda como respaldo del selector de sesión', () => {
+    const selector = createSelector('fill-first', { ttlMs: 60_000, subagents: false })
+    expect(selector).toBeInstanceOf(SessionAffinitySelector)
+    const pool = [{ id: 'a' }, { id: 'b' }]
+    expect(selector.pick('p', 'm', pool, new Date(), {})!.id).toBe('a')
+    ;(selector as SessionAffinitySelector).stop()
   })
 })

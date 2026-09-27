@@ -29,6 +29,7 @@ import {
 } from './credentialSelectors.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
 import { createProxyHandler } from './server.ts'
+import { SessionAffinitySelector } from './session/affinitySelector.ts'
 import { createHttpForwarder, type RawUpstreamEndpoint } from './upstreamForwarder.ts'
 import type { GatewayRoutingConfig } from './upstreamRouting.ts'
 
@@ -42,9 +43,18 @@ export type ProxyStartConfig = {
   endpoints: Record<string, RawUpstreamEndpoint | undefined>
   credentials: Record<string, ProxyCredential[] | undefined>
   selector: SelectorName
+  /** La afinidad por sesión (`routing.session-affinity`); sin declarar, apagada. */
+  sessionAffinity?: SessionAffinityOptions
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
+}
+
+export type SessionAffinityOptions = {
+  /** Cuánto dura una vinculación sin uso (`session-affinity-ttl`); por defecto, una hora. */
+  ttlMs?: number
+  /** Si un subagente hereda la credencial del padre (`session-affinity-subagents`); por defecto, sí. */
+  subagents?: boolean
 }
 
 export type RunningProxy = { url: string; stop: () => void }
@@ -53,6 +63,13 @@ const SELECTORS: Record<SelectorName, () => CredentialSelector> = {
   'fill-first': () => new FillFirstSelector(),
   'round-robin': () => new RoundRobinSelector(),
   'weighted-round-robin': () => new WeightedRoundRobinSelector(),
+}
+
+/** La estrategia nombrada, envuelta por la afinidad por sesión si se declara. */
+export function createSelector(name: SelectorName, sessionAffinity?: SessionAffinityOptions): CredentialSelector {
+  const strategy = SELECTORS[name]()
+  if (!sessionAffinity) return strategy
+  return new SessionAffinitySelector({ fallback: strategy, ttlMs: sessionAffinity.ttlMs, subagentAffinity: sessionAffinity.subagents })
 }
 
 export function startProxyServer(config: ProxyStartConfig): RunningProxy {
@@ -72,7 +89,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     access: new AccessManager([keyProvider]),
     routing: config.routing,
     credentials: config.credentials,
-    selector: SELECTORS[config.selector](),
+    selector: createSelector(config.selector, config.sessionAffinity),
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,

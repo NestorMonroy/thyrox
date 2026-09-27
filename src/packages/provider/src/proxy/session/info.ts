@@ -38,6 +38,11 @@ export const METADATA_KEYS = {
   canonicalSession: 'canonical_session_id',
   parentSession: 'parent_session_id',
   isCompaction: 'is_compaction',
+  isFork: 'is_fork',
+  nodeKind: 'node_kind',
+  lcpAccessGeneration: 'lcp_access_generation',
+  sessionAffinityProvider: 'session_affinity_provider',
+  sessionAffinityModel: 'session_affinity_model',
 } as const
 
 export type SessionMetadata = Record<string, unknown>

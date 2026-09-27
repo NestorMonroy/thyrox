@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: el subagente no es alias del padre > revincular al padre no arrastra la vinculación del subagente [0.58ms]
+ 60 pass
+ 1 fail

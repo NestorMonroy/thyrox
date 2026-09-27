@@ -1,0 +1,3 @@
+(fail) afinidad de sesión en el reenvío > un fallo de la credencial libera la vinculación; uno de la petición la conserva [1.98ms]
+ 21 pass
+ 1 fail
