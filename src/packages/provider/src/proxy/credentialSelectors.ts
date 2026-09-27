@@ -22,9 +22,8 @@
  *   pendiente: portarlo cuando el proxy hable websocket con Codex.
  * - La afinidad por sesión (`SessionAffinitySelector`) vive en
  *   `session/affinitySelector.ts`, que envuelve a estos selectores.
- * - `ModelCooldownError` no lleva la causa aguas arriba: su resumen pasa por
- *   `ExtractUpstreamErrorSummary` y un saneador de ~20 expresiones que es
- *   otro módulo. pendiente: portarlo junto a los traductores (tarea #76).
+ * - `ModelCooldownError` recibe su causa como texto, no como un error de Go;
+ *   la resume y la sanea `./upstreamErrorSummary.ts`.
  * - `hasUnauthorizedAuthFailure` y la caducidad del token de acceso se
  *   modelan como dos campos de la credencial (`unauthorized`,
  *   `accessTokenExpiresAt`) en vez de derivarse del estado de Go.
@@ -34,6 +33,7 @@
 
 import type { SessionHeaders, SessionMetadata } from './session/info.ts'
 import type { JsonObject } from './session/payload.ts'
+import { extractUpstreamErrorSummary } from './upstreamErrorSummary.ts'
 
 export type QuotaState = { exceeded?: boolean; reason?: string; nextRecoverAt?: Date }
 
@@ -109,6 +109,8 @@ export class ModelCooldownError extends Error {
     readonly model: string,
     readonly provider: string,
     readonly resetInMs: number,
+    /** El último error del upstream, en crudo: el error lo resume y lo sanea. */
+    readonly cause?: string,
   ) {
     const resetIn = Math.max(0, resetInMs)
     const resetSeconds = Math.max(0, Math.ceil(resetIn / 1000))
@@ -123,6 +125,11 @@ export class ModelCooldownError extends Error {
       reset_seconds: resetSeconds,
     }
     if (provider) body.provider = provider
+    const causeText = cause ? extractUpstreamErrorSummary(cause) : ''
+    if (causeText) {
+      body.last_upstream_error = causeText
+      body.message = `${message} (last error: ${causeText})`
+    }
     super(JSON.stringify({ error: body }))
     this.resetSeconds = resetSeconds
   }

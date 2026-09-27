@@ -36,6 +36,8 @@ export type CredentialFailure = {
 
 export class CredentialCooldown {
   private readonly backoffLevels = new Map<string, number>()
+  /** El último error de cada credencial, con su instante. */
+  private readonly lastErrors = new Map<string, { text: string; at: number }>()
   /** Las credenciales dadas de baja: un fallo transitorio no las rehabilita. */
   private readonly terminal = new Set<string>()
 
@@ -50,6 +52,7 @@ export class CredentialCooldown {
     const { credential, status, model } = failure
     const now = failure.now ?? new Date()
     const errorText = failure.errorText ?? ''
+    this.lastErrors.set(credential.id, { text: failure.errorText ?? `HTTP ${status}`, at: now.getTime() })
     if (this.terminal.has(credential.id)) return { shouldFallback: true, cooldownMs: 0 }
     const remaining = cooledUntil(credential, now)
     if (remaining > 0) return { shouldFallback: true, cooldownMs: remaining }
@@ -72,6 +75,9 @@ export class CredentialCooldown {
     if (decision.cooldownMs > 0) {
       credential.unavailable = true
       credential.nextRetryAfter = until
+      // Como `MarkResult` de CLIProxyAPI: sólo un 429 es cuota, y el selector
+      // distingue por ella «enfriada» (429 con causa) de «no disponible» (503).
+      if (status === 429) credential.quota = { exceeded: true, reason: 'quota', nextRecoverAt: until }
     }
     return decision
   }
@@ -80,8 +86,23 @@ export class CredentialCooldown {
   clear(credential: ProxyCredential): void {
     if (this.terminal.has(credential.id)) return
     this.backoffLevels.delete(credential.id)
+    this.lastErrors.delete(credential.id)
     credential.unavailable = false
     credential.nextRetryAfter = undefined
+    credential.quota = undefined
+  }
+
+  /**
+   * El error más reciente entre estas credenciales; a igual instante, el de id
+   * mayor. Es la causa que el error de enfriamiento de todas ellas cuenta.
+   */
+  latestError(credentials: readonly ProxyCredential[]): string | undefined {
+    let latest: { id: string; text: string; at: number } | undefined
+    for (const { id } of credentials) {
+      const entry = this.lastErrors.get(id)
+      if (entry && (!latest || entry.at > latest.at || (entry.at === latest.at && id > latest.id))) latest = { id, ...entry }
+    }
+    return latest?.text
   }
 }
 

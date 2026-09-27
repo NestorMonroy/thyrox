@@ -1,0 +1,20 @@
+no-json	s/^  const summary = summaryFromJson(jsonPart)$/  const summary = ''/
+no-prefix-json	s/^  if (idx !== -1 \&\& idx < 50) jsonPart = text.slice(idx + 2).trim()$/  void idx/
+no-code-join	s/^    return sameOrContained ? message : `\${code}: \${message}`$/    return message/
+no-root-fallback	s/^  if (!code \&\& !message) {$/  if (false) {/
+no-truncate	s/^  return runes.length > 256 ? runes.slice(0, 253).join('') + '...' : runes.join('')$/  return runes.join('')/
+no-scheme-auth	s/^  s = s.replace(SCHEME_AUTH, '\$1\[REDACTED_AUTH\]@')$/  s = s/
+no-query	s/^    .replace(QUERY_PARAM, '\$1\[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-connector	s/^  if (connector) {$/  if (false) {/
+no-before-colon	s/^  s = redactPathBeforeColon(s)$/  void 0/
+no-unix	s/^    s = s.replace(UNIX_PATH, '\$1\[REDACTED_PATH\]')$/    void 0/
+no-file-ext	s/^  return s.replace(FILE_EXT_PATH, '\$1\[REDACTED_PATH\]')$/  return s/
+no-windows	s/^    .replace(WINDOWS_PATH, '\[REDACTED_PATH\]')$/    .replace(\/$^\/, '')/
+no-cookie	s/^    .replace(COOKIE, 'Cookie: \[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-auth-header	s/^    .replace(AUTH_HEADER, 'Authorization: \[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-sk	s/^    .replace(SK_KEY, 'sk-\[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-bearer	s/^    .replace(BEARER, 'Bearer \[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-invalid-token	s/^    .replace(INVALID_TOKEN, '\$1 token \[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-natural	s/^    .replace(NATURAL_SECRET, '\$1: \[REDACTED\]')$/    .replace(\/$^\/, '')/
+no-key-value	s/^    .replace(KEY_VALUE, '\$1\[REDACTED\]')$/    .replace(\/$^\/, '')/
+js-space	s/^      out += next === 's' ? (inClass ? ASCII_SPACE : `\[\${ASCII_SPACE}\]`) : c + (next ?? '')$/      out += c + (next ?? '')/

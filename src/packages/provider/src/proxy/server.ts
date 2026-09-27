@@ -38,7 +38,7 @@
  */
 import { randomUUID } from 'node:crypto'
 import { type AccessManager, httpStatusOf } from './access.ts'
-import type { CredentialSelector, ProxyCredential } from './credentialSelectors.ts'
+import { type CredentialSelector, ModelCooldownError, type ProxyCredential } from './credentialSelectors.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
 import { compactMessagesBody } from './context/compactRequest.ts'
 import type { ContextWindowOf } from './context/contextManager.ts'
@@ -128,6 +128,16 @@ export function errorResponse(status: number, type: string, message: string, req
   )
 }
 
+/**
+ * El 429 de un grupo en enfriamiento (`newModelCooldownErrorWithCause`): el
+ * error del selector más el último fallo de sus credenciales, que dice al
+ * cliente por qué está enfriado y no sólo cuánto le falta.
+ */
+function cooldownResponse(config: ProxyServerConfig, error: ModelCooldownError, credentials: ProxyCredential[]): Response {
+  const cause = config.cooldown?.latestError(credentials)
+  const withCause = new ModelCooldownError(error.model, error.provider, error.resetInMs, cause)
+  return new Response(withCause.message, { status: withCause.statusCode, headers: withCause.headers() })
+}
 
 /** Estados que hacen pasar al siguiente upstream (`Bv`). */
 function fallsOver(status: number): boolean {
@@ -198,6 +208,8 @@ async function forwardBody(
   const startedAt = performance.now()
   let attempts = 0
   let lastTried: GatewayUpstream | undefined
+  // Un enfriamiento de todo el grupo no es una petición inválida: vuelve como 429 con su causa.
+  let cooling: { error: ModelCooldownError, credentials: ProxyCredential[] } | undefined
   const settle = (served: GatewayUpstream | undefined, success: boolean) =>
     combo?.record(served, success, performance.now() - startedAt, attempts)
 
@@ -219,6 +231,7 @@ async function forwardBody(
     try {
       credential = config.selector.pick(upstream.provider, resolved.model, config.credentials[upstream.name] ?? [], new Date(), selection)
     } catch (error) {
+      if (error instanceof ModelCooldownError) cooling = { error, credentials: config.credentials[upstream.name] ?? [] }
       reasons.push(`${upstream.name}: ${error instanceof Error ? error.message : String(error)}`)
       continue
     }
@@ -277,6 +290,7 @@ async function forwardBody(
   if (unauthorized) { for (const r of [notImplemented, notFound]) discard(r); return unauthorized }
   if (notFound) { discard(notImplemented); return notFound }
   if (notImplemented) return notImplemented
+  if (cooling) return cooldownResponse(config, cooling.error, cooling.credentials)
   return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted)`, requestId)
 }
 

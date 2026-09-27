@@ -99,18 +99,34 @@ describe('CredentialCooldown.markUnavailable', () => {
     expect(credential.unavailable).toBeUndefined()
     expect(credential.nextRetryAfter).toBeUndefined()
   })
+
+  test('un 429 escribe además la cuota agotada, que el selector lee como enfriamiento', () => {
+    const credential: ProxyCredential = { id: 'a' }
+    const decision = cooldown().markUnavailable(failure(credential, 429, 'Rate limit hit'))
+    expect(credential.quota).toEqual({ exceeded: true, reason: 'quota', nextRecoverAt: at(decision.cooldownMs) })
+    expect(() => new FillFirstSelector().pick('openai', 'gpt-4o', [credential], NOW)).toThrow('cooling down')
+  })
+
+  test('un 5xx enfría sin cuota: el selector lo da por no disponible, no por enfriado', () => {
+    const credential: ProxyCredential = { id: 'a' }
+    cooldown().markUnavailable(failure(credential, 503, 'upstream down'))
+    expect(credential.unavailable).toBe(true)
+    expect(credential.quota).toBeUndefined()
+    expect(() => new FillFirstSelector().pick('openai', 'gpt-4o', [credential], NOW)).toThrow('no auth available')
+  })
 })
 
 describe('CredentialCooldown.clear', () => {
   test('un acierto retira el enfriamiento y vuelve el retroceso a cero', () => {
     const credential: ProxyCredential = { id: 'a' }
     const layer = cooldown()
-    const first = layer.markUnavailable(failure(credential, 502, null))
+    const first = layer.markUnavailable(failure(credential, 429, null))
     layer.clear(credential)
     expect(credential.unavailable).toBe(false)
     expect(credential.nextRetryAfter).toBeUndefined()
+    expect(credential.quota).toBeUndefined()
     expect(layer.backoffLevelOf('a')).toBe(0)
-    const again = layer.markUnavailable(failure(credential, 502, null, { now: at(first.cooldownMs + 1) }))
+    const again = layer.markUnavailable(failure(credential, 429, null, { now: at(first.cooldownMs + 1) }))
     expect(again.cooldownMs).toBe(first.cooldownMs)
   })
 
