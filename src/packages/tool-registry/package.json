@@ -787,6 +787,11 @@
       "types": "./dist/tools/WebFetchTool/WebFetchTool.d.ts",
       "default": "./src/tools/WebFetchTool/WebFetchTool.ts"
     },
+    "./tools/WebFetchTool/preapproved.js": {
+      "@thyrox/source": "./src/tools/WebFetchTool/preapproved.ts",
+      "types": "./dist/tools/WebFetchTool/preapproved.d.ts",
+      "default": "./src/tools/WebFetchTool/preapproved.ts"
+    },
     "./tools/WebFetchTool/prompt.js": {
       "@thyrox/source": "./src/tools/WebFetchTool/prompt.ts",
       "types": "./dist/tools/WebFetchTool/prompt.d.ts",

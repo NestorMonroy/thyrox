@@ -485,6 +485,9 @@
       "@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js": [
         "./src/tools/WebFetchTool/WebFetchTool.ts"
       ],
+      "@thyrox/tool-registry/tools/WebFetchTool/preapproved.js": [
+        "./src/tools/WebFetchTool/preapproved.ts"
+      ],
       "@thyrox/tool-registry/tools/WebFetchTool/prompt.js": [
         "./src/tools/WebFetchTool/prompt.ts"
       ],
