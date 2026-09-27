@@ -22,38 +22,31 @@ import { join } from 'path'
 let dir: string
 
 /**
- * MEDIDO en este archivo, con una sonda de tres casos: en bun 1.3.11 un
- * `mock.module` NO se puede deshacer. Ni `mock.restore()` lo revierte, ni
- * volver a registrar el espacio de nombres real capturado antes de sustituir.
- * Es hermano de la #261 y por el mismo motivo se declara aquí: el fallo que
- * produce ENGAÑA. Un caso que sustituía `fsOperations` para devolver 21 MB
- * dejaba a un caso posterior —el del archivo vacío— recibiendo ese tamaño, y
- * el veredicto salía «corrupted» tres ramas más abajo en vez de «empty».
+ * MEDIDO en bun 1.3.11: `mock.restore()` no revierte un `mock.module`, y
+ * volver a registrar el espacio de nombres real tampoco, porque la
+ * sustitución lo parchea EN SU SITIO. Lo que sí lo revierte es registrar una
+ * COPIA de sus exportaciones tomada antes de sustituir
+ * (`test-isolation-leaks-20260927T080507`). Por eso `realExecFileNoThrow` se
+ * captura aquí y se vuelve a registrar tras cada caso: el caso 7, el único
+ * que usa el `execFileNoThrow` real, dependía de correr antes que los que lo
+ * sustituyen, y con `--randomize` recibía el `Pages: 42` de otro caso
+ * (`test-order-leaks-20260927T082148`).
  *
- * Por eso `fsOperations` se sustituye UNA vez, aquí, con un tamaño que cada
- * caso declara. El default consulta el archivo real, así que un caso que no
- * toque `sizeOverride` mide lo que hay en disco.
+ * `fsOperations` NO se sustituye: el caso del tope de tamaño usa un archivo
+ * DISPERSO de 21 MB, que ocupa cero en disco y declara ese tamaño al `stat`
+ * real. Si el orden de las guardas se invirtiera, ese archivo se leería
+ * entero y su ausencia de cabecera daría «corrupted» en vez de «too_large»,
+ * que es justo lo que el caso distingue.
  */
-/**
- * MEDIDO aquí con una sonda de tres casos: en bun 1.3.11 un `mock.module` NO
- * se puede deshacer —ni con `mock.restore()`, ni volviendo a registrar el
- * espacio de nombres real capturado antes— y ADEMÁS no se queda en su
- * archivo: `bun test` corre todos en un proceso, así que alcanza a los demás.
- * Es hermano de la #261.
- *
- * Consecuencia para este archivo: `fsOperations` NO se sustituye. El caso del
- * tope de tamaño usa un archivo DISPERSO de 21 MB, que ocupa cero en disco y
- * declara ese tamaño al `stat` real. Sale más fuerte que el sustituto: si el
- * orden de las guardas se invirtiera, ese archivo se leería entero y su
- * ausencia de cabecera daría «corrupted» en vez de «too_large», que es justo
- * lo que el caso distingue.
- */
+const realExecFileNoThrow = { ...(await import('@thyrox/shell/execFileNoThrow.js')) }
+
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'pdf-'))
 })
 
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true })
+  mock.module('@thyrox/shell/execFileNoThrow.js', () => realExecFileNoThrow)
 })
 
 /** Un PDF mínimo válido: lo único que `readPDF` mira es la cabecera. */

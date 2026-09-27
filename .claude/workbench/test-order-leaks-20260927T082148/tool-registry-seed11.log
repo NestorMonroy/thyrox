@@ -1,0 +1,63 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/__tests__/ripgrep.test.ts:
+281 |     const count = await countFilesRoundedRg(
+282 |       join(root, 'count-fixture'),
+283 |       new AbortController().signal,
+284 |       ['zzz-no-such-pattern-16'],
+285 |     )
+286 |     expect(count).toBe(10)
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: 10
+Received: 20
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:286:19)
+(fail) countFilesRoundedRg — conteo memoizado redondeado a potencia de 10 > 16. cuenta y redondea el número de archivos del fixture (12 → 10) [8.49ms]
+
+src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/packages/tool-registry/src/__tests__/pdf.test.ts:
+155 |     //
+156 |     // Este caso es el único que usa el `execFileNoThrow` REAL, y por eso va
+157 |     // antes que los que lo sustituyen: la sustitución no se puede deshacer
+158 |     // (ver la nota de la cabecera), así que su orden no es cosmético.
+159 |     const { getPDFPageCount } = await import('../pdf.ts')
+160 |     expect(await getPDFPageCount(writePdf('x.pdf'))).toBeNull()
+                                                           ^
+error: expect(received).toBeNull()
+
+Received: 42
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/pdf.test.ts:160:54)
+(fail) getPDFPageCount — el conteo, y su ausencia > 7. sin pdfinfo devuelve null en vez de lanzar [0.49ms]
+
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+ --seed=11
+ 1416 pass
+ 2 fail
+ 3218 expect() calls
+Ran 1418 tests across 85 files. [7.64s]
+EXIT=1
+EXIT=0

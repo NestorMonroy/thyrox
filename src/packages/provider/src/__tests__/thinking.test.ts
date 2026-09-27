@@ -1,12 +1,20 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { ConnectionRecord } from '@thyrox/config'
 
-// getGlobalConfig is still mocked because the test needs to feed in
-// arbitrary connection lists; replicating that via writable settings would
-// be heavier than the mock. envMap was previously another mock.module —
-// migrated to setEnv/restore below to remove process-wide env-utils
-// pollution (see feedback_self_audit_before_declaring_done.md).
-const realConfigModule = await import('@thyrox/config')
+// `getGlobalConfig` se sustituye porque la prueba necesita alimentar listas
+// de conexiones arbitrarias; reproducirlo con ajustes escribibles pesaría más
+// que la sustitución. `envMap` era antes otro `mock.module` y pasó a
+// guardar-y-restaurar el entorno (abajo), para no contaminar `env-utils` en
+// todo el proceso.
+//
+// La sustitución se DESHACE al terminar el archivo registrando la copia de
+// las exportaciones reales tomada antes: sin ella, `providerRouting.test.ts`
+// corrido después con `--randomize` leía este `getGlobalConfig` fijo (banco
+// `test-order-leaks-20260927T082148`).
+const realConfigModule = { ...(await import('@thyrox/config')) }
+afterAll(() => {
+  mock.module('@thyrox/config', () => realConfigModule)
+})
 const config = {
   connections: [] as ConnectionRecord[],
 }

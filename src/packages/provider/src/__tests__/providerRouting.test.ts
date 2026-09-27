@@ -1,7 +1,16 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { ConnectionRecord } from '@thyrox/config'
 
-const realConfigModule = await import('@thyrox/config')
+// Las dos sustituciones se DESHACEN al terminar el archivo registrando las
+// copias de las exportaciones reales tomadas antes: sin ellas, la otra
+// `providerRouting.test.ts` (`__tests__/`) corrida después con `--randomize`
+// leía este `getGlobalConfig` fijo (banco `test-order-leaks-20260927T082148`).
+const realConfigModule = { ...(await import('@thyrox/config')) }
+const realSettingsModule = { ...(await import('@thyrox/config/settings')) }
+afterAll(() => {
+  mock.module('@thyrox/config', () => realConfigModule)
+  mock.module('@thyrox/config/settings', () => realSettingsModule)
+})
 const config = {
   connections: [] as ConnectionRecord[],
 }
@@ -11,11 +20,10 @@ mock.module('@thyrox/config', () => ({
   getGlobalConfig: () => config,
 }))
 
-// `getAPIProvider()` calls `getInitialSettings()` from config/settings,
-// which requires host bindings to be installed at runtime. Tests don't
-// install bindings — stub a minimal settings object so the env-fallback
-// branches of getProviderForModel / isFirstPartyAnthropicEndpoint can run.
-const realSettingsModule = await import('@thyrox/config/settings')
+// `getAPIProvider()` consulta `getInitialSettings()`, que en ejecución exige
+// bindings instalados. La suite no los instala: se sustituye por un objeto
+// vacío para que corran las ramas de respaldo por variable de entorno de
+// getProviderForModel / isFirstPartyAnthropicEndpoint.
 mock.module('@thyrox/config/settings', () => ({
   ...realSettingsModule,
   getInitialSettings: () => ({}),

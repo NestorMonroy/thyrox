@@ -60,7 +60,7 @@
  * vacio no llega a mirarla — sale por la misma rama de entorno que el 8 y el
  * 15. Cuando la tarea #260 cierre, el 11 dejara de caer con esta anulacion.
  */
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { ConnectionRecord } from '../src/connections.js'
 
 const { saveGlobalConfig } = await import('@thyrox/config/global/config.js')
@@ -77,9 +77,17 @@ function setConnections(connections: ConnectionRecord[]): void {
 // `getAPIProvider()` consulta los ajustes iniciales, que en ejecucion exigen
 // bindings instalados. La suite no los instala: se sustituye por un objeto
 // vacio para que corran las ramas de respaldo por variable de entorno.
-const ajustesReales = await import('@thyrox/config/settings')
+//
+// Se toma una COPIA de las exportaciones reales y se vuelve a registrar al
+// terminar el archivo: sin ella, la otra `providerRouting.test.ts`
+// (`src/__tests__`) corrida después con `--randomize` leía estos ajustes
+// vacíos (banco `test-order-leaks-20260927T082148`).
+const realSettings = { ...(await import('@thyrox/config/settings')) }
+afterAll(() => {
+  mock.module('@thyrox/config/settings', () => realSettings)
+})
 mock.module('@thyrox/config/settings', () => ({
-  ...ajustesReales,
+  ...realSettings,
   getInitialSettings: () => ({}),
 }))
 
@@ -87,7 +95,7 @@ const { getProviderForModel, isFirstPartyAnthropicEndpoint } = await import(
   '../src/providers.js'
 )
 
-const CLAVES = [
+const TRACKED_KEYS = [
   'ANTHROPIC_BASE_URL',
   'CLAUDE_CODE_USE_BEDROCK',
   'CLAUDE_CODE_USE_VERTEX',
@@ -95,23 +103,23 @@ const CLAVES = [
   'CLAUDE_CODE_USE_OPENAI',
   'CLAUDE_CODE_USE_GEMINI',
 ] as const
-const guardado = new Map<string, string | undefined>()
+const savedEnv = new Map<string, string | undefined>()
 
 beforeEach(() => {
   setConnections([])
-  for (const k of CLAVES) {
-    guardado.set(k, process.env[k])
+  for (const k of TRACKED_KEYS) {
+    savedEnv.set(k, process.env[k])
     delete process.env[k]
   }
 })
 
 afterEach(() => {
-  for (const k of CLAVES) {
-    const v = guardado.get(k)
+  for (const k of TRACKED_KEYS) {
+    const v = savedEnv.get(k)
     if (v === undefined) delete process.env[k]
     else process.env[k] = v
   }
-  guardado.clear()
+  savedEnv.clear()
 })
 
 const conexionBase = {

@@ -1,36 +1,50 @@
-// Integration test for createAdapter — exercises the REAL
-// `supportsAnthropicServerWebSearch` chain by mocking only `getGlobalConfig`
-// + `getInitialSettings` + `getMainLoopModel`. Pre-v26.5.26 the WebSearch
-// routing was broken because `getProviderForModel` returned the literal
-// string 'anthropic' for `protocol='anthropic'` connections, hitting the
-// predicate's default-false branch.
+// Prueba de integración de `createAdapter`: ejerce la cadena REAL de
+// `supportsAnthropicServerWebSearch` sustituyendo sólo `getGlobalConfig`,
+// `getInitialSettings` y `getMainLoopModel`. Antes de v26.5.26 el
+// enrutamiento de WebSearch fallaba porque `getProviderForModel` devolvía el
+// literal 'anthropic' para las conexiones con `protocol='anthropic'`, y el
+// predicado caía en su rama por defecto, falsa.
 //
-// Lives in its own file (not adapterFactory.test.ts) because that file
-// mocks `supportsAnthropicServerWebSearch` directly and the outer
-// `beforeEach` would clobber the integration mocks set up here.
+// Vive en su propio archivo (no en adapterFactory.test.ts) porque aquel
+// sustituye `supportsAnthropicServerWebSearch` directamente y su `beforeEach`
+// externo pisaría las sustituciones de integración de éste.
+//
+// Las tres sustituciones se DESHACEN al terminar el archivo. `mock.module`
+// no se queda en su archivo: sin revertirlo, `skillUsageTracking.test.ts`,
+// corrido después con `--randomize`, leía este `getGlobalConfig` fijo y sus
+// escrituras desaparecían (11 fallos en 3 de 6 semillas,
+// `test-order-leaks-20260927T082148`). Lo que revierte es registrar una COPIA
+// de las exportaciones reales tomada antes de sustituir: el espacio de nombres
+// mismo queda parcheado en su sitio.
 
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { ConnectionRecord } from '@thyrox/config'
 
-const realConfig = await import('@thyrox/config')
+const realConfig = { ...(await import('@thyrox/config')) }
 const config = { connections: [] as ConnectionRecord[] }
 mock.module('@thyrox/config', () => ({
   ...realConfig,
   getGlobalConfig: () => config,
 }))
 
-const realSettings = await import('@thyrox/config/settings')
+const realSettings = { ...(await import('@thyrox/config/settings')) }
 mock.module('@thyrox/config/settings', () => ({
   ...realSettings,
   getInitialSettings: () => ({}),
 }))
 
-const realModel = await import('@thyrox/provider/model.js')
+const realModel = { ...(await import('@thyrox/provider/model.js')) }
 let currentMainLoopModel = 'claude-account:claude-opus-4-7'
 mock.module('@thyrox/provider/model.js', () => ({
   ...realModel,
   getMainLoopModel: () => currentMainLoopModel,
 }))
+
+afterAll(() => {
+  mock.module('@thyrox/config', () => realConfig)
+  mock.module('@thyrox/config/settings', () => realSettings)
+  mock.module('@thyrox/provider/model.js', () => realModel)
+})
 
 const baseConn = {
   auth: { type: 'api_key' as const, key: 'k' },
