@@ -46,8 +46,11 @@ const server = await startAnthropicMockServer({
     return {}
   },
 })
-process.stdout.write(`url=${server.url}\n`)
-
+// Los manejadores van ANTES de anunciar la URL: la URL es la señal de «listo»,
+// y quien la recibe puede mandar SIGTERM en seguida. Anunciar primero dejaba
+// una ventana en la que la señal mataba el proceso con 143 (11 de 40 bajo
+// carga, banco `test-isolation-leaks-20260927T080507`).
 const stop = (): void => { void server.close().then(() => process.exit(0)) }
 process.on('SIGTERM', stop)
 process.on('SIGINT', stop)
+process.stdout.write(`url=${server.url}\n`)

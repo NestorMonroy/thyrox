@@ -47,10 +47,19 @@ describe('bin/anthropicMockServer — el proxy local para medir sin credencial r
     }
   })
 
-  test('2. con SIGTERM cierra y sale 0: quien lo lanzó no deja un servidor huérfano', async () => {
-    const log = join(mkdtempSync(join(tmpdir(), 'mock-bin-')), 'requests.log')
-    const { proc } = await start(log)
-    proc.kill('SIGTERM')
-    expect(await proc.exited).toBe(0)
-  })
+  // La señal se manda en cuanto llega la URL, que es la señal de «listo»: si el
+  // lanzador anuncia antes de instalar su manejador, un SIGTERM temprano lo mata
+  // con 143. Medido bajo carga (banco `test-isolation-leaks-20260927T080507`,
+  // `probe-sigterm-race-*.txt`): 11 de 40 salían 143. Un intento solo lo ve a
+  // veces; por eso se repite.
+  test('2. con SIGTERM nada más anunciarse cierra y sale 0, siempre', async () => {
+    const codes: number[] = []
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const log = join(mkdtempSync(join(tmpdir(), 'mock-bin-')), 'requests.log')
+      const { proc } = await start(log)
+      proc.kill('SIGTERM')
+      codes.push(await proc.exited)
+    }
+    expect(codes.filter(code => code !== 0)).toEqual([])
+  }, 30_000)
 })
