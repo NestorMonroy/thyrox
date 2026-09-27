@@ -173,3 +173,14 @@ tool-registry::@thyrox/tool-registry/tools/WebBrowserTool/WebBrowserTool.js
 tool-registry::@thyrox/tool-registry/tools/SnipTool/SnipTool.js
 tool-registry::@thyrox/tool-registry/tools/REPLTool/REPLTool.js
 app-host::@thyrox/tool-registry/tools/REPLTool/REPLTool.js
+
+# Congelados 2026-09-27 al aplanar los cinco paquetes de @ant/ en src/packages/
+# (973ba726). No son deuda nueva: ya no resolvian bajo @ant/, donde este test no
+# los recorria porque solo mira los hijos directos de src/packages/. Los tres
+# primeros son frameworks de macOS que importan los puentes Swift de
+# computer-use; type-fest es un paquete de tipos que ink usa y nadie instalo.
+computer-use-input::CoreGraphics
+computer-use-swift::AppKit
+computer-use-swift::CoreGraphics
+computer-use-swift::Foundation
+ink::type-fest

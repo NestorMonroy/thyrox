@@ -93,6 +93,7 @@
     "./skills": "./src/skills/index.ts",
     "./task": "./src/packages/task/index.ts",
     "./packages/task": "./src/packages/task/index.ts",
+    "./packages/finding": "./src/packages/finding/index.ts",
     "./workbench/manifest": "./src/packages/workbench/manifest.ts",
     "./*": "./src/*.ts",
     "./packages/claude-for-chrome-mcp/src": "./src/packages/claude-for-chrome-mcp/src/index.ts",
