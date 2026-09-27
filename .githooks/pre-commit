@@ -143,6 +143,19 @@ if [[ ${#LINT[@]} -gt 0 ]]; then
     python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
 fi
 
+# El idioma de los identificadores, sobre los .py staged de src/ y tests/.
+# El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
+# 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La
+# deuda heredada está congelada en el baseline que declara el .env; uno nuevo
+# se detiene aquí.
+IDENTIFIERS=()
+for f in "${LINT[@]}"; do
+    [[ "$f" == *.py ]] && IDENTIFIERS+=("$f")
+done
+if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
+    (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
+fi
+
 # Un paquete se entra por su `exports`, nunca por el `src/` del vecino. El gate
 # existía con su suite y ningún flujo lo corría. Mide `src/` entero —todo
 # `package.json` con `exports`, anidado o suelto— porque un cruce lo forman dos
