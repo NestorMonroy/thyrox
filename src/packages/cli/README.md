@@ -40,12 +40,16 @@ y punto de entrada", que es exactamente lo que esos dos archivos son.
 no desde `@thyrox/app-host/cliArgs.js` (nombre de paquete) — aunque
 `package.json` SÍ declara la dependencia real
 (`@thyrox/app-host: workspace:*`). La razón: `@thyrox/cli` no resuelve por
-nombre desde ningún sitio hasta que `src/packages/bun.lock` registre este
-workspace, y ese archivo no estaba entre las rutas de la tarea que creó este
-paquete. `bun install --dry-run` en `src/packages/` confirma que el registro
-es aditivo (sin red, sin alterar ninguna entrada existente). El cambio, una
-vez que alguien corra ese `bun install`, es de una línea — marcado con
-`// TODO(bun.lock)` en `argv.ts`.
+nombre desde ningún sitio mientras el lockfile no registrara este workspace,
+y el lockfile de entonces (`src/packages/bun.lock`, de un manifiesto anidado)
+no estaba entre las rutas de la tarea que creó este paquete.
+
+Hoy ya no aplica: el workspace, sus dependencias y su lockfile viven sólo en
+la raíz (`package.json` y `bun.lock`; el manifiesto y el lockfile anidados se
+retiraron en la tarea #62, y `check_single_workspace_root` impide que vuelvan),
+y `@thyrox/cli` resuelve por nombre desde el paquete y desde `tests/`
+(medido con `import.meta.resolve`). Pasar el reexport a nombre de paquete es
+un cambio de una línea.
 
 ## Verificación
 

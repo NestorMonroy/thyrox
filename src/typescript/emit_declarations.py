@@ -820,8 +820,8 @@ def source_packages(root: Path) -> list[Path]:
     `check_exports_types`. No sale de `workspaces`: cada paquete se construye
     con su `tsconfig.build.json`, y esos proyectos existen para que
     `workspaces` deje de ser necesario. Un paquete sin `exports` no tiene
-    frontera pública que emitir; el único medido así es el agregador
-    `src/packages/package.json`.
+    frontera pública que emitir; el único medido así era el agregador
+    `src/packages/package.json`, retirado en la tarea #62.
     """
     found: list[Path] = []
     for directory, subdirs, files in os.walk(root / SOURCE_ROOT):

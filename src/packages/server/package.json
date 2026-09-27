@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte de @claude-code-how-works/server (ccnmt): endpoints HTTP/WebSocket — directConnectManager, RemoteSessionManager, relay CONNECT-sobre-WebSocket de upstreamproxy. 21 de 21 modulos fuente portados (contando indice y stubs; 7 son ellos mismos stubs auto-generados en la FUENTE, no una limitacion de este porte). Ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (paquete no registrado todavia en src/packages/package.json:workspaces) y la reimplementacion fiel recortada de fromSDKCompactMetadata (agent/messagesMappers.ts no existe en este arbol). sendEventToRemoteSession (teleport/api.ts) queda como punto de inyeccion: el paquete teleport no existe en este arbol.",
+  "description": "Porte de @claude-code-how-works/server (ccnmt): endpoints HTTP/WebSocket — directConnectManager, RemoteSessionManager, relay CONNECT-sobre-WebSocket de upstreamproxy. 21 de 21 modulos fuente portados (contando indice y stubs; 7 son ellos mismos stubs auto-generados en la FUENTE, no una limitacion de este porte). Ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (pendientes de reemplazo por el original, tarea #53) y la reimplementacion fiel recortada de fromSDKCompactMetadata (agent/messagesMappers.ts no existe en este arbol). sendEventToRemoteSession (teleport/api.ts) queda como punto de inyeccion: el paquete teleport no existe en este arbol.",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {

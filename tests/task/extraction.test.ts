@@ -73,10 +73,15 @@ describe('the package has a boundary', () => {
     expect(Object.keys(m.exports ?? {}).length).toBeGreaterThan(0)
   })
 
-  test('the src/packages aggregator lists it', () => {
-    const m = JSON.parse(readFileSync(join(ROOT, 'src', 'packages', 'package.json'), 'utf8'))
-    expect(m.workspaces).toContain('task')
-    expect(m.workspaces).not.toContain('tasks')
+  test('the root workspace covers it', () => {
+    // La raiz es la unica declaracion del workspace: el agregador anidado de
+    // `src/packages/` se retiro (tarea #62). Miembro es lo que sus globos
+    // alcanzan, que es lo que bun enlaza.
+    const root = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
+    const members = (root.workspaces as string[]).flatMap(pattern =>
+      [...new Bun.Glob(pattern).scanSync({ cwd: ROOT, onlyFiles: false })])
+    expect(members).toContain('src/packages/task')
+    expect(members).not.toContain('src/packages/tasks')
   })
 
   test('the real consumer imports by package name', () => {

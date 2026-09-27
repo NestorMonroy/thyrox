@@ -98,9 +98,17 @@ function destino(valor: unknown): string | null {
 
 const TODOS = paquetes()
 
-/** El manifiesto de la raiz de paquetes, que declara `workspaces`. */
-function raizDePaquetes(): { workspaces: string[] } {
-  return JSON.parse(readFileSync(join(PAQUETES, 'package.json'), 'utf8'))
+/**
+ * Los directorios de `src/packages/` que los globos de `workspaces` de la
+ * RAIZ alcanzan. La raiz es la unica declaracion del workspace: el agregador
+ * anidado `src/packages/package.json` se retiro (tarea #62).
+ */
+function declaredByRoot(): Set<string> {
+  const root = JSON.parse(readFileSync(join(RAIZ, 'package.json'), 'utf8')) as { workspaces: string[] }
+  const prefix = 'src/packages/'
+  const matched = root.workspaces.flatMap(pattern =>
+    [...new Bun.Glob(pattern).scanSync({ cwd: RAIZ, onlyFiles: false })])
+  return new Set(matched.filter(p => p.startsWith(prefix)).map(p => p.slice(prefix.length)))
 }
 
 describe('exports de los paquetes hermanos', () => {
@@ -116,7 +124,7 @@ describe('exports de los paquetes hermanos', () => {
     // lista, y cargar el paquete moria con `Cannot find package 'lru-cache'`.
     // El manifiesto infra-declara lo que el arbol tiene — la misma forma que
     // el subpath "." ausente del bloque 1, un nivel mas arriba.
-    const declarados = new Set(raizDePaquetes().workspaces)
+    const declarados = declaredByRoot()
     const enDisco = readdirSync(PAQUETES)
       .filter(d => d !== 'node_modules')
       .filter(d => statSync(join(PAQUETES, d)).isDirectory())

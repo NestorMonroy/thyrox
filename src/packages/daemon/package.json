@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Proceso supervisor de larga vida: registro de workers, IPC, ciclo de vida. Puerto de claude-code-nestor-monroy-tools (packages/daemon). No es miembro del bun workspace (src/packages/package.json) todavia; sus cruces a @thyrox/{local-observability,provider,shell,cli,agent} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
+  "description": "Proceso supervisor de larga vida: registro de workers, IPC, ciclo de vida. Puerto de claude-code-nestor-monroy-tools (packages/daemon). Miembro del workspace de la raiz desde la tarea #62; sus cruces a @thyrox/{local-observability,provider,shell,cli,agent} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {

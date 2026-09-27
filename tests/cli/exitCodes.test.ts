@@ -11,13 +11,12 @@
  * bloque 4— es importar por NOMBRE, porque es el único control que falla
  * cuando el mapa de `exports` no está. Medido en esta misma tarea: por
  * nombre falla siempre hoy, incluso para un paquete SIN ninguna dependencia
- * — `@thyrox/cli` no resuelve por nombre desde ningún sitio hasta que
- * `src/packages/bun.lock` registre el workspace (confirmado con
- * `bun install --dry-run`: aditivo, sin red, sin tocar ninguna entrada
- * existente). Ese archivo no está entre las rutas asignadas a este agente
- * en esta tanda, así que el import de abajo usa la ruta relativa como
- * puente — y sigue siendo un control real: antes de escribir
- * `exitCodes.ts` este mismo import relativo fallaba igual.
+ * — `@thyrox/cli` no resolvía por nombre mientras el lockfile anidado de
+ * `src/packages/` no registrara el workspace, y ese archivo no estaba entre
+ * las rutas asignadas a este agente, así que el import de abajo usa la ruta
+ * relativa como puente — y sigue siendo un control real: antes de escribir
+ * `exitCodes.ts` este mismo import relativo fallaba igual. Hoy el workspace
+ * y su lockfile viven sólo en la raíz (tarea #62) y el nombre resuelve.
  */
 import { describe, expect, test } from 'bun:test'
 import { EXIT_CODE, EXIT_CONFLICT, EXIT_FAIL, EXIT_OK, EXIT_USAGE, exitCodeName } from '../../src/packages/cli/src/exitCodes.ts'

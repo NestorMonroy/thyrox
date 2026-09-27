@@ -8,10 +8,11 @@
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/daemon: src/internal/pendingCrossPackageDeps.ts`: un archivo
  * consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/bridge` no es
- * miembro del bun workspace (`src/packages/package.json`) todavía, así
- * que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano ya
- * exporte el subpath real.
+ * divergencia exacta y su condición de retiro. `@thyrox/bridge` no era
+ * miembro del agregador anidado `src/packages/package.json`, así que ningún
+ * `@thyrox/*` resolvía desde este paquete. Ese agregador se retiró (tarea
+ * #62) y hoy `@thyrox/*` resuelve desde aquí (medido 2026-09-27): cada
+ * envoltorio de abajo espera su reemplazo por el original (tarea #53).
  *
  * Tres formas, igual que en `@thyrox/daemon` — cada bloque dice cuál:
  *

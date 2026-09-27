@@ -12,8 +12,9 @@
  *
  * El resto de dependencias cruzadas (`@thyrox/{agent,app-host,config,
  * local-observability,shell,storage}`) SÍ existen en este árbol, pero
- * resuelven vía `require()` diferido porque `@thyrox/ide` no es miembro de
- * `src/packages/package.json:workspaces` todavía — ver la cabecera de
+ * resuelven vía `require()` diferido porque `@thyrox/ide` no era miembro del agregador anidado
+ * `src/packages/package.json` (retirado en la tarea #62; hoy resuelven por
+ * nombre y el reemplazo es la tarea #53) — ver la cabecera de
  * `internal/pendingCrossPackageDeps.ts` para la verificación en vivo.
  *
  * `memoize`/`capitalize` de `lodash-es` — sustituto local (mismo criterio

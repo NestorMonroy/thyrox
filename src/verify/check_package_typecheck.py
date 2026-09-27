@@ -39,6 +39,20 @@ workspace de cada consumidor y reconstruye solo los que ``is_stale`` declara
 viejos, sellando cada uno. Un provider que no emite bloquea a quien dependa de
 el: no se mide, y el gate sale 2 sin veredicto. ``--no-rebuild`` lo omite.
 
+Contrato
+--------
+
+- **Reconstruccion por defecto.** Sin banderas, los providers viejos de los
+  consumidores pedidos se reconstruyen y se sellan antes de medir; uno al dia
+  no se toca. ``--no-rebuild`` mide contra el ``dist/`` que haya.
+- **Salida 2 sin veredicto** cuando un provider no emite: sus consumidores no
+  se miden, y el corte ocurre antes de ``--write-baseline``, para que un
+  consumidor sin tipar no desaparezca del baseline sin que nadie lo decida.
+- **Salida 1** con ``--strict`` cuando un paquete supera su baseline; **0** en
+  otro caso.
+- **No corre en el pre-commit**, por su coste (ver abajo): es un gate
+  explicito, a mano o en segundo plano con ``bin/thyrox-bg``.
+
 Rehusa en vez de publicar un cero
 ----------------------------------
 

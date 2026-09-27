@@ -33,8 +33,10 @@
  *     (`.../app-host/state/hostSessionState.js`) — SÍ resuelve tal cual
  *     (medido: `Bun.resolveSync` OK).
  *   - `onChangeAppState` (`@claude-code-how-works/repl/onChangeAppState.js`)
- *     — el paquete `repl` NO existe como miembro del workspace (medido:
- *     ausente de `src/packages/package.json`). Se deja SIN traducir y se
+ *     — el paquete `repl` NO existía como miembro del workspace (medido
+ *     entonces: ausente del agregador anidado `src/packages/package.json`,
+ *     retirado en la tarea #62; hoy es miembro y el diferido espera la
+ *     tarea #53). Se deja SIN traducir y se
  *     difiere con `require()`.
  *   - `createStore` / `Store` (`.../app-host/state/store.js`) — el tipo
  *     `Store<T>` se importa de ahí (el paquete ya exporta `./state/store.js`,

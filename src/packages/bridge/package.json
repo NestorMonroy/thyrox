@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Remote Control / Bridge: sesion remota via claude.ai, transporte WebSocket, poll de trabajo, mensajeria peer-a-peer entre sesiones. Puerto de claude-code-nestor-monroy-tools (packages/bridge). No es miembro del bun workspace (src/packages/package.json) todavia; sus cruces a @thyrox/{provider,storage,local-observability,agent,config,tool-registry} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
+  "description": "Remote Control / Bridge: sesion remota via claude.ai, transporte WebSocket, poll de trabajo, mensajeria peer-a-peer entre sesiones. Puerto de claude-code-nestor-monroy-tools (packages/bridge). Miembro del workspace de la raiz desde la tarea #62; sus cruces a @thyrox/{provider,storage,local-observability,agent,config,tool-registry} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {

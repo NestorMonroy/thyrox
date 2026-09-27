@@ -185,6 +185,12 @@ python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
 # que este commit prepara (`--staged`).
 python3 "$GATES/check_cache_layout.py" --root "$ROOT" --staged --strict || CODE=1
 
+# Una sola raiz de workspace: ni manifiesto con `workspaces` ni lockfile fuera
+# de la raiz (tarea #62). Mide el indice, asi que ve lo que este commit prepara.
+# Bloquea: una segunda raiz es una segunda fuente de verdad para dependencias,
+# y una admitida exige su razon en el allowlist, no un --no-verify.
+python3 "$GATES/check_single_workspace_root.py" --root "$ROOT" || CODE=1
+
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
 # inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.

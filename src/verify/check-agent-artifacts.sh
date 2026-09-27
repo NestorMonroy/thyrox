@@ -71,12 +71,13 @@ fi
 #   2. se compara su `version` contra la que fija `$RAIZ/bun.lock`.
 #
 # El lockfile se ancla en $RAIZ EXPLÍCITAMENTE, no por el primero que aparezca
-# subiendo. Hay DOS raíces de workspace anidadas —la raíz y `src/packages`—,
-# cada una con su lockfile, y NO fijan la misma resolución de zod. La que
-# gobierna es la de $RAIZ, porque es desde ahí que este gate corre `bun run`;
-# un walk-up del lockfile pegaría primero en `src/packages/` y rechazaría un
-# árbol correcto. Qué fija cada una lo publica el comando, no esta prosa:
-#     grep -E '^\s*"zod": \[' bun.lock src/packages/bun.lock
+# subiendo. Hubo DOS raíces de workspace anidadas —la raíz y `src/packages`—,
+# cada una con su lockfile y con distinta resolución de zod, y un walk-up
+# pegaba primero en la anidada. La anidada se retiró (tarea #62) y
+# `check_single_workspace_root` impide que vuelva, así que hoy el walk-up y el
+# ancla coinciden; el ancla se queda porque no depende de que ese gate corra.
+# Qué fija la raíz lo publica el comando, no esta prosa:
+#     grep -E '^\s*"zod": \[' bun.lock
 # El ascenso vive en el modulo, no aqui: su hermano `check-cross-model-read.sh`
 # necesita el mismo, y dos copias del mismo recorrido divergen.
 # shellcheck source=/dev/null

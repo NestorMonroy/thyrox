@@ -6,8 +6,10 @@
  * `@thyrox/local-observability: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts`: un
  * archivo consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/daemon` no es
- * miembro del bun workspace (`src/packages/package.json`) — se probó en
+ * divergencia exacta y su condición de retiro. `@thyrox/daemon` no era
+ * miembro del agregador anidado `src/packages/package.json` (retirado en la
+ * tarea #62; hoy `@thyrox/*` resuelve desde aquí, medido 2026-09-27, y el
+ * reemplazo de estos envoltorios es la tarea #53) — se probó en
  * vivo antes de escribir este archivo (`Cannot find module
  * '@thyrox/local-observability'` al resolver desde `src/packages/daemon`) —
  * así que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano

@@ -6,8 +6,9 @@
  * 1. **Envoltorios de `require()` diferido** hacia paquetes hermanos que YA
  *    existen en este árbol (`config`, `local-observability`, `storage`,
  *    `app-host`, `agent`, `shell`) pero no resuelven de forma estática desde
- *    aquí: `@thyrox/ide` **no es miembro** de `src/packages/package.json:
- *    workspaces` todavía, así que ningún `node_modules/@thyrox/*` symlink
+ *    aquí: `@thyrox/ide` **no era miembro** del agregador anidado
+ *    `src/packages/package.json` (retirado en la tarea #62; hoy resuelven,
+ *    medido 2026-09-27, y el reemplazo es la tarea #53), así que ningún `node_modules/@thyrox/*` symlink
  *    existe en este paquete — verificado en vivo, no de memoria:
  *
  *    ```

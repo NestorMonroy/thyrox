@@ -9,9 +9,9 @@
  * La causa NO es que el módulo no esté portado: los cinco paquetes
  * hermanos existen en este árbol (`src/packages/{agent,app-host,config,
  * local-observability,provider}`) y sus símbolos concretos también. La
- * causa es que `@thyrox/server` todavía no es miembro de
- * `src/packages/package.json:workspaces` (ruta que no se toca en este
- * porte) — sin eso, `node_modules/@thyrox/*` no tiene el symlink que el
+ * causa es que `@thyrox/server` no era miembro del agregador anidado
+ * `src/packages/package.json` (retirado en la tarea #62; hoy resuelve,
+ * medido 2026-09-27, y el reemplazo es la tarea #53) — sin eso, `node_modules/@thyrox/*` no tiene el symlink que el
  * resolver de Bun necesita para el especificador con paquete.
  *
  * Por eso las secciones 1 se resuelven con `require()` diferido (Rule 3):

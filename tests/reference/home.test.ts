@@ -54,8 +54,12 @@ describe('the harness package ceases to exist', () => {
   })
 
   test('4. the workspace no longer declares it, and nobody cites it', () => {
-    const manifest = JSON.parse(readFileSync(join(ROOT, 'src', 'packages', 'package.json'), 'utf-8'))
-    expect(manifest.workspaces ?? []).not.toContain('harness')
+    // La raiz es la unica declaracion del workspace (tarea #62): miembro es lo
+    // que sus globos alcanzan.
+    const manifest = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'))
+    const members = (manifest.workspaces as string[]).flatMap(pattern =>
+      [...new Bun.Glob(pattern).scanSync({ cwd: ROOT, onlyFiles: false })])
+    expect(members).not.toContain('src/packages/harness')
     // Metrica: especificadores de modulo que nombren el paquete, en todo `.ts`
     // de `src/` y `tests/`.
     // Ciega a: la prosa que lo mencione —este archivo lo nombra— y a una cita
