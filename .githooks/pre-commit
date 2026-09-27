@@ -202,6 +202,18 @@ python3 "$GATES/check_single_workspace_root.py" --root "$ROOT" || CODE=1
 # Anthropic) no cuentan; su lista y su razón están en el gate.
 python3 "$GATES/check_product_word.py" --repo "$ROOT" --strict || CODE=1
 
+# La configuración de thyrox se lee como THYROX_*, y cada variable propia
+# tiene una prueba que la nombra. Trinquete: las lecturas CLAUDE_* heredadas
+# están congeladas por archivo en `env_prefix_baseline.tsv` (las paga el
+# renombre), y una nueva, una propia sin prueba o una entrada obsoleta
+# bloquean. Sin bun no se mide, y eso se dice en vez de pasar en verde.
+if command -v bun >/dev/null 2>&1; then
+    bun "$GATES/checkEnvPrefix.ts" --root "$ROOT" --strict || CODE=1
+else
+    echo "checkEnvPrefix: bun no está en el PATH; NO se midió el prefijo de entorno." >&2
+    CODE=1
+fi
+
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
 # inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.

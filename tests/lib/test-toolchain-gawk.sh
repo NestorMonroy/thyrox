@@ -210,4 +210,20 @@ else
   bad "gawk ausente: el caso 14 NO se pudo correr"
 fi
 
+
+# Caso 15 — THYROX_TOOLCHAIN_AWK_PROBE_INPUT viaja a los hijos y NO es
+# parámetro. Viaja porque la sonda lleva `export -f` y un hijo que sólo
+# heredara la función recibiría la entrada vacía (caso 14). No es parámetro
+# porque quien pudiera reemplazar la entrada podría hacer pasar un awk sin
+# intervalos: el guion la fija sin `${VAR:-...}` a propósito.
+# shellcheck disable=SC2016  # el $ lo expande el hijo, no este shell
+# env -i por la guarda de idempotencia del caso 12: sin él, el hijo no carga nada.
+child_input="$(env -i PATH="$PATH" THYROX_TOOLCHAIN_AWK_PROBE_INPUT='zzz' bash -c \
+  'source "$0" 2>/dev/null; bash -c "$1"' "$SUBJECT" 'printf %s "$THYROX_TOOLCHAIN_AWK_PROBE_INPUT"')"
+if [[ "$child_input" == "aaax" ]]; then
+  ok "AWK_PROBE_INPUT llega al hijo con su valor fijo, aunque el llamador exporte otro"
+else
+  bad "AWK_PROBE_INPUT en el hijo: esperaba 'aaax', obtuve '$child_input'"
+fi
+
 thyrox_summary

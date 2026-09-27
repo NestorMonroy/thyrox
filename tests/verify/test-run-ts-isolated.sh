@@ -76,6 +76,24 @@ SALIDA="$(cd "$F" && printf '' | bash "$EJECUTOR" 2>&1)"; CODE=$?
 check "sin archivos: rehusa con exit 2" "$CODE" "2"
 check "sin archivos: no publica pass=" "$(printf '%s' "$SALIDA" | gawk '/^pass=/{n++} END{print n+0}')" "0"
 
+# 5 — THYROX_TS_WIDTH fija la anchura que recibe GNU Parallel. Un envoltorio
+# de `parallel` en el PATH anota el `-j` y delega en el real; sin declararla,
+# la anchura es la de `nproc`. El valor 3 no coincide con el `nproc` de
+# ninguna máquina de 4 u 8 núcleos, así que no puede salir del default.
+REAL_PARALLEL="$(command -v parallel)"
+mkdir -p "$F/bin"
+cat > "$F/bin/parallel" <<SH
+#!/usr/bin/env bash
+prev=
+for a in "\$@"; do [[ "\$prev" == "-j" ]] && printf '%s\n' "\$a" >> "$F/width.log"; prev="\$a"; done
+exec "$REAL_PARALLEL" "\$@"
+SH
+chmod +x "$F/bin/parallel"
+(cd "$F" && printf './b.test.ts\n' | PATH="$F/bin:$PATH" THYROX_TS_WIDTH=3 bash "$EJECUTOR" >/dev/null 2>&1)
+check "THYROX_TS_WIDTH=3: parallel recibe -j 3" "$(tail -1 "$F/width.log" 2>/dev/null)" "3"
+(cd "$F" && printf './b.test.ts\n' | PATH="$F/bin:$PATH" env -u THYROX_TS_WIDTH bash "$EJECUTOR" >/dev/null 2>&1)
+check "sin THYROX_TS_WIDTH: parallel recibe -j nproc" "$(tail -1 "$F/width.log" 2>/dev/null)" "$(nproc)"
+
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
 exit $((fallos > 0))
