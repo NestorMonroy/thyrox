@@ -178,14 +178,14 @@ describe('normalizeToCanonicalUuid', () => {
     expect(normalizeToCanonicalUuid('derived:ctx:v1:01a07e72-c84d-7fd3-8207-d217b41cc649')).toBe('01a07e72-c84d-7fd3-8207-d217b41cc649')
   })
 
-  test('coincide con el valor de oro de la referencia', () => {
+  test('coincide con el vector de prueba conocido de la referencia', () => {
     expect(normalizeToCanonicalUuid('c28621bab78eacdb3ae128c0f6aaa0147842f063fda10ae9dc5473cc81d58985')).toBe(
       '2ad1939c-98ca-81da-8b69-3d084d5614c4',
     )
   })
 })
 
-// Valores de oro de `json.Marshal` de Go sobre `canonicalRoot`, producidos
+// Vectores de prueba conocidos (known-answer tests) de `json.Marshal` de Go sobre `canonicalRoot`, producidos
 // por la sonda `.claude/workbench/session-affinity-port-20260927T184048/probes/gomarshal/`.
 // El hash de `deriveId` es el sha256 de estos bytes: un byte distinto parte
 // la afinidad entre thyrox y cualquier proxy que derive con la referencia.

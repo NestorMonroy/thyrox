@@ -1,6 +1,6 @@
 // Sonda: imprime lo que json.Marshal de Go produce para canonicalRoot
 // (struct copiado verbatim de _references/cliproxyapi/sdk/cliproxy/session/identity.go:27-40)
-// y su sha256, para fijar valores de oro de goMarshal en thyrox.
+// y su sha256, como vectores de prueba conocidos de goMarshal en thyrox.
 package main
 
 import (

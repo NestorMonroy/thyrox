@@ -10,7 +10,7 @@ Fase 1: `identity.go` → `src/packages/provider/src/proxy/session/`
 `DeriveID` es el sha256 de `json.Marshal(canonicalRoot)`. Si un byte difiere,
 thyrox y un proxy con la referencia derivan identidades distintas para la
 misma conversación. `probes/gomarshal/main.go` copia el struct verbatim
-(`identity.go:27-40`) y deja en `outputs/gomarshal-golden.tsv` el JSON y su
+(`identity.go:27-40`) y deja en `outputs/gomarshal-known-answers.tsv` el JSON y su
 hash para tres raíces: orden de campos, `omitempty` y los escapes de Go
 (`<`, `>`, `&`, U+2028, U+2029). La prueba `goMarshal` las exige byte a byte.
 
