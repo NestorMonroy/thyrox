@@ -17,7 +17,11 @@
  * Origen en thyrox: propuesta 2 del banco de ai-course-notes. Medido al abrir
  * la tarea, `src/packages` no tenía ni una de las dos guardas.
  *
- * Divergencia declarada: el binario memoriza el máximo de profundidad en el
+ * Divergencias declaradas:
+ * - las variables llevan el prefijo `THYROX_CODE_` en vez de `CLAUDE_CODE_`:
+ *   son de este harness, y el valor que el cliente fija para sí no gobierna a
+ *   thyrox (el mismo criterio que `promptCacheTtl.ts`);
+ * - el binario memoriza el máximo de profundidad en el
  * estado de la sesión; aquí se resuelve en cada llamada, que es más barato de
  * probar y no cambia el valor dentro de una sesión mientras la bandera no
  * cambie.
@@ -53,14 +57,14 @@ export function maxSubagentSpawnDepth(
   env: Env,
   flag: (name: string, fallback: number) => unknown,
 ): number {
-  const fromEnv = positiveInteger(env.CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH)
+  const fromEnv = positiveInteger(env.THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH)
   if (fromEnv !== undefined) return fromEnv
   return positiveInteger(flag(SPAWN_DEPTH_FLAG, DEFAULT_MAX_SPAWN_DEPTH)) ??
     DEFAULT_MAX_SPAWN_DEPTH
 }
 
 export function maxConcurrentSubagents(env: Env): number {
-  return positiveInteger(env.CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS) ??
+  return positiveInteger(env.THYROX_CODE_MAX_CONCURRENT_SUBAGENTS) ??
     DEFAULT_MAX_CONCURRENT_SUBAGENTS
 }
 
@@ -75,7 +79,7 @@ export function depthRefusal(
   if (depth < max) return undefined
   return {
     reason: 'depth_limit',
-    message: `Subagent nesting limit reached (depth ${depth} of ${max}). Complete this task directly using your tools instead of spawning another agent. If the user explicitly requested deeper nesting, ask them to raise CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH.`,
+    message: `Subagent nesting limit reached (depth ${depth} of ${max}). Complete this task directly using your tools instead of spawning another agent. If the user explicitly requested deeper nesting, ask them to raise THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH.`,
   }
 }
 
@@ -93,6 +97,6 @@ export function concurrencyRefusal(
   if (running < max || exempt()) return undefined
   return {
     reason: 'concurrency_limit',
-    message: `Concurrent subagent limit reached. You can run ${max} subagents at once. Do not retry. If the user wants more concurrent subagents, ask them to increase CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS.`,
+    message: `Concurrent subagent limit reached. You can run ${max} subagents at once. Do not retry. If the user wants more concurrent subagents, ask them to increase THYROX_CODE_MAX_CONCURRENT_SUBAGENTS.`,
   }
 }

@@ -61,7 +61,7 @@ export type SubagentContext = {
   agentType: 'subagent'
   /** Profundidad de anidamiento: 1 para un subagente del hilo principal, la
    *  del padre + 1 para uno anidado. La lee `agentDepth` (el `bc` del
-   *  binario) para la guarda de `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`. */
+   *  binario) para la guarda de `THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH`. */
   depth?: number
   /** El nombre de tipo del subagente (p. ej. "Explore", "Bash",
    *  "code-reviewer"). */
