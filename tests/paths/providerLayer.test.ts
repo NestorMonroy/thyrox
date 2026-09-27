@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { productionDeclarations } from '../../src/paths/reach.ts'
+import { productionDeclarations } from '../../src/packages/paths/reach.ts'
 
 const KEYS = ['THYROX_CAPA_DOCS', 'THYROX_COMPARTIDA_DOCS', 'THYROX_CAPA_API', 'THYROX_CAPA_DIR', 'THYROX_ENV_FILE']
 let base: string

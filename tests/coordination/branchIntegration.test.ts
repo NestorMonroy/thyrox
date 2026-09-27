@@ -19,7 +19,7 @@
  * test, con sus tres desenlaces que discriminan: merged, dirty-tree, wrong-committer.
  */
 
-import { thyroxRoot } from '../../src/paths/reach.ts'
+import { thyroxRoot } from '../../src/packages/paths/reach.ts'
 import { describe, expect, test } from 'bun:test'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
@@ -30,7 +30,7 @@ import {
   unionConflictResolver,
   EXPECTED_COMMITTER_EMAIL, EXPECTED_COMMITTER_NAME,
   type CollisionGate, type IntegrationRepo, type LabelResolver, type RenumberedLabel, type StaticGate,
-} from '../../src/coordination/branchIntegration.ts'
+} from '../../src/packages/coordination/branchIntegration.ts'
 
 const DOCS_ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
 const L2 = 'origin/feature/kaupamex-l2'

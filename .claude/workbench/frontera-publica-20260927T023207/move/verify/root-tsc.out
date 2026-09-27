@@ -1,0 +1,14 @@
+tests/coordination/ledger.test.ts(38,8): error TS2307: Cannot find module '../../src/coordination/ledger' or its corresponding type declarations.
+tests/workbench/manifest.test.ts(45,8): error TS2307: Cannot find module '../../src/workbench/manifest' or its corresponding type declarations.
+tests/workbench/manifest.test.ts(99,39): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(106,37): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(112,37): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(119,38): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(148,37): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(181,37): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(187,37): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(305,47): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(318,40): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(319,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/workbench/manifest.test.ts(324,40): error TS7006: Parameter 'p' implicitly has an 'any' type.
+EXIT=2

@@ -35,7 +35,7 @@ import {
   LEDGER_REL,
   gitTopLevel,
   ledgerPathFor,
-} from '../../src/coordination/ledger'
+} from '../../src/packages/coordination/ledger'
 
 /** Un repo sintetico con un subdirectorio, para medir que los dos coinciden. */
 function makeRepo(): { root: string; sub: string } {

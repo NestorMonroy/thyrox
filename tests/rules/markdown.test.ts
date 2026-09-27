@@ -14,7 +14,7 @@ import type { RuleDefinition } from '../../src/rules/types.ts'
 import { render, resolveParameters, toMarkdown, UnresolvedParameterError } from '../../src/rules/emit/markdown.ts'
 import { consumerRulesDir, RULES_SEGMENT } from '../../src/rules/paths.ts'
 import { emittedMarker } from '../../src/rules/provenance.ts'
-import { stateDir } from '../../src/workbench/paths.ts'
+import { stateDir } from '../../src/packages/workbench/paths.ts'
 import { RULES } from '../../src/rules/index.ts'
 
 const universal: RuleDefinition = {

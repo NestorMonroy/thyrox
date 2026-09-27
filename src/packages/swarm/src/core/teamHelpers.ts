@@ -28,7 +28,7 @@
  *
  * NOTA DE SOLAPE: `TeamFile` es el ROSTER de una sesión de swarm —quién es
  * miembro, su panel, su modo de permiso—, reemplazado completo en cada
- * escritura. NO es el ledger de `src/coordination/ledger.ts`, que reserva
+ * escritura. NO es el ledger de `src/packages/coordination/ledger.ts`, que reserva
  * rutas de archivo entre agentes de una tanda y es un JSONL que se fusiona
  * por git. Se declaran los dos para que una decisión futura no los
  * redescubra por separado.

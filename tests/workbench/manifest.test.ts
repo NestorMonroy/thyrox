@@ -42,7 +42,7 @@ import {
   runIdFor,
   runsFor,
   scaffoldWorkbench,
-} from '../../src/workbench/manifest'
+} from '../../src/packages/workbench/manifest'
 
 /** Un banco sintetico con el manifiesto que se le pase. */
 function makeWorkbench(id: string, manifest: Record<string, unknown> | null, opts: {

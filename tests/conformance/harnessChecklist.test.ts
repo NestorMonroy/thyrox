@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CHECKLIST, SECTIONS, coverage, type Predicate } from '../../src/conformance/checklist.ts'
 import { auditEvidence } from '../../src/conformance/audit.ts'
-import { thyroxRoot } from '../../src/paths/reach.ts'
+import { thyroxRoot } from '../../src/packages/paths/reach.ts'
 
 const ROOT = thyroxRoot()
 const APPENDIX = join(ROOT, '_references/harness-books/book1/appendix-a-checklists.md')

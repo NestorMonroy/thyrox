@@ -25,7 +25,7 @@ import {
   agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, ENV_FILE_VAR, envNames, envValue, root, roots,
   CONSUMER_MARKER, CONSUMER_ROOT_VAR, ConsumerUnknownError, consumerRoot,
   ForReadingDeclarations, THYROX_ROOT_VAR, thyroxRoot, treeRoot,
-} from '../../src/paths/reach.ts'
+} from '../../src/packages/paths/reach.ts'
 
 const guardado = { ...process.env }
 const temporales: string[] = []
@@ -121,7 +121,7 @@ describe('agentsDir — el hogar es un parámetro, no un literal', () => {
 /**
  * El tramo del árbol de clones, que el porte parcial declaraba NO portado
  * «porque ningún `.ts` de este paquete lo consulta». Ya lo consulta:
- * `src/paths/docs.ts` resuelve la raíz de `kaupamex-docs` y hasta hoy lo hacía
+ * `src/packages/paths/docs.ts` resuelve la raíz de `kaupamex-docs` y hasta hoy lo hacía
  * con su PROPIA cadena (`KAUPAMEX_DOCS_ROOT` + ascenso a `source/gestion/pm`),
  * que es una segunda fuente de verdad para la misma decisión.
  *

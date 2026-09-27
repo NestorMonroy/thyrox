@@ -107,20 +107,20 @@ fuentes, operaciones de plugin, sync remoto (`cat
 src/packages/config/package.json`) — **no** el descubrimiento de rutas entre
 `thyrox` y sus consumidores. Ese mecanismo es **`src/paths/reach.py`** más
 **`src/workbench/paths.py`**, ya citados en «El alcance por variable» arriba —
-con sus gemelos TypeScript, `src/paths/reach.ts` y `src/workbench/paths.ts`
+con sus gemelos TypeScript, `src/packages/paths/reach.ts` y `src/packages/workbench/paths.ts`
 (gemelos declarados así, no un módulo suelto por lenguaje: `src/workbench/
 paths.py:1-4`). **`reach.ts` tiene consumidores reales, medidos, no "casi
 ninguno":**
 
 ```bash
 grep -rln "^import .*reach\.ts['\"]" --include=*.ts --include=*.tsx . \
-    | grep -v "^src/paths/reach.ts$" | sort -u | wc -l
+    | grep -v "^src/packages/paths/reach.ts$" | sort -u | wc -l
 ```
 
 Da **20** archivos distintos: **12 de producción** —entre ellos `src/
 commands/paths.ts`, `src/rules/paths.ts`, `src/skills/paths.ts`, `src/task/
 schema.ts`, `src/reference/triple.ts`, `src/rules/emit/markdown.ts`, y el
-propio `src/workbench/paths.ts`— y **8 suites de test** que lo importan
+propio `src/packages/workbench/paths.ts`— y **8 suites de test** que lo importan
 directo. La cifra anterior de este párrafo (una afirmación sin `grep` detrás)
 era simplemente falsa; corregida tras el hallazgo `h-thyrox-03` de
 `kaupamex-docs: source/gestion/pm/thyrox/iniciativas/

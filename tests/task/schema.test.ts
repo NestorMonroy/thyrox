@@ -35,7 +35,7 @@ import {
   pythonDdlCarriesCheck, pythonTaskStatuses,
   selectCitationId, statusCheckStatuses,
   TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUS_CHECK, TASK_STATUSES, UPDATE_STATUSES,
-} from '../../src/task/schema.ts'
+} from '../../src/packages/task/schema.ts'
 
 const RAIZ = new URL('../..', import.meta.url).pathname
 

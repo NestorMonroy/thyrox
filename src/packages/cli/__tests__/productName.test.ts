@@ -30,18 +30,18 @@ function codeLines(text: string): string[] {
   return text.split('\n').filter(line => !/^\s*(\/\/|\*|\/\*)/.test(line))
 }
 
-describe('el nombre del producto en la cli', () => {
-  test('1. PRODUCT_NAME es thyrox', () => {
+describe('the product name in the cli', () => {
+  test('1. PRODUCT_NAME is thyrox', () => {
     expect(PRODUCT_NAME).toBe('thyrox')
   })
-  test('2. ningún texto de código nombra a Claude Code', () => {
+  test('2. no code text names Claude Code', () => {
     const offenders = sources(SRC).flatMap(file =>
       codeLines(readFileSync(file, 'utf8'))
         .filter(line => line.includes('Claude Code'))
         .map(line => `${relative(SRC, file)}: ${line.trim()}`))
     expect(offenders).toEqual([])
   })
-  test('3. --version se presenta como thyrox en las dos capas', () => {
+  test('3. --version presents itself as thyrox in both layers', () => {
     for (const file of ['entry/cli.tsx', 'entry/run-program.ts']) {
       expect(readFileSync(join(SRC, file), 'utf8')).toContain('(${PRODUCT_NAME})')
     }

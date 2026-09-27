@@ -8,7 +8,7 @@
  * promueve a codigo para que las definiciones de coordinador lo consuman en
  * vez de repetir la tabla en prosa muerta dentro de cada `*.prompt.md`.
  *
- * Espeja la FORMA de `src/paths/docs.ts`: el hogar no es «la cadena»
+ * Espeja la FORMA de `src/packages/paths/docs.ts`: el hogar no es «la cadena»
  * suelta, es la cadena mas la pregunta de si existe en el arbol
  * (`homesMissingFromTree`). Un hogar `source/…` que no exista es el defecto
  * que :ref:`h-docs-1021` registro — el prompt de RUP citaba una raiz de
@@ -137,7 +137,7 @@ export function allDeclaredHomes(): string[] {
  *
  * Este modulo traia una copia verbatim de `docsRoot` —variable propia mas
  * ascenso a `source/gestion/pm/`— que respondia la misma pregunta que
- * `src/paths/docs.ts`, que a su vez delega en el alcance. Dos copias de una
+ * `src/packages/paths/docs.ts`, que a su vez delega en el alcance. Dos copias de una
  * decision divergen sin avisar: un consumidor que declare la grafia canonica
  * `THYROX_REACH_DOCS` movia una y dejaba la otra midiendo el arbol de siempre,
  * y `homesMissingFromTree` publicaba cero hogares ausentes sobre un arbol que

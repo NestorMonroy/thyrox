@@ -2,7 +2,7 @@
  * Herramientas de tablero `Task*` (T-019, corregidas en T-061).
  *
  * El tablero no se reinventa: su esquema es el que `.claude/agent-results/`
- * ya tiene, y desde la partición del sujeto vive en `src/task/schema.ts` —
+ * ya tiene, y desde la partición del sujeto vive en `src/packages/task/schema.ts` —
  * aquí queda la SUPERFICIE de herramienta, que es lo único propio del
  * harness. La forma de la tabla la comparten dos lenguas, así que
  * declararla dentro de su consumidor la ataba al sitio equivocado —

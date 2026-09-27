@@ -10,7 +10,7 @@
  * usuario que usa thyrox pierda la decisión de dónde van las cosas»*.
  *
  * El defecto MEDIDO que lo motiva vive en el árbol:
- * `src/packages/harness/src/workbench/manifest.ts` cablea el hogar en tres
+ * `src/packages/harness/src/packages/workbench/manifest.ts` cablea el hogar en tres
  * sitios —el parámetro se llama `eventosDir`, el `join` asume ese nombre, y
  * `resolve(eventosDir, '..', '..')` asume además su PROFUNDIDAD para escribir
  * `.ruta-del-evento`—. Un consumidor que aloje su banco a otra profundidad
@@ -37,8 +37,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { thyroxRoot } from '../../src/paths/reach.ts'
-import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../../src/workbench/paths.ts'
+import { thyroxRoot } from '../../src/packages/paths/reach.ts'
+import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../../src/packages/workbench/paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {

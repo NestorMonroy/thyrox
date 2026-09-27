@@ -298,7 +298,7 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     const columnas = (db.query('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
     db.close()
     // El piso es el CREATE del store; las columnas que el store añade por
-    // `ALTER` (`src/task/schema.ts`, «Piso, no contrato») quedan fuera a
+    // `ALTER` (`src/packages/task/schema.ts`, «Piso, no contrato») quedan fuera a
     // propósito y se leen sondeando. El SQL del store real ya las incluye.
     const migradas = new Set(alterColumns())
     const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)]

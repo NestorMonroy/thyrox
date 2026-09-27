@@ -1,6 +1,6 @@
 """El manifiesto del banco de trabajo y el ciclo de vida de un *run*.
 
-Gemelo en Python de ``src/workbench/manifest.ts``. Existe porque el subsistema
+Gemelo en Python de ``src/packages/workbench/manifest.ts``. Existe porque el subsistema
 sabia **acunar** un identificador solo desde TypeScript, y el trabajo de sesion
 —hooks, gates, guiones de shell— es Python y bash. Sin este gemelo, quien creaba
 un run tenia que llevarse el ISO a alguna parte, y esa parte acababa siendo un

@@ -35,25 +35,25 @@ function codeError(code: string): Error {
 }
 
 describe('cwdUnavailableMessage (rt)', () => {
-  test('1. un cwd legible no da mensaje', () => {
+  test('1. a readable cwd gives no message', () => {
     expect(cwdUnavailableMessage(() => '/tmp')).toBeUndefined()
   })
-  test('2. ENOENT da el mensaje del directorio borrado', () => {
+  test('2. ENOENT gives the deleted-directory message', () => {
     expect(cwdUnavailableMessage(() => { throw codeError('ENOENT') })).toBe(
       'The current directory no longer exists (it was deleted or moved). Start thyrox from an existing directory.')
   })
-  test('3. otro codigo lo nombra entre parentesis', () => {
+  test('3. another code is named in parentheses', () => {
     expect(cwdUnavailableMessage(() => { throw codeError('EACCES') })).toBe(
       "Can't read the current directory (EACCES). Start thyrox from a different directory.")
   })
-  test('4. sin codigo, el mensaje generico sin parentesis', () => {
+  test('4. without a code, the generic message without parentheses', () => {
     expect(cwdUnavailableMessage(() => { throw 'no es un Error' })).toBe(
       "Can't read the current directory. Start thyrox from a different directory.")
   })
 })
 
-describe('el resultado de fallo de arranque (sut/ez/out/Fqn/d)', () => {
-  test('5. la linea result lleva la razon y el mensaje como error', () => {
+describe('the startup failure result (sut/ez/out/Fqn/d)', () => {
+  test('5. the result line carries the reason and the message as error', () => {
     const r = buildStartupFailureResult({ sessionId: UUID, message: 'm', reason: 'cwd_unavailable' })
     expect(r).toMatchObject({
       type: 'result', subtype: 'error_during_execution', is_error: true, num_turns: 0,
@@ -62,24 +62,24 @@ describe('el resultado de fallo de arranque (sut/ez/out/Fqn/d)', () => {
     })
     expect(typeof r.uuid).toBe('string')
   })
-  test('6. se pide sólo con la variable del cliente en verdadero', () => {
+  test('6. it is requested only with the client variable set to true', () => {
     expect(isStartupFailureResultRequested({ THYROX_CODE_STARTUP_FAILURE_RESULTS: '1' })).toBe(true)
     expect(isStartupFailureResultRequested({})).toBe(false)
     expect(isStartupFailureResultRequested({ THYROX_CODE_STARTUP_FAILURE_RESULTS: '0' })).toBe(false)
   })
-  test('7. stream-json sólo en un lanzamiento no interactivo', () => {
+  test('7. stream-json only on a non-interactive launch', () => {
     expect(isStreamJsonLaunch(['-p', '--output-format', 'stream-json'], true)).toBe(true)
     expect(isStreamJsonLaunch(['--output-format=stream-json', '--print'], true)).toBe(true)
     expect(isStreamJsonLaunch(['--output-format', 'stream-json'], true)).toBe(false)
     expect(isStreamJsonLaunch(['--output-format', 'stream-json'], false)).toBe(true)
     expect(isStreamJsonLaunch(['-p', '--output-format', 'text'], true)).toBe(false)
   })
-  test('8. el --session-id valido de argv gana al generado', () => {
+  test('8. a valid --session-id in argv wins over the generated one', () => {
     expect(sessionIdFor('gen', ['--session-id', UUID])).toBe(UUID)
     expect(sessionIdFor('gen', ['--session-id', 'no-uuid'])).toBe('gen')
     expect(sessionIdFor('gen', [])).toBe('gen')
   })
-  test('9. escribe UNA linea sólo si se pide y es stream-json', async () => {
+  test('9. writes ONE line only when requested and stream-json', async () => {
     const lines: string[] = []
     const out = { write: (s: string, cb?: () => void) => { lines.push(s); cb?.(); return true },
       once: () => {}, writableEnded: false, destroyed: false }
@@ -93,8 +93,8 @@ describe('el resultado de fallo de arranque (sut/ez/out/Fqn/d)', () => {
   })
 })
 
-describe('la rama de cwd en la capa cli', () => {
-  test('10. sin cwd: mensaje, linea result pedida y salida 1 — en ese orden', async () => {
+describe('the cwd branch in the cli layer', () => {
+  test('10. without cwd: message, requested result line and exit 1, in that order', async () => {
     const events: string[] = []
     await expect(exitIfCwdUnavailable({
       getCwd: () => { throw codeError('ENOENT') },
@@ -105,13 +105,13 @@ describe('la rama de cwd en la capa cli', () => {
     })).rejects.toThrow('salio')
     expect(events).toEqual(['stderr:The current', 'result:cwd_unavailable', 'exit:1'])
   })
-  test('11. con cwd legible no hace nada', async () => {
+  test('11. with a readable cwd it does nothing', async () => {
     const events: string[] = []
     await exitIfCwdUnavailable({ getCwd: () => '/tmp', writeError: m => { events.push(m) },
       exit: (() => { events.push('exit') }) as unknown as (c: number) => never })
     expect(events).toEqual([])
   })
-  test('12. cli.tsx la llama tras --version y ANTES de cargar el perfilador', () => {
+  test('12. cli.tsx calls it after --version and BEFORE loading the profiler', () => {
     const src = readFileSync(CLI, 'utf8')
     const check = src.indexOf('exitIfCwdUnavailable()')
     expect(check).toBeGreaterThan(src.indexOf("args[0] === '--version'"))
@@ -119,8 +119,8 @@ describe('la rama de cwd en la capa cli', () => {
   })
 })
 
-describe('el nombre del producto en los mensajes de arranque', () => {
-  test('5. sale de PRODUCT_NAME, no de un literal del binario', () => {
+describe('the product name in the startup messages', () => {
+  test('13. it comes from PRODUCT_NAME, not from a binary literal', () => {
     expect(PRODUCT_NAME).toBe('thyrox')
     const source = readFileSync(join(import.meta.dir, '../src/entry/cwdCheck.ts'), 'utf8')
     expect(source).not.toContain('Claude Code')

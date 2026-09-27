@@ -12,6 +12,7 @@
     "command-runtime",
     "config",
     "context-compression",
+    "coordination",
     "daemon",
     "headless-sdk",
     "ide",
@@ -22,6 +23,7 @@
     "modifiers-napi",
     "observability",
     "output",
+    "paths",
     "permission",
     "plan",
     "provider",
@@ -32,12 +34,15 @@
     "skills",
     "stdin-napi",
     "storage",
+    "store",
     "swarm",
+    "task",
     "teleport",
     "tool-registry",
     "tools",
     "updater",
     "url-handler-napi",
-    "voice"
+    "voice",
+    "workbench"
   ]
 }

@@ -145,11 +145,11 @@ DB_FILENAME = "agent_store.sqlite3"
 #: aqui vive la tabla que lo consume: el `CHECK` de ``tasks`` lo interpola, asi
 #: que la lista y la restriccion no pueden desincronizarse.
 #:
-#: ``deleted`` NO esta, y su ausencia es el punto: ``src/task/schema.ts:35``
+#: ``deleted`` NO esta, y su ausencia es el punto: ``src/packages/task/schema.ts:35``
 #: lo declara *orden* de borrar la fila, no estado que se guarde. Admitirlo
 #: aqui convertiria la orden en un estado persistible.
 #:
-#: Su gemelo en la otra lengua es ``src/task/schema.ts::TASK_STATUSES``, y la
+#: Su gemelo en la otra lengua es ``src/packages/task/schema.ts::TASK_STATUSES``, y la
 #: suite cruzada (``tests/task/schema.test.ts``) exige que los dos declaren lo
 #: mismo — dos lenguas, un vocabulario.
 TASK_STATUSES = ("pending", "in_progress", "completed")

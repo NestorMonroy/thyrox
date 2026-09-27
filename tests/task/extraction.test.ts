@@ -1,109 +1,104 @@
 /**
- * Control de la DISOLUCIÓN del paquete `@thyrox/tasks` en `src/task/`.
+ * Control del paquete `@thyrox/task` en `src/packages/task/`.
  *
- * Historia, porque el control cambió de sujeto y conviene que se lea: la
- * versión anterior controlaba una EXTRACCIÓN —que `tasks` se hubiera movido
- * del bucle a un paquete propio— y sus aserciones eran correctas para aquella
- * premisa. El análisis de la referencia
- * (`analisis-flujo-de-tareas-en-ccnmt.rst`) midió que la premisa tenía dos
- * mitades y sólo una era falsa: *«el mecanismo no pertenece al bucle»* sigue en
- * pie; *«por tanto es un paquete»* no. Cinco roles alojan el sujeto en
- * dieciocho directorios de la referencia y CERO paquetes llevan su nombre.
- * La corrección es de granularidad, no de dirección.
+ * Historia, porque el control cambió de sujeto dos veces y conviene que se
+ * lea:
  *
- * Qué haría fallar este control, declarado antes de reescribirlo:
+ * 1. Controlaba una EXTRACCIÓN: que `tasks` saliera del bucle a un paquete.
+ * 2. Pasó a controlar su DISOLUCIÓN en `src/task/`. El análisis de la
+ *    referencia (`analisis-flujo-de-tareas-en-ccnmt.rst`) midió cero paquetes
+ *    con el nombre del sujeto, y la forma elegida fue una raíz por rol, con los
+ *    módulos TypeScript junto a sus hermanos Python.
+ * 3. Directiva del ejecutor 2026-09-27: *«lo que está dentro de
+ *    thyrox/src/packages/ se tiene que quedar»*, precisada como mudar los
+ *    cinco sueltos (`paths`, `store`, `task`, `coordination`, `workbench`) a
+ *    `src/packages/`, y confirmada frente a la decisión anterior: *«son
+ *    paquetes»*. La cara TypeScript es el paquete `@thyrox/task`; la cara
+ *    Python se queda en `src/task/`, porque es un paquete Python importado por
+ *    nombre (`from task import …`).
  *
- * 1. Que la disolución fuera una COPIA. El directorio del paquete seguiría en
- *    pie y las dos copias divergirían en silencio — el defecto que
- *    H-DOCS-1119 midió.
- * 2. Que el manifiesto sobreviviera. Un `package.json` dentro de `src/task/`
- *    reintroduciría el paquete nombrado por el sujeto, que es el defecto
- *    entero.
- * 3. Que la entrada del espacio de trabajo sobreviviera: `bun` resolvería un
- *    paquete inexistente y el error saldría en la instalación, no aquí.
- * 4. Que los consumidores siguieran importando por especificador de paquete.
- * 5. Que los módulos no aterrizaran junto a sus hermanos Python — la forma que
- *    `src/paths/` y `src/store/` ya tienen: una raíz por ROL, con la lengua
- *    que la implemente dentro.
- * 6. Que la conducta cambiara. Se ejercita `parseRstTasks` con una entrada
+ * Qué haría fallar este control:
+ *
+ * 1. Que la mudanza fuera una COPIA: un `.ts` que sobreviviera en `src/task/`
+ *    divergiría en silencio de su gemelo en el paquete (H-DOCS-1119).
+ * 2. Que el paquete no tuviera frontera: sin manifiesto ni `exports`, sus
+ *    consumidores volverían a entrar por ruta.
+ * 3. Que el agregador de `src/packages/` no lo enumerara.
+ * 4. Que un consumidor siguiera importando por ruta en vez de por el nombre.
+ * 5. Que la conducta cambiara. Se ejercita `parseRstTasks` con una entrada
  *    real, no con un doble.
  */
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const RAIZ = new URL('../..', import.meta.url).pathname
-const SUJETO = join(RAIZ, 'src', 'task')
-const CLI = join(RAIZ, 'src', 'packages', 'cli')
+const ROOT = new URL('../..', import.meta.url).pathname
+const PACKAGE_DIR = join(ROOT, 'src', 'packages', 'task')
+const PYTHON_TWIN = join(ROOT, 'src', 'task')
+const CLI = join(ROOT, 'src', 'packages', 'cli')
 
-describe('la disolución del paquete es un movimiento, no una copia', () => {
-  test('el paquete ya no existe', () => {
-    expect(existsSync(join(RAIZ, 'src', 'packages', 'tasks'))).toBe(false)
+describe('the move is a move, not a copy', () => {
+  test('the old plural name did not come back', () => {
+    expect(existsSync(join(ROOT, 'src', 'packages', 'tasks'))).toBe(false)
   })
 
-  test('el sujeto NO tiene manifiesto: es un subdirectorio, no un paquete', () => {
-    expect(existsSync(join(SUJETO, 'package.json'))).toBe(false)
+  test('the TypeScript modules live in the package', () => {
+    const entries = readdirSync(PACKAGE_DIR)
+    // Presencia de los que la mudanza movió, no igualdad exacta: el paquete
+    // crece y una igualdad convertiría cada incorporación en un rojo.
+    for (const moduleName of ['index.ts', 'io.ts', 'premises.ts', 'rst.ts', 'schema.ts']) {
+      expect(entries).toContain(moduleName)
+    }
   })
 
-  test('el espacio de trabajo ya no lo enumera', () => {
-    const m = JSON.parse(readFileSync(join(RAIZ, 'src', 'packages', 'package.json'), 'utf8'))
+  test('no .ts file stayed next to the Python twin', () => {
+    const entries = readdirSync(PYTHON_TWIN)
+    expect(entries.filter((f) => f.endsWith('.ts'))).toEqual([])
+    // No puede pasar en vacío: el gemelo Python sigue ahí.
+    expect(entries.filter((f) => f.endsWith('.py')).length).toBeGreaterThan(0)
+  })
+
+  test('no module of the package imports the harness', () => {
+    const offenders = readdirSync(PACKAGE_DIR)
+      .filter((f) => f.endsWith('.ts'))
+      .filter((f) => /@thyrox\/harness|packages\/harness/.test(readFileSync(join(PACKAGE_DIR, f), 'utf8')))
+    expect(offenders).toEqual([])
+  })
+})
+
+describe('the package has a boundary', () => {
+  test('declares its name and its exports', () => {
+    const m = JSON.parse(readFileSync(join(PACKAGE_DIR, 'package.json'), 'utf8'))
+    expect(m.name).toBe('@thyrox/task')
+    expect(Object.keys(m.exports ?? {}).length).toBeGreaterThan(0)
+  })
+
+  test('the src/packages aggregator lists it', () => {
+    const m = JSON.parse(readFileSync(join(ROOT, 'src', 'packages', 'package.json'), 'utf8'))
+    expect(m.workspaces).toContain('task')
     expect(m.workspaces).not.toContain('tasks')
-    // No puede pasar en vacío: si la clave desapareciera, `not.toContain`
-    // daría verde sobre `undefined`. Sub-patrón D dentro del propio control.
-    expect(m.workspaces.length).toBeGreaterThan(0)
   })
 
-  test('los cuatro módulos viven junto a sus hermanos Python', () => {
-    const entradas = readdirSync(SUJETO)
-    // Se afirma la PRESENCIA de los cuatro que la disolución movió, no que el
-    // directorio tenga exactamente cuatro: el subsistema crece —`schema.ts`
-    // llegó con la partición de `tools/tasks.ts`— y una igualdad exacta
-    // convertiría cada incorporación legítima en un rojo. Sigue
-    // discriminando: si uno de los cuatro desapareciera, cae.
-    for (const modulo of ['index.ts', 'io.ts', 'premises.ts', 'rst.ts']) {
-      expect(entradas).toContain(modulo)
-    }
-    // La cohabitación es el punto: es la forma de `src/paths/` y `src/store/`.
-    expect(entradas.filter((f) => f.endsWith('.py')).length).toBeGreaterThan(0)
+  test('the real consumer imports by package name', () => {
+    // `checkPremises.ts` es el comando de premisas desde que la tarea #205
+    // repartió los comandos del viejo `bin/harness.ts` en `cli/src/commands/`.
+    const command = readFileSync(join(CLI, 'src', 'commands', 'checkPremises.ts'), 'utf8')
+    expect(command).toContain("from '@thyrox/task/premises.ts'")
+    expect(command).not.toMatch(/from '(\.\.\/)+task\//)
   })
 
-  test('ningún módulo del sujeto importa del harness', () => {
-    const ofensores: string[] = []
-    for (const f of readdirSync(SUJETO)) {
-      if (!f.endsWith('.ts')) continue
-      if (/@thyrox\/harness|packages\/harness/.test(readFileSync(join(SUJETO, f), 'utf8'))) {
-        ofensores.push(f)
-      }
-    }
-    expect(ofensores).toEqual([])
-  })
-
-  test('el consumidor real importa por ruta, no por especificador de paquete', () => {
-    // El consumidor NO es `packages/harness/bin/harness.ts` -- ese paquete se
-    // disolvio (nombre prohibido, ver kaupamex-docs:
-    // analisis-nombre-del-paquete-harness + progreso-actualizar-agentic-ai-thyrox
-    // 2026-09-08T00:32:20) y su `bin/harness.ts` se retiro en la tarea #205,
-    // repartiendo sus siete comandos en `cli/src/commands/` (la forma de
-    // `ccnmt: packages/cli/src/commands/`). El de premisas es
-    // `checkPremises.ts` -- `cli/package.json` lo declara verbatim: "sin
-    // bin/harness.ts desde #205".
-    const comando = readFileSync(join(CLI, 'src', 'commands', 'checkPremises.ts'), 'utf8')
-    expect(comando).not.toContain('@thyrox/tasks')
-    expect(comando).toContain('../../../../task/premises.ts')
-  })
-
-  test('el cli ya no lo declara como dependencia', () => {
+  test('the cli does not declare the old name', () => {
     const m = JSON.parse(readFileSync(join(CLI, 'package.json'), 'utf8'))
     expect(Object.keys(m.dependencies ?? {})).not.toContain('@thyrox/tasks')
   })
 })
 
-describe('la conducta se preserva', () => {
-  test('parseRstTasks sigue leyendo una casilla marcada', async () => {
-    const { parseRstTasks } = await import('../../src/task/rst.ts')
-    const filas = parseRstTasks('- [x] T-001 hecho\n- [ ] T-002 pendiente\n')
-    expect(filas.length).toBe(2)
-    expect(filas[0]!.done).toBe(true)
-    expect(filas[1]!.done).toBe(false)
+describe('behaviour is preserved', () => {
+  test('parseRstTasks still reads a checked box', async () => {
+    const { parseRstTasks } = await import('../../src/packages/task/rst.ts')
+    const rows = parseRstTasks('- [x] T-001 hecho\n- [ ] T-002 pendiente\n')
+    expect(rows.length).toBe(2)
+    expect(rows[0]!.done).toBe(true)
+    expect(rows[1]!.done).toBe(false)
   })
 })

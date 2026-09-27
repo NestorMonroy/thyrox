@@ -3,12 +3,7 @@
   "private": true,
   "workspaces": [
     "src/packages/*",
-    "src/packages/@ant/*",
-    "src/paths",
-    "src/store",
-    "src/task",
-    "src/coordination",
-    "src/workbench"
+    "src/packages/@ant/*"
   ],
   "type": "module",
   "license": "UNLICENSED",
@@ -19,7 +14,7 @@
   "description": "THYROX — el Agentic AI y su project management: el mecanismo, sin el parametro del repo que lo consume (DEC-04).",
   "exports": {
     "./commands": "./src/commands/index.ts",
-    "./coordination/ledger": "./src/coordination/ledger.ts",
+    "./coordination/ledger": "./src/packages/coordination/ledger.ts",
     "./packages/agent": "./src/packages/agent/index.ts",
     "./packages/agent/assistant": "./src/packages/agent/assistant/index.ts",
     "./packages/agent/contextCollapse": "./src/packages/agent/contextCollapse/index.ts",
@@ -97,8 +92,8 @@
     "./packages/voice/testing": "./src/packages/voice/testing/index.ts",
     "./rules": "./src/rules/index.ts",
     "./skills": "./src/skills/index.ts",
-    "./task": "./src/task/index.ts",
-    "./workbench/manifest": "./src/workbench/manifest.ts",
+    "./task": "./src/packages/task/index.ts",
+    "./workbench/manifest": "./src/packages/workbench/manifest.ts",
     "./*": "./src/*.ts",
     "./packages/@ant/claude-for-chrome-mcp/src": "./src/packages/@ant/claude-for-chrome-mcp/src/index.ts",
     "./packages/@ant/computer-use-input/src": "./src/packages/@ant/computer-use-input/src/index.ts",

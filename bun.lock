@@ -68,10 +68,6 @@
         "zod": "^4.3.6",
       },
     },
-    "src/coordination": {
-      "name": "@thyrox/coordination",
-      "version": "0.1.0",
-    },
     "src/packages/@ant/claude-for-chrome-mcp": {
       "name": "@ant/claude-for-chrome-mcp",
       "version": "1.0.0",
@@ -347,6 +343,10 @@
         "@types/bun": "^1.4.0",
       },
     },
+    "src/packages/coordination": {
+      "name": "@thyrox/coordination",
+      "version": "0.1.0",
+    },
     "src/packages/daemon": {
       "name": "@thyrox/daemon",
       "version": "0.1.0",
@@ -494,6 +494,10 @@
         "cli-highlight": "^2.1.11",
         "highlight.js": "^11.11.1",
       },
+    },
+    "src/packages/paths": {
+      "name": "@thyrox/paths",
+      "version": "0.1.0",
     },
     "src/packages/permission": {
       "name": "@thyrox/permission",
@@ -695,6 +699,10 @@
         "proper-lockfile": "^4.1.2",
       },
     },
+    "src/packages/store": {
+      "name": "@thyrox/store",
+      "version": "0.1.0",
+    },
     "src/packages/swarm": {
       "name": "@thyrox/swarm",
       "version": "0.1.0",
@@ -721,6 +729,13 @@
       "devDependencies": {
         "@types/proper-lockfile": "^4.1.4",
         "proper-lockfile": "^4.1.2",
+      },
+    },
+    "src/packages/task": {
+      "name": "@thyrox/task",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/paths": "workspace:*",
       },
     },
     "src/packages/teleport": {
@@ -830,22 +845,7 @@
         "@types/ws": "^8.18.1",
       },
     },
-    "src/paths": {
-      "name": "@thyrox/paths",
-      "version": "0.1.0",
-    },
-    "src/store": {
-      "name": "@thyrox/store",
-      "version": "0.1.0",
-    },
-    "src/task": {
-      "name": "@thyrox/task",
-      "version": "0.1.0",
-      "dependencies": {
-        "@thyrox/paths": "workspace:*",
-      },
-    },
-    "src/workbench": {
+    "src/packages/workbench": {
       "name": "@thyrox/workbench",
       "version": "0.1.0",
       "dependencies": {
@@ -1210,7 +1210,7 @@
 
     "@thyrox/context-compression": ["@thyrox/context-compression@workspace:src/packages/context-compression"],
 
-    "@thyrox/coordination": ["@thyrox/coordination@workspace:src/coordination"],
+    "@thyrox/coordination": ["@thyrox/coordination@workspace:src/packages/coordination"],
 
     "@thyrox/daemon": ["@thyrox/daemon@workspace:src/packages/daemon"],
 
@@ -1232,7 +1232,7 @@
 
     "@thyrox/output": ["@thyrox/output@workspace:src/packages/output"],
 
-    "@thyrox/paths": ["@thyrox/paths@workspace:src/paths"],
+    "@thyrox/paths": ["@thyrox/paths@workspace:src/packages/paths"],
 
     "@thyrox/permission": ["@thyrox/permission@workspace:src/packages/permission"],
 
@@ -1254,11 +1254,11 @@
 
     "@thyrox/storage": ["@thyrox/storage@workspace:src/packages/storage"],
 
-    "@thyrox/store": ["@thyrox/store@workspace:src/store"],
+    "@thyrox/store": ["@thyrox/store@workspace:src/packages/store"],
 
     "@thyrox/swarm": ["@thyrox/swarm@workspace:src/packages/swarm"],
 
-    "@thyrox/task": ["@thyrox/task@workspace:src/task"],
+    "@thyrox/task": ["@thyrox/task@workspace:src/packages/task"],
 
     "@thyrox/teleport": ["@thyrox/teleport@workspace:src/packages/teleport"],
 
@@ -1272,7 +1272,7 @@
 
     "@thyrox/voice": ["@thyrox/voice@workspace:src/packages/voice"],
 
-    "@thyrox/workbench": ["@thyrox/workbench@workspace:src/workbench"],
+    "@thyrox/workbench": ["@thyrox/workbench@workspace:src/packages/workbench"],
 
     "@types/asciichart": ["@types/asciichart@1.5.8", "", {}, "sha512-8yzgCUybv8/yUfj4WeTh7G+V+AxU7AzwsF2CrkTtARKHdrxE/EiByF2efUMj6qdm87tENucNu6pLs22RWU0H7g=="],
 

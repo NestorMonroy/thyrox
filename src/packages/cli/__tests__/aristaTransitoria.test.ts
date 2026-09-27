@@ -24,7 +24,7 @@
  * claves no se solapan en ninguna posicion— y ordena que su retiro sea «su
  * propio pase y con su propia suite … para que no se cuele como parte de un
  * git mv». Ese pase fue #266, y NO lo mudo: lo RETIRO, reapuntando el
- * binario al sucesor que ya vivia en `thyrox: src/workbench/manifest.ts`.
+ * binario al sucesor que ya vivia en `thyrox: src/packages/workbench/manifest.ts`.
  * Por eso el caso 3 ya no necesita excepcion para el workbench, y la unica
  * que admite es la de `reference/`.
  *
