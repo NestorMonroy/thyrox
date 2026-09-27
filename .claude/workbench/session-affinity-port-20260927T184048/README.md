@@ -228,5 +228,50 @@ en `proxySessionIdentity.test.ts`).
 Los recuentos de la tabla son de la última corrida de cada caso; los que se
 añadieron escenarios después se volvieron a correr (`rerun*.txt`).
 
-Pendiente de la fase 5c: `pickLCP` y la mitad LCP de `onResult` y
-`lookupAffinity` en el selector, y el `caller_scope` en el servidor.
+## Fase 5c: el LCP en el selector y en el servidor
+
+`affinitySelector.ts` gana `pickLcp` (sin identidad explícita y con
+`caller_scope`, antes de la derivada y el hash), la mitad LCP de `onResult`
+(refresca o retira la secuencia exacta con las huellas que `pick` dejó en la
+metadata, y deja en paz las vinculaciones por sesión) y de
+`lookupAffinity` (por id publicado o por hash sin prefijo, con los alias de
+proveedor: `gemini`/`vertex`/`aistudio` son `google`, `codex` es `openai`).
+Prueba `__tests__/proxySessionAffinityLcp.test.ts`, de `selector_lcp_test.go`
+y la parte LCP de `session_affinity_lookup_test.go`; corrida primero en rojo
+(11 de 15).
+
+`server.ts` da a la selección el `caller_scope` de la clave de acceso
+(`requestCallerScope`: SHA-256 con dominio, nunca la clave en claro), el
+cuerpo como llegó con su protocolo (`claude` en `/v1/messages`, `openai` en
+`/v1/chat/completions`) y la metadata de `Enrich`.
+
+Tres pruebas que Go no tiene, porque sus equivalentes no discriminaban:
+refrescar sin el cuerpo (en Go el enlace sobrevive igual sin el refresco;
+aquí, con reloj, caduca si no se refresca), una secuencia enlazada a una
+credencial ya no disponible, y que el resultado de una petición LCP no toque
+las vinculaciones por sesión. En el servidor, la compactación y el
+aislamiento por clave necesitan tres credenciales: con dos, el reparto por
+turno devuelve la misma por casualidad.
+
+| Anulación (`probes/annul-cases7/`, corre `probes/annul-run7.sh`) | Caen |
+|---|---|
+| sin `pickLcp` | 6 |
+| LCP sin exigir `caller_scope` | 1 |
+| sin publicar la identidad del acierto | 4 |
+| sin la mitad LCP de `onResult` | 3 |
+| el resultado LCP toca la caché de sesiones | 1 |
+| acierto con credencial no disponible | 1 |
+| `lookupAffinity` sin el comparador | 3 |
+| sin alias de proveedor | 1 |
+| `onResult` recalcula en vez de usar las huellas | 1 |
+| `invalidateAuth` sin el comparador | 1 |
+| servidor sin `caller_scope` | 2 |
+| servidor sin `Enrich` | **0** |
+
+`Enrich` no tiene efecto observable mientras el LCP aplique, y con una clave
+de acceso siempre hay `caller_scope`: la identidad derivada sólo decide
+cuando la conversación no tiene un turno que no sea de sistema. Se conserva
+por fidelidad con `conductor_execution.go`, que la calcula antes de elegir.
+
+Comprobación del paquete (`probes/phase4-checks.txt`, por `run-task-pool`):
+`tsc --noEmit` sin errores en `proxy/`, y 3289 pruebas en verde.

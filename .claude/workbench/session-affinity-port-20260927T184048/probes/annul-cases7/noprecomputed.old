@@ -1,0 +1,2 @@
+    if (fingerprints.length === 0) {
+      const prepared

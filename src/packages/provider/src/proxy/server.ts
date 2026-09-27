@@ -9,9 +9,11 @@
  * A ese camino se suman el control de acceso de CLIProxyAPI
  * (`sdk/access/manager.go`, `./access.ts`) y, por upstream, el selector de
  * credenciales (`sdk/cliproxy/auth/selector.go`, `./credentialSelectors.ts`).
- * El selector ve las cabeceras y el cuerpo del cliente —la afinidad por
- * sesión (`./session/affinitySelector.ts`) saca de ahí la sesión— y recibe
- * el desenlace de cada intento por `onResult`.
+ * El selector ve las cabeceras y el cuerpo del cliente tal como llegó —con
+ * su protocolo, el alcance que da su clave de acceso y la identidad que
+ * deriva `Enrich`; la afinidad por sesión (`./session/affinitySelector.ts`)
+ * saca de ahí la sesión o reconoce la conversación por su historia— y
+ * recibe el desenlace de cada intento por `onResult`.
  *
  * CLIProxyAPI y la pasarela del ejecutable son referencias, no
  * dependencias: todo lo que aquí corre lo implementa thyrox. El servidor
@@ -39,6 +41,9 @@ import { type AccessManager, httpStatusOf } from './access.ts'
 import type { CredentialSelector, ProxyCredential } from './credentialSelectors.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
 import { modelsResponse } from './modelsList.ts'
+import { enrich } from './session/enrich.ts'
+import { callerScope } from './session/identity.ts'
+import { METADATA_KEYS } from './session/info.ts'
 import { type GatewayRoutingConfig, type GatewayUpstream, resolveUpstreamModel } from './upstreamRouting.ts'
 
 /** `fj`: las rutas de inferencia. */
@@ -100,18 +105,24 @@ function fallsOver(status: number): boolean {
   return status >= 500 || status === 429 || status === 401 || status === 403 || status === 404
 }
 
-/** El cuerpo de la petición como objeto JSON, o la respuesta 400 que lo rechaza. */
-async function readJsonObject(request: Request, requestId: string): Promise<Record<string, unknown> | Response> {
+/** Lo que la selección de credencial lee del cliente: su alcance y su cuerpo tal como llegó. */
+type SelectionSource = { callerScope: string; payload: string; sourceFormat: string }
+
+type JsonBody = { body: Record<string, unknown>; text: string }
+
+/** El cuerpo de la petición como objeto JSON con su texto, o la respuesta 400 que lo rechaza. */
+async function readJsonObject(request: Request, requestId: string): Promise<JsonBody | Response> {
   let parsed: unknown
+  const text = await request.text()
   try {
-    parsed = JSON.parse(await request.text())
+    parsed = JSON.parse(text)
   } catch {
     return errorResponse(400, 'invalid_request_error', 'invalid JSON', requestId)
   }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     return errorResponse(400, 'invalid_request_error', 'request body must be a JSON object', requestId)
   }
-  return parsed as Record<string, unknown>
+  return { body: parsed as Record<string, unknown>, text }
 }
 
 /** El `model` del cuerpo, o la respuesta 400 que lo rechaza. */
@@ -121,10 +132,10 @@ function requireModel(body: Record<string, unknown>, requestId: string): string 
   return body.model
 }
 
-async function forwardAcrossUpstreams(config: ProxyServerConfig, request: Request, path: string, requestId: string): Promise<Response> {
-  const body = await readJsonObject(request, requestId)
-  if (body instanceof Response) return body
-  return forwardBody(config, request, path, body, requestId)
+async function forwardAcrossUpstreams(config: ProxyServerConfig, request: Request, path: string, requestId: string, scope: string): Promise<Response> {
+  const read = await readJsonObject(request, requestId)
+  if (read instanceof Response) return read
+  return forwardBody(config, request, path, read.body, requestId, { callerScope: scope, payload: read.text, sourceFormat: 'claude' })
 }
 
 /** `Bv`: el cuerpo ya validado, por cada upstream hasta que uno responda. */
@@ -134,9 +145,17 @@ async function forwardBody(
   path: string,
   body: Record<string, unknown>,
   requestId: string,
+  source: SelectionSource,
 ): Promise<Response> {
   const model = requireModel(body, requestId)
   if (model instanceof Response) return model
+  // `Enrich`: la identidad derivada de la conversación, antes de elegir credencial.
+  const enriched = enrich({
+    payload: source.payload,
+    headers: request.headers,
+    sourceFormat: source.sourceFormat,
+    optionsMetadata: source.callerScope ? { [METADATA_KEYS.callerScope]: source.callerScope } : {},
+  })
 
   const reasons: string[] = []
   let attempted = false
@@ -156,7 +175,7 @@ async function forwardBody(
     }
     attempted = true
     // Por upstream, una metadata propia: la afinidad escribe en ella su espacio de nombres.
-    const selection = { headers: request.headers, payload: body, metadata: {} }
+    const selection = { headers: request.headers, payload: source.payload, sourceFormat: source.sourceFormat, metadata: { ...enriched.optionsMetadata } }
     const report = (success: boolean, skipCooldown = false) =>
       config.selector.onResult?.({ authId: credential.id, provider: upstream.provider, model: resolved.model, success, skipCooldown, options: selection })
     let credential: ProxyCredential
@@ -233,18 +252,21 @@ async function route(config: ProxyServerConfig, request: Request, requestId: str
   if (request.method === 'GET' && pathname === '/healthz') return new Response('ok', { status: 200 })
   const access = config.access.authenticate(request)
   if (access.error) return errorResponse(httpStatusOf(access.error), 'authentication_error', access.error.message, requestId)
+  // `requestCallerScope`: el espacio de afinidad de este cliente sale de su clave de acceso, nunca guardada en claro.
+  const scope = callerScope(access.result?.principal ?? '')
   if (request.method === 'POST' && (INFERENCE_PATHS as readonly string[]).includes(pathname)) {
-    return forwardAcrossUpstreams(config, request, pathname, requestId)
+    return forwardAcrossUpstreams(config, request, pathname, requestId, scope)
   }
   if (request.method === 'GET' && pathname === '/v1/models') {
     return modelsResponse(config.routing.models, config.routing.upstreams, config.routing.auto_include_builtin_models)
   }
   if (request.method === 'POST' && pathname === CHAT_COMPLETIONS_PATH) {
-    const body = await readJsonObject(request, requestId)
-    if (body instanceof Response) return body
-    const model = requireModel(body, requestId)
+    const read = await readJsonObject(request, requestId)
+    if (read instanceof Response) return read
+    const model = requireModel(read.body, requestId)
     if (model instanceof Response) return model
-    return serveChatCompletion(model, body, messagesBody => forwardBody(config, request, '/v1/messages', messagesBody, requestId))
+    const source = { callerScope: scope, payload: read.text, sourceFormat: 'openai' }
+    return serveChatCompletion(model, read.body, messagesBody => forwardBody(config, request, '/v1/messages', messagesBody, requestId, source))
   }
   return new Response('not found', { status: 404 })
 }

@@ -201,3 +201,43 @@ describe('afinidad de sesión en el reenvío', () => {
     expect(selector.lookupAffinity('anthropic', 'mx-b', 'header:s1')).toEqual({ authId: '', status: 'unbound' })
   })
 })
+
+describe('afinidad por historia (LCP) en el reenvío', () => {
+  const single = { upstreams: [{ name: 'b', provider: 'anthropic' }], models: [{ id: 'mx', upstream_model: { b: 'mx-b' } }], auto_include_builtin_models: false }
+  const OTHER_KEY = 'sk-local-other'
+  const lcpHandler = (seen: ForwardRequest[]) =>
+    createProxyHandler({
+      access: new AccessManager([createConfigApiKeyProvider([KEY, OTHER_KEY])!]),
+      routing: single,
+      credentials: { b: [{ id: 'b1' }, { id: 'b2' }, { id: 'b3' }] },
+      selector: new SessionAffinitySelector({ fallback: new RoundRobinSelector(), cleanup: false }),
+      forward: async request => {
+        seen.push(request)
+        return Response.json({ ok: true })
+      },
+    })
+  const conversation = (...texts: string[]) => ({ model: 'mx', messages: texts.map((content, i) => ({ role: i % 2 ? 'assistant' : 'user', content })) })
+  const as = (key: string) => ({ authorization: `Bearer ${key}` })
+  const last = (seen: ForwardRequest[]) => seen[seen.length - 1]!.credential.id
+
+  test('sin sesión explícita, una conversación compactada vuelve a su credencial', async () => {
+    const seen: ForwardRequest[] = []
+    const handler = lcpHandler(seen)
+    await handler(post(conversation('step 1', 'ack 1', 'step 2', 'ack 2', 'step 3'), as(KEY)))
+    const bound = last(seen)
+    await handler(post(conversation('otra conversación'), as(KEY)))
+    expect(last(seen)).not.toBe(bound)
+    // El resumen cambia el primer turno: el hash de mensajes ya no la reconoce, la cola sí.
+    await handler(post(conversation('<summary>steps 1 and 2</summary>', 'ack 2', 'step 3', 'ack 3'), as(KEY)))
+    expect(last(seen)).toBe(bound)
+  })
+
+  test('el espacio LCP es por clave de acceso', async () => {
+    const seen: ForwardRequest[] = []
+    const handler = lcpHandler(seen)
+    await handler(post(conversation('prompt compartido'), as(KEY)))
+    const first = last(seen)
+    await handler(post(conversation('prompt compartido', 'r', 'más'), as(OTHER_KEY)))
+    expect(last(seen)).not.toBe(first)
+  })
+})

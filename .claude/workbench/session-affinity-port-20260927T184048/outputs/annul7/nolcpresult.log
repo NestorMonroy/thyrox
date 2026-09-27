@@ -1,0 +1,5 @@
+(fail) SessionAffinitySelector: LCP > un fallo retira la secuencia exacta [1.62ms]
+(fail) SessionAffinitySelector: LCP > un fallo tras un acierto del LCP desaloja la vinculación [1.05ms]
+(fail) SessionAffinitySelector: LCP > una compactación conserva la credencial y enlaza con la sesión anterior [5.42ms]
+ 97 pass
+ 3 fail

@@ -41,6 +41,10 @@ export const METADATA_KEYS = {
   isFork: 'is_fork',
   nodeKind: 'node_kind',
   lcpAccessGeneration: 'lcp_access_generation',
+  lcpFingerprints: 'lcp_fingerprints',
+  lcpMinPrefixLength: 'lcp_min_prefix_length',
+  lcpTailFingerprints: 'lcp_tail_fingerprints',
+  lcpEnvironmentDigest: 'lcp_environment_digest',
   sessionAffinityProvider: 'session_affinity_provider',
   sessionAffinityModel: 'session_affinity_model',
 } as const

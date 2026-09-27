@@ -61,6 +61,8 @@ export type ProxyCredential = {
 export type PickOptions = {
   headers?: SessionHeaders
   payload?: string | JsonObject
+  /** El protocolo del cuerpo (`openai`, `claude`, `gemini`…); vacío, se infiere. */
+  sourceFormat?: string
   /** La metadata de ejecución; la afinidad escribe en ella sus claves. */
   metadata?: SessionMetadata
 }

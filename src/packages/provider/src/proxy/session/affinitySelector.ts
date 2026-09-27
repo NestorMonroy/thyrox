@@ -21,10 +21,14 @@
  * disponible se reutiliza aunque se recupere otra de más prioridad. El
  * respaldo sólo ve el nivel de prioridad más alto disponible.
  *
+ * Sin identidad explícita y con un `caller_scope` en la metadata, antes de
+ * la derivada y el hash decide el comparador de prefijo común
+ * (`./lcpMatcher.ts`): la historia de la conversación nombra la credencial,
+ * y las bifurcaciones y compactaciones heredan su linaje. `pick` deja las
+ * huellas en la metadata para que `onResult` refresque o retire la
+ * secuencia exacta sin volver a leer el cuerpo.
+ *
  * Divergencias declaradas:
- * - El comparador de prefijo común (LCP) no se porta aquí: sin identidad
- *   explícita la petición cae directo a la derivada y al hash. pendiente:
- *   `pickLCP` y la mitad LCP de `onResult` y `lookupAffinity` (tarea #90).
  * - `shouldSkipCredentialCooldown` es del conductor, que thyrox aún no
  *   tiene: quien informa el resultado lo declara con `skipCooldown`.
  *   pendiente: derivarlo del clasificador de errores (tarea #91).
@@ -43,10 +47,12 @@ import {
   type SelectionResult,
   WeightedRoundRobinSelector,
 } from '../credentialSelectors.ts'
+import { extractCanonicalTurns } from './canonicalTurns.ts'
 import { derivedId } from './enrich.ts'
 import { CANDIDATE_SESSION_PREFIXES, normalizeExplicitId } from './identity.ts'
 import { boundSessionIdentity, extractSessionInfo, METADATA_KEYS, type SessionHeaders, type SessionMetadata } from './info.ts'
 import { getPath, type JsonObject, type JsonValue, parsePayload, textAt } from './payload.ts'
+import { MerklePrefixMatcher, type MerklePrefixBindResult } from './lcpMatcher.ts'
 import { SessionCache } from './sessionCache.ts'
 
 export type { PickOptions, SelectionResult } from '../credentialSelectors.ts'
@@ -70,18 +76,16 @@ export type AffinityLookup = { authId: string; status: AffinityStatus }
 
 export class SessionAffinitySelector implements CredentialSelector {
   readonly cache: SessionCache
+  private readonly matcher: MerklePrefixMatcher
   private readonly fallback: CredentialSelector
   private readonly subagentAffinity: boolean
 
   constructor(config: SessionAffinityConfig = {}) {
     this.fallback = config.fallback ?? new RoundRobinSelector()
     this.subagentAffinity = config.subagentAffinity ?? true
-    this.cache = new SessionCache({
-      ttlMs: config.ttlMs && config.ttlMs > 0 ? config.ttlMs : DEFAULT_TTL_MS,
-      maxEntries: config.maxEntries,
-      now: config.now,
-      cleanup: config.cleanup,
-    })
+    const ttlMs = config.ttlMs && config.ttlMs > 0 ? config.ttlMs : DEFAULT_TTL_MS
+    this.cache = new SessionCache({ ttlMs, maxEntries: config.maxEntries, now: config.now, cleanup: config.cleanup })
+    this.matcher = new MerklePrefixMatcher({ ttlMs, now: config.now })
   }
 
   pick(provider: string, model: string, credentials: ProxyCredential[], now = new Date(), options: PickOptions = {}): ProxyCredential {
@@ -91,7 +95,10 @@ export class SessionAffinitySelector implements CredentialSelector {
     const request = { ...options, metadata }
 
     const [explicitId, explicitFallback] = extractExplicitSessionIds(request.headers, request.payload, metadata)
-    if (explicitId) {
+    if (!explicitId) {
+      const lcp = this.pickLcp(provider, model, credentials, now, request, metadata)
+      if (lcp) return lcp
+    } else {
       delete metadata[METADATA_KEYS.lcpAffinitySession]
       delete metadata[METADATA_KEYS.lcpAccessGeneration]
       delete metadata[METADATA_KEYS.isCompaction]
@@ -145,17 +152,58 @@ export class SessionAffinitySelector implements CredentialSelector {
     return picked
   }
 
+  /**
+   * Sin identidad explícita, el prefijo común: si una trayectoria enlazada
+   * comparte el prefijo más largo y su credencial sigue disponible, ésa; si
+   * no, la elige el respaldo y la secuencia queda enlazada. `undefined`
+   * cuando el LCP no aplica (sin `caller_scope` o sin turnos).
+   */
+  private pickLcp(provider: string, model: string, credentials: ProxyCredential[], now: Date, request: PickOptions, metadata: SessionMetadata): ProxyCredential | undefined {
+    const namespace = lcpAffinityNamespace(provider, model, metadata)
+    if (!namespace) return undefined
+    const turns = extractCanonicalTurns(request.sourceFormat ?? '', request.payload)
+    if (!turns || turns.length === 0) return undefined
+    const prepared = this.matcher.prepareExt(turns)
+    const { fingerprints, minPrefixLength, tailFingerprints, envDigest } = prepared
+    if (fingerprints.length === 0 || minPrefixLength <= 0 || minPrefixLength > fingerprints.length) return undefined
+    metadata[METADATA_KEYS.lcpFingerprints] = fingerprints
+    metadata[METADATA_KEYS.lcpMinPrefixLength] = minPrefixLength
+    metadata[METADATA_KEYS.lcpTailFingerprints] = tailFingerprints
+    metadata[METADATA_KEYS.lcpEnvironmentDigest] = envDigest
+
+    const candidates = this.fallback instanceof WeightedRoundRobinSelector ? positiveWeightCredentials(credentials) : credentials
+    const available = availableCredentials(candidates, provider, model, now, true)
+    const found = this.matcher.matchFingerprints(namespace, fingerprints, tailFingerprints, envDigest, minPrefixLength)
+    const matched = found && available.find(c => c.id === found.authId)
+    if (found && matched) {
+      publishLcpIdentity(metadata, found)
+      return matched
+    }
+    const picked = this.fallback.pick(provider, model, highestPriorityCredentials(available), now, request)
+    const bound = this.matcher.bindFingerprints(namespace, fingerprints, tailFingerprints, envDigest, minPrefixLength, picked.id)
+    if (bound.sessionId) publishLcpIdentity(metadata, bound)
+    return picked
+  }
+
   /** Refresca la vinculación tras un éxito, o la libera tras un fallo de la credencial. */
   onResult(result: SelectionResult): void {
     if (!result.authId) return
-    if (!result.success && result.skipCooldown) return
     const options = result.options ?? {}
     const metadata = options.metadata
+    let [explicitId, explicitFallback] = extractExplicitSessionIds(options.headers, options.payload, metadata)
+    if (explicitId) {
+      explicitId = boundSessionIdentity(explicitId)
+      if (explicitFallback) explicitFallback = boundSessionIdentity(explicitFallback)
+    }
     const namespace = metadataText(metadata, METADATA_KEYS.sessionAffinityProvider) || result.provider
     const modelKey = canonicalModelKey(metadataText(metadata, METADATA_KEYS.sessionAffinityModel) || result.model)
+    if (!result.success && result.skipCooldown) return
 
-    let [primaryId, fallbackId] = extractExplicitSessionIds(options.headers, options.payload, metadata)
-    if (!primaryId) [primaryId, fallbackId] = extractSessionIds(options.headers, options.payload, metadata)
+    // El enlace LCP es independiente del explícito: un éxito refresca la secuencia y un fallo retira sólo la intentada.
+    if (!explicitId) this.lcpResult(result, namespace, modelKey, options)
+    if (!explicitId && metadata && METADATA_KEYS.lcpAffinitySession in metadata) return
+
+    let [primaryId, fallbackId] = explicitId ? [explicitId, explicitFallback] : extractSessionIds(options.headers, options.payload, metadata)
     if (!primaryId && !fallbackId) return
     if (primaryId) primaryId = boundSessionIdentity(primaryId)
     if (fallbackId) fallbackId = boundSessionIdentity(fallbackId)
@@ -168,6 +216,27 @@ export class SessionAffinitySelector implements CredentialSelector {
       if (result.success) this.cache.touch(key, result.authId)
       else this.cache.compareAndDelete(key, result.authId)
     }
+  }
+
+  private lcpResult(result: SelectionResult, provider: string, modelKey: string, options: PickOptions): void {
+    const metadata = options.metadata
+    const namespace = lcpAffinityNamespace(provider, modelKey, metadata)
+    if (!namespace) return
+    let fingerprints = stringList(metadata?.[METADATA_KEYS.lcpFingerprints])
+    let minPrefixLength = typeof metadata?.[METADATA_KEYS.lcpMinPrefixLength] === 'number' ? metadata[METADATA_KEYS.lcpMinPrefixLength] as number : 0
+    let tailFingerprints = stringList(metadata?.[METADATA_KEYS.lcpTailFingerprints])
+    let envDigest = typeof metadata?.[METADATA_KEYS.lcpEnvironmentDigest] === 'string' ? metadata[METADATA_KEYS.lcpEnvironmentDigest] as string : ''
+    if (fingerprints.length === 0) {
+      const prepared = this.matcher.prepareExt(extractCanonicalTurns(options.sourceFormat ?? '', options.payload) ?? [])
+      ;({ fingerprints, minPrefixLength, tailFingerprints, envDigest } = prepared)
+    }
+    if (fingerprints.length === 0 || minPrefixLength <= 0 || minPrefixLength > fingerprints.length) return
+    if (result.success) {
+      this.matcher.touchFingerprints(namespace, fingerprints, tailFingerprints, envDigest, minPrefixLength, result.authId)
+      return
+    }
+    const generation = metadata?.[METADATA_KEYS.lcpAccessGeneration]
+    this.matcher.removeFingerprintsBefore(namespace, fingerprints, result.authId, typeof generation === 'number' ? generation : 0)
   }
 
   /**
@@ -191,6 +260,16 @@ export class SessionAffinitySelector implements CredentialSelector {
         if (authId && (!authFilter || authFilter(authId))) found.add(authId)
       }
     }
+    for (const candidate of candidates) {
+      const lcp = this.matcher.lookupSession(candidate)
+      if (!lcp || lcp.authIds.length === 0) continue
+      const parsed = parseLcpNamespace(lcp.namespace)
+      if (parsed) {
+        const otherProvider = provider !== 'mixed' && parsed.provider !== 'mixed' && canonicalLcpProvider(parsed.provider) !== canonicalLcpProvider(provider)
+        if (otherProvider || (modelKey !== '' && parsed.model !== modelKey)) continue
+      }
+      for (const authId of lcp.authIds) if (!authFilter || authFilter(authId)) found.add(authId)
+    }
     if (found.size === 0) return { authId: '', status: 'unbound' }
     if (found.size > 1) return { authId: '', status: 'ambiguous' }
     return { authId: [...found][0]!, status: 'bound' }
@@ -199,11 +278,73 @@ export class SessionAffinitySelector implements CredentialSelector {
   /** Retira todas las vinculaciones de una credencial limitada o caída. */
   invalidateAuth(authId: string): void {
     this.cache.invalidateAuth(authId)
+    this.matcher.invalidateAuth(authId)
   }
 
   stop(): void {
     this.cache.stop()
+    this.matcher.clear()
   }
+}
+
+/** Publica en la metadata la sesión LCP, su padre, su generación y su clase de nodo. */
+function publishLcpIdentity(metadata: SessionMetadata, identity: Omit<MerklePrefixBindResult, 'nodeKind'>): void {
+  if (identity.sessionId) {
+    metadata[METADATA_KEYS.lcpAffinitySession] = identity.sessionId
+    metadata[METADATA_KEYS.canonicalSession] = identity.sessionId
+  }
+  if (identity.parentSessionId) metadata[METADATA_KEYS.parentSession] = identity.parentSessionId
+  else delete metadata[METADATA_KEYS.parentSession]
+  if (identity.accessNumber > 0) metadata[METADATA_KEYS.lcpAccessGeneration] = identity.accessNumber
+  if (identity.isFork) {
+    metadata[METADATA_KEYS.isFork] = true
+    delete metadata[METADATA_KEYS.isCompaction]
+    metadata[METADATA_KEYS.nodeKind] = 'fork'
+  } else if (identity.isCompaction) {
+    metadata[METADATA_KEYS.isCompaction] = true
+    delete metadata[METADATA_KEYS.isFork]
+    metadata[METADATA_KEYS.nodeKind] = 'compaction'
+  } else {
+    delete metadata[METADATA_KEYS.isFork]
+    delete metadata[METADATA_KEYS.isCompaction]
+    delete metadata[METADATA_KEYS.nodeKind]
+  }
+}
+
+/** Los textos no vacíos de una lista; lo demás, lista vacía. */
+function stringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item !== '') : []
+}
+
+/** Los alias de un mismo proveedor comparten espacio LCP. */
+export function canonicalLcpProvider(provider: string): string {
+  const normalized = provider.trim().toLowerCase()
+  if (['google', 'gemini', 'vertex', 'aistudio'].includes(normalized)) return 'google'
+  if (normalized === 'codex' || normalized === 'openai') return 'openai'
+  if (normalized === 'claude' || normalized === 'anthropic') return 'claude'
+  return normalized
+}
+
+/** El espacio LCP: proveedor canónico, modelo sin sufijo y `caller_scope`; sin alcance, ninguno. */
+export function lcpAffinityNamespace(provider: string, model: string, metadata: SessionMetadata | undefined): string {
+  const canonicalProvider = canonicalLcpProvider(provider)
+  const scope = metadataText(metadata, METADATA_KEYS.callerScope)
+  if (!canonicalProvider || !scope) return ''
+  return ['lcp:v1', canonicalProvider, canonicalModelKey(model), scope].join('::')
+}
+
+/** Las partes de un espacio LCP; el modelo puede llevar `::`, el alcance no. */
+export function parseLcpNamespace(namespace: string): { provider: string; model: string; callerScope: string } | undefined {
+  const prefix = 'lcp:v1::'
+  if (!namespace.startsWith(prefix)) return undefined
+  const rest = namespace.slice(prefix.length)
+  const cut = rest.indexOf('::')
+  if (cut === -1) return undefined
+  const provider = rest.slice(0, cut)
+  const tail = rest.slice(cut + 2)
+  const last = tail.lastIndexOf('::')
+  if (last === -1) return { provider, model: tail, callerScope: '' }
+  return { provider, model: tail.slice(0, last), callerScope: tail.slice(last + 2) }
 }
 
 function metadataText(metadata: SessionMetadata | undefined, key: string): string {
