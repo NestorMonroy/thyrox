@@ -239,7 +239,7 @@ export type HookCallback = {
     input: HookInput,
     toolUseID: string | null,
     abort: AbortSignal | undefined,
-    /** Indice del hook, para que los de SessionStart compongan CLAUDE_ENV_FILE */
+    /** Indice del hook, para que los de SessionStart compongan THYROX_ENV_FILE */
     hookIndex?: number,
     /** Contexto opcional de acceso al estado de la aplicacion */
     context?: HookCallbackContext,

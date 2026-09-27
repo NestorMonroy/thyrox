@@ -602,8 +602,8 @@ export function migrateLegacyEnvToConnections(
       try {
         requireConfig().saveGlobalConfig(current => {
           const env = current.env ?? {}
-          if (env.CLAUDE_CODE_USE_OPENAI !== '1') return current
-          const { CLAUDE_CODE_USE_OPENAI: _drop, ...rest } = env
+          if (env.THYROX_CODE_USE_OPENAI !== '1') return current
+          const { THYROX_CODE_USE_OPENAI: _drop, ...rest } = env
           void _drop
           return { ...current, env: rest }
         })
@@ -612,8 +612,8 @@ export function migrateLegacyEnvToConnections(
           readEnv: (name: string) => string | undefined
           deleteEnv: (name: string) => void
         }
-        if (readEnv('CLAUDE_CODE_USE_OPENAI') === '1') {
-          deleteEnv('CLAUDE_CODE_USE_OPENAI')
+        if (readEnv('THYROX_CODE_USE_OPENAI') === '1') {
+          deleteEnv('THYROX_CODE_USE_OPENAI')
         }
       } catch {
         // Best-effort; nunca bloquea el arranque.

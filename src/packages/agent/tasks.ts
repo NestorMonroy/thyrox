@@ -15,7 +15,7 @@
  *     equipo del lider (via `swarm/teammateState.js`).
  *   - la resolucion por equipo de `getTaskListId()` (via
  *     `swarm/teammateContext.js` + `app-host/bootstrap/state.js`); esta
- *     version resuelve solo por `CLAUDE_CODE_TASK_LIST_ID` o el id explicito
+ *     version resuelve solo por `THYROX_CODE_TASK_LIST_ID` o el id explicito
  *     que el llamador pase.
  *   - `claimTask()`/`claimTaskWithBusyCheck()` y sus tipos
  *     `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita y
@@ -34,7 +34,7 @@
  *   - `lazySchema` (memoiza la construccion del schema Zod al primer uso;
  *     `tool-registry/utils/lazySchema.ts`, 4 lineas).
  *   - `getConfigHomeDir` — la fuente la memoiza con `lodash-es`
- *     keyed por `CLAUDE_CONFIG_DIR`; aqui se lee el env var en cada
+ *     keyed por `THYROX_CONFIG_DIR`; aqui se lee el env var en cada
  *     llamada (sin memo: es una optimizacion de performance, no de
  *     comportamiento, y el valor puede cambiar entre tests).
  *   - `errorMessage` / `getErrnoCode` (`local-observability/errorHelpers.ts`).
@@ -245,11 +245,11 @@ async function writeHighWaterMark(taskListId: string, value: number): Promise<vo
 /**
  * Obtiene el ID de la lista de tareas segun el contexto actual.
  * Prioridad (version portada — ver la divergencia declarada arriba):
- * 1. `CLAUDE_CODE_TASK_LIST_ID` — ID de lista de tareas explicito.
+ * 1. `THYROX_CODE_TASK_LIST_ID` — ID de lista de tareas explicito.
  * 2. Nombre de equipo del lider — fijado al crear un equipo via TeamCreate.
  */
 export function getTaskListId(): string {
-  const taskListId = process.env.CLAUDE_CODE_TASK_LIST_ID
+  const taskListId = process.env.THYROX_CODE_TASK_LIST_ID
   if (taskListId) {
     return taskListId
   }
@@ -257,7 +257,7 @@ export function getTaskListId(): string {
     return leaderTeamName
   }
   throw new Error(
-    'getTaskListId(): no hay CLAUDE_CODE_TASK_LIST_ID ni equipo de lider — ' +
+    'getTaskListId(): no hay THYROX_CODE_TASK_LIST_ID ni equipo de lider — ' +
       'la resolucion por sesion/equipo no se porto (ver docstring del modulo).',
   )
 }
@@ -691,7 +691,7 @@ export const DEFAULT_TASKS_MODE_TASK_LIST_ID = 'tasklist'
  * al reves de lo pedido.
  */
 export function isTodoV2Enabled(): boolean {
-  const declarado = process.env.CLAUDE_CODE_ENABLE_TASKS
+  const declarado = process.env.THYROX_CODE_ENABLE_TASKS
   if (
     declarado !== undefined &&
     ['1', 'true', 'yes', 'on'].includes(declarado.toLowerCase().trim())

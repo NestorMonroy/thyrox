@@ -29,7 +29,7 @@ describe('subprocessEnv — scrub disabled (default)', () => {
   test('returns full env when scrub flag is "0"', () => {
     expect(
       subprocessEnv({
-        CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '0',
+        THYROX_CODE_SUBPROCESS_ENV_SCRUB: '0',
         ANTHROPIC_API_KEY: 'sk-ant-secret',
       }).ANTHROPIC_API_KEY,
     ).toBe('sk-ant-secret')
@@ -38,7 +38,7 @@ describe('subprocessEnv — scrub disabled (default)', () => {
   test('returns full env when scrub flag is "false"', () => {
     expect(
       subprocessEnv({
-        CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: 'false',
+        THYROX_CODE_SUBPROCESS_ENV_SCRUB: 'false',
         ANTHROPIC_API_KEY: 'sk-ant-secret',
       }).ANTHROPIC_API_KEY,
     ).toBe('sk-ant-secret')
@@ -50,14 +50,14 @@ describe('subprocessEnv — scrub enabled', () => {
   // these secrets MUST be deleted from subprocess env. Prevents
   // prompt-injection exfil via shell expansion.
   const scrubOn = (extra: Record<string, string>) =>
-    subprocessEnv({ CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1', ...extra })
+    subprocessEnv({ THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1', ...extra })
 
   test('strips ANTHROPIC_API_KEY', () => {
     expect(scrubOn({ ANTHROPIC_API_KEY: 'secret' }).ANTHROPIC_API_KEY).toBeUndefined()
   })
 
-  test('strips CLAUDE_CODE_OAUTH_TOKEN', () => {
-    expect(scrubOn({ CLAUDE_CODE_OAUTH_TOKEN: 'secret' }).CLAUDE_CODE_OAUTH_TOKEN).toBeUndefined()
+  test('strips THYROX_CODE_OAUTH_TOKEN', () => {
+    expect(scrubOn({ THYROX_CODE_OAUTH_TOKEN: 'secret' }).THYROX_CODE_OAUTH_TOKEN).toBeUndefined()
   })
 
   test('strips ANTHROPIC_AUTH_TOKEN', () => {
@@ -110,7 +110,7 @@ describe('subprocessEnv — INPUT_-prefixed scrubbing', () => {
   // If an action's input was named "ANTHROPIC_API_KEY" (rare but possible),
   // it'd be exposed as INPUT_ANTHROPIC_API_KEY. Scrub both forms.
   const scrubOn = (extra: Record<string, string>) =>
-    subprocessEnv({ CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1', ...extra })
+    subprocessEnv({ THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1', ...extra })
 
   test('strips INPUT_ANTHROPIC_API_KEY', () => {
     expect(
@@ -133,7 +133,7 @@ describe('subprocessEnv — INPUT_-prefixed scrubbing', () => {
 
 describe('subprocessEnv — non-secret env preserved', () => {
   const scrubOn = (extra: Record<string, string>) =>
-    subprocessEnv({ CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1', ...extra })
+    subprocessEnv({ THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1', ...extra })
 
   test('PATH preserved even with scrub on', () => {
     expect(scrubOn({ PATH: '/usr/bin:/bin' }).PATH).toBe('/usr/bin:/bin')
@@ -143,8 +143,8 @@ describe('subprocessEnv — non-secret env preserved', () => {
     expect(scrubOn({ HOME: '/users/me' }).HOME).toBe('/users/me')
   })
 
-  test('CLAUDE_CODE_SUBPROCESS_ENV_SCRUB itself preserved (the flag)', () => {
-    expect(scrubOn({}).CLAUDE_CODE_SUBPROCESS_ENV_SCRUB).toBe('1')
+  test('THYROX_CODE_SUBPROCESS_ENV_SCRUB itself preserved (the flag)', () => {
+    expect(scrubOn({}).THYROX_CODE_SUBPROCESS_ENV_SCRUB).toBe('1')
   })
 })
 
@@ -172,7 +172,7 @@ describe('subprocessEnv — upstream proxy injection', () => {
     // so proxy values that match scrubbed names are also stripped.
     registerUpstreamProxyEnvFn(() => ({ ANTHROPIC_API_KEY: 'proxy-injected' }))
     expect(
-      subprocessEnv({ CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1' }).ANTHROPIC_API_KEY,
+      subprocessEnv({ THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1' }).ANTHROPIC_API_KEY,
     ).toBeUndefined()
   })
 
@@ -183,61 +183,61 @@ describe('subprocessEnv — upstream proxy injection', () => {
 })
 
 describe('subprocessEnv — process-control marker scrub (always)', () => {
-  // ALWAYS_SCRUB applies regardless of CLAUDE_CODE_SUBPROCESS_ENV_SCRUB.
-  // Process-control markers (CLAUDE_CODE_SESSION_KIND, CLAUDE_BG_*,
-  // CLAUDE_CODE_SESSION_NAME, CLAUDE_CODE_BG_JOB_SHORT,
-  // CLAUDE_CODE_RESUME_INTERRUPTED_TURN) must not leak from a parent
+  // ALWAYS_SCRUB applies regardless of THYROX_CODE_SUBPROCESS_ENV_SCRUB.
+  // Process-control markers (THYROX_CODE_SESSION_KIND, CLAUDE_BG_*,
+  // THYROX_CODE_SESSION_NAME, THYROX_CODE_BG_JOB_SHORT,
+  // THYROX_CODE_RESUME_INTERRUPTED_TURN) must not leak from a parent
   // ccb session into a recursive `ccb` invocation made via BashTool.
 
-  test('strips CLAUDE_CODE_SESSION_KIND even when scrub flag unset', () => {
+  test('strips THYROX_CODE_SESSION_KIND even when scrub flag unset', () => {
     expect(
       subprocessEnv({
         FOO: 'bar',
-        CLAUDE_CODE_SESSION_KIND: 'bg',
-      }).CLAUDE_CODE_SESSION_KIND,
+        THYROX_CODE_SESSION_KIND: 'bg',
+      }).THYROX_CODE_SESSION_KIND,
     ).toBeUndefined()
   })
 
-  test('strips CLAUDE_BG_SOURCE/ISOLATION/BACKEND', () => {
+  test('strips THYROX_BG_SOURCE/ISOLATION/BACKEND', () => {
     const env = subprocessEnv({
-      CLAUDE_BG_SOURCE: 'cli',
+      THYROX_BG_SOURCE: 'cli',
       CLAUDE_BG_ISOLATION: 'worktree',
       CLAUDE_BG_BACKEND: 'detached',
     })
-    expect(env.CLAUDE_BG_SOURCE).toBeUndefined()
+    expect(env.THYROX_BG_SOURCE).toBeUndefined()
     expect(env.CLAUDE_BG_ISOLATION).toBeUndefined()
     expect(env.CLAUDE_BG_BACKEND).toBeUndefined()
   })
 
-  test('strips CLAUDE_CODE_BG_JOB_SHORT (set by handleBgFlag)', () => {
+  test('strips THYROX_CODE_BG_JOB_SHORT (set by handleBgFlag)', () => {
     expect(
       subprocessEnv({
-        CLAUDE_CODE_BG_JOB_SHORT: 'abc12345',
-      }).CLAUDE_CODE_BG_JOB_SHORT,
+        THYROX_CODE_BG_JOB_SHORT: 'abc12345',
+      }).THYROX_CODE_BG_JOB_SHORT,
     ).toBeUndefined()
   })
 
-  test('strips CLAUDE_CODE_SESSION_NAME', () => {
+  test('strips THYROX_CODE_SESSION_NAME', () => {
     expect(
       subprocessEnv({
-        CLAUDE_CODE_SESSION_NAME: 'my-task',
-      }).CLAUDE_CODE_SESSION_NAME,
+        THYROX_CODE_SESSION_NAME: 'my-task',
+      }).THYROX_CODE_SESSION_NAME,
     ).toBeUndefined()
   })
 
-  test('strips CLAUDE_CODE_RESUME_INTERRUPTED_TURN', () => {
+  test('strips THYROX_CODE_RESUME_INTERRUPTED_TURN', () => {
     expect(
       subprocessEnv({
-        CLAUDE_CODE_RESUME_INTERRUPTED_TURN: '1',
-      }).CLAUDE_CODE_RESUME_INTERRUPTED_TURN,
+        THYROX_CODE_RESUME_INTERRUPTED_TURN: '1',
+      }).THYROX_CODE_RESUME_INTERRUPTED_TURN,
     ).toBeUndefined()
   })
 
-  test('strips CLAUDE_JOB_DIR (internal bg-job-dir pointer)', () => {
+  test('strips THYROX_JOB_DIR (internal bg-job-dir pointer)', () => {
     expect(
       subprocessEnv({
-        CLAUDE_JOB_DIR: '/home/user/.claude/jobs/abc12345',
-      }).CLAUDE_JOB_DIR,
+        THYROX_JOB_DIR: '/home/user/.claude/jobs/abc12345',
+      }).THYROX_JOB_DIR,
     ).toBeUndefined()
   })
 
@@ -260,7 +260,7 @@ describe('subprocessEnv — process-control marker scrub (always)', () => {
       PATH: '/usr/bin',
       HOME: '/home/user',
       USER: 'liu',
-      CLAUDE_CODE_SESSION_KIND: 'bg',
+      THYROX_CODE_SESSION_KIND: 'bg',
     })
     expect(env.PATH).toBe('/usr/bin')
     expect(env.HOME).toBe('/home/user')
@@ -269,13 +269,13 @@ describe('subprocessEnv — process-control marker scrub (always)', () => {
 
   test('combines with GHA scrub when both apply', () => {
     const env = subprocessEnv({
-      CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1',
-      CLAUDE_CODE_SESSION_KIND: 'bg',
+      THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1',
+      THYROX_CODE_SESSION_KIND: 'bg',
       ANTHROPIC_API_KEY: 'sk-secret',
       FOO: 'preserved',
     })
     // Both gates strip their respective sets:
-    expect(env.CLAUDE_CODE_SESSION_KIND).toBeUndefined()
+    expect(env.THYROX_CODE_SESSION_KIND).toBeUndefined()
     expect(env.ANTHROPIC_API_KEY).toBeUndefined()
     expect(env.FOO).toBe('preserved')
   })
@@ -291,21 +291,21 @@ describe('subprocessEnv — process-control marker scrub (always)', () => {
 })
 
 describe('subprocessEnv — auth + OTEL scrub (always, parity with ant 2482.js iy)', () => {
-  test('strips CLAUDE_CODE_OAUTH_TOKEN', () => {
+  test('strips THYROX_CODE_OAUTH_TOKEN', () => {
     expect(
       subprocessEnv({
-        CLAUDE_CODE_OAUTH_TOKEN: 'sk-ant-oauth01-xxx',
-      }).CLAUDE_CODE_OAUTH_TOKEN,
+        THYROX_CODE_OAUTH_TOKEN: 'sk-ant-oauth01-xxx',
+      }).THYROX_CODE_OAUTH_TOKEN,
     ).toBeUndefined()
   })
 
-  test('strips CLAUDE_CODE_SUBSCRIPTION_TYPE / RATE_LIMIT_TIER', () => {
+  test('strips THYROX_CODE_SUBSCRIPTION_TYPE / RATE_LIMIT_TIER', () => {
     const env = subprocessEnv({
-      CLAUDE_CODE_SUBSCRIPTION_TYPE: 'pro',
-      CLAUDE_CODE_RATE_LIMIT_TIER: 'tier-3',
+      THYROX_CODE_SUBSCRIPTION_TYPE: 'pro',
+      THYROX_CODE_RATE_LIMIT_TIER: 'tier-3',
     })
-    expect(env.CLAUDE_CODE_SUBSCRIPTION_TYPE).toBeUndefined()
-    expect(env.CLAUDE_CODE_RATE_LIMIT_TIER).toBeUndefined()
+    expect(env.THYROX_CODE_SUBSCRIPTION_TYPE).toBeUndefined()
+    expect(env.THYROX_CODE_RATE_LIMIT_TIER).toBeUndefined()
   })
 
   test('strips OTEL_* prefix env vars', () => {
@@ -330,10 +330,35 @@ describe('subprocessEnv — auth + OTEL scrub (always, parity with ant 2482.js i
 
   test('scrubs auth + OTEL even with no GHA scrub flag', () => {
     const env = subprocessEnv({
-      CLAUDE_CODE_OAUTH_TOKEN: 'tok',
+      THYROX_CODE_OAUTH_TOKEN: 'tok',
       OTEL_EXPORTER_OTLP_ENDPOINT: 'url',
     })
-    expect(env.CLAUDE_CODE_OAUTH_TOKEN).toBeUndefined()
+    expect(env.THYROX_CODE_OAUTH_TOKEN).toBeUndefined()
     expect(env.OTEL_EXPORTER_OTLP_ENDPOINT).toBeUndefined()
+  })
+})
+
+/**
+ * La credencial se llama de dos maneras y las dos se retiran. thyrox inyecta
+ * la suya como THYROX_CODE_OAUTH_TOKEN; la del cliente anfitrión sigue
+ * llamándose THYROX_CODE_OAUTH_TOKEN, y un hijo de Bash que la heredara
+ * podría exfiltrarla. Renombrar la lista en vez de ampliarla dejaría pasar la
+ * del anfitrión: por eso las líneas del nombre ajeno llevan la marca keep.
+ */
+describe('subprocessEnv — los dos nombres de la credencial', () => {
+  test('sin bandera, se retiran THYROX_CODE_OAUTH_TOKEN y el del anfitrión', () => {
+    const env = subprocessEnv({
+      THYROX_CODE_OAUTH_TOKEN: 'propia',
+      CLAUDE_CODE_OAUTH_TOKEN: 'del-anfitrion', // thyrox-rename: keep
+      PATH: '/usr/bin',
+    })
+    expect(env.THYROX_CODE_OAUTH_TOKEN).toBeUndefined()
+    expect(env.CLAUDE_CODE_OAUTH_TOKEN).toBeUndefined() // thyrox-rename: keep
+    expect(env.PATH).toBe('/usr/bin')
+  })
+
+  test('la bandera propia THYROX_CODE_SUBPROCESS_ENV_SCRUB activa la limpieza de CI', () => {
+    const env = subprocessEnv({ THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1', ANTHROPIC_API_KEY: 'secreta' })
+    expect(env.ANTHROPIC_API_KEY).toBeUndefined()
   })
 })

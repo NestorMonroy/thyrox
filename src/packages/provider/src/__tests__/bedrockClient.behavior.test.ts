@@ -7,7 +7,7 @@ import { resolve } from 'path'
  * Source-level pin for Bedrock client configuration. Bedrock supports
  * three auth modes:
  *   1. AWS_BEARER_TOKEN_BEDROCK (API key style — Bearer header)
- *   2. CLAUDE_CODE_SKIP_BEDROCK_AUTH (proxy/test scenarios)
+ *   2. THYROX_CODE_SKIP_BEDROCK_AUTH (proxy/test scenarios)
  *   3. Default: refresh AWS credentials and pass to SDK
  *
  * Plus ANTHROPIC_BEDROCK_SERVICE_TIER for enterprise priority vs
@@ -40,9 +40,9 @@ describe('Bedrock client config (ant 1984.js parity)', () => {
     )
   })
 
-  test('CLAUDE_CODE_SKIP_BEDROCK_AUTH → skipAuth true (proxy/test scenarios)', () => {
+  test('THYROX_CODE_SKIP_BEDROCK_AUTH → skipAuth true (proxy/test scenarios)', () => {
     expect(source).toMatch(
-      /\.\.\.\(anthropic\.isEnvTruthy\(readEnv\('CLAUDE_CODE_SKIP_BEDROCK_AUTH'\)\) && \{\s*\n?\s*skipAuth: true/,
+      /\.\.\.\(anthropic\.isEnvTruthy\(readEnv\('THYROX_CODE_SKIP_BEDROCK_AUTH'\)\) && \{\s*\n?\s*skipAuth: true/,
     )
   })
 

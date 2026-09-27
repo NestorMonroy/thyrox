@@ -100,7 +100,7 @@ export function getAntModels(): Array<{ alias: string; label: string; model: str
 
 // ── ccnmt: packages/provider/src/gatewayModelDiscovery.ts (stub) ────────
 export function isGatewayModelDiscoveryEnabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY)
+  return isEnvTruthy(process.env.THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY)
 }
 
 export function readCachedGatewayModels(): Array<{

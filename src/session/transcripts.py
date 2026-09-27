@@ -144,4 +144,5 @@ def session_id_declared() -> str:
     una de las dos podria envejecer sola, que es el defecto que este modulo
     cierra un nivel mas arriba.
     """
+    # thyrox-rename: keep — el id de la sesión anfitriona
     return os.environ.get("CLAUDE_CODE_SESSION_ID", "")

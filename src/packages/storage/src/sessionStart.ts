@@ -37,7 +37,7 @@
  * `isBareMode` SÍ es fiel a `@thyrox/config: env/utils.ts` (que existe de
  * verdad en este monorepo) — no se importa cruzando de paquete (mismo
  * criterio que `sessionActivity.ts`/`sessionState.ts`); se reimplementa
- * fiel a esa fuente real: `CLAUDE_CODE_SIMPLE` truthy o `--bare` en
+ * fiel a esa fuente real: `THYROX_CODE_SIMPLE` truthy o `--bare` en
  * `process.argv`. `isEnvTruthy`, que esa fórmula consume, también se
  * duplica aquí en vez de importarse — el shim de este paquete
  * (`./internal/pendingCrossPackageDeps.ts`) no lo exporta.
@@ -92,7 +92,7 @@ type SessionStartHooksOptions = {
 /** Fiel a `@thyrox/config: env/utils.ts::isBareMode` — ver docstring. */
 function isBareMode(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
+    isEnvTruthy(process.env.THYROX_CODE_SIMPLE) ||
     process.argv.includes('--bare')
   )
 }

@@ -175,7 +175,7 @@ describe('macOsKeychainHelpers — source pins', () => {
     // Pin: existing keychain entries don't have a dir-hash suffix.
     // A regression that adds one would orphan them.
     expect(source).toMatch(
-      /const isDefaultDir = !process\.env\.CLAUDE_CONFIG_DIR/,
+      /const isDefaultDir = !process\.env\.THYROX_CONFIG_DIR/,
     )
     expect(source).toMatch(
       /const dirHash = isDefaultDir\s*\n?\s*\?\s*''/,

@@ -42,7 +42,7 @@ import { performance as nodePerformance } from 'node:perf_hooks'
  * SUSTITUTO RETIRADO. Su motivo declarado —«`@thyrox/config` sólo exporta
  * `isEnvTruthy`/`readEnv`/`getAllEnv`»— dejó de ser cierto: el símbolo
  * está en `config/env/utils.ts`, memoizado, con la clave del memo puesta
- * a `CLAUDE_CONFIG_DIR`. Se reexporta el canónico en vez de mantener una
+ * a `THYROX_CONFIG_DIR`. Se reexporta el canónico en vez de mantener una
  * segunda copia que puede divergir sin que nada lo delate.
  */
 import { getConfigHomeDir } from '@thyrox/config/env/utils'

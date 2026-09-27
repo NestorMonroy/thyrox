@@ -217,6 +217,15 @@ export class McpToolCallError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS extends T
  * Per the MCP spec, servers return 404 when a session ID is no longer valid.
  * We check both signals to avoid false positives from generic 404s (wrong URL, server gone, etc.).
  */
+/**
+ * ¿Las herramientas de este servidor se exponen sin el prefijo
+ * `mcp__servidor__`? Sólo un servidor del SDK, y sólo con
+ * `THYROX_AGENT_SDK_MCP_NO_PREFIX`.
+ */
+export function skipsMcpToolPrefix(configType: string | undefined): boolean {
+  return configType === 'sdk' && isEnvTruthy(process.env.THYROX_AGENT_SDK_MCP_NO_PREFIX)
+}
+
 export function isMcpSessionExpiredError(error: Error): boolean {
   const httpStatus =
     'code' in error ? (error as Error & { code?: number }).code : undefined
@@ -671,8 +680,8 @@ export const connectToServer = memoize(
       } else if ((serverRef as ScopedMcpServerConfig).type === 'stdio' || !(serverRef as ScopedMcpServerConfig).type) {
         const stdioRef = serverRef as McpStdioServerConfig
         const finalCommand =
-          process.env.CLAUDE_CODE_SHELL_PREFIX || stdioRef.command
-        const finalArgs = process.env.CLAUDE_CODE_SHELL_PREFIX
+          process.env.THYROX_CODE_SHELL_PREFIX || stdioRef.command
+        const finalArgs = process.env.THYROX_CODE_SHELL_PREFIX
           ? [[stdioRef.command, ...stdioRef.args].join(' ')]
           : stdioRef.args
         transport = new StdioClientTransport({
@@ -1484,9 +1493,7 @@ export const fetchToolsForClient = memoizeWithLRU(
       const toolsToProcess = recursivelySanitizeUnicode(result.tools)
 
       // Check if we should skip the mcp__ prefix for SDK MCP servers
-      const skipPrefix =
-        client.config.type === 'sdk' &&
-        isEnvTruthy(process.env.CLAUDE_AGENT_SDK_MCP_NO_PREFIX)
+      const skipPrefix = skipsMcpToolPrefix(client.config.type)
 
       // Estados de progreso del ciclo de vida de una llamada MCP que este
       // archivo emite (inicio/fin/fallo), además del progreso reenviado por

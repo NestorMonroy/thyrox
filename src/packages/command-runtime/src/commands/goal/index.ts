@@ -18,7 +18,7 @@
  *
  * El comando queda habilitado por defecto (CLI local, sin GrowthBook).
  * `isGoalCommandEnabled()` es un kill-switch de emergencia sobre
- * `CLAUDE_CODE_DISABLE_GOAL`.
+ * `THYROX_CODE_DISABLE_GOAL`.
  */
 import type { Command } from '../../runtime.js'
 import {

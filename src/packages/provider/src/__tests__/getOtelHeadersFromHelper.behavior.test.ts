@@ -37,8 +37,8 @@ describe('getOtelHeadersFromHelper (ant He6 parity)', () => {
     )
   })
 
-  test('debounce env-var override: CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS', () => {
-    expect(fnSlice).toMatch(/CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS/)
+  test('debounce env-var override: THYROX_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS', () => {
+    expect(fnSlice).toMatch(/THYROX_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS/)
   })
 
   test('trust gate: project/local helper requires accepted trust dialog', () => {

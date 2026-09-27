@@ -10,7 +10,7 @@
  * Contexto — la receta oficial de thyrox de DeepSeek fija
  *   ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
  *   ANTHROPIC_MODEL=deepseek-v4-pro[1m]
- *   CLAUDE_CODE_EFFORT_LEVEL=max
+ *   THYROX_CODE_EFFORT_LEVEL=max
  * lo que aterriza como una configuración puramente de entorno, `firstParty`,
  * sin registro de conexión. La matriz de capacidades de Anthropic
  * (max ⇒ Opus 4.7/4.6/Sonnet 4.6) está equivocada para este endpoint — es
@@ -47,13 +47,13 @@ import {
 
 const TRACKED_KEYS = [
   'ANTHROPIC_BASE_URL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
-  'CLAUDE_CODE_EFFORT_LEVEL',
-  'CLAUDE_CODE_ALWAYS_ENABLE_EFFORT',
+  'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_USE_VERTEX',
+  'THYROX_CODE_USE_FOUNDRY',
+  'THYROX_CODE_USE_OPENAI',
+  'THYROX_CODE_USE_GEMINI',
+  'THYROX_CODE_EFFORT_LEVEL',
+  'THYROX_CODE_ALWAYS_ENABLE_EFFORT',
   'USER_TYPE',
 ] as const
 const savedEnv = new Map<string, string | undefined>()
@@ -94,7 +94,7 @@ describe('modelSupportsMaxEffort — nativo frente a proxy de protocolo anthropi
   })
 
   test('despliegue en Bedrock + modelo desconocido → false (no cae al fallthrough de proxy anthropic)', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     expect(modelSupportsMaxEffort('claude-haiku-4-5')).toBe(false)
   })
 })
@@ -121,18 +121,18 @@ describe('modelSupportsXhighEffort — más angosto que max', () => {
 })
 
 describe('resolveAppliedEffort — passthrough end-to-end de max en DeepSeek', () => {
-  test('CLAUDE_CODE_EFFORT_LEVEL=max + base URL de DeepSeek → max (sin recorte silencioso a high)', () => {
+  test('THYROX_CODE_EFFORT_LEVEL=max + base URL de DeepSeek → max (sin recorte silencioso a high)', () => {
     process.env.ANTHROPIC_BASE_URL = 'https://api.deepseek.com/anthropic'
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'max'
+    process.env.THYROX_CODE_EFFORT_LEVEL = 'max'
     expect(resolveAppliedEffort('deepseek-v4-pro[1m]', undefined)).toBe('max')
   })
 
-  test('CLAUDE_CODE_EFFORT_LEVEL=max + Anthropic nativo + Haiku → high (recortado, es lo esperado)', () => {
+  test('THYROX_CODE_EFFORT_LEVEL=max + Anthropic nativo + Haiku → high (recortado, es lo esperado)', () => {
     // Se queda recortado en nativo porque la matriz de Anthropic es
     // autoritativa y Haiku no acepta 'max'. Esta es la protección de
     // migración cross-modelo para la que existe el recorte en primer
     // lugar.
-    process.env.CLAUDE_CODE_EFFORT_LEVEL = 'max'
+    process.env.THYROX_CODE_EFFORT_LEVEL = 'max'
     expect(resolveAppliedEffort('claude-haiku-4-5', undefined)).toBe('high')
   })
 })

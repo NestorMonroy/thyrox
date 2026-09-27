@@ -13,8 +13,8 @@
  *    equipo. Contexto: `TeammateAgentContext` con `agentType: 'teammate'`.
  *
  * Para teammates de swarm en procesos separados (tmux/iTerm2), la fuente usa
- * variables de entorno (`CLAUDE_CODE_AGENT_ID`,
- * `CLAUDE_CODE_PARENT_SESSION_ID`) en vez de este mecanismo — fuera del
+ * variables de entorno (`THYROX_CODE_AGENT_ID`,
+ * `THYROX_CODE_PARENT_SESSION_ID`) en vez de este mecanismo — fuera del
  * alcance de este módulo.
  *
  * POR QUÉ AsyncLocalStorage y no un estado compartido único (AppState):
@@ -50,7 +50,7 @@ export type SubagentContext = {
   /** El UUID del subagente (de createAgentId()). */
   agentId: string
   /** El session id del team lead (de la variable de entorno
-   *  CLAUDE_CODE_PARENT_SESSION_ID); indefinido para subagentes del REPL
+   *  THYROX_CODE_PARENT_SESSION_ID); indefinido para subagentes del REPL
    *  principal. */
   parentSessionId?: string
   /** El id del agente padre inmediato, si este subagente fue engendrado

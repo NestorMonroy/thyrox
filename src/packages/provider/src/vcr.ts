@@ -63,7 +63,7 @@ export async function withVCR(
     dehydrateValue,
   )
   const filename = join(
-    readEnv('CLAUDE_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
+    readEnv('THYROX_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
     `fixtures/${dehydratedInput.map(_ => createHash('sha1').update(jsonStringify(_)).digest('hex').slice(0, 6)).join('-')}.json`,
   )
 

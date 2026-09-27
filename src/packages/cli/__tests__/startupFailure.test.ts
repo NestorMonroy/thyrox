@@ -5,7 +5,7 @@
  *
  * - `rt` — si `process.cwd()` lanza, el mensaje que se imprime antes de salir 1;
  * - `sut`/`ez` — la linea `result` de error con `startup_failure_reason`;
- * - `out` — se pide con `CLAUDE_CODE_STARTUP_FAILURE_RESULTS` (aqui
+ * - `out` — se pide con `THYROX_CODE_STARTUP_FAILURE_RESULTS` (aqui
  *   `THYROX_CODE_STARTUP_FAILURE_RESULTS`, la variable del cliente);
  * - `Fqn`/`Yun` — solo en un lanzamiento no interactivo con `stream-json`;
  * - `d` — el `--session-id` de argv gana al generado.

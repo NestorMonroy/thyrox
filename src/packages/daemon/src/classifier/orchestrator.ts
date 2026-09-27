@@ -10,8 +10,8 @@
  *
  * Stops orchestration on vm.settle.
  *
- * Gate: CLAUDE_CODE_BG_CLASSIFIER=1 (env var). LLM engine additionally
- * requires CLAUDE_CODE_BG_CLASSIFIER_ENGINE=llm; default is heuristic
+ * Gate: THYROX_CODE_BG_CLASSIFIER=1 (env var). LLM engine additionally
+ * requires THYROX_CODE_BG_CLASSIFIER_ENGINE=llm; default is heuristic
  * (no API spend).
  *
  * @dynamicRequire
@@ -47,11 +47,11 @@ interface OrchestratorState {
 const orchestrators = new Map<string, OrchestratorState>()
 
 export function isClassifierEnabled(): boolean {
-  return process.env.CLAUDE_CODE_BG_CLASSIFIER === '1'
+  return process.env.THYROX_CODE_BG_CLASSIFIER === '1'
 }
 
 export function getClassifierEngine(): 'heuristic' | 'llm' {
-  return process.env.CLAUDE_CODE_BG_CLASSIFIER_ENGINE === 'llm' ? 'llm' : 'heuristic'
+  return process.env.THYROX_CODE_BG_CLASSIFIER_ENGINE === 'llm' ? 'llm' : 'heuristic'
 }
 
 /** ant fp7 — record once per process, on first orchestrator start. */
@@ -256,8 +256,8 @@ async function runClassify(state: OrchestratorState): Promise<void> {
   // The namer is fire-once per worker lifetime (via attempted Set in
   // namer.ts), so spamming this branch is safe — it self-debounces.
   if (result.source === 'llm') {
-    const jobsRoot = process.env.CLAUDE_CONFIG_HOME
-      ? `${process.env.CLAUDE_CONFIG_HOME}/jobs/${state.vm.short}`
+    const jobsRoot = process.env.THYROX_CONFIG_HOME
+      ? `${process.env.THYROX_CONFIG_HOME}/jobs/${state.vm.short}`
       : `${process.env.HOME ?? ''}/.claude/jobs/${state.vm.short}`
     const fleetState = await readJobState(jobsRoot).catch(() => null)
     const intent =

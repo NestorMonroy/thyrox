@@ -53,7 +53,6 @@ import {
   registerCleanup,
   updateSessionBridgeId,
   updateSessionIngressAuthToken,
-  isEnvTruthy,
   isInProtectedNamespace,
   errorMessage,
   sleep,
@@ -110,6 +109,7 @@ import {
   clearBridgePointer,
   readBridgePointer,
 } from './bridgePointer.js'
+import { isBridgeCcrV2Forced } from './bridgeConfig.js'
 
 export type ReplBridgeHandle = {
   bridgeSessionId: string
@@ -638,7 +638,7 @@ export async function initBridgeCore(
   // Session-Ingress) o SSETransport+CCRClient (v2: lecturas SSE +
   // escrituras POST a CCR /worker/*). La elección v1/v2 se hace en
   // onWorkReceived: dirigida por el servidor vía secret.use_code_sessions,
-  // con CLAUDE_BRIDGE_USE_CCR_V2 como override de dev-ant.
+  // con THYROX_BRIDGE_USE_CCR_V2 como override de dev-ant.
   let transport: ReplBridgeTransport | null = null
   // Se incrementa en cada onWorkReceived. Se captura en el .then() de
   // createV2ReplTransport para detectar resoluciones obsoletas: si dos
@@ -1275,12 +1275,12 @@ export async function initBridgeCore(
       // bandera del servidor esté activa para tu usuario — requiere
       // ccr_v2_compat_enabled del lado servidor o registerWorker da 404.
       //
-      // Se mantiene separada de CLAUDE_CODE_USE_CCR_V2 (el selector de
+      // Se mantiene separada de THYROX_CODE_USE_CCR_V2 (el selector de
       // transporte del SDK hijo que fija sessionRunner/environment-manager)
       // para evitar el riesgo de herencia en modo spawn donde la variable
       // del orquestador padre se filtraría a un hijo v1.
       const useCcrV2 =
-        serverUseCcrV2 || isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+        serverUseCcrV2 || isBridgeCcrV2Forced()
 
       // La autenticación es el único punto donde v1 y v2 divergen de
       // verdad:

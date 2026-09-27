@@ -272,7 +272,7 @@ function isWindowsSandboxPolicyViolation(): boolean {
 // Check if background tasks are disabled at module load time
 const isBackgroundTasksDisabled =
   // eslint-disable-next-line custom-rules/no-process-env-top-level -- Intentional: schema must be defined at module load
-  isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS)
+  isEnvTruthy(process.env.THYROX_CODE_DISABLE_BACKGROUND_TASKS)
 
 const fullInputSchema = lazySchema(() =>
   z.strictObject({

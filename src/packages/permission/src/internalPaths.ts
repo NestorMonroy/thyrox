@@ -180,7 +180,7 @@ function claudeConfigHome(): string {
 
 /** La raíz de la memoria remota, o el directorio de configuración (≙ `r2`). */
 function memoryRoot(): string {
-  return process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR || claudeConfigHome()
+  return process.env.THYROX_CODE_REMOTE_MEMORY_DIR || claudeConfigHome()
 }
 
 function projectStorageDir(cwd: string): string {
@@ -249,7 +249,7 @@ function isAtOrUnder(path: string, dirWithSep: string): boolean {
 function resolvedSpellings(dir: string): string[] {
   const hit = workingDirSpellings.get(dir)
   if (hit !== undefined) return hit
-  const spellings = process.env.CLAUDE_CODE_EVAL_CONFINED && dir === originalCwd() ? [dir] : getPathsForPermissionCheck(dir)
+  const spellings = process.env.THYROX_CODE_EVAL_CONFINED && dir === originalCwd() ? [dir] : getPathsForPermissionCheck(dir)
   workingDirSpellings.set(dir, spellings)
   return spellings
 }
@@ -328,8 +328,8 @@ function isSessionScratchpadPath(path: string): boolean {
 
 /** Dentro del `tmp/` del trabajo en segundo plano actual (≙ `js`). */
 function isBackgroundJobTmpPath(path: string): boolean {
-  if (process.env.CLAUDE_CODE_SESSION_KIND !== 'bg') return false
-  const jobDir = process.env.CLAUDE_JOB_DIR
+  if (process.env.THYROX_CODE_SESSION_KIND !== 'bg') return false
+  const jobDir = process.env.THYROX_JOB_DIR
   if (!jobDir) return false
   const jobsRoot = nodePath.join(claudeConfigHome(), 'jobs') + SEP
   const job = normalized(jobDir)
@@ -345,8 +345,8 @@ function agentMemoryRoot(path: string): string | null {
   if (path.startsWith(shared)) return shared
   const project = nodePath.join(currentCwd(), '.claude', 'agent-memory') + SEP
   if (path.startsWith(project)) return project
-  if (process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR) {
-    const remote = nodePath.join(process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR, 'projects') + SEP
+  if (process.env.THYROX_CODE_REMOTE_MEMORY_DIR) {
+    const remote = nodePath.join(process.env.THYROX_CODE_REMOTE_MEMORY_DIR, 'projects') + SEP
     if (path.includes(SEP + 'agent-memory-local' + SEP) && path.startsWith(remote)) return remote
     return null
   }
@@ -405,7 +405,7 @@ export function isUnderAutoMemoryDir(path: string): boolean {
 
 /** La memoria de Cowork redirigida por variable (≙ `sle`). */
 function hasCoworkMemoryOverride(): boolean {
-  return Boolean(process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE)
+  return Boolean(process.env.THYROX_COWORK_MEMORY_PATH_OVERRIDE)
 }
 
 /** El directorio de almacenamiento de este proyecto (≙ `Ou`). */
@@ -430,7 +430,7 @@ export function getBundledSkillsRoot(): string {
 
 /** El archivo de credenciales que el anfitrión declara (≙ `Gr`). */
 export function isHostCredentialsFile(path: string): boolean {
-  const declared = process.env.CLAUDE_CODE_HOST_CREDS_FILE
+  const declared = process.env.THYROX_CODE_HOST_CREDS_FILE
   if (!declared) return false
   const trimmed = declared.replace(getPlatform() === 'windows' ? /[\\/]+$/ : /\/+$/, '') || declared
   const target = foldPathCase(normalized(path))

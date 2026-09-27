@@ -170,11 +170,11 @@ type SystemAPIErrorMessage = { type: 'system'; subtype: string; [key: string]: u
 type AgentId = AgentIdReal | string
 
 /**
- * Ensambla `extra_body` a partir de `CLAUDE_CODE_EXTRA_BODY` y de las
+ * Ensambla `extra_body` a partir de `THYROX_CODE_EXTRA_BODY` y de las
  * cabeceras beta (para Bedrock, sobre todo).
  */
 export function getExtraBodyParams(betaHeaders?: string[]): JsonObject {
-  const extraBodyStr = readEnv('CLAUDE_CODE_EXTRA_BODY')
+  const extraBodyStr = readEnv('THYROX_CODE_EXTRA_BODY')
   let result: JsonObject = {}
 
   if (extraBodyStr) {
@@ -183,10 +183,10 @@ export function getExtraBodyParams(betaHeaders?: string[]): JsonObject {
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         result = { ...(parsed as JsonObject) }
       } else {
-        logForDebugging(`CLAUDE_CODE_EXTRA_BODY env var must be a JSON object, but was given ${extraBodyStr}`, { level: 'error' })
+        logForDebugging(`THYROX_CODE_EXTRA_BODY env var must be a JSON object, but was given ${extraBodyStr}`, { level: 'error' })
       }
     } catch (error) {
-      logForDebugging(`Error parsing CLAUDE_CODE_EXTRA_BODY: ${errorMessage(error)}`, { level: 'error' })
+      logForDebugging(`Error parsing THYROX_CODE_EXTRA_BODY: ${errorMessage(error)}`, { level: 'error' })
     }
   }
 
@@ -309,13 +309,13 @@ export function configureTaskBudgetParams(
 
 export function getAPIMetadata(): { user_id: string } {
   let extra: JsonObject = {}
-  const extraStr = readEnv('CLAUDE_CODE_EXTRA_METADATA')
+  const extraStr = readEnv('THYROX_CODE_EXTRA_METADATA')
   if (extraStr) {
     const parsed = safeParseJSON(extraStr, false)
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       extra = parsed as JsonObject
     } else {
-      logForDebugging(`CLAUDE_CODE_EXTRA_METADATA env var must be a JSON object, but was given ${extraStr}`, { level: 'error' })
+      logForDebugging(`THYROX_CODE_EXTRA_METADATA env var must be a JSON object, but was given ${extraStr}`, { level: 'error' })
     }
   }
 
@@ -690,7 +690,7 @@ void toolMatchesName
 function getNonstreamingFallbackTimeoutMs(): number {
   const override = parseInt(readEnv('API_TIMEOUT_MS') || '', 10)
   if (override) return override
-  return isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) ? 120_000 : 300_000
+  return isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) ? 120_000 : 300_000
 }
 
 /** Tipo mínimo del contexto de reintento que `paramsFromContext` consume. */
@@ -1123,7 +1123,7 @@ function isMaxTokensCapEnabled(): boolean {
 export function getMaxOutputTokensForModel(model: string): number {
   const maxOutputTokens = getModelMaxOutputTokens(model)
   const defaultTokens = isMaxTokensCapEnabled() ? Math.min(maxOutputTokens.default, CAPPED_DEFAULT_MAX_TOKENS) : maxOutputTokens.default
-  const result = validateBoundedIntEnvVar('CLAUDE_CODE_MAX_OUTPUT_TOKENS', readEnv('CLAUDE_CODE_MAX_OUTPUT_TOKENS'), defaultTokens, maxOutputTokens.upperLimit)
+  const result = validateBoundedIntEnvVar('THYROX_CODE_MAX_OUTPUT_TOKENS', readEnv('THYROX_CODE_MAX_OUTPUT_TOKENS'), defaultTokens, maxOutputTokens.upperLimit)
   return result.effective
 }
 

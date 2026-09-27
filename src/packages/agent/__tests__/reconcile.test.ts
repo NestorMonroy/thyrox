@@ -157,14 +157,14 @@ describe('sessionEpoch (T-092)', () => {
     expect(sessionEpoch({})).toEqual({ epoch: 1, priorWorkerProcess: false })
   })
   test('247 → prior worker true', () => {
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: '247' })).toEqual({ epoch: 247, priorWorkerProcess: true })
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: '247' })).toEqual({ epoch: 247, priorWorkerProcess: true })
   })
   test('mal formada → MAX_SAFE_INTEGER (hubo worker, seguro)', () => {
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: 'x' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: 'x' }).priorWorkerProcess).toBe(true)
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: 'x' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: 'x' }).priorWorkerProcess).toBe(true)
   })
   test('0 y negativos → MAX_SAFE_INTEGER (no es un ordinal válido ≥1)', () => {
-    expect(sessionEpoch({ CLAUDE_CODE_WORKER_EPOCH: '0' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
+    expect(sessionEpoch({ THYROX_CODE_WORKER_EPOCH: '0' }).epoch).toBe(Number.MAX_SAFE_INTEGER)
   })
 })
 

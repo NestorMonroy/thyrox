@@ -25,7 +25,7 @@
  *    `getSessionId` de ESTE archivo, no reimplementan el suyo, para que
  *    los cuatro compartan un mismo id dentro del mismo proceso).
  *  - `getConfigHomeDir` (`@claude-code-how-works/config/env/utils`)
- *    — fiel: `$CLAUDE_CONFIG_DIR` o `~/.claude`, NFC-normalizado. Mismo
+ *    — fiel: `$THYROX_CONFIG_DIR` o `~/.claude`, NFC-normalizado. Mismo
  *    cuerpo que ya usa `projectPurge.ts` de este paquete (duplicado a
  *    propósito — cada archivo es dueño exclusivo de sus símbolos en este
  *    pase, ver la convención de aislamiento de working tree).

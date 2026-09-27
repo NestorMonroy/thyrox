@@ -25,11 +25,11 @@ import {
 import { setOriginalCwd, setSessionId } from '../sessionPaths.js'
 
 let tmpBase: string
-const ORIGINAL_TMPDIR = process.env.CLAUDE_CODE_TMPDIR
+const ORIGINAL_TMPDIR = process.env.THYROX_CODE_TMPDIR
 
 beforeEach(async () => {
   tmpBase = await mkdtemp(join(tmpdir(), 'disk-output-'))
-  process.env.CLAUDE_CODE_TMPDIR = tmpBase
+  process.env.THYROX_CODE_TMPDIR = tmpBase
   setOriginalCwd('/home/user/mi-proyecto-diskoutput')
   setSessionId('sesion-diskoutput-1')
   _resetTaskOutputDirForTest()
@@ -38,8 +38,8 @@ beforeEach(async () => {
 afterEach(async () => {
   await _clearOutputsForTest()
   _resetTaskOutputDirForTest()
-  if (ORIGINAL_TMPDIR === undefined) delete process.env.CLAUDE_CODE_TMPDIR
-  else process.env.CLAUDE_CODE_TMPDIR = ORIGINAL_TMPDIR
+  if (ORIGINAL_TMPDIR === undefined) delete process.env.THYROX_CODE_TMPDIR
+  else process.env.THYROX_CODE_TMPDIR = ORIGINAL_TMPDIR
   await rm(tmpBase, { recursive: true, force: true })
 })
 

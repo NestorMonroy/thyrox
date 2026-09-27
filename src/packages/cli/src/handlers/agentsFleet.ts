@@ -39,6 +39,19 @@ type FleetAction =
   | { type: 'quit' }
   | { type: 'attach'; short: string }
 
+/**
+ * De dónde arranca FleetView: `THYROX_AGENTS_SELECT` (la sesión que el
+ * REPL acaba de mandar a segundo plano) fija la fila enfocada y la «sesión
+ * actual»; sin ella, la sesión actual es `THYROX_SESSION_ID`.
+ */
+export function fleetFocusSeed(): { focusedShort: string | undefined; originSessionId: string } {
+  const selected = process.env.THYROX_AGENTS_SELECT || undefined
+  return {
+    focusedShort: selected,
+    originSessionId: selected || process.env.THYROX_SESSION_ID || '',
+  }
+}
+
 export async function agentsFleetHandler(): Promise<void> {
   if (!feature('AGENTS_FLEET')) {
     return plainTextHandler()
@@ -152,22 +165,21 @@ async function runFleetLoop(): Promise<void> {
   // alt buffer (CCB_ATTACH_OWNED_ALT_SCREEN env tells it not to toggle).
 
   // Carries the last-attached short across iterations. Source: ant 5092.js
-  // `let z = process.env.CLAUDE_AGENTS_SELECT; … z = f.job.id` — when
+  // `let z = process.env.THYROX_AGENTS_SELECT; … z = f.job.id` — when
   // FleetView remounts after attach, this seeds the focused row so the
   // user lands back on the session they just left (not the default
   // first row / "Working" group header).
-  let lastFocusedShort: string | undefined =
-    process.env.CLAUDE_AGENTS_SELECT || undefined
+  const seed = fleetFocusSeed()
+  let lastFocusedShort: string | undefined = seed.focusedShort
   // The "current session" row — the job the user just backgrounded via the
   // REPL left-arrow bridge. Source: ant 5277.js uWO — `initialJobId =
-  // process.env.CLAUDE_AGENTS_SELECT` (then deleted), passed as `isOrigin`
+  // process.env.THYROX_AGENTS_SELECT` (then deleted), passed as `isOrigin`
   // (`job.id === initialJobId`) into the row label so an empty-intent job
   // shows "current session" / "new session" instead of the bare template
-  // name "bg". ant uses CLAUDE_AGENTS_SELECT, NOT a session id — captured
+  // name "bg". ant uses THYROX_AGENTS_SELECT, NOT a session id — captured
   // once at mount (before attach loops can change focus). Falls back to
-  // CLAUDE_SESSION_ID for the standalone `ccb agents` entry (no left-arrow).
-  const originSessionId =
-    process.env.CLAUDE_AGENTS_SELECT || process.env.CLAUDE_SESSION_ID || ''
+  // THYROX_SESSION_ID for the standalone `ccb agents` entry (no left-arrow).
+  const originSessionId = seed.originSessionId
   // Carries an error message from the previous attach attempt so the
   // remounted FleetView can surface it as an errorToast. Source: ant
   // 5092.js Ot3 `let J; … if (k.kind === "error" && !k.ended) J = k.msg`
@@ -292,8 +304,8 @@ async function runFleetLoop(): Promise<void> {
           const os = require('node:os') as typeof import('node:os')
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           const path = require('node:path') as typeof import('node:path')
-          const jobsRoot = process.env.CLAUDE_CONFIG_HOME
-            ? path.join(process.env.CLAUDE_CONFIG_HOME, 'jobs')
+          const jobsRoot = process.env.THYROX_CONFIG_HOME
+            ? path.join(process.env.THYROX_CONFIG_HOME, 'jobs')
             : path.join(os.homedir(), '.claude', 'jobs')
           const ptySocketPath = path.join(jobsRoot, short, 'pty.sock')
           // 10s budget matches fleetAttach's PTY_SOCK_WAIT_BUDGET_MS — the

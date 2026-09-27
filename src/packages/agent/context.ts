@@ -65,7 +65,7 @@ export const COMPACT_MAX_OUTPUT_TOKENS = 20_000
  * deshabilitar el contexto de 1M por cumplimiento HIPAA.
  */
 export function is1mContextDisabled(): boolean {
-  return isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_1M_CONTEXT'))
+  return isEnvTruthy(readEnv('THYROX_CODE_DISABLE_1M_CONTEXT'))
 }
 
 export function has1mContext(model: string): boolean {
@@ -89,7 +89,7 @@ export function getContextWindowForModel(
   betas?: string[],
 ): number {
   // Permite override vía variable de entorno (sólo ant)
-  const maxCtxToken = readEnv('CLAUDE_CODE_MAX_CONTEXT_TOKENS')
+  const maxCtxToken = readEnv('THYROX_CODE_MAX_CONTEXT_TOKENS')
   if (process.env.USER_TYPE === 'ant' && maxCtxToken) {
     const override = parseInt(maxCtxToken, 10)
     if (!isNaN(override) && override > 0) {
@@ -105,7 +105,7 @@ export function getContextWindowForModel(
   // El contexto de 1M es el default GA para Opus 4.7 / Opus 4.6 / Sonnet
   // 4.x — sin beta header ni opt-in necesario. Sin esta rama, se cae al
   // default de 200K y la compactación dispara ~5× demasiado pronto.
-  // modelSupports1M ya corta a false con CLAUDE_CODE_DISABLE_1M_CONTEXT=1
+  // modelSupports1M ya corta a false con THYROX_CODE_DISABLE_1M_CONTEXT=1
   // (ruta HIPAA), y excluye Haiku 4.5 (que es genuinamente 200K).
   if (modelSupports1M(model)) {
     return 1_000_000

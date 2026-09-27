@@ -1359,9 +1359,9 @@ export async function execIntoTmuxWorktree(args: string[]): Promise<{
   // Set env vars for the inner thyrox to display tmux info in welcome message
   const tmuxEnv = {
     ...process.env,
-    CLAUDE_CODE_TMUX_SESSION: tmuxSessionName,
-    CLAUDE_CODE_TMUX_PREFIX: tmuxPrefix,
-    CLAUDE_CODE_TMUX_PREFIX_CONFLICTS: prefixConflicts ? '1' : '',
+    THYROX_CODE_TMUX_SESSION: tmuxSessionName,
+    THYROX_CODE_TMUX_PREFIX: tmuxPrefix,
+    THYROX_CODE_TMUX_PREFIX_CONFLICTS: prefixConflicts ? '1' : '',
   }
 
   // Check if session already exists

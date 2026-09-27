@@ -330,7 +330,7 @@ export function ConsoleOAuthFlow({
 
       if (mode === 'setup-token') {
         // For setup-token mode, return the OAuth access token directly (it can be used as an API key)
-        // Don't save to keychain - the token is displayed for manual use with CLAUDE_CODE_OAUTH_TOKEN
+        // Don't save to keychain - the token is displayed for manual use with THYROX_CODE_OAUTH_TOKEN
         setOAuthStatus({ state: 'success', token: result.accessToken })
       } else {
         await installOAuthTokens(result)
@@ -390,7 +390,7 @@ export function ConsoleOAuthFlow({
       // Codex models: static mirror from getDefaultModelsForProtocol.
       // Dynamic /models needs impersonating openai/codex Rust CLI version
       // space and returns tier-filtered varying lists. Routing is per-model
-      // via the connection record — do NOT set CLAUDE_CODE_USE_OPENAI here
+      // via the connection record — do NOT set THYROX_CODE_USE_OPENAI here
       // (would clobber thyrox Account requests with the OpenAI adapter).
       upsertProtocolConnection(
         'codex',
@@ -507,7 +507,7 @@ export function ConsoleOAuthFlow({
               </Text>
               <Text dimColor>
                 Use this token by setting: export
-                CLAUDE_CODE_OAUTH_TOKEN=&lt;token&gt;
+                THYROX_CODE_OAUTH_TOKEN=&lt;token&gt;
               </Text>
             </Box>
           </Box>

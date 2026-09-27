@@ -260,7 +260,7 @@ function createHttpsProxyAgent(
     ...(caCerts && { ca: caCerts }),
   }
 
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_PROXY_RESOLVES_HOSTS'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_PROXY_RESOLVES_HOSTS'))) {
     agentOptions.lookup = (hostname, options, callback) => {
       callback(null, hostname, getAddressFamily(options))
     }

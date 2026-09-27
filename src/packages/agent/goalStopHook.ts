@@ -151,11 +151,11 @@ export function isGoalClearKeyword(input: string): boolean {
 /**
  * Ant `HoH`: /goal feature gate. ccb is a solo-maintained CLI, not an
  * enterprise product — no need to mirror ant's GrowthBook gating. The
- * command is always enabled; CLAUDE_CODE_DISABLE_GOAL=1 turns it off as
+ * command is always enabled; THYROX_CODE_DISABLE_GOAL=1 turns it off as
  * an emergency kill-switch.
  */
 export function isGoalCommandEnabled(): boolean {
-  return !isEnvTruthy(process.env['CLAUDE_CODE_DISABLE_GOAL'])
+  return !isEnvTruthy(process.env['THYROX_CODE_DISABLE_GOAL'])
 }
 
 /**
@@ -163,13 +163,13 @@ export function isGoalCommandEnabled(): boolean {
  * the Workflow tool (3904 `isEnabled:()=>bp()`), the `ultrawork` keyword
  * highlight (5163 `bp()?Ap8(j7):[]`) + `ultrawork_request` attachment (4135
  * `FZ3`), and the `/workflows` command (4938). ant gates on
- * `CLAUDE_CODE_WORKFLOWS` env opt-IN + `tengu_workflows_enabled`.
+ * `THYROX_CODE_WORKFLOWS` env opt-IN + `tengu_workflows_enabled`.
  *
- * ccb defaults ON (solo-operator, like `/goal`); `CLAUDE_CODE_WORKFLOWS=0` is
+ * ccb defaults ON (solo-operator, like `/goal`); `THYROX_CODE_WORKFLOWS=0` is
  * the kill-switch (opt-OUT). Folds in the `/goal` kill-switch too.
  */
 export function isWorkflowsEnabled(): boolean {
-  if (isEnvDefinedFalsy(process.env['CLAUDE_CODE_WORKFLOWS'])) return false
+  if (isEnvDefinedFalsy(process.env['THYROX_CODE_WORKFLOWS'])) return false
   return isGoalCommandEnabled()
 }
 

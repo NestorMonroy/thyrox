@@ -75,7 +75,7 @@ function getAutoModeDumpDir(): string {
 /**
  * Vuelca los cuerpos de petición y respuesta del clasificador de modo
  * automático al directorio temporal de claude de cada usuario cuando
- * CLAUDE_CODE_DUMP_AUTO_MODE está fijada. Los archivos se nombran por
+ * THYROX_CODE_DUMP_AUTO_MODE está fijada. Los archivos se nombran por
  * timestamp unix: {timestamp}[.{suffix}].req.json y .res.json
  */
 async function maybeDumpAutoMode(
@@ -85,7 +85,7 @@ async function maybeDumpAutoMode(
   suffix?: string,
 ): Promise<void> {
   if (process.env.USER_TYPE !== 'ant') return
-  if (!isEnvTruthy(readEnv('CLAUDE_CODE_DUMP_AUTO_MODE'))) return
+  if (!isEnvTruthy(readEnv('THYROX_CODE_DUMP_AUTO_MODE'))) return
   const base = suffix ? `${timestamp}.${suffix}` : `${timestamp}`
   try {
     await mkdir(getAutoModeDumpDir(), { recursive: true })
@@ -430,7 +430,7 @@ export function buildTranscriptForClassifier(
  * Lee de la caché de bootstrap/state.ts — la puebla context.ts — en vez de
  * importar claudemd.ts directamente: claudemd → permissions/filesystem →
  * permissions → yoloClassifier es un ciclo. context.ts ya condiciona por
- * CLAUDE_CODE_DISABLE_CLAUDE_MDS y normaliza '' a null antes de cachear. Si la
+ * THYROX_CODE_DISABLE_CLAUDE_MDS y normaliza '' a null antes de cachear. Si la
  * caché está sin poblar — en tests, o en un punto de entrada que nunca llama a
  * getUserContext — el clasificador procede sin THYROX.md, igual que antes del
  * PR.
@@ -1317,7 +1317,7 @@ function getClassifierModel(): string {
   // La sobreescritura por entorno se lee sin condición: ant la condiciona a
   // USER_TYPE==='ant', que deja fuera a los operadores de ccb — el mismo
   // anti-patrón que el gate de pantalla completa 7895b9d6.
-  const envModel = readEnv('CLAUDE_CODE_AUTO_MODE_MODEL')
+  const envModel = readEnv('THYROX_CODE_AUTO_MODE_MODEL')
   if (envModel) return envModel
   const config = getFeatureValue_CACHED_MAY_BE_STALE(
     'tengu_auto_mode_config',
@@ -1334,7 +1334,7 @@ function getClassifierModel(): string {
   // thinking ya está deshabilitado con [false,0] (el iZ7 de ant), y una etapa 1
   // no parseable en modo `both` escala en vez de bloquear. El costo real del
   // cambio fue un modelo débil sobre-bloqueando bajo «err on the side of
-  // blocking». CLAUDE_CODE_AUTO_MODE_MODEL, arriba, sigue siendo la válvula de
+  // blocking». THYROX_CODE_AUTO_MODE_MODEL, arriba, sigue siendo la válvula de
   // escape hacia Haiku.
   return getMainLoopModel()
 }
@@ -1350,7 +1350,7 @@ function resolveTwoStageClassifier():
   | 'thinking'
   | undefined {
   if (process.env.USER_TYPE === 'ant') {
-    const env = readEnv('CLAUDE_CODE_TWO_STAGE_CLASSIFIER')
+    const env = readEnv('THYROX_CODE_TWO_STAGE_CLASSIFIER')
     if (env === 'fast' || env === 'thinking') return env
     if (isEnvTruthy(env)) return true
     if (isEnvDefinedFalsy(env)) return false
@@ -1378,7 +1378,7 @@ function isTwoStageClassifierEnabled(): boolean {
 
 function isJsonlTranscriptEnabled(): boolean {
   if (process.env.USER_TYPE === 'ant') {
-    const env = readEnv('CLAUDE_CODE_JSONL_TRANSCRIPT')
+    const env = readEnv('THYROX_CODE_JSONL_TRANSCRIPT')
     if (isEnvTruthy(env)) return true
     if (isEnvDefinedFalsy(env)) return false
   }

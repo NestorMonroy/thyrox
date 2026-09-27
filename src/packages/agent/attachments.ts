@@ -2364,7 +2364,7 @@ export function getTokenUsageAttachment(
   messages: Message[],
   model: string,
 ): StateAttachment[] {
-  if (!isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT'))) {
+  if (!isEnvTruthy(readEnv('THYROX_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT'))) {
     return []
   }
 
@@ -2421,7 +2421,7 @@ async function getVerifyPlanReminderAttachment(
 ): Promise<StateAttachment[]> {
   if (
     readEnv('USER_TYPE') !== 'ant' ||
-    !isEnvTruthy(readEnv('CLAUDE_CODE_VERIFY_PLAN'))
+    !isEnvTruthy(readEnv('THYROX_CODE_VERIFY_PLAN'))
   ) {
     return []
   }
@@ -3037,8 +3037,8 @@ export async function getAttachments(
   options?: { skipSkillDiscovery?: boolean },
 ): Promise<Attachment[]> {
   if (
-    isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_ATTACHMENTS')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))
+    isEnvTruthy(readEnv('THYROX_CODE_DISABLE_ATTACHMENTS')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_SIMPLE'))
   ) {
     // query.ts:removeFromQueue dequeues these unconditionally after
     // getAttachmentMessages runs — returning [] here silently drops them.

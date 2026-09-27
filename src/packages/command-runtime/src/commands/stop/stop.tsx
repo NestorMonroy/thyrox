@@ -2,7 +2,7 @@
  * `/stop` execute body.
  *
  * Mirror of ant 4653.js Df3 + 4652.js _j6 — when run inside a bg session
- * (CLAUDE_CODE_SESSION_KIND=bg), persist the job's meta.json with
+ * (THYROX_CODE_SESSION_KIND=bg), persist the job's meta.json with
  * status=stopped and trigger graceful shutdown so the tmux client
  * detaches and the worker process exits.
  *
@@ -30,7 +30,7 @@ export async function call(
   // ant 4652.js _j6 writes status='stopped' to meta.json BEFORE exiting,
   // so the tasks panel and `ccb ps` reflect user intent immediately
   // rather than waiting for the daemon's next adopt sweep. Mirror.
-  const short = process.env.CLAUDE_CODE_BG_JOB_SHORT
+  const short = process.env.THYROX_CODE_BG_JOB_SHORT
   if (short) {
     try {
       // Route through @thyrox/cli/bg.js (which already depends on

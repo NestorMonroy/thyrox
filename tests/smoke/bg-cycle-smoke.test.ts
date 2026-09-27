@@ -10,7 +10,7 @@
  * detached path of bg.ts; the PTY path needs a live socket and is
  * exercised by integration tests.
  *
- * Each test uses CLAUDE_CONFIG_HOME pointing at a per-test tmpdir so
+ * Each test uses THYROX_CONFIG_HOME pointing at a per-test tmpdir so
  * we don't pollute the user's real ~/.claude/jobs/.
  *
  * Run: bun test tests/smoke/bg-cycle-smoke.test.ts
@@ -53,7 +53,7 @@ async function runCli(
           ...process.env,
           NO_COLOR: '1',
           FORCE_COLOR: '0',
-          CLAUDE_CONFIG_HOME: ISOLATED_HOME,
+          THYROX_CONFIG_HOME: ISOLATED_HOME,
         },
         stdio: ['ignore', 'ignore', 'ignore'],
         timeout: timeoutMs,

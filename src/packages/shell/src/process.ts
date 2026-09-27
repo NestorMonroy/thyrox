@@ -121,14 +121,14 @@ export function writeToStderr(data: string): void {
 }
 
 // Nombre del archivo que un trabajo en segundo plano deja en su directorio
-// (`CLAUDE_JOB_DIR`) para declarar por qué terminó (`y` en la fuente).
+// (`THYROX_JOB_DIR`) para declarar por qué terminó (`y` en la fuente).
 const EXIT_CAUSE_FILE = 'exit-cause'
 
 // Anota la causa de salida en el directorio del trabajo (`Om`). Sin
 // directorio no hay trabajo que la lea; un fallo de escritura se traga
 // porque el proceso ya va de salida y la causa es informativa.
 export function writeExitCause(cause: string, jobDir?: string): void {
-  const dir = jobDir ?? process.env.CLAUDE_JOB_DIR
+  const dir = jobDir ?? process.env.THYROX_JOB_DIR
   if (!dir) return
   try {
     writeFileSync(join(dir, EXIT_CAUSE_FILE), cause)

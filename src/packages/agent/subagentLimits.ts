@@ -5,12 +5,12 @@
  *   - `bc` (`chunk-xbd48fav.js`): la profundidad de un contexto es 0 para el
  *     hilo principal y `depth ?? 0` para un agente;
  *   - `Yb` (`chunk-0tc6wzvy.js`): el máximo sale de
- *     `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, si no de la bandera
+ *     `THYROX_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, si no de la bandera
  *     `tengu_hazel_trellis` si es entera y >= 1, si no 3;
  *   - `lo` (`chunk-x9krcp51.js`): al alcanzarlo se rehúsa con
  *     `depth_limit`;
  *   - `pn` (mismo archivo): la anchura sale de
- *     `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS ?? 20`; al alcanzarla se rehúsa
+ *     `THYROX_CODE_MAX_CONCURRENT_SUBAGENTS ?? 20`; al alcanzarla se rehúsa
  *     con `concurrency_limit` y «Do not retry» — el lanzamiento N+1 no se
  *     encola.
  *

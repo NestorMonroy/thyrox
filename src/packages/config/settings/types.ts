@@ -356,7 +356,7 @@ export const SettingsSchema = lazySchema(() => z
         .enum(['default', 'fullscreen'])
         .optional()
         .describe(
-          'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting CLAUDE_CODE_NO_FLICKER, but persistent across sessions.',
+          'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting THYROX_CODE_NO_FLICKER, but persistent across sessions.',
         ),
     spinnerTipsEnabled: z.boolean().optional(),
     // Forma de 2.1.281: `append` añade los verbos a los de fábrica y

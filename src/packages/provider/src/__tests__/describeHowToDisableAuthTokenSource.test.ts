@@ -43,8 +43,8 @@ describe('describeHowToDisableAuthTokenSource (ant gt6 parity)', () => {
 
   test.each([
     'ANTHROPIC_AUTH_TOKEN',
-    'CLAUDE_CODE_OAUTH_TOKEN',
-    'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR',
+    'THYROX_CODE_OAUTH_TOKEN',
+    'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR',
   ])('%s → generic env-var unset message', source => {
     expect(describeHowToDisableAuthTokenSource(source)).toBe(
       `Unset the ${source} environment variable.`,

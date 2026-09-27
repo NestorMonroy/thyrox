@@ -20,11 +20,11 @@ import {
 
 const KEYS = [
   'ENABLE_TOOL_SEARCH',
-  'CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS',
+  'THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS',
   'ANTHROPIC_BASE_URL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_USE_VERTEX',
+  'THYROX_CODE_USE_FOUNDRY',
   'ANTHROPIC_API_KEY',
 ]
 const saved = Object.fromEntries(KEYS.map(k => [k, process.env[k]]))
@@ -76,7 +76,7 @@ describe('getToolSearchUnavailableReason (iyt)', () => {
   })
 
   test('en Vertex, un modelo previo a 4.5 se rechaza y uno de 4.5 no', () => {
-    env({ CLAUDE_CODE_USE_VERTEX: '1' })
+    env({ THYROX_CODE_USE_VERTEX: '1' })
     expect(getToolSearchUnavailableReason('claude-sonnet-4@20250514', [toolSearch] as never)).toBe(
       'vertex_model_unsupported',
     )
@@ -86,7 +86,7 @@ describe('getToolSearchUnavailableReason (iyt)', () => {
   })
 
   test('un despliegue de Foundry que rechazó la búsqueda la deja fuera', () => {
-    env({ CLAUDE_CODE_USE_FOUNDRY: '1' })
+    env({ THYROX_CODE_USE_FOUNDRY: '1' })
     resetFoundryCapabilities()
     expect(getToolSearchUnavailableReason('claude-sonnet-4-5', [toolSearch] as never)).toBeUndefined()
     recordUnsupportedCapabilities('claude-sonnet-4-5', ['tool_search'])

@@ -290,7 +290,7 @@ export function Config({
   )
 
   const isFileCheckpointingAvailable = !isEnvTruthy(
-    process.env.CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING,
+    process.env.THYROX_CODE_DISABLE_FILE_CHECKPOINTING,
   )
 
   const memoryFiles = React.use(getMemoryFiles(true))

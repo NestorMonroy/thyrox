@@ -203,10 +203,10 @@ export async function invokePolicyHelper(
       child = spawn(config.path, [], {
         env: {
           ...process.env,
-          // Ant ships `CLAUDE_CODE_VERSION` from the build-time const.
-          // ccb mirrors via the `CLAUDE_CODE_VERSION` env so the helper
+          // Ant ships `THYROX_CODE_VERSION` from the build-time const.
+          // ccb mirrors via the `THYROX_CODE_VERSION` env so the helper
           // sees the version that invoked it.
-          CLAUDE_CODE_VERSION: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+          THYROX_CODE_VERSION: process.env.THYROX_CODE_VERSION ?? 'dev',
         },
         stdio: ['ignore', 'pipe', 'pipe'],
       })

@@ -1,0 +1,48 @@
+-- FAIL tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+207 |     test(`${m.name}: todo import externo resuelve`, () => {
+208 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+209 |         .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+210 |           && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
+211 |         .sort()
+212 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "${DEF}",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:212:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/binary: todo import externo resuelve [5.89ms]
+
+ 101 pass
+ 1 fail
+ 103 expect() calls
+Ran 102 tests across 1 file. [2.84s]
+-- FAIL tests/unit/utils/envUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/envUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getClaudeConfigHomeDir' not found in module '/home/user/thyrox/src/packages/config/env/utils.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [153.00ms]
+pass=16026 fail=2 errors=1 crashes=0 files=1104 failed=2

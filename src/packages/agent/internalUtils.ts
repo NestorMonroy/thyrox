@@ -150,7 +150,7 @@ export function asSystemPrompt(value: readonly string[]): SystemPrompt {
  */
 export function isBareMode(): boolean {
   return (
-    isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE')) || process.argv.includes('--bare')
+    isEnvTruthy(readEnv('THYROX_CODE_SIMPLE')) || process.argv.includes('--bare')
   )
 }
 

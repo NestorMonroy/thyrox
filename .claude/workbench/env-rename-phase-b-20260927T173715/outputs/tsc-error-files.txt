@@ -1,0 +1,16 @@
+src/packages/agent/tasks.ts
+src/packages/app-host/src/commands/__tests__/initCommand.test.ts
+src/packages/app-host/src/startup/startupProfiler.ts
+src/packages/bridge/src/internal/pendingCrossPackageDeps.ts
+src/packages/command-runtime/src/skills/loadSkillsDir.ts
+src/packages/config/env/utils.ts
+src/packages/finding/index.ts
+src/packages/memory/src/internal/pendingCrossPackageDeps.ts
+src/packages/provider/__tests__/anthropicMockServerBin.test.ts
+src/packages/provider/__tests__/proxyUpstreamRouting.test.ts
+src/packages/storage/src/plans.ts
+src/packages/storage/src/secureStorage/plainTextStorage.ts
+src/packages/storage/src/sessionEnvironment.ts
+src/packages/storage/src/sessionPaths.ts
+src/packages/updater/src/internal/envCompat.ts
+tests/unit/utils/envUtils.test.ts

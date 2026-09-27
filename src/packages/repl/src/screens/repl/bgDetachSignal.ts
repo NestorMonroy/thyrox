@@ -18,7 +18,7 @@
  *      is a recognized vt control), so this path is unreliable.
  *
  *   2. Open a side-channel connection to pty.sock (path derived from
- *      CLAUDE_JOB_DIR set by spawnPty), send a `t:'detach'` ctrl
+ *      THYROX_JOB_DIR set by spawnPty), send a `t:'detach'` ctrl
  *      frame, close after 50ms. ptyHost's handleCtrl 'detach' case
  *      broadcasts `encodeDataFrame(DETACH_APC_BUF)` to all attached
  *      clients, bypassing the PTY entirely — same outcome as ant's
@@ -29,7 +29,7 @@ import type { Socket } from 'node:net'
 
 export function sendBgDetachSignal(): void {
   process.stdout.write('\x1b_cc-daemon-detach\x1b\\')
-  const jobDir = process.env.CLAUDE_JOB_DIR
+  const jobDir = process.env.THYROX_JOB_DIR
   if (jobDir === undefined || jobDir === '') return
   void (async () => {
     try {

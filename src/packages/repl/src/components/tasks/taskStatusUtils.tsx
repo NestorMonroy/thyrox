@@ -15,7 +15,7 @@ import { summarizeRecentActivities } from '@thyrox/tool-registry/collapseReadSea
  * Whether the steerable background-agent panel (CoordinatorTaskPanel) is the
  * surface for `local_agent` tasks (panel + steerable transcript view) rather
  * than the read-only summary pill. ant gates this via `F6H()` (3973.js):
- * `!nonInteractive && (env CLAUDE_CODE_FORK_SUBAGENT || GrowthBook
+ * `!nonInteractive && (env THYROX_CODE_FORK_SUBAGENT || GrowthBook
  * tengu_copper_fox)`; the decompiler rendered every `F6H()` as
  * `USER_TYPE === 'ant'`, pinning it OFF for ccb (same class as the fullscreen
  * `j9` gate). ant renders the panel UNCONDITIONALLY and self-gates on empty.

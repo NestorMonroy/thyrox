@@ -13,7 +13,7 @@ import { resolve } from 'path'
  * ant-aligned behaviors:
  *
  *   1. Disk re-read fallback when env/CCR-injected mode has no keychain refresh token
- *      (mirrors ant hX1: if(process.env.CLAUDE_CODE_OAUTH_TOKEN||Fr()){disk re-read})
+ *      (mirrors ant hX1: if(process.env.THYROX_CODE_OAUTH_TOKEN||Fr()){disk re-read})
  *   2. Race-detection baseline token threaded through retry recursion and post-lock
  *      check (mirrors ant pt6: T=q??O.accessToken; if(A.accessToken!==T) race_resolved)
  *   3. tengu_oauth_401_recovered_from_disk telemetry event
@@ -28,14 +28,14 @@ describe('handleOAuth401Error / checkAndRefreshOAuthTokenIfNeeded ant alignment'
   test('handleOAuth401Error implements disk re-read fallback for env/CCR mode', () => {
     // The fallback only fires when keychain has NO refresh token AND we're in
     // env/CCR mode — otherwise we go straight to the keychain refresh path.
-    expect(authAliasSource).toMatch(/hasEnvToken\s*=\s*!!readEnv\('CLAUDE_CODE_OAUTH_TOKEN'\)/)
+    expect(authAliasSource).toMatch(/hasEnvToken\s*=\s*!!readEnv\('THYROX_CODE_OAUTH_TOKEN'\)/)
     expect(authAliasSource).toMatch(/hasCcrToken\s*=\s*!!getOAuthTokenFromFileDescriptor\(\)/)
     expect(authAliasSource).toMatch(/if\s*\(hasEnvToken\s*\|\|\s*hasCcrToken\)/)
   })
 
   test('disk re-read adopts the on-disk token by writing back to env / FD cache', () => {
     expect(authAliasSource).toMatch(
-      /process\.env\.CLAUDE_CODE_OAUTH_TOKEN\s*=\s*diskOauth\.accessToken/,
+      /process\.env\.THYROX_CODE_OAUTH_TOKEN\s*=\s*diskOauth\.accessToken/,
     )
     expect(authAliasSource).toMatch(
       /setOauthTokenFromFd\(diskOauth\.accessToken\)/,

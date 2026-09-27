@@ -199,6 +199,7 @@ def main(argv=None) -> int:
 
     transcript = args.transcript
     if not transcript:
+        # thyrox-rename: keep — el id de la sesión anfitriona
         found = transcript_for(os.environ.get("CLAUDE_CODE_SESSION_ID", ""))
         transcript = str(found) if found else ""
 

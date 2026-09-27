@@ -168,7 +168,7 @@ export function notifySessionStateChanged(
   // Opt-in hasta que los clientes CCR web + mobile aprendan a ignorar
   // este subtipo en sus heurísticas isWorking() de último mensaje — el
   // evento idle final hoy los deja fijos en "Running...".
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_EMIT_SESSION_STATE_EVENTS'))) {
     _enqueueSdkEvent({
       type: 'system',
       subtype: 'session_state_changed',

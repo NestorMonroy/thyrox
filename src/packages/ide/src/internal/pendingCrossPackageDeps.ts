@@ -253,13 +253,13 @@ export function isEnvDefinedFalsy(
 
 /**
  * Puerto de `ccnmt: packages/config/env/utils.ts` (`isBareMode`). `--bare` /
- * `CLAUDE_CODE_SIMPLE`: sin LSP, porque LSP es para integración de editor
+ * `THYROX_CODE_SIMPLE`: sin LSP, porque LSP es para integración de editor
  * (diagnostics, hover, ir-a-definición) y las llamadas `-p` guionadas no lo
  * usan.
  */
 export function isBareMode(): boolean {
   return (
-    requireConfigEnvUtils().isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
+    requireConfigEnvUtils().isEnvTruthy(process.env.THYROX_CODE_SIMPLE) ||
     process.argv.includes('--bare')
   )
 }

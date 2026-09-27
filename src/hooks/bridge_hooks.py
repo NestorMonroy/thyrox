@@ -95,6 +95,7 @@ def live_settings_path() -> pathlib.Path:
     if override:
         return pathlib.Path(override)
     cwd = pathlib.Path("/home/user")
+    # thyrox-rename: keep — el pid del cliente anfitrión
     pid = os.environ.get("CLAUDE_PID")
     if pid and pid.isdigit():
         try:

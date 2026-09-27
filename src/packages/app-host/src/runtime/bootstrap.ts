@@ -183,7 +183,7 @@ export function installRuntimeSkeletonBindings(): void {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./installNativeStdinReader.js')
   // Logger de eventos local-only — nunca manda nada a la red. OFF por
-  // defecto; se habilita con CLAUDE_CODE_LOCAL_TELEMETRY=1 para escribir
+  // defecto; se habilita con THYROX_CODE_LOCAL_TELEMETRY=1 para escribir
   // eventos tengu_bg_* en ~/.claude/debug/<sid>.txt.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { isLocalTelemetryEnabled, installLocalEventLogger } =

@@ -40,7 +40,7 @@ export function maybeActivateProactive(options: unknown, deps: ProactiveDeps = {
   const featureGateActive = false
   if (
     featureGateActive &&
-    ((options as { proactive?: boolean } | null)?.proactive || isEnvTruthy(process.env.CLAUDE_CODE_PROACTIVE))
+    ((options as { proactive?: boolean } | null)?.proactive || isEnvTruthy(process.env.THYROX_CODE_PROACTIVE))
   ) {
     const isProactiveActive = deps.isProactiveActive ?? (() => false)
     const activateProactive = deps.activateProactive ?? (() => {})
@@ -63,7 +63,7 @@ export function maybeActivateBrief(options: unknown, deps: BriefDeps = {}): void
   if (!featureGateActive) return
 
   const briefFlag = (options as { brief?: boolean } | null)?.brief
-  const briefEnv = isEnvTruthy(process.env.CLAUDE_CODE_BRIEF)
+  const briefEnv = isEnvTruthy(process.env.THYROX_CODE_BRIEF)
   if (!briefFlag && !briefEnv) return
 
   const isBriefEntitled = deps.isBriefEntitled ?? (() => false)

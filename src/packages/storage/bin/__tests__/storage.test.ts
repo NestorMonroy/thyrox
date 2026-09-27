@@ -8,7 +8,7 @@
  * no lo que el test imaginó que escribiría.
  *
  * `getProjectDir` (sessionPaths.ts) memoiza SÓLO por el `cwd` que recibe,
- * ignorando `CLAUDE_CONFIG_DIR` — por eso cada caso usa un `project` propio
+ * ignorando `THYROX_CONFIG_DIR` — por eso cada caso usa un `project` propio
  * (`mkdtempSync`): si dos casos compartieran cwd con estados distintos, el
  * segundo leería la caché del primero.
  */
@@ -50,10 +50,10 @@ async function run(argv: string[]) {
   }
 }
 
-const envSnapshot = { CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR, THYROX_ENV_FILE: process.env.THYROX_ENV_FILE }
+const envSnapshot = { THYROX_CONFIG_DIR: process.env.THYROX_CONFIG_DIR, THYROX_ENV_FILE: process.env.THYROX_ENV_FILE }
 afterEach(() => {
-  if (envSnapshot.CLAUDE_CONFIG_DIR === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = envSnapshot.CLAUDE_CONFIG_DIR
+  if (envSnapshot.THYROX_CONFIG_DIR === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = envSnapshot.THYROX_CONFIG_DIR
   if (envSnapshot.THYROX_ENV_FILE === undefined) delete process.env.THYROX_ENV_FILE
   else process.env.THYROX_ENV_FILE = envSnapshot.THYROX_ENV_FILE
 })
@@ -91,7 +91,7 @@ describe('sessions', () => {
   test('lista los ids reales escritos por FileTranscriptStore', async () => {
     const stateRoot = tmp('state')
     const project = tmp('project')
-    process.env.CLAUDE_CONFIG_DIR = stateRoot
+    process.env.THYROX_CONFIG_DIR = stateRoot
     const dir = getProjectDir(project)
     const ts = new FileTranscriptStore(backend, dir)
     await ts.appendSessionEvent('sess-1', '{"a":1}\n')
@@ -123,7 +123,7 @@ describe('transcript', () => {
   test('imprime los eventos reales, y --tail acota', async () => {
     const stateRoot = tmp('state')
     const project = tmp('project')
-    process.env.CLAUDE_CONFIG_DIR = stateRoot
+    process.env.THYROX_CONFIG_DIR = stateRoot
     const dir = getProjectDir(project)
     const ts = new FileTranscriptStore(backend, dir)
     await ts.appendSessionEvent('sess-1', '{"turno":1}\n')
@@ -268,11 +268,11 @@ describe('lock-status', () => {
 })
 
 describe('la raíz del estado es un parámetro, con dos entradas de precedencia', () => {
-  test('--state-root gana sobre CLAUDE_CONFIG_DIR del proceso', async () => {
+  test('--state-root gana sobre THYROX_CONFIG_DIR del proceso', async () => {
     const fromEnv = tmp('env-root')
     const fromFlag = tmp('flag-root')
     const project = tmp('project')
-    process.env.CLAUDE_CONFIG_DIR = fromEnv
+    process.env.THYROX_CONFIG_DIR = fromEnv
 
     const r = await run(['sessions', '--state-root', fromFlag, '--project', project])
     expect(r.code).toBe(0)
@@ -280,12 +280,12 @@ describe('la raíz del estado es un parámetro, con dos entradas de precedencia'
     expect(r.out).not.toContain(fromEnv)
   })
 
-  test('sin flag ni CLAUDE_CONFIG_DIR directo, se lee de un .env vía THYROX_ENV_FILE — la SEGUNDA entrada', async () => {
-    delete process.env.CLAUDE_CONFIG_DIR
+  test('sin flag ni THYROX_CONFIG_DIR directo, se lee de un .env vía THYROX_ENV_FILE — la SEGUNDA entrada', async () => {
+    delete process.env.THYROX_CONFIG_DIR
     const declaredRoot = tmp('declared-root')
     const envDir = tmp('envfile')
     const envFile = join(envDir, '.env')
-    writeFileSync(envFile, `CLAUDE_CONFIG_DIR=${declaredRoot}\n`)
+    writeFileSync(envFile, `THYROX_CONFIG_DIR=${declaredRoot}\n`)
     process.env.THYROX_ENV_FILE = envFile
     const project = tmp('project')
 

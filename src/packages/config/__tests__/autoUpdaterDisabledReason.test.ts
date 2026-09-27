@@ -7,7 +7,7 @@ import {
   shouldSkipPluginAutoupdate,
 } from '../global/autoUpdater.ts'
 
-const KEYS = ['DISABLE_UPDATES', 'DISABLE_AUTOUPDATER', 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC', 'FORCE_AUTOUPDATE_PLUGINS']
+const KEYS = ['DISABLE_UPDATES', 'DISABLE_AUTOUPDATER', 'THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC', 'FORCE_AUTOUPDATE_PLUGINS']
 const saved = Object.fromEntries(KEYS.map(k => [k, process.env[k]]))
 afterEach(() => {
   for (const k of KEYS) saved[k] === undefined ? delete process.env[k] : (process.env[k] = saved[k])
@@ -25,10 +25,10 @@ describe('getAutoUpdaterDisabledReason', () => {
   test('el orden de las variables decide cuál se informa', () => {
     env({ DISABLE_UPDATES: '1', DISABLE_AUTOUPDATER: '1' })
     expect(getAutoUpdaterDisabledReason({})).toEqual({ type: 'env', envVar: 'DISABLE_UPDATES' })
-    env({ DISABLE_AUTOUPDATER: '1', CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' })
+    env({ DISABLE_AUTOUPDATER: '1', THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' })
     expect(getAutoUpdaterDisabledReason({})).toEqual({ type: 'env', envVar: 'DISABLE_AUTOUPDATER' })
-    env({ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' })
-    expect(getAutoUpdaterDisabledReason({})).toEqual({ type: 'env', envVar: 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC' })
+    env({ THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1' })
+    expect(getAutoUpdaterDisabledReason({})).toEqual({ type: 'env', envVar: 'THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC' })
   })
   test('autoUpdates false en la config, salvo nativa protegida', () => {
     env({})

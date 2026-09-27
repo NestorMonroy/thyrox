@@ -12,7 +12,7 @@
  *     papers over the symptom but TaskGet output keeps showing ghost
  *     dependencies.
  *
- * Each test runs against an isolated CLAUDE_CONFIG_DIR (mkdtemp) so it
+ * Each test runs against an isolated THYROX_CONFIG_DIR (mkdtemp) so it
  * cannot collide with the operator's real ~/.claude/tasks. The
  * .lock file machinery in tasks.ts is shared across files, so we run
  * tests serially (no `test.concurrent`) to avoid lock contention from
@@ -40,16 +40,16 @@ let originalConfigDir: string | undefined
 let tmpRoot: string
 
 beforeEach(async () => {
-  originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  originalConfigDir = process.env.THYROX_CONFIG_DIR
   tmpRoot = await mkdtemp(join(tmpdir(), 'ccb-tasks-'))
-  process.env.CLAUDE_CONFIG_DIR = tmpRoot
+  process.env.THYROX_CONFIG_DIR = tmpRoot
 })
 
 afterEach(async () => {
   if (originalConfigDir === undefined) {
-    delete process.env.CLAUDE_CONFIG_DIR
+    delete process.env.THYROX_CONFIG_DIR
   } else {
-    process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+    process.env.THYROX_CONFIG_DIR = originalConfigDir
   }
   await rm(tmpRoot, { recursive: true, force: true })
 })

@@ -334,20 +334,20 @@ export function createSessionSpawner(deps: SessionSpawnerDeps): SessionSpawner {
         ...deps.env,
         // Quita el token OAuth del bridge para que el proceso CC hijo use
         // el token de acceso de la sesión para inferencia en su lugar.
-        CLAUDE_CODE_OAUTH_TOKEN: undefined,
-        CLAUDE_CODE_ENVIRONMENT_KIND: 'bridge',
-        ...(deps.sandbox && { CLAUDE_CODE_FORCE_SANDBOX: '1' }),
-        CLAUDE_CODE_SESSION_ACCESS_TOKEN: opts.accessToken,
+        THYROX_CODE_OAUTH_TOKEN: undefined,
+        THYROX_CODE_ENVIRONMENT_KIND: 'bridge',
+        ...(deps.sandbox && { THYROX_CODE_FORCE_SANDBOX: '1' }),
+        THYROX_CODE_SESSION_ACCESS_TOKEN: opts.accessToken,
         // v1: HybridTransport (lecturas WS + escrituras POST) a
         // Session-Ingress. Inocuo en modo v2 — transportUtils chequea
-        // CLAUDE_CODE_USE_CCR_V2 primero.
-        CLAUDE_CODE_POST_FOR_SESSION_INGRESS_V2: '1',
+        // THYROX_CODE_USE_CCR_V2 primero.
+        THYROX_CODE_POST_FOR_SESSION_INGRESS_V2: '1',
         // v2: SSETransport + CCRClient a los endpoints /v1/code/sessions/*
         // de CCR. Las mismas env vars que environment-manager fija en el
         // camino de contenedor.
         ...(opts.useCcrV2 && {
-          CLAUDE_CODE_USE_CCR_V2: '1',
-          CLAUDE_CODE_WORKER_EPOCH: String(opts.workerEpoch),
+          THYROX_CODE_USE_CCR_V2: '1',
+          THYROX_CODE_WORKER_EPOCH: String(opts.workerEpoch),
         }),
       }
 
@@ -566,7 +566,7 @@ export function createSessionSpawner(deps: SessionSpawnerDeps): SessionSpawner {
           handle.writeStdin(
             jsonStringify({
               type: 'update_environment_variables',
-              variables: { CLAUDE_CODE_SESSION_ACCESS_TOKEN: token },
+              variables: { THYROX_CODE_SESSION_ACCESS_TOKEN: token },
             }) + '\n',
           )
           deps.onDebug(

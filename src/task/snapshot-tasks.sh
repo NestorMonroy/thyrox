@@ -87,6 +87,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/deprecated.sh"
 deprecated_guard snapshot-tasks.sh
 
+# thyrox-rename: keep — directorio del cliente anfitrión
 CLAUDE_HOME="${CLAUDE_HOME:-$HOME/.claude}"
 TASKS_ROOT="$CLAUDE_HOME/tasks"
 

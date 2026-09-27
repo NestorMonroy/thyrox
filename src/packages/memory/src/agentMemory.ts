@@ -28,13 +28,13 @@ function sanitizeAgentTypeForPath(agentType: string): string {
 
 /**
  * Devuelve el directorio de memoria de agente local, que es específico del
- * proyecto y no se registra en VCS. Cuando `CLAUDE_CODE_REMOTE_MEMORY_DIR`
+ * proyecto y no se registra en VCS. Cuando `THYROX_CODE_REMOTE_MEMORY_DIR`
  * está fijado, persiste en el mount con namespacing por proyecto. Si no,
  * usa `<cwd>/.claude/agent-memory-local/<agentType>/`.
  */
 function getLocalAgentMemoryDir(dirName: string): string {
   const bindings = getMemoryHostBindings()
-  const remoteMemoryDir = readEnv('CLAUDE_CODE_REMOTE_MEMORY_DIR')
+  const remoteMemoryDir = readEnv('THYROX_CODE_REMOTE_MEMORY_DIR')
   if (remoteMemoryDir) {
     const projectRoot = bindings.getProjectRoot?.() ?? process.cwd()
     return (
@@ -102,8 +102,8 @@ export function isAgentMemoryPath(absolutePath: string): boolean {
   }
 
   // Alcance 'local': persiste en el mount cuando
-  // CLAUDE_CODE_REMOTE_MEMORY_DIR está fijado, si no basado en cwd.
-  const remoteMemoryDir = readEnv('CLAUDE_CODE_REMOTE_MEMORY_DIR')
+  // THYROX_CODE_REMOTE_MEMORY_DIR está fijado, si no basado en cwd.
+  const remoteMemoryDir = readEnv('THYROX_CODE_REMOTE_MEMORY_DIR')
   if (remoteMemoryDir) {
     if (
       normalizedPath.includes(sep + 'agent-memory-local' + sep) &&
@@ -186,7 +186,7 @@ export function loadAgentMemoryPrompt(
   // FileWriteTool hace su propio mkdir del directorio padre.
   void ensureMemoryDirExists(memoryDir)
 
-  const coworkExtraGuidelines = readEnv('CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES')
+  const coworkExtraGuidelines = readEnv('THYROX_COWORK_MEMORY_EXTRA_GUIDELINES')
   return buildMemoryPrompt({
     displayName: 'Persistent Agent Memory',
     memoryDir,

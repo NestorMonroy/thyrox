@@ -112,7 +112,7 @@ export function LogoV2(): React.ReactNode {
   // so this is now equivalent to "condensed unless onboarding or forced".
   const isCondensedMode =
     !showOnboarding &&
-    !isEnvTruthy(process.env.CLAUDE_CODE_FORCE_FULL_LOGO)
+    !isEnvTruthy(process.env.THYROX_CODE_FORCE_FULL_LOGO)
 
   useEffect(() => {
     if (showGuestPassesUpsell && !showOnboarding && !isCondensedMode) {
@@ -154,7 +154,7 @@ export function LogoV2(): React.ReactNode {
   )
 
   // Render condensed logo unless we're showing project onboarding or
-  // CLAUDE_CODE_FORCE_FULL_LOGO is set (matches `isCondensedMode` above).
+  // THYROX_CODE_FORCE_FULL_LOGO is set (matches `isCondensedMode` above).
   if (isCondensedMode) {
     return (
       <>
@@ -172,15 +172,15 @@ export function LogoV2(): React.ReactNode {
         )}
         <EmergencyTip />
         <PowerupBanner />
-        {process.env.CLAUDE_CODE_TMUX_SESSION && (
+        {process.env.THYROX_CODE_TMUX_SESSION && (
           <Box paddingLeft={2} flexDirection="column">
             <Text dimColor>
-              tmux session: {process.env.CLAUDE_CODE_TMUX_SESSION}
+              tmux session: {process.env.THYROX_CODE_TMUX_SESSION}
             </Text>
             <Text dimColor>
-              {process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS
-                ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
-                : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}
+              {process.env.THYROX_CODE_TMUX_PREFIX_CONFLICTS
+                ? `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} ${process.env.THYROX_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.THYROX_CODE_TMUX_PREFIX})`
+                : `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} d`}
             </Text>
           </Box>
         )}
@@ -383,15 +383,15 @@ export function LogoV2(): React.ReactNode {
       )}
       <EmergencyTip />
       <PowerupBanner />
-      {process.env.CLAUDE_CODE_TMUX_SESSION && (
+      {process.env.THYROX_CODE_TMUX_SESSION && (
         <Box paddingLeft={2} flexDirection="column">
           <Text dimColor>
-            tmux session: {process.env.CLAUDE_CODE_TMUX_SESSION}
+            tmux session: {process.env.THYROX_CODE_TMUX_SESSION}
           </Text>
           <Text dimColor>
-            {process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS
-              ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
-              : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}
+            {process.env.THYROX_CODE_TMUX_PREFIX_CONFLICTS
+              ? `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} ${process.env.THYROX_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.THYROX_CODE_TMUX_PREFIX})`
+              : `Detach: ${process.env.THYROX_CODE_TMUX_PREFIX} d`}
           </Text>
         </Box>
       )}

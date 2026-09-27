@@ -74,7 +74,7 @@ function getPackageVersion(): string {
 // trabajo de refactor que excede el alcance de "portar lo que falta"; se
 // deja declarado aquí en vez de silenciado.
 export function isFastModeEnabled(): boolean {
-  return !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FAST_MODE'))
+  return !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FAST_MODE'))
 }
 
 // ── ccnmt: packages/provider/src/advisor.ts → getAdvisorUsage ───────────
@@ -111,7 +111,7 @@ export function isEnvDefinedFalsy(envVar: string | boolean | undefined): boolean
 // No existe `@thyrox/config/commonConstants`. Trivial: hoy local, con el
 // mismo override ant-only por variable de entorno que la fuente declara.
 export function getLocalISODate(): string {
-  const override = readEnv('CLAUDE_CODE_OVERRIDE_DATE')
+  const override = readEnv('THYROX_CODE_OVERRIDE_DATE')
   if (override) return override
   const now = new Date()
   const y = now.getFullYear()
@@ -122,7 +122,7 @@ export function getLocalISODate(): string {
 
 // ── ccnmt: packages/config/env/utils.ts → isBareMode ─────────────────────
 export function isBareMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) || process.argv.includes('--bare')
+  return isEnvTruthy(process.env.THYROX_CODE_SIMPLE) || process.argv.includes('--bare')
 }
 
 // ── ccnmt: packages/config/env/git-settings.ts → shouldIncludeGitInstructions
@@ -130,7 +130,7 @@ export function isBareMode(): boolean {
 // (config/settings, no portado). Sin ese árbol el default es `true`, igual
 // que la fuente cuando la clave de settings no está presente.
 export function shouldIncludeGitInstructions(): boolean {
-  const envVal = process.env.CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS
+  const envVal = process.env.THYROX_CODE_DISABLE_GIT_INSTRUCTIONS
   if (isEnvTruthy(envVal)) return false
   if (isEnvDefinedFalsy(envVal)) return true
   return true
@@ -162,7 +162,7 @@ export function createSignal<Args extends unknown[] = []>(): {
 
 // ── ccnmt: packages/config/env/privacy-level.ts → isEssentialTrafficOnly
 export function isEssentialTrafficOnly(): boolean {
-  return isEnvTruthy(readEnv('CLAUDE_CODE_ESSENTIAL_TRAFFIC_ONLY'))
+  return isEnvTruthy(readEnv('THYROX_CODE_ESSENTIAL_TRAFFIC_ONLY'))
 }
 
 // ── ccnmt: packages/app-host/bootstrap/cleanupRegistry.ts → registerCleanup

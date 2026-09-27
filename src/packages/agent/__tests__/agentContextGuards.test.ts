@@ -74,7 +74,7 @@ describe('isTeammateAgentContext', () => {
   // We lock that documented behavior.
 
   test('TeammateAgentContext under default test env → returns false (gate disabled)', () => {
-    // Documented contract: when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is
+    // Documented contract: when THYROX_CODE_EXPERIMENTAL_AGENT_TEAMS is
     // off and --agent-teams flag absent, swarm is disabled, so the
     // type guard short-circuits to false even for valid teammates.
     // Pure-test environment doesn't have either set, but USER_TYPE may

@@ -204,7 +204,7 @@ export function modelSupportsAdaptiveThinking(model: string): boolean {
  * Some models REQUIRE adaptive thinking — they don't accept the legacy
  * `budget_tokens` enabled mode. Opus 4.7 dropped budget_tokens entirely
  * (sending it returns 400). Mirrors ant 4682.js disable-adaptive guard:
- * `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is honoured ONLY for the
+ * `THYROX_CODE_DISABLE_ADAPTIVE_THINKING` is honoured ONLY for the
  * deprecation-window models (4.6 / Sonnet 4.6) — for newer models the
  * env var is ignored to avoid wedging API requests.
  */

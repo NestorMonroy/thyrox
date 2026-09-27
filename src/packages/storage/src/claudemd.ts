@@ -343,7 +343,7 @@ function loaderConfig(): LoaderConfig {
     // `ye()`: la raíz de la sesión, no el cwd del proceso; de ella parte la
     // subida y contra ella se mide qué es externo.
     originalCwd: safe(() => state?.getOriginalCwd?.() as string, process.cwd()),
-    additionalDirs: isTruthyEnv(process.env.CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD)
+    additionalDirs: isTruthyEnv(process.env.THYROX_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD)
       ? safe(() => state?.getAdditionalDirectoriesForClaudeMd?.() as string[], [])
       : [],
   }

@@ -176,7 +176,7 @@ function spawnTransient(): void {
     const child = spawn(cmd, [...prefixArgs, 'daemon', 'bg', 'run'], {
       detached: true,
       stdio: ['ignore', 'ignore', 'ignore'],
-      env: { ...process.env, CLAUDE_CODE_DAEMON_TRANSIENT: '1' },
+      env: { ...process.env, THYROX_CODE_DAEMON_TRANSIENT: '1' },
     })
     child.once('error', err => {
       const code = (err as NodeJS.ErrnoException).code ?? 'unknown'

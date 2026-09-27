@@ -19,11 +19,11 @@ import {
   stripUnsupportedToolFields,
 } from '../foundryCapabilities.js'
 
-const KEYS = ['CLAUDE_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_FOUNDRY_RESOURCE']
+const KEYS = ['THYROX_CODE_USE_FOUNDRY', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_FOUNDRY_RESOURCE']
 const saved = Object.fromEntries(KEYS.map(k => [k, process.env[k]]))
 beforeEach(() => {
   for (const k of KEYS) delete process.env[k]
-  process.env.CLAUDE_CODE_USE_FOUNDRY = '1'
+  process.env.THYROX_CODE_USE_FOUNDRY = '1'
   process.env.ANTHROPIC_FOUNDRY_RESOURCE = 'mi-recurso'
   resetFoundryCapabilities()
 })
@@ -92,7 +92,7 @@ describe('handleFoundryCapabilityRejection (GDn)', () => {
 
   test('fuera de Foundry, o sin capacidad reconocible, no decide nada', () => {
     expect(handleFoundryCapabilityRejection(badRequest('prompt is too long'), 'm', 'repl_main_thread')).toBeNull()
-    delete process.env.CLAUDE_CODE_USE_FOUNDRY
+    delete process.env.THYROX_CODE_USE_FOUNDRY
     expect(
       handleFoundryCapabilityRejection(badRequest('tool_search not supported in your workspace'), 'm', 'repl_main_thread'),
     ).toBeNull()

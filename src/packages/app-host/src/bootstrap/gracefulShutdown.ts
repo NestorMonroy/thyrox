@@ -154,10 +154,10 @@ export function cleanupTerminalModes(): void {
     // punto viejo
     if (supportsTabStatus()) writeSync(1, wrapForMultiplexer(CLEAR_TAB_STATUS))
     // Limpia el título de la terminal para que la pestaña no muestre
-    // info vieja de la sesión. Respeta CLAUDE_CODE_DISABLE_TERMINAL_TITLE
+    // info vieja de la sesión. Respeta THYROX_CODE_DISABLE_TERMINAL_TITLE
     // — si el usuario optó por no tener cambios de título, tampoco
     // limpiar su título existente al salir.
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_DISABLE_TERMINAL_TITLE)) {
       if (process.platform === 'win32') {
         process.title = ''
       } else {
@@ -608,7 +608,7 @@ export async function gracefulShutdown(
 
   // Ejecuta los hooks SessionEnd. Se acota tanto el timeout por defecto
   // por hook como la ejecución completa vía un único presupuesto
-  // (CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS, default 1.5s).
+  // (THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS, default 1.5s).
   // hook.timeout en settings se respeta hasta este tope.
   try {
     await executeSessionEndHooks(reason, {

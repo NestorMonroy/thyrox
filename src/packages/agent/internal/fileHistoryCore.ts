@@ -86,14 +86,14 @@ export function fileHistoryEnabled(): boolean {
   }
   return (
     getGlobalConfig().fileCheckpointingEnabled !== false &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FILE_CHECKPOINTING'))
   )
 }
 
 function fileHistoryEnabledSdk(): boolean {
   return (
-    isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_SDK_FILE_CHECKPOINTING')) &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING'))
+    isEnvTruthy(readEnv('THYROX_CODE_ENABLE_SDK_FILE_CHECKPOINTING')) &&
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FILE_CHECKPOINTING'))
   )
 }
 

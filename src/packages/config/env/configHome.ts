@@ -1,11 +1,11 @@
 /**
  * La raíz de configuración del usuario. El ejecutable 2.1.283 la resuelve
- * como `CLAUDE_CONFIG_DIR ?? ~/.claude`; thyrox la migra a nombres propios
+ * como `CLAUDE_CONFIG_DIR ?? ~/.claude`; thyrox la migra a nombres propios (thyrox-rename: keep — respaldo heredado)
  * (decisión del ejecutor 2026-09-27, «Migrar a .thyrox») y conserva los
  * heredados sólo como respaldo de lectura, para que un usuario que aún no
  * migró no pierda su configuración.
  *
- * Orden: `THYROX_CONFIG_DIR` → `CLAUDE_CONFIG_DIR` → `~/.thyrox` si existe →
+ * Orden: `THYROX_CONFIG_DIR` → `CLAUDE_CONFIG_DIR` → `~/.thyrox` si existe → (thyrox-rename: keep — respaldo heredado)
  * `~/.claude` si existe → `~/.thyrox` (el destino de una instalación nueva).
  * Una variable vacía no cuenta como declarada: el ejecutable usa `??` y
  * resolvería a la cadena vacía, que ninguna ruta posterior puede usar.
@@ -19,7 +19,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 export const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
-export const LEGACY_CONFIG_DIR_ENV = 'CLAUDE_CONFIG_DIR'
+export const LEGACY_CONFIG_DIR_ENV = 'CLAUDE_CONFIG_DIR' // thyrox-rename: keep — respaldo heredado de configHome
 export const CONFIG_DIR_NAME = '.thyrox'
 export const LEGACY_CONFIG_DIR_NAME = '.claude'
 /** Los dos nombres que el cliente lee como raíz de configuración, el propio

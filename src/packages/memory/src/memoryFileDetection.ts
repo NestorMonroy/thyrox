@@ -232,7 +232,7 @@ export function isMemoryDirectory(dirPath: string): boolean {
     return true
   }
   // Verifica el override de ruta de auto-memoria
-  // (CLAUDE_COWORK_MEMORY_PATH_OVERRIDE).
+  // (THYROX_COWORK_MEMORY_PATH_OVERRIDE).
   if (isAutoMemoryEnabled()) {
     const autoMemPath = getAutoMemPath()
     const autoMemDirCmp = toComparable(autoMemPath.replace(/[/\\]+$/, ''))

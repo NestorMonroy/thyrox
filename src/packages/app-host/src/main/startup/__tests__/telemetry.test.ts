@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { logSessionTelemetry, logStartupTelemetry, type PluginInfo } from '../telemetry.js'
 
-const ENV_KEYS = ['NODE_EXTRA_CA_CERTS', 'CLAUDE_CODE_CLIENT_CERT', 'NODE_OPTIONS'] as const
+const ENV_KEYS = ['NODE_EXTRA_CA_CERTS', 'THYROX_CODE_CLIENT_CERT', 'NODE_OPTIONS'] as const
 let snapshot: Record<string, string | undefined>
 
 beforeEach(() => {

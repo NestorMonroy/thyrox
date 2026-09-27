@@ -53,10 +53,10 @@ export function shouldEnableClaudeInChrome(chromeFlag?: boolean): boolean {
   }
 
   // Check environment variables
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_CFC'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_ENABLE_CFC'))) {
     return true
   }
-  if (isEnvDefinedFalsy(readEnv('CLAUDE_CODE_ENABLE_CFC'))) {
+  if (isEnvDefinedFalsy(readEnv('THYROX_CODE_ENABLE_CFC'))) {
     return false
   }
 
@@ -102,7 +102,7 @@ export function setupClaudeInChrome(): {
 
   const env: Record<string, string> = {}
   if (getSessionBypassPermissionsMode()) {
-    env.CLAUDE_CHROME_PERMISSION_MODE = 'skip_all_permission_checks'
+    env.THYROX_CHROME_PERMISSION_MODE = 'skip_all_permission_checks'
   }
   const hasEnv = Object.keys(env).length > 0
 

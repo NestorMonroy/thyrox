@@ -82,7 +82,7 @@ function isToolSearchForced(): boolean {
 
 /** `e_t`: las betas experimentales desactivadas, salvo forzado. */
 function experimentalBetasDisabled(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS) && !isToolSearchForced()
+  return isEnvTruthy(process.env.THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS) && !isToolSearchForced()
 }
 
 /** `u9e`: el modo de búsqueda de herramientas según el entorno. */

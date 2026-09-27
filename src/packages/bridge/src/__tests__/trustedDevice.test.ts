@@ -72,12 +72,12 @@ beforeEach(() => {
   flagState.gates = {}
   flagState.policy = {}
   storageState.data = {}
-  delete process.env.CLAUDE_TRUSTED_DEVICE_TOKEN
+  delete process.env.THYROX_TRUSTED_DEVICE_TOKEN
   clearTrustedDeviceTokenCache()
 })
 
 afterEach(() => {
-  delete process.env.CLAUDE_TRUSTED_DEVICE_TOKEN
+  delete process.env.THYROX_TRUSTED_DEVICE_TOKEN
 })
 
 describe('isTrustedDeviceGateEnabled (ant wgH)', () => {
@@ -111,10 +111,10 @@ describe('isTrustedDeviceGateEnabled (ant wgH)', () => {
 })
 
 describe('readStoredTrustedDeviceToken — env-var precedence', () => {
-  test('CLAUDE_TRUSTED_DEVICE_TOKEN env var shadows keychain', () => {
+  test('THYROX_TRUSTED_DEVICE_TOKEN env var shadows keychain', () => {
     flagState.gates[GATE] = true
     storageState.data = { trustedDeviceToken: 'from-keychain' }
-    process.env.CLAUDE_TRUSTED_DEVICE_TOKEN = 'from-env'
+    process.env.THYROX_TRUSTED_DEVICE_TOKEN = 'from-env'
     clearTrustedDeviceTokenCache()
     expect(getTrustedDeviceToken()).toBe('from-env')
   })

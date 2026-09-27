@@ -591,7 +591,7 @@ export function validateBoundedIntEnvVar(
 export { returnValue as returnValueFromGenerator }
 
 export function getOrCreateUserID(): string {
-  return readEnv('CLAUDE_CODE_USER_ID') ?? sessionId
+  return readEnv('THYROX_CODE_USER_ID') ?? sessionId
 }
 
 export function resolveAppliedEffort(_options: unknown): string | undefined {

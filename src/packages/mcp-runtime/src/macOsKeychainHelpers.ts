@@ -54,7 +54,7 @@ export function getMacOsKeychainStorageServiceName(
   serviceSuffix: string = '',
 ): string {
   const configDir = getConfigHomeDir()
-  const isDefaultDir = !process.env.CLAUDE_CONFIG_DIR
+  const isDefaultDir = !process.env.THYROX_CONFIG_DIR
 
   // Usa un hash de la ruta del directorio de config para crear un sufijo
   // único pero estable. Sólo se añade sufijo para directorios no-default,

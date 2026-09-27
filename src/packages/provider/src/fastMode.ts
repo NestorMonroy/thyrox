@@ -122,7 +122,7 @@ function requireBundledMode(): { isInBundledMode: () => boolean } {
 }
 
 export function isFastModeEnabled(): boolean {
-  return !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_FAST_MODE'))
+  return !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FAST_MODE'))
 }
 
 export function isFastModeAvailable(): boolean {
@@ -201,7 +201,7 @@ export function getFastModeUnavailableReason(): string | null {
       orgStatus.reason === 'network_error' ||
       orgStatus.reason === 'unknown'
     ) {
-      if (isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_FAST_MODE_NETWORK_ERRORS'))) {
+      if (isEnvTruthy(readEnv('THYROX_CODE_SKIP_FAST_MODE_NETWORK_ERRORS'))) {
         return null
       }
     }
@@ -220,8 +220,8 @@ export function getFastModeUnavailableReason(): string | null {
 // heredado a Opus 4.6 está deprecado upstream pero se conserva para
 // compatibilidad mientras los usuarios migran.
 function shouldUseOpus46FastMode(): boolean {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_OPUS_4_8_FAST_MODE'))) return false
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE'))) return true
+  if (isEnvTruthy(readEnv('THYROX_CODE_ENABLE_OPUS_4_8_FAST_MODE'))) return false
+  if (isEnvTruthy(readEnv('THYROX_CODE_OPUS_4_6_FAST_MODE_OVERRIDE'))) return true
   return false
 }
 

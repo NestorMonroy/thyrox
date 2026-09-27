@@ -102,6 +102,7 @@ def main() -> int:
     # --- anchura de Agent ---------------------------------------------------
     etiqueta, patron = CAPS["agent_width"][0], CAPS["agent_width"][1]
     var = patron.search(cadenas)
+    # thyrox-rename: keep — el límite que lee el binario anfitrión
     entorno = os.environ.get("CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS")
     if entorno:
         resultados["agent_width"] = (etiqueta, f"{entorno} (de la variable de entorno)")
@@ -140,6 +141,7 @@ def main() -> int:
 
     # --- profundidad --------------------------------------------------------
     etiqueta, patron = CAPS["spawn_depth"][0], CAPS["spawn_depth"][1]
+    # thyrox-rename: keep — el límite que lee el binario anfitrión
     entorno = os.environ.get("CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH")
     if entorno:
         resultados["spawn_depth"] = (etiqueta, f"{entorno} (de la variable de entorno)")

@@ -92,7 +92,7 @@ describe('validateForceLoginOrg (ant I8H parity)', () => {
 
   test('env-var token mismatch names the env var (so user can unset it)', () => {
     expect(fnSlice).toMatch(
-      /if\s*\(isEnvVarToken\)\s*\{[\s\S]*?envVarName\s*=[\s\S]*?CLAUDE_CODE_OAUTH_TOKEN/,
+      /if\s*\(isEnvVarToken\)\s*\{[\s\S]*?envVarName\s*=[\s\S]*?THYROX_CODE_OAUTH_TOKEN/,
     )
   })
 

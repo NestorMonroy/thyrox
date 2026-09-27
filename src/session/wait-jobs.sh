@@ -81,6 +81,7 @@ set -uo pipefail
 # aterrizaba fuera del arbol versionado. Los dos tests lo sobreescriben con
 # `KX_TRABAJOS_DIR`, asi que el default equivocado nunca se ejercitaba.
 _ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# thyrox-rename: keep — el id de la sesión anfitriona
 _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # NO va bajo el banco: una pieza de banco es una PREGUNTA medida, y esto es
 # estado de sesion. Mezclarlos haria que el gate del manifiesto midiera

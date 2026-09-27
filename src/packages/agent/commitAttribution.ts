@@ -265,7 +265,7 @@ export type AttributionState = {
 
 /** La superficie del cliente actual, leida del entorno. */
 export function getClientSurface(): string {
-  return readEnv('CLAUDE_CODE_ENTRYPOINT') ?? 'cli'
+  return readEnv('THYROX_CODE_ENTRYPOINT') ?? 'cli'
 }
 
 /** Crea un `AttributionState` vacio para una sesion nueva. */

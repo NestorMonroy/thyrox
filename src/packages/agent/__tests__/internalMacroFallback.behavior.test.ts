@@ -19,7 +19,7 @@ import { resolve } from 'path'
  *  1. El fallback SÓLO dispara cuando MACRO está `undefined` (guard con
  *     typeof). Los builds de producción reciben valores reales vía
  *     scripts/defines.ts, así que NO se pueden pisar.
- *  2. VERSION cae a la variable de entorno CLAUDE_CODE_VERSION, y luego a
+ *  2. VERSION cae a la variable de entorno THYROX_CODE_VERSION, y luego a
  *     '1.carus.000' (prefijo identificador ccb — distingue test/fallback
  *     de un build real de Anthropic).
  *  3. BUILD_TIME es `new Date().toISOString()` (hora actual, NO el epoch
@@ -46,9 +46,9 @@ describe('internal/macroFallback', () => {
     expect(source).toMatch(/if \(typeof globalThis\.MACRO === 'undefined'\)/)
   })
 
-  test('VERSION priority: CLAUDE_CODE_VERSION env → "1.carus.000" literal', () => {
+  test('VERSION priority: THYROX_CODE_VERSION env → "1.carus.000" literal', () => {
     expect(source).toMatch(
-      /VERSION: readEnv\('CLAUDE_CODE_VERSION'\) \|\| '1\.carus\.000'/,
+      /VERSION: readEnv\('THYROX_CODE_VERSION'\) \|\| '1\.carus\.000'/,
     )
   })
 

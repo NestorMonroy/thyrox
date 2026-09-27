@@ -57,7 +57,7 @@ function withEnv(vars: Record<string, string | undefined>, fn: () => void) {
 
 describe('getTeamsDir', () => {
   test('anida "teams" bajo getConfigHomeDir', () => {
-    withEnv({ CLAUDE_CONFIG_DIR: '/tmp/config-envutils-teams' }, () => {
+    withEnv({ THYROX_CONFIG_DIR: '/tmp/config-envutils-teams' }, () => {
       expect(getTeamsDir()).toBe(`${getConfigHomeDir()}/teams`)
       expect(getTeamsDir().endsWith('/teams')).toBe(true)
     })
@@ -88,16 +88,16 @@ describe('hasNodeOption', () => {
 
 describe('isBareMode', () => {
   afterEach(() => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.THYROX_CODE_SIMPLE
   })
 
-  test('CLAUDE_CODE_SIMPLE truthy activa el modo', () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+  test('THYROX_CODE_SIMPLE truthy activa el modo', () => {
+    process.env.THYROX_CODE_SIMPLE = '1'
     expect(isBareMode()).toBe(true)
   })
 
   test('sin la variable y sin --bare en argv: false', () => {
-    delete process.env.CLAUDE_CODE_SIMPLE
+    delete process.env.THYROX_CODE_SIMPLE
     expect(process.argv.includes('--bare')).toBe(false)
     expect(isBareMode()).toBe(false)
   })
@@ -145,11 +145,11 @@ describe('getAWSRegion / getDefaultVertexRegion', () => {
 })
 
 describe('shouldMaintainProjectWorkingDir', () => {
-  test('delega en isEnvTruthy sobre CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR', () => {
-    withEnv({ CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR: 'true' }, () => {
+  test('delega en isEnvTruthy sobre THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR', () => {
+    withEnv({ THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR: 'true' }, () => {
       expect(shouldMaintainProjectWorkingDir()).toBe(true)
     })
-    withEnv({ CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR: undefined }, () => {
+    withEnv({ THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR: undefined }, () => {
       expect(shouldMaintainProjectWorkingDir()).toBe(false)
     })
   })

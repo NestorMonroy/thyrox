@@ -26,13 +26,13 @@ export function emitAgentAction(
 /**
  * ant 3921.js YB5 — fires when a bg agent captures the user's intent
  * (the directive for `ccb --bg-pty <directive>`). Source defaults to
- * 'shell' but CLAUDE_BG_SOURCE env can override (e.g. for slash-command
+ * 'shell' but THYROX_BG_SOURCE env can override (e.g. for slash-command
  * or fleet-spawned dispatches).
  */
 export function emitAgentDispatch(short: string, intent: string): void {
   logEvent('tengu_bg_agent_dispatch', {
     short,
-    source: process.env.CLAUDE_BG_SOURCE ?? 'shell',
+    source: process.env.THYROX_BG_SOURCE ?? 'shell',
     intent_length: String(intent.length),
   })
 }

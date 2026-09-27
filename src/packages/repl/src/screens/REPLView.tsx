@@ -606,7 +606,7 @@ export function REPL({
   const { titleDisabled, moreRightEnabled, disableVirtualScroll } = useReplEnvFlags();
   const disableMessageActions = feature('MESSAGE_ACTIONS')
     ?
-      useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_MESSAGE_ACTIONS), [])
+      useMemo(() => isEnvTruthy(process.env.THYROX_CODE_DISABLE_MESSAGE_ACTIONS), [])
     : false;
 
   // Log REPL mount/unmount lifecycle
@@ -719,7 +719,7 @@ export function REPL({
   const [screen, setScreen] = useState<Screen>('prompt');
   const [showAllInTranscript, setShowAllInTranscript] = useState(false);
   // [ forces the dump-to-scrollback path inside transcript mode. Separate
-  // from CLAUDE_CODE_NO_FLICKER=0 (which is process-lifetime) — this is
+  // from THYROX_CODE_NO_FLICKER=0 (which is process-lifetime) — this is
   // ephemeral, reset on transcript exit. Diagnostic escape hatch so
   // terminal/tmux native cmd-F can search the full flat render.
   const [dumpMode, setDumpMode] = useState(false);
@@ -3546,8 +3546,8 @@ export function REPL({
       // controls treatment: "dialog" (blocking), "hint" (notification), "off".
       {
         const willowMode = getFeatureValue_CACHED_MAY_BE_STALE('tengu_willow_mode', 'off');
-        const idleThresholdMin = Number(process.env.CLAUDE_CODE_IDLE_THRESHOLD_MINUTES) || 75;  // `||` falls back on NaN; `??` wouldn't
-        const tokenThreshold = Number(process.env.CLAUDE_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
+        const idleThresholdMin = Number(process.env.THYROX_CODE_IDLE_THRESHOLD_MINUTES) || 75;  // `||` falls back on NaN; `??` wouldn't
+        const tokenThreshold = Number(process.env.THYROX_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
         if (
           willowMode !== 'off' &&
           !getGlobalConfig().idleReturnDismissed &&
@@ -3873,7 +3873,7 @@ export function REPL({
    * with an empty prompt opens the agents view.
    *
    * In ccb, when the REPL is running as a bg session attached via
-   * FleetView (`CLAUDE_CODE_SESSION_KIND === 'bg'`), we emit a sentinel
+   * FleetView (`THYROX_CODE_SESSION_KIND === 'bg'`), we emit a sentinel
    * OSC sequence over stdout. The outer `runAttach` client scans PTY
    * data for the sentinel and detaches — landing the user back in
    * the FleetView (which is paused on the outer process).
@@ -3891,7 +3891,7 @@ export function REPL({
     //
     // w_H = ant 4176.js: with msg → `\x1b_cc-detach-msg;<msg>\x1b\\` + aNH; without → aNH
     // aNH = `\x1b_cc-daemon-detach\x1b\\`
-    if (process.env.CLAUDE_CODE_SESSION_KIND === 'bg') {
+    if (process.env.THYROX_CODE_SESSION_KIND === 'bg') {
       sendBgDetachSignal();
       return;
     }
@@ -3960,7 +3960,7 @@ export function REPL({
   // (detach / exit via handleLeftArrowOnEmpty).
   const leftArrowMessageHandler = useMemo(
     () =>
-      process.env.CLAUDE_CODE_SESSION_KIND === 'bg' ||
+      process.env.THYROX_CODE_SESSION_KIND === 'bg' ||
       process.env.CCB_FLEET_ATTACH_CHILD === '1'
         ? undefined
         : (_show: boolean) => {
@@ -4342,10 +4342,10 @@ export function REPL({
     if (willowMode !== 'hint' && willowMode !== 'hint_v2') return;
     if (getGlobalConfig().idleReturnDismissed) return;
 
-    const tokenThreshold = Number(process.env.CLAUDE_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
+    const tokenThreshold = Number(process.env.THYROX_CODE_IDLE_TOKEN_THRESHOLD) || 100_000;
     if (getTotalInputTokens() < tokenThreshold) return;
 
-    const idleThresholdMs = (Number(process.env.CLAUDE_CODE_IDLE_THRESHOLD_MINUTES) || 75) * 60_000;
+    const idleThresholdMs = (Number(process.env.THYROX_CODE_IDLE_THRESHOLD_MINUTES) || 75) * 60_000;
     const elapsed = Date.now() - lastQueryCompletionTime;
     const remaining = idleThresholdMs - elapsed;
 

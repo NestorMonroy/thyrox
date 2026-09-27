@@ -262,12 +262,12 @@ export function getClaudeTempDirName(): string {
 
 /**
  * Ruta del directorio temporal de thyrox, con symlinks resueltos.
- * Usa `CLAUDE_CODE_TMPDIR` si está definida; si no, `/tmp` en Unix o
+ * Usa `THYROX_CODE_TMPDIR` si está definida; si no, `/tmp` en Unix o
  * `tmpdir()` en Windows.
  */
 export const getClaudeTempDir = memoizeOnce((): string => {
   const baseTmpDir =
-    process.env.CLAUDE_CODE_TMPDIR ||
+    process.env.THYROX_CODE_TMPDIR ||
     (getPlatformDeferred() === 'windows' ? nodeOs.tmpdir() : '/tmp')
 
   const fs = getFsImplementationDeferred()

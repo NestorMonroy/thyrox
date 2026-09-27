@@ -294,13 +294,13 @@ export const init = memoize(async (): Promise<void> => {
 
     // CCR upstreamproxy: arranca el relay CONNECT local para que los
     // subprocesos de agente puedan alcanzar upstreams configurados por la
-    // org con inyección de credenciales. Gateado en CLAUDE_CODE_REMOTE +
+    // org con inyección de credenciales. Gateado en THYROX_CODE_REMOTE +
     // GrowthBook; fail-open ante cualquier error. Import perezoso para que
     // los arranques no-CCR no paguen la carga del módulo. La función
     // getUpstreamProxyEnv se registra con subprocessEnv.ts para que el spawn
     // de subprocesos pueda inyectar variables de proxy sin un import
     // estático del módulo upstreamproxy.
-    if (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) {
+    if (isEnvTruthy(process.env.THYROX_CODE_REMOTE)) {
       try {
         const { initUpstreamProxy, getUpstreamProxyEnv } = await import(
           '@thyrox/server/upstreamproxy/upstreamproxy.js'
@@ -326,9 +326,9 @@ export const init = memoize(async (): Promise<void> => {
     if (getPlatform() === 'windows' && !findGitBashPath()) {
       if (!isPowerShellToolEnabled()) {
         process.stderr.write(
-          `${PRODUCT_NAME} on Windows requires a shell tool. Git Bash was not found and the PowerShell tool is disabled (CLAUDE_CODE_USE_POWERSHELL_TOOL=0).\n` +
+          `${PRODUCT_NAME} on Windows requires a shell tool. Git Bash was not found and the PowerShell tool is disabled (THYROX_CODE_USE_POWERSHELL_TOOL=0).\n` +
             '  - Install Git for Windows: https://git-scm.com/downloads/win, or\n' +
-            '  - Remove CLAUDE_CODE_USE_POWERSHELL_TOOL from your environment or settings.\n',
+            '  - Remove THYROX_CODE_USE_POWERSHELL_TOOL from your environment or settings.\n',
         )
         // eslint-disable-next-line custom-rules/no-process-exit
         process.exit(1)
@@ -338,7 +338,7 @@ export const init = memoize(async (): Promise<void> => {
           `${PRODUCT_NAME} on Windows requires either Git for Windows (for bash) or PowerShell. Install one of:\n` +
             '  - Git for Windows: https://git-scm.com/downloads/win\n' +
             '  - PowerShell 7: https://aka.ms/powershell\n' +
-            'Or set CLAUDE_CODE_GIT_BASH_PATH to your bash.exe location.\n',
+            'Or set THYROX_CODE_GIT_BASH_PATH to your bash.exe location.\n',
         )
         // eslint-disable-next-line custom-rules/no-process-exit
         process.exit(1)

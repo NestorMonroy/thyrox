@@ -133,10 +133,10 @@ describe('PastedContent — el tipo que #260 portó incompleto', () => {
 })
 
 describe('getConfigHomeDir — un símbolo, no tres copias', () => {
-  const previo = process.env.CLAUDE_CONFIG_DIR
+  const previo = process.env.THYROX_CONFIG_DIR
   afterEach(() => {
-    if (previo === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = previo
+    if (previo === undefined) delete process.env.THYROX_CONFIG_DIR
+    else process.env.THYROX_CONFIG_DIR = previo
   })
 
   test('9. los dos sustitutos se retiran y reexportan el canónico', async () => {
@@ -159,24 +159,24 @@ describe('getConfigHomeDir — un símbolo, no tres copias', () => {
     // compuesta (NFC) del disco. Dos formas de la MISMA ruta que no
     // comparan iguales producen un directorio duplicado que nadie ve.
     const { getConfigHomeDir } = await import('@thyrox/config/env/utils')
-    process.env.CLAUDE_CONFIG_DIR = '/tmp/config-nfd-é'
+    process.env.THYROX_CONFIG_DIR = '/tmp/config-nfd-é'
     expect(getConfigHomeDir()).toBe('/tmp/config-nfd-é'.normalize('NFC'))
   })
 })
 
 describe('imageStore — la imagen pegada, en disco y en el índice', () => {
   let base: string
-  const previo = process.env.CLAUDE_CONFIG_DIR
+  const previo = process.env.THYROX_CONFIG_DIR
 
   beforeEach(async () => {
     base = arbol()
-    process.env.CLAUDE_CONFIG_DIR = base
+    process.env.THYROX_CONFIG_DIR = base
     const { clearStoredImagePaths } = await import('../imageStore.ts')
     clearStoredImagePaths()
   })
   afterEach(() => {
-    if (previo === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = previo
+    if (previo === undefined) delete process.env.THYROX_CONFIG_DIR
+    else process.env.THYROX_CONFIG_DIR = previo
   })
 
   test('11. lo que no es imagen no entra al índice', async () => {
@@ -217,7 +217,7 @@ describe('imageStore — la imagen pegada, en disco y en el índice', () => {
     // permisos 0600 en un directorio de sesión; si algo falla, se pierde la
     // imagen y sigue la conversación.
     const { storeImage } = await import('../imageStore.ts')
-    process.env.CLAUDE_CONFIG_DIR = '/proc/no-se-puede-escribir-aqui'
+    process.env.THYROX_CONFIG_DIR = '/proc/no-se-puede-escribir-aqui'
     expect(await storeImage({ id: 6, type: 'image', content: '' })).toBeNull()
   })
 
@@ -258,7 +258,7 @@ describe('imageStore — la imagen pegada, en disco y en el índice', () => {
 
   test('19. sin directorio base la limpieza no lanza', async () => {
     const { cleanupOldImageCaches } = await import('../imageStore.ts')
-    process.env.CLAUDE_CONFIG_DIR = join(arbol(), 'nunca-existio')
+    process.env.THYROX_CONFIG_DIR = join(arbol(), 'nunca-existio')
     await cleanupOldImageCaches()
   })
 })

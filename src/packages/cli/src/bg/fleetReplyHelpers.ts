@@ -88,7 +88,7 @@ export async function ptySockReply(short: string, text: string): Promise<boolean
  * pre-seeds PromptInput → auto-submits on mount).
  */
 function historyDir(cwd: string): string {
-  const root = readEnv('CLAUDE_CONFIG_HOME') ?? join(homedir(), '.claude')
+  const root = readEnv('THYROX_CONFIG_HOME') ?? join(homedir(), '.claude')
   // ant I2(): replace path separators with `-`.
   const slug = cwd.replace(/[/\\]/g, '-').replace(/^-/, '-')
   return join(root, 'projects', slug)

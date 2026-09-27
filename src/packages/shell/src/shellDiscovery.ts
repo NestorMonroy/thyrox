@@ -42,7 +42,7 @@ export async function findSuitableShell(
   _signal?: AbortSignal,
 ): Promise<string> {
   // Check for explicit shell override first
-  const shellOverride = process.env.CLAUDE_CODE_SHELL
+  const shellOverride = process.env.THYROX_CODE_SHELL
   if (shellOverride) {
     const isSupported =
       shellOverride.includes('bash') || shellOverride.includes('zsh')
@@ -51,7 +51,7 @@ export async function findSuitableShell(
       return shellOverride
     } else {
       logForDebugging(
-        `CLAUDE_CODE_SHELL="${shellOverride}" is not a valid bash/zsh path, falling back to detection`,
+        `THYROX_CODE_SHELL="${shellOverride}" is not a valid bash/zsh path, falling back to detection`,
       )
     }
   }
@@ -95,7 +95,7 @@ export async function findSuitableShell(
       throw new ExecError(
         `No suitable shell found. On Windows, ${PRODUCT_NAME} requires git-bash ` +
           '(https://git-scm.com/downloads/win). Install git-bash, ensure ' +
-          'bash.exe is discoverable, or set CLAUDE_CODE_GIT_BASH_PATH to the ' +
+          'bash.exe is discoverable, or set THYROX_CODE_GIT_BASH_PATH to the ' +
           'full path of bash.exe. PowerShell commands (via the PowerShell tool) ' +
           'do not require git-bash.',
       )

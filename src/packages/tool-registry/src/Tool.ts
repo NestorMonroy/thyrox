@@ -509,7 +509,7 @@ export type Tool<
    * Para herramientas MCP: los nombres de servidor y herramienta tal como
    * los recibió el servidor MCP (sin normalizar). Presente en toda
    * herramienta MCP sin importar si `name` lleva prefijo
-   * (mcp__server__tool) o no (modo CLAUDE_AGENT_SDK_MCP_NO_PREFIX).
+   * (mcp__server__tool) o no (modo THYROX_AGENT_SDK_MCP_NO_PREFIX).
    */
   mcpInfo?: { serverName: string; toolName: string }
   readonly name: string

@@ -8,10 +8,10 @@
  *
  * - `getConfigHomeDir` (de `@claude-code-how-works/config/env/utils`)
  *   — se reimplementa localmente, SIN memoización. La fuente la memoiza
- *   (`lodash-es/memoize`, resolver = `process.env.CLAUDE_CONFIG_DIR`)
+ *   (`lodash-es/memoize`, resolver = `process.env.THYROX_CONFIG_DIR`)
  *   porque tiene 150+ llamadores de alto tráfico; este porte tiene un solo
  *   consumidor (este archivo), así que memoizar aquí sólo complicaría los
- *   tests que cambian `CLAUDE_CONFIG_DIR` entre casos sin aportar nada.
+ *   tests que cambian `THYROX_CONFIG_DIR` entre casos sin aportar nada.
  * - `getErrnoCode` — la de `./fsOperations.js` de este mismo paquete
  *   (verbatim a la fuente de `local-observability/errorHelpers.js`, ya
  *   consolidada ahí).

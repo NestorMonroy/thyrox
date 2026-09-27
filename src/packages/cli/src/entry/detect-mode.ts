@@ -89,18 +89,18 @@ export function detectMode(argv: string[]): Mode {
  */
 function resolveClientType(): string {
   if (isEnvTruthy(process.env.GITHUB_ACTIONS)) return 'github-action'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'sdk-ts') return 'sdk-typescript'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'sdk-py') return 'sdk-python'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'sdk-cli') return 'sdk-cli'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-vscode') return 'claude-vscode'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'local-agent') return 'local-agent'
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'claude-desktop') return 'claude-desktop'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'sdk-ts') return 'sdk-typescript'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'sdk-py') return 'sdk-python'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'sdk-cli') return 'sdk-cli'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'claude-vscode') return 'claude-vscode'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'local-agent') return 'local-agent'
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'claude-desktop') return 'claude-desktop'
 
   // Check if session-ingress token is provided (indicates remote session)
   const hasSessionIngressToken =
-    process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN ||
-    process.env.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR
-  if (process.env.CLAUDE_CODE_ENTRYPOINT === 'remote' || hasSessionIngressToken) {
+    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN ||
+    process.env.THYROX_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR
+  if (process.env.THYROX_CODE_ENTRYPOINT === 'remote' || hasSessionIngressToken) {
     return 'remote'
   }
 
@@ -132,7 +132,7 @@ export function detectRuntimeMode(): void {
   const clientType = resolveClientType()
   setClientType(clientType)
 
-  const previewFormat = process.env.CLAUDE_CODE_QUESTION_PREVIEW_FORMAT
+  const previewFormat = process.env.THYROX_CODE_QUESTION_PREVIEW_FORMAT
   if (previewFormat === 'markdown' || previewFormat === 'html') {
     setQuestionPreviewFormat(previewFormat)
   } else if (
@@ -147,7 +147,7 @@ export function detectRuntimeMode(): void {
   }
 
   // Tag sessions created via `claude remote-control` so the backend can identify them
-  if (process.env.CLAUDE_CODE_ENVIRONMENT_KIND === 'bridge') {
+  if (process.env.THYROX_CODE_ENVIRONMENT_KIND === 'bridge') {
     setSessionSource('remote-control')
   }
 }

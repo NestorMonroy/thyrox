@@ -33,18 +33,18 @@ import {
 } from '@thyrox/agent/background/fleet/rvServer.js'
 
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-rv-test-'))
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
-const ORIGINAL_RV_SOCK = process.env.CLAUDE_BG_RENDEZVOUS_SOCK
-const ORIGINAL_JOB_DIR = process.env.CLAUDE_JOB_DIR
+const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
+const ORIGINAL_RV_SOCK = process.env.THYROX_BG_RENDEZVOUS_SOCK
+const ORIGINAL_JOB_DIR = process.env.THYROX_JOB_DIR
 
 let sockSeq = 0
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_HOME = ISOLATED_HOME
 })
 afterAll(() => {
-  if (ORIGINAL_CONFIG_HOME === undefined) delete process.env.CLAUDE_CONFIG_HOME
-  else process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+  if (ORIGINAL_CONFIG_HOME === undefined) delete process.env.THYROX_CONFIG_HOME
+  else process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })
 
@@ -54,14 +54,14 @@ function freshSockPath(): string {
 }
 
 beforeEach(() => {
-  delete process.env.CLAUDE_JOB_DIR
+  delete process.env.THYROX_JOB_DIR
 })
 afterEach(() => {
   stopRendezvousServer()
-  if (ORIGINAL_RV_SOCK === undefined) delete process.env.CLAUDE_BG_RENDEZVOUS_SOCK
-  else process.env.CLAUDE_BG_RENDEZVOUS_SOCK = ORIGINAL_RV_SOCK
-  if (ORIGINAL_JOB_DIR === undefined) delete process.env.CLAUDE_JOB_DIR
-  else process.env.CLAUDE_JOB_DIR = ORIGINAL_JOB_DIR
+  if (ORIGINAL_RV_SOCK === undefined) delete process.env.THYROX_BG_RENDEZVOUS_SOCK
+  else process.env.THYROX_BG_RENDEZVOUS_SOCK = ORIGINAL_RV_SOCK
+  if (ORIGINAL_JOB_DIR === undefined) delete process.env.THYROX_JOB_DIR
+  else process.env.THYROX_JOB_DIR = ORIGINAL_JOB_DIR
 })
 
 /** Wait until `pred()` is true or the deadline elapses. */
@@ -75,19 +75,19 @@ async function until(pred: () => boolean, ms = 2000): Promise<void> {
 }
 
 describe('rv channel — server start/stop', () => {
-  test('start is a no-op without CLAUDE_BG_RENDEZVOUS_SOCK', async () => {
-    delete process.env.CLAUDE_BG_RENDEZVOUS_SOCK
+  test('start is a no-op without THYROX_BG_RENDEZVOUS_SOCK', async () => {
+    delete process.env.THYROX_BG_RENDEZVOUS_SOCK
     await startRendezvousServer()
     expect(isRendezvousServerRunning()).toBe(false)
   })
 
   test('start binds when the env var is set, stop tears down', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     await startRendezvousServer()
     expect(isRendezvousServerRunning()).toBe(true)
     // The env var is consumed so a nested spawn can't re-bind.
-    expect(process.env.CLAUDE_BG_RENDEZVOUS_SOCK).toBeUndefined()
+    expect(process.env.THYROX_BG_RENDEZVOUS_SOCK).toBeUndefined()
     stopRendezvousServer()
     expect(isRendezvousServerRunning()).toBe(false)
   })
@@ -96,7 +96,7 @@ describe('rv channel — server start/stop', () => {
 describe('rv channel — supervisor ↔ worker', () => {
   test('client connects, handshake is discarded by the worker handler', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     // A reply hook that records — if the handshake frame ever leaked into
     // the command handler, it would NOT match a reply, but a malformed
     // frame with a `role` must be silently dropped (ant kb3).
@@ -125,7 +125,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('worker pushes heartbeat; client receives it', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     await startRendezvousServer({ isRendererReady: () => true })
 
     const received: RvServerMessage[] = []
@@ -151,7 +151,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('client onDisconnect fires when an established connection drops', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     await startRendezvousServer({ isRendererReady: () => true })
 
     let connected = false
@@ -176,7 +176,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('supervisor reply reaches the worker enqueueReply hook', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     const replies: string[] = []
     await startRendezvousServer({
       enqueueReply: t => replies.push(t),
@@ -201,7 +201,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('reply answering an open question short-circuits enqueue', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     const replies: string[] = []
     await startRendezvousServer({
       enqueueReply: t => replies.push(t),
@@ -227,7 +227,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('supervisor repaint triggers forceRedraw + repaint-done ack', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     let redrawCount = 0
     await startRendezvousServer({
       forceRedraw: () => {
@@ -256,7 +256,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('shutdown frame acks shutting-down + calls onShutdown', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     let shutdownCalled = false
     await startRendezvousServer({
       onShutdown: () => {
@@ -291,7 +291,7 @@ describe('rv channel — supervisor ↔ worker', () => {
 
   test('only one connection lives — a second connect drops the first', async () => {
     const sock = freshSockPath()
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
     await startRendezvousServer({ isRendererReady: () => true })
 
     let firstConnected = false
@@ -328,8 +328,8 @@ describe('rv channel — state + done persist to disk', () => {
   test('pushRvState writes state.json and pushes the patch', async () => {
     const sock = freshSockPath()
     const jobDir = join(ISOLATED_HOME, 'job-state')
-    process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
-    process.env.CLAUDE_JOB_DIR = jobDir
+    process.env.THYROX_BG_RENDEZVOUS_SOCK = sock
+    process.env.THYROX_JOB_DIR = jobDir
     // Seed a baseline state.json so pushRvState has something to merge.
     const { writeJobState, readJobState } = await import(
       '@thyrox/agent/background/fleet/fleetStore.js'

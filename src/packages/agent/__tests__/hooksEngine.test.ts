@@ -57,7 +57,7 @@ async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
 beforeEach(() => resetHooksConfigSnapshot())
 afterEach(() => {
   resetHooksConfigSnapshot()
-  delete process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
+  delete process.env.THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS
 })
 
 describe('hookMatcherMatches — el matcher del cliente', () => {
@@ -205,7 +205,7 @@ describe('eventos fuera del bucle', () => {
     expect(getSessionEndHookTimeoutMs()).toBe(30_000)
     setHooksConfigSnapshot({ SessionEnd: [{ hooks: [cmd('true', { timeout: 900 })] }] })
     expect(getSessionEndHookTimeoutMs()).toBe(60_000)
-    process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS = '4321'
+    process.env.THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS = '4321'
     expect(getSessionEndHookTimeoutMs()).toBe(4321)
   })
 })

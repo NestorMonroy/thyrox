@@ -18,7 +18,7 @@
 import { feature } from 'bun:bundle'
 
 const SLOW_OPERATION_THRESHOLD_MS = (() => {
-  const envValue = process.env.CLAUDE_CODE_SLOW_OPERATION_THRESHOLD_MS
+  const envValue = process.env.THYROX_CODE_SLOW_OPERATION_THRESHOLD_MS
   if (envValue !== undefined) {
     const parsed = Number(envValue)
     if (!Number.isNaN(parsed) && parsed >= 0) {

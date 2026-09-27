@@ -55,12 +55,12 @@ function positional(argv: string[]): string | undefined {
  * El hogar de los settings de usuario, sin traer `@thyrox/storage` sólo por
  * esta línea — mismo criterio que `app-host/src/main/startup/settings.ts` ya
  * aplicó al reimplementar piezas de un párrafo en vez de cruzar de paquete.
- * El patrón (`CLAUDE_CONFIG_DIR` o `~/.claude`) se repite igual en
+ * El patrón (`THYROX_CONFIG_DIR` o `~/.claude`) se repite igual en
  * `storage/src/{plans,projectPurge,sessionEnvironment,sessionPaths}.ts` y en
  * `app-host/src/startup/startupProfiler.ts`.
  */
 function userConfigDir(): string {
-  return process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
+  return process.env.THYROX_CONFIG_DIR ?? join(homedir(), '.claude')
 }
 
 /** Las tres fuentes con convención de ruta conocida EN ESTE ÁRBOL. */
@@ -294,7 +294,7 @@ const AYUDA = `settings — la puerta a @thyrox/config
 
   resolve [--cwd <ruta>] [--source NOMBRE=RUTA ...] [--skip-defaults] [--json]
         fusiona userSettings/projectSettings/localSettings (rutas por
-        convención bajo <ruta o cwd>/.claude/ y ~/.claude/, o \${CLAUDE_CONFIG_DIR})
+        convención bajo <ruta o cwd>/.claude/ y ~/.claude/, o \${THYROX_CONFIG_DIR})
         por precedencia y muestra valor + origen de cada clave.
         --source repite; NOMBRE=user|project|local|flag|policy (o el nombre
         canónico) sustituye a la ruta por defecto de esa fuente.

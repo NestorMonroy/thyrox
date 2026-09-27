@@ -102,7 +102,7 @@ export async function adoptFromRoster(
         ptySocket,
         rvSocket: entry.rendezvousSock,
         cmd: [],
-        cliVersion: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: process.env.THYROX_CODE_VERSION ?? 'dev',
       },
       record,
     )
@@ -154,7 +154,7 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
         sock: ptySocket,
       })
     }
-    const currentCli = process.env.CLAUDE_CODE_VERSION ?? 'dev'
+    const currentCli = process.env.THYROX_CODE_VERSION ?? 'dev'
     if (record.cliVersion && record.cliVersion !== currentCli) {
       logEvent('tengu_bg_adopt_upgrade_respawn', {
         short: record.short,

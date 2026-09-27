@@ -54,7 +54,7 @@ const PROD_OAUTH_CONFIG: OauthConfig = {
 }
 
 export function getOauthConfig(): OauthConfig {
-  const custom = process.env.CLAUDE_CODE_CUSTOM_OAUTH_URL
+  const custom = process.env.THYROX_CODE_CUSTOM_OAUTH_URL
   if (custom) {
     const base = custom.replace(/\/$/, '')
     return { ...PROD_OAUTH_CONFIG, BASE_API_URL: base }
@@ -936,7 +936,7 @@ export function setWaitForPolicyLimitsToLoadFn(fn: () => Promise<void>): void {
 type PrivacyLevel = 'default' | 'no-telemetry' | 'essential-traffic'
 
 export function getPrivacyLevel(): PrivacyLevel {
-  if (process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) {
+  if (process.env.THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC) {
     return 'essential-traffic'
   }
   if (process.env.DISABLE_TELEMETRY) {
@@ -1008,7 +1008,7 @@ export function setGetSecureStorageFn(fn: () => SecureStorage): void {
  * workspace.
  */
 export function updateSessionIngressAuthToken(token: string): void {
-  process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN = token
+  process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = token
 }
 
 /**

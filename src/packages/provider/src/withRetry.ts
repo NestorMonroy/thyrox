@@ -99,7 +99,7 @@ const HEARTBEAT_INTERVAL_MS = 30_000
 
 function isPersistentRetryEnabled(): boolean {
   return feature('UNATTENDED_RETRY')
-    ? isEnvTruthy(readEnv('CLAUDE_CODE_UNATTENDED_RETRY'))
+    ? isEnvTruthy(readEnv('THYROX_CODE_UNATTENDED_RETRY'))
     : false
 }
 
@@ -655,7 +655,7 @@ function isOAuthTokenRevokedError(error: unknown): boolean {
 }
 
 function isBedrockAuthError(error: unknown): boolean {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) {
     // AWS libs reject without an API call if .aws holds a past Expiration value
     // otherwise, API calls that receive expired tokens give generic 403
     // "The security token included in the request is invalid"
@@ -694,7 +694,7 @@ function isGoogleAuthLibraryCredentialError(error: unknown): boolean {
 }
 
 function isVertexAuthError(error: unknown): boolean {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) {
     // SDK-level: google-auth-library fails in prepareOptions() before the HTTP call
     if (isGoogleAuthLibraryCredentialError(error)) {
       return true
@@ -736,7 +736,7 @@ function shouldRetry(error: APIError): boolean {
   // credentials. Bypass x-should-retry:false — the server assumes we'd retry
   // the same bad key, but our key is fine.
   if (
-    isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
+    isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
     (error.status === 401 || error.status === 403)
   ) {
     return true
@@ -813,11 +813,11 @@ function shouldRetry(error: APIError): boolean {
 }
 
 export function getDefaultMaxRetries(): number {
-  const maxRetriesEnv = readEnv('CLAUDE_CODE_MAX_RETRIES')
+  const maxRetriesEnv = readEnv('THYROX_CODE_MAX_RETRIES')
   if (maxRetriesEnv) {
     return parseInt(maxRetriesEnv, 10)
   }
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_RETRY_WATCHDOG'))) return 300
+  if (isEnvTruthy(readEnv('THYROX_CODE_RETRY_WATCHDOG'))) return 300
   return DEFAULT_MAX_RETRIES
 }
 function getMaxRetries(options: RetryOptions): number {

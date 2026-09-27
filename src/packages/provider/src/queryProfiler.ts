@@ -1,7 +1,7 @@
 import { getPerformance } from '@thyrox/app-host/startup/profilerBase.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
-const ENABLED = isEnvTruthy(readEnv('CLAUDE_CODE_PROFILE_QUERY'))
+const ENABLED = isEnvTruthy(readEnv('THYROX_CODE_PROFILE_QUERY'))
 let queryCount = 0
 
 export function startQueryProfile(): void {

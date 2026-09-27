@@ -324,7 +324,7 @@ function cmdEnv(argv: string[]): number {
   // simulación, no algo que `subprocessEnv` "gane" — si se dejara fuera de
   // `before`, aparecería falsamente como "agregada" en cada corrida --gha.
   const before: Record<string, string | undefined> = gha.present
-    ? { ...process.env, CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1' }
+    ? { ...process.env, THYROX_CODE_SUBPROCESS_ENV_SCRUB: '1' }
     : process.env
   const after = subprocessEnv(gha.present ? before : undefined)
 

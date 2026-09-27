@@ -18,15 +18,15 @@ describe('memoryPause', () => {
     expect(isMemoryPaused()).toBe(false)
   })
   test('con la memoria en pausa, la memoria automática queda apagada', () => {
-    const saved = process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY
-    process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = '0'
+    const saved = process.env.THYROX_CODE_DISABLE_AUTO_MEMORY
+    process.env.THYROX_CODE_DISABLE_AUTO_MEMORY = '0'
     try {
       expect(isAutoMemoryEnabled()).toBe(true)
       setMemoryPaused(true)
       expect(isAutoMemoryEnabled()).toBe(false)
     } finally {
-      if (saved === undefined) delete process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY
-      else process.env.CLAUDE_CODE_DISABLE_AUTO_MEMORY = saved
+      if (saved === undefined) delete process.env.THYROX_CODE_DISABLE_AUTO_MEMORY
+      else process.env.THYROX_CODE_DISABLE_AUTO_MEMORY = saved
     }
   })
 })

@@ -47,9 +47,9 @@ export function preconnectAnthropicApi(): void {
 
   // Se omite si usa un proveedor cloud — endpoint y auth distintos.
   if (
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||
-    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY'))
+    isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX')) ||
+    isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY'))
   ) {
     return
   }
@@ -61,8 +61,8 @@ export function preconnectAnthropicApi(): void {
     readEnv('HTTP_PROXY') ||
     readEnv('http_proxy') ||
     readEnv('ANTHROPIC_UNIX_SOCKET') ||
-    readEnv('CLAUDE_CODE_CLIENT_CERT') ||
-    readEnv('CLAUDE_CODE_CLIENT_KEY')
+    readEnv('THYROX_CODE_CLIENT_CERT') ||
+    readEnv('THYROX_CODE_CLIENT_KEY')
   ) {
     return
   }

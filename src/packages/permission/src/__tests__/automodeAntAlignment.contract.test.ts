@@ -55,8 +55,8 @@ describe('auto-mode classifier model (ant IZ7→F7: main-loop, not Haiku)', () =
     expect(fnSlice).not.toMatch(/return getSmallFastModel\(\)/)
   })
 
-  test('env override CLAUDE_CODE_AUTO_MODE_MODEL stays the escape hatch', () => {
-    expect(yoloClassifier).toMatch(/CLAUDE_CODE_AUTO_MODE_MODEL/)
+  test('env override THYROX_CODE_AUTO_MODE_MODEL stays the escape hatch', () => {
+    expect(yoloClassifier).toMatch(/THYROX_CODE_AUTO_MODE_MODEL/)
   })
 })
 

@@ -25,7 +25,7 @@
  *   - blocked-marker / `?` at end                  → state=blocked
  *   - giving-up                                    → state=failed
  *
- * Gated on `CLAUDE_CODE_SESSION_KIND === 'bg'` AND `CLAUDE_JOB_DIR`
+ * Gated on `THYROX_CODE_SESSION_KIND === 'bg'` AND `THYROX_JOB_DIR`
  * being set — both written by spawnPty so the foreground REPL is
  * unaffected.
  */
@@ -200,8 +200,8 @@ export function useBgFleetStateSync(
   messagesRef.current = messages
 
   useEffect(() => {
-    if (process.env.CLAUDE_CODE_SESSION_KIND !== 'bg') return
-    const jobDir = process.env.CLAUDE_JOB_DIR
+    if (process.env.THYROX_CODE_SESSION_KIND !== 'bg') return
+    const jobDir = process.env.THYROX_JOB_DIR
     if (!jobDir) return
 
     const previous = previousLoadingRef.current

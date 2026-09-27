@@ -20,7 +20,7 @@ function getOauthConfigType(): OauthConfigType {
 }
 
 export function fileSuffixForOauthConfig(): string {
-  if (readEnv('CLAUDE_CODE_CUSTOM_OAUTH_URL')) {
+  if (readEnv('THYROX_CODE_CUSTOM_OAUTH_URL')) {
     return '-custom-oauth'
   }
   switch (getOauthConfigType()) {
@@ -121,11 +121,11 @@ const STAGING_OAUTH_CONFIG =
 // Tres servidores de desarrollo local: :8000 api-proxy, :4000 frontend
 // claude-ai, :3000 frontend Console. Variables de entorno permiten override.
 function getLocalOauthConfig(): OauthConfig {
-  const api = readEnv('CLAUDE_LOCAL_OAUTH_API_BASE')?.replace(/\/$/, '') ?? 'http://localhost:8000'
+  const api = readEnv('THYROX_LOCAL_OAUTH_API_BASE')?.replace(/\/$/, '') ?? 'http://localhost:8000'
   const apps =
-    readEnv('CLAUDE_LOCAL_OAUTH_APPS_BASE')?.replace(/\/$/, '') ?? 'http://localhost:4000'
+    readEnv('THYROX_LOCAL_OAUTH_APPS_BASE')?.replace(/\/$/, '') ?? 'http://localhost:4000'
   const consoleBase =
-    readEnv('CLAUDE_LOCAL_OAUTH_CONSOLE_BASE')?.replace(/\/$/, '') ?? 'http://localhost:3000'
+    readEnv('THYROX_LOCAL_OAUTH_CONSOLE_BASE')?.replace(/\/$/, '') ?? 'http://localhost:3000'
   return {
     BASE_API_URL: api,
     CONSOLE_AUTHORIZE_URL: `${consoleBase}/oauth/authorize`,
@@ -144,7 +144,7 @@ function getLocalOauthConfig(): OauthConfig {
   }
 }
 
-// Sólo despliegues FedStart/PubSec pueden usar CLAUDE_CODE_CUSTOM_OAUTH_URL —
+// Sólo despliegues FedStart/PubSec pueden usar THYROX_CODE_CUSTOM_OAUTH_URL —
 // evita que un token OAuth se envíe a un endpoint arbitrario.
 const ALLOWED_OAUTH_BASE_URLS = [
   'https://beacon.claude-ai.staging.ant.dev',
@@ -164,11 +164,11 @@ export function getOauthConfig(): OauthConfig {
     }
   })()
 
-  const oauthBaseUrl = readEnv('CLAUDE_CODE_CUSTOM_OAUTH_URL')
+  const oauthBaseUrl = readEnv('THYROX_CODE_CUSTOM_OAUTH_URL')
   if (oauthBaseUrl) {
     const base = oauthBaseUrl.replace(/\/$/, '')
     if (!ALLOWED_OAUTH_BASE_URLS.includes(base)) {
-      throw new Error('CLAUDE_CODE_CUSTOM_OAUTH_URL is not an approved endpoint.')
+      throw new Error('THYROX_CODE_CUSTOM_OAUTH_URL is not an approved endpoint.')
     }
     config = {
       ...config,
@@ -186,7 +186,7 @@ export function getOauthConfig(): OauthConfig {
     }
   }
 
-  const clientIdOverride = readEnv('CLAUDE_CODE_OAUTH_CLIENT_ID')
+  const clientIdOverride = readEnv('THYROX_CODE_OAUTH_CLIENT_ID')
   if (clientIdOverride) {
     config = { ...config, CLIENT_ID: clientIdOverride }
   }

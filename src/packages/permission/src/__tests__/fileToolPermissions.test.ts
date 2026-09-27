@@ -18,7 +18,7 @@ let base: string
 let work: string
 let outside: string
 let previousCwd: string
-const savedConfig = process.env.CLAUDE_CONFIG_DIR
+const savedConfig = process.env.THYROX_CONFIG_DIR
 
 const Read = { name: 'Read', getPath: (i: { file_path: string }) => i.file_path }
 const Edit = { name: 'Edit', getPath: (i: { file_path: string }) => i.file_path }
@@ -49,7 +49,7 @@ beforeAll(() => {
   touch(join(work, '.claude', 'skills', 'demo', 'SKILL.md'))
   touch(join(outside, 'secret.txt'))
   symlinkSync(join(outside, 'secret.txt'), join(work, 'escape.txt'))
-  process.env.CLAUDE_CONFIG_DIR = join(base, 'config-home')
+  process.env.THYROX_CONFIG_DIR = join(base, 'config-home')
   previousCwd = getOriginalCwd()
   setOriginalCwd(work)
   setCwdState(work)
@@ -57,8 +57,8 @@ beforeAll(() => {
 afterAll(() => {
   setOriginalCwd(previousCwd)
   setCwdState(previousCwd)
-  if (savedConfig === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = savedConfig
+  if (savedConfig === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = savedConfig
   rmSync(base, { recursive: true, force: true })
 })
 

@@ -14,12 +14,12 @@ import {
   type SessionState,
 } from '../sessionState.js'
 
-const ORIGINAL_ENV = process.env.CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS
+const ORIGINAL_ENV = process.env.THYROX_CODE_EMIT_SESSION_STATE_EVENTS
 
 beforeEach(() => {
   resetSessionStateForTest()
   setEnqueueSdkEventFn(() => {})
-  delete process.env.CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS
+  delete process.env.THYROX_CODE_EMIT_SESSION_STATE_EVENTS
 })
 
 afterEach(() => {
@@ -29,9 +29,9 @@ afterEach(() => {
   setPermissionModeChangedListener(null)
   setEnqueueSdkEventFn(() => {})
   if (ORIGINAL_ENV === undefined) {
-    delete process.env.CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS
+    delete process.env.THYROX_CODE_EMIT_SESSION_STATE_EVENTS
   } else {
-    process.env.CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS = ORIGINAL_ENV
+    process.env.THYROX_CODE_EMIT_SESSION_STATE_EVENTS = ORIGINAL_ENV
   }
 })
 
@@ -135,15 +135,15 @@ describe('idle limpia task_summary', () => {
 })
 
 describe('emisión al stream SDK — gateada por env var', () => {
-  test('sin CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS, no encola nada', () => {
+  test('sin THYROX_CODE_EMIT_SESSION_STATE_EVENTS, no encola nada', () => {
     const events: Record<string, unknown>[] = []
     setEnqueueSdkEventFn(e => events.push(e))
     notifySessionStateChanged('running')
     expect(events).toHaveLength(0)
   })
 
-  test('con CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS=1, encola el evento con el estado', () => {
-    process.env.CLAUDE_CODE_EMIT_SESSION_STATE_EVENTS = '1'
+  test('con THYROX_CODE_EMIT_SESSION_STATE_EVENTS=1, encola el evento con el estado', () => {
+    process.env.THYROX_CODE_EMIT_SESSION_STATE_EVENTS = '1'
     const events: Record<string, unknown>[] = []
     setEnqueueSdkEventFn(e => events.push(e))
     notifySessionStateChanged('running')

@@ -178,7 +178,7 @@ const CLAUDE_4_5_OR_4_6_MODEL_IDS = {
 
 /** Nombre de mercadeo del modelo de fast-mode — Opus 4.8 por defecto, con override legacy. */
 function getFastModelName(): string {
-  return isEnvTruthy(readEnv('CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE'))
+  return isEnvTruthy(readEnv('THYROX_CODE_OPUS_4_6_FAST_MODE_OVERRIDE'))
     ? 'Opus 4.6'
     : 'Opus 4.8'
 }
@@ -331,7 +331,7 @@ const SUBAGENT_NOTES = [
  * de pares y las notas de conducta. Devuelve una lista nueva.
  *
  * pendiente: el bloque final condicional de la fuente (`etn`, la cuenta
- * atrás de contexto gobernada por CLAUDE_CODE_DISABLE_ATTACHMENTS) no se
+ * atrás de contexto gobernada por THYROX_CODE_DISABLE_ATTACHMENTS) no se
  * porta; su productor (`Koe`/`GTe`) no existe en este árbol. Los argumentos
  * de modelo, directorios y herramientas se aceptan por la firma de los
  * llamadores y 2.1.275 ya no los usa aquí.
@@ -400,7 +400,7 @@ function mcpInstructionsSection(clients: readonly PromptMcpClient[] | undefined)
 }
 
 /**
- * El system prompt por partes. En modo simple (`CLAUDE_CODE_SIMPLE`) sólo el
+ * El system prompt por partes. En modo simple (`THYROX_CODE_SIMPLE`) sólo el
  * directorio y la fecha, como la fuente.
  */
 export async function getSystemPrompt(
@@ -410,7 +410,7 @@ export async function getSystemPrompt(
   mcpClients?: readonly PromptMcpClient[],
   options?: { excludeDynamicSections?: boolean },
 ): Promise<string[]> {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_SIMPLE'))) {
     return options?.excludeDynamicSections ? [] : [`CWD: ${getCwd()}\nDate: ${todayIso()}`]
   }
   const staticSections = [INTRO_SECTION, WORKING_SECTION, toolsSection(tools), CAUTION_SECTION, COMMUNICATION_SECTION]

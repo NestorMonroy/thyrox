@@ -23,7 +23,7 @@
  * las DOS entradas que `paths/reach.ts` ya resuelve para cualquier
  * variable: el valor directo del proceso, y — si no está — la ruta a su
  * declaración en un `.env` (gobernado por `THYROX_ENV_FILE`, o el primer
- * `.env` que aparezca ascendiendo). Aquí la variable es `CLAUDE_CONFIG_DIR`
+ * `.env` que aparezca ascendiendo). Aquí la variable es `THYROX_CONFIG_DIR`
  * — el mismo nombre que `sessionPaths.ts` ya lee del proceso — y sólo si
  * ninguna de las dos entradas la declara se cae al `~/.claude` que el
  * propio mecanismo portado ya usaba de default. Ningún `parents[N]`: el
@@ -41,7 +41,7 @@ import { getProjectDir, setOriginalCwd, setSessionId } from '../src/sessionPaths
 import { getTaskOutput, getTaskOutputPath } from '../src/task/diskOutput.ts'
 
 /** La grafía que declara dónde vive el estado real de una sesión. */
-const STATE_ROOT_VAR = 'CLAUDE_CONFIG_DIR'
+const STATE_ROOT_VAR = 'THYROX_CONFIG_DIR'
 
 const AYUDA = `storage — leer lo que el paquete ya persiste en disco (SÓLO LECTURA)
 
@@ -90,7 +90,7 @@ function arg(argv: string[], name: string): string | undefined {
 }
 
 /**
- * Resuelve y APLICA la raíz del estado: la deja en `process.env.CLAUDE_CONFIG_DIR`
+ * Resuelve y APLICA la raíz del estado: la deja en `process.env.THYROX_CONFIG_DIR`
  * para que `sessionPaths.ts` (que SÍ es el mecanismo real, no una copia)
  * la vea y derive `getProjectDir`/`getTranscriptPath` sobre ella. Evita una
  * segunda fuente de verdad para la misma resolución de ruta.

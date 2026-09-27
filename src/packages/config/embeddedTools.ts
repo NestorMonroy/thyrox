@@ -14,7 +14,7 @@ import { isEnvTruthy, readEnv } from './env/utils.js'
  */
 export function hasEmbeddedSearchTools(): boolean {
   if (!isEnvTruthy(readEnv('EMBEDDED_SEARCH_TOOLS'))) return false
-  const e = readEnv('CLAUDE_CODE_ENTRYPOINT')
+  const e = readEnv('THYROX_CODE_ENTRYPOINT')
   return (
     e !== 'sdk-ts' && e !== 'sdk-py' && e !== 'sdk-cli' && e !== 'local-agent'
   )

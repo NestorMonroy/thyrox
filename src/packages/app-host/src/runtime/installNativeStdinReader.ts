@@ -27,7 +27,7 @@
  * Los tres imports se conservan literales, sin traducir y sin stub —
  * mismo criterio que `installCliBindings.ts` (hermano en este
  * directorio) y `agent/internal/macroFallback.ts`. El resto del archivo
- * —el guard `installed`, el escape hatch `CLAUDE_CODE_NATIVE_STDIN=0`,
+ * —el guard `installed`, el escape hatch `THYROX_CODE_NATIVE_STDIN=0`,
  * el registro de callbacks y el auto-run final— se porta verbatim: es
  * la única parte con lógica propia, y no depende de QUÉ hace
  * `setAppCallbacks`/`isReaderSupported`/`startReader` — sólo de que
@@ -50,11 +50,11 @@ export function installNativeStdinReader(): void {
   installed = true
 
   // Escape hatch: si el lector nativo llega a portarse mal en la
-  // terminal de un usuario, CLAUDE_CODE_NATIVE_STDIN=0 fuerza la ruta
+  // terminal de un usuario, THYROX_CODE_NATIVE_STDIN=0 fuerza la ruta
   // estándar de process.stdin.
-  if (process.env.CLAUDE_CODE_NATIVE_STDIN === '0') {
+  if (process.env.THYROX_CODE_NATIVE_STDIN === '0') {
     logForDebugging(
-      '[stdin] native reader disabled via CLAUDE_CODE_NATIVE_STDIN=0',
+      '[stdin] native reader disabled via THYROX_CODE_NATIVE_STDIN=0',
     )
     return
   }

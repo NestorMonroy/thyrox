@@ -18,7 +18,7 @@
  *    ausente por completo del árbol) — la fuente compone
  *    `getClaudeTempDirName()` (`claude-{uid}` en POSIX, `'claude'` en
  *    Windows) + `sanitizePath(getOriginalCwd())`, con resuelto de
- *    symlinks de `/tmp` (macOS) y honrando `CLAUDE_CODE_TMPDIR`. Se
+ *    symlinks de `/tmp` (macOS) y honrando `THYROX_CODE_TMPDIR`. Se
  *    reimplementa aquí fiel a esa fórmula sin el resuelto de symlinks
  *    (ningún test de este pase corre en macOS) — `sanitizePath` se
  *    reusa de `../sessionStoragePortable.js` (hermano YA portado en este
@@ -89,7 +89,7 @@ function getClaudeTempDirName(): string {
  * de symlinks de macOS — ver docstring del archivo. */
 function getClaudeTempDir(): string {
   const base =
-    process.env.CLAUDE_CODE_TMPDIR ||
+    process.env.THYROX_CODE_TMPDIR ||
     (process.platform === 'win32' ? tmpdir() : '/tmp')
   return join(base, getClaudeTempDirName())
 }

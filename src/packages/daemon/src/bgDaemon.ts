@@ -152,7 +152,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
           pid: process.pid,
           startedAt: state.startedAt,
           origin: parsed.origin ?? 'transient',
-          version: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+          version: process.env.THYROX_CODE_VERSION ?? 'dev',
           spawnedBy: parsed.spawnedBy,
         }),
       )
@@ -175,7 +175,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
     worker_count: '0',
     origin: parsed.origin ?? 'transient',
   })
-  if (process.env.CLAUDE_CODE_BG_SPARE_POOL === '1') {
+  if (process.env.THYROX_CODE_BG_SPARE_POOL === '1') {
     enableSparePool()
     // Scheduler de pre-calentamiento: cada 30s, si no hay repuesto + no
     // hay uno en vuelo, genera uno. `ant 4644.js` iw6.
@@ -340,7 +340,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         ptySocket: (d.ptySocket as string) ?? '',
         rvSocket: d.rvSocket as string | undefined,
         cmd: (d.cmd as string[]) ?? [],
-        cliVersion: (d.cliVersion as string) ?? process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: (d.cliVersion as string) ?? process.env.THYROX_CODE_VERSION ?? 'dev',
         dispatch: d.dispatch as Record<string, unknown> | undefined,
       })
       state.workers.set(short, vm)
@@ -403,10 +403,10 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         // cross-package del daemon lo mantiene independiente de
         // `@claude-code-how-works/config`, así que se evita el flag de
         // GrowthBook y se acota sólo vía env.
-        // CLAUDE_CODE_BG_LOW_MEM_MB sobreescribe el default (1024 MB en
+        // THYROX_CODE_BG_LOW_MEM_MB sobreescribe el default (1024 MB en
         // Linux/Win, 0 en macOS — la semántica de vm_stat no coincide con
         // os.freemem y causaría retiros espurios).
-        const envOverride = Number(process.env.CLAUDE_CODE_BG_LOW_MEM_MB)
+        const envOverride = Number(process.env.THYROX_CODE_BG_LOW_MEM_MB)
         const thresholdMb =
           platform === 'darwin'
             ? Number.isFinite(envOverride)
@@ -482,7 +482,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         ptySocket: (d.ptySocket as string) ?? '',
         rvSocket: d.rvSocket as string | undefined,
         cmd: (d.cmd as string[]) ?? [],
-        cliVersion: (d.cliVersion as string) ?? process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: (d.cliVersion as string) ?? process.env.THYROX_CODE_VERSION ?? 'dev',
         dispatch: d as Record<string, unknown>,
       })
       state.workers.set(short, vm)
@@ -643,7 +643,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         env: process.env,
         ptySocket: oldRecord.ptySocket ?? '',
         cmd: oldRecord.cmd,
-        cliVersion: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: process.env.THYROX_CODE_VERSION ?? 'dev',
       })
       // Lleva el contador incrementado para que un 2do estancamiento en
       // este worker respawneado salga por la ruta EGAVEUP de arriba.
@@ -679,7 +679,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         env: process.env,
         ptySocket: oldRecord.ptySocket ?? '',
         cmd: oldRecord.cmd,
-        cliVersion: process.env.CLAUDE_CODE_VERSION ?? 'dev',
+        cliVersion: process.env.THYROX_CODE_VERSION ?? 'dev',
       })
       state.workers.set(short, fresh)
       fresh.spawn()

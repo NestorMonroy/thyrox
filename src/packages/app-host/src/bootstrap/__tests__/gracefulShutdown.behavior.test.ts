@@ -159,10 +159,10 @@ describe('gracefulShutdown — source pins', () => {
       expect(mouseIdx).toBeLessThan(altIdx)
     })
 
-    test('CLAUDE_CODE_DISABLE_TERMINAL_TITLE → skip clearing title', () => {
+    test('THYROX_CODE_DISABLE_TERMINAL_TITLE → skip clearing title', () => {
       // Pin: if user disabled title changes, don't clear it on exit.
       expect(source).toMatch(
-        /if \(!isEnvTruthy\(process\.env\.CLAUDE_CODE_DISABLE_TERMINAL_TITLE\)\)/,
+        /if \(!isEnvTruthy\(process\.env\.THYROX_CODE_DISABLE_TERMINAL_TITLE\)\)/,
       )
     })
 

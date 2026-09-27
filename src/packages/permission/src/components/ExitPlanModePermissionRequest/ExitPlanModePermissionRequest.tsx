@@ -539,7 +539,7 @@ export function ExitPlanModePermissionRequest({
       // contexto y de la consulta nueva. Añadir la instrucción de
       // verificación si la funcionalidad está habilitada.
       // Eliminación de código muerto: en las builds externas
-      // CLAUDE_CODE_VERIFY_PLAN vale 'false', así que la comparación
+      // THYROX_CODE_VERIFY_PLAN vale 'false', así que la comparación
       // === 'true' le permite a Bun eliminar la cadena.
       const verificationInstruction =
         undefined === 'true'

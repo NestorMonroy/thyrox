@@ -70,7 +70,7 @@ export function spawnPtyHost(opts: {
   // binds to push authoritative state/done/heartbeat to the daemon
   // supervisor (ant 4291.js server ← 5016.js naK client). Sits alongside
   // pty.sock in the flat per-job dir; the inner REPL reads
-  // CLAUDE_BG_RENDEZVOUS_SOCK to know where to bind. See
+  // THYROX_BG_RENDEZVOUS_SOCK to know where to bind. See
   // daemon/socketPaths.ts getRendezvousSocketPath.
   const rendezvousSocketPath = join(opts.jobDir, 'rv.sock')
 
@@ -132,21 +132,21 @@ export function spawnPtyHost(opts: {
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    CLAUDE_CODE_SESSION_KIND: 'bg',
-    CLAUDE_CODE_BG_JOB_SHORT: opts.short,
+    THYROX_CODE_SESSION_KIND: 'bg',
+    THYROX_CODE_BG_JOB_SHORT: opts.short,
     FORCE_COLOR: '3',
     COLORTERM: 'truecolor',
     BROWSER: 'true',
-    CLAUDE_JOB_DIR: opts.jobDir,
+    THYROX_JOB_DIR: opts.jobDir,
     CLAUDE_BG_BACKEND: 'pty',
     // Rendezvous control socket the inner REPL binds (ant eaK sets the same
-    // CLAUDE_BG_RENDEZVOUS_SOCK env). The bg REPL's useBgRendezvousServer
+    // THYROX_BG_RENDEZVOUS_SOCK env). The bg REPL's useBgRendezvousServer
     // hook reads this to start the out-of-band control channel; absent it,
     // the worker degrades to the legacy disk-poll path.
-    CLAUDE_BG_RENDEZVOUS_SOCK: rendezvousSocketPath,
-    CLAUDE_BG_SOURCE: 'cli',
+    THYROX_BG_RENDEZVOUS_SOCK: rendezvousSocketPath,
+    THYROX_BG_SOURCE: 'cli',
     CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
-    CLAUDE_CODE_SESSION_NAME: opts.short,
+    THYROX_CODE_SESSION_NAME: opts.short,
     // Spare-pool marker: an EXPLICIT spare flag (ant `i1O` mode "spare"),
     // not inferred from an empty directive. Read by useSpareReadyMarker
     // (writes spare-ready.flag) + useBgFleetStateSync (skips its own

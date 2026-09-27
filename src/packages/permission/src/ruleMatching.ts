@@ -20,7 +20,7 @@
  *   (`n0`: Bash, PowerShell, Agent, REPL y herramientas de MCP). Este
  *   compilador sólo lee reglas de `Read` y `Edit`, que ese filtro nunca
  *   retira, así que omitirlo no cambia ningún veredicto. La variante
- *   `CLAUDE_CODE_EVAL_CONFINED`, que sí cambia el resultado (el permiso se
+ *   `THYROX_CODE_EVAL_CONFINED`, que sí cambia el resultado (el permiso se
  *   reduce a `cliArg`), está portada.
  * - La resolución del prefijo de un gemelo físico usa
  *   `resolveDeepestExistingAncestorSync` de `@thyrox/storage`; el `uI` del
@@ -384,7 +384,7 @@ function physicalTwinOf(root: string, pattern: string): string | null {
 function rulesForBehavior(context: ToolPermissionContext, behavior: PermissionBehavior): PermissionRule[] {
   switch (behavior) {
     case 'allow':
-      return process.env.CLAUDE_CODE_EVAL_CONFINED
+      return process.env.THYROX_CODE_EVAL_CONFINED
         ? getAllowRules({ ...context, alwaysAllowRules: { cliArg: context.alwaysAllowRules.cliArg } })
         : getAllowRules(context)
     case 'deny':
@@ -431,7 +431,7 @@ export function compileRuleMatchers(
           platform(),
           homedir(),
           getConfigHomeDirDeferred(),
-          process.env.CLAUDE_CODE_EVAL_CONFINED ?? '',
+          process.env.THYROX_CODE_EVAL_CONFINED ?? '',
           getOriginalCwdDeferred(),
         ].join('\x00')
       : null

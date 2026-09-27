@@ -91,7 +91,7 @@ export const HEARTBEAT_POLL_MS = 5_000
 export const STALLED_THRESHOLD_MS = 120_000
 
 function getJobsRoot(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
+  const root = process.env.THYROX_CONFIG_HOME
   return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
 }
 

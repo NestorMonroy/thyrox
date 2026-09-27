@@ -276,7 +276,7 @@ async function downloadVersionFromArtifactory(
 const DEFAULT_STALL_TIMEOUT_MS = 60000 // 60 segundos
 function getStallTimeoutMs(): number {
   return (
-    Number(process.env.CLAUDE_CODE_STALL_TIMEOUT_MS_FOR_TESTING) ||
+    Number(process.env.THYROX_CODE_STALL_TIMEOUT_MS_FOR_TESTING) ||
     DEFAULT_STALL_TIMEOUT_MS
   )
 }

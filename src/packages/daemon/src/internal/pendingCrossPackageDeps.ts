@@ -126,7 +126,7 @@ const STATE_FILE = 'state.json'
 
 /** Fiel a `ccnmt: fleetStore.ts:38-41` (ant `b0()`). */
 function getJobsRoot(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
+  const root = process.env.THYROX_CONFIG_HOME
   return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
 }
 
@@ -405,7 +405,7 @@ export function errorMessage(e: unknown): string {
  * esta forma portada todavía — y es un subsistema con estado real, spawnea
  * un proceso PTY-host — a diferencia de `ptyFrame.ts`, que sí se portó
  * entero por ser puro). Sólo lo usa el scheduler de pre-calentamiento del
- * spare pool (gate `CLAUDE_CODE_BG_SPARE_POOL=1`, default OFF). Default:
+ * spare pool (gate `THYROX_CODE_BG_SPARE_POOL=1`, default OFF). Default:
  * lanza, así el `catch` que ya envuelve la llamada en `bgDaemon.ts` absorbe
  * el fallo y sólo emite la telemetría `tengu_bg_spare_claim_fail`
  * `reason: 'prewarm-spawn-failed'` — el daemon sigue funcionando sin

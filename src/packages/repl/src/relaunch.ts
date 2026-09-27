@@ -171,7 +171,7 @@ export async function relaunchCli(options: RelaunchOptions = {}): Promise<void> 
   options.preSpawn?.()
 
   const env: Record<string, string | undefined> = { ...process.env }
-  delete env.CLAUDE_CODE_TUI_JUST_SWITCHED
+  delete env.THYROX_CODE_TUI_JUST_SWITCHED
   if (options.env) {
     for (const [k, v] of Object.entries(options.env)) env[k] = v
   }

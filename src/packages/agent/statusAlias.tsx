@@ -372,7 +372,7 @@ export function buildAPIProviderProperties(): Property[] {
       value: getAWSRegion(),
     })
 
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_BEDROCK_AUTH'))) {
+    if (isEnvTruthy(readEnv('THYROX_CODE_SKIP_BEDROCK_AUTH'))) {
       properties.push({
         value: 'AWS auth skipped',
       })
@@ -399,7 +399,7 @@ export function buildAPIProviderProperties(): Property[] {
       value: getDefaultVertexRegion(),
     })
 
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_VERTEX_AUTH'))) {
+    if (isEnvTruthy(readEnv('THYROX_CODE_SKIP_VERTEX_AUTH'))) {
       properties.push({
         value: 'GCP auth skipped',
       })
@@ -421,7 +421,7 @@ export function buildAPIProviderProperties(): Property[] {
       })
     }
 
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_SKIP_FOUNDRY_AUTH'))) {
+    if (isEnvTruthy(readEnv('THYROX_CODE_SKIP_FOUNDRY_AUTH'))) {
       properties.push({
         value: 'Microsoft Foundry auth skipped',
       })
@@ -457,17 +457,17 @@ export function buildAPIProviderProperties(): Property[] {
     })
   }
   if (mtlsConfig) {
-    if (mtlsConfig.cert && readEnv('CLAUDE_CODE_CLIENT_CERT')) {
+    if (mtlsConfig.cert && readEnv('THYROX_CODE_CLIENT_CERT')) {
       properties.push({
         label: 'mTLS client cert',
-        value: readEnv('CLAUDE_CODE_CLIENT_CERT'),
+        value: readEnv('THYROX_CODE_CLIENT_CERT'),
       })
     }
 
-    if (mtlsConfig.key && readEnv('CLAUDE_CODE_CLIENT_KEY')) {
+    if (mtlsConfig.key && readEnv('THYROX_CODE_CLIENT_KEY')) {
       properties.push({
         label: 'mTLS client key',
-        value: readEnv('CLAUDE_CODE_CLIENT_KEY'),
+        value: readEnv('THYROX_CODE_CLIENT_KEY'),
       })
     }
   }

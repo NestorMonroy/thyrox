@@ -61,7 +61,7 @@ const noopDebugSink: DebugSink = () => {}
 // Estado a nivel de módulo — decidido una vez al cargar, igual que la
 // fuente. `resetProfilerStateForTests` lo re-evalúa para tests.
 // eslint-disable-next-line custom-rules/no-process-env-top-level
-let DETAILED_PROFILING = isEnvTruthy(process.env.CLAUDE_CODE_PROFILE_STARTUP)
+let DETAILED_PROFILING = isEnvTruthy(process.env.THYROX_CODE_PROFILE_STARTUP)
 
 const STATSIG_SAMPLE_RATE = 0.005
 // eslint-disable-next-line custom-rules/no-process-env-top-level
@@ -157,7 +157,7 @@ export function profileReport(options: ProfileReportOptions): void {
   // Log a Statsig (muestreado: 100% ant, 0.5% externo)
   logStartupPerf(options.telemetrySink ?? noopTelemetrySink)
 
-  // Reporte detallado si CLAUDE_CODE_PROFILE_STARTUP=1
+  // Reporte detallado si THYROX_CODE_PROFILE_STARTUP=1
   if (DETAILED_PROFILING) {
     const debugSink = options.debugSink ?? noopDebugSink
     const path = getStartupPerfLogPath(options.sessionId)
@@ -220,7 +220,7 @@ export function logStartupPerf(telemetrySink: TelemetrySink = noopTelemetrySink)
  */
 export function resetProfilerStateForTests(): void {
   // eslint-disable-next-line custom-rules/no-process-env-top-level
-  DETAILED_PROFILING = isEnvTruthy(process.env.CLAUDE_CODE_PROFILE_STARTUP)
+  DETAILED_PROFILING = isEnvTruthy(process.env.THYROX_CODE_PROFILE_STARTUP)
   // Sin el sorteo aleatorio de la fuente (Math.random() < STATSIG_SAMPLE_RATE):
   // un reset determinista no puede depender de un dado de 0.5%.
   STATSIG_LOGGING_SAMPLED = process.env.USER_TYPE === 'ant'

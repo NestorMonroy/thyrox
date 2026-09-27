@@ -112,7 +112,7 @@ describe('refreshOAuthToken — clientId + expiresIn signature pins', () => {
     })
   })
 
-  describe('headless env-var login (CLAUDE_CODE_OAUTH_REFRESH_TOKEN path)', () => {
+  describe('headless env-var login (THYROX_CODE_OAUTH_REFRESH_TOKEN path)', () => {
     const cliSource = readFileSync(
       resolve(__dirname, '..', '..', '..', 'cli', 'src', 'handlers', 'auth.ts'),
       'utf-8',
@@ -133,16 +133,16 @@ describe('refreshOAuthToken — clientId + expiresIn signature pins', () => {
       )
     })
 
-    test('passes clientId: process.env.CLAUDE_CODE_OAUTH_CLIENT_ID || undefined', () => {
+    test('passes clientId: process.env.THYROX_CODE_OAUTH_CLIENT_ID || undefined', () => {
       // Pin: matches ant 3508.js exactly.
       expect(cliSource).toMatch(
-        /clientId: process\.env\.CLAUDE_CODE_OAUTH_CLIENT_ID \|\| undefined/,
+        /clientId: process\.env\.THYROX_CODE_OAUTH_CLIENT_ID \|\| undefined/,
       )
     })
 
     test('comment references ant 3508.js port reasoning', () => {
       expect(cliSource).toMatch(
-        /Port of ant v2\.1\.136 \(3508\.js\)[\s\S]{0,300}?CLAUDE_CODE_OAUTH_CLIENT_ID/,
+        /Port of ant v2\.1\.136 \(3508\.js\)[\s\S]{0,300}?THYROX_CODE_OAUTH_CLIENT_ID/,
       )
     })
   })

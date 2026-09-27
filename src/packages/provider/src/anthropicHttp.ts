@@ -2,7 +2,7 @@
  * `AnthropicHttpProvider` (T-011…T-014): el adaptador real.
  *
  * **Sin ejercitar contra el servicio.** Este contenedor no tiene credencial de
- * modelo — `ANTHROPIC_API_KEY` ausente, `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST=1`,
+ * modelo — `ANTHROPIC_API_KEY` ausente, `THYROX_CODE_PROVIDER_MANAGED_BY_HOST=1`,
  * y el proxy no inyecta auth para `api.anthropic.com` (401 medido). Lo que sí
  * está probado es su **contrato**: qué envía, qué lee y qué hace cuando el
  * servicio falla, inyectando `fetch`, que es su única dependencia externa.

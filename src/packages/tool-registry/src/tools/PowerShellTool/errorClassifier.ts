@@ -104,12 +104,12 @@ export function classifyPowerShellError(stderr: string): PowerShellErrorClass {
 
 /**
  * Pwsh parse subprocess timeout — port of ant `co5` (3999.js).
- * Reads `CLAUDE_CODE_PWSH_PARSE_TIMEOUT_MS` env, falls back to 5000ms.
+ * Reads `THYROX_CODE_PWSH_PARSE_TIMEOUT_MS` env, falls back to 5000ms.
  * Used by callers that spawn pwsh just to parse a script AST (not
  * execute), so timeout discipline is independent of the run path.
  */
 export function getPwshParseTimeoutMs(): number {
-  const v = readEnv('CLAUDE_CODE_PWSH_PARSE_TIMEOUT_MS')
+  const v = readEnv('THYROX_CODE_PWSH_PARSE_TIMEOUT_MS')
   if (!v) return 5000
   const n = Number(v)
   return Number.isFinite(n) && n > 0 ? n : 5000

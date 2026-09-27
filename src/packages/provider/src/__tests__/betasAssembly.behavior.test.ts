@@ -69,8 +69,8 @@ describe('betas.ts header assembly (ant ux/SQ_/CQ_)', () => {
     const fnStart = source.indexOf('export function getMergedBetas')
     const fnSlice = source.slice(fnStart, fnStart + 1500)
 
-    test('agentic-query injection skipped when CLAUDE_CODE_20250219 already present', () => {
-      // Pin the de-dup: getAllModelBetas already adds CLAUDE_CODE_20250219
+    test('agentic-query injection skipped when THYROX_CODE_20250219 already present', () => {
+      // Pin the de-dup: getAllModelBetas already adds THYROX_CODE_20250219
       // for non-Haiku; the agentic-query path adds it ONLY when missing,
       // so non-Haiku calls don't get the header twice (server rejects
       // duplicate beta headers).

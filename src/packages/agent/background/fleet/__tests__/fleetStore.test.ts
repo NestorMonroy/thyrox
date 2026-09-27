@@ -2,7 +2,7 @@
  * Fleet-store I/O tests — write a state.json, read it back, mutate
  * sort orders + pin set, verify cache invalidation.
  *
- * Uses CLAUDE_CONFIG_HOME to redirect the jobs root into a tmp dir per
+ * Uses THYROX_CONFIG_HOME to redirect the jobs root into a tmp dir per
  * test so we don't touch the user's real ~/.claude.
  */
 
@@ -52,17 +52,17 @@ function mockState(overrides: Partial<FleetJobState> = {}): FleetJobState {
 
 beforeEach(async () => {
   tmpRoot = await fs.mkdtemp(join(tmpdir(), 'ccb-fleet-test-'))
-  process.env.CLAUDE_CONFIG_HOME = tmpRoot
+  process.env.THYROX_CONFIG_HOME = tmpRoot
   clearAllCaches()
 })
 
 afterEach(async () => {
-  delete process.env.CLAUDE_CONFIG_HOME
+  delete process.env.THYROX_CONFIG_HOME
   await fs.rm(tmpRoot, { recursive: true, force: true })
 })
 
 describe('fleetStore', () => {
-  test('getJobsRoot honours CLAUDE_CONFIG_HOME', () => {
+  test('getJobsRoot honours THYROX_CONFIG_HOME', () => {
     expect(getJobsRoot()).toBe(join(tmpRoot, 'jobs'))
   })
 

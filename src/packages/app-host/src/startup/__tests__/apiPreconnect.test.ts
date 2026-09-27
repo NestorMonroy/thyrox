@@ -2,16 +2,16 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { preconnectAnthropicApi, resetPreconnectStateForTests } from '../apiPreconnect.js'
 
 const ENV_KEYS = [
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
+  'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_USE_VERTEX',
+  'THYROX_CODE_USE_FOUNDRY',
   'HTTPS_PROXY',
   'https_proxy',
   'HTTP_PROXY',
   'http_proxy',
   'ANTHROPIC_UNIX_SOCKET',
-  'CLAUDE_CODE_CLIENT_CERT',
-  'CLAUDE_CODE_CLIENT_KEY',
+  'THYROX_CODE_CLIENT_CERT',
+  'THYROX_CODE_CLIENT_KEY',
   'ANTHROPIC_BASE_URL',
 ] as const
 
@@ -65,7 +65,7 @@ describe('preconnectAnthropicApi', () => {
   })
 
   test('con proveedor Bedrock: no llama a fetch (endpoint distinto)', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     let llamado = false
     globalThis.fetch = mock(() => {
       llamado = true

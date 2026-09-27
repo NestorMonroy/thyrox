@@ -7,7 +7,7 @@
  * is spawned in the same cwd, with its meta.json persisted under
  * ~/.claude/jobs/<short>/.
  *
- * If we're already inside a bg session (CLAUDE_CODE_SESSION_KIND=bg),
+ * If we're already inside a bg session (THYROX_CODE_SESSION_KIND=bg),
  * fall through to gracefulShutdown without spawning anything — this
  * mirrors ant Tf3 line 254 (`if (E7()) ...g7H()...`).
  *

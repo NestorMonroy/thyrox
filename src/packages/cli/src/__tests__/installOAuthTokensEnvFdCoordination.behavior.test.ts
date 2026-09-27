@@ -7,9 +7,9 @@ import { resolve } from 'path'
  * Pin the post-storage env var + FD-token coordination dance that ant
  * NZH (3508.js) does after SxH (storage write):
  *
- *   if (process.env.CLAUDE_CODE_OAUTH_TOKEN)
- *     if (q.success) delete process.env.CLAUDE_CODE_OAUTH_TOKEN
- *     else process.env.CLAUDE_CODE_OAUTH_TOKEN = H.accessToken
+ *   if (process.env.THYROX_CODE_OAUTH_TOKEN)
+ *     if (q.success) delete process.env.THYROX_CODE_OAUTH_TOKEN
+ *     else process.env.THYROX_CODE_OAUTH_TOKEN = H.accessToken
  *   if (BsH()) A_H(q.success ? null : H.accessToken)
  *
  * Two failure modes if missing:
@@ -49,7 +49,7 @@ describe('installOAuthTokens env var + FD coordination (ant NZH)', () => {
   test('post-storage: env var deleted on storage success', () => {
     // Pin: if env was set AND storage succeeded → delete env var.
     expect(fnSlice).toMatch(
-      /if \(process\.env\.CLAUDE_CODE_OAUTH_TOKEN\)[\s\S]{0,300}?if \(storageResult\.success\)[\s\S]{0,200}?delete process\.env\.CLAUDE_CODE_OAUTH_TOKEN/,
+      /if \(process\.env\.THYROX_CODE_OAUTH_TOKEN\)[\s\S]{0,300}?if \(storageResult\.success\)[\s\S]{0,200}?delete process\.env\.THYROX_CODE_OAUTH_TOKEN/,
     )
   })
 
@@ -58,7 +58,7 @@ describe('installOAuthTokens env var + FD coordination (ant NZH)', () => {
     // current process keeps working. Code uses local `tokensView` cast
     // (tokens is OAuthTokens=unknown so direct .accessToken would TS-error).
     expect(fnSlice).toMatch(
-      /process\.env\.CLAUDE_CODE_OAUTH_TOKEN = tokensView\.accessToken/,
+      /process\.env\.THYROX_CODE_OAUTH_TOKEN = tokensView\.accessToken/,
     )
   })
 
@@ -123,11 +123,11 @@ describe('performLogout preserveInProcessTokens flag (ant Xw_)', () => {
   })
 
   test('preserveInProcessTokens=false → wipe env var + null FD token', () => {
-    // Pin: ant: `if (!_) (delete process.env.CLAUDE_CODE_OAUTH_TOKEN, A_H(null))`.
+    // Pin: ant: `if (!_) (delete process.env.THYROX_CODE_OAUTH_TOKEN, A_H(null))`.
     // V7 §8.6 routes env mutation through the canonical `deleteEnv` helper
     // (anti-pattern verifier blocks bare `delete process.env[...]`).
     expect(source).toMatch(
-      /if \(!preserveInProcessTokens\) \{[\s\S]{0,400}?deleteEnv\('CLAUDE_CODE_OAUTH_TOKEN'\)[\s\S]{0,300}?setOauthTokenFromFd\(null\)/,
+      /if \(!preserveInProcessTokens\) \{[\s\S]{0,400}?deleteEnv\('THYROX_CODE_OAUTH_TOKEN'\)[\s\S]{0,300}?setOauthTokenFromFd\(null\)/,
     )
   })
 

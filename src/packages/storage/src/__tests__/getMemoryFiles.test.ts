@@ -45,8 +45,8 @@ mkdirSync(join(sub, 'excluido'))
 // un cwd ya borrado — `git.test.ts` guardaba como «original» un directorio
 // inexistente y sus 14 casos caían al volver a él.
 const cwdBefore = process.cwd()
-const configDirBefore = process.env.CLAUDE_CONFIG_DIR
-process.env.CLAUDE_CONFIG_DIR = home
+const configDirBefore = process.env.THYROX_CONFIG_DIR
+process.env.THYROX_CONFIG_DIR = home
 process.chdir(sub)
 
 // Los settings (y con ellos `claudeMdExcludes`) exigen los bindings de host.
@@ -58,8 +58,8 @@ const { getMemoryFiles, resetGetMemoryFilesCache, clearMemoryFileCaches, getClau
 
 afterAll(() => {
   process.chdir(cwdBefore)
-  if (configDirBefore === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = configDirBefore
+  if (configDirBefore === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = configDirBefore
   rmSync(base, { recursive: true, force: true })
 })
 beforeEach(() => clearMemoryFileCaches())

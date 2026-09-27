@@ -24,7 +24,7 @@ export function getBuiltInAgents(): AgentDefinition[] {
   // Allow disabling all built-in agents via env var (useful for SDK users who want a blank slate)
   // Only applies in noninteractive mode (SDK/API usage)
   if (
-    isEnvTruthy(process.env.CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS) &&
+    isEnvTruthy(process.env.THYROX_AGENT_SDK_DISABLE_BUILTIN_AGENTS) &&
     getIsNonInteractiveSession()
   ) {
     return []
@@ -34,7 +34,7 @@ export function getBuiltInAgents(): AgentDefinition[] {
   // `getCoordinatorAgents`: el binario lo carga de su propio módulo, portado
   // en `built-in/workerAgent.ts`, que sólo importa constantes y no cierra ciclo.
   if (feature('COORDINATOR_MODE')) {
-    if (isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)) {
+    if (isEnvTruthy(process.env.THYROX_CODE_COORDINATOR_MODE)) {
       return getCoordinatorAgents()
     }
   }
@@ -50,9 +50,9 @@ export function getBuiltInAgents(): AgentDefinition[] {
 
   // Include Code Guide agent for non-SDK entrypoints
   const isNonSdkEntrypoint =
-    process.env.CLAUDE_CODE_ENTRYPOINT !== 'sdk-ts' &&
-    process.env.CLAUDE_CODE_ENTRYPOINT !== 'sdk-py' &&
-    process.env.CLAUDE_CODE_ENTRYPOINT !== 'sdk-cli'
+    process.env.THYROX_CODE_ENTRYPOINT !== 'sdk-ts' &&
+    process.env.THYROX_CODE_ENTRYPOINT !== 'sdk-py' &&
+    process.env.THYROX_CODE_ENTRYPOINT !== 'sdk-cli'
 
   if (isNonSdkEntrypoint) {
     agents.push(CLAUDE_CODE_GUIDE_AGENT)

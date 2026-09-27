@@ -52,9 +52,9 @@ export function getAPIProvider(): APIProvider {
   })()
 
   if (hasConnections) {
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) return 'bedrock'
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY'))) return 'foundry'
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) return 'vertex'
+    if (isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) return 'bedrock'
+    if (isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY'))) return 'foundry'
+    if (isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) return 'vertex'
     return 'firstParty'
   }
 
@@ -63,12 +63,12 @@ export function getAPIProvider(): APIProvider {
   if (modelType === 'gemini') return 'gemini'
   if (modelType === 'codex') return 'codex'
 
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK'))) return 'bedrock'
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY'))) return 'foundry'
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX'))) return 'vertex'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_BEDROCK'))) return 'bedrock'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_FOUNDRY'))) return 'foundry'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_VERTEX'))) return 'vertex'
 
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_OPENAI'))) return 'openai'
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_USE_GEMINI'))) return 'gemini'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_OPENAI'))) return 'openai'
+  if (isEnvTruthy(readEnv('THYROX_CODE_USE_GEMINI'))) return 'gemini'
 
   return 'firstParty'
 }

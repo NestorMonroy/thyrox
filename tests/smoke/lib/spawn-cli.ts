@@ -7,7 +7,7 @@
  * stubs. The point is catching silent failures that pass every static
  * check but break under real wiring (e.g. ralph-loop hook bug).
  *
- * Tests don't hit the real Anthropic API. We set CLAUDE_CODE_USE_OPENAI
+ * Tests don't hit the real Anthropic API. We set THYROX_CODE_USE_OPENAI
  * pointing at a local stub server, OR set up a stub provider via env vars
  * (per-test setup).
  */
@@ -46,7 +46,7 @@ export async function spawnCli(opts: SpawnOptions = {}): Promise<SpawnResult> {
     // Force a deterministic CI-like environment.
     NO_COLOR: '1',
     FORCE_COLOR: '0',
-    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
+    THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
     ...opts.env,
   } as NodeJS.ProcessEnv
 

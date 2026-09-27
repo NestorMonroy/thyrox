@@ -33,7 +33,7 @@ describe('slash command popup e2e', () => {
       if (
         msg.includes('Config accessed before allowed') ||
         msg.includes('ANTHROPIC_API_KEY') ||
-        msg.includes('CLAUDE_CODE_OAUTH_TOKEN')
+        msg.includes('THYROX_CODE_OAUTH_TOKEN')
       ) {
         return
       }

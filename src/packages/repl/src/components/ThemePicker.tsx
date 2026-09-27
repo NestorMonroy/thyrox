@@ -183,7 +183,7 @@ export function ThemePicker({
           {syntaxHighlightingDisabled
             ? `Syntax highlighting disabled (${syntaxToggleShortcut} to enable)`
             : colorModuleUnavailableReason === 'env'
-              ? `Syntax highlighting unavailable (via CLAUDE_CODE_SYNTAX_HIGHLIGHT=${process.env.CLAUDE_CODE_SYNTAX_HIGHLIGHT})`
+              ? `Syntax highlighting unavailable (via THYROX_CODE_SYNTAX_HIGHLIGHT=${process.env.THYROX_CODE_SYNTAX_HIGHLIGHT})`
               : syntaxTheme
                 ? `Syntax theme: ${syntaxTheme.theme}${syntaxTheme.source ? ` (from ${syntaxTheme.source})` : ''} (${syntaxToggleShortcut} to disable)`
                 : `Syntax highlighting enabled (${syntaxToggleShortcut} to disable)`}

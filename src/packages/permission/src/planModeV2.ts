@@ -19,7 +19,7 @@
  * 2. La consulta de la suscripción se envuelve. En la fuente
  *    `getPlanModeV2AgentCount` llama a `getSubscriptionType()` sin proteger, y
  *    esa función LANZA cuando no hay credenciales declaradas —medido:
- *    `ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required`—. El
+ *    `ANTHROPIC_API_KEY or THYROX_CODE_OAUTH_TOKEN env var is required`—. El
  *    efecto es que un parámetro de planificación derriba la sesión entera por
  *    una credencial ausente, cuando lo que corresponde es su default: un
  *    agente. No es cosmético — es la diferencia entre degradar y caerse.
@@ -66,7 +66,7 @@ function declaredAgentCount(name: string): number | null {
  * alto y para los de organización, uno para el resto.
  */
 export function getPlanModeV2AgentCount(): number {
-  const declared = declaredAgentCount('CLAUDE_CODE_PLAN_V2_AGENT_COUNT')
+  const declared = declaredAgentCount('THYROX_CODE_PLAN_V2_AGENT_COUNT')
   if (declared !== null) return declared
 
   // Sin credenciales declaradas la consulta LANZA. Un parámetro de
@@ -99,7 +99,7 @@ export function getPlanModeV2AgentCount(): number {
  * acotarlo por suscripción dejaría un plan mal informado en vez de más barato.
  */
 export function getPlanModeV2ExploreAgentCount(): number {
-  const declared = declaredAgentCount('CLAUDE_CODE_PLAN_V2_EXPLORE_AGENT_COUNT')
+  const declared = declaredAgentCount('THYROX_CODE_PLAN_V2_EXPLORE_AGENT_COUNT')
   if (declared !== null) return declared
   return 3
 }
@@ -113,7 +113,7 @@ export function getPlanModeV2ExploreAgentCount(): number {
  * habría forma de apagarlo contra una bandera encendida.
  */
 export function isPlanModeInterviewPhaseEnabled(): boolean {
-  const env = readEnv('CLAUDE_CODE_PLAN_MODE_INTERVIEW_PHASE')
+  const env = readEnv('THYROX_CODE_PLAN_MODE_INTERVIEW_PHASE')
   if (isEnvTruthy(env)) return true
   if (isEnvDefinedFalsy(env)) return false
 

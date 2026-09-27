@@ -94,7 +94,7 @@ export function filterAllowedSdkBetas(
  * model should opt into the `mid-conversation-system-2026-04-07` beta.
  *
  * Activation order:
- *   1. env `CLAUDE_CODE_MID_CONVERSATION_SYSTEM` — value is matched as a
+ *   1. env `THYROX_CODE_MID_CONVERSATION_SYSTEM` — value is matched as a
  *      substring of the model id. Useful for local pinning.
  *   2. GrowthBook flag `tengu_fennel_kite_model` — same substring semantics.
  *      ant's cache-aware lookup is collapsed into a single getFeatureValue
@@ -109,7 +109,7 @@ export function isMidConversationSystemEnabled(model: string): boolean {
 
   const canonical = getCanonicalName(model)
 
-  const envValue = readEnv('CLAUDE_CODE_MID_CONVERSATION_SYSTEM')
+  const envValue = readEnv('THYROX_CODE_MID_CONVERSATION_SYSTEM')
   if (envValue && canonical.includes(envValue)) return true
 
   const flagValue = getFeatureValue_CACHED_MAY_BE_STALE<string>(
@@ -230,14 +230,14 @@ export function getToolSearchBetaHeader(): string {
 export function shouldIncludeFirstPartyOnlyBetas(): boolean {
   return (
     (getAPIProvider() === 'firstParty' || getAPIProvider() === 'foundry') &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS'))
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS'))
   )
 }
 
 export function shouldUseGlobalCacheScope(): boolean {
   return (
     getAPIProvider() === 'firstParty' &&
-    !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS'))
+    !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS'))
   )
 }
 
@@ -251,7 +251,7 @@ export const getAllModelBetas = memoize((model: string): string[] => {
     betaHeaders.push(CLAUDE_CODE_20250219_BETA_HEADER)
     if (
       process.env.USER_TYPE === 'ant' &&
-      readEnv('CLAUDE_CODE_ENTRYPOINT') === 'cli'
+      readEnv('THYROX_CODE_ENTRYPOINT') === 'cli'
     ) {
       if (CLI_INTERNAL_BETA_HEADER) {
         betaHeaders.push(CLI_INTERNAL_BETA_HEADER)
@@ -396,7 +396,7 @@ export function getMergedBetas(
     }
     if (
       process.env.USER_TYPE === 'ant' &&
-      readEnv('CLAUDE_CODE_ENTRYPOINT') === 'cli' &&
+      readEnv('THYROX_CODE_ENTRYPOINT') === 'cli' &&
       CLI_INTERNAL_BETA_HEADER &&
       !baseBetas.includes(CLI_INTERNAL_BETA_HEADER)
     ) {

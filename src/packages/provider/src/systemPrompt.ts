@@ -62,7 +62,7 @@ export function buildEffectiveSystemPrompt({
   // Lazy require through shim to avoid circular dependency at module load time.
   if (
     feature('COORDINATOR_MODE') &&
-    isEnvTruthy(readEnv('CLAUDE_CODE_COORDINATOR_MODE')) &&
+    isEnvTruthy(readEnv('THYROX_CODE_COORDINATOR_MODE')) &&
     !mainThreadAgentDefinition
   ) {
     const { getCoordinatorSystemPrompt } =

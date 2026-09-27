@@ -37,7 +37,7 @@
  * Import cruzado: la enorme mayoría de los símbolos foráneos de este
  * archivo (`checkGate_CACHED_OR_BLOCKING`, `logEvent`, `logEventAsync`,
  * `shutdownEventLoggers`, `isInBundledMode`, `logForDebugging`,
- * `logForDiagnosticsNoPII`, `isEnvTruthy`, `isInProtectedNamespace`,
+ * `logForDiagnosticsNoPII`, `isInProtectedNamespace`,
  * `errorMessage`, `truncateToWidth`, `logError`, `sleep`,
  * `createAgentWorktree`, `removeAgentWorktree`, `installSwarmHost`,
  * `getRemoteSessionUrl`, `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`,
@@ -63,7 +63,6 @@ import {
   getRemoteSessionUrl,
   initSinks,
   installSwarmHost,
-  isEnvTruthy,
   isInBundledMode,
   isInProtectedNamespace,
   logError,
@@ -1023,7 +1022,7 @@ export async function runBridgeLoop(
           // antes de que el flag del servidor esté prendido).
           if (
             secret.use_code_sessions === true ||
-            isEnvTruthy(process.env.CLAUDE_BRIDGE_USE_CCR_V2)
+            isBridgeCcrV2Forced()
           ) {
             sdkUrl = buildCCRv2SdkUrl(config.apiBaseUrl, sessionId)
             // Reintenta una vez ante fallo transitorio (blip de red,
@@ -2242,11 +2241,7 @@ export async function runBridgeHeadless(
       'Remote Control base URL uses HTTP. Only HTTPS or localhost HTTP is allowed.',
     )
   }
-  const sessionIngressUrl =
-    process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      ? process.env.CLAUDE_BRIDGE_SESSION_INGRESS_URL
-      : baseUrl
+  const sessionIngressUrl = getBridgeSessionIngressUrlOverride() ?? baseUrl
 
   if (opts.spawnMode === 'worktree') {
     const worktreeAvailable =
@@ -2366,7 +2361,11 @@ export async function runBridgeHeadless(
  * porque son de un solo consumidor: sólo runBridgeHeadless los usa,
  * bridgeMain() está bloqueado).
  */
-import { getBridgeBaseUrl as _getBridgeBaseUrl } from './bridgeConfig.js'
+import {
+  getBridgeBaseUrl as _getBridgeBaseUrl,
+  getBridgeSessionIngressUrlOverride,
+  isBridgeCcrV2Forced,
+} from './bridgeConfig.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getBridgeBaseUrlForHeadless(): string {

@@ -99,7 +99,7 @@ export async function installOAuthTokens(tokens: OAuthTokens): Promise<void> {
   // Port of ant NZH (3508.js) which calls
   //   `Xw_({ clearOnboarding: false, preserveInProcessTokens: true })`.
   // The preserve flag matters because installOAuthTokens may be called during
-  // a refresh-token re-login while CLAUDE_CODE_OAUTH_TOKEN env var (or the
+  // a refresh-token re-login while THYROX_CODE_OAUTH_TOKEN env var (or the
   // FD-loaded token) is still the live source — wiping them mid-flow would
   // race against the new tokens being written.
   await performLogout({ clearOnboarding: false, preserveInProcessTokens: true })
@@ -152,9 +152,9 @@ export async function installOAuthTokens(tokens: OAuthTokens): Promise<void> {
   clearOAuthTokenCache()
 
   // Port of ant NZH (3508.js) env-var + FD-token coordination:
-  //   if (process.env.CLAUDE_CODE_OAUTH_TOKEN)
-  //     if (q.success) delete process.env.CLAUDE_CODE_OAUTH_TOKEN
-  //     else process.env.CLAUDE_CODE_OAUTH_TOKEN = H.accessToken
+  //   if (process.env.THYROX_CODE_OAUTH_TOKEN)
+  //     if (q.success) delete process.env.THYROX_CODE_OAUTH_TOKEN
+  //     else process.env.THYROX_CODE_OAUTH_TOKEN = H.accessToken
   //   if (BsH()) A_H(q.success ? null : H.accessToken)
   //
   // Once secure storage holds the token, the env var becomes redundant
@@ -165,11 +165,11 @@ export async function installOAuthTokens(tokens: OAuthTokens): Promise<void> {
   // tokens is typed as `unknown` (OAuthTokens stub); local cast keeps the
   // type errors confined to one site instead of a dozen access lines.
   const tokensView = tokens as { accessToken: string }
-  if (process.env.CLAUDE_CODE_OAUTH_TOKEN) {
+  if (process.env.THYROX_CODE_OAUTH_TOKEN) {
     if (storageResult.success) {
-      delete process.env.CLAUDE_CODE_OAUTH_TOKEN
+      delete process.env.THYROX_CODE_OAUTH_TOKEN
     } else {
-      process.env.CLAUDE_CODE_OAUTH_TOKEN = tokensView.accessToken
+      process.env.THYROX_CODE_OAUTH_TOKEN = tokensView.accessToken
     }
   }
   // Same logic for FD-loaded token: only update if a prior FD token exists.
@@ -241,12 +241,12 @@ export async function authLogin({
 
   // Fast path: if a refresh token is provided via env var, skip the browser
   // OAuth flow and exchange it directly for tokens.
-  const envRefreshToken = process.env.CLAUDE_CODE_OAUTH_REFRESH_TOKEN
+  const envRefreshToken = process.env.THYROX_CODE_OAUTH_REFRESH_TOKEN
   if (envRefreshToken) {
-    const envScopes = process.env.CLAUDE_CODE_OAUTH_SCOPES
+    const envScopes = process.env.THYROX_CODE_OAUTH_SCOPES
     if (!envScopes) {
       process.stderr.write(
-        'CLAUDE_CODE_OAUTH_SCOPES is required when using CLAUDE_CODE_OAUTH_REFRESH_TOKEN.\n' +
+        'THYROX_CODE_OAUTH_SCOPES is required when using THYROX_CODE_OAUTH_REFRESH_TOKEN.\n' +
           'Set it to the space-separated scopes the refresh token was issued with\n' +
           '(e.g. "user:inference" or "user:profile user:inference user:sessions:claude_code user:mcp_servers").\n',
       )
@@ -260,12 +260,12 @@ export async function authLogin({
 
       // Port of ant v2.1.136 (3508.js): the headless refresh-token login
       // requests a LONG-LIVED token (1 year via LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS)
-      // and propagates CLAUDE_CODE_OAUTH_CLIENT_ID through to the refresh
+      // and propagates THYROX_CODE_OAUTH_CLIENT_ID through to the refresh
       // request body so the token stays bound to the env-overridden client.
       const tokens = await refreshOAuthToken(envRefreshToken, {
         scopes,
         expiresIn: LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS,
-        clientId: process.env.CLAUDE_CODE_OAUTH_CLIENT_ID || undefined,
+        clientId: process.env.THYROX_CODE_OAUTH_CLIENT_ID || undefined,
       })
       await installOAuthTokens(tokens)
 

@@ -181,7 +181,7 @@ export function isPlanModeRequired(): boolean {
   if (dynamicTeamContext !== null) {
     return dynamicTeamContext.planModeRequired
   }
-  return isEnvTruthy(process.env.CLAUDE_CODE_PLAN_MODE_REQUIRED)
+  return isEnvTruthy(process.env.THYROX_CODE_PLAN_MODE_REQUIRED)
 }
 
 /**
@@ -190,8 +190,8 @@ export function isPlanModeRequired(): boolean {
  * Una sesión se considera team lead si:
  * 1. Existe un contexto de equipo con `leadAgentId`, Y
  * 2. O bien:
- *    - nuestro `CLAUDE_CODE_AGENT_ID` coincide con `leadAgentId`, O
- *    - no tenemos `CLAUDE_CODE_AGENT_ID` fijado (compatibilidad hacia
+ *    - nuestro `THYROX_CODE_AGENT_ID` coincide con `leadAgentId`, O
+ *    - no tenemos `THYROX_CODE_AGENT_ID` fijado (compatibilidad hacia
  *      atrás: la sesión original que creó el equipo antes de que los
  *      agent IDs se estandarizaran).
  *

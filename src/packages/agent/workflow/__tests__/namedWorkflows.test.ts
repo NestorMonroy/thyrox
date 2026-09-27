@@ -8,7 +8,7 @@ import { join } from 'node:path'
 // workflows by name, and resolves by name.
 //
 // We drive the USER directory through a REAL temp filesystem pointed at by the
-// CLAUDE_CONFIG_DIR env var (getConfigHomeDir reads it, memoized-keyed off
+// THYROX_CONFIG_DIR env var (getConfigHomeDir reads it, memoized-keyed off
 // it). NO module mocks — bun's mock.module is global for the whole run and an fs
 // or config stub leaks into unrelated suites (projectPurge etc.). Project-dir
 // and settings-gate paths need shared-module mocks to drive, so they're covered
@@ -32,12 +32,12 @@ function wf(name: string, body = 'log("hi")'): string {
 
 beforeEach(() => {
   configDir = mkdtempSync(join(tmpdir(), 'wf-cfg-'))
-  prevConfigDir = process.env.CLAUDE_CONFIG_DIR
-  process.env.CLAUDE_CONFIG_DIR = configDir
+  prevConfigDir = process.env.THYROX_CONFIG_DIR
+  process.env.THYROX_CONFIG_DIR = configDir
 })
 afterEach(() => {
-  if (prevConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = prevConfigDir
+  if (prevConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = prevConfigDir
   rmSync(configDir, { recursive: true, force: true })
 })
 

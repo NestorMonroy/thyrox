@@ -1242,11 +1242,11 @@ export function initialPermissionModeFromCLI({
     // settings (p. ej. bypassPermissions concedería acceso total en
     // silencio en un entorno remoto).
     if (
-      isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
+      isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
       !['acceptEdits', 'plan', 'default'].includes(settingsMode)
     ) {
       logForDebugging(
-        `settings defaultMode "${settingsMode}" is not supported in CLAUDE_CODE_REMOTE — only acceptEdits and plan are allowed`,
+        `settings defaultMode "${settingsMode}" is not supported in THYROX_CODE_REMOTE — only acceptEdits and plan are allowed`,
       )
       logEvent('tengu_ccr_unsupported_default_mode_ignored', {
         mode: settingsMode,

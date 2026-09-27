@@ -298,7 +298,7 @@ export function MCPRemoteServerMenu({
         ? 'mcpsrv' + server.config.id.slice(5)
         : server.config.id
       const productSurface = encodeURIComponent(
-        process.env.CLAUDE_CODE_ENTRYPOINT || 'cli',
+        process.env.THYROX_CODE_ENTRYPOINT || 'cli',
       )
       authUrl = `${claudeAiBaseUrl}/api/organizations/${orgUuid}/mcp/start-auth/${serverId}?product_surface=${productSurface}`
     } else {

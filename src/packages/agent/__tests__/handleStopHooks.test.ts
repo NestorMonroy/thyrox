@@ -128,8 +128,8 @@ const vacio = (ctx: AgentToolUseContext, fuente = 'repl_main_thread') =>
 
 describe('handleStopHooks', () => {
   beforeEach(() => {
-    delete process.env.CLAUDE_CODE_SIMPLE
-    delete process.env.CLAUDE_JOB_DIR
+    delete process.env.THYROX_CODE_SIMPLE
+    delete process.env.THYROX_JOB_DIR
   })
 
   test('1. PREGUNTA por los hooks — no se limita a terminar limpio', async () => {
@@ -226,7 +226,7 @@ describe('handleStopHooks', () => {
     await drenar(vacio(contexto()))
     expect(normal.map(l => l.nombre)).toContain('executePromptSuggestion')
 
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.THYROX_CODE_SIMPLE = '1'
     const bare: Llamada[] = []
     installAgentHostBindings(bindings(bare) as never)
     await drenar(vacio(contexto()))

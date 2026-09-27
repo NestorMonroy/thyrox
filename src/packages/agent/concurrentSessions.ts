@@ -31,7 +31,7 @@ function getSessionsDir(): string {
  */
 function envSessionKind(): SessionKind | undefined {
   if (feature('BG_SESSIONS')) {
-    const k = readEnv('CLAUDE_CODE_SESSION_KIND')
+    const k = readEnv('THYROX_CODE_SESSION_KIND')
     if (k === 'bg' || k === 'daemon' || k === 'daemon-worker') return k
   }
   return undefined
@@ -83,15 +83,15 @@ export async function registerSession(): Promise<boolean> {
         cwd: getOriginalCwd(),
         startedAt: Date.now(),
         kind,
-        entrypoint: readEnv('CLAUDE_CODE_ENTRYPOINT'),
+        entrypoint: readEnv('THYROX_CODE_ENTRYPOINT'),
         ...(feature('UDS_INBOX')
-          ? { messagingSocketPath: readEnv('CLAUDE_CODE_MESSAGING_SOCKET') }
+          ? { messagingSocketPath: readEnv('THYROX_CODE_MESSAGING_SOCKET') }
           : {}),
         ...(feature('BG_SESSIONS')
           ? {
-              name: readEnv('CLAUDE_CODE_SESSION_NAME'),
-              logPath: readEnv('CLAUDE_CODE_SESSION_LOG'),
-              agent: readEnv('CLAUDE_CODE_AGENT'),
+              name: readEnv('THYROX_CODE_SESSION_NAME'),
+              logPath: readEnv('THYROX_CODE_SESSION_LOG'),
+              agent: readEnv('THYROX_CODE_AGENT'),
             }
           : {}),
       }),
@@ -195,7 +195,7 @@ export async function countConcurrentSessions(): Promise<number> {
     } else if (getPlatform() !== 'wsl') {
       // Stale file from a crashed session — sweep it. Skip on WSL: if
       // ~/.claude/sessions/ is shared with Windows-native thyrox (symlink
-      // or CLAUDE_CONFIG_DIR), a Windows PID won't be probeable from WSL
+      // or THYROX_CONFIG_DIR), a Windows PID won't be probeable from WSL
       // and we'd falsely delete a live session's file. This is just
       // telemetry so conservative undercount is acceptable.
       void unlink(join(dir, file)).catch(() => {})

@@ -111,7 +111,7 @@ const getScheduleWakeupTool = () =>
     : null
 
 const getVerifyPlanExecutionTool = () =>
-  process.env.CLAUDE_CODE_VERIFY_PLAN === 'true'
+  process.env.THYROX_CODE_VERIFY_PLAN === 'true'
     ? require('../../VerifyPlanExecutionTool/VerifyPlanExecutionTool.js').VerifyPlanExecutionTool as Tool
     : null
 

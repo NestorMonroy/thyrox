@@ -128,7 +128,7 @@ async function bgDaemonTailLog(): Promise<void> {
   const logPath = join(homedir(), '.claude', 'telemetry', `events-${today}.jsonl`)
   if (!existsSync(logPath)) {
     console.error(`bg daemon log: no events file at ${logPath}`)
-    console.error(`(set CLAUDE_CODE_LOCAL_TELEMETRY=1 + restart daemon to populate)`)
+    console.error(`(set THYROX_CODE_LOCAL_TELEMETRY=1 + restart daemon to populate)`)
     process.exitCode = 1
     return
   }
@@ -384,7 +384,7 @@ function spawnWorker(
     DAEMON_WORKER_PERMISSION: config.permissionMode,
     DAEMON_WORKER_SANDBOX: config.sandbox || '0',
     DAEMON_WORKER_CREATE_SESSION: '1',
-    CLAUDE_CODE_SESSION_KIND: 'daemon-worker',
+    THYROX_CODE_SESSION_KIND: 'daemon-worker',
   }
 
   // Build the worker command: reuse the same entrypoint with --daemon-worker flag

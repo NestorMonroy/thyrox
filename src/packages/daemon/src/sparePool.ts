@@ -10,7 +10,7 @@
  * flight): spawns a spare with `--bg-pty -- bg` template + placeholder
  * sessionId, marks `EKH = { jobId, sessionId, cwd, ready: false }`.
  *
- * Gate: CLAUDE_CODE_BG_SPARE_POOL=1 (default OFF — saves user's idle
+ * Gate: THYROX_CODE_BG_SPARE_POOL=1 (default OFF — saves user's idle
  * resources unless they opt in).
  *
  * @dynamicRequire

@@ -52,7 +52,7 @@ export function getCLISyspromptPrefix(options?: {
 /**
  * Port of ant v2.1.150 `T2()` (resolved in 5452.js / 5166.js / 5072.js etc.
  * as the `anthropic-client-platform` request header value). Maps the
- * `CLAUDE_CODE_ENTRYPOINT` env var to a coarse platform identifier sent on
+ * `THYROX_CODE_ENTRYPOINT` env var to a coarse platform identifier sent on
  * every first-party request so server analytics can split traffic by
  * surface (CLI vs VS Code vs SDK vs MCP vs remote …).
  *
@@ -60,7 +60,7 @@ export function getCLISyspromptPrefix(options?: {
  * `claude_code_cli` (ant's `case "cli": default:`).
  */
 export function getClientPlatform(): string {
-  switch (readEnv('CLAUDE_CODE_ENTRYPOINT')) {
+  switch (readEnv('THYROX_CODE_ENTRYPOINT')) {
     case 'claude-vscode':
       return 'claude_code_vscode'
     case 'remote':
@@ -91,7 +91,7 @@ export function getClientPlatform(): string {
  * Enabled by default, can be disabled via env var or GrowthBook killswitch.
  */
 function isAttributionHeaderEnabled(): boolean {
-  if (isEnvDefinedFalsy(readEnv('CLAUDE_CODE_ATTRIBUTION_HEADER'))) {
+  if (isEnvDefinedFalsy(readEnv('THYROX_CODE_ATTRIBUTION_HEADER'))) {
     return false
   }
   return getFeatureValue_CACHED_MAY_BE_STALE('tengu_attribution_header', true)
@@ -117,7 +117,7 @@ export function getAttributionHeader(fingerprint: string): string {
   }
 
   const version = `${MACRO.VERSION}.${fingerprint}`
-  const entrypoint = readEnv('CLAUDE_CODE_ENTRYPOINT') ?? 'unknown'
+  const entrypoint = readEnv('THYROX_CODE_ENTRYPOINT') ?? 'unknown'
 
   // cch=00000 placeholder is overwritten by Bun's HTTP stack with attestation token
   const cch = feature('NATIVE_CLIENT_ATTESTATION') ? ' cch=00000;' : ''

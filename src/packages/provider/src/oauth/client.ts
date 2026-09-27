@@ -446,7 +446,7 @@ export async function fetchProfileInfo(accessToken: string): Promise<{
  * → fetch en vivo del perfil (requiere scope `user:profile`).
  */
 export async function getOrganizationUUID(): Promise<string | null> {
-  const envOrgUUID = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
+  const envOrgUUID = readEnv('THYROX_CODE_ORGANIZATION_UUID')
   if (envOrgUUID) return envOrgUUID
 
   const globalConfig = getGlobalConfig()
@@ -465,9 +465,9 @@ export async function getOrganizationUUID(): Promise<string | null> {
 
 /** Puebla la info de cuenta OAuth si no está ya cacheada en config. */
 export async function populateOAuthAccountInfoIfNeeded(): Promise<boolean> {
-  const envAccountUuid = readEnv('CLAUDE_CODE_ACCOUNT_UUID')
-  const envUserEmail = readEnv('CLAUDE_CODE_USER_EMAIL')
-  const envOrganizationUuid = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')
+  const envAccountUuid = readEnv('THYROX_CODE_ACCOUNT_UUID')
+  const envUserEmail = readEnv('THYROX_CODE_USER_EMAIL')
+  const envOrganizationUuid = readEnv('THYROX_CODE_ORGANIZATION_UUID')
   const hasEnvVars = Boolean(envAccountUuid && envUserEmail && envOrganizationUuid)
   if (envAccountUuid && envUserEmail && envOrganizationUuid) {
     if (!getGlobalConfig().oauthAccount) {

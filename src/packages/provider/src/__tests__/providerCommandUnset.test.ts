@@ -1,6 +1,6 @@
 /**
  * `/provider unset` borra las variables de proveedor del entorno, como la
- * fuente (`delete process.env.CLAUDE_CODE_USE_*`). El porte las había vuelto
+ * fuente (`delete process.env.THYROX_CODE_USE_*`). El porte las había vuelto
  * `delete readEnv(...)`, que borra un valor y no la variable: un no-op.
  */
 import { afterAll, afterEach, describe, expect, mock, test } from 'bun:test'
@@ -27,11 +27,11 @@ mock.module('@thyrox/config/settings', () => ({
 const { default: provider } = await import('../commands/provider.js')
 
 const NAMES = [
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
+  'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_USE_VERTEX',
+  'THYROX_CODE_USE_FOUNDRY',
+  'THYROX_CODE_USE_OPENAI',
+  'THYROX_CODE_USE_GEMINI',
 ]
 
 afterEach(() => {

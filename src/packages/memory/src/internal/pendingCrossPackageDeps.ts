@@ -27,7 +27,7 @@
  *   sustituto es FIEL para el subconjunto de flags que `memory` realmente
  *   lee (`tengu_moth_copse`, `tengu_bramble_lintel`, `tengu_passport_quail`,
  *   `tengu_herring_clock`, `tengu_coral_fern`, `tengu_slate_thimble`):
- *   mismo mecanismo de override (`CLAUDE_CODE_FEATURE_OVERRIDES`, JSON) y la
+ *   mismo mecanismo de override (`THYROX_CODE_FEATURE_OVERRIDES`, JSON) y la
  *   misma tabla `LOCAL_GATE_DEFAULTS` recortada a esas seis claves —
  *   verbatim contra `config/feature-flags.ts:88,97` (`tengu_passport_quail:
  *   true`, `tengu_coral_fern: true`; las otras cuatro NO están en la tabla
@@ -111,7 +111,7 @@ const configOverrides = new Map<string, FeatureValue>()
 function parseEnvOverrides(): Record<string, FeatureValue> {
   if (envOverridesParsed) return envOverrides
   envOverridesParsed = true
-  const raw = process.env.CLAUDE_CODE_FEATURE_OVERRIDES
+  const raw = process.env.THYROX_CODE_FEATURE_OVERRIDES
   if (!raw) {
     envOverrides = {}
     return envOverrides

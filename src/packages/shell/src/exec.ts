@@ -138,7 +138,7 @@ export async function exec(
 
   // Sandbox temp directory - use per-user directory name to prevent multi-user permission conflicts
   const sandboxTmpDir = posixJoin(
-    process.env.CLAUDE_CODE_TMPDIR || '/tmp',
+    process.env.THYROX_CODE_TMPDIR || '/tmp',
     _getSandboxTmpDirNameFn?.() ?? 'claude-code',
   )
 
@@ -254,7 +254,7 @@ export async function exec(
         GIT_EDITOR: 'true',
         CLAUDECODE: '1',
         ...envOverrides,
-        CLAUDE_CODE_SESSION_ID: ctx.getSessionId(),
+        THYROX_CODE_SESSION_ID: ctx.getSessionId(),
         // extraEnv last so caller-provided values win over both subprocessEnv
         // and provider overrides — mirrors ant's `extraEnv` semantics.
         ...(extraEnv ?? {}),

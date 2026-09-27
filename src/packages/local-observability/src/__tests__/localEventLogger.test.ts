@@ -16,28 +16,28 @@ const noOpLogger = {
 }
 afterEach(() => {
   installLocalObservability({ logger: noOpLogger })
-  delete process.env.CLAUDE_CODE_LOCAL_TELEMETRY
+  delete process.env.THYROX_CODE_LOCAL_TELEMETRY
 })
 
 describe('isLocalTelemetryEnabled', () => {
   test('devuelve false cuando la env no está fijada', () => {
-    delete process.env.CLAUDE_CODE_LOCAL_TELEMETRY
+    delete process.env.THYROX_CODE_LOCAL_TELEMETRY
     expect(isLocalTelemetryEnabled()).toBe(false)
   })
   test('devuelve true para "1"', () => {
-    process.env.CLAUDE_CODE_LOCAL_TELEMETRY = '1'
+    process.env.THYROX_CODE_LOCAL_TELEMETRY = '1'
     expect(isLocalTelemetryEnabled()).toBe(true)
   })
   test('devuelve true para "true"', () => {
-    process.env.CLAUDE_CODE_LOCAL_TELEMETRY = 'true'
+    process.env.THYROX_CODE_LOCAL_TELEMETRY = 'true'
     expect(isLocalTelemetryEnabled()).toBe(true)
   })
   test('devuelve false para cadena vacía', () => {
-    process.env.CLAUDE_CODE_LOCAL_TELEMETRY = ''
+    process.env.THYROX_CODE_LOCAL_TELEMETRY = ''
     expect(isLocalTelemetryEnabled()).toBe(false)
   })
   test('devuelve false para "0"', () => {
-    process.env.CLAUDE_CODE_LOCAL_TELEMETRY = '0'
+    process.env.THYROX_CODE_LOCAL_TELEMETRY = '0'
     expect(isLocalTelemetryEnabled()).toBe(false)
   })
 })

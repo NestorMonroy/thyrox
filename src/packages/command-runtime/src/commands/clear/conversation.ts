@@ -65,7 +65,7 @@ export async function clearConversation({
   setConversationId?: (id: UUID) => void
 }): Promise<void> {
   // Execute SessionEnd hooks before clearing (bounded by
-  // CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS, default 1.5s)
+  // THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS, default 1.5s)
   const sessionEndTimeoutMs = getSessionEndHookTimeoutMs()
   await executeSessionEndHooks('clear', {
     getAppState,
@@ -203,8 +203,8 @@ export async function clearConversation({
   // Set the old session as parent for analytics lineage tracking
   regenerateSessionId({ setCurrentAsParent: true })
   // Update the environment variable so subprocesses use the new session ID
-  if (readEnv('USER_TYPE') === 'ant' && readEnv('CLAUDE_CODE_SESSION_ID')) {
-    process.env.CLAUDE_CODE_SESSION_ID = getSessionId()
+  if (readEnv('USER_TYPE') === 'ant' && readEnv('THYROX_CODE_SESSION_ID')) {
+    process.env.THYROX_CODE_SESSION_ID = getSessionId()
   }
   await resetSessionFilePointer()
 

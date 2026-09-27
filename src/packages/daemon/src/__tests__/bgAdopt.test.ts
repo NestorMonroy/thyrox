@@ -11,16 +11,16 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-bgadopt-test-'))
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
+const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_HOME = ISOLATED_HOME
 })
 afterAll(() => {
   if (ORIGINAL_CONFIG_HOME === undefined) {
-    delete process.env.CLAUDE_CONFIG_HOME
+    delete process.env.THYROX_CONFIG_HOME
   } else {
-    process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+    process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
   }
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })

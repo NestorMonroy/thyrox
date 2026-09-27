@@ -118,7 +118,7 @@ const wrappedRender = async (
   // write overwrites scrollback instead of appending below the logo.
   await Promise.resolve()
   const instance = renderSync(withTheme(node), options)
-  if (process.env.CLAUDE_CODE_DEBUG_REPAINTS === '1') {
+  if (process.env.THYROX_CODE_DEBUG_REPAINTS === '1') {
     console.warn(
       `[render] first ink render: ${Math.round(process.uptime() * 1000)}ms since process start`,
     )

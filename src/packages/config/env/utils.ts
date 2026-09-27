@@ -97,7 +97,7 @@ export function hasNodeOption(flag: string): boolean {
 }
 
 /**
- * `--bare` / `CLAUDE_CODE_SIMPLE`: el modo que salta la contabilidad de
+ * `--bare` / `THYROX_CODE_SIMPLE`: el modo que salta la contabilidad de
  * fondo (sugerencia de prompt, extracción de memoria, auto-dream). Las dos
  * vías gobiernan alcances distintos y no son intercambiables: la variable
  * de entorno gobierna el proceso entero; el flag de línea de comandos,
@@ -105,7 +105,7 @@ export function hasNodeOption(flag: string): boolean {
  */
 export function isBareMode(): boolean {
   return (
-    isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) ||
+    isEnvTruthy(process.env.THYROX_CODE_SIMPLE) ||
     process.argv.includes('--bare')
   )
 }
@@ -150,9 +150,9 @@ export function getDefaultVertexRegion(): string {
 }
 
 /** ¿Debe un comando bash restaurar el directorio de trabajo del proyecto
- * después de cada invocación? Gobernado por `CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR`. */
+ * después de cada invocación? Gobernado por `THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR`. */
 export function shouldMaintainProjectWorkingDir(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR)
+  return isEnvTruthy(process.env.THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR)
 }
 
 /** ¿Corre esto en Homespace (el entorno cloud interno de Anthropic)? Exige

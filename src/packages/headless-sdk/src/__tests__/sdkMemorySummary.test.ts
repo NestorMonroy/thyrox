@@ -55,22 +55,22 @@ installLocalObservability({
 
 const mod = await import('../sdkMemorySummary.ts')
 
-const ORIG_ENTRYPOINT = process.env.CLAUDE_CODE_ENTRYPOINT
-const ORIG_SIMPLE = process.env.CLAUDE_CODE_SIMPLE
+const ORIG_ENTRYPOINT = process.env.THYROX_CODE_ENTRYPOINT
+const ORIG_SIMPLE = process.env.THYROX_CODE_SIMPLE
 
 beforeEach(() => {
   events.length = 0
   mod._resetSdkMemorySummaryForTesting()
-  process.env.CLAUDE_CODE_ENTRYPOINT = 'sdk-cli'
-  delete process.env.CLAUDE_CODE_SIMPLE
+  process.env.THYROX_CODE_ENTRYPOINT = 'sdk-cli'
+  delete process.env.THYROX_CODE_SIMPLE
 })
 
 afterEach(() => {
   if (ORIG_ENTRYPOINT === undefined)
-    delete process.env.CLAUDE_CODE_ENTRYPOINT
-  else process.env.CLAUDE_CODE_ENTRYPOINT = ORIG_ENTRYPOINT
-  if (ORIG_SIMPLE === undefined) delete process.env.CLAUDE_CODE_SIMPLE
-  else process.env.CLAUDE_CODE_SIMPLE = ORIG_SIMPLE
+    delete process.env.THYROX_CODE_ENTRYPOINT
+  else process.env.THYROX_CODE_ENTRYPOINT = ORIG_ENTRYPOINT
+  if (ORIG_SIMPLE === undefined) delete process.env.THYROX_CODE_SIMPLE
+  else process.env.THYROX_CODE_SIMPLE = ORIG_SIMPLE
 })
 
 function captureEmit(): EventPayload | undefined {
@@ -246,7 +246,7 @@ describe('registerMemoryAttribute / unregisterMemoryAttribute (ant xH8/uH8)', ()
 
 describe('trackChildProcess / markChildProcessDead (ant Cc_/vP9)', () => {
   test('non-SDK entrypoint never registers a child', () => {
-    process.env.CLAUDE_CODE_ENTRYPOINT = 'cli'
+    process.env.THYROX_CODE_ENTRYPOINT = 'cli'
     mod.trackChildProcess('bash_shell', 1234)
     mod.recordRssSample()
     let captured: (() => void) | null = null
@@ -259,7 +259,7 @@ describe('trackChildProcess / markChildProcessDead (ant Cc_/vP9)', () => {
   })
 
   test('simple mode never registers a child', () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+    process.env.THYROX_CODE_SIMPLE = '1'
     mod.trackChildProcess('bash_shell', 1234)
     mod.recordRssSample()
     let captured: (() => void) | null = null

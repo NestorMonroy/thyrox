@@ -7,7 +7,7 @@
  * (:1064).
  *
  * El plan se lee con `@thyrox/storage/plans.js` real, sobre un
- * `CLAUDE_CONFIG_DIR` temporal: el directorio del usuario no se toca. Antes se
+ * `THYROX_CONFIG_DIR` temporal: el directorio del usuario no se toca. Antes se
  * sustituía el módulo con `mock.module`, y en Bun ese sustituto vive el resto
  * del proceso, así que `plans.test.ts` corrido después en el mismo lote
  * recibía el falso y fallaba. El resto —agrupación por ronda, estimación de
@@ -132,19 +132,19 @@ describe('truncateHeadForPTLRetry', () => {
 })
 
 describe('createPlanAttachmentIfNeeded', () => {
-  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const originalConfigDir = process.env.THYROX_CONFIG_DIR
   let configDir = ''
 
   beforeEach(async () => {
     configDir = await mkdtemp(join(tmpdir(), 'compact-plan-'))
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.THYROX_CONFIG_DIR = configDir
     setInitialSettingsForTest({})
     clearAllPlanSlugs()
   })
 
   afterEach(async () => {
-    if (originalConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+    if (originalConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
+    else process.env.THYROX_CONFIG_DIR = originalConfigDir
     clearAllPlanSlugs()
     await rm(configDir, { recursive: true, force: true })
   })

@@ -74,7 +74,7 @@ import { getManagedFilePath } from './managedPath.js'
  *   para medirlos directamente.
  * - `buildSkillPromptText` extrae de `getPromptForCommand` el ensamblado del
  *   prompt (prefijo del directorio base, argumentos, `${CLAUDE_SKILL_DIR}`,
- *   `${CLAUDE_SESSION_ID}`); la ejecución de shell y la guarda MCP quedan en
+ *   `${THYROX_SESSION_ID}`); la ejecución de shell y la guarda MCP quedan en
  *   el método. Forma distinta, misma conducta, medible sin `ToolUseContext`.
  * - La memoización de `getSkillDirCommands` es un `Map` por `cwd` (la fuente
  *   usa `lodash-es/memoize`, que este paquete no declara). Igual que aquélla
@@ -104,7 +104,7 @@ import { getManagedFilePath } from './managedPath.js'
  *   Porte fiel salvo la memoización: sin `lodash-es/memoize` disponible
  *   (0 dependencias en el `package.json` de este paquete), se sustituye
  *   por una memoización manual keyed por el propio valor de
- *   `CLAUDE_CONFIG_DIR`, igual que hace la fuente con su resolver.
+ *   `THYROX_CONFIG_DIR`, igual que hace la fuente con su resolver.
  *
  * - `roughTokenCountEstimation` — de `@claude-code-how-works/agent/tokenEstimation.js`.
  *   Ese símbolo SÍ existe portado en `@thyrox/agent/tokenEstimation.ts`,
@@ -121,12 +121,12 @@ import { getManagedFilePath } from './managedPath.js'
  * HALLAZGO CORREGIDO EN ESTE PASE (H-COMMAND-RUNTIME-01): la memoización
  * manual de `getConfigHomeDir` comparaba `cachedHomeDirKey !== key`
  * contra un `cachedHomeDirKey` inicializado en `undefined`. Con
- * `CLAUDE_CONFIG_DIR` sin declarar (el caso por defecto), `key` TAMBIÉN es
+ * `THYROX_CONFIG_DIR` sin declarar (el caso por defecto), `key` TAMBIÉN es
  * `undefined` en la primera llamada, así que la comparación daba `false` —
  * la caché nunca se poblaba y la función devolvía `undefined`, que `join()`
  * rechaza con `TypeError: The "paths[0]" property must be of type string,
  * got undefined`. Invisible en la suite existente: `skillHelpers.test.ts`
- * fija `CLAUDE_CONFIG_DIR` en su `beforeAll` ANTES de la primera llamada,
+ * fija `THYROX_CONFIG_DIR` en su `beforeAll` ANTES de la primera llamada,
  * así que `key` nunca es `undefined` ahí — el caso real (entorno sin la
  * variable) no tenía cobertura. Se destapó al abrir la puerta de CLI de la
  * tarea #223 e invocar `skills-path userSettings skills` sobre el entorno
@@ -397,7 +397,7 @@ export type LoadedFrom =
 /**
  * El texto del prompt ANTES de ejecutar los bloques de shell: prefijo del
  * directorio base, sustitución de argumentos y de `${CLAUDE_SKILL_DIR}` /
- * `${CLAUDE_SESSION_ID}`. En la fuente vive en línea dentro de
+ * `${THYROX_SESSION_ID}`. En la fuente vive en línea dentro de
  * `getPromptForCommand`; se extrae para poder medirlo sin construir un
  * `ToolUseContext` completo (divergencia de forma, no de conducta).
  */
@@ -427,8 +427,8 @@ export function buildSkillPromptText({
     finalContent = finalContent.replace(/\$\{CLAUDE_SKILL_DIR\}/g, skillDir)
   }
 
-  // Replace ${CLAUDE_SESSION_ID} with the current session ID
-  return finalContent.replace(/\$\{CLAUDE_SESSION_ID\}/g, getSessionId())
+  // Replace ${THYROX_SESSION_ID} with the current session ID
+  return finalContent.replace(/\$\{THYROX_SESSION_ID\}/g, getSessionId())
 }
 
 /**
@@ -870,7 +870,7 @@ async function loadSkillDirCommands(cwd: string): Promise<Command[]> {
     additionalSkillsNested,
     legacyCommands,
   ] = await Promise.all([
-    isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_POLICY_SKILLS)
+    isEnvTruthy(process.env.THYROX_CODE_DISABLE_POLICY_SKILLS)
       ? Promise.resolve([])
       : loadSkillsFromSkillsDir(managedSkillsDir, 'policySettings'),
     isSettingSourceEnabled('userSettings') && !skillsLocked

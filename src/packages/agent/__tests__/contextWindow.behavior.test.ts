@@ -14,7 +14,7 @@ import { resolve } from 'path'
  *   - 1M when model doesn't support it: API rejects with 400 "context
  *     limit exceeded" once the input crosses 200K.
  *
- * CLAUDE_CODE_DISABLE_1M_CONTEXT=1 is the HIPAA-path escape hatch (forces
+ * THYROX_CODE_DISABLE_1M_CONTEXT=1 is the HIPAA-path escape hatch (forces
  * 200K) — must be honored everywhere has1m / modelSupports1M is consulted.
  */
 describe('1M-context detection (vs ant model gate)', () => {
@@ -23,7 +23,7 @@ describe('1M-context detection (vs ant model gate)', () => {
     'utf-8',
   )
 
-  test('CLAUDE_CODE_DISABLE_1M_CONTEXT short-circuits has1mContext to false', () => {
+  test('THYROX_CODE_DISABLE_1M_CONTEXT short-circuits has1mContext to false', () => {
     expect(source).toMatch(
       /export function has1mContext\(model: string\): boolean \{[\s\S]*?if\s*\(is1mContextDisabled\(\)\)\s*\{?\s*\n?\s*return false/,
     )
@@ -47,12 +47,12 @@ describe('1M-context detection (vs ant model gate)', () => {
     expect(fnBody).not.toMatch(/haiku/i)
   })
 
-  test('getContextWindowForModel: ant CLAUDE_CODE_MAX_CONTEXT_TOKENS env override comes FIRST', () => {
+  test('getContextWindowForModel: ant THYROX_CODE_MAX_CONTEXT_TOKENS env override comes FIRST', () => {
     // Order matters — if [1m] check ran first, env-override couldn't shrink
     // the window for testing. Pin the order.
     const fnStart = source.indexOf('export function getContextWindowForModel')
     const fnSlice = source.slice(fnStart, fnStart + 2000)
-    const envOverrideIdx = fnSlice.indexOf("readEnv('CLAUDE_CODE_MAX_CONTEXT_TOKENS')")
+    const envOverrideIdx = fnSlice.indexOf("readEnv('THYROX_CODE_MAX_CONTEXT_TOKENS')")
     const has1mIdx = fnSlice.indexOf('has1mContext(model)')
     expect(envOverrideIdx).toBeGreaterThan(0)
     expect(envOverrideIdx).toBeLessThan(has1mIdx)

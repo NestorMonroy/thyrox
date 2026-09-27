@@ -165,8 +165,8 @@ export async function connectVoiceStream(
   }
 
   const forwardInterimsTyped =
-    process.env.CLAUDE_CODE_VOICE_FORWARD_INTERIMS_TYPED === '1' ||
-    process.env.CLAUDE_CODE_VOICE_FORWARD_INTERIMS_TYPED === 'true' ||
+    process.env.THYROX_CODE_VOICE_FORWARD_INTERIMS_TYPED === '1' ||
+    process.env.THYROX_CODE_VOICE_FORWARD_INTERIMS_TYPED === 'true' ||
     getFeatureValue_CACHED_MAY_BE_STALE('tengu_brick_follow', false)
   if (forwardInterimsTyped) {
     params.set('forward_interims', 'typed')

@@ -72,7 +72,7 @@ import { TaskOutput } from '../TaskOutput.js'
  *
  * Métrica: comportamiento observable por la superficie pública de la clase
  * (constructor, escrituras, getters, `getStdout`/`getStderr`, el callback de
- * progreso) contra archivos reales bajo un `CLAUDE_CODE_TMPDIR` propio.
+ * progreso) contra archivos reales bajo un `THYROX_CODE_TMPDIR` propio.
  * Ciega a: el estado estático privado (`#registry`, `#activePolling`,
  * `#pollInterval`) salvo por su efecto en el callback; a la retención de
  * memoria que `Buffer.from(line).toString()` evita, que no tiene superficie
@@ -81,7 +81,7 @@ import { TaskOutput } from '../TaskOutput.js'
  */
 
 let tmpBase: string
-const ORIGINAL_TMPDIR = process.env.CLAUDE_CODE_TMPDIR
+const ORIGINAL_TMPDIR = process.env.THYROX_CODE_TMPDIR
 const ORIGINAL_MAX_OUTPUT = process.env.BASH_MAX_OUTPUT_LENGTH
 
 /** Las instancias vivas del caso, para que `afterEach` las desmonte. */
@@ -94,7 +94,7 @@ function track(instance: TaskOutput): TaskOutput {
 
 beforeEach(async () => {
   tmpBase = await mkdtemp(join(tmpdir(), 'task-output-'))
-  process.env.CLAUDE_CODE_TMPDIR = tmpBase
+  process.env.THYROX_CODE_TMPDIR = tmpBase
   _resetTaskOutputDirForTest()
   live = []
 })
@@ -116,8 +116,8 @@ afterEach(async () => {
   live = []
   await rm(tmpBase, { recursive: true, force: true })
   _resetTaskOutputDirForTest()
-  if (ORIGINAL_TMPDIR === undefined) delete process.env.CLAUDE_CODE_TMPDIR
-  else process.env.CLAUDE_CODE_TMPDIR = ORIGINAL_TMPDIR
+  if (ORIGINAL_TMPDIR === undefined) delete process.env.THYROX_CODE_TMPDIR
+  else process.env.THYROX_CODE_TMPDIR = ORIGINAL_TMPDIR
   if (ORIGINAL_MAX_OUTPUT === undefined) delete process.env.BASH_MAX_OUTPUT_LENGTH
   else process.env.BASH_MAX_OUTPUT_LENGTH = ORIGINAL_MAX_OUTPUT
 })

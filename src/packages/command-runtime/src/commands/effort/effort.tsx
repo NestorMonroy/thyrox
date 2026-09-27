@@ -37,9 +37,9 @@ function setEffortValue(effortValue: EffortValue): EffortCommandResult {
   // the same, so "Set effort to X" is true and the note is noise.
   const envOverride = getEffortEnvOverride()
   if (envOverride !== undefined && envOverride !== effortValue) {
-    const envRaw = readEnv('CLAUDE_CODE_EFFORT_LEVEL')
+    const envRaw = readEnv('THYROX_CODE_EFFORT_LEVEL')
     return {
-      message: `CLAUDE_CODE_EFFORT_LEVEL=${envRaw} overrides this session — clear it and ${effortValue} takes over`,
+      message: `THYROX_CODE_EFFORT_LEVEL=${envRaw} overrides this session — clear it and ${effortValue} takes over`,
       effortUpdate: { value: effortValue },
     }
   }
@@ -101,9 +101,9 @@ function unsetEffortLevel(): EffortCommandResult {
   // when env is pinning a specific level that will keep overriding.
   const envOverride = getEffortEnvOverride()
   if (envOverride !== undefined && envOverride !== null) {
-    const envRaw = readEnv('CLAUDE_CODE_EFFORT_LEVEL')
+    const envRaw = readEnv('THYROX_CODE_EFFORT_LEVEL')
     return {
-      message: `Cleared session effort, but CLAUDE_CODE_EFFORT_LEVEL=${envRaw} still controls this session`,
+      message: `Cleared session effort, but THYROX_CODE_EFFORT_LEVEL=${envRaw} still controls this session`,
       effortUpdate: { value: undefined },
     }
   }

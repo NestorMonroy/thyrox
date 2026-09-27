@@ -743,8 +743,8 @@ export async function detectIDEs(
   const detectedIDEs: DetectedIDEInfo[] = []
 
   try {
-    // Obtiene CLAUDE_CODE_SSE_PORT, si está fijado.
-    const ssePort = process.env.CLAUDE_CODE_SSE_PORT
+    // Obtiene THYROX_CODE_SSE_PORT, si está fijado.
+    const ssePort = process.env.THYROX_CODE_SSE_PORT
     const envPort = ssePort ? parseInt(ssePort, 10) : null
 
     // Obtiene el directorio de trabajo actual, normalizado a NFC para
@@ -772,7 +772,7 @@ export async function detectIDEs(
       if (!lockfileInfo) continue
 
       let isValid = false
-      if (isEnvTruthy(process.env.CLAUDE_CODE_IDE_SKIP_VALID_CHECK)) {
+      if (isEnvTruthy(process.env.THYROX_CODE_IDE_SKIP_VALID_CHECK)) {
         isValid = true
       } else if (lockfileInfo.port === envPort) {
         // Si el puerto coincide con la variable de entorno, se marca como válido sin importar el directorio.
@@ -1400,7 +1400,7 @@ export async function initializeIdeIntegration(
 
   const shouldAutoInstall = getGlobalConfig().autoInstallIdeExtension ?? true
   if (
-    !isEnvTruthy(process.env.CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL) &&
+    !isEnvTruthy(process.env.THYROX_CODE_IDE_SKIP_AUTO_INSTALL) &&
     shouldAutoInstall
   ) {
     const ideType = ideToInstallExtension ?? getTerminalIdeType()
@@ -1457,8 +1457,8 @@ const detectHostIP = memoize(
   async (isIdeRunningInWindows: boolean, port: number) => {
     const { getPlatform } = requireConfigPlatform()
 
-    if (process.env.CLAUDE_CODE_IDE_HOST_OVERRIDE) {
-      return process.env.CLAUDE_CODE_IDE_HOST_OVERRIDE
+    if (process.env.THYROX_CODE_IDE_HOST_OVERRIDE) {
+      return process.env.THYROX_CODE_IDE_HOST_OVERRIDE
     }
 
     if (getPlatform() !== 'wsl' || !isIdeRunningInWindows) {

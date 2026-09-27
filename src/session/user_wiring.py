@@ -479,7 +479,9 @@ def _bases() -> dict:
     """Las raices de los tres prefijos; `None` cuando el entorno no la declara."""
     return {
         "home": os.path.expanduser("~"),
+        # thyrox-rename: keep — marcador de los settings del anfitrión
         "project": os.environ.get("CLAUDE_PROJECT_DIR"),
+        # thyrox-rename: keep — marcador de los settings del anfitrión
         "plugin": os.environ.get("CLAUDE_PLUGIN_ROOT"),
     }
 

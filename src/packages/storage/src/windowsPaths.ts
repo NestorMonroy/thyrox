@@ -111,12 +111,12 @@ export function setShellIfWindows(): void {
  * but PowerShell hooks and non-shell tools keep working).
  */
 export const findGitBashPath = memoize((): string | null => {
-  if (process.env.CLAUDE_CODE_GIT_BASH_PATH) {
-    if (checkPathExists(process.env.CLAUDE_CODE_GIT_BASH_PATH)) {
-      return process.env.CLAUDE_CODE_GIT_BASH_PATH
+  if (process.env.THYROX_CODE_GIT_BASH_PATH) {
+    if (checkPathExists(process.env.THYROX_CODE_GIT_BASH_PATH)) {
+      return process.env.THYROX_CODE_GIT_BASH_PATH
     }
     console.error(
-      `${PRODUCT_NAME} was unable to find CLAUDE_CODE_GIT_BASH_PATH path "${process.env.CLAUDE_CODE_GIT_BASH_PATH}"`,
+      `${PRODUCT_NAME} was unable to find THYROX_CODE_GIT_BASH_PATH path "${process.env.THYROX_CODE_GIT_BASH_PATH}"`,
     )
     return null
   }

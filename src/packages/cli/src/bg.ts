@@ -96,9 +96,9 @@ interface JobMeta {
 const JOB_SHORT_LENGTH = 8
 
 function getJobsRoot(): string {
-  // CLAUDE_CONFIG_HOME env override mirrors the rest of the CLI's
+  // THYROX_CONFIG_HOME env override mirrors the rest of the CLI's
   // config-dir convention; default to ~/.claude.
-  const root = process.env.CLAUDE_CONFIG_HOME
+  const root = process.env.THYROX_CONFIG_HOME
   return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
 }
 
@@ -543,21 +543,21 @@ export async function spawnBgJob(opts: {
   const fullCmd = [cmd, ...nodeArgs]
 
   // Marker env (parity with ant 4706.js xXK):
-  // - CLAUDE_CODE_SESSION_KIND/CLAUDE_CODE_BG_JOB_SHORT: read by
+  // - THYROX_CODE_SESSION_KIND/THYROX_CODE_BG_JOB_SHORT: read by
   //   concurrentSessions.isBgSession() and by ps reconciliation.
   // - FORCE_COLOR/COLORTERM/BROWSER: child stdio is wired to a file fd
   //   (non-TTY), so chalk would strip colors and any "open in browser"
   //   path would try to spawn a browser. Force colors on, browser off.
-  // - CLAUDE_JOB_DIR: ant compat marker recording the job's on-disk
+  // - THYROX_JOB_DIR: ant compat marker recording the job's on-disk
   //   directory so future tooling can find it without re-deriving.
   // ant 4706.js xXK env. BG_BACKEND='detached' (ant 'daemon') = daemon-less.
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    CLAUDE_CODE_SESSION_KIND: 'bg', CLAUDE_CODE_BG_JOB_SHORT: short,
+    THYROX_CODE_SESSION_KIND: 'bg', THYROX_CODE_BG_JOB_SHORT: short,
     FORCE_COLOR: '3', COLORTERM: 'truecolor', BROWSER: 'true',
-    CLAUDE_JOB_DIR: jobDir, CLAUDE_BG_BACKEND: 'detached',
-    CLAUDE_BG_SOURCE: 'cli', CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
-    CLAUDE_CODE_SESSION_NAME: short,
+    THYROX_JOB_DIR: jobDir, CLAUDE_BG_BACKEND: 'detached',
+    THYROX_BG_SOURCE: 'cli', CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
+    THYROX_CODE_SESSION_NAME: short,
   }
 
   const spawnOpts: SpawnOptions = {

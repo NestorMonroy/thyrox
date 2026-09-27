@@ -5,7 +5,7 @@
  *
  * Two write paths:
  *   - The current foreground session: rename via the in-process job
- *     dir (CLAUDE_JOB_DIR env or short(8) of session id).
+ *     dir (THYROX_JOB_DIR env or short(8) of session id).
  *   - A peer (background) session: write directly to that session's
  *     state.json.
  *
@@ -20,7 +20,7 @@ import type { FleetNameSource } from './fleetTypes.js'
 
 function getCurrentJobDir(currentSessionId: string, requestedSessionId: string): string {
   if (currentSessionId === requestedSessionId) {
-    const envDir = readEnv('CLAUDE_JOB_DIR')
+    const envDir = readEnv('THYROX_JOB_DIR')
     if (envDir !== undefined) return envDir
     return getJobDir(currentSessionId.slice(0, 8))
   }

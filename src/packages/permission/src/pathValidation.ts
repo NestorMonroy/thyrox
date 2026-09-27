@@ -279,7 +279,7 @@ function originalCwdForValidation(): string {
 
 /** Las grafías resueltas de un directorio de trabajo (≙ `qge`). */
 function workingDirSpellings(dir: string): string[] {
-  return process.env.CLAUDE_CODE_EVAL_CONFINED && dir === originalCwdForValidation()
+  return process.env.THYROX_CODE_EVAL_CONFINED && dir === originalCwdForValidation()
     ? [dir]
     : getPathsForPermissionCheck(dir)
 }

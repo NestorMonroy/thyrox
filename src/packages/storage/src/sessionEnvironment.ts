@@ -113,23 +113,23 @@ export async function getSessionEnvironmentScript(): Promise<string | null> {
 
   const scripts: string[] = []
 
-  // Revisa CLAUDE_ENV_FILE pasado desde el proceso padre (p. ej. el
+  // Revisa THYROX_ENV_FILE pasado desde el proceso padre (p. ej. el
   // corredor de trayectorias HFI). Esto permite que la activación de
   // venv/conda persista entre comandos de shell.
-  const envFile = readEnv('CLAUDE_ENV_FILE')
+  const envFile = readEnv('THYROX_ENV_FILE')
   if (envFile) {
     try {
       const envScript = (await readFile(envFile, 'utf8')).trim()
       if (envScript) {
         scripts.push(envScript)
         logForDebugging(
-          `Session environment loaded from CLAUDE_ENV_FILE: ${envFile} (${envScript.length} chars)`,
+          `Session environment loaded from THYROX_ENV_FILE: ${envFile} (${envScript.length} chars)`,
         )
       }
     } catch (e: unknown) {
       const code = getErrnoCode(e)
       if (code !== 'ENOENT') {
-        logForDebugging(`Failed to read CLAUDE_ENV_FILE: ${errorMessage(e)}`)
+        logForDebugging(`Failed to read THYROX_ENV_FILE: ${errorMessage(e)}`)
       }
     }
   }

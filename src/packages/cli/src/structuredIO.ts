@@ -352,7 +352,7 @@ export class StructuredIO {
       if (message.type === 'update_environment_variables') {
         // Apply environment variable updates directly to process.env.
         // Used by bridge session runner for auth token refresh
-        // (CLAUDE_CODE_SESSION_ACCESS_TOKEN) which must be readable
+        // (THYROX_CODE_SESSION_ACCESS_TOKEN) which must be readable
         // by the REPL process itself, not just child Bash commands.
         const variables = message.variables as Record<string, string>
         const keys = Object.keys(variables)

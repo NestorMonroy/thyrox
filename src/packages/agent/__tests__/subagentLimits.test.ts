@@ -74,10 +74,10 @@ describe('anchura', () => {
 // no gobierna a thyrox, que lee las suyas (`THYROX_CODE_*`), como el TTL de
 // caché en `promptCacheTtl.ts`.
 describe('las variables del cliente no gobiernan', () => {
-  test('CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH no fija la profundidad', () => {
-    expect(maxSubagentSpawnDepth({ CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(5)
+  test('CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH no fija la profundidad', () => { // thyrox-rename: keep — el nombre del anfitrión no gobierna
+    expect(maxSubagentSpawnDepth({ CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH: '1' }, () => 5)).toBe(5) // thyrox-rename: keep — el nombre del anfitrión no gobierna
   })
-  test('CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS no fija la anchura', () => {
-    expect(maxConcurrentSubagents({ CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBe(20)
+  test('CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS no fija la anchura', () => { // thyrox-rename: keep — el nombre del anfitrión no gobierna
+    expect(maxConcurrentSubagents({ CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS: '4' })).toBe(20) // thyrox-rename: keep — el nombre del anfitrión no gobierna
   })
 })

@@ -191,3 +191,16 @@ describe('el propio thyrox', () => {
     expect({ code: p.exitCode, out }).toEqual({ code: 0, out: expect.any(String) })
   })
 })
+
+describe('extractEnvReads — alcance de la marca keep', () => {
+  test('una marca al final de una línea de código no protege la siguiente', () => {
+    const src = [
+      "const a = process.env.CLAUDE_CODE_A // thyrox-rename: keep",
+      'const b = process.env.CLAUDE_CODE_B',
+    ].join('\n')
+    expect(extractEnvReads(src, 'ts').map(r => [r.name, r.keep])).toEqual([
+      ['CLAUDE_CODE_A', true],
+      ['CLAUDE_CODE_B', false],
+    ])
+  })
+})

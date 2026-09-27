@@ -14,7 +14,7 @@ import {
   type HookResultMessage,
 } from '../sessionStart.js'
 
-const ORIGINAL_SIMPLE = process.env.CLAUDE_CODE_SIMPLE
+const ORIGINAL_SIMPLE = process.env.THYROX_CODE_SIMPLE
 const ORIGINAL_ARGV = [...process.argv]
 
 // `uuid`/`type` fijos — sólo `label` varía — para construir un `Message`
@@ -35,14 +35,14 @@ function resetAllInjections(): void {
 }
 
 beforeEach(() => {
-  delete process.env.CLAUDE_CODE_SIMPLE
+  delete process.env.THYROX_CODE_SIMPLE
   process.argv = [...ORIGINAL_ARGV]
   resetAllInjections()
 })
 
 afterEach(() => {
-  if (ORIGINAL_SIMPLE === undefined) delete process.env.CLAUDE_CODE_SIMPLE
-  else process.env.CLAUDE_CODE_SIMPLE = ORIGINAL_SIMPLE
+  if (ORIGINAL_SIMPLE === undefined) delete process.env.THYROX_CODE_SIMPLE
+  else process.env.THYROX_CODE_SIMPLE = ORIGINAL_SIMPLE
   process.argv = [...ORIGINAL_ARGV]
   resetAllInjections()
 })
@@ -106,8 +106,8 @@ describe('guidanceForPluginHookError', () => {
 })
 
 describe('processSessionStartHooks — modo --bare', () => {
-  test('con CLAUDE_CODE_SIMPLE=1, devuelve [] sin llamar a ningún colaborador', async () => {
-    process.env.CLAUDE_CODE_SIMPLE = '1'
+  test('con THYROX_CODE_SIMPLE=1, devuelve [] sin llamar a ningún colaborador', async () => {
+    process.env.THYROX_CODE_SIMPLE = '1'
     let loadPluginHooksCalled = false
     setLoadPluginHooksFn(() => {
       loadPluginHooksCalled = true
@@ -194,7 +194,7 @@ describe('processSessionStartHooks — orquestación con colaboradores inyectado
 
 describe('processSetupHooks', () => {
   test('con --bare, devuelve [] sin tocar colaboradores', async () => {
-    process.env.CLAUDE_CODE_SIMPLE = 'true'
+    process.env.THYROX_CODE_SIMPLE = 'true'
     expect(await processSetupHooks('init')).toEqual([])
   })
 

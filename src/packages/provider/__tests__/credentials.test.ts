@@ -52,7 +52,7 @@ describe('resolveCredential — la cadena jc()/Qf() de 2.1.282 con nombres THYRO
   })
 
   test('las variables del cliente ajeno NO se leen: los nombres propios son THYROX_CODE_*', () => {
-    const c = resolveCredential({ CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '3' }, sinFd)
+    const c = resolveCredential({ CLAUDE_CODE_OAUTH_TOKEN: 'o', CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '3' }, sinFd) // thyrox-rename: keep — el nombre del anfitrión no se lee
     expect(c.source).toBe('none')
   })
 

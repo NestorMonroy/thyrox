@@ -33,9 +33,9 @@ export const getManagedFilePath = memoize(function (): string {
   // Permite override para testing/demos (sólo ant, eliminado en builds externos).
   if (
     process.env.USER_TYPE === 'ant' &&
-    process.env.CLAUDE_CODE_MANAGED_SETTINGS_PATH
+    process.env.THYROX_CODE_MANAGED_SETTINGS_PATH
   ) {
-    return process.env.CLAUDE_CODE_MANAGED_SETTINGS_PATH
+    return process.env.THYROX_CODE_MANAGED_SETTINGS_PATH
   }
 
   switch (getManagedSettingsPlatform()) {

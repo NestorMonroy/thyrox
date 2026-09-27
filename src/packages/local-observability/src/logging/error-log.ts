@@ -131,9 +131,9 @@ export function logError(error: unknown): void {
   }
   try {
     if (
-      isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
-      isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
-      isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
+      isEnvTruthy(process.env.THYROX_CODE_USE_BEDROCK) ||
+      isEnvTruthy(process.env.THYROX_CODE_USE_VERTEX) ||
+      isEnvTruthy(process.env.THYROX_CODE_USE_FOUNDRY) ||
       process.env.DISABLE_ERROR_REPORTING ||
       isEssentialTrafficOnly()
     ) {

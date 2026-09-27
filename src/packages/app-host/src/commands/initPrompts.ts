@@ -5,7 +5,7 @@
  * mano: se corrige el generador y se vuelve a correr.
  *
  * Selectores del ejecutable: `aWo` elige el prompt nuevo con
- * `CLAUDE_CODE_NEW_INIT` o la bandera `tengu_slate_harbor_experiment` (aquí
+ * `THYROX_CODE_NEW_INIT` o la bandera `tengu_slate_harbor_experiment` (aquí
  * `THYROX_CODE_NEW_INIT`); `lme` añade la oferta de importación con la
  * bandera `tengu_import`.
  */

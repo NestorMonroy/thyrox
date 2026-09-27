@@ -11,7 +11,7 @@
  *                       (telemetry + auto-updates, grove, release notes, model capabilities, etc.).
  *
  * The resolved level is the most restrictive signal from:
- *   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC  →  essential-traffic
+ *   THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC  →  essential-traffic
  *   DISABLE_TELEMETRY                         →  no-telemetry
  */
 
@@ -20,7 +20,7 @@ import { readEnv } from './utils.js'
 type PrivacyLevel = 'default' | 'no-telemetry' | 'essential-traffic'
 
 export function getPrivacyLevel(): PrivacyLevel {
-  if (readEnv('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) {
+  if (readEnv('THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) {
     return 'essential-traffic'
   }
   if (readEnv('DISABLE_TELEMETRY')) {
@@ -49,8 +49,8 @@ export function isTelemetryDisabled(): boolean {
  * or null if unrestricted. Used for user-facing "unset X to re-enable" messages.
  */
 export function getEssentialTrafficOnlyReason(): string | null {
-  if (readEnv('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) {
-    return 'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'
+  if (readEnv('THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) {
+    return 'THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC'
   }
   return null
 }

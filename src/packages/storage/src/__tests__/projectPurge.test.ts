@@ -5,7 +5,7 @@
  *   - `Id8` → executePurgeItem
  *   - `xd8` → scanHistoryFile
  *
- * Strategy: build an isolated CLAUDE_CONFIG_DIR per-test, point env so
+ * Strategy: build an isolated THYROX_CONFIG_DIR per-test, point env so
  * `getConfigHomeDir()` lands inside the tmpdir, populate the
  * canonical layout (projects/, tasks/, debug/, file-history/, .claude.json,
  * history.jsonl), then assert what collectProjectPurgeItems / scanHistoryFile
@@ -42,21 +42,21 @@ let claudeHome: string
 let origEnv: string | undefined
 
 beforeEach(() => {
-  origEnv = process.env.CLAUDE_CONFIG_DIR
+  origEnv = process.env.THYROX_CONFIG_DIR
   claudeHome = mkdtempSync(join(tmpdir(), 'ccb-purge-test-'))
-  // getConfigHomeDir() reads CLAUDE_CONFIG_DIR.
-  process.env.CLAUDE_CONFIG_DIR = claudeHome
+  // getConfigHomeDir() reads THYROX_CONFIG_DIR.
+  process.env.THYROX_CONFIG_DIR = claudeHome
 })
 
 afterEach(() => {
-  if (origEnv === undefined) delete process.env.CLAUDE_CONFIG_DIR
-  else process.env.CLAUDE_CONFIG_DIR = origEnv
+  if (origEnv === undefined) delete process.env.THYROX_CONFIG_DIR
+  else process.env.THYROX_CONFIG_DIR = origEnv
   rmSync(claudeHome, { recursive: true, force: true })
 })
 
 function setupClaudeJson(projects: Record<string, unknown>): void {
   // ant `.claude.json` lives at ~/.claude/../.claude.json — i.e. one
-  // level UP from CLAUDE_CONFIG_DIR. Place it accordingly so our
+  // level UP from THYROX_CONFIG_DIR. Place it accordingly so our
   // readClaudeJsonProjects() path matches.
   writeFileSync(
     join(claudeHome, '..', '.claude.json'),

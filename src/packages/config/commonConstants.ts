@@ -4,7 +4,7 @@ import { readEnv } from './env/utils.js'
 // This ensures you get the LOCAL date in ISO format
 export function getLocalISODate(): string {
   // Check for ant-only date override
-  const override = readEnv('CLAUDE_CODE_OVERRIDE_DATE')
+  const override = readEnv('THYROX_CODE_OVERRIDE_DATE')
   if (override) return override
 
   const now = new Date()
@@ -26,7 +26,7 @@ export const getSessionStartDate = memoize(getLocalISODate)
 // Returns "Month YYYY" (e.g. "February 2026") in the user's local timezone.
 // Changes monthly, not daily — used in tool prompts to minimize cache busting.
 export function getLocalMonthYear(): string {
-  const override = readEnv('CLAUDE_CODE_OVERRIDE_DATE')
+  const override = readEnv('THYROX_CODE_OVERRIDE_DATE')
   const date = override ? new Date(override) : new Date()
   return date.toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }

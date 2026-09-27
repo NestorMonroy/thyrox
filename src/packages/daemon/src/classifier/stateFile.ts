@@ -35,7 +35,7 @@ import type {
 import type { WorkerState, WorkerStateFile, WorkerTempo } from './state.js'
 
 function getJobsRoot(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
+  const root = process.env.THYROX_CONFIG_HOME
   return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
 }
 

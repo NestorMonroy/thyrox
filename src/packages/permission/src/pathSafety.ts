@@ -537,7 +537,7 @@ export function workingDirectoryDepth(segments: string[]): number {
   let depth = 0
   const originalCwd = getOriginalCwdDeferred()
   const roots =
-    process.env.CLAUDE_CODE_EVAL_CONFINED ? [originalCwd] : getPathsForPermissionCheck(originalCwd)
+    process.env.THYROX_CODE_EVAL_CONFINED ? [originalCwd] : getPathsForPermissionCheck(originalCwd)
   for (const root of roots) {
     const parts = expandPathDeferred(root).split(SEP)
     if (parts.length > 1 && parts.at(-1) === '') parts.pop()

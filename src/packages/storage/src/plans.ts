@@ -32,7 +32,7 @@
  *  - `getEnvironmentKind` (`./filePersistence/outputsScanner.js`, hermano
  *    del propio paquete `storage` pero NO uno de mis 14 módulos ni
  *    presente todavía en este árbol) — se reimplementa aquí, fiel a su
- *    cuerpo real (lee `CLAUDE_CODE_ENVIRONMENT_KIND`, 8 líneas).
+ *    cuerpo real (lee `THYROX_CODE_ENVIRONMENT_KIND`, 8 líneas).
  *  - `getFsImplementation` (`./fsOperations.js`, archivo de 23801 B en la
  *    fuente, AUSENTE de este árbol y fuera de mis 14 módulos) — se usa
  *    `fs`/`fs/promises` DIRECTO en vez de la capa de abstracción
@@ -54,7 +54,7 @@
  * `getPlansDirectory` NO se memoiza (la fuente sí, con `lodash-es/
  * memoize.js` sin argumentos) — mismo criterio que YA declara
  * `projectPurge.ts` de este paquete para `getConfigHomeDir`: cada
- * test de este pase cambia `CLAUDE_CONFIG_DIR`/settings/cwd a un valor
+ * test de este pase cambia `THYROX_CONFIG_DIR`/settings/cwd a un valor
  * nuevo, así que memoizar no ahorraría nada y rompería el aislamiento
  * entre casos.
  */
@@ -96,7 +96,7 @@ function isENOENT(e: unknown): boolean {
 /** Fiel a `filePersistence/outputsScanner.ts::getEnvironmentKind` — ver
  * docstring del archivo. */
 function getEnvironmentKind(): 'byoc' | 'anthropic_cloud' | null {
-  const kind = process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+  const kind = process.env.THYROX_CODE_ENVIRONMENT_KIND
   if (kind === 'byoc' || kind === 'anthropic_cloud') {
     return kind
   }

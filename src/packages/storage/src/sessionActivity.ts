@@ -11,7 +11,7 @@
  * para mantener el contenedor vivo.
  *
  * El envío de keep-alives está gateado por
- * CLAUDE_CODE_REMOTE_SEND_KEEPALIVES. El logging de diagnóstico dispara
+ * THYROX_CODE_REMOTE_SEND_KEEPALIVES. El logging de diagnóstico dispara
  * siempre, para ayudar a diagnosticar huecos de inactividad.
  *
  * Tres dependencias hermanas ausentes, reimplementadas PRIVADAMENTE con
@@ -93,7 +93,7 @@ function startHeartbeatTimer(): void {
     _logForDiagnosticsNoPII('debug', 'session_keepalive_heartbeat', {
       refcount,
     })
-    if (isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE_SEND_KEEPALIVES'))) {
+    if (isEnvTruthy(readEnv('THYROX_CODE_REMOTE_SEND_KEEPALIVES'))) {
       activityCallback?.()
     }
   }, SESSION_ACTIVITY_INTERVAL_MS)
@@ -136,7 +136,7 @@ export function unregisterSessionActivityCallback(): void {
 }
 
 export function sendSessionActivitySignal(): void {
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE_SEND_KEEPALIVES'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_REMOTE_SEND_KEEPALIVES'))) {
     activityCallback?.()
   }
 }

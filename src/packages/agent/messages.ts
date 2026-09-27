@@ -3920,7 +3920,7 @@ You have exited auto mode. The user may now want to interact more directly. You 
     case 'verify_plan_reminder': {
       // La comparacion con `'true'` permite eliminar la cadena en builds
       // externas, donde la variable vale `'false'`.
-      const toolName = readEnv('CLAUDE_CODE_VERIFY_PLAN') === 'true' ? 'VerifyPlanExecution' : ''
+      const toolName = readEnv('THYROX_CODE_VERIFY_PLAN') === 'true' ? 'VerifyPlanExecution' : ''
       return wrapMessagesInSystemReminder([
         meta(
           `You have completed implementing the plan. Please call the "${toolName}" tool directly (NOT the ${AGENT_TOOL_NAME} tool or an agent) to verify that all plan items were completed correctly.`,

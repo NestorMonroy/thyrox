@@ -40,8 +40,8 @@ describe('getAccountInformation (ant CxH parity)', () => {
   })
 
   test('env-var OAuth token sources go straight to accountInfo.tokenSource', () => {
-    expect(fnSlice).toMatch(/authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN'[\s\S]*?accountInfo\.tokenSource = authTokenSource/)
-    expect(fnSlice).toMatch(/'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'/)
+    expect(fnSlice).toMatch(/authTokenSource === 'THYROX_CODE_OAUTH_TOKEN'[\s\S]*?accountInfo\.tokenSource = authTokenSource/)
+    expect(fnSlice).toMatch(/'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'/)
   })
 
   test('Claude.ai subscribers get subscription name, NOT token source', () => {

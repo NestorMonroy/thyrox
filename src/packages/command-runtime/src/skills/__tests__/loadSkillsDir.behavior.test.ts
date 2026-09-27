@@ -87,14 +87,14 @@ describe('createSkillCommand', () => {
 describe('buildSkillPromptText', () => {
   test('antepone el directorio base y sustituye argumentos y variables', () => {
     const text = buildSkillPromptText({
-      markdownContent: 'Run ${CLAUDE_SKILL_DIR}/x.sh with $ARGUMENTS in ${CLAUDE_SESSION_ID}',
+      markdownContent: 'Run ${CLAUDE_SKILL_DIR}/x.sh with $ARGUMENTS in ${THYROX_SESSION_ID}',
       baseDir: '/skills/demo',
       args: 'fast',
       argumentNames: [],
     })
     expect(text.startsWith('Base directory for this skill: /skills/demo\n\n')).toBe(true)
     expect(text).toContain('Run /skills/demo/x.sh with fast in ')
-    expect(text).not.toContain('${CLAUDE_SESSION_ID}')
+    expect(text).not.toContain('${THYROX_SESSION_ID}')
   })
 
   test('sin directorio base no hay prefijo ni sustitución de CLAUDE_SKILL_DIR', () => {

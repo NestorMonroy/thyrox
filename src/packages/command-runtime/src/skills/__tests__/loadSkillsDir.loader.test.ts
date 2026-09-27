@@ -85,17 +85,17 @@ describe('loadSkillsFromSkillsDir', () => {
 })
 
 describe('getSkillDirCommands', () => {
-  // El directorio de usuario se aísla por CLAUDE_CONFIG_DIR, igual que en
+  // El directorio de usuario se aísla por THYROX_CONFIG_DIR, igual que en
   // `__tests__/skillHelpers.test.ts`: la memoización va keyed por su valor.
-  const savedConfigDir = process.env.CLAUDE_CONFIG_DIR
+  const savedConfigDir = process.env.THYROX_CONFIG_DIR
   let configDir = ''
   beforeAll(() => {
     configDir = realpathSync(mkdtempSync(join(tmpdir(), 'claude-config-')))
-    process.env.CLAUDE_CONFIG_DIR = configDir
+    process.env.THYROX_CONFIG_DIR = configDir
   })
   afterAll(() => {
-    if (savedConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR
-    else process.env.CLAUDE_CONFIG_DIR = savedConfigDir
+    if (savedConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
+    else process.env.THYROX_CONFIG_DIR = savedConfigDir
     rmSync(configDir, { recursive: true, force: true })
   })
 

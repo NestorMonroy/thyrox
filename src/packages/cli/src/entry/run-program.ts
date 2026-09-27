@@ -71,7 +71,7 @@ function attachPreActionHook(program: MainProgram): void {
     // process.title on Windows sets the console title directly; on POSIX,
     // terminal shell integration may mirror the process name to the tab.
     // After init() so settings.json env can also gate this (gh-4765).
-    if (!isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE)) {
+    if (!isEnvTruthy(process.env.THYROX_CODE_DISABLE_TERMINAL_TITLE)) {
       process.title = 'claude'
     }
 

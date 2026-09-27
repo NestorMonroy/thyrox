@@ -155,7 +155,7 @@ export const WorkflowTool = buildTool({
   searchHint: 'orchestrate subagents with a deterministic JavaScript workflow',
   maxResultSizeChars: 100_000,
   // ant 3904.js `isEnabled:()=>bp()` — runtime workflows gate (default-on,
-  // CLAUDE_CODE_WORKFLOWS=0 kill-switch). The tool module is bundled
+  // THYROX_CODE_WORKFLOWS=0 kill-switch). The tool module is bundled
   // unconditionally; this is the sole visibility gate.
   isEnabled() {
     return isWorkflowsEnabled()

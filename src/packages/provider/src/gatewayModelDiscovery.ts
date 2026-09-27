@@ -16,7 +16,7 @@
  * compares it on read so stale data is invisible.
  *
  * Eligibility chain (ant `ZHK`):
- *   - `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY` env truthy
+ *   - `THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY` env truthy
  *   - getAPIProvider() === 'firstParty'
  *   - !isFirstPartyAnthropicBaseUrl() — must be a custom gateway
  *   - ANTHROPIC_BASE_URL must be set
@@ -140,7 +140,7 @@ function _clearCacheReaderMemoForTesting(): void {
  * never touch the auth / provider helpers (which would log debug noise).
  */
 export function isGatewayModelDiscoveryEnabled(): boolean {
-  if (!isEnvTruthy(readEnv('CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY'))) {
+  if (!isEnvTruthy(readEnv('THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY'))) {
     return false
   }
   if (getAPIProvider() !== 'firstParty') return false

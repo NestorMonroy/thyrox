@@ -41,7 +41,7 @@ const PINS_FILE = 'pins.json'
 
 /** Source: ant b0(). */
 export function getJobsRoot(): string {
-  const root = readEnv('CLAUDE_CONFIG_HOME')
+  const root = readEnv('THYROX_CONFIG_HOME')
   return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
 }
 

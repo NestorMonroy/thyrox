@@ -1068,7 +1068,7 @@ async function executeRemoteSkill(
   // content unchanged if no frontmatter is present.
   const { content: bodyContent } = parseFrontmatter(content, skillPath)
 
-  // Inject base directory header + ${CLAUDE_SKILL_DIR}/${CLAUDE_SESSION_ID}
+  // Inject base directory header + ${CLAUDE_SKILL_DIR}/${THYROX_SESSION_ID}
   // substitution (matches loadSkillsDir.ts) so the model can resolve relative
   // refs like ./schemas/foo.json against the cache dir.
   const skillDir = dirname(skillPath)
@@ -1077,7 +1077,7 @@ async function executeRemoteSkill(
   let finalContent = `Base directory for this skill: ${normalizedDir}\n\n${bodyContent}`
   finalContent = finalContent.replace(/\$\{CLAUDE_SKILL_DIR\}/g, normalizedDir)
   finalContent = finalContent.replace(
-    /\$\{CLAUDE_SESSION_ID\}/g,
+    /\$\{THYROX_SESSION_ID\}/g,
     getSessionId(),
   )
 

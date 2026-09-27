@@ -122,7 +122,7 @@ function getCertEnvVarTelemetry(): Record<string, boolean> {
   if (process.env.NODE_EXTRA_CA_CERTS) {
     result.has_node_extra_ca_certs = true
   }
-  if (process.env.CLAUDE_CODE_CLIENT_CERT) {
+  if (process.env.THYROX_CODE_CLIENT_CERT) {
     result.has_client_cert = true
   }
   if (hasNodeOption('--use-system-ca')) {

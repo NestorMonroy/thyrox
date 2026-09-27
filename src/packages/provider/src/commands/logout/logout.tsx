@@ -23,7 +23,7 @@ export async function performLogout({
   // Port of ant Xw_ (3471.js) `preserveInProcessTokens` flag. installOAuthTokens
   // (ant NZH) calls performLogout to clear prior state BEFORE storing the new
   // credentials — but the in-process `oauthTokenFromFd` (BsH/A_H) and the
-  // `CLAUDE_CODE_OAUTH_TOKEN` env var must NOT be wiped during this prelude,
+  // `THYROX_CODE_OAUTH_TOKEN` env var must NOT be wiped during this prelude,
   // because installOAuthTokens may re-establish them afterwards. A regular
   // logout (clearOnboarding-driven or user-invoked) does want them wiped.
   preserveInProcessTokens?: boolean
@@ -34,13 +34,13 @@ export async function performLogout({
   )
   await flushTelemetry()
 
-  // Ant Xw_: `if (!_) (delete process.env.CLAUDE_CODE_OAUTH_TOKEN, A_H(null))`.
+  // Ant Xw_: `if (!_) (delete process.env.THYROX_CODE_OAUTH_TOKEN, A_H(null))`.
   // Skip when re-logging in (preserveInProcessTokens=true) so the env-var path
-  // (CLAUDE_CODE_OAUTH_TOKEN headless login) doesn't lose its source mid-flow.
+  // (THYROX_CODE_OAUTH_TOKEN headless login) doesn't lose its source mid-flow.
   if (!preserveInProcessTokens) {
     // V7 §8.6: core-domain package must go through config helper for env access.
     const { deleteEnv } = await import('@thyrox/config/env/utils')
-    deleteEnv('CLAUDE_CODE_OAUTH_TOKEN')
+    deleteEnv('THYROX_CODE_OAUTH_TOKEN')
     // Lazy import to avoid circular dep through app-host barrel.
     const { setOauthTokenFromFd } = await import(
       '@thyrox/app-host/bootstrap/state.js'

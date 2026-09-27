@@ -210,7 +210,7 @@ export function deserializeMessagesWithInterruptDetection(
     if (internalState.kind === 'interrupted_turn') {
       // ant v2.1.140 3623.js:48 — env override for the synthetic resume prompt.
       const resumeText =
-        process.env.CLAUDE_CODE_RESUME_PROMPT || 'Continue from where you left off.'
+        process.env.THYROX_CODE_RESUME_PROMPT || 'Continue from where you left off.'
       const [continuationMessage] = normalizeMessages([
         createUserMessage({
           content: resumeText,

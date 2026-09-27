@@ -428,7 +428,7 @@ async function fetchSessionLogsFromUrl(
       headers,
       timeout: 20000,
       validateStatus: status => status < 500,
-      params: isEnvTruthy(readEnv('CLAUDE_AFTER_LAST_COMPACT'))
+      params: isEnvTruthy(readEnv('THYROX_AFTER_LAST_COMPACT'))
         ? { after_last_compact: true }
         : undefined,
     })

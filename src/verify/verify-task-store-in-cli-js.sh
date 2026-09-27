@@ -29,6 +29,7 @@
 
 set -euo pipefail
 
+# thyrox-rename: keep — el paquete del cliente anfitrión
 PKG_DIR="${CLAUDE_CODE_PKG_DIR:-/opt/node22/lib/node_modules/@anthropic-ai/claude-code}"
 CLI_JS="$PKG_DIR/cli.js"
 SDK_DTS="$PKG_DIR/sdk-tools.d.ts"

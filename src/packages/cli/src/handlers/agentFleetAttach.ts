@@ -185,7 +185,7 @@ export async function waitForWorkerFirstFrame(
 }
 
 function getJobsRoot(): string {
-  const root = process.env.CLAUDE_CONFIG_HOME
+  const root = process.env.THYROX_CONFIG_HOME
   return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
 }
 
@@ -372,7 +372,7 @@ function buildResumeArgsIfTranscriptExists(
   sessionId: string,
 ): readonly string[] {
   try {
-    const root = process.env.CLAUDE_CONFIG_HOME ?? join(homedir(), '.claude')
+    const root = process.env.THYROX_CONFIG_HOME ?? join(homedir(), '.claude')
     const projectsDir = join(root, 'projects')
     const slug = cwd.replace(/[/\\]/g, '-').replace(/^-/, '-')
     const transcript = join(projectsDir, slug, `${sessionId}.jsonl`)

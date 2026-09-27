@@ -213,7 +213,7 @@ export async function toolToAPISchema(
     options.model && has1mContext(options.model) ? 'L:' : ''
   const eagerCachePrefix = (() => {
     const envOverride = readEnv(
-      'CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING',
+      'THYROX_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING',
     )
     if (envOverride === '0') return ''
     if (envOverride === '1') return 'F:'
@@ -303,12 +303,12 @@ export async function toolToAPISchema(
     // 'firstParty' && isFirstPartyAnthropicBaseUrl()` returns true and silently
     // sends `eager_input_streaming` to the proxy, which 400s. Resolving the
     // connection's actual endpoint host fixes this.
-    // CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING semantics ported from
+    // THYROX_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING semantics ported from
     // ant v2.1.133 OI→ou (4719.js):
     //   - `=1` → force on across all providers (regardless of flags)
     //   - `=0` → force OFF across all providers (overrides flags too)
     //   - unset → fall through to the per-provider gates below.
-    const envOverride = readEnv('CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING')
+    const envOverride = readEnv('THYROX_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING')
     if (envOverride === '0') {
       // explicit suppress
     } else if (envOverride === '1') {
@@ -360,7 +360,7 @@ export async function toolToAPISchema(
     schema.cache_control = options.cacheControl
   }
 
-  // CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS is the kill switch for beta API
+  // THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS is the kill switch for beta API
   // shapes. Proxy gateways (ANTHROPIC_BASE_URL → LiteLLM → Bedrock) reject
   // fields like defer_loading with "Extra inputs are not permitted". The gates
   // above each field are scattered and not all provider-aware, so this strips
@@ -371,7 +371,7 @@ export async function toolToAPISchema(
   // (scope, ttl) are already gated upstream by shouldIncludeFirstPartyOnlyBetas
   // which independently respects this kill switch.
   // github.com/anthropics/claude-code-how-works-how-works/issues/20031
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS'))) {
+  if (isEnvTruthy(readEnv('THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS'))) {
     const allowed = new Set([
       'name',
       'description',
@@ -401,7 +401,7 @@ function logStripOnce(stripped: string[]): void {
   if (loggedStrip) return
   loggedStrip = true
   logForDebugging(
-    `[betas] Stripped from tool schemas: [${stripped.join(', ')}] (CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1)`,
+    `[betas] Stripped from tool schemas: [${stripped.join(', ')}] (THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS=1)`,
   )
 }
 
@@ -730,7 +730,7 @@ export function normalizeToolInput<T extends Tool>(
         logEvent('tengu_bash_tool_simple_echo', {})
       }
 
-      // Check for run_in_background (may not exist in schema if CLAUDE_CODE_DISABLE_BACKGROUND_TASKS is set)
+      // Check for run_in_background (may not exist in schema if THYROX_CODE_DISABLE_BACKGROUND_TASKS is set)
       const run_in_background =
         'run_in_background' in parsed ? parsed.run_in_background : undefined
 

@@ -62,7 +62,7 @@ export function UserPromptMessage({
   const briefEnvEnabled =
     feature('KAIROS') || feature('KAIROS_BRIEF')
       ?
-        useMemo(() => isEnvTruthy(process.env.CLAUDE_CODE_BRIEF), [])
+        useMemo(() => isEnvTruthy(process.env.THYROX_CODE_BRIEF), [])
       : false
   const useBriefLayout =
     feature('KAIROS') || feature('KAIROS_BRIEF')

@@ -29,9 +29,9 @@ export function isTelemetryDisabledForPrivacyConfig(): boolean {
 export function isAnalyticsDisabled(): boolean {
   return (
     process.env.NODE_ENV === 'test' ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_VERTEX) ||
-    isEnvTruthy(process.env.CLAUDE_CODE_USE_FOUNDRY) ||
+    isEnvTruthy(process.env.THYROX_CODE_USE_BEDROCK) ||
+    isEnvTruthy(process.env.THYROX_CODE_USE_VERTEX) ||
+    isEnvTruthy(process.env.THYROX_CODE_USE_FOUNDRY) ||
     _isTelemetryDisabled()
   )
 }

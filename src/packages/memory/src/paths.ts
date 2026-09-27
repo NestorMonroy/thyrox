@@ -29,13 +29,13 @@ import { getMemoryHostBindings } from './host.js'
 export function isAutoMemoryEnabled(): boolean {
   // 2.1.281 (`Va`): con la memoria en pausa por `/pause-memory`, apagada.
   if (isMemoryPaused()) return false
-  const envVal = readEnv('CLAUDE_CODE_DISABLE_AUTO_MEMORY')
+  const envVal = readEnv('THYROX_CODE_DISABLE_AUTO_MEMORY')
   if (isEnvTruthy(envVal)) return false
   if (isEnvDefinedFalsy(envVal)) return true
-  if (isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))) return false
+  if (isEnvTruthy(readEnv('THYROX_CODE_SIMPLE'))) return false
   if (
-    isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) &&
-    !readEnv('CLAUDE_CODE_REMOTE_MEMORY_DIR')
+    isEnvTruthy(readEnv('THYROX_CODE_REMOTE')) &&
+    !readEnv('THYROX_CODE_REMOTE_MEMORY_DIR')
   ) {
     return false
   }
@@ -58,14 +58,14 @@ export function isExtractModeActive(): boolean {
 }
 
 export function getMemoryBaseDir(): string {
-  const remoteMemoryDir = readEnv('CLAUDE_CODE_REMOTE_MEMORY_DIR')
+  const remoteMemoryDir = readEnv('THYROX_CODE_REMOTE_MEMORY_DIR')
   if (remoteMemoryDir) {
     return remoteMemoryDir
   }
   const bindings = getMemoryHostBindings()
   return (
     bindings.getConfigHomeDir?.() ??
-    (readEnv('CLAUDE_CONFIG_DIR') ?? join(homedir(), '.claude')).normalize(
+    (readEnv('THYROX_CONFIG_DIR') ?? join(homedir(), '.claude')).normalize(
       'NFC',
     )
   )
@@ -107,7 +107,7 @@ function validateMemoryPath(
 
 function getAutoMemPathOverride(): string | undefined {
   return validateMemoryPath(
-    readEnv('CLAUDE_COWORK_MEMORY_PATH_OVERRIDE'),
+    readEnv('THYROX_COWORK_MEMORY_PATH_OVERRIDE'),
     false,
   )
 }

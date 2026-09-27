@@ -11,20 +11,20 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // Isolate every roster test under a per-run tmpdir, NEVER touch the
-// user's real ~/.claude/daemon. Done via CLAUDE_CONFIG_HOME, which is
+// user's real ~/.claude/daemon. Done via THYROX_CONFIG_HOME, which is
 // the same env var bgWorkerRegistry.getJobsRoot() respects.
 const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-roster-test-'))
 const DAEMON_DIR = join(ISOLATED_HOME, 'daemon')
-const ORIGINAL_CONFIG_HOME = process.env.CLAUDE_CONFIG_HOME
+const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
 
 beforeAll(() => {
-  process.env.CLAUDE_CONFIG_HOME = ISOLATED_HOME
+  process.env.THYROX_CONFIG_HOME = ISOLATED_HOME
 })
 afterAll(() => {
   if (ORIGINAL_CONFIG_HOME === undefined) {
-    delete process.env.CLAUDE_CONFIG_HOME
+    delete process.env.THYROX_CONFIG_HOME
   } else {
-    process.env.CLAUDE_CONFIG_HOME = ORIGINAL_CONFIG_HOME
+    process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
   }
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })

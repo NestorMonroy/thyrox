@@ -9,29 +9,29 @@ function makeTmpDir(): string {
 }
 
 describe('getEnvironmentKind', () => {
-  const original = process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+  const original = process.env.THYROX_CODE_ENVIRONMENT_KIND
   afterEach(() => {
-    if (original === undefined) delete process.env.CLAUDE_CODE_ENVIRONMENT_KIND
-    else process.env.CLAUDE_CODE_ENVIRONMENT_KIND = original
+    if (original === undefined) delete process.env.THYROX_CODE_ENVIRONMENT_KIND
+    else process.env.THYROX_CODE_ENVIRONMENT_KIND = original
   })
 
   test("'byoc' se reconoce", () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'byoc'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'byoc'
     expect(getEnvironmentKind()).toBe('byoc')
   })
 
   test("'anthropic_cloud' se reconoce", () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'anthropic_cloud'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'anthropic_cloud'
     expect(getEnvironmentKind()).toBe('anthropic_cloud')
   })
 
   test('un valor no reconocido devuelve null', () => {
-    process.env.CLAUDE_CODE_ENVIRONMENT_KIND = 'bridge'
+    process.env.THYROX_CODE_ENVIRONMENT_KIND = 'bridge'
     expect(getEnvironmentKind()).toBeNull()
   })
 
   test('sin la variable definida devuelve null', () => {
-    delete process.env.CLAUDE_CODE_ENVIRONMENT_KIND
+    delete process.env.THYROX_CODE_ENVIRONMENT_KIND
     expect(getEnvironmentKind()).toBeNull()
   })
 })

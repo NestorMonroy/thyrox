@@ -451,7 +451,7 @@ function ModeIndicator({
     // Source: ant 4967.js Ln3 — when running as a bg session attached
     // via FleetView, hint that ← detaches back to the fleet list. ant gates
     // on `G7() && K && !P` where K = isInputEmpty (NOT the composed showHint):
-    //   - isBgSession()  — CLAUDE_CODE_SESSION_KIND === 'bg'
+    //   - isBgSession()  — THYROX_CODE_SESSION_KIND === 'bg'
     //   - isInputEmpty   — input empty, IGNORING status-line/search suppression
     // MUST use isInputEmpty, not showHint: showHint folds in suppressHint,
     // which goes true once the bg session's status line renders (after the

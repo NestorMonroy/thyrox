@@ -83,7 +83,7 @@ export function getTelemetryAttributes(): Attributes {
     ) {
       attributes['user.account_uuid'] = accountUuid
       attributes['user.account_id'] =
-        process.env.CLAUDE_CODE_ACCOUNT_TAGGED_ID ||
+        process.env.THYROX_CODE_ACCOUNT_TAGGED_ID ||
         toTaggedId('user', accountUuid)
     }
   }

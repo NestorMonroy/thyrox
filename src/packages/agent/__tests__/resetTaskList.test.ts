@@ -7,7 +7,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const base = mkdtempSync(join(resolve(import.meta.dir, '../../../../.claude/cache'), 'tasks-'))
-process.env.CLAUDE_CONFIG_DIR = base
+process.env.THYROX_CONFIG_DIR = base
 const { createTask, getTasksDir, listTasks, resetTaskList, updateTask } = await import('../tasks.ts')
 afterAll(() => rmSync(base, { recursive: true, force: true }))
 

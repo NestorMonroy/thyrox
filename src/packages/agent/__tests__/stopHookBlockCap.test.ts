@@ -170,7 +170,7 @@ describe('evaluateStopHookBlockOutcome', () => {
  *
  * POR QUE SE PINCHA LA CADENA VERBATIM Y NO SOLO SU FORMA: el mensaje es
  * CONTRATO con quien escribe un hook — le dice que mirar (`stop_hook_active`)
- * y que variable subir (`CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`). Un refactor que
+ * y que variable subir (`THYROX_CODE_STOP_HOOK_BLOCK_CAP`). Un refactor que
  * lo reformule «mas claro» rompe a quien lo lea buscando esas dos cosas, y
  * ninguna asercion de forma lo veria.
  *
@@ -194,6 +194,6 @@ describe('stopHookBlockCapMessage', () => {
   })
 
   test('4. nombra la variable con que se sube el limite', () => {
-    expect(stopHookBlockCapMessage(8)).toContain('CLAUDE_CODE_STOP_HOOK_BLOCK_CAP')
+    expect(stopHookBlockCapMessage(8)).toContain('THYROX_CODE_STOP_HOOK_BLOCK_CAP')
   })
 })

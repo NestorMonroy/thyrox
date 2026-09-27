@@ -35,12 +35,12 @@
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { keepFlags } from './renameEnvPrefix.ts'
 
 export type Language = 'ts' | 'py' | 'sh'
 export type NameClass = 'own' | 'provider' | 'foreign' | 'other'
 export type EnvRead = { line: number; name: string; keep: boolean }
 
-const KEEP = 'thyrox-rename: keep'
 const NAME = '([A-Z][A-Z0-9_]*)'
 const PATTERNS: Record<Language, RegExp[]> = {
   ts: [
@@ -87,9 +87,10 @@ export const COVERAGE_BASELINE = 'src/verify/env_test_coverage_baseline.tsv'
 /** Las lecturas de entorno del texto, en orden, con la marca keep resuelta. */
 export function extractEnvReads(text: string, language: Language): EnvRead[] {
   const lines = text.split('\n')
+  const kept = keepFlags(lines)
   const reads: EnvRead[] = []
   lines.forEach((line, i) => {
-    const keep = line.includes(KEEP) || (i > 0 && lines[i - 1]!.includes(KEEP))
+    const keep = kept[i]!
     const found: { at: number; name: string }[] = []
     for (const pattern of PATTERNS[language]) {
       for (const m of line.matchAll(pattern)) found.push({ at: m.index ?? 0, name: m[1]! })

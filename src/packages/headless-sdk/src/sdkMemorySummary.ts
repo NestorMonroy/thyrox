@@ -29,7 +29,7 @@
  * Ant gates:
  *   - `Ny_()` — only SDK entrypoint (sdk-ts / sdk-py / sdk-cli) records
  *     children. `T1()` (simple mode) also skips. Mirror via the
- *     `CLAUDE_CODE_ENTRYPOINT` env check.
+ *     `THYROX_CODE_ENTRYPOINT` env check.
  *   - emit-once guard `VP9` so a second scheduleSdkMemorySummary call
  *     can't double-emit.
  *   - schedule-once guard `kP9` so multiple registration sites don't
@@ -98,13 +98,13 @@ export function _resetSdkMemorySummaryForTesting(): void {
 
 function isSdkEntrypoint(): boolean {
   // Mirror ant `Ny_()` — SDK paths only emit memory telemetry.
-  const ep = process.env.CLAUDE_CODE_ENTRYPOINT
+  const ep = process.env.THYROX_CODE_ENTRYPOINT
   return ep === 'sdk-ts' || ep === 'sdk-py' || ep === 'sdk-cli'
 }
 
 function isSimpleMode(): boolean {
   // Mirror ant `T1()` — simple-mode short-circuits telemetry.
-  return process.env.CLAUDE_CODE_SIMPLE === '1'
+  return process.env.THYROX_CODE_SIMPLE === '1'
 }
 
 /**

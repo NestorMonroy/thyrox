@@ -9,7 +9,7 @@
  * Gate:
  *   default OFF — logEvent stays no-op so events file doesn't fill up
  *     for users who don't ask for telemetry.
- *   `CLAUDE_CODE_LOCAL_TELEMETRY=1` → install file-writing logger.
+ *   `THYROX_CODE_LOCAL_TELEMETRY=1` → install file-writing logger.
  *
  * Output: ~/.claude/telemetry/events-<YYYY-MM-DD>.jsonl, one event per
  * line as `{"ts": iso, "name": str, "metadata": obj}`. Date suffix so
@@ -84,6 +84,6 @@ export function installLocalEventLogger(
  * caller can choose to skip installation entirely.
  */
 export function isLocalTelemetryEnabled(): boolean {
-  const v = process.env.CLAUDE_CODE_LOCAL_TELEMETRY
+  const v = process.env.THYROX_CODE_LOCAL_TELEMETRY
   return v === '1' || v === 'true'
 }

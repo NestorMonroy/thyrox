@@ -97,11 +97,11 @@ const { getProviderForModel, isFirstPartyAnthropicEndpoint } = await import(
 
 const TRACKED_KEYS = [
   'ANTHROPIC_BASE_URL',
-  'CLAUDE_CODE_USE_BEDROCK',
-  'CLAUDE_CODE_USE_VERTEX',
-  'CLAUDE_CODE_USE_FOUNDRY',
-  'CLAUDE_CODE_USE_OPENAI',
-  'CLAUDE_CODE_USE_GEMINI',
+  'THYROX_CODE_USE_BEDROCK',
+  'THYROX_CODE_USE_VERTEX',
+  'THYROX_CODE_USE_FOUNDRY',
+  'THYROX_CODE_USE_OPENAI',
+  'THYROX_CODE_USE_GEMINI',
 ] as const
 const savedEnv = new Map<string, string | undefined>()
 
@@ -214,7 +214,7 @@ describe('isFirstPartyAnthropicEndpoint', () => {
   })
 
   test('10. sin modelo y con bedrock activo: falso, aunque el modelo sea de clase Anthropic', () => {
-    process.env.CLAUDE_CODE_USE_BEDROCK = '1'
+    process.env.THYROX_CODE_USE_BEDROCK = '1'
     expect(isFirstPartyAnthropicEndpoint()).toBe(false)
   })
 

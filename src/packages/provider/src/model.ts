@@ -456,7 +456,7 @@ function isLegacyOpusFirstParty(model: string): boolean {
 }
 
 export function isLegacyModelRemapEnabled(): boolean {
-  return !isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_LEGACY_MODEL_REMAP'))
+  return !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_LEGACY_MODEL_REMAP'))
 }
 
 export function modelDisplayString(model: ModelSetting): string {

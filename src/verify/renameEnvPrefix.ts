@@ -38,8 +38,21 @@ function renameToken(token: string, rest: string): string {
   return FOREIGN_CONSTANTS.has(token) ? token : `THYROX_CODE_${rest}`
 }
 
+/**
+ * Qué líneas lleva protegidas la marca keep: la línea que la contiene, y la
+ * siguiente sólo cuando la marca va en una línea de comentario propia. Una
+ * marca al final de una línea de código protege esa línea y nada más; si no,
+ * un elemento de lista marcado protegía también al siguiente.
+ */
+export function keepFlags(lines: string[]): boolean[] {
+  const commentOnly = (line: string) => /^\s*(\/\/|#|\*|\/\*)/.test(line)
+  return lines.map(
+    (line, i) => line.includes(KEEP) || (i > 0 && lines[i - 1]!.includes(KEEP) && commentOnly(lines[i - 1]!)),
+  )
+}
+
 function lineRenames(lines: string[]): boolean[] {
-  return lines.map((line, i) => !line.includes(KEEP) && !(i > 0 && lines[i - 1]!.includes(KEEP)))
+  return keepFlags(lines).map(kept => !kept)
 }
 
 /** El texto con cada CLAUDE_CODE_<X> fuera de una línea marcada como THYROX_CODE_<X>. */

@@ -31,7 +31,7 @@ const ANTHROPIC_VERSION = '2023-06-01'
 function getDefaultApiBaseUrl(): string {
   return (
     readEnv('ANTHROPIC_BASE_URL') ||
-    readEnv('CLAUDE_CODE_API_BASE_URL') ||
+    readEnv('THYROX_CODE_API_BASE_URL') ||
     'https://api.anthropic.com'
   )
 }

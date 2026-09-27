@@ -25,17 +25,17 @@ describe('resolveConfigHomeDir', () => {
   test('los nombres propios son los de thyrox', () => {
     expect(CONFIG_DIR_ENV).toBe('THYROX_CONFIG_DIR')
     expect(CONFIG_DIR_NAME).toBe('.thyrox')
-    expect(LEGACY_CONFIG_DIR_ENV).toBe('CLAUDE_CONFIG_DIR')
+    expect(LEGACY_CONFIG_DIR_ENV).toBe('CLAUDE_CONFIG_DIR') // thyrox-rename: keep — respaldo heredado de configHome
     expect(LEGACY_CONFIG_DIR_NAME).toBe('.claude')
   })
 
   test('la variable propia gana a todo', () => {
-    const env = { THYROX_CONFIG_DIR: '/x', CLAUDE_CONFIG_DIR: '/y' }
+    const env = { THYROX_CONFIG_DIR: '/x', CLAUDE_CONFIG_DIR: '/y' } // thyrox-rename: keep — respaldo heredado de configHome
     expect(resolveConfigHomeDir({ env, home: HOME, exists: only(join(HOME, '.claude')) })).toBe('/x')
   })
 
   test('la variable heredada se lee como respaldo', () => {
-    expect(resolveConfigHomeDir({ env: { CLAUDE_CONFIG_DIR: '/y' }, home: HOME, exists: none })).toBe('/y')
+    expect(resolveConfigHomeDir({ env: { CLAUDE_CONFIG_DIR: '/y' }, home: HOME, exists: none })).toBe('/y') // thyrox-rename: keep — respaldo heredado de configHome
   })
 
   test('sin variables ni directorios, el destino es ~/.thyrox', () => {
@@ -53,7 +53,7 @@ describe('resolveConfigHomeDir', () => {
   })
 
   test('una variable vacía no cuenta como declarada', () => {
-    expect(resolveConfigHomeDir({ env: { THYROX_CONFIG_DIR: '', CLAUDE_CONFIG_DIR: '/y' }, home: HOME, exists: none }))
+    expect(resolveConfigHomeDir({ env: { THYROX_CONFIG_DIR: '', CLAUDE_CONFIG_DIR: '/y' }, home: HOME, exists: none })) // thyrox-rename: keep — respaldo heredado de configHome
       .toBe('/y')
   })
 
@@ -65,9 +65,9 @@ describe('resolveConfigHomeDir', () => {
 })
 
 describe('getConfigHomeDir', () => {
-  const saved = { t: process.env.THYROX_CONFIG_DIR, c: process.env.CLAUDE_CONFIG_DIR, h: process.env.HOME }
+  const saved = { t: process.env.THYROX_CONFIG_DIR, c: process.env.CLAUDE_CONFIG_DIR, h: process.env.HOME } // thyrox-rename: keep — respaldo heredado de configHome
   const restore = () => {
-    for (const [k, v] of [['THYROX_CONFIG_DIR', saved.t], ['CLAUDE_CONFIG_DIR', saved.c], ['HOME', saved.h]] as const) {
+    for (const [k, v] of [['THYROX_CONFIG_DIR', saved.t], ['CLAUDE_CONFIG_DIR', saved.c], ['HOME', saved.h]] as const) { // thyrox-rename: keep — respaldo heredado de configHome
       if (v === undefined) delete process.env[k]
       else process.env[k] = v
     }
@@ -87,7 +87,7 @@ describe('getConfigHomeDir', () => {
   test('sin variables, resuelve contra el directorio del usuario y lo que existe en disco', () => {
     try {
       delete process.env.THYROX_CONFIG_DIR
-      delete process.env.CLAUDE_CONFIG_DIR
+      delete process.env.CLAUDE_CONFIG_DIR // thyrox-rename: keep — respaldo heredado de configHome
       expect(getConfigHomeDir()).toBe(resolveConfigHomeDir({ env: {}, home: homedir(), exists: existsSync }))
     } finally {
       restore()

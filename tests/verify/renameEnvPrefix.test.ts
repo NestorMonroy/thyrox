@@ -95,3 +95,16 @@ describe('renameEnvPrefix — constantes del cliente ajeno', () => {
     expect([...declared].filter(n => !FOREIGN_CONSTANTS.has(n))).toEqual([])
   })
 })
+
+describe('renameEnvPrefix — alcance de la marca keep', () => {
+  test('una marca al final de una línea de código protege sólo esa línea', () => {
+    const src = [
+      "  'CLAUDE_CODE_OAUTH_TOKEN', // thyrox-rename: keep — la del anfitrión",
+      "  'CLAUDE_CODE_SUBSCRIPTION_TYPE',",
+    ].join('\n')
+    expect(renameEnvPrefix(src).split('\n')).toEqual([
+      "  'CLAUDE_CODE_OAUTH_TOKEN', // thyrox-rename: keep — la del anfitrión",
+      "  'THYROX_CODE_SUBSCRIPTION_TYPE',",
+    ])
+  })
+})
