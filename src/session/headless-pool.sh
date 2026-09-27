@@ -203,7 +203,9 @@ DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reser
              --gpu-interval "$HP_GPU_INTERVAL" --vram-floor-mib "$VRAM_FLOOR_MIB"
              # La cota es del binario que corre los ítems: una fila medida con
              # `claude -p` no fija la de `thyrox -p` (#48), y al revés.
-             --runner "$CLAUDE_BIN")
+             --runner "$CLAUDE_BIN"
+             # Y del modelo: la misma plantilla con otro modelo es otra carga.
+             --item-model "$MODEL")
 AVAILABLE_RAM_KB="$(gawk '/^MemAvailable:/{print $2}' "${THYROX_POOL_MEMINFO_PATH:-/proc/meminfo}" 2>/dev/null)"
 [[ -z "$AVAILABLE_RAM_KB" ]] || DERIVE_ARGS+=(--available-ram-kb "$AVAILABLE_RAM_KB")
 if [[ -n "$HP_NVIDIA_SMI" ]]; then
@@ -356,6 +358,6 @@ gawk -F'\t' '
 STATUS=$?
 # La medida de esta ejecución alimenta a la siguiente. Sin GNU Time no hay
 # `.time` y `record` no escribe fila: una medida ausente no es un cero.
-[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$CLAUDE_BIN" >/dev/null
+[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$CLAUDE_BIN" --item-model "$MODEL" >/dev/null
 [[ -n "$HP_TIME" ]] || echo "memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)"
 exit $STATUS

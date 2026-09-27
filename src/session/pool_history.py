@@ -103,7 +103,8 @@ def _gpu_peak(gpu_file: Path) -> int | None:
     return reading.summary.peak_mib if reading.summary is not None else None
 
 
-def record(history: Path, out_dir: Path, runner: str | None = None) -> dict | None:
+def record(history: Path, out_dir: Path, runner: str | None = None,
+           item_model: str | None = None) -> dict | None:
     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
     ningún ``.time`` fue medible (no se escribe una fila de ceros).
 
@@ -125,6 +126,10 @@ def record(history: Path, out_dir: Path, runner: str | None = None) -> dict | No
     # nada del otro.
     if runner:
         row["runner"] = runner
+    # El modelo que corrió los ítems: otra carga con la misma plantilla. Su
+    # pico no predice el de otro modelo.
+    if item_model:
+        row["item_model"] = item_model
     vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
     if vram:
         row["peak_vram_mib"] = max(vram)
@@ -148,12 +153,16 @@ def _rows(history: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def _last_row(history: Path, runner: str | None = None) -> dict | None:
-    """La última fila; con ``runner``, la última DE ese binario. Una fila de
-    otro binario, o sin binario registrado, no describe al declarado."""
+def _last_row(history: Path, runner: str | None = None,
+              item_model: str | None = None) -> dict | None:
+    """La última fila; con ``runner`` o ``item_model``, la última que registra
+    ESE binario y ESE modelo. Una fila de otro, o sin el campo registrado, no
+    describe al declarado."""
     rows = _rows(history)
     if runner:
         rows = [r for r in rows if r.get("runner") == runner]
+    if item_model:
+        rows = [r for r in rows if r.get("item_model") == item_model]
     return rows[-1] if rows else None
 
 
@@ -245,7 +254,8 @@ def _vram_decision(row: dict | None, free_vram_mib: int | None, vram_reserve_mib
 def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MARGIN,
            reserve_kb: int = 0, free_vram_mib: int | None = None, vram_reserve_mib: int = 0,
            available_ram_kb: int | None = None, vram_floor_mib: int = 0,
-           gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S, runner: str | None = None) -> Decision:
+           gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S, runner: str | None = None,
+           item_model: str | None = None) -> Decision:
     """TTL y ``--memfree`` desde la última ejecución medida de esta plantilla.
 
     Con ``runner``, sólo cuentan las ejecuciones de ese binario: sin ninguna,
@@ -255,7 +265,7 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
     ``tsc`` del pipeline, en ``tsc_cycle``): se suma a lo medido del ítem,
     porque la admisión de Parallel tiene que dejar sitio a los dos."""
     reserve_note = f" + reserva {reserve_kb} KB" if reserve_kb else ""
-    row = _last_row(history, runner)
+    row = _last_row(history, runner, item_model)
     vram_cap, need, vram_why = _vram_decision(row, free_vram_mib, vram_reserve_mib, margin,
                                               vram_floor_mib, gpu_interval_s)
     if row is None:
@@ -265,6 +275,8 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
             missing = f"sin ejecución previa de {runner} en esta plantilla"
             if others:
                 missing += f" ({others} fila(s) de otro binario o sin binario registrado)"
+        if item_model:
+            missing += f"; ninguna con el modelo {item_model}"
         if reserve_kb:
             return Decision(None, _mebibytes(reserve_kb),
                             f"{missing}: la cota es sólo la reserva {reserve_kb} KB"
@@ -288,6 +300,7 @@ def main(argv: list[str]) -> int:
     p_rec = sub.add_parser("record", help="agrega la fila de una ejecución")
     p_rec.add_argument("history"); p_rec.add_argument("out_dir")
     p_rec.add_argument("--runner", default=None, help="el binario que corrió los ítems")
+    p_rec.add_argument("--item-model", default=None, help="el modelo que corrió los ítems")
     p_der = sub.add_parser("derive", help="imprime TTL, memfree y porqué, separados por tabulador")
     p_der.add_argument("history"); p_der.add_argument("model")
     p_der.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
@@ -299,13 +312,15 @@ def main(argv: list[str]) -> int:
     p_der.add_argument("--gpu-interval", type=float, default=DEFAULT_GPU_INTERVAL_S)
     p_der.add_argument("--vram-floor-mib", type=int, default=0)
     p_der.add_argument("--runner", default=None, help="sólo filas de este binario")
+    p_der.add_argument("--item-model", default=None, help="sólo filas de este modelo")
     args = parser.parse_args(argv)
 
     if args.command == "dir":
         print(history_dir(history_base(), Path(args.prompt)))
         return 0
     if args.command == "record":
-        row = record(Path(args.history), Path(args.out_dir), runner=args.runner)
+        row = record(Path(args.history), Path(args.out_dir), runner=args.runner,
+                     item_model=args.item_model)
         print(json.dumps(row) if row else "historial: ningún .time medible, sin fila")
         return 0
     catalog, reason = model_catalog.try_catalog()
@@ -315,7 +330,8 @@ def main(argv: list[str]) -> int:
     decision = derive(Path(args.history), args.model, catalog, args.margin, args.reserve_kb,
                       free_vram_mib=args.free_vram_mib, vram_reserve_mib=args.vram_reserve_mib,
                       available_ram_kb=args.available_ram_kb, vram_floor_mib=args.vram_floor_mib,
-                      gpu_interval_s=args.gpu_interval, runner=args.runner)
+                      gpu_interval_s=args.gpu_interval, runner=args.runner,
+                      item_model=args.item_model)
     width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap
     # `-` y no vacío: `read` con IFS de tabulador colapsa dos tabuladores
     # seguidos, y un campo vacío corre al siguiente a su lugar.

@@ -338,6 +338,8 @@ check "historial vacío: no inventa TTL" "$(thx_de)" "ttl=sin|thx=sin"
 check "la ejecución deja una fila" "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | wc -l)" "1"
 check "la fila nombra el binario que corrió los ítems" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .runner)" "$HEADLESS_POOL_CLAUDE"
+check "la fila nombra el modelo que corrió los ítems" \
+  "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .item_model)" "claude-sonnet-5"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=5m|thx=5m"
 check "con historial: declara de dónde salió el TTL" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}')" "1"
@@ -363,6 +365,19 @@ check "otro binario: no deriva memfree de su fila" \
   "$(printf '%s' "$SALIDA" | gawk '/^memfree: .*\(history\)/{n++} END{print n+0}')" "0"
 check "otro binario: lo dice" \
   "$(printf '%s' "$SALIDA" | gawk -v b="$HEADLESS_POOL_CLAUDE" 'index($0, "sin ejecución previa de " b){n++} END{print n+0}')" "1"
+unset HIST
+# La cota es también del modelo: la misma plantilla con otro modelo es otra
+# carga, y su fila no fija la de éste aunque el binario coincida.
+HIST="$F/historial-otro-modelo"
+HIST_DIR="$(HEADLESS_POOL_HISTORY_DIR="$HIST" bash "$RAIZ/bin/pool_history" dir "$F/prompt.md")"
+mkdir -p "$HIST_DIR"
+printf '{"items_measured": 1, "min_wall_s": 1.0, "max_wall_s": 1.0, "peak_kb": 900000, "runner": "%s", "item_model": "claude-opus-5"}\n' \
+  "$HEADLESS_POOL_CLAUDE" > "$HIST_DIR/runs.jsonl"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+check "otro modelo: no deriva memfree de su fila" \
+  "$(printf '%s' "$SALIDA" | gawk '/^memfree: .*\(history\)/{n++} END{print n+0}')" "0"
+check "otro modelo: lo dice" \
+  "$(printf '%s' "$SALIDA" | gawk 'index($0, "ninguna con el modelo claude-sonnet-5"){n++} END{print n+0}')" "1"
 unset HIST
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=1G corre alfa
 check "sin historial, la reserva sola es la cota" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1024M \(history\)/{n++} END{print n+0}')" "1"

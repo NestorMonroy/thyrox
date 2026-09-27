@@ -268,5 +268,31 @@ with tempfile.TemporaryDirectory() as raw:
     check("la CLI recibe --runner en las dos órdenes", "782M",
           buffer.getvalue().splitlines()[-1].split("\t")[1])
 
+    print("== 24. la cota es del MODELO que corrió los ítems ==")
+    # Una plantilla corrida con otro modelo es otra carga: su pico de RAM y de
+    # VRAM no predice el de éste. Con ``item_model`` la fila lo guarda y la
+    # derivación sólo usa las de ese modelo.
+    h = TMP / "h-modelo"
+    row = ph.record(h, run_with(["300000 10 1 0\n"]), runner="bin/cli", item_model="claude-sonnet-5")
+    check("record guarda el modelo", "claude-sonnet-5", row["item_model"] if row else None)
+    ph.record(h, run_with(["900000 10 1 0\n"]), runner="bin/cli", item_model="claude-opus-5")
+    check("derive usa la fila de su modelo", "586M",
+          ph.derive(h, MODEL, catalog, margin=2.0, runner="bin/cli", item_model="claude-sonnet-5").memfree)
+    check("... y la del otro modelo es la del otro", "1758M",
+          ph.derive(h, MODEL, catalog, margin=2.0, runner="bin/cli", item_model="claude-opus-5").memfree)
+    d = ph.derive(h, MODEL, catalog, margin=2.0, runner="bin/cli", item_model="claude-haiku-4-5")
+    check("un modelo sin filas no hereda la de otro", (None, None), (d.memfree, d.cache_ttl))
+    check("... y lo nombra", True, "claude-haiku-4-5" in d.why)
+    check("sin item_model se conserva la conducta anterior", "1758M",
+          ph.derive(h, MODEL, catalog, margin=2.0, runner="bin/cli").memfree)
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["record", str(TMP / "h-cli-modelo"), str(run_with(["400000 10 1 0\n"])),
+                 "--runner", "bin/cli", "--item-model", "claude-sonnet-5"])
+        ph.main(["derive", str(TMP / "h-cli-modelo"), MODEL, "--margin", "2", "--runner", "bin/cli",
+                 "--item-model", "claude-opus-5"])
+    check("la CLI recibe --item-model en las dos órdenes", "-",
+          buffer.getvalue().splitlines()[-1].split("\t")[1])
+
 print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
 raise SystemExit(1 if FAILED else 0)
