@@ -1,0 +1,21 @@
+run-task-pool: 3 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T025246
+  job-20260927T025246/job-001 pid 25939   bash bin/check_package_typecheck --strict mcp-runtime > .claude/workbench/frontera-publica-20260927T023207/mcp/tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/mcp/tsc.out
+  job-20260927T025246/job-002 pid 25992   cd src/packages/mcp-runtime && bun test > ../../../.claude/workbench/frontera-publica-20260927T023207/mcp/bun.out 2>&1; echo EXIT=$? >> ../../../.claude/workbench/frontera-publica-20260927T023207/mcp/bun.out
+  job-20260927T025246/job-003 pid 26025   bash bin/check_stand_ins src > .claude/workbench/frontera-publica-20260927T023207/mcp/stand-ins.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/mcp/stand-ins.out
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T025246_job-002 -> OK (2 de 4)
+asentado: job-20260927T025246_job-003 -> OK (3 de 4)
+asentado: job-20260927T025246_job-001 -> OK (2 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T025246
+       | (vacío — no emitió nada)
+OK     job-20260927T025246_job-001
+       | EXIT=0
+       memoria pico: 571208 KB (558 MB) · pared 5.56s
+OK     job-20260927T025246_job-002
+       | EXIT=0
+       memoria pico: 220596 KB (215 MB) · pared 1.29s
+OK     job-20260927T025246_job-003
+       | EXIT=0
+       memoria pico: 19092 KB (19 MB) · pared 1.82s
+__BG_EXIT__=0

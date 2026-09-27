@@ -3,12 +3,10 @@
  * `ccnmt: packages/mcp-runtime/src/macOsKeychainHelpers.ts` — sus 6
  * exportaciones, ninguna omitida.
  *
- * `getClaudeConfigHomeDir` usa el sustituto local verbatim de
- * `./internal/pendingCrossPackageDeps.ts` — el mismo símbolo cuyo repunte
- * falso por `grep` (sin resolución real) se corrigió en H-DOCS-1160 dentro
- * de `client/authCache.ts` de este mismo puerto. `@thyrox/config/env/utils`
- * sólo trae `isEnvTruthy`/`readEnv`/`getAllEnv` (porte parcial
- * TASK-DOCS-0200); ésos son los 14 símbolos omitidos.
+ * `getClaudeConfigHomeDir` viene de `@thyrox/config/env/utils`. Hasta el
+ * 2026-09-27 era un sustituto local (`internal/pendingCrossPackageDeps.ts`),
+ * escrito cuando ese subpath no lo exportaba; `check_stand_ins` midió que ya
+ * lo hacía y el sustituto se retiró.
  *
  * `getOauthConfig` (`@claude-code-how-works/provider/oauthConstants`) NO
  * tiene sustituto local: no es una función pura y simple — construye
@@ -34,7 +32,7 @@
 
 import { createHash } from 'crypto'
 import { userInfo } from 'os'
-import { getClaudeConfigHomeDir } from './internal/pendingCrossPackageDeps.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
 import type { SecureStorageData } from './secureStorageTypes'
 
 function getOauthConfig(): { OAUTH_FILE_SUFFIX: string } {

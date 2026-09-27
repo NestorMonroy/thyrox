@@ -22,17 +22,15 @@
  * un `import` estático de un subpath inexistente hace fallar la carga del
  * MÓDULO ENTERO (`Cannot find module`), no sólo el símbolo — medido con
  * `bun -e "import(...)"` sobre este mismo archivo antes de la corrección.
- * Se usa en su lugar el sustituto local verbatim de
- * `./internal/pendingCrossPackageDeps.ts` (mismo cuerpo que
- * `@thyrox/local-observability` ya usa para el mismo símbolo), que sí es
- * importable. Se retira cuando `@thyrox/config/env/utils` exporte
- * `getClaudeConfigHomeDir` — ver H-DOCS-1160 para el episodio que originó
- * la primera mitad de esta corrección.
+ * Hoy viene de `@thyrox/config/env/utils`, que ya exporta
+ * `getClaudeConfigHomeDir`; el sustituto local que lo cubría se retiró el
+ * 2026-09-27 (`check_stand_ins`). Ver H-DOCS-1160 para el episodio que
+ * originó la primera mitad de esta corrección.
  */
 import { mkdir, readFile, unlink, writeFile } from "fs/promises";
 import { dirname } from "path";
 import { jsonParse, jsonStringify } from "@thyrox/local-observability/slowOperations.js";
-import { getClaudeConfigHomeDir } from "../internal/pendingCrossPackageDeps.js";
+import { getClaudeConfigHomeDir } from "@thyrox/config/env/utils";
 
 const MCP_AUTH_CACHE_TTL_MS = 15 * 60 * 1000;
 

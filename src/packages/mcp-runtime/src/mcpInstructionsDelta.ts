@@ -6,9 +6,8 @@
  * `@thyrox/local-observability` (`logEvent`). `isEnvTruthy` se toma de
  * `@thyrox/config/env/utils` (SÍ resuelve — porte parcial TASK-DOCS-0200,
  * y `isEnvTruthy` es uno de los tres símbolos que sí trae). `isEnvDefinedFalsy`
- * usa el sustituto local de `./internal/pendingCrossPackageDeps.ts` (no
- * está entre esos tres — mismo símbolo que `claudeai.ts` de este puerto
- * dejaba como especificador colgante antes de que se creara ese sustituto).
+ * viene del mismo subpath: su sustituto local se retiró el 2026-09-27, cuando
+ * `check_stand_ins` midió que `@thyrox/config/env/utils` ya lo exportaba.
  *
  * Se dejan como especificadores colgantes (deuda documentada, filtro de
  * dos pasos — ninguno de los dos subpaths existe en el `exports` del
@@ -32,7 +31,7 @@ import type {
 import type { Message } from '@thyrox/agent/messageShapes'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
-import { isEnvDefinedFalsy } from './internal/pendingCrossPackageDeps.js'
+import { isEnvDefinedFalsy } from '@thyrox/config/env/utils'
 
 export type McpInstructionsDelta = {
   /** Nombres de servidor — para reconstrucción de escaneo sin estado. */

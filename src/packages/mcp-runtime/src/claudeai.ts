@@ -9,11 +9,10 @@
  * se re-exporta desde la raíz del paquete (declarado en `compat.ts`), igual
  * que ya lo usa `mcpConnectionTelemetry.ts` de este mismo puerto.
  *
- * `isEnvDefinedFalsy` usa el sustituto local de
- * `./internal/pendingCrossPackageDeps.ts` (no está entre los tres símbolos
- * que `@thyrox/config/env/utils` sí trae — porte parcial TASK-DOCS-0200;
- * ver H-DOCS-1160 para el episodio en que confundir esto con
- * `getClaudeConfigHomeDir` produjo un repunte falso por `grep`).
+ * `isEnvDefinedFalsy` viene de `@thyrox/config/env/utils`: su sustituto
+ * local se retiró el 2026-09-27, cuando `check_stand_ins` midió que el
+ * subpath ya lo exportaba (ver H-DOCS-1160 para el repunte falso por `grep`
+ * que originó aquel sustituto).
  *
  * `getGlobalConfig`/`saveGlobalConfig` (`@claude-code-how-works/config`),
  * `getOauthConfig` (`@claude-code-how-works/provider/oauthConstants`) y
@@ -33,7 +32,7 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { isEnvDefinedFalsy } from './internal/pendingCrossPackageDeps.js'
+import { isEnvDefinedFalsy } from '@thyrox/config/env/utils'
 import { clearMcpAuthCache } from './client.js'
 import { normalizeNameForMCP } from './normalization.js'
 import type { ScopedMcpServerConfig } from './types.js'

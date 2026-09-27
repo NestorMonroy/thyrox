@@ -1,0 +1,3 @@
+bash bin/check_package_typecheck --strict mcp-runtime > .claude/workbench/frontera-publica-20260927T023207/mcp/tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/mcp/tsc.out
+cd src/packages/mcp-runtime && bun test > ../../../.claude/workbench/frontera-publica-20260927T023207/mcp/bun.out 2>&1; echo EXIT=$? >> ../../../.claude/workbench/frontera-publica-20260927T023207/mcp/bun.out
+bash bin/check_stand_ins src > .claude/workbench/frontera-publica-20260927T023207/mcp/stand-ins.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/mcp/stand-ins.out
