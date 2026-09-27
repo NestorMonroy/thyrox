@@ -63,6 +63,10 @@ despachar() { # despachar <archivo-de-comandos> [args...]
 echo "test-run-task-pool-isolation:"
 
 # -------------------------------------------------------------------------
+# Los conteos excluyen `.jobs/`: ahí vive el `.cmd` que GNU Parallel entrega a
+# cada trabajo, que es su INSUMO y lleva el texto del comando. La evidencia
+# que estas aserciones cuentan es la salida, en `<nombre>.log`.
+#
 # 1. EL CONTROL POSITIVO — dos despachos, mismo prefijo, la evidencia del
 #    primero SOBREVIVE. Es el defecto real: hoy `cifras-001.log` pasaba de
 #    PRIMER-DESPACHO a SEGUNDO-DESPACHO y quedaba UN archivo.
@@ -73,8 +77,8 @@ printf 'echo SEGUNDO-DESPACHO\n' > "$T/b.txt"
 despachar "$T/a.txt"
 despachar "$T/b.txt"
 
-_primero="$(grep -rl 'PRIMER-DESPACHO'  "$T/logs" 2>/dev/null | wc -l)"
-_segundo="$(grep -rl 'SEGUNDO-DESPACHO' "$T/logs" 2>/dev/null | wc -l)"
+_primero="$(grep -rl --exclude-dir=.jobs 'PRIMER-DESPACHO'  "$T/logs" 2>/dev/null | wc -l)"
+_segundo="$(grep -rl --exclude-dir=.jobs 'SEGUNDO-DESPACHO' "$T/logs" 2>/dev/null | wc -l)"
 af "la evidencia del PRIMER despacho sobrevive" 1 "$_primero"
 af "la del SEGUNDO tambien esta"                1 "$_segundo"
 
@@ -145,7 +149,7 @@ export BG_DIR="$T/logs-sin"
 printf 'echo SIN-NOMBRE\n' > "$T/sin-nombre.txt"
 despachar "$T/sin-nombre.txt"
 af "una linea sin tabulador sigue corriendo" 1 \
-   "$(grep -rl 'SIN-NOMBRE' "$T/logs-sin" 2>/dev/null | wc -l)"
+   "$(grep -rl --exclude-dir=.jobs 'SIN-NOMBRE' "$T/logs-sin" 2>/dev/null | wc -l)"
 
 # -------------------------------------------------------------------------
 # 6. Un comando que CONTIENE un tabulador no se parte por error: el nombre es
@@ -159,7 +163,7 @@ export BG_DIR="$T/logs-tab"
 printf 'printf "A\\tB\\n"\n' > "$T/con-tab.txt"
 despachar "$T/con-tab.txt"
 af "un comando con tabulador no se parte" 1 \
-   "$(grep -rlP 'A\tB' "$T/logs-tab" 2>/dev/null | wc -l)"
+   "$(grep -rlP --exclude-dir=.jobs 'A\tB' "$T/logs-tab" 2>/dev/null | wc -l)"
 
 echo
 echo "resultado: $OK de $((OK+FALLA)) aserciones en verde"

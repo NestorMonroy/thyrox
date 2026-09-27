@@ -1,0 +1,8 @@
+test-run-task-pool	bash tests/session/test-run-task-pool.sh
+test-run-task-pool-memfree	bash tests/session/test-run-task-pool-memfree.sh
+test-run-task-pool-scope	bash tests/session/test-run-task-pool-scope.sh
+test-run-task-pool-isolation	bash tests/session/test-run-task-pool-isolation.sh
+test-gpu-admission-cli	bash tests/session/test-gpu-admission-cli.sh
+test-headless-pool	bash tests/session/test-headless-pool.sh
+test_gpu_scenarios	python3 tests/session/test_gpu_scenarios.py
+test_gpu_monitor	python3 tests/session/test_gpu_monitor.py

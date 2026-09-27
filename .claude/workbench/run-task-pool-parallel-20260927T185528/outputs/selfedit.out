@@ -1,0 +1,27 @@
+exit=0
+run-task-pool: 2 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/selfedit/mut/mut-20260927T190635
+  mut-20260927T190635/mut-001 sleep 2
+  mut-20260927T190635/mut-002 sleep 2
+run-task-pool: lanzados 2 de 2; esperando en PRIMER PLANO (timeout 28s)
+asentado: mut-20260927T190635_mut-001 -> OK (2 de 3)
+asentado: mut-20260927T190635_mut-002 -> OK (3 de 3)
+== 3 trabajos asentados ==
+OLVIDADO mut-20260927T190635
+       | (vacío — no emitió nada)
+OK     mut-20260927T190635_mut-001 exit=0
+       | EXIT=0
+       memoria pico: 3268 KB (3 MB) · pared 2.00s
+OK     mut-20260927T190635_mut-002 exit=0
+       | EXIT=0
+       memoria pico: 3192 KB (3 MB) · pared 2.00s
+total 32
+drwxr-xr-x 3 root root 4096 Sep 27 19:06 .
+drwxr-xr-x 3 root root 4096 Sep 27 19:06 ..
+drwxr-xr-x 2 root root 4096 Sep 27 19:06 .jobs
+-rw-r--r-- 1 root root  692 Sep 27 19:06 joblog.tsv
+-rw-r--r-- 1 root root    7 Sep 27 19:06 mut-001.log
+-rw-r--r-- 1 root root   20 Sep 27 19:06 mut-001.log.time
+-rw-r--r-- 1 root root    7 Sep 27 19:06 mut-002.log
+-rw-r--r-- 1 root root   20 Sep 27 19:06 mut-002.log.time
+EXIT=0
+EXIT=0

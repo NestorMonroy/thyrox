@@ -1,0 +1,26 @@
+run-task-pool: 4 trabajo(s), anchura 1 (en serie), logs en /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-annul/relee/rel-20260927T191823
+  rel-20260927T191823/rel-001 sleep 2
+  rel-20260927T191823/rel-002 sleep 2
+  rel-20260927T191823/rel-003 sleep 2
+  rel-20260927T191823/rel-004 sleep 2
+run-task-pool: anchura ahora 3 (releida de /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-annul/vivo.conf)
+run-task-pool: lanzados 4 de 4; esperando en PRIMER PLANO (timeout 25s)
+asentado: rel-20260927T191823_rel-001 -> OK (2 de 5)
+asentado: rel-20260927T191823_rel-002 -> OK (3 de 5)
+asentado: rel-20260927T191823_rel-003 -> OK (4 de 5)
+asentado: rel-20260927T191823_rel-004 -> OK (5 de 5)
+== 5 trabajos asentados ==
+OLVIDADO rel-20260927T191823
+       | (vacío — no emitió nada)
+OK     rel-20260927T191823_rel-001 exit=0
+       | EXIT=0
+       memoria pico: 3184 KB (3 MB) · pared 2.00s
+OK     rel-20260927T191823_rel-002 exit=0
+       | EXIT=0
+       memoria pico: 3216 KB (3 MB) · pared 2.00s
+OK     rel-20260927T191823_rel-003 exit=0
+       | EXIT=0
+       memoria pico: 3240 KB (3 MB) · pared 2.00s
+OK     rel-20260927T191823_rel-004 exit=0
+       | EXIT=0
+       memoria pico: 3200 KB (3 MB) · pared 2.00s

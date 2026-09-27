@@ -90,10 +90,12 @@ Python o con una herramienta dedicada vuelve por la puerta de atrás.
 defecto — `which parallel` falla. Ya existe su instalador idempotente,
 opt-in y con re-verificación del binario (no del exit code del `apt`):
 `src/lib/toolchain.sh::thyrox_toolchain_require_parallel` (`THYROX_INSTALL_PARALLEL=1`).
-Hoy **0 gates** lo invocan fuera de su propia suite
-(`tests/lib/test-toolchain-parallel.sh`) — el mecanismo de lotes de este
-árbol sigue siendo `src/session/run-task-pool.sh`
-(`trabajo-en-segundo-plano.md`), no `parallel`; instalarlo no lo reemplaza.
+El mecanismo de lotes de este árbol, `src/session/run-task-pool.sh`
+(`trabajo-en-segundo-plano.md`), **es** GNU Parallel: lo resuelve con ese
+instalador y rehúsa con exit 4 si falta. Parallel ejerce la anchura
+(`--jobs <archivo>`), la cota de memoria (`--limit`) y el drenaje (SIGHUP); el
+pool pone el marcador, el ledger y la barrera. Lo mismo `headless-pool` y
+`run_ts_isolated.sh`.
 
 | Necesidad | Idioma |
 |---|---|
