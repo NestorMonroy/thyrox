@@ -151,7 +151,7 @@ DB_FILENAME = "agent_store.sqlite3"
 #: aqui convertiria la orden en un estado persistible.
 #:
 #: Su gemelo en la otra lengua es ``src/packages/task/schema.ts::TASK_STATUSES``, y la
-#: suite cruzada (``tests/task/schema.test.ts``) exige que los dos declaren lo
+#: suite cruzada (``src/packages/task/__tests__/schema.test.ts``) exige que los dos declaren lo
 #: mismo — dos lenguas, un vocabulario.
 TASK_STATUSES = ("pending", "in_progress", "completed")
 

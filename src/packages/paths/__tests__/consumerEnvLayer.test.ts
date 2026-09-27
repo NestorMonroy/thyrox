@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ENV_FILE_VAR, envValue } from '../../src/packages/paths/reach.ts'
+import { ENV_FILE_VAR, envValue } from '../reach.ts'
 
 const KEY = 'THYROX_H178_PROBE'
 const PROVIDER_KEY = 'THYROX_CLONE_PREFIX'

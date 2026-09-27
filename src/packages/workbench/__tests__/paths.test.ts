@@ -37,8 +37,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { thyroxRoot } from '../../src/packages/paths/reach.ts'
-import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../../src/packages/workbench/paths.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
+import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {

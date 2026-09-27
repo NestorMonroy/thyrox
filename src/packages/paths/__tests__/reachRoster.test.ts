@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { cloneName, reachRoots, root } from '../../src/packages/paths/reach.ts'
+import { cloneName, reachRoots, root } from '../reach.ts'
 
 const KEYS = ['THYROX_REACH_ROOT', 'THYROX_CLONE_PREFIX', 'THYROX_REACH_ROOTS', 'THYROX_ENV_FILE']
 let base: string

@@ -38,12 +38,12 @@ import { join } from 'node:path'
 import { readFileSync } from 'node:fs'
 import {
   DEFAULT_LEDGER_REL, gitTopLevel as gitTopLevelHarness, ledgerPathFor as ledgerPathForHarness,
-} from '../../src/packages/coordination/claims.ts'
+} from '../claims.ts'
 import {
   CoordinationRootError, gitTopLevel, ledgerPathFor, LEDGER_REL,
-} from '../../src/packages/coordination/ledger.ts'
+} from '../ledger.ts'
 
-const RAIZ = new URL('../..', import.meta.url).pathname
+const RAIZ = new URL('../../../..', import.meta.url).pathname
 const CLAIMS = join(RAIZ, 'src/packages/coordination/claims.ts')
 
 describe('el duplicado se colapsó a una reexportación', () => {

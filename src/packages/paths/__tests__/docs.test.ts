@@ -19,7 +19,7 @@ import {
   docsLayer, docsRoot, findingPath, homeFor, initiativeAnalysis, initiativeArtifact,
   initiativeDir, initiativeIndex, isHome, isUnderDocs, resetDocsRootCache, submoduleBin,
   type Home,
-} from '../../src/packages/paths/docs.ts'
+} from '../docs.ts'
 
 const conRaiz = (raiz: string, f: () => void) => {
   const previo = process.env.KAUPAMEX_DOCS_ROOT

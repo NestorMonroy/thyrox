@@ -32,7 +32,7 @@ import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-const ROOT = new URL('../..', import.meta.url).pathname
+const ROOT = new URL('../../../..', import.meta.url).pathname
 const PACKAGE_DIR = join(ROOT, 'src', 'packages', 'task')
 const PYTHON_TWIN = join(ROOT, 'src', 'task')
 const CLI = join(ROOT, 'src', 'packages', 'cli')
@@ -100,7 +100,7 @@ describe('the package has a boundary', () => {
 
 describe('behaviour is preserved', () => {
   test('parseRstTasks still reads a checked box', async () => {
-    const { parseRstTasks } = await import('../../src/packages/task/rst.ts')
+    const { parseRstTasks } = await import('../rst.ts')
     const rows = parseRstTasks('- [x] T-001 hecho\n- [ ] T-002 pendiente\n')
     expect(rows.length).toBe(2)
     expect(rows[0]!.done).toBe(true)

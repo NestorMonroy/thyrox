@@ -10,7 +10,7 @@ Qué haría fallar a estos casos (sub-patrón D): retirar el parámetro `source`
 de `env_value` y volver a leer `os.environ` incondicionalmente. Entonces el
 primer caso lee lo que el proceso tenga y el fake no decide nada.
 
-Ciega a: la mitad TypeScript, cuyo puerto ata `tests/paths/reach.test.ts`. Y
+Ciega a: la mitad TypeScript, cuyo puerto ata `src/packages/paths/__tests__/reach.test.ts`. Y
 ciega a los demás efectos conducidos del módulo —el ascenso por el sistema de
 archivos de `consumer_root`, que sigue sin puerto— por decisión de alcance:
 este porte declara UN puerto, el que sus consumidores ya usan.

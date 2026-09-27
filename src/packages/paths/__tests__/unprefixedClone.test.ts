@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
-import { cloneName, clonePrefix, cloneShortName, cloneSuffixOf } from '../../src/packages/paths/reach.ts'
+import { cloneName, clonePrefix, cloneShortName, cloneSuffixOf } from '../reach.ts'
 
 let base: string
 const saved: Record<string, string | undefined> = {}

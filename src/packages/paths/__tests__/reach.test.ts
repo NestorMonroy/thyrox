@@ -25,7 +25,7 @@ import {
   agentsDir, AGENTS_DIR_VAR, cloneName, cloneNames, ENV_FILE_VAR, envNames, envValue, root, roots,
   CONSUMER_MARKER, CONSUMER_ROOT_VAR, ConsumerUnknownError, consumerRoot,
   ForReadingDeclarations, THYROX_ROOT_VAR, thyroxRoot, treeRoot,
-} from '../../src/packages/paths/reach.ts'
+} from '../reach.ts'
 
 const guardado = { ...process.env }
 const temporales: string[] = []

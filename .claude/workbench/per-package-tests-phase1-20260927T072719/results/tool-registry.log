@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/adapterFactory.integration.test.ts:
+101 |         endpoint: 'https://api.openai.com/v1',
+102 |         models: [{ id: 'gpt-5.5', label: 'GPT-5.5' }],
+103 |       },
+104 |     ]
+105 |     currentMainLoopModel = 'openai:gpt-5.5'
+106 |     expect((await freshFactory())().constructor.name).toBe('BingSearchAdapter')
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "BingSearchAdapter"
+Received: "ApiSearchAdapter"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/tools/WebSearchTool/__tests__/adapterFactory.integration.test.ts:106:55)
+(fail) createAdapter — connection-routed integration (v26.5.26 leak fix) > OpenAI connection → BingSearchAdapter [0.26ms]
+
+ 1413 pass
+ 1 fail
+ 3242 expect() calls
+Ran 1414 tests across 84 files. [7.34s]

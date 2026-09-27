@@ -44,7 +44,7 @@ describe('the harness package ceases to exist', () => {
 
   test('2. the two orphan suites travel with their subject to coordination', () => {
     for (const name of ['claims.test.ts', 'branchIntegration.test.ts']) {
-      expect(existsSync(join(ROOT, 'tests', 'coordination', name))).toBe(true)
+      expect(existsSync(join(ROOT, 'src', 'packages', 'coordination', '__tests__', name))).toBe(true)
     }
     expect(existsSync(join(ROOT, 'src', 'packages', 'coordination', 'claims.ts'))).toBe(true)
   })

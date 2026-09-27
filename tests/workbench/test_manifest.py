@@ -1,6 +1,6 @@
 """Pruebas de ``workbench.manifest`` — acunar, resolver, andamiar.
 
-Espeja el bloque de resolutor de ``tests/workbench/manifest.test.ts`` y anade el
+Espeja el bloque de resolutor de ``src/packages/workbench/__tests__/manifest.test.ts`` y anade el
 control que ese bloque no tiene: la **anulacion por mtime invertido**.
 
 Por que ese control y no otro. ``runs_for`` ordena por NOMBRE, y un test que

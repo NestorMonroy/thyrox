@@ -1,0 +1,21 @@
+src/packages/coordination	0	60	PASS
+src/packages/paths	0	84	PASS
+src/packages/store	0	4	PASS
+src/packages/task	0	44	PASS
+src/packages/workbench	0	52	PASS
+src/packages/shell	0	284	PASS
+src/packages/tool-registry	1	1414	FAIL
+ 0 fail
+ 907 expect() calls
+Ran 308 tests across 6 files. [8.26s]
+  coordination: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  paths: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  store: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  task: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  workbench: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 7 de 7 paquete(s))
+python3: can't open file '/home/user/thyrox/src/verify/check_package_boundary.py': [Errno 2] No such file or directory
+__BG_EXIT__=0

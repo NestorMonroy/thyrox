@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createSyntheticOutputTool } from './SyntheticOutputTool.js'
+import { createSyntheticOutputTool } from '../SyntheticOutputTool.js'
 
 describe('createSyntheticOutputTool', () => {
   test('accepts standard format annotations', () => {
