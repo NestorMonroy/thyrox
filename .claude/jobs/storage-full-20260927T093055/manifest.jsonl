@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/storage && bun test > ../../../.claude/build-logs/storage-full.log 2>&1; echo EXIT=$?", "started_at": "2026-09-27T09:30:55+00:00"}

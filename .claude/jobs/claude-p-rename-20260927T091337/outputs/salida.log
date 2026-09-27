@@ -1,0 +1,231 @@
+run-task-pool: 15 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T091337
+  job-20260927T091337/job-001 pid 30812   cd /home/user/thyrox && PYTHONPATH=src python3 tests/agents/test_model_catalog_tokens.py
+  job-20260927T091337/job-002 pid 30835   cd /home/user/thyrox && PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+  job-20260927T091337/job-003 pid 30853   cd /home/user/thyrox && PYTHONPATH=src python3 tests/hooks/test_stop_payload.py
+  job-20260927T091337/job-004 pid 30888   cd /home/user/thyrox && bash tests/lib/test-toolchain-gnu-time.sh
+  job-20260927T091337/job-005 pid 30919   cd /home/user/thyrox && PYTHONPATH=src python3 tests/roster/test_stdin_probe.py
+  job-20260927T091337/job-006 pid 30954   cd /home/user/thyrox && bash tests/session/test-headless-pool.sh
+  job-20260927T091337/job-007 pid 31005   cd /home/user/thyrox && bash tests/session/test-wait-jobs-probe.sh
+  job-20260927T091337/job-008 pid 31293   cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_gpu_monitor.py
+  job-20260927T091337/job-009 pid 524     cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_pool_history.py
+  job-20260927T091337/job-010 pid 803     cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_probe_model_switch_cache.py
+  job-20260927T091337/job-011 pid 821     cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_check_cache_layout.py
+  job-20260927T091337/job-012 pid 1128    cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_member_port.py
+  job-20260927T091337/job-013 pid 1378    cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_step_report.py
+  job-20260927T091337/job-014 pid 1403    cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_tsc_cycle.py
+  job-20260927T091337/job-015 pid 1422    cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_tsc_reflect.py
+run-task-pool: lanzados 15 de 15; esperando en PRIMER PLANO (timeout 600s)
+asentado: job-20260927T091337_job-001 -> OK (2 de 16)
+asentado: job-20260927T091337_job-002 -> OK (3 de 16)
+asentado: job-20260927T091337_job-003 -> OK (4 de 16)
+asentado: job-20260927T091337_job-004 -> OK (5 de 16)
+asentado: job-20260927T091337_job-005 -> OK (6 de 16)
+asentado: job-20260927T091337_job-007 -> OK (7 de 16)
+asentado: job-20260927T091337_job-008 -> OK (8 de 16)
+asentado: job-20260927T091337_job-009 -> OK (9 de 16)
+asentado: job-20260927T091337_job-010 -> OK (10 de 16)
+asentado: job-20260927T091337_job-011 -> OK (11 de 16)
+asentado: job-20260927T091337_job-012 -> OK (12 de 16)
+asentado: job-20260927T091337_job-013 -> OK (13 de 16)
+asentado: job-20260927T091337_job-014 -> OK (14 de 16)
+asentado: job-20260927T091337_job-015 -> OK (15 de 16)
+esperando: 15 de 16 asentados, 30s; vivos: job-20260927T091337_job-006
+sonda job-20260927T091337_job-006: 30954 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 30958 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 30959 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+sonda job-20260927T091337_job-006: 5272 bash stdin=channel(pipe:[62388]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5373 parallel stdin=channel(pipe:[62388]) sin escritor estado=S cpu=0.24s
+sonda job-20260927T091337_job-006: 5407 bash stdin=channel(pipe:[63993]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5538 bash stdin=channel(pipe:[64527]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5544 timeout stdin=channel(pipe:[64527]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5546 bash stdin=channel(pipe:[64527]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5556 sleep stdin=channel(pipe:[64527]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5539 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+sonda job-20260927T091337_job-006: 5275 bash stdin=channel(pipe:[62389]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5377 parallel stdin=channel(pipe:[62389]) sin escritor estado=S cpu=0.24s
+sonda job-20260927T091337_job-006: 5419 bash stdin=channel(pipe:[63067]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T091337_job-006: 5425 python stdin=channel(pipe:[63067]) sin escritor estado=S cpu=0.06s
+asentado: job-20260927T091337_job-006 -> OK (7 de 16)
+== 16 trabajos asentados ==
+OLVIDADO job-20260927T091337
+       | (vacío — no emitió nada)
+OK     job-20260927T091337_job-001 exit=0
+       |   ok    sin catálogo ni modelo: la fórmula fija, declarada
+       | == 8. choose_cache_ttl: gemelo de chooseCacheTtl (provider/src/cost/policy.ts) ==
+       |   ok    umbral de caducidades: (1h − 5m) / 5m, del precio del tier
+       |   ok    turnos seguidos (hueco ≤ 5 min): 5m
+       |   ok    un hueco entre 5 y 60 min: 1h
+       |   ok    un hueco de más de una hora: 5m, ninguna caché sobrevive
+       |   ok    el porqué se publica junto a la decisión
+       | 
+       | 20 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 14296 KB (14 MB) · pared 0.04s
+OK     job-20260927T091337_job-002 exit=0
+       | ok   test_stays_silent_on_a_payload_without_prompt
+       | ok   test_stays_silent_when_the_work_needs_judgment
+       | ok   test_suggests_the_headless_pool_for_judgment_over_many_items
+       | ok   test_the_judgment_half_carries_its_own_weight
+       | ok   test_the_notice_states_the_measured_cost_asymmetry
+       | ok   test_the_real_captured_payload_stays_silent
+       | ok   test_warns_when_the_dispatched_work_is_a_suite
+       | 
+       | 11 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 11680 KB (11 MB) · pared 0.03s
+OK     job-20260927T091337_job-003 exit=0
+       |   ok    supera los 2 MB
+       |   ok    y sigue siendo reentrada
+       | == 6. read_payload: stdin ilegible NO rompe el turno ==
+       |   ok    None se lee como objeto vacío
+       |   ok    basura se lee como objeto vacío
+       |   ok    un objeto se devuelve entero
+       |   ok    un no-objeto se descarta
+       | 
+       | 19 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15992 KB (16 MB) · pared 0.04s
+OK     job-20260927T091337_job-004 exit=0
+       |   ok    el rechazo nombra la variable de opt-in y el paquete
+       |   ok    un GNU time presente pasa sin opt-in
+       |   ok    un instalador que miente NO se acepta
+       |   ok    el instalador por defecto pide el paquete time
+       |   ok    el binario por defecto es una ruta absoluta
+       |   ok    la palabra reservada time no se acepta como GNU time
+       |   ok    un time que no es GNU rehusa
+       | 
+       | 9 casos: 9 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 12720 KB (12 MB) · pared 0.09s
+OK     job-20260927T091337_job-005 exit=0
+       |   ok    la línea es TSV: pid, destino, clase, estado, cpu, escritores
+       |   ok    una tubería cuenta a quien la tiene para escribir, no a quien sólo la lee
+       |   ok    una tubería sin escritor vivo: 0, leer da EOF
+       |   ok    un socket o un no-canal no se miden: ninguno, no cero
+       | stdin_probe: REHÚSA — los pids son enteros
+       |   ok    un pid no numérico rehúsa con exit 2
+       |   ok    con GNU Parallel -k: una línea por pid, en el orden de entrada
+       | 
+       | test_stdin_probe: 12 aserciones — 12 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 18848 KB (18 MB) · pared 0.29s
+OK     job-20260927T091337_job-006 exit=0
+       | OK   una plantilla, un solo historial
+       | OK   otro binario: no deriva memfree de su fila
+       | OK   otro binario: lo dice
+       | OK   otro modelo: no deriva memfree de su fila
+       | OK   otro modelo: lo dice
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 105 de 105 · fallos: 0
+       | EXIT=0
+       memoria pico: 22564 KB (22 MB) · pared 64.02s
+OK     job-20260927T091337_job-007 exit=0
+       |   ok    probe: sondea el árbol del trabajo y ve el canal del nieto
+       |   ok    probe: avisa de quien lee stdin de un canal, nombrando el trabajo
+       |   ok    probe: el trabajo limpio se sondea y no se avisa
+       |   ok    probe: una tubería sin escritor vivo no es un cuelgue: se sondea y no se avisa
+       |   ok    probe sin GNU Parallel: sondea en serie y lo dice
+       |   ok    wait: el latido sondea al vivo sin que se lo pidan
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18716 KB (18 MB) · pared 7.26s
+OK     job-20260927T091337_job-008 exit=0
+       |   ok    sólo cuentan los dueños vivos
+       |   ok    soltada, no queda nada
+       | == 5b. un proceso que sale a mitad del recorrido no tumba tree() ==
+       |   ok    el hijo que desapareció cuenta y el recorrido sigue
+       | == 6. disponible() distingue las dos situaciones ==
+       |   ok    con el falso: disponible
+       |   ok    sin él: no disponible
+       | 
+       | test_gpu_monitor: 43 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16876 KB (16 MB) · pared 9.16s
+OK     job-20260927T091337_job-009 exit=0
+       |   ok    sin límite declarado, la edad no cuenta
+       |   ok    derive con pocos ítems: pide la GPU entera, de a uno
+       | == 27. la CLI recibe la plantilla, los ítems mínimos y la edad máxima ==
+       |   ok    record --template guarda la huella
+       |   ok    ... y la fecha
+       |   ok    derive --template con OTRA plantilla: la GPU entera
+       |   ok    ... con la MISMA plantilla: el pico medido
+       | 
+       | test_pool_history: 89 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 22960 KB (22 MB) · pared 0.10s
+OK     job-20260927T091337_job-010 exit=0
+       | OK   matriz: leer casi todo con otro id sería clave compartida
+       | OK   matriz: el control se marca como tal, no como hallazgo
+       | OK   matriz: un par cruzado por debajo de su control no comparte conversación
+       | OK   matriz: el control se compara consigo mismo y da True
+       | OK   matriz: sin control del mismo origen, vs_control no decide
+       | OK   matriz: sin contexto previo el par no decide
+       | OK   preconditions: sin binario → mensaje y código 2
+       | 
+       | test_probe_model_switch_cache: 48 ok, 0 fallos (alcance medido: 48 aserciones)
+       | EXIT=0
+       memoria pico: 14304 KB (14 MB) · pared 0.04s
+OK     job-20260927T091337_job-011 exit=0
+       |   ok    las copias de annul_parallel también
+       |   ok    el README de otra carpeta no cubre ésta
+       |   ok    el hogar sale de THYROX_CACHE_DIR, no del literal
+       |   ok    reporta la deuda con su denominador y sale 0 sin --strict
+       |   ok    con --staged, un commit que no toca el cache no se bloquea
+       |   ok    con --staged, un archivo suelto nuevo se bloquea y se nombra
+       |   ok    con --staged, lo nuevo dentro de una carpeta con README pasa
+       |   ok    un árbol que no es repositorio rehúsa, sin cifra
+       | test_check_cache_layout: 12 aserciones — 12 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16556 KB (16 MB) · pared 1.85s
+OK     job-20260927T091337_job-012 exit=0
+       | member_port plan: 2 ítem(s) -> /tmp/tmp2w84sdff/step/items.txt
+       |   ok    plan escribe un ítem por grupo, en el formato de módulo
+       |   ok    el ítem nombra ancla, rangos con JSDoc y los otros miembros que usa
+       |   ok    las declaraciones se listan con su rango, JSDoc incluido
+       |   ok    un nombre repetido lleva una sola ancla de cada clase
+       |   ok    un nombre reexportado cuenta como declarado en el destino
+       |   ok    un import de varias líneas sin duplicados conserva su forma
+       |   ok    un 0 en el mapa salta la salida de otro módulo
+       | test_member_port: 29 aserciones — 29 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 107484 KB (105 MB) · pared 0.85s
+OK     job-20260927T091337_job-013 exit=0
+       |   ok    sin modelUsage la base es la fórmula fija, declarada
+       |   ok    costo con los cocientes del tier del modelo de cada salida
+       |   ok    la base de cada modelo se publica
+       |   ok    sin streams el prefijo se declara no medido, no cero
+       |   ok    un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa)
+       |   ok    el prefijo: primer ítem frío, su tamaño por la lectura de los demás
+       |   ok    el primer ítem es el primero en arrancar, no el de Seq menor
+       |   ok    sin lotes medidos rehúsa en vez de publicar ceros
+       | test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 17680 KB (17 MB) · pared 0.08s
+OK     job-20260927T091337_job-014 exit=0
+       |   ok    la variable del origen gana a activar 1h
+       |   ok    forzar 5m gana a todo
+       |   ok    un valor ilegible rehúsa nombrando la variable
+       |   ok    sin entorno, la cota decide como antes
+       |   ok    sin paso anterior medido no se decide: lo decide el cliente
+       |   ok    el TTL decidido llega al pool
+       |   ok    sin TTL decidido el pool no lo fija
+       |   ok    el TTL es parte de la configuración del paso (setup_id)
+       | test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 25032 KB (24 MB) · pared 0.25s
+OK     job-20260927T091337_job-015 exit=0
+       |   ok   sin patrones abiertos, el gate 4 no exige nada
+       |   ok   con patrones y sin gate4.json, bloquea: el paso 4 se omitió
+       |   ok   revisado y sin instancias vivas: pasa
+       |   ok   revisado pero con una instancia viva sin salida: bloquea
+       |   ok   con el log vigente de un paso posterior: pasa
+       | audit
+       |   ok   aceptados, cubiertos por memoria, aplicaciones masivas
+       | 
+       | todas pasan
+       | EXIT=0
+       memoria pico: 14636 KB (14 MB) · pared 0.06s
+__BG_EXIT__=0

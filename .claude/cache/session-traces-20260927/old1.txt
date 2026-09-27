@@ -1,0 +1,2 @@
+        repointed[subpath] = {SOURCE_CONDITION: source_entry, "types": declaration,
+                              "default": source_entry}

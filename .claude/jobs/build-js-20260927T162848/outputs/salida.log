@@ -1,0 +1,247 @@
+run-task-pool: 48 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T162848
+  job-20260927T162848/job-001 pid 4275    cd /home/user/thyrox/src/packages/agent && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-agent.log 2>&1
+  job-20260927T162848/job-002 pid 4298    cd /home/user/thyrox/src/packages/app-host && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-app-host.log 2>&1
+  job-20260927T162848/job-003 pid 4320    cd /home/user/thyrox/src/packages/audio-capture-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-audio-capture-napi.log 2>&1
+  job-20260927T162848/job-004 pid 4339    cd /home/user/thyrox/src/packages/binary && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-binary.log 2>&1
+  job-20260927T162848/job-005 pid 4364    cd /home/user/thyrox/src/packages/bridge && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-bridge.log 2>&1
+  job-20260927T162848/job-006 pid 4386    cd /home/user/thyrox/src/packages/claude-for-chrome-mcp && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-claude-for-chrome-mcp.log 2>&1
+  job-20260927T162848/job-007 pid 4408    cd /home/user/thyrox/src/packages/cli && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-cli.log 2>&1
+  job-20260927T162848/job-008 pid 4427    cd /home/user/thyrox/src/packages/color-diff-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-color-diff-napi.log 2>&1
+  job-20260927T162848/job-009 pid 4450    cd /home/user/thyrox/src/packages/command-runtime && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-command-runtime.log 2>&1
+  job-20260927T162848/job-010 pid 4472    cd /home/user/thyrox/src/packages/computer-use-input && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-computer-use-input.log 2>&1
+  job-20260927T162848/job-011 pid 4494    cd /home/user/thyrox/src/packages/computer-use-mcp && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-computer-use-mcp.log 2>&1
+  job-20260927T162848/job-012 pid 4516    cd /home/user/thyrox/src/packages/computer-use-swift && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-computer-use-swift.log 2>&1
+  job-20260927T162848/job-013 pid 4538    cd /home/user/thyrox/src/packages/config && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-config.log 2>&1
+  job-20260927T162848/job-014 pid 4560    cd /home/user/thyrox/src/packages/context-compression && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-context-compression.log 2>&1
+  job-20260927T162848/job-015 pid 4579    cd /home/user/thyrox/src/packages/coordination && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-coordination.log 2>&1
+  job-20260927T162848/job-016 pid 4604    cd /home/user/thyrox/src/packages/daemon && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-daemon.log 2>&1
+  job-20260927T162848/job-017 pid 4626    cd /home/user/thyrox/src/packages/finding && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-finding.log 2>&1
+  job-20260927T162848/job-018 pid 4645    cd /home/user/thyrox/src/packages/headless-sdk && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-headless-sdk.log 2>&1
+  job-20260927T162848/job-019 pid 4672    cd /home/user/thyrox/src/packages/ide && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-ide.log 2>&1
+  job-20260927T162848/job-020 pid 4695    cd /home/user/thyrox/src/packages/image-processor-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-image-processor-napi.log 2>&1
+  job-20260927T162848/job-021 pid 4717    cd /home/user/thyrox/src/packages/ink && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-ink.log 2>&1
+  job-20260927T162848/job-022 pid 4739    cd /home/user/thyrox/src/packages/local-observability && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-local-observability.log 2>&1
+  job-20260927T162848/job-023 pid 4762    cd /home/user/thyrox/src/packages/mcp-runtime && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-mcp-runtime.log 2>&1
+  job-20260927T162848/job-024 pid 4784    cd /home/user/thyrox/src/packages/memory && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-memory.log 2>&1
+  job-20260927T162848/job-025 pid 4802    cd /home/user/thyrox/src/packages/modifiers-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-modifiers-napi.log 2>&1
+  job-20260927T162848/job-026 pid 4828    cd /home/user/thyrox/src/packages/observability && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-observability.log 2>&1
+  job-20260927T162848/job-027 pid 4850    cd /home/user/thyrox/src/packages/output && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-output.log 2>&1
+  job-20260927T162848/job-028 pid 4868    cd /home/user/thyrox/src/packages/paths && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-paths.log 2>&1
+  job-20260927T162848/job-029 pid 4895    cd /home/user/thyrox/src/packages/permission && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-permission.log 2>&1
+  job-20260927T162848/job-030 pid 4914    cd /home/user/thyrox/src/packages/plan && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-plan.log 2>&1
+  job-20260927T162848/job-031 pid 4941    cd /home/user/thyrox/src/packages/provider && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-provider.log 2>&1
+  job-20260927T162848/job-032 pid 4971    cd /home/user/thyrox/src/packages/repl && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-repl.log 2>&1
+  job-20260927T162848/job-033 pid 4993    cd /home/user/thyrox/src/packages/ripgrep-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-ripgrep-napi.log 2>&1
+  job-20260927T162848/job-034 pid 5015    cd /home/user/thyrox/src/packages/server && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-server.log 2>&1
+  job-20260927T162848/job-035 pid 5037    cd /home/user/thyrox/src/packages/shell && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-shell.log 2>&1
+  job-20260927T162848/job-036 pid 5059    cd /home/user/thyrox/src/packages/skills && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-skills.log 2>&1
+  job-20260927T162848/job-037 pid 5081    cd /home/user/thyrox/src/packages/stdin-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-stdin-napi.log 2>&1
+  job-20260927T162848/job-038 pid 5103    cd /home/user/thyrox/src/packages/storage && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-storage.log 2>&1
+  job-20260927T162848/job-039 pid 5125    cd /home/user/thyrox/src/packages/store && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-store.log 2>&1
+  job-20260927T162848/job-040 pid 5147    cd /home/user/thyrox/src/packages/swarm && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-swarm.log 2>&1
+  job-20260927T162848/job-041 pid 5170    cd /home/user/thyrox/src/packages/task && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-task.log 2>&1
+  job-20260927T162848/job-042 pid 5192    cd /home/user/thyrox/src/packages/teleport && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-teleport.log 2>&1
+  job-20260927T162848/job-043 pid 5212    cd /home/user/thyrox/src/packages/tool-registry && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-tool-registry.log 2>&1
+  job-20260927T162848/job-044 pid 5234    cd /home/user/thyrox/src/packages/tools && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-tools.log 2>&1
+  job-20260927T162848/job-045 pid 5256    cd /home/user/thyrox/src/packages/updater && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-updater.log 2>&1
+  job-20260927T162848/job-046 pid 5274    cd /home/user/thyrox/src/packages/url-handler-napi && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-url-handler-napi.log 2>&1
+  job-20260927T162848/job-047 pid 5300    cd /home/user/thyrox/src/packages/voice && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-voice.log 2>&1
+  job-20260927T162848/job-048 pid 5320    cd /home/user/thyrox/src/packages/workbench && python3 /home/user/thyrox/src/typescript/build_javascript.py . > /home/user/thyrox/.claude/build-logs/build-js-workbench.log 2>&1
+run-task-pool: lanzados 48 de 48; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260927T162848_job-001 -> OK (2 de 49)
+asentado: job-20260927T162848_job-002 -> OK (3 de 49)
+asentado: job-20260927T162848_job-003 -> OK (4 de 49)
+asentado: job-20260927T162848_job-004 -> OK (5 de 49)
+asentado: job-20260927T162848_job-005 -> OK (6 de 49)
+asentado: job-20260927T162848_job-006 -> OK (7 de 49)
+asentado: job-20260927T162848_job-007 -> OK (8 de 49)
+asentado: job-20260927T162848_job-008 -> OK (9 de 49)
+asentado: job-20260927T162848_job-009 -> OK (10 de 49)
+asentado: job-20260927T162848_job-010 -> OK (11 de 49)
+asentado: job-20260927T162848_job-011 -> OK (12 de 49)
+asentado: job-20260927T162848_job-012 -> OK (13 de 49)
+asentado: job-20260927T162848_job-013 -> OK (14 de 49)
+asentado: job-20260927T162848_job-014 -> OK (15 de 49)
+asentado: job-20260927T162848_job-015 -> OK (16 de 49)
+asentado: job-20260927T162848_job-016 -> OK (17 de 49)
+asentado: job-20260927T162848_job-017 -> OK (18 de 49)
+asentado: job-20260927T162848_job-018 -> OK (19 de 49)
+asentado: job-20260927T162848_job-019 -> OK (20 de 49)
+asentado: job-20260927T162848_job-020 -> OK (21 de 49)
+asentado: job-20260927T162848_job-021 -> OK (22 de 49)
+asentado: job-20260927T162848_job-022 -> OK (23 de 49)
+asentado: job-20260927T162848_job-023 -> OK (24 de 49)
+asentado: job-20260927T162848_job-024 -> OK (25 de 49)
+asentado: job-20260927T162848_job-025 -> OK (26 de 49)
+asentado: job-20260927T162848_job-026 -> OK (27 de 49)
+asentado: job-20260927T162848_job-027 -> OK (28 de 49)
+asentado: job-20260927T162848_job-028 -> OK (29 de 49)
+asentado: job-20260927T162848_job-029 -> OK (30 de 49)
+asentado: job-20260927T162848_job-030 -> OK (31 de 49)
+asentado: job-20260927T162848_job-031 -> OK (32 de 49)
+asentado: job-20260927T162848_job-032 -> OK (33 de 49)
+asentado: job-20260927T162848_job-033 -> OK (34 de 49)
+asentado: job-20260927T162848_job-034 -> OK (35 de 49)
+asentado: job-20260927T162848_job-035 -> OK (36 de 49)
+asentado: job-20260927T162848_job-036 -> OK (37 de 49)
+asentado: job-20260927T162848_job-037 -> OK (38 de 49)
+asentado: job-20260927T162848_job-038 -> OK (39 de 49)
+asentado: job-20260927T162848_job-039 -> OK (40 de 49)
+asentado: job-20260927T162848_job-040 -> OK (41 de 49)
+asentado: job-20260927T162848_job-041 -> OK (42 de 49)
+asentado: job-20260927T162848_job-042 -> OK (43 de 49)
+asentado: job-20260927T162848_job-043 -> OK (44 de 49)
+asentado: job-20260927T162848_job-044 -> OK (45 de 49)
+asentado: job-20260927T162848_job-045 -> OK (46 de 49)
+asentado: job-20260927T162848_job-046 -> OK (47 de 49)
+asentado: job-20260927T162848_job-047 -> OK (48 de 49)
+asentado: job-20260927T162848_job-048 -> OK (49 de 49)
+== 49 trabajos asentados ==
+OLVIDADO job-20260927T162848
+       | (vacío — no emitió nada)
+OK     job-20260927T162848_job-001 exit=1
+       | EXIT=1
+       memoria pico: 48924 KB (48 MB) · pared 0.10s
+OK     job-20260927T162848_job-002 exit=1
+       | EXIT=1
+       memoria pico: 24568 KB (24 MB) · pared 0.06s
+OK     job-20260927T162848_job-003 exit=0
+       | EXIT=0
+       memoria pico: 21788 KB (21 MB) · pared 0.07s
+OK     job-20260927T162848_job-004 exit=0
+       | EXIT=0
+       memoria pico: 19948 KB (19 MB) · pared 0.07s
+OK     job-20260927T162848_job-005 exit=0
+       | EXIT=0
+       memoria pico: 29084 KB (28 MB) · pared 0.07s
+OK     job-20260927T162848_job-006 exit=0
+       | EXIT=0
+       memoria pico: 21724 KB (21 MB) · pared 0.06s
+OK     job-20260927T162848_job-007 exit=0
+       | EXIT=0
+       memoria pico: 32748 KB (32 MB) · pared 0.10s
+OK     job-20260927T162848_job-008 exit=0
+       | EXIT=0
+       memoria pico: 20380 KB (20 MB) · pared 0.07s
+OK     job-20260927T162848_job-009 exit=0
+       | EXIT=0
+       memoria pico: 41116 KB (40 MB) · pared 0.10s
+OK     job-20260927T162848_job-010 exit=0
+       | EXIT=0
+       memoria pico: 20504 KB (20 MB) · pared 0.07s
+OK     job-20260927T162848_job-011 exit=0
+       | EXIT=0
+       memoria pico: 28696 KB (28 MB) · pared 0.07s
+OK     job-20260927T162848_job-012 exit=0
+       | EXIT=0
+       memoria pico: 20468 KB (20 MB) · pared 0.06s
+OK     job-20260927T162848_job-013 exit=0
+       | EXIT=0
+       memoria pico: 46876 KB (46 MB) · pared 0.12s
+OK     job-20260927T162848_job-014 exit=0
+       | EXIT=0
+       memoria pico: 20664 KB (20 MB) · pared 0.09s
+OK     job-20260927T162848_job-015 exit=1
+       | EXIT=1
+       memoria pico: 18844 KB (18 MB) · pared 0.07s
+OK     job-20260927T162848_job-016 exit=0
+       | EXIT=0
+       memoria pico: 24540 KB (24 MB) · pared 0.07s
+OK     job-20260927T162848_job-017 exit=0
+       | EXIT=0
+       memoria pico: 19960 KB (19 MB) · pared 0.07s
+OK     job-20260927T162848_job-018 exit=0
+       | EXIT=0
+       memoria pico: 22516 KB (22 MB) · pared 0.06s
+OK     job-20260927T162848_job-019 exit=0
+       | EXIT=0
+       memoria pico: 23704 KB (23 MB) · pared 0.07s
+OK     job-20260927T162848_job-020 exit=0
+       | EXIT=0
+       memoria pico: 26472 KB (26 MB) · pared 0.08s
+OK     job-20260927T162848_job-021 exit=0
+       | EXIT=0
+       memoria pico: 37880 KB (37 MB) · pared 0.09s
+OK     job-20260927T162848_job-022 exit=0
+       | EXIT=0
+       memoria pico: 25876 KB (25 MB) · pared 0.08s
+OK     job-20260927T162848_job-023 exit=0
+       | EXIT=0
+       memoria pico: 31004 KB (30 MB) · pared 0.11s
+OK     job-20260927T162848_job-024 exit=0
+       | EXIT=0
+       memoria pico: 24504 KB (24 MB) · pared 0.10s
+OK     job-20260927T162848_job-025 exit=0
+       | EXIT=0
+       memoria pico: 19228 KB (19 MB) · pared 0.09s
+OK     job-20260927T162848_job-026 exit=0
+       | EXIT=0
+       memoria pico: 20088 KB (20 MB) · pared 0.08s
+OK     job-20260927T162848_job-027 exit=0
+       | EXIT=0
+       memoria pico: 24476 KB (24 MB) · pared 0.09s
+OK     job-20260927T162848_job-028 exit=0
+       | EXIT=0
+       memoria pico: 20508 KB (20 MB) · pared 0.06s
+OK     job-20260927T162848_job-029 exit=0
+       | EXIT=0
+       memoria pico: 39324 KB (38 MB) · pared 0.12s
+OK     job-20260927T162848_job-030 exit=0
+       | EXIT=0
+       memoria pico: 19316 KB (19 MB) · pared 0.06s
+OK     job-20260927T162848_job-031 exit=1
+       | EXIT=1
+       memoria pico: 33336 KB (33 MB) · pared 0.07s
+OK     job-20260927T162848_job-032 exit=1
+       | EXIT=1
+       memoria pico: 81820 KB (80 MB) · pared 0.16s
+OK     job-20260927T162848_job-033 exit=0
+       | EXIT=0
+       memoria pico: 32504 KB (32 MB) · pared 0.16s
+OK     job-20260927T162848_job-034 exit=0
+       | EXIT=0
+       memoria pico: 21532 KB (21 MB) · pared 0.07s
+OK     job-20260927T162848_job-035 exit=0
+       | EXIT=0
+       memoria pico: 34204 KB (33 MB) · pared 0.08s
+OK     job-20260927T162848_job-036 exit=0
+       | EXIT=0
+       memoria pico: 19960 KB (19 MB) · pared 0.06s
+OK     job-20260927T162848_job-037 exit=0
+       | EXIT=0
+       memoria pico: 21368 KB (21 MB) · pared 0.07s
+OK     job-20260927T162848_job-038 exit=1
+       | EXIT=1
+       memoria pico: 27932 KB (27 MB) · pared 0.06s
+OK     job-20260927T162848_job-039 exit=0
+       | EXIT=0
+       memoria pico: 19424 KB (19 MB) · pared 0.06s
+OK     job-20260927T162848_job-040 exit=0
+       | EXIT=0
+       memoria pico: 29596 KB (29 MB) · pared 0.08s
+OK     job-20260927T162848_job-041 exit=1
+       | EXIT=1
+       memoria pico: 18400 KB (18 MB) · pared 0.06s
+OK     job-20260927T162848_job-042 exit=0
+       | EXIT=0
+       memoria pico: 21404 KB (21 MB) · pared 0.07s
+OK     job-20260927T162848_job-043 exit=0
+       | EXIT=0
+       memoria pico: 64540 KB (63 MB) · pared 0.14s
+OK     job-20260927T162848_job-044 exit=0
+       | EXIT=0
+       memoria pico: 22636 KB (22 MB) · pared 0.07s
+OK     job-20260927T162848_job-045 exit=0
+       | EXIT=0
+       memoria pico: 23524 KB (23 MB) · pared 0.09s
+OK     job-20260927T162848_job-046 exit=0
+       | EXIT=0
+       memoria pico: 18716 KB (18 MB) · pared 0.06s
+OK     job-20260927T162848_job-047 exit=0
+       | EXIT=0
+       memoria pico: 22508 KB (22 MB) · pared 0.06s
+OK     job-20260927T162848_job-048 exit=0
+       | EXIT=0
+       memoria pico: 20084 KB (20 MB) · pared 0.06s
+salida distinta de 0: 7 (job-20260927T162848_job-001 job-20260927T162848_job-002 job-20260927T162848_job-015 job-20260927T162848_job-031 job-20260927T162848_job-032 job-20260927T162848_job-038 job-20260927T162848_job-041)
+__BG_EXIT__=0

@@ -1,0 +1,75 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/barrelAndTesting.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/__tests__/pathSafety.test.ts:
+57 |     const file = touch('.claude', 'settings.json')
+58 |     const r = checkPathSafetyForAutoEdit(file)
+59 |     expect(r.safe).toBe(false)
+60 |     if (r.safe) throw new Error('unreachable')
+61 |     expect(r).toMatchObject({ classifierApprovable: true, circuitBreaker: 'claudeSettingsFile' })
+62 |     expect(r.message).toBe(`Claude requested permissions to write to ${file}, but you haven't granted it yet.`)
+                           ^
+error: expect(received).toBe(expected)
+
+Expected: "Claude requested permissions to write to /tmp/path-safety-wSzsGB/.claude/settings.json, but you haven't granted it yet."
+Received: "thyrox requested permissions to write to /tmp/path-safety-wSzsGB/.claude/settings.json, but you haven't granted it yet."
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathSafety.test.ts:62:23)
+(fail) checkPathSafetyForAutoEdit (Gge) > el archivo de settings de un proyecto se corta como settings [0.35ms]
+62 |     expect(r.message).toBe(`Claude requested permissions to write to ${file}, but you haven't granted it yet.`)
+63 |   })
+64 |   test('un archivo de shell es sensible', () => {
+65 |     const file = touch('.bashrc')
+66 |     const r = checkPathSafetyForAutoEdit(file)
+67 |     expect(r).toEqual({ safe: false, message: `Claude requested permissions to edit ${file} which is a sensitive file.`, classifierApprovable: true })
+                   ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "classifierApprovable": true,
+-   "message": "Claude requested permissions to edit /tmp/path-safety-wSzsGB/.bashrc which is a sensitive file.",
++   "message": "thyrox requested permissions to edit /tmp/path-safety-wSzsGB/.bashrc which is a sensitive file.",
+    "safe": false,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathSafety.test.ts:67:15)
+(fail) checkPathSafetyForAutoEdit (Gge) > un archivo de shell es sensible [0.67ms]
+
+src/__tests__/createPermissionRequestMessage.test.ts:
+ 6 | import { createPermissionRequestMessage } from '../permissions.js'
+ 7 | import type { PermissionRule } from '../PermissionRule.js'
+ 8 | 
+ 9 | describe('createPermissionRequestMessage (su)', () => {
+10 |   test('sin razón: el aviso genérico', () => {
+11 |     expect(createPermissionRequestMessage('Bash')).toBe("Claude requested permissions to use Bash, but you haven't granted it yet.")
+                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "Claude requested permissions to use Bash, but you haven't granted it yet."
+Received: "thyrox requested permissions to use Bash, but you haven't granted it yet."
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts:11:52)
+(fail) createPermissionRequestMessage (su) > sin razón: el aviso genérico [0.21ms]
+
+ 1072 pass
+ 3 fail
+ 1821 expect() calls
+Ran 1075 tests across 69 files. [11.83s]

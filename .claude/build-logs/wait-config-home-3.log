@@ -1,0 +1,140 @@
+asentado: job-20260927T093231_job-003 -> OK (1 de 6)
+asentado: job-20260927T093231_job-004 -> OK (2 de 6)
+asentado: job-20260927T093231_job-002 -> OK (1 de 6)
+esperando: 3 de 6 asentados, 31s; vivos: config-home-3 job-20260927T093231_job-001 job-20260927T093231_job-005
+sonda config-home-3: 19444 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19449 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19452 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.02s
+sonda config-home-3: 19490 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19495 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19496 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.24s
+sonda config-home-3: 26257 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26260 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=13.20s
+sonda config-home-3: 27440 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 27441 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.56s
+sonda config-home-3: 20243 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 20250 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 20251 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 20253 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.91s
+sonda config-home-3: 27610 bun stdin=file(/memfd:spawn_stdio_stdin (deleted)) escritores=- estado=R cpu=1.26s
+sonda config-home-3: 20254 tail stdin=channel(pipe:[154213]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home-3: pid 20254 (tail) lee stdin de un canal (pipe:[154213]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home-3: 26834 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26836 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26839 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26841 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.81s
+sonda config-home-3: 27598 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home-3: 26842 tail stdin=channel(pipe:[163886]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home-3: pid 26842 (tail) lee stdin de un canal (pipe:[163886]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home-3: 27597 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T093231_job-001: 19490 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 19495 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 19496 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.25s
+sonda job-20260927T093231_job-001: 27440 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 27441 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.72s
+sonda job-20260927T093231_job-001: 27786 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 27787 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.40s
+sonda job-20260927T093231_job-005: 20243 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-005: 20250 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-005: 20251 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-005: 20253 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.91s
+sonda job-20260927T093231_job-005: 27825 bun stdin=file(/memfd:spawn_stdio_stdin (deleted)) escritores=- estado=R cpu=1.33s
+sonda job-20260927T093231_job-005: 20254 tail stdin=channel(pipe:[154213]) escritores=1 estado=S cpu=0.00s
+  AVISO job-20260927T093231_job-005: pid 20254 (tail) lee stdin de un canal (pipe:[154213]) — si su productor no escribe ni cierra, espera para siempre
+esperando: 3 de 6 asentados, 62s; vivos: config-home-3 job-20260927T093231_job-001 job-20260927T093231_job-005
+sonda config-home-3: 19444 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19449 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19452 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.04s
+sonda config-home-3: 19490 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19495 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19496 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.26s
+sonda config-home-3: 29282 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 29283 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.67s
+sonda config-home-3: 29477 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 29478 node stdin=devnull(/dev/null) escritores=- estado=R cpu=0.93s
+sonda config-home-3: 20243 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 20250 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 20251 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 20253 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.10s
+sonda config-home-3: 29464 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=1.38s
+sonda config-home-3: 20254 tail stdin=channel(pipe:[154213]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home-3: pid 20254 (tail) lee stdin de un canal (pipe:[154213]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home-3: 26834 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26836 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26839 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 26841 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.83s
+sonda config-home-3: 29535 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.20s
+sonda config-home-3: 26842 tail stdin=channel(pipe:[163886]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home-3: pid 26842 (tail) lee stdin de un canal (pipe:[163886]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home-3: 29511 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T093231_job-001: 19490 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 19495 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 19496 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.26s
+sonda job-20260927T093231_job-001: 29282 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 29283 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.40s
+sonda job-20260927T093231_job-001: 29477 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 29478 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.84s
+sonda job-20260927T093231_job-005: 20243 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-005: 20250 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-005: 20251 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-005: 20253 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.10s
+sonda job-20260927T093231_job-005: 29652 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=0.98s
+sonda job-20260927T093231_job-005: 20254 tail stdin=channel(pipe:[154213]) escritores=1 estado=S cpu=0.00s
+  AVISO job-20260927T093231_job-005: pid 20254 (tail) lee stdin de un canal (pipe:[154213]) — si su productor no escribe ni cierra, espera para siempre
+asentado: job-20260927T093231_job-005 -> OK (4 de 6)
+esperando: 4 de 6 asentados, 93s; vivos: config-home-3 job-20260927T093231_job-001
+sonda config-home-3: 19444 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19449 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19452 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda config-home-3: 19490 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19495 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 19496 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.27s
+sonda config-home-3: 31228 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31229 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.10s
+sonda config-home-3: 31330 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31331 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.55s
+sonda config-home-3: 31107 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31112 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31113 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31114 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=1.92s
+sonda config-home-3: 31578 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home-3: 31115 tail stdin=channel(pipe:[176214]) escritores=1 estado=S cpu=0.00s
+  AVISO config-home-3: pid 31115 (tail) lee stdin de un canal (pipe:[176214]) — si su productor no escribe ni cierra, espera para siempre
+sonda config-home-3: 31287 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31291 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31293 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda config-home-3: 31294 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=4.26s
+sonda config-home-3: 31297 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda config-home-3: 31649 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T093231_job-001: 19490 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 19495 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 19496 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.27s
+sonda job-20260927T093231_job-001: 31228 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 31229 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.26s
+sonda job-20260927T093231_job-001: 31330 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T093231_job-001: 31331 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.43s
+asentado: job-20260927T093231_job-001 -> OK (1 de 6)
+asentado: config-home-3 -> OK (1 de 6)
+== 6 trabajos asentados ==
+OK     config-home-3 exit=0
+       |        | bun test v1.3.11 (af24e281)
+       |        | 
+       |        |  57 pass
+       |        |  0 fail
+       |        |  64 expect() calls
+       |        | Ran 57 tests across 5 files. [535.00ms]
+       |        | EXIT=0
+       |        memoria pico: 132336 KB (129 MB) · pared 0.54s
+       | salida distinta de 0: 1 (job-20260927T093231_job-003)
+       | __BG_EXIT__=0
+       memoria pico: 868112 KB (848 MB) · pared 112.96s
+OK     job-20260927T093231_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T093231_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T093231_job-003
+       | (vacío — no emitió nada)
+OK     job-20260927T093231_job-004
+       | (vacío — no emitió nada)
+OK     job-20260927T093231_job-005
+       | (vacío — no emitió nada)

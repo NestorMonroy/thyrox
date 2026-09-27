@@ -1,0 +1,17 @@
+: bun build salió 1
+31 |   getLastSummarizedMessageId,
+       ^
+error: No matching export in "SessionMemory/sessionMemoryUtils.ts" for import "getLastSummarizedMessageId"
+    at /home/user/thyrox/src/packages/agent/compaction/sessionMemoryCompact.ts:31:3
+
+32 |   getSessionMemoryContent,
+       ^
+error: No matching export in "SessionMemory/sessionMemoryUtils.ts" for import "getSessionMemoryContent"
+    at /home/user/thyrox/src/packages/agent/compaction/sessionMemoryCompact.ts:32:3
+
+33 |   waitForSessionMemoryExtraction,
+       ^
+error: No matching export in "SessionMemory/sessionMemoryUtils.ts" for import "waitForSessionMemoryExtraction"
+    at /home/user/thyrox/src/packages/agent/compaction/sessionMemoryCompact.ts:33:3
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

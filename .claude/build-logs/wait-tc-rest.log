@@ -1,0 +1,22 @@
+esperando: 0 de 1 asentados, 31s; vivos: tc-rest
+sonda tc-rest: 18877 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda tc-rest: 18884 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda tc-rest: 18885 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.32s
+sonda tc-rest: 19344 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda tc-rest: 19345 node stdin=devnull(/dev/null) escritores=- estado=R cpu=11.45s
+sonda tc-rest: 19390 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda tc-rest: 19391 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.40s
+asentado: tc-rest -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     tc-rest exit=0
+       |   agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   app-host: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       | 
+       | check-package-typecheck: 0 error(es) propio(s) (alcance medido: 7 de 7 paquete(s))
+       | __BG_EXIT__=0
+       memoria pico: 748920 KB (731 MB) · pared 40.85s

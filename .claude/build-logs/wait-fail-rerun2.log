@@ -1,0 +1,42 @@
+asentado: job-20260927T154821_job-002 -> OK (1 de 5)
+asentado: job-20260927T154821_job-004 -> OK (2 de 5)
+asentado: job-20260927T154821_job-001 -> OK (1 de 5)
+esperando: 3 de 5 asentados, 31s; vivos: fail-rerun2 job-20260927T154821_job-003
+sonda fail-rerun2: 6819 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda fail-rerun2: 6824 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda fail-rerun2: 6827 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.02s
+sonda fail-rerun2: 6938 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda fail-rerun2: 6945 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda fail-rerun2: 6947 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda fail-rerun2: 6948 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.52s
+sonda fail-rerun2: 16356 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.89s
+sonda fail-rerun2: 14846 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.04s
+sonda fail-rerun2: 16404 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154821_job-003: 6938 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154821_job-003: 6945 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154821_job-003: 6947 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154821_job-003: 6948 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.52s
+sonda job-20260927T154821_job-003: 16356 ? stdin=unreadable(-) escritores=- estado=Z cpu=2.28s
+asentado: job-20260927T154821_job-003 -> OK (3 de 5)
+asentado: fail-rerun2 -> OK (1 de 5)
+== 5 trabajos asentados ==
+OK     fail-rerun2 exit=0
+       |        memoria pico: 264904 KB (259 MB) · pared 5.20s
+       | OK     job-20260927T154821_job-007 exit=0
+       |        | EXIT=0
+       |        | EXIT=0
+       |        memoria pico: 256400 KB (250 MB) · pared 6.95s
+       | OK     job-20260927T154821_job-008 exit=0
+       |        | EXIT=1
+       |        | EXIT=0
+       |        memoria pico: 255192 KB (249 MB) · pared 8.40s
+       | __BG_EXIT__=0
+       memoria pico: 268952 KB (263 MB) · pared 63.20s
+OK     job-20260927T154821_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-003
+       | (vacío — no emitió nada)
+OK     job-20260927T154821_job-004
+       | (vacío — no emitió nada)
