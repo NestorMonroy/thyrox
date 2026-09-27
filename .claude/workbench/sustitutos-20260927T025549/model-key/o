@@ -1,3 +1,8 @@
-if [[ ${#LINT[@]} -gt 0 ]]; then
-    python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
-fi
+    # `mint` y `verify` son los nombres públicos; `acunar` y `verificar` quedan
+    # como alias para los guiones y documentos que ya los invocan.
+    mint = sub.add_parser(
+        'mint', aliases=['acunar'], help='imprime el next_number H-<PREFIJO>-N libre')
+    mint.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
+    mint.add_argument('--consumer', default='docs',
+                         help='el clon a resolver con reach.root (default: docs)')
+    mint.set_defaults(func=_cmd_mint)

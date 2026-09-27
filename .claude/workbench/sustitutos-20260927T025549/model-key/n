@@ -1,16 +1,15 @@
-if [[ ${#LINT[@]} -gt 0 ]]; then
-    python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
-fi
-
-# El idioma de los identificadores, sobre los .py staged de src/ y tests/.
-# El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
-# 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La
-# deuda heredada está congelada en el baseline que declara el .env; uno nuevo
-# se detiene aquí.
-IDENTIFIERS=()
-for f in "${LINT[@]}"; do
-    [[ "$f" == *.py ]] && IDENTIFIERS+=("$f")
-done
-if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
-    (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
-fi
+    # `propose-id` y `verify` son los nombres públicos; `mint`, `acunar` y
+    # `verificar` quedan como alias para los guiones y documentos que ya los
+    # invocan. «Proponer» y no «acuñar» ni «emitir»: el número NO se reserva,
+    # y un nombre que prometa la asignación invita a saltarse el registro que
+    # sí la hace (H-THYROX-26).
+    propose = sub.add_parser(
+        'propose-id', aliases=['mint', 'acunar'],
+        help='propone H-<PREFIJO>-N para un hallazgo nuevo',
+        description='Propone H-<PREFIJO>-N: el mayor número usado en los .rst y en '
+                    'el store, más uno. Es una propuesta: no lo reserva. Queda '
+                    'asignado cuando se escribe su fila o su .rst.')
+    propose.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
+    propose.add_argument('--consumer', default='docs',
+                         help='el clon a resolver con reach.root (default: docs)')
+    propose.set_defaults(func=_cmd_propose_id)
