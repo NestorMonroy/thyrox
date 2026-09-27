@@ -4,7 +4,7 @@
 # GNU Parallel. No es un subagente (no hereda el piso del orquestador ni ocupa
 # su anchura) y no es un proceso determinista (cada item exige un modelo).
 #
-# El `claude` real no se invoca: HEADLESS_POOL_CLAUDE apunta a un falso que
+# El `claude` real no se invoca: HEADLESS_POOL_RUNNER apunta a un falso que
 # devuelve en `result` el ultimo renglon de su stdin y las banderas que vio.
 # Lo que se mide es el mecanismo —reparto, salida por item, veredicto,
 # rechazos—, no al modelo.
@@ -55,7 +55,7 @@ fi
 SH
 chmod +x "$F/claude"
 printf 'Lee y resume.\n' > "$F/prompt.md"
-export HEADLESS_POOL_CLAUDE="$F/claude"
+export HEADLESS_POOL_RUNNER="$F/claude"
 
 # Cada caso con un historial propio y vacío, salvo que declare `HIST`: sin eso,
 # el primero dejaría una fila y todos los siguientes derivarían su TTL de ella.
@@ -100,17 +100,24 @@ check "sin items: exit 2" "$CODE" "2"
 SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_PARALLEL=/no/existe/parallel bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin parallel: exit 2" "$CODE" "2"
 check "sin parallel: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/parallel/{n++} END{print (n>0)}')" "1"
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=/no/existe/claude bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
-check "sin claude: exit 2" "$CODE" "2"
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+check "sin ejecutor: exit 2" "$CODE" "2"
+# El pool sólo corre `thyrox -p`: el nombre que permitía declarar `claude`
+# como ejecutor rehúsa entero y nombra el que lo reemplaza.
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+check "HEADLESS_POOL_CLAUDE retirada: exit 2" "$CODE" "2"
+check "HEADLESS_POOL_CLAUDE retirada: nombra HEADLESS_POOL_RUNNER" \
+  "$(printf '%s' "$SALIDA" | gawk '/HEADLESS_POOL_CLAUDE/ && /HEADLESS_POOL_RUNNER/{n++} END{print n+0}')" "1"
+check "HEADLESS_POOL_CLAUDE retirada: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
 # Sin ejecutor declarado, el ítem corre con `thyrox -p` (`bin/cli`), no con
 # `thyrox -p`: el pool es del proveedor. Un Parallel falso deja ver con qué
 # binario se lanzaría, sin lanzarlo.
-printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_CLAUDE" > "%s/runner.txt"\n' "$F" > "$F/parallel-runner"
+printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_RUNNER" > "%s/runner.txt"\n' "$F" > "$F/parallel-runner"
 chmod +x "$F/parallel-runner"
 rm -rf "$F/out" "$F/runner.txt"
-printf 'alfa\n' | env -u HEADLESS_POOL_CLAUDE HEADLESS_POOL_PARALLEL="$F/parallel-runner" HEADLESS_POOL_TIME="$F/no-existe" \
+printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER HEADLESS_POOL_PARALLEL="$F/parallel-runner" HEADLESS_POOL_TIME="$F/no-existe" \
   HEADLESS_POOL_HISTORY_DIR="$F/historial-runner" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 >/dev/null 2>&1
 check "sin ejecutor declarado: thyrox -p (bin/cli)" "$(cat "$F/runner.txt" 2>/dev/null)" "$RAIZ/bin/cli"
 
@@ -129,45 +136,45 @@ check "memfree ilegible: exit 2" "$CODE" "2"
 check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
 # --cache-ttl: el TTL de la caché llega a cada `thyrox -p` por
-# CLAUDE_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
+# THYROX_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
 # y un valor fuera de 5m|1h rehúsa sin resumen.
-ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5}' | sort -u | paste -sd,; }
+ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa beta
 check "cache-ttl 5m: exit 0" "$CODE" "0"
-check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "ttl=5m"
-rm -rf "$F/out"; EXTRA="" CLAUDE_CODE_PROMPT_CACHE_TTL='' corre alfa
-check "sin cache-ttl: no se fija" "$(ttl_de)" "ttl=sin"
+check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "thx=5m"
+rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL='' corre alfa
+check "sin cache-ttl: no se fija" "$(ttl_de)" "thx=sin"
 rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
 check "cache-ttl ilegible: exit 2" "$CODE" "2"
 check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
 # El entorno THYROX_* por encima de --cache-ttl, como `QCt` en 2.1.282: la
 # variable gana a la decisión calculada, y forzar 5m gana a la variable. El
-# ítem la recibe con los dos nombres: `thyrox -p` lee CLAUDE_CODE_*, y
-# `thyrox -p` —cuando el árbol llegue a 0 errores— leerá THYROX_*.
+# ítem la recibe sólo como THYROX_CODE_PROMPT_CACHE_TTL: el pool corre
+# `thyrox -p` y nada más, así que CLAUDE_CODE_* no tiene lector (campo ttl=sin).
 thx_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5"|"$6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
-check "variable sin --cache-ttl: llega con los dos nombres" "$(thx_de)" "ttl=1h|thx=1h"
+check "variable sin --cache-ttl: llega sólo como THYROX_*" "$(thx_de)" "ttl=sin|thx=1h"
 check "variable: el pool nombra la razón" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(env\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
-check "la variable gana a --cache-ttl" "$(thx_de)" "ttl=1h|thx=1h"
+check "la variable gana a --cache-ttl" "$(thx_de)" "ttl=sin|thx=1h"
 rm -rf "$F/out"; EXTRA="--cache-ttl 1h" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
-check "forzar 5m gana a la variable y a la opción" "$(thx_de)" "ttl=5m|thx=5m"
+check "forzar 5m gana a la variable y a la opción" "$(thx_de)" "ttl=sin|thx=5m"
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa
 check "sólo --cache-ttl: su razón es la opción" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(option\)$/{n++} END{print n+0}')" "1"
 # Activar 1h: la regla 5 de `QCt`, por debajo de la opción y de la variable.
 rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
-check "activar 1h sin opción ni variable: 1h" "$(thx_de)" "ttl=1h|thx=1h"
+check "activar 1h sin opción ni variable: 1h" "$(thx_de)" "ttl=sin|thx=1h"
 check "activar 1h: el pool nombra la razón" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
-check "la opción gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
+check "la opción gana a activar 1h" "$(thx_de)" "ttl=sin|thx=5m"
 rm -rf "$F/out"; EXTRA="" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
-check "forzar 5m gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
+check "forzar 5m gana a activar 1h" "$(thx_de)" "ttl=sin|thx=5m"
 # La mitad Bedrock de la regla 5 (`SPt`, 2.1.283): su variable propia sólo
 # decide cuando el proveedor ES Bedrock, y el pool lo lee de la misma variable
 # con que el proveedor lo elige.
 rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 CLAUDE_CODE_USE_BEDROCK=1 corre alfa
-check "activar 1h en Bedrock, con Bedrock: 1h" "$(thx_de)" "ttl=1h|thx=1h"
+check "activar 1h en Bedrock, con Bedrock: 1h" "$(thx_de)" "ttl=sin|thx=1h"
 check "activar 1h en Bedrock: la razón es la misma regla" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 corre alfa
 check "activar 1h en Bedrock sin Bedrock: no decide" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: /{n++} END{print n+0}')" "0"
@@ -247,7 +254,7 @@ check "sin GNU time: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gaw
 cat > "$F/nvidia-smi" <<'SH'
 #!/usr/bin/env bash
 case "$*" in
-  *--query-compute-apps=pid,used_memory*) pgrep -f "^bash $HEADLESS_POOL_CLAUDE -p" | gawk '{print $1 ", 400"}' ;;
+  *--query-compute-apps=pid,used_memory*) pgrep -f "^bash $HEADLESS_POOL_RUNNER -p" | gawk '{print $1 ", 400"}' ;;
   *--query-gpu=index,utilization.gpu*)    echo "0, 77" ;;
   *--query-gpu=index,memory.free*)        echo "0, ${FAKE_FREE_VRAM:-100000}" ;;
   *) exit 9 ;;
@@ -359,7 +366,7 @@ HIST="$F/historial-cero"
 HIST_DIR="$(HEADLESS_POOL_HISTORY_DIR="$HIST" bash "$RAIZ/bin/pool_history" dir "$F/prompt.md")"
 mkdir -p "$HIST_DIR"
 printf '{"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 0.1, "max_wall_s": 0.1, "peak_kb": 1000, "peak_vram_mib": 0, "runner": "%s"}\n' \
-  "$HEADLESS_POOL_CLAUDE" > "$HIST_DIR/runs.jsonl"
+  "$HEADLESS_POOL_RUNNER" > "$HIST_DIR/runs.jsonl"
 : > "$RAMPA_LOG"
 dos_pools
 check "pico 0 sin calibrar: los dos terminan" \
@@ -390,21 +397,21 @@ check "historial vacío: lo declara" "$(printf '%s' "$SALIDA" | gawk '/sin ejecu
 check "historial vacío: no inventa TTL" "$(thx_de)" "ttl=sin|thx=sin"
 check "la ejecución deja una fila" "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | wc -l)" "1"
 check "la fila nombra el binario que corrió los ítems" \
-  "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .runner)" "$HEADLESS_POOL_CLAUDE"
+  "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .runner)" "$HEADLESS_POOL_RUNNER"
 check "la fila nombra el modelo que corrió los ítems" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .item_model)" "claude-sonnet-5"
 check "la fila lleva la huella del CONTENIDO de la plantilla" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .template_digest)" \
   "$(sha256sum "$F/prompt.md" | gawk '{print $1}')"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
-check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=5m|thx=5m"
+check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=sin|thx=5m"
 check "con historial: declara de dónde salió el TTL" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}')" "1"
 check "con historial: --memfree sale de la memoria medida" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 25M \(history\)/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 1h --memfree 1G" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
-check "lo declarado gana al historial: TTL" "$(thx_de)" "ttl=1h|thx=1h"
+check "lo declarado gana al historial: TTL" "$(thx_de)" "ttl=sin|thx=1h"
 check "lo declarado gana al historial: memfree" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1G \(option\)/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H=1 HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
-check "el entorno gana al historial" "$(thx_de)" "ttl=1h|thx=1h"
+check "el entorno gana al historial" "$(thx_de)" "ttl=sin|thx=1h"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=1G HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "la reserva del vecino se suma a lo medido" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1049M \(history\)/{n++} END{print n+0}')" "1"
 check "una plantilla, un solo historial" "$(find "$HIST" -name runs.jsonl | wc -l)" "1"
@@ -420,7 +427,7 @@ rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "otro binario: no deriva memfree de su fila" \
   "$(printf '%s' "$SALIDA" | gawk '/^memfree: .*\(history\)/{n++} END{print n+0}')" "0"
 check "otro binario: lo dice" \
-  "$(printf '%s' "$SALIDA" | gawk -v b="$HEADLESS_POOL_CLAUDE" 'index($0, "sin ejecución previa de " b){n++} END{print n+0}')" "1"
+  "$(printf '%s' "$SALIDA" | gawk -v b="$HEADLESS_POOL_RUNNER" 'index($0, "sin ejecución previa de " b){n++} END{print n+0}')" "1"
 unset HIST
 # La cota es también del modelo: la misma plantilla con otro modelo es otra
 # carga, y su fila no fija la de éste aunque el binario coincida.
@@ -428,7 +435,7 @@ HIST="$F/historial-otro-modelo"
 HIST_DIR="$(HEADLESS_POOL_HISTORY_DIR="$HIST" bash "$RAIZ/bin/pool_history" dir "$F/prompt.md")"
 mkdir -p "$HIST_DIR"
 printf '{"items_measured": 1, "min_wall_s": 1.0, "max_wall_s": 1.0, "peak_kb": 900000, "runner": "%s", "item_model": "claude-opus-5"}\n' \
-  "$HEADLESS_POOL_CLAUDE" > "$HIST_DIR/runs.jsonl"
+  "$HEADLESS_POOL_RUNNER" > "$HIST_DIR/runs.jsonl"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "otro modelo: no deriva memfree de su fila" \
   "$(printf '%s' "$SALIDA" | gawk '/^memfree: .*\(history\)/{n++} END{print n+0}')" "0"

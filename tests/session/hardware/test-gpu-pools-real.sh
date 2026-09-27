@@ -32,7 +32,7 @@ export CUDA_ITEM_MIB=$(( FREE * 35 / 100 )) CUDA_ITEM_DELAY=3 CUDA_ITEM_HOLD=2
 # El ítem corre con el intérprete que tiene PyTorch, no con el del shebang.
 printf '#!/usr/bin/env bash\nexec "%s" "%s" "$@"\n' "$PY" "$HERE/cuda_pool_item.py" > "$OUT/cuda-item"
 chmod +x "$OUT/cuda-item"
-export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_CLAUDE="$OUT/cuda-item"
+export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_RUNNER="$OUT/cuda-item"
 export HEADLESS_POOL_HISTORY_DIR="$OUT/history" HEADLESS_POOL_NVIDIA_SMI="$SMI"
 printf 'Ítem de GPU.\n' > "$OUT/prompt.md"
 pool() { bash "$RAIZ/src/session/headless-pool.sh" --prompt "$OUT/prompt.md" --out "$OUT/out-$1" \

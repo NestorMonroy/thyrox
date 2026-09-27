@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# headless-pool con `thyrox -p` en lugar de `claude -p` (TASK-THYROX-0257).
+# headless-pool corre cada ítem con `thyrox -p` (TASK-THYROX-0257).
 #
-# El pool lanza cada ítem con la línea de comando fija de `claude -p`
+# El pool lanza cada ítem con una línea de comando fija
 # (`--setting-sources project --tools --allowedTools --max-turns
 # --no-session-persistence --output-format stream-json --verbose`). Esta suite
 # comprueba que `thyrox -p` la acepta tal cual y que lo que el pool lee
@@ -27,7 +27,7 @@ printf '#!/usr/bin/env bash\nexec bash "%s/bin/cli" "$@" --provider recorded --g
     "$ROOT" "$F" > "$F/thyrox-p"
 chmod +x "$F/thyrox-p"
 
-SALIDA="$(printf 'alfa\nbeta\n' | HEADLESS_POOL_CLAUDE="$F/thyrox-p" HEADLESS_POOL_TIME="$F/no-existe" \
+SALIDA="$(printf 'alfa\nbeta\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p" HEADLESS_POOL_TIME="$F/no-existe" \
     HEADLESS_POOL_HISTORY_DIR="$F/hist" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" \
     --model claude-sonnet-5 --width 2 2>&1)"; CODE=$?
 

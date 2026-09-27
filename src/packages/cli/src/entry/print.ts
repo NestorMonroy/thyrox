@@ -1,8 +1,10 @@
 /**
- * `thyrox -p` / `--print`: el contrato de `claude -p` sobre el bucle nativo.
+ * `thyrox -p` / `--print`: el modo no interactivo sobre el bucle nativo.
  *
- * Existe para que `headless-pool` pueda lanzar `thyrox -p` donde hoy lanza
- * `claude -p`, con la misma línea de comando. Traduce las banderas que el
+ * Es el único ejecutor de `headless-pool`: hablar con Anthropic u otro
+ * proveedor es trabajo de thyrox (traductores y selección de credenciales),
+ * no de un segundo cliente. Su línea de comando y sus formas de salida son
+ * un porte del modo `--print` del ejecutable 2.1.282. Traduce las banderas que el
  * pool usa y rehúsa las demás nombrándolas: aceptar en silencio una bandera
  * que no se cumple es peor que no aceptarla.
  *
@@ -53,7 +55,7 @@ function toolList(v: string): string[] {
 }
 
 /**
- * Traduce la línea de comando de `claude -p`. `stdin` es el texto leído de la
+ * Traduce la línea de comando de `thyrox -p`. `stdin` es el texto leído de la
  * entrada estándar, o `null` si no hubo; el prompt posicional gana.
  */
 export function parsePrintArgs(argv: string[], stdin: string | null): PrintArgs {

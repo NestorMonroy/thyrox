@@ -1,6 +1,6 @@
 /**
- * `thyrox -p`: el contrato de `claude -p` que `headless-pool` usa, traducido
- * al despacho nativo. Las formas de las líneas `system/init` y `result`
+ * `thyrox -p`: el contrato que `headless-pool` usa, portado del modo `--print`
+ * del ejecutable 2.1.282 al despacho nativo. Las formas de las líneas `system/init` y `result`
  * salen del binario 2.1.282 (`S5` y el constructor de `init`), extraídas en
  * `.claude/workbench/print-mode-20260926T225709/`.
  */
@@ -44,7 +44,7 @@ describe('detectMode — -p y --print eligen el modo print', () => {
   test('sin -p sigue siendo el bucle', () => expect(detectMode(['--prompt', 'x']).kind).toBe('loop'))
 })
 
-describe('parsePrintArgs — la traducción del contrato de claude -p', () => {
+describe('parsePrintArgs — el contrato de thyrox -p', () => {
   test('el prompt posicional gana a stdin', () => {
     expect(parsePrintArgs(['-p', 'hola'], 'de stdin').prompt).toBe('hola')
   })

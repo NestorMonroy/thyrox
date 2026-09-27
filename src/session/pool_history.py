@@ -148,8 +148,9 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
     if template_digest:
         row["template_digest"] = template_digest
     # El binario que corrió los ítems: la cota que deriva esta fila es SUYA.
-    # `claude -p` y `thyrox -p` son procesos distintos, y medir uno no dice
-    # nada del otro.
+    # Un doble (`HEADLESS_POOL_RUNNER`) y `thyrox -p` son procesos distintos,
+    # y medir uno no dice nada del otro; también separa las filas anteriores
+    # a #48, medidas con otro ejecutor.
     if runner:
         row["runner"] = runner
     # El modelo que corrió los ítems: otra carga con la misma plantilla. Su

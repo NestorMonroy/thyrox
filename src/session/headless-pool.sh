@@ -43,7 +43,7 @@
 # `timeout` da 212 680 KB. Sin GNU Time el pool corre igual y lo declara.
 #
 # `--cache-ttl` fija el TTL de la cache de cada `thyrox -p` con
-# THYROX_CODE_PROMPT_CACHE_TTL (y CLAUDE_CODE_PROMPT_CACHE_TTL para el ejecutor `claude`). Sin la opcion decide el cliente: 1 h en
+# THYROX_CODE_PROMPT_CACHE_TTL. Sin la opcion decide el cliente: 1 h en
 # suscripcion, 5 m con clave de API. Otro valor rehusa con exit 2.
 #
 # `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
@@ -96,10 +96,13 @@
 set -uo pipefail
 
 PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
-# El ejecutor de cada ítem: `thyrox -p` (`bin/cli`) salvo que se declare otro.
-# `HEADLESS_POOL_CLAUDE` conserva su nombre por compatibilidad con quien ya lo
-# declara; su valor ya no es `claude` por defecto.
-CLAUDE_BIN="${HEADLESS_POOL_CLAUDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}"
+# El ejecutor de cada ítem es `thyrox -p` (`bin/cli`) y ningún otro: hablar
+# con Anthropic u otro proveedor es trabajo de thyrox —sus traductores y su
+# selección de credenciales—, no de un segundo cliente. `HEADLESS_POOL_RUNNER`
+# sólo declara un doble que habla el contrato de `thyrox -p` (pruebas, el
+# arnés de GPU). `HEADLESS_POOL_CLAUDE`, que permitía correr `claude -p`, se
+# retiró por directiva del ejecutor 2026-09-27 y rehúsa abajo.
+RUNNER_BIN="${HEADLESS_POOL_RUNNER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
@@ -126,7 +129,8 @@ done
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
-command -v "$CLAUDE_BIN" >/dev/null 2>&1 || rehusa "falta el ejecutor de los ítems ($CLAUDE_BIN)."
+[[ -z "${HEADLESS_POOL_CLAUDE+x}" ]] || rehusa "HEADLESS_POOL_CLAUDE se retiró: el pool sólo corre thyrox -p. Para un doble de prueba declara HEADLESS_POOL_RUNNER."
+command -v "$RUNNER_BIN" >/dev/null 2>&1 || rehusa "falta el ejecutor de los ítems ($RUNNER_BIN)."
 [[ -n "$PROMPT" && -f "$PROMPT" ]] || rehusa "la plantilla de prompt no existe: ${PROMPT:-(sin --prompt)}"
 [[ -n "$OUT" ]] || rehusa "falta --out"
 case "$MODEL" in
@@ -234,8 +238,9 @@ DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reser
              --template "$PROMPT" --min-items "$MIN_ITEMS"
              --gpu-interval "$HP_GPU_INTERVAL" --vram-floor-mib "$VRAM_FLOOR_MIB"
              # La cota es del binario que corre los ítems: una fila medida con
-             # `claude -p` no fija la de `thyrox -p` (#48), y al revés.
-             --runner "$CLAUDE_BIN"
+             # otro ejecutor (un doble, o filas anteriores a #48) no fija la
+             # de `thyrox -p`, y al revés.
+             --runner "$RUNNER_BIN"
              # Y del modelo: la misma plantilla con otro modelo es otra carga.
              --item-model "$MODEL")
 # La edad máxima de la fila, parámetro del consumidor: sin declarar, la edad no
@@ -337,9 +342,8 @@ _headless_item() {
     rm -f "$HP_OUT/$n.admit.err"
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$HP_WORKDIR" || exit 1
-         # Con los dos nombres: `claude -p` lee CLAUDE_CODE_*; `thyrox -p`, THYROX_*.
-         [[ -z "$HP_CACHE_TTL" ]] || export CLAUDE_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL" \
-                                           THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
+         # `thyrox -p` lee THYROX_CODE_PROMPT_CACHE_TTL; no hay otro lector.
+         [[ -z "$HP_CACHE_TTL" ]] || export THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
          # Con proxy, el item recibe el socket y el marcador; la credencial
          # real se retira de su entorno por todas sus vías.
          if [[ -n "$HP_PROXY_SOCKET" ]]; then
@@ -353,7 +357,7 @@ _headless_item() {
          # N» a la medida del item que falla, y un consumidor que lee la
          # primera palabra (`ai-course-notes: translation_loop.py`) revienta.
          ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
-         timeout "$HP_TIMEOUT" "$HP_CLAUDE" -p \
+         timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             --max-turns "$HP_MAX_TURNS" --no-session-persistence \
@@ -384,8 +388,8 @@ _headless_item() {
 export -f _headless_item
 HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 HP_OUT="$(cd "$OUT" && pwd)"
-HP_CLAUDE="$(command -v "$CLAUDE_BIN")"
-export HP_PROMPT HP_OUT HP_CLAUDE
+HP_RUNNER="$(command -v "$RUNNER_BIN")"
+export HP_PROMPT HP_OUT HP_RUNNER
 export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 # Qué decidió el TTL, para que el paso lo registre y no haya que deducirlo.
@@ -424,6 +428,6 @@ gawk -F'\t' '
 STATUS=$?
 # La medida de esta ejecución alimenta a la siguiente. Sin GNU Time no hay
 # `.time` y `record` no escribe fila: una medida ausente no es un cero.
-[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$CLAUDE_BIN" --item-model "$MODEL" --template "$PROMPT" >/dev/null
+[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$RUNNER_BIN" --item-model "$MODEL" --template "$PROMPT" >/dev/null
 [[ -n "$HP_TIME" ]] || echo "memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)"
 exit $STATUS

@@ -245,7 +245,7 @@ with tempfile.TemporaryDirectory() as raw:
     check("anchura 1 y la GPU entera", ["1", "12000"], buffer.getvalue().split("\t")[2:4])
 
     print("== 23. la cota es del BINARIO que corrió: thyrox -p no mide thyrox -p ==")
-    # `headless-pool` corre sus ítems con `thyrox -p` (`HEADLESS_POOL_CLAUDE=bin/cli`)
+    # `headless-pool` corre sus ítems con `thyrox -p` (`HEADLESS_POOL_RUNNER=bin/cli`)
     # desde la #48. Una fila medida con `thyrox -p` es OTRO proceso: aplicarla
     # a `thyrox -p` daría una cota medida sobre algo que ya no corre.
     h = TMP / "h-runner"

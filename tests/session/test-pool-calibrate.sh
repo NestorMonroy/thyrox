@@ -34,7 +34,7 @@ check "4b. lo dice: peticiones y filas" "$(printf '%s' "$SALIDA" | gawk '/^calib
 # 5. Un ítem que no llega al proxy no se mide contra él: un ejecutor que no
 # habla con la API da filas que no describen a `thyrox -p`.
 printf '#!/usr/bin/env bash\ncat >/dev/null; echo "{\\"type\\":\\"result\\"}"\n' > "$F/no-habla"; chmod +x "$F/no-habla"
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE="$F/no-habla" HEADLESS_POOL_HISTORY_DIR="$F/hist-5" \
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/no-habla" HEADLESS_POOL_HISTORY_DIR="$F/hist-5" \
     bash "$CAL" --prompt "$F/prompt.md" --model claude-sonnet-5 --runs 1 --out "$F/out-5" 2>&1)"; CODE=$?
 check "5. sin peticiones al proxy: exit 1" "$CODE" "1"
 check "5b. lo nombra" "$(printf '%s' "$SALIDA" | gawk '/^pool-calibrate: 0 peticiones al proxy/{n++} END{print n+0}')" "1"
