@@ -26,8 +26,16 @@
 #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
 #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
-#                    [--credential-proxy]
+#                    [--credential-proxy] [--isolation worktree [--verify CMD]]
 #                    < items (uno por linea)
+#
+# `--isolation worktree` hace que cada item implemente: corre en su propio
+# worktree desde HEAD (`item_worktree.sh`), con herramientas de escritura por
+# defecto, y al terminar deja <n>.patch, <n>.files y <n>.verdict
+# (`verificado`, `rechazado`, `sin-verificar`, `sin-cambios` o `fallido`;
+# `--verify CMD` corre en el worktree). El arbol principal no cambia:
+# `bin/pool_integrate OUT` aplica lo verificado y disjunto, y el commit es de
+# quien integra.
 #
 # `--credential-proxy` lanza el proxy de credencial
 # (`bin/provider-credential-proxy`, o HEADLESS_POOL_CREDENTIAL_PROXY) con la
@@ -105,7 +113,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 RUNNER_BIN="${HEADLESS_POOL_RUNNER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
-TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
+TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -116,7 +124,9 @@ while [[ $# -gt 0 ]]; do
         --model) MODEL="${2:-}"; shift 2 ;;
         --width) WIDTH="${2:-}"; shift 2 ;;
         --timeout) TIMEOUT="${2:-}"; shift 2 ;;
-        --tools) TOOLS="${2:-}"; shift 2 ;;
+        --tools) TOOLS="${2:-}"; TOOLS_SET=1; shift 2 ;;
+        --isolation) ISOLATION="${2:-}"; shift 2 ;;
+        --verify) VERIFY="${2:-}"; shift 2 ;;
         --max-turns) MAX_TURNS="${2:-}"; shift 2 ;;
         --cwd) WORKDIR="${2:-}"; shift 2 ;;
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
@@ -138,6 +148,17 @@ case "$MODEL" in
     *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
 esac
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
+# Con --isolation worktree cada ítem implementa en su propio worktree: por
+# defecto recibe herramientas de escritura, y el árbol principal no cambia
+# hasta que `pool_integrate` aplique lo verificado.
+case "$ISOLATION" in
+    "") [[ -z "$VERIFY" ]] || rehusa "--verify sólo aplica con --isolation worktree" ;;
+    worktree)
+        git -C "$WORKDIR" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+            || rehusa "--isolation worktree exige que --cwd sea un árbol de git: $WORKDIR"
+        [[ -n "$TOOLS_SET" ]] || TOOLS="Read,Edit,Write,Glob,Grep,Bash" ;;
+    *) rehusa "--isolation va vacío o \"worktree\", no: $ISOLATION" ;;
+esac
 # El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Sin
 # la opción no se fija y decide el cliente: 1 h en suscripción, 5 m con clave.
 case "$CACHE_TTL" in
@@ -340,8 +361,13 @@ _headless_item() {
         return 3
     fi
     rm -f "$HP_OUT/$n.admit.err"
+    local workdir="$HP_WORKDIR"
+    if [[ "$HP_ISOLATION" == worktree ]]; then
+        workdir="$(bash "$HP_ITEM_WORKTREE" prepare "$HP_WORKDIR" "$HP_OUT" "$n")" || {
+            echo "no se pudo preparar el worktree del item" > "$HP_OUT/$n.err"; : > "$HP_OUT/$n.json"; return 4; }
+    fi
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
-      | (cd "$HP_WORKDIR" || exit 1
+      | (cd "$workdir" || exit 1
          # `thyrox -p` lee THYROX_CODE_PROMPT_CACHE_TTL; no hay otro lector.
          [[ -z "$HP_CACHE_TTL" ]] || export THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
          # Con proxy, el item recibe el socket y el marcador; la credencial
@@ -376,6 +402,7 @@ _headless_item() {
     local rc=$?
     [[ -z "$monitor" ]] || wait "$monitor"
     [[ -z "$HP_VRAM_NEED" ]] || bash "$HP_GPU" release --ledger "$HP_VRAM_LEDGER" --owner "$owner"
+    [[ "$HP_ISOLATION" != worktree ]] || bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_OUT" "$n" "$rc" "$HP_VERIFY"
     # El .json de siempre es la linea `result` del stream: sus consumidores
     # no cambian. El stream se queda porque es lo unico que trae el uso de
     # cada peticion; `usage.iterations` del result trae solo la ultima.
@@ -392,6 +419,8 @@ HP_RUNNER="$(command -v "$RUNNER_BIN")"
 export HP_PROMPT HP_OUT HP_RUNNER
 export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
+export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY"
+export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
 # Qué decidió el TTL, para que el paso lo registre y no haya que deducirlo.
 [[ -z "$CACHE_TTL" ]] || echo "cache-ttl: $CACHE_TTL ($CACHE_TTL_WHY)"
 
@@ -426,6 +455,13 @@ gawk -F'\t' '
     END { printf "items=%d ok=%d fallidos=%d\n", total, ok, mal; exit (mal > 0) }
 ' "$OUT/index.tsv" "$OUT/joblog.tsv"
 STATUS=$?
+if [[ "$ISOLATION" == worktree ]]; then
+    cat "$OUT"/*.verdict 2>/dev/null | gawk '{c[$1]++} END {
+        printf "verificados=%d rechazados=%d sin-cambios=%d fallidos=%d", c["verificado"], c["rechazado"], c["sin-cambios"], c["fallido"]
+        if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
+        print "" }'
+    bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT"
+fi
 # La medida de esta ejecución alimenta a la siguiente. Sin GNU Time no hay
 # `.time` y `record` no escribe fila: una medida ausente no es un cero.
 [[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$RUNNER_BIN" --item-model "$MODEL" --template "$PROMPT" >/dev/null

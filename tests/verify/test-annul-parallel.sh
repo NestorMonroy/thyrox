@@ -100,5 +100,23 @@ out="$(cd "$RAIZ" && bash "$SUJETO" "$FIX/py/mod.py" "$FIX/py/test_mod.py" ANNUL
 printf '%s\n' "$out" | sed 's/^/    /'
 check "el aborto cuenta como fallo y lo nombra" 'grep -qxF "boom	0 pass, 1 fail	abortó (exit 3)" <<< "$out"'
 
+echo "caso 5 — un script de shell que carga un archivo del directorio padre"
+mkdir -p "$FIX/sh/bin" "$FIX/sh/lib"
+printf 'VAL=2\nONE=1\n' > "$FIX/sh/lib/val.sh"
+cat > "$FIX/sh/bin/mod.sh" <<'SH'
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/val.sh"
+echo "double=$((3 * VAL)) shift=$((3 + ONE))"
+SH
+cat > "$FIX/sh/test_mod.sh" <<'SH'
+out="$(bash "${ANNUL_FIXTURE_MODULE:-$(dirname "$0")/bin/mod.sh}")"
+[[ "$out" == *"double=6"* ]] && echo "  ok    double" || echo "  FALLA double: $out"
+[[ "$out" == *"shift=4"* ]] && echo "  ok    shift" || echo "  FALLA shift: $out"
+SH
+printf 'double\ts/3 \\* VAL/3 * 3/\n' > "$FIX/sh/variants.tsv"
+out="$(cd "$RAIZ" && bash "$SUJETO" "$FIX/sh/bin/mod.sh" "$FIX/sh/test_mod.sh" ANNUL_FIXTURE_MODULE "$FIX/sh/variants.tsv" annul-fixture-sh 2>&1)"
+printf '%s\n' "$out" | sed 's/^/    /'
+check "la variante de shell cae SOLO en double" 'grep -qxF "double	1 pass, 1 fail	double" <<< "$out"'
+
 echo "test-annul-parallel: $total aserciones — $((total - fallos)) ok, $fallos falla(s)"
 [[ $fallos -eq 0 ]]

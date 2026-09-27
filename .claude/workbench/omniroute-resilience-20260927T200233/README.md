@@ -62,3 +62,39 @@ python3 tests/hooks/test_detect_history_comment.py
 bash tests/verify/test-annul-parallel.sh
 (cd src/packages/provider && bun test __tests__/proxyErrorClassifier.test.ts)
 ```
+
+## Lotes que implementan: `headless-pool --isolation worktree`
+
+Antes de este trabajo, un ítem de `headless-pool` sólo leía (`--tools Read`)
+y todos compartían un directorio. La única vía que implementaba era
+`pool_pipeline`, atada a los diagnósticos de tsc: los ítems proponen
+ediciones en JSON y un paso aparte las aplica en un worktree.
+
+La forma general, equivalente a un subagente con `isolation: worktree`:
+
+- **`item_worktree.sh`:**
+  - `prepare`: crea el worktree del ítem desde HEAD, bajo el directorio común
+    de git;
+  - `finalize`: guarda el parche, los archivos y el veredicto, y retira el
+    worktree;
+  - `sweep`: retira lo que quede de la ejecución.
+- **`pool_integrate.sh`:** aplica en orden lo verificado y disjunto, declara
+  `conflicto: <archivo>` y no commitea.
+
+Anulaciones, con `bin/annul_parallel` sobre
+`tests/session/test-headless-pool-worktree.sh`:
+
+- `outputs/annul-item-worktree.tsv`
+- `outputs/annul-pool-integrate.tsv`
+- `outputs/annul-headless-worktree.tsv`
+
+**Lo que destaparon:**
+
+1. **Un camino al directorio padre dejaba la copia sin arrancar.** Las seis
+   variantes de `headless-pool` daban el mismo resultado, porque la copia no
+   resolvía `$HP_HERE/../lib`. `annul_parallel` ahora monta un árbol sombra
+   del repositorio, y la copia ocupa el lugar del original.
+2. **Con seis variantes a la vez, una dejaba un worktree huérfano.** La
+   variante sola no lo reproduce. La causa, inferida y no medida, es que
+   `worktree add`/`remove` chocan con el candado de otro ítem. Se reintentan,
+   y el pool barre al terminar; el barrido tiene su propio caso determinista.

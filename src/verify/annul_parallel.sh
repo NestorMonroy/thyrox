@@ -70,31 +70,43 @@ run_test() {
     }'
 }
 
+# La copia ocupa el lugar del modulo en un arbol sombra del repositorio: en
+# cada nivel del camino se enlazan las demas entradas, asi que todo camino
+# relativo del modulo —un import `../x.ts`, un `with_name`, un
+# `$(dirname "$0")/../lib`— resuelve como en el original. Imprime la ruta que
+# ocupa la copia.
+shadow_tree() {
+  local src="$ROOT" dst="$1" part entry name
+  local -a parts
+  IFS=/ read -ra parts <<< "${MODULE#"$ROOT"/}"
+  mkdir -p "$dst"
+  for part in "${parts[@]}"; do
+    for entry in "$src"/* "$src"/.[!.]*; do
+      [[ -e "$entry" || -L "$entry" ]] || continue
+      name="$(basename "$entry")"
+      [[ "$name" == "$part" || "$name" == __pycache__ ]] || ln -s "$entry" "$dst/$name"
+    done
+    src="$src/$part"; dst="$dst/$part"
+    [[ "$src" == "$MODULE" ]] || mkdir -p "$dst"
+  done
+  printf '%s\n' "$dst"
+}
+
 run_variant() {
   local index="$1" label="$2" expr="$3"
-  local dir="$WORK/$index" copy sibling
+  local dir="$WORK/$index" copy
   mkdir -p "$dir"
-  copy="$dir/$(basename "$MODULE")"
-  sed -e "$expr" "$MODULE" > "$copy.raw"
-  if cmp -s "$MODULE" "$copy.raw"; then
+  copy="$(shadow_tree "$dir/tree")"
+  sed -e "$expr" "$MODULE" > "$dir/variant"
+  if cmp -s "$MODULE" "$dir/variant"; then
     printf '%s\tNO-CAMBIO\t%s\n' "$label" "la expresion no casa: no se anulo nada"
     return 0
   fi
-  # La copia se lee como si estuviera junto a sus hermanos: cada hermano se
-  # enlaza a su lado (lo que se carga por ruta, `with_name`, `dirname "$0"`) y
-  # cada especificador relativo se ancla al directorio original (`../x.ts`).
-  for sibling in "$(dirname "$MODULE")"/*; do
-    [[ "$sibling" == "$MODULE" || "$(basename "$sibling")" == __pycache__ ]] && continue
-    ln -s "$sibling" "$dir/"
-  done
-  gawk -v dir="$(dirname "$MODULE")" '
-    BEGIN { gsub(/&/, "\\\\&", dir) }
-    { print gensub(/((from|import)[[:space:]]*\(?[[:space:]]*)(["\047])(\.\.?\/)/, "\\1\\3" dir "/\\4", "g") }
-  ' "$copy.raw" > "$copy"
+  mv "$dir/variant" "$copy"
   printf '%s\t%s\n' "$label" "$(PYTHONDONTWRITEBYTECODE=1 run_test "$copy")"
 }
-export -f run_test run_variant
-export MODULE="$root/${module#"$root"/}" TEST="$test_file" ENV_VAR="$env_var" WORK="$work"
+export -f run_test shadow_tree run_variant
+export ROOT="$root" MODULE="$root/${module#"$root"/}" TEST="$test_file" ENV_VAR="$env_var" WORK="$work"
 
 printf 'base\t%s\n' "$(run_test "$MODULE" | cut -f1)"$'\t—'
 gawk -F'\t' 'NF>=2{print NR"\t"$1"\t"$2}' "$variants" \

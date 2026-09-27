@@ -1,0 +1,7 @@
+defaulttools	s/\[\[ -n "\$TOOLS_SET" \]\] || TOOLS="Read,Edit,Write,Glob,Grep,Bash"/:/
+gitcheck	s/            || rehusa "--isolation worktree exige/            || : "--isolation worktree exige/
+isolationmode	s/    \*) rehusa "--isolation va vacío/    *) : "--isolation va vacío/
+cdworkdir	s/      | (cd "\$workdir" || exit 1/      | (cd "$HP_WORKDIR" || exit 1/
+nofinalize	s/^    \[\[ "\$HP_ISOLATION" != worktree \]\] || bash "\$HP_ITEM_WORKTREE" finalize/    : finalize/
+nosummary	s/printf "verificados=%d/printf "x=%d/
+nosweep	s/^    bash "\$HP_ITEM_WORKTREE" sweep "\$WORKDIR" "\$HP_OUT"/    :/

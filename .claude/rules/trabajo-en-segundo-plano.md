@@ -20,6 +20,7 @@ forma del problema:
 | N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
 | la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
 | N lecturas **con juicio**, una por item | `src/session/headless-pool.sh` | `bin/headless-pool` | una conversación `thyrox -p` por item, repartidas con GNU Parallel; salida y veredicto por item |
+| N implementaciones **con juicio**, una por item | `headless-pool --isolation worktree` + `src/session/pool_integrate.sh` | `bin/headless-pool`, `bin/pool_integrate` | cada item escribe en su propio worktree y se verifica ahí; la integración aplica al árbol lo verificado y disjunto, y declara cada conflicto |
 
 Debajo están los primitivos: `background.spawn_detached`, `job_ledger`,
 `marker_wait` y `task_pool`.
@@ -230,6 +231,35 @@ bien, y nadie más podía invocarlo.
 ```bash
 bash tests/session/test-headless-pool.sh
 python3 tests/hooks/test_detect_agent_dispatch.py
+```
+
+## La cuarta forma: implementación por item, con aislamiento
+
+Cuando cada item tiene que **escribir** —implementar un cambio, no sólo
+leerlo—, el pool le da lo mismo que `isolation: worktree` le da a un
+subagente: un worktree propio desde `HEAD`, herramientas de escritura y una
+verificación en su sitio. El árbol principal no cambia mientras el pool corre.
+
+```bash
+printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
+    --out <banco>/outputs/<dir> --model claude-sonnet-5 \
+    --isolation worktree --verify '<comando que prueba el cambio>'
+bash bin/pool_integrate <banco>/outputs/<dir>     # aplica lo verificado y disjunto
+```
+
+Cada item deja `<n>.patch`, `<n>.files` y `<n>.verdict`: `verificado`,
+`rechazado`, `sin-verificar`, `sin-cambios` o `fallido`. `pool_integrate`
+aplica en orden los `verificado`, y los `sin-verificar` sólo con
+`--unverified`. Un parche que toca un archivo ya aplicado queda como
+`conflicto: <archivo>` y no se aplica. No commitea: los archivos aplicados
+quedan en el árbol, y quien integra los commitea por pathspec.
+
+El discriminador es el mismo que el de la tercera forma, más uno: los items
+tienen que ser **disjuntos por archivo**. Dos items que editan el mismo
+archivo no se integran los dos; el segundo vuelve como conflicto.
+
+```bash
+bash tests/session/test-headless-pool-worktree.sh
 ```
 
 ## Antes de elegir el instrumento de espera: ¿cómo se lanzó?
