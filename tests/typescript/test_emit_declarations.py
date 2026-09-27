@@ -634,6 +634,34 @@ def main():
         check("un paquete que usa MACRO no da error propio", 0, result.own_errors)
         check("y el conteo total tampoco lo trae", False, "MACRO" in result.output)
 
+    # --- el paquete se ve a si mismo por su fuente, no por su dist ---------
+    #
+    # Medido en tool-registry: sus 48 errores propios eran TODOS la misma
+    # clase con dos identidades — `src/Tool` contra
+    # `node_modules/@thyrox/tool-registry/dist/Tool` —, porque un camino del
+    # programa vuelve al paquete por su NOMBRE y el `exports` repuntado lo
+    # manda a su declaracion. Lo mismo el ultimo de repl (`Cursor`). El
+    # proyecto de un paquete tiene que resolver su propio nombre a su fuente;
+    # sus hermanos siguen por `dist`, que es lo que ve un consumidor externo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "propio", "src")
+        (pkg / "src" / "index.ts").write_text(
+            "export class Box { private value = 1\n"
+            "  get(): number { return this.value } }\n")
+        (pkg / "src" / "helper.ts").write_text(
+            "import { Box as ByName } from '@probe/propio'\n"
+            "import { Box } from './index'\n"
+            "export const box: Box = new ByName()\n")
+        mod.emit_package(pkg)
+        mod.repoint_manifest(pkg)
+        result = mod.check_package(pkg)
+        check("el nombre propio resuelve a la fuente: una sola identidad",
+              0, result.own_errors)
+        check("y el error de la doble identidad no aparece",
+              False, "separate declarations" in result.output
+              or "is not assignable" in result.output)
+
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0
 
