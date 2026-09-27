@@ -3,37 +3,29 @@
  * handler de apagado del proceso (señales, excepciones no atrapadas,
  * timer de failsafe, limpieza de terminal, hint de reanudación).
  *
- * PORTE PARCIAL DECLARADO. `gracefulShutdown.test.ts` (el que sí importa
- * el módulo, fuera del alcance de este pase) queda pendiente; el test de
- * ESTE pase — `__tests__/gracefulShutdown.behavior.test.ts` — es un
- * conjunto de 33 pins A NIVEL DE FUENTE: lee este archivo con
- * `readFileSync` y asevera con `toMatch` sobre su texto literal. NUNCA
- * importa el módulo como código ejecutable, así que las 6 dependencias
- * de paquete que la fuente cita y que NO existen en este árbol —medido
- * con `ls /home/user/thyrox/src/packages/`— no bloquean ese test:
+ * Dos pruebas, dos ejes. `__tests__/gracefulShutdown.behavior.test.ts` fija
+ * la FORMA: lee este archivo con `readFileSync` y asevera sobre su texto.
+ * `__tests__/gracefulShutdown.test.ts` fija la CONDUCTA: importa el módulo y
+ * lo ejecuta con `process.exit` sustituido. Esa segunda estaba pendiente
+ * porque el módulo no se podía importar —la lista de abajo enumeraba seis
+ * dependencias ausentes—; medido el 2026-09-27, se importa y expone sus siete
+ * símbolos, así que la lista es historia del porte, no un bloqueo vigente:
  *
  *   - `chalk` (dim del hint de reanudación)
  *   - `signal-exit` (`onExit`, el pin del workaround de Bun)
  *   - `lodash-es/memoize.js` (memoización de `setupGracefulShutdown`)
  *   - `@anthropic/ink` (constantes de secuencias de escape + `instances`)
- *   - `@claude-code-how-works/headless-sdk/agentSdkTypes.js` (tipo
- *     `ExitReason` — import de solo-tipo, se elide al transpilar)
- *   - `@claude-code-how-works/local-observability` y sus subrutas
- *     (`logEvent`, `logInternalErrorEvent`, `shutdownEventLoggers`,
- *     `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`,
- *     `logForDebugging`, `logForDiagnosticsNoPII`, `closeSentry`)
- *   - `@claude-code-how-works/config` y sus subrutas (`isEnvTruthy`,
+ *   - `@thyrox/headless-sdk/agentSdkTypes.js` (tipo `ExitReason`)
+ *   - `@thyrox/local-observability` y sus subrutas
+ *   - `@thyrox/config` y sus subrutas (`isEnvTruthy`,
  *     `getInvokedBinaryName`, `sleep`)
- *   - `@claude-code-how-works/storage/sessionStorage.js`
+ *   - `@thyrox/storage/sessionStorage.js`
  *     (`getCurrentSessionTitle`, `sessionIdExists`)
- *   - `../startup/startupProfiler.js` (`profileReport` — vecino de
- *     paquete que tampoco existe todavía en este árbol)
+ *   - `../startup/startupProfiler.js` (`profileReport`)
  *
  * Se citan las mismas rutas de import de la fuente (no se inventan
- * equivalentes locales) para que el símbolo quede localizable el día que
- * esos paquetes se porten. El único import real de este árbol es
- * `./cleanupRegistry.js` (portado en este mismo pase) y `./state.js`
- * (otro agente de esta tanda lo está escribiendo — NO se toca).
+ * equivalentes locales), así que cada símbolo se localiza por su ruta
+ * original.
  *
  * Los 33 pins SÍ exigen preservar literalmente la forma del código (nombres
  * de función, control de flujo, constantes) — ahí el literal ES el
