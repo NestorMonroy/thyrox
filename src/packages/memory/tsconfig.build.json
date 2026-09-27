@@ -1,0 +1,87 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/memory": [
+        "./src/index.ts"
+      ],
+      "@thyrox/memory/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/memory/agentMemory": [
+        "./src/agentMemory.ts"
+      ],
+      "@thyrox/memory/extractMemories": [
+        "./src/extractMemories.ts"
+      ],
+      "@thyrox/memory/memoryAge": [
+        "./src/memoryAge.ts"
+      ],
+      "@thyrox/memory/memoryFileDetection": [
+        "./src/memoryFileDetection.ts"
+      ],
+      "@thyrox/memory/memoryPause": [
+        "./src/memoryPause.ts"
+      ],
+      "@thyrox/memory/memoryShapeTelemetry": [
+        "./src/memoryShapeTelemetry.ts"
+      ],
+      "@thyrox/memory/memorySourceTypes": [
+        "./src/memorySourceTypes.ts"
+      ],
+      "@thyrox/memory/paths": [
+        "./src/paths.ts"
+      ],
+      "@thyrox/memory/projectGitInfo": [
+        "./src/projectGitInfo.ts"
+      ],
+      "@thyrox/memory/sessionMemoryPrompts": [
+        "./src/sessionMemoryPrompts.ts"
+      ],
+      "@thyrox/memory/sessionMemoryUtils": [
+        "./src/sessionMemoryUtils.ts"
+      ],
+      "@thyrox/memory/teamMemPaths": [
+        "./src/teamMemPaths.ts"
+      ],
+      "@thyrox/memory/teamMemSecretGuard": [
+        "./src/teamMemSecretGuard.ts"
+      ],
+      "@thyrox/memory/teamMemoryOps": [
+        "./src/teamMemoryOps.ts"
+      ],
+      "@thyrox/memory/teamMemorySyncWatcher": [
+        "./src/teamMemorySyncWatcher.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

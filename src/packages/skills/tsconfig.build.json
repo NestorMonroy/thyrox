@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/skills/registry": [
+        "./src/registry.ts"
+      ],
+      "@thyrox/skills/fromDir": [
+        "./src/fromDir.ts"
+      ],
+      "@thyrox/skills/bundled": [
+        "./src/bundled.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

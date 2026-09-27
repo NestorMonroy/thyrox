@@ -1,0 +1,53 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "rootDir": "."
+  },
+  "include": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__tests__/**/*",
+    "bundledMode.ts",
+    "commonConstants.ts",
+    "configConstants.ts",
+    "dxt/**/*",
+    "embeddedTools.ts",
+    "env/**/*",
+    "feature-flags.ts",
+    "frontmatterParser.ts",
+    "generators.ts",
+    "git/**/*",
+    "gitFilesystem.ts",
+    "global/**/*",
+    "hash.ts",
+    "host.ts",
+    "index.ts",
+    "internal/**/*",
+    "managedEnv.ts",
+    "mcpConfigSchema.ts",
+    "memoize.ts",
+    "outputStyles.ts",
+    "platform.ts",
+    "plugin/**/*",
+    "product.ts",
+    "remote/**/*",
+    "semver.ts",
+    "sequential.ts",
+    "settings/**/*",
+    "signal.ts",
+    "sleep.ts",
+    "stream.ts",
+    "sync/**/*",
+    "testing/**/*",
+    "timeouts.ts",
+    "utils/**/*",
+    "yaml.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

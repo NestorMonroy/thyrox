@@ -1,0 +1,68 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@ant/computer-use-mcp": [
+        "./src/index.ts"
+      ],
+      "@ant/computer-use-mcp/sentinelApps": [
+        "./src/sentinelApps.ts"
+      ],
+      "@ant/computer-use-mcp/types": [
+        "./src/types.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/mcpServer.js": [
+        "./src/legacy/mcpServer.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/common.js": [
+        "./src/legacy/common.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/setup.js": [
+        "./src/legacy/setup.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/cleanup.js": [
+        "./src/legacy/cleanup.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/gates.js": [
+        "./src/legacy/gates.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/wrapper.js": [
+        "./src/legacy/wrapper.tsx"
+      ],
+      "@ant/computer-use-mcp/legacy/win32/windowEnum.js": [
+        "./src/legacy/win32/windowEnum.ts"
+      ],
+      "@ant/computer-use-mcp/legacy/win32/windowCapture.js": [
+        "./src/legacy/win32/windowCapture.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../../types/build-globals.d.ts"
+  ]
+}

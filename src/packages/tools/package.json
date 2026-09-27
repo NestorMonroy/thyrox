@@ -5,15 +5,51 @@
   "type": "module",
   "description": "El registro de herramientas y las herramientas mismas: las seis del nucleo, el despacho de subagentes con sus definiciones, plan, skill, tareas y web.",
   "exports": {
-    "./registry": "./src/registry.ts",
-    "./agent": "./src/agent.ts",
-    "./agentDefinitions": "./src/agentDefinitions.ts",
-    "./plan": "./src/plan.ts",
-    "./skill": "./src/skill.ts",
-    "./tasks": "./src/tasks.ts",
-    "./web": "./src/web.ts",
-    "./definitions": "./src/definitions/index.ts",
-    "./definitions/rupCoordinator": "./src/definitions/rupCoordinator.ts"
+    "./registry": {
+      "@thyrox/source": "./src/registry.ts",
+      "types": "./dist/registry.d.ts",
+      "default": "./src/registry.ts"
+    },
+    "./agent": {
+      "@thyrox/source": "./src/agent.ts",
+      "types": "./dist/agent.d.ts",
+      "default": "./src/agent.ts"
+    },
+    "./agentDefinitions": {
+      "@thyrox/source": "./src/agentDefinitions.ts",
+      "types": "./dist/agentDefinitions.d.ts",
+      "default": "./src/agentDefinitions.ts"
+    },
+    "./plan": {
+      "@thyrox/source": "./src/plan.ts",
+      "types": "./dist/plan.d.ts",
+      "default": "./src/plan.ts"
+    },
+    "./skill": {
+      "@thyrox/source": "./src/skill.ts",
+      "types": "./dist/skill.d.ts",
+      "default": "./src/skill.ts"
+    },
+    "./tasks": {
+      "@thyrox/source": "./src/tasks.ts",
+      "types": "./dist/tasks.d.ts",
+      "default": "./src/tasks.ts"
+    },
+    "./web": {
+      "@thyrox/source": "./src/web.ts",
+      "types": "./dist/web.d.ts",
+      "default": "./src/web.ts"
+    },
+    "./definitions": {
+      "@thyrox/source": "./src/definitions/index.ts",
+      "types": "./dist/definitions/index.d.ts",
+      "default": "./src/definitions/index.ts"
+    },
+    "./definitions/rupCoordinator": {
+      "@thyrox/source": "./src/definitions/rupCoordinator.ts",
+      "types": "./dist/definitions/rupCoordinator.d.ts",
+      "default": "./src/definitions/rupCoordinator.ts"
+    }
   },
   "scripts": {
     "test": "bun test",

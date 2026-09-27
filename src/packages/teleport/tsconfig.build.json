@@ -1,0 +1,69 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/teleport": [
+        "./src/index.ts"
+      ],
+      "@thyrox/teleport/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/teleport/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/teleport/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/teleport/remote-setup": [
+        "./src/remote-setup/index.ts"
+      ],
+      "@thyrox/teleport/remote-setup/remote-setup": [
+        "./src/remote-setup/remote-setup.tsx"
+      ],
+      "@thyrox/teleport/api.js": [
+        "./src/api.ts"
+      ],
+      "@thyrox/teleport/environmentSelection.js": [
+        "./src/environmentSelection.ts"
+      ],
+      "@thyrox/teleport/environments.js": [
+        "./src/environments.ts"
+      ],
+      "@thyrox/teleport/gitBundle.js": [
+        "./src/gitBundle.ts"
+      ],
+      "@thyrox/teleport/remote-setup/index.js": [
+        "./src/remote-setup/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

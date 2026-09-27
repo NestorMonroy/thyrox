@@ -1,0 +1,107 @@
+agent: OK
+agent: repunte INERTE — 39 destino(s) de types no existen:
+  . -> ./dist/index.d.ts
+  ./taggedId -> ./dist/taggedId.d.ts
+  ./agentIdUtils -> ./dist/agentIdUtils.d.ts
+  ./sanitizePathComponent -> ./dist/sanitizePathComponent.d.ts
+  ./promptCategory -> ./dist/promptCategory.d.ts
+  ./contentArray -> ./dist/contentArray.d.ts
+  ./tee -> ./dist/tee.d.ts
+  ./coordinatorMode -> ./dist/coordinatorMode.d.ts
+  ./sessionStores -> ./dist/sessionStores.d.ts
+  ./yaml -> ./dist/yaml.d.ts
+  ./statusAlias.js -> ./dist/statusAlias.d.ts
+  ./agentDeps.js -> ./dist/agentDeps.d.ts
+  ./agentHostBindings.js -> ./dist/agentHostBindings.d.ts
+  ./awaySummary.js -> ./dist/awaySummary.d.ts
+  ./concurrentSessions.js -> ./dist/concurrentSessions.d.ts
+  ./contentArray.js -> ./dist/contentArray.d.ts
+  ./coordinatorMode.js -> ./dist/coordinatorMode.d.ts
+  ./diff.js -> ./dist/diff.d.ts
+  ./effort.js -> ./dist/effort.d.ts
+  ./idleTimeout.js -> ./dist/idleTimeout.d.ts
+  ./inProcessTeammateHelpers.js -> ./dist/inProcessTeammateHelpers.d.ts
+  ./jetbrains.js -> ./dist/jetbrains.d.ts
+  ./messagesMappers.js -> ./dist/messagesMappers.d.ts
+  ./promptCategory.js -> ./dist/promptCategory.d.ts
+  ./queryContext.js -> ./dist/queryContext.d.ts
+  ./replHydration.js -> ./dist/replHydration.d.ts
+  ./sdkControlSchemas.js -> ./dist/sdkControlSchemas.d.ts
+  ./sessionFileAccessHooks.js -> ./dist/sessionFileAccessHooks.d.ts
+  ./sessionStores.js -> ./dist/sessionStores.d.ts
+  ./sessionTitle.js -> ./dist/sessionTitle.d.ts
+  ./sessionUrl.js -> ./dist/sessionUrl.d.ts
+  ./sideQuestion.js -> ./dist/sideQuestion.d.ts
+  ./taggedId.js -> ./dist/taggedId.d.ts
+  ./taskFramework.js -> ./dist/taskFramework.d.ts
+  ./tokenBudget -> ./dist/tokenBudget.d.ts
+  ./worktreeModeEnabled.js -> ./dist/worktreeModeEnabled.d.ts
+  ./yaml.js -> ./dist/yaml.d.ts
+  ./query-engine -> ./dist/QueryEngine.d.ts
+  ./subagentLimits.js -> ./dist/subagentLimits.d.ts
+  Corre la emision antes del repunte: emit_declarations <paquete>
+app-host: emitio pese a 2 errores (2 propio(s))
+audio-capture-napi: OK
+binary: OK
+bridge: OK
+cli: emitio pese a 1 errores (0 propio(s))
+cli: repunte INERTE — 1 destino(s) de types no existen:
+  ./entry/main -> ./dist/entry/main.d.ts
+  Corre la emision antes del repunte: emit_declarations <paquete>
+color-diff-napi: OK
+command-runtime: OK
+config: OK
+config: repunte INERTE — 16 destino(s) de types no existen:
+  ./commonConstants.js -> ./dist/commonConstants.d.ts
+  ./configConstants.js -> ./dist/configConstants.d.ts
+  ./embeddedTools.js -> ./dist/embeddedTools.d.ts
+  ./generators -> ./dist/generators.d.ts
+  ./gitFilesystem.js -> ./dist/gitFilesystem.d.ts
+  ./hash -> ./dist/hash.d.ts
+  ./hash.js -> ./dist/hash.d.ts
+  ./managedEnv.js -> ./dist/managedEnv.d.ts
+  ./memoize.js -> ./dist/memoize.d.ts
+  ./product -> ./dist/product.d.ts
+  ./semver -> ./dist/semver.d.ts
+  ./sequential -> ./dist/sequential.d.ts
+  ./signal -> ./dist/signal.d.ts
+  ./sleep -> ./dist/sleep.d.ts
+  ./stream -> ./dist/stream.d.ts
+  ./timeouts -> ./dist/timeouts.d.ts
+  Corre la emision antes del repunte: emit_declarations <paquete>
+context-compression: OK
+daemon: OK
+headless-sdk: OK
+ide: OK
+image-processor-napi: OK
+local-observability: OK
+mcp-runtime: OK
+memory: OK
+modifiers-napi: OK
+observability: OK
+output: OK
+permission: OK
+plan: OK
+provider: OK
+repl: OK
+ripgrep-napi: OK
+server: OK
+shell: OK
+skills: OK
+stdin-napi: OK
+storage: OK
+swarm: OK
+teleport: OK
+tool-registry: OK
+tools: OK
+updater: OK
+url-handler-napi: OK
+voice: OK
+claude-for-chrome-mcp: OK
+computer-use-input: OK
+computer-use-mcp: OK
+computer-use-swift: OK
+ink: OK
+
+emit_declarations: 42 paquete(s) medido(s), 3 error(es) que siguen vivos en su propio paquete
+EXIT=0

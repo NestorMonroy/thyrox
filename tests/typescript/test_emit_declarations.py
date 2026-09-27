@@ -25,6 +25,8 @@ otra cosa; quien lo confunda comete el sub-patron C con este mecanismo como
 sujeto. Y ciego al coste de recompilar los 42, que no se midio.
 """
 import json
+import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -661,6 +663,66 @@ def main():
         check("y el error de la doble identidad no aparece",
               False, "separate declarations" in result.output
               or "is not assignable" in result.output)
+
+    # --- el build y el test quedan en el paquete, reproducibles sin Python --
+    #
+    # TASK-THYROX-0256. La emision escribia `tsconfig.declarations.json`, lo
+    # usaba y lo BORRABA: ningun paquete tenia con que reconstruir su `dist/`
+    # salvo este script. Los dos proyectos quedan versionables —rutas
+    # relativas— y cada uno se prueba por conducta, no por existencia: el
+    # build regenera `dist/` con `tsc -p` a secas, y el de test ve un error
+    # que el build excluye a proposito.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "reproducible", "src")
+        (pkg / "src" / "index.ts").write_text("export const n: number = 1\n")
+        (pkg / "__tests__").mkdir()
+        (pkg / "__tests__" / "n.test.ts").write_text(
+            "import { n } from '../src/index.ts'\nexport const roto: string = n\n")
+        mod.emit_package(pkg)
+        build = pkg / "tsconfig.build.json"
+        test_project = pkg / "tsconfig.test.json"
+        check("el build queda en el paquete", True, build.is_file())
+        check("y el de test tambien", True, test_project.is_file())
+        texts = [p.read_text() for p in (build, test_project) if p.is_file()]
+        check("ninguno lleva una ruta absoluta: se versionan", False,
+              any(str(root) in t or '"/' in t for t in texts))
+        shutil.rmtree(pkg / "dist", ignore_errors=True)
+        rebuilt = subprocess.run(["bunx", "tsc", "-p", "tsconfig.build.json"],
+                                 cwd=pkg, capture_output=True, text=True, timeout=300)
+        check("tsc -p tsconfig.build.json regenera dist/ sin el script", True,
+              (pkg / "dist" / "index.d.ts").is_file())
+        check("y el build NO ve el error del test", False,
+              "n.test.ts" in (rebuilt.stdout + rebuilt.stderr))
+        tested = subprocess.run(["bunx", "tsc", "-p", "tsconfig.test.json"],
+                                cwd=pkg, capture_output=True, text=True, timeout=300)
+        check("el proyecto de test SI ve el error del test", True,
+              "n.test.ts" in (tested.stdout + tested.stderr))
+        check("y no emite nada", False,
+              any((pkg / "dist").rglob("n.test.d.ts")))
+
+    # --- un archivo exportado desde la RAIZ del paquete tambien se emite ---
+    #
+    # Medido al construir los 42: `config` exporta `./hash.js -> ./hash.ts`
+    # junto a directorios (`settings/`, `env/`, …). `entry_directory` da `""`
+    # para un archivo de la raiz y el `include` lo descartaba: solo se emitia
+    # si algun archivo incluido lo importaba. 16 destinos de `config`, 39 de
+    # `agent` y 1 de `cli` quedaban sin `.d.ts` y el repunte los rehusaba.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "raiz-y-sub"
+        (pkg / "sub").mkdir(parents=True)
+        write_types_stub(root)
+        (pkg / "sub" / "a.ts").write_text("export const a = 1\n")
+        (pkg / "top.ts").write_text("export const top = 2\n")
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/raiz-y-sub", "version": "1.0.0", "private": True,
+            "exports": {"./sub/a.js": "./sub/a.ts", "./top.js": "./top.ts"},
+        }) + "\n")
+        mod.emit_package(pkg)
+        check("el archivo exportado desde la raiz tiene su .d.ts", True,
+              (pkg / "dist" / "top.d.ts").is_file())
+        check("y el repunte ya no lo rehusa", True, mod.repoint_manifest(pkg))
 
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0

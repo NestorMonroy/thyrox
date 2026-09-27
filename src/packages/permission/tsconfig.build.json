@@ -1,0 +1,204 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/permission": [
+        "./src/permission.ts"
+      ],
+      "@thyrox/permission/host.js": [
+        "./src/host.ts"
+      ],
+      "@thyrox/permission/errors.js": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/permission/contracts.js": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/permission/permissionTypes.js": [
+        "./src/permissionTypes.ts"
+      ],
+      "@thyrox/permission/permissionRuleParser.js": [
+        "./src/permissionRuleParser.ts"
+      ],
+      "@thyrox/permission/permissions.js": [
+        "./src/permissions.ts"
+      ],
+      "@thyrox/permission/filesystem.js": [
+        "./src/filesystem.ts"
+      ],
+      "@thyrox/permission/pathValidation.js": [
+        "./src/pathValidation.ts"
+      ],
+      "@thyrox/permission/permissionSetup.js": [
+        "./src/permissionSetup.ts"
+      ],
+      "@thyrox/permission/index.js": [
+        "./src/index.ts"
+      ],
+      "@thyrox/permission/appStateHooks.js": [
+        "./src/appStateHooks.ts"
+      ],
+      "@thyrox/permission/testing": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/permission/testing/index.js": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/permission/commands/add-dir/validation.js": [
+        "./src/commands/add-dir/validation.ts"
+      ],
+      "@thyrox/permission/commands/rename/generateSessionName.js": [
+        "./src/commands/rename/generateSessionName.ts"
+      ],
+      "@thyrox/permission/components/ComputerUseApproval/ComputerUseApproval.js": [
+        "./src/components/ComputerUseApproval/ComputerUseApproval.tsx"
+      ],
+      "@thyrox/permission/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js": [
+        "./src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx"
+      ],
+      "@thyrox/permission/components/FilePermissionDialog/permissionOptions.js": [
+        "./src/components/FilePermissionDialog/permissionOptions.tsx"
+      ],
+      "@thyrox/permission/components/PermissionDialog.js": [
+        "./src/components/PermissionDialog.tsx"
+      ],
+      "@thyrox/permission/components/PermissionRequest.js": [
+        "./src/components/PermissionRequest.tsx"
+      ],
+      "@thyrox/permission/components/SandboxPermissionRequest.js": [
+        "./src/components/SandboxPermissionRequest.tsx"
+      ],
+      "@thyrox/permission/components/WorkerPendingPermission.js": [
+        "./src/components/WorkerPendingPermission.tsx"
+      ],
+      "@thyrox/permission/components/rules/AddWorkspaceDirectory.js": [
+        "./src/components/rules/AddWorkspaceDirectory.tsx"
+      ],
+      "@thyrox/permission/PermissionMode": [
+        "./src/PermissionMode.ts"
+      ],
+      "@thyrox/permission/PermissionPromptToolResultSchema": [
+        "./src/PermissionPromptToolResultSchema.ts"
+      ],
+      "@thyrox/permission/PermissionResult": [
+        "./src/PermissionResult.ts"
+      ],
+      "@thyrox/permission/PermissionRule": [
+        "./src/PermissionRule.ts"
+      ],
+      "@thyrox/permission/PermissionUpdate": [
+        "./src/PermissionUpdate.ts"
+      ],
+      "@thyrox/permission/PermissionUpdateSchema": [
+        "./src/PermissionUpdateSchema.ts"
+      ],
+      "@thyrox/permission/autoModeDenials.js": [
+        "./src/autoModeDenials.ts"
+      ],
+      "@thyrox/permission/autoModeState.js": [
+        "./src/autoModeState.ts"
+      ],
+      "@thyrox/permission/bashClassifier.js": [
+        "./src/bashClassifier.ts"
+      ],
+      "@thyrox/permission/bypassPermissionsKillswitch.js": [
+        "./src/bypassPermissionsKillswitch.ts"
+      ],
+      "@thyrox/permission/classifierApprovals.js": [
+        "./src/classifierApprovals.ts"
+      ],
+      "@thyrox/permission/classifierApprovalsHook.js": [
+        "./src/classifierApprovalsHook.ts"
+      ],
+      "@thyrox/permission/classifierDecision.js": [
+        "./src/classifierDecision.ts"
+      ],
+      "@thyrox/permission/commands/index.js": [
+        "./src/commands/index.ts"
+      ],
+      "@thyrox/permission/dangerousPatterns.js": [
+        "./src/dangerousPatterns.ts"
+      ],
+      "@thyrox/permission/denialTracking": [
+        "./src/denialTracking.ts"
+      ],
+      "@thyrox/permission/filesystem": [
+        "./src/filesystem.ts"
+      ],
+      "@thyrox/permission/getNextPermissionMode.js": [
+        "./src/getNextPermissionMode.ts"
+      ],
+      "@thyrox/permission/permissionRuleParser": [
+        "./src/permissionRuleParser.ts"
+      ],
+      "@thyrox/permission/permissionSetup": [
+        "./src/permissionSetup.ts"
+      ],
+      "@thyrox/permission/permissionTypes": [
+        "./src/permissionTypes.ts"
+      ],
+      "@thyrox/permission/permissions": [
+        "./src/permissions.ts"
+      ],
+      "@thyrox/permission/permissionsLoader.js": [
+        "./src/permissionsLoader.ts"
+      ],
+      "@thyrox/permission/planModeV2.js": [
+        "./src/planModeV2.ts"
+      ],
+      "@thyrox/permission/shadowedRuleDetection.js": [
+        "./src/shadowedRuleDetection.ts"
+      ],
+      "@thyrox/permission/shellRuleMatching.js": [
+        "./src/shellRuleMatching.ts"
+      ],
+      "@thyrox/permission/toolPermission/PermissionContext.js": [
+        "./src/toolPermission/PermissionContext.ts"
+      ],
+      "@thyrox/permission/toolPermission/handlers/coordinatorHandler.js": [
+        "./src/toolPermission/handlers/coordinatorHandler.ts"
+      ],
+      "@thyrox/permission/toolPermission/handlers/interactiveHandler.js": [
+        "./src/toolPermission/handlers/interactiveHandler.ts"
+      ],
+      "@thyrox/permission/toolPermission/handlers/swarmWorkerHandler.js": [
+        "./src/toolPermission/handlers/swarmWorkerHandler.ts"
+      ],
+      "@thyrox/permission/toolPermission/permissionLogging.js": [
+        "./src/toolPermission/permissionLogging.ts"
+      ],
+      "@thyrox/permission/yoloClassifier.js": [
+        "./src/yoloClassifier.ts"
+      ]
+    }
+  },
+  "include": [
+    "internal/**/*",
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

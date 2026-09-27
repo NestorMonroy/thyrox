@@ -1,0 +1,213 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/mcp-runtime": [
+        "./src/index.ts"
+      ],
+      "@thyrox/mcp-runtime/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/mcp-runtime/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/mcp-runtime/normalization": [
+        "./src/normalization.ts"
+      ],
+      "@thyrox/mcp-runtime/sanitization": [
+        "./src/sanitization.ts"
+      ],
+      "@thyrox/mcp-runtime/secureStorageTypes": [
+        "./src/secureStorageTypes.ts"
+      ],
+      "@thyrox/mcp-runtime/appStateHooks": [
+        "./src/appStateHooks.ts"
+      ],
+      "@thyrox/mcp-runtime/reservedNames": [
+        "./src/reservedNames.ts"
+      ],
+      "@thyrox/mcp-runtime/envExpansion": [
+        "./src/envExpansion.ts"
+      ],
+      "@thyrox/mcp-runtime/host": [
+        "./src/host.ts"
+      ],
+      "@thyrox/mcp-runtime/api": [
+        "./src/api.ts"
+      ],
+      "@thyrox/mcp-runtime/client": [
+        "./src/client.ts"
+      ],
+      "@thyrox/mcp-runtime/compat": [
+        "./src/compat.ts"
+      ],
+      "@thyrox/mcp-runtime/client/authCache": [
+        "./src/client/authCache.ts"
+      ],
+      "@thyrox/mcp-runtime/client/transport": [
+        "./src/client/transport.ts"
+      ],
+      "@thyrox/mcp-runtime/client/discovery": [
+        "./src/client/discovery.ts"
+      ],
+      "@thyrox/mcp-runtime/client/auth": [
+        "./src/client/auth.ts"
+      ],
+      "@thyrox/mcp-runtime/InProcessTransport": [
+        "./src/InProcessTransport.ts"
+      ],
+      "@thyrox/mcp-runtime/SdkControlTransport": [
+        "./src/SdkControlTransport.ts"
+      ],
+      "@thyrox/mcp-runtime/channelPermissions": [
+        "./src/channelPermissions.ts"
+      ],
+      "@thyrox/mcp-runtime/claudeai": [
+        "./src/claudeai.ts"
+      ],
+      "@thyrox/mcp-runtime/dateTimeParser": [
+        "./src/dateTimeParser.ts"
+      ],
+      "@thyrox/mcp-runtime/elicitationHandler": [
+        "./src/elicitationHandler.ts"
+      ],
+      "@thyrox/mcp-runtime/elicitationValidation": [
+        "./src/elicitationValidation.ts"
+      ],
+      "@thyrox/mcp-runtime/headersHelper": [
+        "./src/headersHelper.ts"
+      ],
+      "@thyrox/mcp-runtime/macOsKeychainHelpers": [
+        "./src/macOsKeychainHelpers.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpConnectionTelemetry": [
+        "./src/mcpConnectionTelemetry.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpInstructionsDelta": [
+        "./src/mcpInstructionsDelta.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpStringUtils": [
+        "./src/mcpStringUtils.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpValidation": [
+        "./src/mcpValidation.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpWebSocketTransport": [
+        "./src/mcpWebSocketTransport.ts"
+      ],
+      "@thyrox/mcp-runtime/oauthPort": [
+        "./src/oauthPort.ts"
+      ],
+      "@thyrox/mcp-runtime/officialRegistry": [
+        "./src/officialRegistry.ts"
+      ],
+      "@thyrox/mcp-runtime/roots": [
+        "./src/roots.ts"
+      ],
+      "@thyrox/mcp-runtime/types": [
+        "./src/types.ts"
+      ],
+      "@thyrox/mcp-runtime/xaaIdpLogin": [
+        "./src/xaaIdpLogin.ts"
+      ],
+      "@thyrox/mcp-runtime/testing": [
+        "./testing/index.ts"
+      ],
+      "@thyrox/mcp-runtime/MCPConnectionManager.js": [
+        "./src/MCPConnectionManager.tsx"
+      ],
+      "@thyrox/mcp-runtime/auth.js": [
+        "./src/auth.ts"
+      ],
+      "@thyrox/mcp-runtime/channelAllowlist.js": [
+        "./src/channelAllowlist.ts"
+      ],
+      "@thyrox/mcp-runtime/channelNotification.js": [
+        "./src/channelNotification.ts"
+      ],
+      "@thyrox/mcp-runtime/channelPermissions.js": [
+        "./src/channelPermissions.ts"
+      ],
+      "@thyrox/mcp-runtime/claudeai.js": [
+        "./src/claudeai.ts"
+      ],
+      "@thyrox/mcp-runtime/clientRuntime.js": [
+        "./src/clientRuntime.ts"
+      ],
+      "@thyrox/mcp-runtime/config.js": [
+        "./src/config.ts"
+      ],
+      "@thyrox/mcp-runtime/elicitationHandler.js": [
+        "./src/elicitationHandler.ts"
+      ],
+      "@thyrox/mcp-runtime/elicitationValidation.js": [
+        "./src/elicitationValidation.ts"
+      ],
+      "@thyrox/mcp-runtime/envExpansion.js": [
+        "./src/envExpansion.ts"
+      ],
+      "@thyrox/mcp-runtime/macOsKeychainHelpers.js": [
+        "./src/macOsKeychainHelpers.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpOutputStorage.js": [
+        "./src/mcpOutputStorage.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpStringUtils.js": [
+        "./src/mcpStringUtils.ts"
+      ],
+      "@thyrox/mcp-runtime/mcpValidation.js": [
+        "./src/mcpValidation.ts"
+      ],
+      "@thyrox/mcp-runtime/normalization.js": [
+        "./src/normalization.ts"
+      ],
+      "@thyrox/mcp-runtime/runtimeHostSetup.js": [
+        "./src/runtimeHostSetup.ts"
+      ],
+      "@thyrox/mcp-runtime/sanitization.js": [
+        "./src/sanitization.ts"
+      ],
+      "@thyrox/mcp-runtime/types.js": [
+        "./src/types.ts"
+      ],
+      "@thyrox/mcp-runtime/utils.js": [
+        "./src/utils.ts"
+      ],
+      "@thyrox/mcp-runtime/vscodeSdkMcp.js": [
+        "./src/vscodeSdkMcp.ts"
+      ],
+      "@thyrox/mcp-runtime/xaaIdpLogin.js": [
+        "./src/xaaIdpLogin.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "testing/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

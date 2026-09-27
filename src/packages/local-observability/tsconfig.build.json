@@ -1,0 +1,140 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@thyrox/local-observability": [
+        "./src/index.ts"
+      ],
+      "@thyrox/local-observability/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/local-observability/errors": [
+        "./src/errors.ts"
+      ],
+      "@thyrox/local-observability/testing": [
+        "./src/testing/index.ts"
+      ],
+      "@thyrox/local-observability/compat": [
+        "./src/compat.ts"
+      ],
+      "@thyrox/local-observability/spans": [
+        "./src/spans.ts"
+      ],
+      "@thyrox/local-observability/logging": [
+        "./src/logging/index.ts"
+      ],
+      "@thyrox/local-observability/telemetry": [
+        "./src/telemetry/index.ts"
+      ],
+      "@thyrox/local-observability/slowOperations.js": [
+        "./src/slowOperations.ts"
+      ],
+      "@thyrox/local-observability/slowLoggingTag.js": [
+        "./src/slowLoggingTag.ts"
+      ],
+      "@thyrox/local-observability/errorHelpers.js": [
+        "./src/errorHelpers.ts"
+      ],
+      "@thyrox/local-observability/fileOperationAnalytics": [
+        "./src/fileOperationAnalytics.ts"
+      ],
+      "@thyrox/local-observability/debug.js": [
+        "./src/debug.ts"
+      ],
+      "@thyrox/local-observability/log.js": [
+        "./src/log.ts"
+      ],
+      "@thyrox/local-observability/telemetryEvents.js": [
+        "./src/telemetryEvents.ts"
+      ],
+      "@thyrox/local-observability/sentry.js": [
+        "./src/sentry.ts"
+      ],
+      "@thyrox/local-observability/betaSessionTracing.js": [
+        "./src/betaSessionTracing.ts"
+      ],
+      "@thyrox/local-observability/errorIds.js": [
+        "./src/errorIds.ts"
+      ],
+      "@thyrox/local-observability/errorIds": [
+        "./src/errorIds.ts"
+      ],
+      "@thyrox/local-observability/utils/withResolvers.js": [
+        "./src/utils/withResolvers.ts"
+      ],
+      "@thyrox/local-observability/sinks.js": [
+        "./src/sinks.ts"
+      ],
+      "@thyrox/local-observability/eventLoopStallDetector.js": [
+        "./src/eventLoopStallDetector.ts"
+      ],
+      "@thyrox/local-observability/uds/udsMessaging.js": [
+        "./src/uds/udsMessaging.ts"
+      ],
+      "@thyrox/local-observability/uds/udsClient.js": [
+        "./src/uds/udsClient.ts"
+      ],
+      "@thyrox/local-observability/sdkHeapDumpMonitor.js": [
+        "./src/sdkHeapDumpMonitor.ts"
+      ],
+      "@thyrox/local-observability/sessionDataUploader.js": [
+        "./src/sessionDataUploader.ts"
+      ],
+      "@thyrox/local-observability/telemetry/perfettoTracing.js": [
+        "./src/telemetry/perfettoTracing.ts"
+      ],
+      "@thyrox/local-observability/aggregates/cleanup.js": [
+        "./src/aggregates/cleanup.ts"
+      ],
+      "@thyrox/local-observability/aggregates/headlessProfiler.js": [
+        "./src/aggregates/headlessProfiler.ts"
+      ],
+      "@thyrox/local-observability/aggregates/heatmap.js": [
+        "./src/aggregates/heatmap.ts"
+      ],
+      "@thyrox/local-observability/aggregates/queryProfiler.js": [
+        "./src/aggregates/queryProfiler.ts"
+      ],
+      "@thyrox/local-observability/aggregates/stats.js": [
+        "./src/aggregates/stats.ts"
+      ],
+      "@thyrox/local-observability/localEventLogger.js": [
+        "./src/localEventLogger.ts"
+      ],
+      "@thyrox/local-observability/internal/pendingCrossPackageDeps.js": [
+        "./src/internal/pendingCrossPackageDeps.ts"
+      ],
+      "@thyrox/local-observability/logging/error-log.js": [
+        "./src/logging/error-log.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

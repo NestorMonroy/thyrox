@@ -418,21 +418,13 @@ def _project_shape(package_dir: Path):
         return ".", ["**/*"]
     if not directories:
         return ".", ["*.ts"]
-    # Un archivo exportado desde la RAIZ tiene directorio `""` y la seleccion
-    # de arriba lo descarta: con directorios nombrados al lado, solo se emitia
-    # si algun archivo incluido lo importaba. Medido al construir los 42:
-    # 16 destinos de `config`, 39 de `agent` y 1 de `cli` sin `.d.ts`. Se
-    # declaran por nombre, y su presencia fuerza el `rootDir` a la raiz.
-    root_files = sorted({t.lstrip("./") for t in export_targets(manifest)
-                         if "*" not in t and not entry_directory(t)
-                         and t.endswith((".ts", ".tsx"))})
     # El `rootDir` es el ANCESTRO COMUN de los directorios declarados, no el
     # primero ni la raiz del paquete. `storage` declara `src` y `src/testing`:
     # elegir la raiz subiria el `rootDir` un nivel de mas y desplazaria TODA su
     # emision dentro de `dist/`. `headless-sdk` declara `src` y `testing`, que
     # no se anidan, y ahi el ancestro comun si es el paquete.
     root = os.path.commonpath(directories) if len(directories) > 1 else directories[0]
-    if root in ("", ".") or root_files:
+    if root in ("", "."):
         # Un directorio ANIDADO en otro ya lo cubre el comodin del ancestro; se
         # descarta para no declarar el mismo archivo dos veces. `repl` declara
         # 58 destinos, 57 de ellos bajo `src`: sin este colapso el `include`
@@ -440,7 +432,7 @@ def _project_shape(package_dir: Path):
         covered = [d for d in directories
                      if not any(o != d and (d + os.sep).startswith(o + os.sep)
                                 for o in directories)]
-        return ".", [f"{d}/**/*" for d in covered] + root_files
+        return ".", [f"{d}/**/*" for d in covered]
     # Un directorio que cae DENTRO de la raiz comun ya lo cubre su comodin; se
     # descarta para no declarar el mismo archivo dos veces.
     return root, [f"{root}/**/*"]
