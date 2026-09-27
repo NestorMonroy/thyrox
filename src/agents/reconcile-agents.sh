@@ -246,6 +246,7 @@ DELIVERY
   case "$v" in
     delivered) echo "entrego" ;;
     cut)       echo "cortado" ;;
+    api_error) echo "error-api" ;;
     *)         echo "indecidible" ;;
   esac
 }
@@ -414,7 +415,7 @@ fi
 # guion moria en `COUNT[$v]: unbound variable` — el instrumento que las reglas
 # mandan correr para mirar el roster no corria. No mintio: se apago, que es el
 # desenlace menos malo de los dos, pero deja al roster sin lectura.
-declare -A COUNT=( [terminado]=0 [entrego]=0 [cortado]=0 [vivo]=0 [reciente]=0 \
+declare -A COUNT=( [terminado]=0 [entrego]=0 [cortado]=0 [error-api]=0 [vivo]=0 [reciente]=0 \
                    [atascado]=0 [desaparecido]=0 [indecidible]=0 )
 TOTAL=0
 DETAIL=""
@@ -431,16 +432,21 @@ while IFS= read -r entry; do
     v=indecidible
   fi
   COUNT[$v]=$(( ${COUNT[$v]} + 1 ))
-  if [[ "$v" == "desaparecido" || "$v" == "atascado" ]]; then
+  if [[ "$v" == "desaparecido" || "$v" == "atascado" || "$v" == "error-api" ]]; then
     id=$(basename "$entry" .output)
     kind=$([[ -L "$entry" ]] && echo subagente || echo bash)
     mins=$(( (NOW - $(stat -L -c %Y "$entry" 2>/dev/null || echo "$NOW")) / 60 ))
     DETAIL+="  $v  $id  ($kind, sin escribir ${mins} min)"$'\n'
+    if [[ "$v" == "error-api" ]]; then
+      plan=$(PYTHONPATH="$READER" python3 "$READER/roster/recovery.py" "$(readlink -f "$entry")" 2>/dev/null \
+        | cut -f3)
+      DETAIL+="      -> ${plan:-(no se pudo leer la accion)}"$'\n'
+    fi
   fi
 done < <(find "$ROSTER" -maxdepth 1 -name '*.output' 2>/dev/null | sort)
 
 if [[ "$MODE" == "quiet" ]]; then
-  echo "reconcile-agents: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
+  echo "reconcile-agents: desaparecidos=${COUNT[desaparecido]} atascados=${COUNT[atascado]} error-api=${COUNT[error-api]} indecidibles=${COUNT[indecidible]} (alcance medido: $TOTAL entradas de roster)"
   exit 0
 fi
 
@@ -453,10 +459,11 @@ echo
 # en 0 —ningun veredicto de subagente devuelve el literal `terminado`— y el
 # lector veia «terminado 0» con un «entrego 1» debajo: la cabecera negando a
 # su propio detalle.
-TERMINADOS=$(( COUNT[terminado] + COUNT[entrego] + COUNT[cortado] ))
+TERMINADOS=$(( COUNT[terminado] + COUNT[entrego] + COUNT[cortado] + COUNT[error-api] ))
 printf '  %-14s %s\n' terminado    "$TERMINADOS"
 printf '  %-14s %s\n' "  entrego"   "${COUNT[entrego]}"
 printf '  %-14s %s\n' "  cortado"   "${COUNT[cortado]}"
+printf '  %-14s %s\n' "  error-api" "${COUNT[error-api]}"
 printf '  %-14s %s\n' "  no aplica" "${COUNT[terminado]}"
 printf '  %-14s %s\n' vivo         "${COUNT[vivo]}"
 printf '  %-14s %s\n' reciente     "${COUNT[reciente]}"
@@ -468,6 +475,7 @@ printf '  %-14s %s\n' TOTAL "$TOTAL"
 [[ -n "$DETAIL" ]] && { echo; echo "$DETAIL"; }
 echo "Sólo 'desaparecido' autoriza relanzar, y sólo vía --confirmar-muerte <id>."
 echo "'indecidible' NO es 'muerto': es que este instrumento no puede verlo."
+echo "'error-api' NO entregó: la API rehusó la petición; su trabajo en disco sigue sin recoger."
 # El worktree de un agente es otro eje: el candado de git lo pone el CLIENTE
 # con su pid y no dice si el agente sigue. Lo deciden su entrega, su rama y su
 # árbol (`thyrox: src/roster/worktree_state.py`), y cada veredicto trae qué
