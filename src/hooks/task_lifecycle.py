@@ -107,6 +107,7 @@ def handle(payload: dict, store_path, board_dir=None, layer=None) -> dict:
 
 
 def main(argv=None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--store", default=None,
                         help="el store destino; por defecto el del proveedor")

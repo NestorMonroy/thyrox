@@ -84,7 +84,7 @@ def version_del_binario(ruta):
     conteo = {}
     for v in re.findall(r'\b\d+\.\d+\.\d+\b', salida):
         conteo[v] = conteo.get(v, 0) + 1
-    return max(conteo, key=conteo.get) if conteo else 'desconocida'
+    return max(conteo, key=lambda v: conteo[v]) if conteo else 'desconocida'
 
 
 def eventos_declarados(raices):

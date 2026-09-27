@@ -201,6 +201,9 @@ def check_release_on_exit(rows: list[TraceRow], baseline_free: int | None, toler
     if not exited or baseline_free is None or exited[-1].free_mib is None:
         return Verdict("unmeasured", "sin muestras tras la salida del asignador")
     last = exited[-1]
+    # Ya se descartó arriba (`exited[-1].free_mib is None`) que la última
+    # muestra carezca de libre — es la misma fila.
+    assert last.free_mib is not None
     if last.smi_used_mib is None and abs(last.free_mib - baseline_free) <= tolerance:
         return Verdict("holds")
     return Verdict("violated", f"tras salir: uso {last.smi_used_mib}, libre {last.free_mib} "
@@ -240,7 +243,7 @@ def compare(rows: list[TraceRow], tolerance_mib: int = DEFAULT_TOLERANCE_MIB) ->
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     p_rec = sub.add_parser("record", help="corre ALLOC_CMD por pasos y escribe la traza TSV en OUT")
     p_rec.add_argument("out", type=Path)

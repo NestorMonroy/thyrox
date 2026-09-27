@@ -175,6 +175,7 @@ check("y el mismo número SÍ está libre si se declara el opt-out — el contro
       "DISCRIMINA las dos fuentes", True,
       hallazgo_ids.is_free(TMP / "nueve", "H-TESTDEF-9",
                            store_path=hallazgo_ids.NO_STORE))
+assert hallazgo_ids.next_id.__defaults__ is not None
 check("el DEFAULT no es el opt-out: RESOLVE_STORE es el valor por omisión",
       hallazgo_ids.RESOLVE_STORE,
       hallazgo_ids.next_id.__defaults__[0])

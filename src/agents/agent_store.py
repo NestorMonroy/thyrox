@@ -93,7 +93,6 @@ from pathlib import Path, PurePosixPath
 from agents import agents_paths  # noqa: E402
 
 from corpus.document_types import (  # noqa: E402
-    DOCUMENT_TYPES,
     DOCUMENT_TYPE_UNKNOWN,
     document_type as _document_type_projected,
 )
@@ -877,7 +876,7 @@ LAYER_SIGNALS_VAR = "THYROX_LAYER_SIGNALS"
 
 
 def _cargar_senales() -> tuple:
-    """(patrón de cita, señales por capa) desde la declaración del consumidor.
+    r"""(patrón de cita, señales por capa) desde la declaración del consumidor.
 
     Formato del archivo, una línea por señal::
 
@@ -3212,6 +3211,10 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     if catalogo is None:
         print(f"USD por modelo: SIN MEDIR — {motivo}")
     else:
+        # `catalogo` sólo se pobló en la rama donde `model_catalog` ya se
+        # resolvió como módulo (ver el if/else de arriba); la estrechamos
+        # aquí para que el analizador la vea en el resto del bloque.
+        assert model_catalog is not None
         with connect_readonly(store_dir) as conn:
             por_modelo = conn.execute(
                 "SELECT model, COUNT(*), SUM(turns), SUM(input_tokens), "

@@ -121,14 +121,16 @@ def _gpu(bench: Path) -> dict:
     ``nvidia-smi``— ``measured: 0``: una medida ausente no es un cero. Un ítem
     que no usó la GPU sí cuenta, con 0 MiB, porque eso SÍ se midió."""
     readings = [gpu_monitor.read_gpu_file(path) for path in (bench / "outputs").glob("*.gpu")]
-    measured = [r.summary for r in readings if r.state == "measured"]
+    # `state == "measured"` ya implica `summary is not None` en la fuente
+    # (gpu_monitor.py); se repite aquí porque el tipo no lo codifica.
+    measured = [r.summary for r in readings if r.state == "measured" and r.summary is not None]
     errors = sum(1 for r in readings if r.state == "error")
     if not measured:
         return {"measured": 0, **({"errors": errors} if errors else {})}
     peaks = [s.peak_mib for s in measured]
     return {"measured": len(measured), "errors": errors, "vram_max_mib": max(peaks),
             "vram_median_mib": int(statistics.median(peaks)),
-            "util_max_pct": max(s.peak_util_pct for s in measured)}
+            "utilization_max_pct": max(s.peak_utilization_pct for s in measured)}
 
 
 def _first_request(path: Path) -> tuple[int, int] | None:
@@ -203,7 +205,7 @@ def step_report(bench: Path, pipeline: Path) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--bench", type=Path, required=True)
     parser.add_argument("--pipeline", type=Path, help="el directorio del pipeline (por defecto <bench>/pipeline)")
     args = parser.parse_args(argv)

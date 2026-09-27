@@ -153,7 +153,7 @@ def offenders(root: pathlib.Path):
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument('--strict', action='store_true',
                         help='exit 1 si algún generador toma el instante del reloj')
     args = parser.parse_args()

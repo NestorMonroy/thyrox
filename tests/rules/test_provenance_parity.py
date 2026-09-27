@@ -64,6 +64,7 @@ class ProvenanceParity(unittest.TestCase):
 
     def test_el_directorio_de_definiciones_existe_en_el_proveedor(self):
         """Un segmento que no apunta a nada sella una procedencia inexistente."""
+        assert _RAIZ is not None  # ya lo verifico el guard del modulo
         self.assertTrue((_RAIZ / provenance.DEFINITIONS_SEGMENT).is_dir())
 
     def test_la_linea_compuesta_contiene_el_marcador(self):
@@ -79,6 +80,7 @@ class EmittedBucketDiscriminates(unittest.TestCase):
     """El cubo tiene que separar, no absorber."""
 
     def test_reconoce_una_cabecera_sellada(self, ):
+        assert _RAIZ is not None  # ya lo verifico el guard del modulo
         destino = Path(_RAIZ / "tests" / "rules" / ".sello-de-prueba.md")
         destino.write_text(
             provenance.emitted_marker("regla-de-prueba") + "\n\nCuerpo.\n",
@@ -108,6 +110,7 @@ class EmittedBucketDiscriminates(unittest.TestCase):
         Es la misma acotación que `declares_canon` ya tenía: se mira la
         CABECERA, no el archivo entero.
         """
+        assert _RAIZ is not None  # ya lo verifico el guard del modulo
         destino = Path(_RAIZ / "tests" / "rules" / ".sello-tardio.md")
         relleno = "\n".join(f"linea {i}" for i in range(gate.HEADER_LINES + 3))
         destino.write_text(

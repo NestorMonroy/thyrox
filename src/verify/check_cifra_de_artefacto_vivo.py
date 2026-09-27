@@ -261,7 +261,7 @@ def scan(raiz: pathlib.Path) -> tuple[list[tuple[str, int, str, str]], int]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     # `default=None`, resuelto TRAS `parse_args`: argparse evalua el default al
     # CONSTRUIR el parser, asi que un `default=str(default_root())` invoca la
     # resolucion aunque el llamador pase la raiz. Ese orden hacia que el gate

@@ -149,7 +149,8 @@ def literals_of(node) -> list:
     if isinstance(node, ast.Constant):
         return [repr(node.value)]
     if isinstance(node, ast.Tuple) and all(isinstance(e, ast.Constant) for e in node.elts):
-        return [repr(tuple(e.value for e in node.elts))]
+        constant_nodes = [e for e in node.elts if isinstance(e, ast.Constant)]
+        return [repr(tuple(e.value for e in constant_nodes))]
     if isinstance(node, ast.IfExp):
         return literals_of(node.body) + literals_of(node.orelse)
     return []

@@ -33,6 +33,7 @@ from paths import reach  # noqa: E402
 spec = importlib.util.spec_from_file_location(
     "symbol_presence",
     reach.thyrox_root() / "src" / "verify" / "symbol_presence.py")
+assert spec is not None and spec.loader is not None  # el archivo existe en este árbol
 engine = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(engine)
 reader = engine.reader_module

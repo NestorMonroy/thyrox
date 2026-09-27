@@ -207,6 +207,10 @@ class ProviderLayer(unittest.TestCase):
     def test_real_positive_per_clone_family_is_read_from_consumer(self):
         """El episodio: ``THYROX_WORKBENCH_DOCS`` vive en el ``.env`` del
         proveedor y se pedía desde ``kaupamex-docs``."""
+        # El módulo ya rehusó con RuntimeError si `_ROOT` fuera None; se
+        # re-estrecha aquí porque el narrowing de un global no cruza al
+        # cuerpo de un método.
+        assert _ROOT is not None
         provider_env = _ROOT / ".env"
         declared = reach.read_env_file(provider_env).get("THYROX_WORKBENCH_DOCS") \
             if provider_env.is_file() else None

@@ -40,7 +40,6 @@ from __future__ import annotations
 
 import argparse
 import pathlib
-import re
 import sys
 from datetime import datetime, timezone
 

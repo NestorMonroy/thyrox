@@ -191,6 +191,7 @@ def test_the_modules_under_test_do_not_write_to_the_tree() -> None:
     repositorio cuando se le declara un store temporal. Sin él, la seguridad
     de esta suite descansaría en haber leído su código una vez.
     """
+    assert ROOT is not None
     before = tree_fingerprint(ROOT)
     with tempfile.TemporaryDirectory() as tmp:
         home = pathlib.Path(tmp) / "home"

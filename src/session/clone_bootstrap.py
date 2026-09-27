@@ -51,6 +51,7 @@ import importlib.util
 import json
 import pathlib
 import sys
+from typing import Any
 
 from paths import reach  # noqa: E402
 
@@ -161,7 +162,7 @@ def load_sync_module():
     return module
 
 
-def render(value, docs_root, root, provider):
+def render(value: Any, docs_root: Any, root: Any, provider: Any) -> Any:
     """Sustituye los tres marcadores en cualquier estructura JSON.
 
     El de `docs_root` va primero: en el arbol por defecto es un prefijo mas
@@ -309,7 +310,7 @@ def describe(destination, hooks, allow_final, allow_live, allow_payload, missing
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--raiz", type=pathlib.Path, default=None,
                         help="raiz de proyecto de la sesion "
                              "(por defecto: el directorio que contiene el clon)")

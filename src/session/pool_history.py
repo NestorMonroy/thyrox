@@ -100,7 +100,7 @@ def _gpu_peak(gpu_file: Path) -> int | None:
     si el archivo es un error o está ausente: los tres estados de
     ``gpu_monitor.read_gpu_file``, sin colapsar."""
     reading = gpu_monitor.read_gpu_file(gpu_file)
-    return reading.summary.peak_mib if reading.state == "measured" else None
+    return reading.summary.peak_mib if reading.summary is not None else None
 
 
 def record(history: Path, out_dir: Path) -> dict | None:
@@ -197,6 +197,9 @@ def vram_request(row: dict | None, calibrated: bool, margin: float, floor_mib: i
     declaró; si no, la GPU entera —exclusiva a través del registro, así que
     protege también entre pools— hasta que una ejecución la calibre."""
     if calibrated:
+        # ``calibrated`` sólo sale ``True`` de ``vram_calibration`` cuando
+        # ``row`` no es ``None`` (su primera guarda descarta ese caso).
+        assert row is not None
         need = max(math.ceil(row["peak_vram_mib"] * margin), floor_mib)
         if need == 0:
             return None, "pico 0 calibrado y sin piso: no pide VRAM"
@@ -216,6 +219,8 @@ def _vram_decision(row: dict | None, free_vram_mib: int | None, vram_reserve_mib
     calibrated, why_cal = vram_calibration(row, gpu_interval_s)
     need, why_need = vram_request(row, calibrated, margin, floor_mib, max(free_vram_mib - vram_reserve_mib, 0))
     if calibrated:
+        # Mismo invariante que en ``vram_request``: calibrado implica fila.
+        assert row is not None
         cap, why_cap = _cap("VRAM", "MiB", free_vram_mib, vram_reserve_mib, row["peak_vram_mib"], margin)
     elif floor_mib:
         cap, why_cap = _cap("VRAM", "MiB", free_vram_mib, vram_reserve_mib, floor_mib, 1.0)
@@ -254,7 +259,7 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
 
 
 def main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     p_dir = sub.add_parser("dir", help="imprime el historial de una plantilla")
     p_dir.add_argument("prompt")

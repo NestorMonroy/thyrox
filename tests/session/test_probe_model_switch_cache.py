@@ -44,8 +44,8 @@ HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location(
     "probe_model_switch_cache", HERE / "session" / "probe_model_switch_cache.py"
 )
+assert spec is not None and spec.loader is not None
 probe = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
 spec.loader.exec_module(probe)
 
 PASS = 0

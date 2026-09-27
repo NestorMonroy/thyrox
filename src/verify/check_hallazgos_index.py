@@ -91,6 +91,9 @@ def parse_rows(text):
     rows = []
     for n, idx in enumerate(starts):
         match = ROW_START.match(body[idx])
+        # idx viene de `starts`, que ya exigió este mismo match arriba —
+        # sobre la misma cadena, el patrón vuelve a casar siempre.
+        assert match is not None
         indent = len(match.group(1))
         first_cell = match.group(2)
         end = starts[n + 1] if n + 1 < len(starts) else len(body)

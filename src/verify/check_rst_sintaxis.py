@@ -281,7 +281,10 @@ def revisar(rutas: list[pathlib.Path]) -> list[tuple[pathlib.Path, list[str]]]:
                 docname = app.env.path2doc(str(ruta.resolve())) or str(ruta)
                 antes = avisos.tell()
 
-                ajustes = get_default_settings(Parser)
+                # El stub de docutils tipa `SettingsSpec` como instancia; el
+                # propio docutils documenta pasar la CLASE (patrón real, no
+                # una divergencia nuestra) — pyright no puede ver eso.
+                ajustes = get_default_settings(Parser)  # pyright: ignore[reportArgumentType]
                 ajustes.report_level = 2      # WARNING y peor
                 ajustes.halt_level = 5        # nunca abortar: queremos el parte completo
                 ajustes.env = app.env

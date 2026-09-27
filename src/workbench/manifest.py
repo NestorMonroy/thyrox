@@ -129,7 +129,7 @@ def split_into_records(document: dict) -> list[tuple[str, dict]]:
     Conserva el orden de insercion dentro de cada registro: asi convertir un
     documento es una re-particion pura y su diff se lee como tal.
     """
-    launch_keys = set(LAUNCH_KEYS)
+    launch_keys: set[str] = set(LAUNCH_KEYS)
     if LAUNCH_DISCRIMINATOR in document:
         launch_keys.add(CONDITIONAL_LAUNCH_KEY)
     settle_keys = set(SETTLE_KEYS)

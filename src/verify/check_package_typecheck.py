@@ -81,7 +81,8 @@ def measure(root: Path, wanted, jobs: int):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(add_help=True, description=__doc__.strip().splitlines()[0])
+    parser = argparse.ArgumentParser(add_help=True,
+                                     description=(__doc__ or "").strip().splitlines()[0])
     parser.add_argument("packages", nargs="*", help="los paquetes a medir; vacio = todos")
     parser.add_argument("--strict", action="store_true",
                         help="sale 1 si algun paquete supera su baseline")

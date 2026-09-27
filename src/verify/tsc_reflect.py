@@ -214,7 +214,7 @@ def sweep_gate(run: Path, step: Path, log: Path | None = None) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     add_p = sub.add_parser("add", help="escribe la reflexión de un paso no aceptado")
     add_p.add_argument("--run", type=Path, required=True)

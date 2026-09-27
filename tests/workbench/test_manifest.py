@@ -69,8 +69,9 @@ with tempfile.TemporaryDirectory() as base:
     check("tres runs, en orden descendente",
           ["probe-20260909T175959", "probe-20260505T120000", "probe-20260101T000000"],
           [p.name for p in manifest.runs_for(home, "probe")])
-    check("el mas reciente", "probe-20260909T175959",
-          manifest.latest_run(home, "probe").name)
+    _most_recent = manifest.latest_run(home, "probe")
+    assert _most_recent is not None
+    check("el mas reciente", "probe-20260909T175959", _most_recent.name)
 
     print("== 4. CONTROL de frontera: el prefijo se ancla por los dos extremos ==")
     # Sin el ancla `^...$`, `probe-extra-<ISO>` empieza por `probe-` y su resto
@@ -93,8 +94,9 @@ with tempfile.TemporaryDirectory() as base:
                        key=lambda p: p.stat().st_mtime, reverse=True)
     check("los dos criterios DISCREPAN (si no, el caso no mide nada)", False,
           [p.name for p in por_mtime] == [p.name for p in manifest.runs_for(home, "probe")])
-    check("y gana el ISO del identificador", "probe-20260909T175959",
-          manifest.latest_run(home, "probe").name)
+    _iso_wins = manifest.latest_run(home, "probe")
+    assert _iso_wins is not None
+    check("y gana el ISO del identificador", "probe-20260909T175959", _iso_wins.name)
 
     print("== 6. sin runs: None y lista vacia, nunca una ruta inventada ==")
     check("un slug desconocido no tiene ultimo", None,

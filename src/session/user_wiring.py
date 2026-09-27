@@ -42,7 +42,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 # La raiz la declaran `bin/` (`export PYTHONPATH="$THYROX_ROOT/src"`) y
 # `tests/run.sh`, asi que este modulo NO se abre el camino solo. El
@@ -100,7 +100,7 @@ def declared_wiring(root: Path | None = None,
     consumer = Path(consumer) if consumer else base.parent / "kaupamex-docs"
 
     def cmd(command: str, timeout: int | None = None) -> dict:
-        entrada = {"type": "command", "command": command}
+        entrada: dict[str, Any] = {"type": "command", "command": command}
         if timeout is not None:
             entrada["timeout"] = timeout
         return entrada

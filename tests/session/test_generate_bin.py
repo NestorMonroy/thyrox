@@ -40,14 +40,17 @@ import generate_bin as gb  # noqa: E402
 passed = failed = 0
 
 
-def check(label: str, condition: bool, extra: str = "") -> None:
+def check(label: str, condition: bool, extra: object = "") -> None:
     global passed, failed
     if condition:
         passed += 1
         print(f"  ok   {label}")
     else:
         failed += 1
-        print(f"  FAIL {label}{(' — ' + extra) if extra else ''}")
+        # `extra` puede ser una lista (el diagnostico de un plan) y no solo
+        # texto: concatenar con `+` (la forma vieja) rompia con TypeError
+        # justo en el caso que existe para diagnosticar — un FAIL real.
+        print(f"  FAIL {label}{(' — ' + str(extra)) if extra else ''}")
 
 
 def _make_tree(base: pathlib.Path) -> pathlib.Path:

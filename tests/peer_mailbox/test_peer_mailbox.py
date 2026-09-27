@@ -205,7 +205,10 @@ class InboxTest(ScratchCase):
 
     def test_post_has_no_authority_parameter(self):
         with self.assertRaises(TypeError):
-            self.box.post('alice', 'bob', 'x', authority='grant')
+            # El kwarg no existe A PROPOSITO: el test prueba que la API lo
+            # rechaza en tiempo de ejecucion, asi que el error de pyright es
+            # el mismo hecho que se esta verificando, no un defecto del tipo.
+            self.box.post('alice', 'bob', 'x', authority='grant')  # pyright: ignore[reportCallIssue]
 
     def test_torn_last_line_is_tolerated_and_reported(self):
         self.box.post('alice', 'bob', 'entero')

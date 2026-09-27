@@ -173,6 +173,7 @@ def scenario_zombie():
         check("A admitido mientras vive", True, gm.admit(3200, gpu.ledger, owner.pid, gpu.smi, timeout_s=0.5, interval_s=0.05))
         b = gpu.job()
         check("B de 3200 no cabe mientras A vive", False, gpu.admit(3200, b))
+        assert owner.stdin is not None  # se pidio con stdin=PIPE
         owner.stdin.close()
         wait_until(lambda: proc_state(owner.pid) == "Z", "A no llegó a zombi")
         check("A es zombi (sigue en /proc)", "Z", proc_state(owner.pid))
@@ -225,11 +226,13 @@ def scenario_race():
                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, env=env)
                       for _ in range(2)]
             for racer in racers:
+                assert racer.stdin is not None and racer.stdout is not None
                 stack.callback(racer.wait)
                 stack.callback(racer.stdin.close)
             time.sleep(0.2)          # los dos ya esperan en la barrera
             barrier.touch()
-            outcomes = sorted(racer.stdout.readline().strip() for racer in racers)
+            outcomes = sorted(racer.stdout.readline().strip() for racer in racers
+                               if racer.stdout is not None)
             admitted_per_round.append(outcomes.count("admitido"))
     check("en cada ronda entra exactamente uno", [1] * RACE_ROUNDS, admitted_per_round)
 

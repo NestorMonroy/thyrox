@@ -118,7 +118,7 @@ def probe(pid: int, proc_root: str = "/proc", ticks_per_second: int | None = Non
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("pids", nargs="+")
     parser.add_argument("--proc-root", default="/proc", help="raíz de /proc (para probar sin procesos reales)")
     args = parser.parse_args(argv)

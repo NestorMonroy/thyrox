@@ -8,7 +8,7 @@ import json
 import pathlib
 import re
 import sys
-from typing import Iterable
+from typing import Any, Iterable
 
 # Dos familias de codigo: `TSnnnn` de tsc y `SHAPEnnn` del auditor de forma
 # de mensajes (`message_shape_audit.ts`), que emite en este mismo formato para
@@ -137,7 +137,7 @@ def stable_key(key: str) -> str:
     return _QUOTED.sub(_stable_type, key)
 
 
-def analyze(lines: Iterable[str]) -> dict[str, object]:
+def analyze(lines: Iterable[str]) -> dict[str, Any]:
     by_code: collections.Counter[str] = collections.Counter()
     by_file: collections.Counter[str] = collections.Counter()
     edges: collections.Counter[tuple[str, str, str]] = collections.Counter()

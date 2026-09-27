@@ -126,7 +126,7 @@ def _read_jsonl(path: Path) -> list[dict]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--candidates", type=Path, required=True)
     parser.add_argument("--ledger", type=Path)
     parser.add_argument("--seed", type=int, required=True)

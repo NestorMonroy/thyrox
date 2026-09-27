@@ -58,6 +58,8 @@ def main(argv: list[str] | None = None) -> int:
     if not cuda_ready():
         return refuse("falta PyTorch con CUDA en este intérprete")
     free = gm.free_vram_mib(args.nvidia_smi)
+    if free is None:
+        return refuse(f"no se pudo medir la VRAM libre ({args.nvidia_smi})")
     mib = args.mib or min(2048, free // 4)
     out = args.out or ROOT / ".claude/build-logs" / time.strftime("gpu-trace-%Y%m%dT%H%M%SZ", time.gmtime())
     out.mkdir(parents=True, exist_ok=True)

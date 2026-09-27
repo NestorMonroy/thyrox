@@ -152,7 +152,7 @@ def export_lines(source: ForReadingDeclarations | None = None,
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     check = sub.add_parser("check", help="la identidad del próximo commit (pre-commit)")
     check.add_argument("--repo", type=Path, default=Path.cwd())

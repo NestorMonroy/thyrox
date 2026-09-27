@@ -1,6 +1,10 @@
 # Puente sólo para Windows: mss, PIL, comtypes y pywinauto existen donde corre,
-# no en este árbol (Linux). pyright no puede resolverlos aquí.
+# no en este árbol (Linux). pyright no puede resolverlos aquí. Por la misma
+# razón el typeshed de este contenedor no declara `ctypes.windll`,
+# `ctypes.WINFUNCTYPE` ni `TextIO.reconfigure` bajo `sys.platform != "win32"`
+# — símbolos reales en Windows, invisibles para el analizador en Linux.
 # pyright: reportMissingImports=false
+# pyright: reportAttributeAccessIssue=false
 """
 Python Bridge for Windows Computer Use.
 
@@ -160,7 +164,9 @@ def screenshot_window(hwnd_str):
         user32.ShowWindow(hwnd, SW_SHOWMINNOACTIVE)
 
     # Convert to JPEG
-    img = Image.frombuffer('RGBA', (w, h), pixel_buf, 'raw', 'BGRA', 0, 1)
+    # El stub de PIL no modela `ctypes.Array[c_char]` como soporte del
+    # protocolo de buffer, aunque en tiempo de ejecución sí lo cumple.
+    img = Image.frombuffer('RGBA', (w, h), pixel_buf, 'raw', 'BGRA', 0, 1)  # pyright: ignore[reportArgumentType]
     img = img.convert('RGB')
     out = io.BytesIO()
     img.save(out, format='JPEG', quality=75)
@@ -338,7 +344,6 @@ def accessibility_snapshot(hwnd_str, max_depth=4):
     """Get the accessibility tree using pywinauto (more reliable than raw comtypes)."""
     try:
         from pywinauto import Desktop
-        from pywinauto.controls.uiawrapper import UIAWrapper
 
         hwnd = int(hwnd_str)
         app = Desktop(backend='uia')
@@ -398,7 +403,7 @@ def accessibility_snapshot(hwnd_str, max_depth=4):
 
         tree = walk(win, 0)
         return tree if tree else None
-    except Exception as e:
+    except Exception:
         return None
 
 # ---------------------------------------------------------------------------

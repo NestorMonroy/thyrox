@@ -82,7 +82,6 @@ def _load_owner():
             f"        Declara {OWNER_ROOT_VAR} o clona {OWNER_CLONE} como hermano.\n"
             f"        NO se emite un conteo: un 0 aquí sería un verde falso."
         )
-    src = str(path.parent.parent)          # …/thyrox/src
     from verify import hook_script_token
     return hook_script_token
 

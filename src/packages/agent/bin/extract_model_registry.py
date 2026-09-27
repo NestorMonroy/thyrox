@@ -35,6 +35,7 @@ import json
 import pathlib
 import re
 import sys
+from typing import Any
 
 # El ancla es la cabecera del catálogo horneado. Sobrevive a la minificación
 # porque `schema_version` y `pricing_tiers` son claves del contrato del archivo
@@ -150,7 +151,7 @@ def js_a_json(bloque):
     return ''.join(salida)
 
 
-def ordenar(valor):
+def ordenar(valor: Any) -> Any:
     """Ordena las claves de todo diccionario, en profundidad.
 
     La salida tiene que ser **estable entre ejecuciones**: el paquete la
@@ -329,12 +330,15 @@ def main(argv):
     meta_models = {KIND_KEY: 'meta',
                     'fuente': salida_modelos['fuente'],
                     'schema_version': OUTPUT_SCHEMA_VERSION}
-    meta_alias = {KIND_KEY: 'meta'}
+    meta_alias: dict[str, Any] = {KIND_KEY: 'meta'}
     meta_alias.update({k: salida_alias[k] for k in
                        ('fuente', 'aliases', 'defaults', 'best',
                         'latest_per_family', 'alias_migration')})
     meta_alias['schema_version'] = OUTPUT_SCHEMA_VERSION
 
+    # `destino` es None sólo bajo `--stdout`, y esa rama ya hizo `return 0`
+    # más arriba.
+    assert destino is not None
     (destino / 'model_registry.jsonl').write_text(
         jsonl([meta_models] + [r for r in records
                                 if r[KIND_KEY] in ('tier', 'model')]))

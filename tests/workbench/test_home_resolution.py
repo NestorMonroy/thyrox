@@ -185,6 +185,7 @@ class WorkbenchHomeResolution(unittest.TestCase):
         —los otros cuatro sobreviven— acusando al mecanismo de componer
         distinto cuando lo que difiere es qué clave responde.
         """
+        assert _RAIZ is not None  # ya lo verifico el guard del modulo
         sys.path.insert(0, str(_RAIZ / "src"))
         from rules import paths as rules  # noqa: PLC0415
 

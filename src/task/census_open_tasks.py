@@ -264,7 +264,7 @@ def build_buckets(tasks: list[dict],
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument(
         "--layer", required=True, choices=LAYER_CHOICES,
         help="la capa a censar. SIN default: uno seria un universo silencioso")

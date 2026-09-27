@@ -40,6 +40,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "symbol_home", HERE / "src" / "verify" / "symbol_home.py")
+assert spec is not None and spec.loader is not None  # el archivo existe en este árbol
 home = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(home)
 reader = home.reader_module

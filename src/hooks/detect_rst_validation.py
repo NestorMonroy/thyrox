@@ -23,7 +23,6 @@ nunca cruzándola: la versión de la que se porta componía el literal
 el defecto era **mudo** porque el aviso sólo CITA el comando sin ejecutarlo.
 """
 
-import pathlib
 import re
 
 from paths import reach  # noqa: E402

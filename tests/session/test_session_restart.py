@@ -137,7 +137,7 @@ print("=== 7. dos transcripts con el MISMO id: elige por evidencia ===")
 # Medido el 2026-09-23: el id de esta sesion aparece en DOS directorios de
 # proyecto, y tomar el primero del glob daba el vacio. Elegir por orden de
 # listado es adivinar cuando hay una medicion a mano.
-import os, time  # noqa: E402
+import time  # noqa: E402
 root = pathlib.Path(tempfile.mkdtemp())
 old = root / "proyecto-a"
 new_dir = root / "proyecto-b"

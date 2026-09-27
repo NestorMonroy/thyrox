@@ -50,7 +50,7 @@ def iter_commands(settings):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("archivos", nargs="+", type=pathlib.Path)
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args(argv)

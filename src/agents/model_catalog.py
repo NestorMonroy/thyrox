@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import signal
 import sqlite3
 import sys
@@ -227,7 +226,9 @@ def equivalent_tokens_with_basis(catalog: dict | None, model_id: str | None, usa
     """Los tokens equivalentes y la base con que se ponderaron: el tier del
     modelo si el catálogo lo conoce; si no, la fórmula fija, declarada como
     ``FIXED_BASIS`` para que dos bases no se sumen en silencio."""
-    tier = models_by_id(catalog).get(model_id, {}).get("pricing_tier") if catalog and model_id else None
+    if catalog is None or model_id is None:
+        return fixed_equivalent_tokens(usage), FIXED_BASIS
+    tier = models_by_id(catalog).get(model_id, {}).get("pricing_tier")
     if not tier:
         return fixed_equivalent_tokens(usage), FIXED_BASIS
     return equivalent_tokens(catalog, model_id, usage), tier
@@ -500,7 +501,7 @@ def _cmd_sesion(catalog: dict, args) -> int:
     return 0
 
 def main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
     sub = parser.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("costo", help="USD de un consumo con el tier del modelo")
     c.add_argument("model")

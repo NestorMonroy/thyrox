@@ -38,7 +38,7 @@ from session import shared_lock
 
 DEFAULT_INTERVAL_S = 0.5
 APPS_QUERY = ["--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"]
-UTIL_QUERY = ["--query-gpu=index,utilization.gpu", "--format=csv,noheader,nounits"]
+UTILIZATION_QUERY = ["--query-gpu=index,utilization.gpu", "--format=csv,noheader,nounits"]
 
 
 class GpuUnavailable(Exception):
@@ -48,18 +48,18 @@ class GpuUnavailable(Exception):
 @dataclass(frozen=True)
 class Sample:
     vram_by_pid: dict[int, int]
-    util_pct: int
+    utilization_pct: int
 
 
 @dataclass(frozen=True)
 class Summary:
     peak_mib: int
     avg_mib: int
-    peak_util_pct: int
+    peak_utilization_pct: int
     samples: int
 
     def line(self) -> str:
-        return f"{self.peak_mib} {self.avg_mib} {self.peak_util_pct} {self.samples}"
+        return f"{self.peak_mib} {self.avg_mib} {self.peak_utilization_pct} {self.samples}"
 
 
 def _query(nvidia_smi: str, args: list[str]) -> list[list[str]]:
@@ -75,7 +75,7 @@ def _query(nvidia_smi: str, args: list[str]) -> list[list[str]]:
 def sample(nvidia_smi: str = "nvidia-smi") -> Sample:
     """Una lectura: VRAM por PID y el uso máximo entre las GPUs."""
     vram = {int(pid): int(float(mib)) for pid, mib, *_ in _query(nvidia_smi, APPS_QUERY)}
-    utils = [int(float(pct)) for _index, pct, *_ in _query(nvidia_smi, UTIL_QUERY)]
+    utils = [int(float(pct)) for _index, pct, *_ in _query(nvidia_smi, UTILIZATION_QUERY)]
     return Sample(vram, max(utils, default=0))
 
 
@@ -119,7 +119,13 @@ def tree(pid: int, proc_root: str = "/proc") -> set[int]:
         if current in seen:
             continue
         seen.add(current)
-        for children in Path(proc_root, str(current), "task").glob("*/children"):
+        try:
+            listings = list(Path(proc_root, str(current), "task").glob("*/children"))
+        except OSError:
+            # El proceso salió entre la comprobación de pathlib y su `scandir`
+            # (medido en test_gpu_trace.py): sigue contando, sin hijos que leer.
+            continue
+        for children in listings:
             try:
                 pending.extend(int(c) for c in children.read_text().split())
             except OSError:
@@ -150,7 +156,7 @@ def watch(pid: int, out: Path, nvidia_smi: str = "nvidia-smi",
         members = tree(pid)
         used = sum(mib for p, mib in current.vram_by_pid.items() if p in members)
         totals.append(used)
-        utils.append(current.util_pct if used > 0 else 0)
+        utils.append(current.utilization_pct if used > 0 else 0)
         time.sleep(interval_s)
     if not totals:
         return None
@@ -301,7 +307,7 @@ def release(ledger: Path, owner_pid: int) -> None:
 
 
 def main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(prog="gpu_monitor", description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(prog="gpu_monitor", description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="order", required=True)
     p_watch = sub.add_parser("watch", help="muestrea el árbol de PID y escribe OUT")
     p_watch.add_argument("pid", type=int)

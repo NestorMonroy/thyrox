@@ -103,6 +103,7 @@ with tempfile.TemporaryDirectory() as raw:
     print("== 2. un lock fresco de otro es ELOCKED y nombra a su dueño (De) ==")
     holder = subprocess.Popen([sys.executable, "-c", HOLDER, SRC, str(target), "3"],
                               stdout=subprocess.PIPE, text=True)
+    assert holder.stdout is not None  # se pidio con stdout=PIPE
     holder.stdout.readline()
     try:
         sl.acquire(target, run_id="r2", retries=0)

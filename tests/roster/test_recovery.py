@@ -61,23 +61,23 @@ print("2. Un 429 se reanuda YA; la hora declarada es un dato, no una espera")
 # 429. Esperar a la hora declarada habría parado tres días un trabajo que
 # podía seguir. Si la reanudación vuelve a dar 429, el transcript lo dice y el
 # roster lo vuelve a clasificar: el control es reintentar y medir.
-limite = api_error(429, {"status": "rejected", "resetsAt": RESETS_AT, "rateLimitType": "seven_day"})
-antes = recovery.plan(transcript(limite), now=RESETS_AT - 3600)
-check("antes del reinicio declarado -> reanudar igual", recovery.RESUME, antes.action)
-check("y conserva la hora que el servidor declaró", RESETS_AT, antes.retry_at)
+limit_hit = api_error(429, {"status": "rejected", "resetsAt": RESETS_AT, "rateLimitType": "seven_day"})
+before_reset = recovery.plan(transcript(limit_hit), now=RESETS_AT - 3600)
+check("antes del reinicio declarado -> reanudar igual", recovery.RESUME, before_reset.action)
+check("y conserva la hora que el servidor declaró", RESETS_AT, before_reset.retry_at)
 check("y la razón nombra el tipo de límite y la hora", True,
-      "seven_day" in antes.reason and "2026-09-30T06:00:00Z" in antes.reason)
-despues = recovery.plan(transcript(limite), now=RESETS_AT + 1)
-check("pasado el reinicio -> reanudar", recovery.RESUME, despues.action)
+      "seven_day" in before_reset.reason and "2026-09-30T06:00:00Z" in before_reset.reason)
+after_reset = recovery.plan(transcript(limit_hit), now=RESETS_AT + 1)
+check("pasado el reinicio -> reanudar", recovery.RESUME, after_reset.action)
 
 print("3. Un 429 sin hora conocida se reanuda (no hay a qué esperar)")
 check("429 sin quotaLimits -> reanudar", recovery.RESUME,
       recovery.plan(transcript(api_error(429)), now=0).action)
 
 print("4. Un 400 no se reanuda")
-mala = recovery.plan(transcript(api_error(400)), now=0)
-check("400 -> relanzar con el prompt corregido", recovery.RELAUNCH, mala.action)
-check("y lo explica", True, "400" in mala.reason)
+bad_request = recovery.plan(transcript(api_error(400)), now=0)
+check("400 -> relanzar con el prompt corregido", recovery.RELAUNCH, bad_request.action)
+check("y lo explica", True, "400" in bad_request.reason)
 
 print("5. La hora se publica en ISO")
 check("iso de resetsAt", "2026-09-30T06:00:00Z", recovery.iso(RESETS_AT))

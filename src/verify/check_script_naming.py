@@ -172,6 +172,10 @@ def cargar_lexico():
               f'porque un 0 sería un verde falso.', file=sys.stderr)
         raise SystemExit(2)
     spec = importlib.util.spec_from_file_location('_lexico', ruta)
+    if spec is None or spec.loader is None:
+        # `ruta.is_file()` ya se verificó arriba; si esto falla es un
+        # fallo real de carga, no una condición esperada.
+        raise ImportError(f"no se pudo cargar el léxico desde {ruta}")
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     return modulo.spanish_words_in
@@ -249,6 +253,10 @@ def load_identifier_lexicon():
               file=sys.stderr)
         raise SystemExit(2)
     spec = importlib.util.spec_from_file_location('_lexico', ruta)
+    if spec is None or spec.loader is None:
+        # `ruta.is_file()` ya se verificó arriba; si esto falla es un
+        # fallo real de carga, no una condición esperada.
+        raise ImportError(f"no se pudo cargar el léxico desde {ruta}")
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     return modulo
@@ -341,7 +349,7 @@ def main_identifiers(root, args):
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument('raiz', nargs='?', default='.', help='raíz del repositorio')
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')
     ap.add_argument('--strict', action='store_true', help='exit 1 si hay infractores')

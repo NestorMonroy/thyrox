@@ -581,7 +581,7 @@ def _cmd_sync_board(args: argparse.Namespace) -> int:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     # El store se declara (THYROX_AGENT_STORE), no se deriva: ver task_ids.
     parser.add_argument("--store", default=None)
     sub = parser.add_subparsers(dest="comando", required=True)

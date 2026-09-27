@@ -317,7 +317,7 @@ def decide(block, repo_value, live_value, base_value, base_tiene):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--repo", type=pathlib.Path, required=True,
                         help="copia versionada")
     parser.add_argument("--viva", type=pathlib.Path,

@@ -117,8 +117,11 @@ with tempfile.TemporaryDirectory() as raw:
     (out / "2.gpu").write_text("1000 800 40 20\n")
     h = TMP / "h-vram"
     row = ph.record(h, out)
+    assert row is not None
     check("pico de VRAM entre ítems", 3000, row.get("peak_vram_mib"))
-    check("sin .gpu no hay clave: ausente no es cero", False, "peak_vram_mib" in ph.record(TMP / "h-sin-gpu", run_with(["1 1 1 1\n"])))
+    no_gpu = ph.record(TMP / "h-sin-gpu", run_with(["1 1 1 1\n"]))
+    assert no_gpu is not None
+    check("sin .gpu no hay clave: ausente no es cero", False, "peak_vram_mib" in no_gpu)
 
     print("== 13. la anchura se acota por VRAM: libre / (pico x margen) ==")
     check("12000 libres / (3000 x 2) -> 2 a la vez", 2, ph.derive(h, MODEL, catalog, margin=2.0, free_vram_mib=12000).width_cap)
@@ -152,6 +155,7 @@ with tempfile.TemporaryDirectory() as raw:
     (out / "1.gpu").write_text("error NVML: fallo\n")
     (out / "2.gpu").write_text("0 0 0 9\n")
     row = ph.record(TMP / "h-tres", out)
+    assert row is not None
     check("el 0 medido es el pico; el error no cuenta", 0, row.get("peak_vram_mib"))
 
     print("== 17. la VRAM que pide cada ítem para ser admitido: pico x margen ==")
@@ -172,6 +176,7 @@ with tempfile.TemporaryDirectory() as raw:
     (out / "1.gpu").write_text("3000 2500 90 20\n")
     (out / "2.gpu").write_text("error NVML: fallo\n")
     row = ph.record(TMP / "h-cobertura", out)
+    assert row is not None
     check("ítems con VRAM medida (el del error no cuenta)", 1, row.get("items_gpu_measured"))
     check("la pared del ítem más corto", 0.2, row.get("min_wall_s"))
 
@@ -198,28 +203,35 @@ with tempfile.TemporaryDirectory() as raw:
         h.mkdir()
         (h / ph.HISTORY_FILE).write_text(json.dumps(row) + "\n")
         return h
-    gpu = dict(free_vram_mib=14000, vram_reserve_mib=2000, gpu_interval_s=0.5)
+    # Envoltorio en vez de un dict fusionado: `dict(a=14000, b=2000, c=0.5)`
+    # unifica sus valores al tipo comun mas ancho (float), y `derive()` pide
+    # `int` en dos de los tres — un `**kw` de funcion sí conserva el tipo de
+    # cada argumento por separado.
+    def with_gpu(history, **kw):
+        assert catalog is not None  # ya lo verifico el `raise SystemExit` de arriba
+        return ph.derive(history, MODEL, catalog, free_vram_mib=14000,
+                          vram_reserve_mib=2000, gpu_interval_s=0.5, **kw)
     stale_zero = history_with("h-cero-corto", {"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 0.1,
                                                "max_wall_s": 0.1, "peak_kb": 1000, "peak_vram_mib": 0})
-    d = ph.derive(stale_zero, MODEL, catalog, margin=2.0, **gpu)
+    d = with_gpu(stale_zero, margin=2.0)
     check("H-THYROX-192: pico 0 de ítems demasiado cortos -> pide la GPU entera", 12000, d.vram_need_mib)
     check("... y de a uno", 1, d.width_cap)
     check("... y lo dice", True, "hasta calibrar" in d.why)
-    d = ph.derive(TMP / "h-nunca", MODEL, catalog, margin=2.0, **gpu)
+    d = with_gpu(TMP / "h-nunca", margin=2.0)
     check("sin historial y con GPU: exclusiva y de a uno", (12000, 1), (d.vram_need_mib, d.width_cap))
-    d = ph.derive(stale_zero, MODEL, catalog, margin=2.0, vram_floor_mib=1500, **gpu)
+    d = with_gpu(stale_zero, margin=2.0, vram_floor_mib=1500)
     check("con piso declarado: pide el piso", 1500, d.vram_need_mib)
     check("... y la anchura la acota el piso: 12000 / 1500 = 8", 8, d.width_cap)
     zero_ok = history_with("h-cero-fiable", {"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 5.0,
                                              "max_wall_s": 5.0, "peak_kb": 1000, "peak_vram_mib": 0})
-    d = ph.derive(zero_ok, MODEL, catalog, margin=2.0, **gpu)
+    d = with_gpu(zero_ok, margin=2.0)
     check("pico 0 calibrado y sin piso: no pide VRAM, y lo dice", (None, True),
           (d.vram_need_mib, "pico 0" in d.why))
     check("con piso, el piso manda sobre el 0", 700,
-          ph.derive(zero_ok, MODEL, catalog, margin=2.0, vram_floor_mib=700, **gpu).vram_need_mib)
+          with_gpu(zero_ok, margin=2.0, vram_floor_mib=700).vram_need_mib)
     check("calibrado: max(pico x margen, piso)", 6400,
-          ph.derive(history_with("h-cal", {**full, "max_wall_s": 3.0, "peak_kb": 1, "peak_vram_mib": 3200}),
-                    MODEL, catalog, margin=2.0, vram_floor_mib=700, **gpu).vram_need_mib)
+          with_gpu(history_with("h-cal", {**full, "max_wall_s": 3.0, "peak_kb": 1, "peak_vram_mib": 3200}),
+                    margin=2.0, vram_floor_mib=700).vram_need_mib)
     d = ph.derive(TMP / "h-nunca", MODEL, catalog, margin=2.0)
     check("sin GPU no cambia nada: ni pedido ni tope", (None, None), (d.vram_need_mib, d.width_cap))
 

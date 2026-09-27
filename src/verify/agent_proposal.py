@@ -77,7 +77,7 @@ def build(root: Path, files: list[str], before_lines: list[str], pattern: str, n
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--before-log", type=Path, required=True)
     parser.add_argument("--pattern", required=True, help="regex sobre `archivo: TSxxxx: mensaje`")

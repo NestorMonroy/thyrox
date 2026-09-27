@@ -182,6 +182,7 @@ def _cargar_hook():
             "veredicto: reconciliar con la fórmula de costo ausente publicaría "
             "filas con el costo equivocado.")
     spec = importlib.util.spec_from_file_location("_register_session", ruta)
+    assert spec is not None and spec.loader is not None
     modulo = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(modulo)
     return modulo
@@ -537,7 +538,7 @@ def _transcripts() -> list:
     return sorted(raiz.rglob("subagents/agent-*.jsonl"))
 
 
-def _retention_level(transcript: Path, status: str) -> int:
+def _retention_level(transcript: Path, status: str) -> int | None:
     """El nivel que el reconciliador PUEDE medir — nunca el 2.
 
     Ver ``.claude/rules/niveles-de-retencion.md``. Aquí sólo se distingue 3 de

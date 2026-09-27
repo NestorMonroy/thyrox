@@ -157,7 +157,6 @@ import gzip
 import json
 import os
 import pathlib
-import os
 import re
 import subprocess
 import sys
@@ -675,7 +674,7 @@ def scan(files, lexicon, forbidden, root):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument('files', nargs='*', help='archivos concretos (default: todo el corpus)')
     parser.add_argument('--quiet', action='store_true', help='sólo el conteo')
     parser.add_argument('--strict', action='store_true', help='exit 1 si hay nuevos')

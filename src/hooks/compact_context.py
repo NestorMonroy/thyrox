@@ -116,6 +116,7 @@ def build_context(roots: list[str], ledger_home: Path, session_id: str,
 
 
 def main(argv: list[str] | None = None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", action="append", default=[], help="una raíz de repo; repetible")
     parser.add_argument("--ledger-root", type=Path, default=None,

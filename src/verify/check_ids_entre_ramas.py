@@ -96,7 +96,7 @@ def declaraciones(ref):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument('--base', default='origin/develop',
                         help='rama destino contra la que se decide si otra sigue viva')
     parser.add_argument('--quiet', action='store_true', help='solo el conteo')

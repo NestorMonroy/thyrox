@@ -126,12 +126,14 @@ def build_module_candidate(unit: str, root: Path, edits: list[dict], before_keys
     files = sorted(texts)
     reach = set(files) | set(target_files)
     targets = sorted(k for k in before_keys if k.split(": ", 1)[0] in reach)
+    def _base(before: str | None) -> str:
+        return ABSENT_BASE if before is None else hashlib.sha256(before.encode()).hexdigest()
+
     candidate = {
         "proposal_id": f"agent:pool:{unit}", "proposer": "agent", "targets": targets, "files": files,
         "edits": [{"file": f, "start": 0, "length": len(texts[f][0] or ""), "newText": texts[f][1]}
                   for f in files],
-        "bases": {f: ABSENT_BASE if texts[f][0] is None else hashlib.sha256(texts[f][0].encode()).hexdigest()
-                  for f in files}}
+        "bases": {f: _base(texts[f][0]) for f in files}}
     return candidate, dropped
 
 
@@ -421,6 +423,10 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                 result = subprocess.run(tsc, cwd=wt, capture_output=True, text=True)
                 before.write_text(result.stdout)
                 before_log, keys = before, log_keys(result.stdout.splitlines())
+            # Si `keys` llegó no vacío, `before_log` ya era un `Path` (el
+            # `if before_log else []` de arriba lo exige); si llegó vacío, el
+            # bloque de encima lo asignó. En los dos casos deja de ser None.
+            assert before_log is not None
             rows: list[dict] = []
             with (bench / "candidates.jsonl").open("w") as out:
                 for file in ready:
@@ -485,7 +491,7 @@ def main(argv: list[str] | None = None) -> int:
         print("pool_pipeline: falta `--` antes del comando de tsc", file=sys.stderr)
         return 2
     split = argv.index("--")
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--main", type=Path, required=True)
     parser.add_argument("--worktree", type=Path, action="append", required=True,
                         help="repetible: con más de uno y --net, cada lote mide prefijos a la vez")

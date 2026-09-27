@@ -16,11 +16,11 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from verify import pool_pipeline as pp
 
@@ -57,6 +57,7 @@ candidate, dropped = pp.build_candidate("a.ts", text, [
     {"old": "OK", "new": "x as any"},
     {"old": "NOPE", "new": "z"},
 ], keys)
+assert candidate is not None  # hay dos ediciones válidas: siempre hay candidato
 assert_equal("aplica lo seguro y descarta lo que silencia o no encuentra", (["silencia", "old no único"],
              "const a = 1\nconst b = OK\n"), (dropped, candidate["edits"][0]["newText"]))
 assert_equal("la base es el texto ACTUAL, no HEAD", hashlib.sha256(text.encode()).hexdigest(),
@@ -282,6 +283,7 @@ with tempfile.TemporaryDirectory() as directory:
         module_edit("src/sub/n.ts", "", "export const x = 1\n"),
         module_edit("src/c.ts", "NOPE", "3"),
     ], keys, ["src/z.ts"])
+    assert candidate is not None  # hay ediciones válidas: siempre hay candidato
     assert_equal("el candidato toca los archivos que aplican y crea el nuevo",
                  ["src/a.ts", "src/sub/n.ts"], candidate["files"])
     assert_equal("un archivo con una edición que falla cae entero, con su motivo",
@@ -396,8 +398,8 @@ with tempfile.TemporaryDirectory() as directory:
 
 # La política neta viaja hasta el paso: sin ella, unificar un tipo que
 # destapa contratos se revierte aunque baje el total.
-base_args = dict(ledger=Path("/l.jsonl"), bench_dir=Path("/b"), before_log=Path("/before.log"), seed=3,
-                 tsc=["tsc"])
+base_args: dict[str, Any] = dict(ledger=Path("/l.jsonl"), bench_dir=Path("/b"),
+                 before_log=Path("/before.log"), seed=3, tsc=["tsc"])
 assert_equal("el paso lleva --net cuando el pipeline lo pide", True,
              "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=True, **base_args))
 assert_equal("y no lo lleva cuando no", False,

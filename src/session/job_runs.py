@@ -30,7 +30,6 @@ conforme**, y ése es el estado correcto hasta que alguien recoge su resultado.
 """
 from __future__ import annotations
 
-import json
 import pathlib
 from collections.abc import Sequence
 from datetime import datetime, timezone

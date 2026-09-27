@@ -940,7 +940,7 @@ def _cmd_duplicados(args: argparse.Namespace) -> int:
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--store", default=None)
     sub = parser.add_subparsers(dest="comando", required=True)
 

@@ -305,8 +305,8 @@ def code_suffix_families(names):
         head, separator, tail = name.rpartition('_')
         if separator and len(tail) == 2 and tail.isalpha():
             by_prefix.setdefault(head.lower(), set()).add(tail.lower())
-    return {prefix for prefix, tails in by_prefix.items()
-            if len(tails) >= MINIMUM_FAMILY_SIZE}
+    return frozenset(prefix for prefix, tails in by_prefix.items()
+                     if len(tails) >= MINIMUM_FAMILY_SIZE)
 
 
 # ── Cuarto criterio: el CORPUS, que es abierto ───────────────────────────────

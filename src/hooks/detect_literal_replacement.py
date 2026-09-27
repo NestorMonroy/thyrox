@@ -80,7 +80,8 @@ def substitution_patterns(command: str) -> list[str]:
 
 def rewrites_in_place(command: str) -> str | None:
     """La familia que reescribe un archivo en el sitio, o None."""
-    if _PERL.search(command) and _PERL_IN_PLACE.search(command[_PERL.search(command).end():]):
+    perl_match = _PERL.search(command)
+    if perl_match and _PERL_IN_PLACE.search(command[perl_match.end():]):
         return "perl"
     if _SED_IN_PLACE.search(command):
         return "sed"

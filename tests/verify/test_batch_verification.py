@@ -65,7 +65,8 @@ AFTER = [
 ]
 
 report = bv.verify_batch(BEFORE, AFTER, ["@thyrox/alpha", "@thyrox/gamma", "@thyrox/delta"])
-by_provider = {v.provider: v for v in report.verdicts}
+# verify_batch sólo produce Verdict; el tipo de la unión es de verify_proposals.
+by_provider = {v.provider: v for v in report.verdicts if isinstance(v, bv.Verdict)}
 assert_equal("alpha llega a cero: aceptada", "accepted", by_provider["@thyrox/alpha"].outcome)
 assert_equal("gamma baja sin llegar a cero: parcial", "partial", by_provider["@thyrox/gamma"].outcome)
 assert_equal("delta no tenia aristas: sin objeto, no aceptada", "no-edges",
@@ -113,11 +114,13 @@ assert_equal("y el movimiento de la línea ajena no ensucia el lote", True, gene
 
 regressed_after = [other("imports.ts", 4, "TS2339"), other("keep.ts", 70, "TS2322")]
 regressed = bv.verify_proposals(generic_before, regressed_after, [proposal])
+regressed_verdict = regressed.verdicts[0]
+assert isinstance(regressed_verdict, bv.ProposalVerdict)  # verify_proposals sólo produce ProposalVerdict
 assert_equal("un diagnóstico nuevo en el archivo tocado rechaza la propuesta",
-             "rejected", regressed.verdicts[0].outcome)
+             "rejected", regressed_verdict.outcome)
 assert_equal("el veredicto atribuye el diagnóstico nuevo",
              [bv.diagnostic_key_from_line(regressed_after[0])],
-             regressed.verdicts[0].new_diagnostics)
+             regressed_verdict.new_diagnostics)
 
 with tempfile.TemporaryDirectory() as directory:
     manifest = Path(directory) / "proposals.jsonl"

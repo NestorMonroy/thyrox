@@ -153,6 +153,7 @@ def bridged_hooks(include_stop: bool):
 
 
 def main(argv: list[str]) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--apply", action="store_true",
                         help="escribe la fuente viva (por defecto sólo muestra el diff)")

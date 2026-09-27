@@ -30,9 +30,10 @@ import sys
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve()
-ROOT = next((p for p in HERE.parents if (p / "src" / "paths" / "reach.py").is_file()), None)
-if ROOT is None:
+_root = next((p for p in HERE.parents if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _root is None:
     raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {HERE}")
+ROOT: pathlib.Path = _root
 
 GATE = ROOT / "src/verify/check_finding_id_unique.py"
 PREFIX = "TESTUNI"

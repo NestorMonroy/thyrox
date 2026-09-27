@@ -72,7 +72,7 @@ def _git_paths(root: Path, home: Path, *args: str) -> list[str] | None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--cache", type=Path, help="el hogar; por defecto el que resuelve cache_dir()")
     parser.add_argument("--staged", action="store_true", help="sólo las unidades que el commit prepara")

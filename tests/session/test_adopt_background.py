@@ -28,7 +28,7 @@ from session.adopt_background import (  # noqa: E402
     DEFAULT_MARKER, MARKER_VAR, OUTPUT_ROOT_VAR, OUTPUT_SESSION_VAR,
     adopt, derived_output, parse_notice,
 )
-from session.job_ledger import JobLedger  # noqa: E402
+from session.job_ledger import Job, JobLedger  # noqa: E402
 
 # Se invoca por el ENVOLTORIO de `bin/`, no por la ruta al fuente: el
 # envoltorio exporta `PYTHONPATH`, y el modulo importa `session.job_ledger`
@@ -59,6 +59,7 @@ NOTICE = (
 
 print("== 1. el anuncio se lee por sus dos hechos, no por su prosa ==")
 leido = parse_notice(NOTICE)
+assert leido is not None
 check("1.1 saca el identificador", "bmdqwv5l7", leido[0])
 check("1.2 y la ruta de salida",
       "/tmp/claude-0/-home-user/168b0fdf/tasks/bmdqwv5l7.output", str(leido[1]))
@@ -66,8 +67,9 @@ check("1.3 sin ID no adivina", None, parse_notice("se fue a segundo plano"))
 check("1.4 sin salida NI convencion, no adivina", None,
       parse_notice("(ID: abc123) y nada mas"))
 # La prosa cambia entre versiones; los dos hechos no.
-check("1.5 otra prosa, mismos hechos", ("z9",),
-      (parse_notice("backgrounded (ID: z9) -> /var/t/z9.output")[0],))
+_other_prose = parse_notice("backgrounded (ID: z9) -> /var/t/z9.output")
+assert _other_prose is not None
+check("1.5 otra prosa, mismos hechos", ("z9",), (_other_prose[0],))
 
 print("== 2. adoptar deja el trabajo esperable por la barrera ==")
 with tempfile.TemporaryDirectory() as d:
@@ -76,6 +78,10 @@ with tempfile.TemporaryDirectory() as d:
     log = base / "trabajo.output"
     log.write_text("trabajando\n")
     job = adopt(ledger, "bmdqwv5l7", log)
+    # `adopt()` declara su retorno como `object` porque el sucesor tambien
+    # cubre variantes sin `Job.marker`; en este camino real siempre es un
+    # `Job` — lo que `ledger.register()` construye y devuelve.
+    assert isinstance(job, Job)
     check("2.1 queda anotado", ["bmdqwv5l7"], [j.label for j in ledger.jobs()])
     check("2.2 sin pid: no lo lanzamos nosotros", None, job.pid)
     check("2.3 con el marcador del anfitrion", DEFAULT_MARKER, job.marker)
@@ -114,6 +120,7 @@ with tempfile.TemporaryDirectory() as d:
     log = base / "otro.output"
     log.write_text("fin: [[done 7]]\n")
     job = adopt(ledger, "otro", log, marker=r"\[\[done ")
+    assert isinstance(job, Job)
     check("3.1 el declarado gana al respaldo", r"\[\[done ", job.marker)
     check("3.2 y con el se recoge", "collected",
           ledger.settle(job, marker_pattern="EXIT=", alive=lambda _j: True))
@@ -152,8 +159,8 @@ import os as _os2
 
 # La raiz ya se resolvio por ascenso arriba (`_RAIZ`); repetir el bootstrap
 # aqui con `parents[N]` era la aritmetica por offset que TASK-THYROX-0228
-# prohibe, y ademas redundante.
-from paths import reach  # noqa: E402
+# prohibe, y ademas redundante — de ahi que este bloque no vuelva a importar
+# `paths.reach`.
 check("5.1 compone <raiz>/<sesion>/tasks/<id>.output",
       "/r/s7/tasks/j1.output", str(derived_output("j1", "/r", "s7")))
 check("5.2 sin raiz declarada, None", None, derived_output("j1", None, "s7"))
@@ -163,13 +170,17 @@ _previo = {k: _os2.environ.get(k) for k in (OUTPUT_ROOT_VAR, OUTPUT_SESSION_VAR)
 try:
     _os2.environ[OUTPUT_ROOT_VAR] = "/raiz-adoptada"
     _os2.environ[OUTPUT_SESSION_VAR] = "ses-9"
+    _read54 = parse_notice("(ID: abc123) y nada mas")
+    assert _read54 is not None
     check("5.4 con la convencion declarada, el ID SOLO alcanza",
           "/raiz-adoptada/ses-9/tasks/abc123.output",
-          str(parse_notice("(ID: abc123) y nada mas")[1]))
+          str(_read54[1]))
     # La ruta NOMBRADA sigue ganando: es el hecho, no una derivacion.
+    _read55 = parse_notice(NOTICE)
+    assert _read55 is not None
     check("5.5 y la ruta nombrada gana sobre la derivada",
           "/tmp/claude-0/-home-user/168b0fdf/tasks/bmdqwv5l7.output",
-          str(parse_notice(NOTICE)[1]))
+          str(_read55[1]))
 finally:
     for k, v in _previo.items():
         if v is None:
@@ -180,9 +191,11 @@ finally:
 # CONTROL DE ANULACION: retirada la convencion, 5.4 cae y SOLO 5.4.
 check("5-bis.1 anulada la convencion, 5.4 cae", None,
       parse_notice("(ID: abc123) y nada mas"))
+_read_bis = parse_notice(NOTICE)
+assert _read_bis is not None
 check("5-bis.2 y 5.5 SOBREVIVE, porque su ruta va nombrada",
       "/tmp/claude-0/-home-user/168b0fdf/tasks/bmdqwv5l7.output",
-      str(parse_notice(NOTICE)[1]))
+      str(_read_bis[1]))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

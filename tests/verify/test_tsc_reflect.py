@@ -144,7 +144,7 @@ def main() -> int:
         # Gate 3b: un paso que avanzó deja sus archivos cubiertos por un
         # patrón cuya señal casa con SUS objetivos — no basta con 4 campos.
         print("uncovered_by_memory")
-        mem = root_mem = run / "gate"
+        mem = run / "gate"
         mem.mkdir()
         step = mem / "step-009"
         step.mkdir()

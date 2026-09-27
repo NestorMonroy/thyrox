@@ -57,7 +57,7 @@ import json
 import shlex
 import sys
 from dataclasses import dataclass, field
-from pathlib import Path
+from typing import TextIO
 
 # El módulo se importa como ``hooks.maintenance_chain`` (con ``src`` en la ruta)
 # y también se ejecuta como guion —así lo invoca el stub del consumidor—, donde
@@ -108,7 +108,7 @@ class Chain:
 
     steps: list[Step]
     budget: int
-    stderr: object = field(default=None, repr=False)
+    stderr: TextIO | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         if not self.steps:
@@ -210,6 +210,7 @@ RENDERS = {"session-start": render_session_start, "stop": render_stop}
 
 
 def main(argv: list[str] | None = None) -> int:
+    assert __doc__ is not None  # el módulo siempre declara docstring
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--render", choices=sorted(RENDERS), required=True)
     parser.add_argument("--budget", type=int, required=True,

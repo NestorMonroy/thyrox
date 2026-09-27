@@ -53,6 +53,7 @@ import os
 import pathlib
 import statistics as st
 import sys
+from typing import Any
 
 # Peso relativo al input base. Son los cocientes de UN tier —tier_3_15 del
 # catálogo (3 / 15 / w5m 3.75 / cr 0.3)— aplicados a todo modelo, y por eso
@@ -119,7 +120,7 @@ def measure(ruta: str) -> dict:
             by_id[msg.get('id')] = {k: u.get(c, 0) for k, c in CLAVE.items()}
             model[msg.get('model') or '?'] += 1
             attr[obj.get('attributionAgent') or '?'] += 1
-    acc = {k: sum(v[k] for v in by_id.values()) for k in CLAVE}
+    acc: dict[str, Any] = {k: sum(v[k] for v in by_id.values()) for k in CLAVE}
     acc['turnos'] = len(by_id)
     # Dimensiones que la referencia sí lleva y nosotros no llevábamos: el
     # acumulador de coste del CLI es **por modelo** (hccw: 16-observability:177)

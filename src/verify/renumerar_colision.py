@@ -81,7 +81,7 @@ def ajustar_subrayado(path, capa, newnum):
 
 def main(argv=None):
     from pathlib import Path
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     ap.add_argument('--source', required=True, help='ref del origen que se integra')
     ap.add_argument('--target', required=True, help='ref del destino')
     ap.add_argument('--json', action='store_true', help='emite el resultado como JSON en stdout')

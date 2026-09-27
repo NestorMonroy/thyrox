@@ -147,6 +147,7 @@ with tempfile.TemporaryDirectory() as tmp:
     env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src")}
     holder = subprocess.Popen([sys.executable, "-c", HOLDER, str(step_close.commit_lock_target(repo))],
                               stdout=subprocess.PIPE, text=True, env=env)
+    assert holder.stdout is not None  # se pidió stdout=PIPE arriba
     holder.stdout.readline()
     try:
         step_close.close_step(repo, run, bench, lock_retries=0)

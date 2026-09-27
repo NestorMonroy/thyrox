@@ -236,8 +236,6 @@ clean_env()  # el subproceso HEREDA el environ: sin esto dependería del bloque 
 # que el guion termine de escribir. Sin tratarlo, Python vuelca un traceback de
 # BrokenPipeError por stderr: ruido que se lee como fallo del mecanismo cuando
 # es conducta normal de una tubería.
-import subprocess
-
 _completado = subprocess.run(
     f"python3 {THYROX_ROOT / 'src' / 'paths' / 'reach.py'} --list | head -1",
     shell=True, capture_output=True, text=True,

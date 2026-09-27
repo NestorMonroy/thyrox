@@ -225,7 +225,11 @@ def shared_units(diagnostics, duplicates: dict[str, list[str]], prefix: str) -> 
     routes = tsc_routes.classify(diagnostics, duplicates)
     by_type: dict[str, list] = {}
     for d in routes["shared"]:
-        by_type.setdefault(tsc_routes.shared_type(d, duplicates), []).append(d)
+        type_name = tsc_routes.shared_type(d, duplicates)
+        # `d` viene de `routes["shared"]`: `classify()` sólo lo pone ahí
+        # cuando `shared_type` ya dio un valor — nunca None en este contrato.
+        assert type_name is not None
+        by_type.setdefault(type_name, []).append(d)
     units = []
     for entry in tsc_routes.shared_queue(routes["shared"], duplicates):
         definitions = [f"{prefix}{f}" for f in entry["definitions"]]
@@ -753,7 +757,7 @@ def cmd_modules_launch(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("classify", help="reparte los diagnósticos de un log en las tres rutas")
     p.add_argument("--log", type=Path, required=True)

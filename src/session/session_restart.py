@@ -186,7 +186,7 @@ def build_payload(*, environment, repository, branch, title, prompt) -> dict:
 def main(argv=None) -> int:
     import argparse  # noqa: PLC0415
 
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--transcript", default=None,
                         help="el .jsonl de la sesion viva; por defecto se "
                              "deriva de CLAUDE_CODE_SESSION_ID")

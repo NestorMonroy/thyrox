@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """The root install must reproduce the TypeScript workspace topology."""
-from pathlib import Path
 import tomllib
 from paths import reach  # noqa: E402
 

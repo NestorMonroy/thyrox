@@ -43,6 +43,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "user_wiring", HERE / "src" / "session" / "user_wiring.py")
+assert spec is not None and spec.loader is not None
 w = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(w)
 
@@ -371,6 +372,7 @@ import json as _json
 import subprocess as _sp
 import tempfile as _tf
 
+assert w.__file__ is not None
 _MODULO = str(Path(w.__file__))
 
 def _correr(vivo: dict):
@@ -451,7 +453,7 @@ print("== 15-bis. CONTROL DE ANULACION: se retira el campo de la clave ==")
 # Debe caer 15.4 y SOLO 15.4: si tambien cayera 15.9, el verde de la seccion
 # estaria midiendo la idempotencia y no la politica de cache.
 _original = w.CACHE_KEY_FIELDS
-w.CACHE_KEY_FIELDS = ()
+setattr(w, "CACHE_KEY_FIELDS", ())
 try:
     _l18 = _tmp / "anulado.json"
     _l18.write_text(_json.dumps(_otro))
@@ -463,7 +465,7 @@ try:
         pass
     _r19 = w.install(_l16, _declarado15, _FakeBackup(), "SELLO", backups=_tmp)
 finally:
-    w.CACHE_KEY_FIELDS = _original
+    setattr(w, "CACHE_KEY_FIELDS", _original)
 
 check("15-bis.1 anulado, la negativa de 15.4 desaparece", False, _anulado_rehusa)
 check("15-bis.2 y la idempotencia de 15.9 SOBREVIVE", True, _r19["unchanged"])
@@ -527,12 +529,12 @@ print("== 16-bis. CONTROL DE ANULACION: se retira la bandera del destino ==")
 # cuerpo sano no se reporte, y un instrumento ciego tambien las pasa. Ese
 # contraste es lo que hace que el verde de la seccion discrimine.
 _flags_original = w.STORE_DEST_FLAGS
-w.STORE_DEST_FLAGS = ()
+setattr(w, "STORE_DEST_FLAGS", ())
 try:
     _anulado = w.misdirected_store_destinations(_cuerpos)
     _anulado_sano = w.misdirected_store_destinations(_optin)
 finally:
-    w.STORE_DEST_FLAGS = _flags_original
+    setattr(w, "STORE_DEST_FLAGS", _flags_original)
 
 check("16-bis.1 anulado, los dos incumplidores dejan de verse", 0, len(_anulado))
 check("16-bis.2 y el cuerpo sano SOBREVIVE en verde", [], _anulado_sano)
@@ -578,8 +580,8 @@ print("== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==")
 _sufijo_original = w._SCRIPT_SUFFIX
 _prefijos_original = w._BASE_PREFIXES
 import re as _re
-w._SCRIPT_SUFFIX = _re.compile(r"(?!)")   # no casa con nada
-w._BASE_PREFIXES = ()
+setattr(w, "_SCRIPT_SUFFIX", _re.compile(r"(?!)"))   # no casa con nada
+setattr(w, "_BASE_PREFIXES", ())
 try:
     _anul_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
     _anul_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
@@ -587,8 +589,8 @@ try:
     _anul_casa = w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES)
     _anul_sano = w._target_of("python3 --stop", cwd="/home/user", bases=_BASES)
 finally:
-    w._SCRIPT_SUFFIX = _sufijo_original
-    w._BASE_PREFIXES = _prefijos_original
+    setattr(w, "_SCRIPT_SUFFIX", _sufijo_original)
+    setattr(w, "_BASE_PREFIXES", _prefijos_original)
 
 # `../thyrox/...` lleva `/`, asi que anular el sufijo NO basta: la rama del
 # `/` es la que lo ve. Se anula tambien esa, y entonces 17.1 y 17.2 caen.
@@ -608,13 +610,13 @@ def _solo_absoluto(command, cwd=None, bases=None):
         if pieza.startswith("/"):
             return pieza
     return None
-w._target_of = _solo_absoluto
+setattr(w, "_target_of", _solo_absoluto)
 try:
     _ciego_rel = w._target_of(_REL, cwd="/home/user", bases=_BASES)
     _ciego_rotos = w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
         {"type": "command", "command": _REL}]}]}}, cwd="/home/user", bases=_BASES)
 finally:
-    w._target_of = _original_target
+    setattr(w, "_target_of", _original_target)
 
 check("17-bis.5 con la version vieja, 17.1 CAE", None, _ciego_rel)
 check("17-bis.6 y 17.2 CAE: el comando roto sale del universo", 0, len(_ciego_rotos))

@@ -53,6 +53,7 @@ def spawn_tree(seconds: float) -> tuple[subprocess.Popen, int]:
     """Un padre con un hijo: el hijo es quien usa la GPU, no el padre."""
     parent = subprocess.Popen(["bash", "-c", f"sleep {seconds} & echo $!; wait"],
                               stdout=subprocess.PIPE, text=True)
+    assert parent.stdout is not None  # se pidio con stdout=PIPE
     return parent, int(parent.stdout.readline())
 
 
@@ -60,8 +61,8 @@ with tempfile.TemporaryDirectory() as raw:
     tmp = Path(raw)
     smi = tmp / "nvidia-smi"
     smi.write_text(FAKE_SMI); smi.chmod(0o755)
-    apps, util = tmp / "apps.csv", tmp / "util.csv"
-    os.environ["FAKE_GPU_APPS"], os.environ["FAKE_GPU_UTIL"] = str(apps), str(util)
+    apps, utilization = tmp / "apps.csv", tmp / "util.csv"
+    os.environ["FAKE_GPU_APPS"], os.environ["FAKE_GPU_UTIL"] = str(apps), str(utilization)
 
     print("== 1. el árbol del ítem incluye a sus hijos ==")
     parent, child = spawn_tree(2)
@@ -70,10 +71,10 @@ with tempfile.TemporaryDirectory() as raw:
 
     print("== 2. una muestra: VRAM por PID y uso por GPU ==")
     apps.write_text("4242, 300\n4343, 5000\n")
-    util.write_text("0, 91\n1, 12\n")
+    utilization.write_text("0, 91\n1, 12\n")
     sample = gm.sample(str(smi))
     check("VRAM por PID", {4242: 300, 4343: 5000}, sample.vram_by_pid)
-    check("uso pico entre GPUs", 91, sample.util_pct)
+    check("uso pico entre GPUs", 91, sample.utilization_pct)
 
     print("== 3. watch cuenta SÓLO el árbol del ítem, y para cuando termina ==")
     parent, child = spawn_tree(1.5)
@@ -83,13 +84,14 @@ with tempfile.TemporaryDirectory() as raw:
     summary = gm.watch(parent.pid, out, nvidia_smi=str(smi), interval_s=0.2)
     elapsed = time.monotonic() - started
     parent.wait()
+    assert summary is not None
     check("pico: los 300 MiB del hijo, no los 5000 ajenos", 300, summary.peak_mib)
     # La media NO se fija en 300: entre que el hijo termina y el padre sale hay
     # una ventana de milisegundos, y una muestra ahí mide 0 MiB, que es verdad
     # (el árbol no usaba VRAM en ese instante). Fijarla en 300 suponía una
     # sincronización que el test no controla: salió 262 de forma intermitente.
     check("media: positiva y no mayor que el pico", True, 0 < summary.avg_mib <= 300)
-    check("uso pico de GPU", 91, summary.peak_util_pct)
+    check("uso pico de GPU", 91, summary.peak_utilization_pct)
     check("varias muestras", True, summary.samples >= 3)
     check("para al terminar el árbol, no después", True, elapsed < 3.0)
     check("<n>.gpu con las cuatro cifras", f"300 {summary.avg_mib} 91 {summary.samples}", out.read_text().strip())
@@ -100,7 +102,8 @@ with tempfile.TemporaryDirectory() as raw:
     out = tmp / "2.gpu"
     summary = gm.watch(parent.pid, out, nvidia_smi=str(smi), interval_s=0.2)
     parent.wait()
-    check("pico cero, uso cero", (0, 0), (summary.peak_mib, summary.peak_util_pct))
+    assert summary is not None
+    check("pico cero, uso cero", (0, 0), (summary.peak_mib, summary.peak_utilization_pct))
     check("y el archivo existe", True, out.exists())
 
     print("== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==")
@@ -235,6 +238,31 @@ with tempfile.TemporaryDirectory() as raw:
     book.release(alive.pid)
     check("soltada, no queda nada", {}, book.live())
     alive.kill(); alive.wait()
+
+    print("== 5b. un proceso que sale a mitad del recorrido no tumba tree() ==")
+    # La carrera medida en test_gpu_trace.py: pathlib 3.11 comprueba que
+    # `/proc/<pid>/task` es directorio y luego lo lista; si el proceso salió en
+    # medio, `scandir` da FileNotFoundError. Se fuerza aquí, sin carrera real.
+    fake_proc = tmp / "proc"
+    (fake_proc / "4242" / "task" / "4242").mkdir(parents=True)
+    (fake_proc / "4242" / "task" / "4242" / "children").write_text("4243\n")
+    (fake_proc / "4243" / "task").mkdir(parents=True)
+    real_scandir = os.scandir
+
+    def vanishing_scandir(path=".", *rest):
+        if str(path).endswith(os.path.join("4243", "task")):
+            raise FileNotFoundError(2, "No such file or directory", str(path))
+        return real_scandir(path, *rest)
+
+    os.scandir = vanishing_scandir
+    try:
+        try:
+            walked = gm.tree(4242, proc_root=str(fake_proc))
+        except OSError as error:
+            walked = f"{type(error).__name__}"
+    finally:
+        os.scandir = real_scandir
+    check("el hijo que desapareció cuenta y el recorrido sigue", {4242, 4243}, walked)
 
     print("== 6. disponible() distingue las dos situaciones ==")
     check("con el falso: disponible", True, gm.available(str(smi)))

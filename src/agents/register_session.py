@@ -39,6 +39,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 
 from hooks.error_log import run_and_log  # noqa: E402
@@ -896,7 +897,7 @@ def main() -> None:
         # Nombres y no valores por dos razones: un valor puede traer contenido
         # de la sesión (la lista blanca del anonimizador, tarea #662), y para
         # separar dos poblaciones basta con que sus formas difieran.
-        marca = {"claves_de_payload": sorted(payload)}
+        marca: dict[str, Any] = {"claves_de_payload": sorted(payload)}
         # Sin transcript la fila queda vacia y el reconciliador NO la alcanza:
         # lee de disco. Medido hoy: 68 de 107 filas nuevas sin modelo, sin tipo
         # y sin telemetria, y la correlacion con el disco es perfecta —39 con

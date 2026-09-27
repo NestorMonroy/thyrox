@@ -121,7 +121,7 @@ def scan(repo: Path, tasks_dir: Path) -> list[dict]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--repo", type=Path, default=Path("."))
     parser.add_argument("--tasks-dir", type=Path, required=True)
     args = parser.parse_args(argv)

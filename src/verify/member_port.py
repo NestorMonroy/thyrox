@@ -290,7 +290,6 @@ def main(argv: list[str] | None = None) -> int:
     original de cada uno. Escribe el destino y el informe en JSON por stdout.
     """
     import argparse
-    import sys
     parser = argparse.ArgumentParser(description="porte de un módulo por miembros")
     parser.add_argument("command", choices=("assemble", "plan"))
     parser.add_argument("--target", type=Path, required=True)
