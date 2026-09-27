@@ -23,6 +23,9 @@
       "@thyrox/provider/anthropicHttp": [
         "./src/anthropicHttp.ts"
       ],
+      "@thyrox/provider/credentials": [
+        "./src/credentials.ts"
+      ],
       "@thyrox/provider/recorded": [
         "./src/recorded.ts"
       ],
