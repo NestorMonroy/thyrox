@@ -18,6 +18,15 @@
  * cuando `workspaces` los enlace); no se toca `bridge` desde aquí.
  */
 
+/**
+ * El nombre con que el programa se presenta al usuario. Los literales
+ * portados del binario nombran al producto de origen, que es quien los emite
+ * allí; aquí quien arranca es thyrox, y un texto que nombra a otro programa
+ * describe uno que el usuario no lanzó. Todo texto visible lo toma
+ * de aquí (`check_product_word.py` mide lo que falta).
+ */
+export const PRODUCT_NAME = 'thyrox'
+
 export const PRODUCT_URL = 'https://claude.com/claude-code'
 
 // URLs de sesión de Claude Code Remote.
