@@ -1,0 +1,2 @@
+[project]
+dependencies = ["a>=1", "b"]

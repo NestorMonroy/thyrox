@@ -1,0 +1,4 @@
+shellcheck: 0 hallazgo(s) (alcance medido: 11 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 23 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 23 archivo(s))
+__BG_EXIT__=0

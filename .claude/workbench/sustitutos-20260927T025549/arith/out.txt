@@ -1,0 +1,15 @@
+-- FAIL tests/package/test_packages_home.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/package/test_packages_home.py", line 17, in <module>
+    ROOT = reach.thyrox_root()
+           ^^^^^
+NameError: name 'reach' is not defined
+-- FAIL tests/paths/test_unprefixed_clone.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_unprefixed_clone.py", line 26, in <module>
+    ROOT = reach.thyrox_root()
+           ^^^^^
+NameError: name 'reach' is not defined
+-- UNMEASURED (exit 2) tests/session/hardware/test_gpu_admission_real.py
+files=14 failed=2 unmeasured=1 timeout=0
+EXIT=1

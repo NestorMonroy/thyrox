@@ -1,0 +1,16 @@
+# lint-final
+
+## Qué se lanzó
+
+```
+bash bin/check_lint_zero src/agents/agent_store.py src/lib/toolchain.sh src/paths/reach.py src/session/headless-pool.sh src/session/job_ledger.py src/session/pool_history.py src/typescript/emit_declarations.py src/verify/check_lint_zero.py src/verify/registry.py src/verify/run_ts_isolated.sh tests/githooks/test-pre-commit-reconcile-status.sh tests/meta/test_runner_exit_two.py tests/package/test_packages_home.py tests/paths/test_declaration_port.py tests/paths/test_unprefixed_clone.py tests/run.sh tests/session/hardware/test_gpu_admission_real.py tests/session/test-arranque-de-clon.sh tests/session/test-headless-pool.sh tests/session/test_gpu_monitor.py tests/session/test_gpu_scenarios.py tests/session/test_gpu_trace.py tests/session/test_pool_history.py tests/session/test_shared_lock.py tests/task/test-closure-graph.sh tests/verify/test-mutante-en-staging.sh tests/verify/test-run-tree-mutation.sh tests/verify/test-run-ts-isolated.sh tests/verify/test_check_exports_types.py tests/verify/test_check_lint_zero.py tests/verify/test_check_stand_ins.py tests/verify/test_stand_ins_cleared.py tests/verify/test_step_close.py tests/verify/test_step_setup.py
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*
