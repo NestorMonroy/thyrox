@@ -435,12 +435,26 @@ cmd_wait() {
     done
 
     # Todos asentados: publicar el veredicto por trabajo y retirarlos.
-    local had_bail=0
+    local had_bail=0 nonzero=()
     echo "== $total trabajos asentados =="
     for f in "${jobs[@]}"; do
-        local label log; label=$(basename "$f" .job)
+        local label log mk code; label=$(basename "$f" .job)
         log=$(sed -n 's/^log=//p' "$f" 2>/dev/null)
-        printf '%-6s %s\n' "${settled_as[$label]}" "$label"
+        # `OK` significa «asentado con marcador», no «pasó»: la salida que el
+        # marcador declara va en la misma línea, para que leer sólo la
+        # cabecera no esconda un `EXIT=1`. Un BAIL no tiene marcador y no se
+        # le inventa salida.
+        code=""
+        if [[ "${settled_as[$label]}" == OK ]]; then
+            mk=$(sed -n 's/^marker=//p' "$f" 2>/dev/null)
+            code=$(grep -E "${mk:-$pattern}" "$log" 2>/dev/null | tail -1 | grep -oE '[0-9]+' | tail -1)
+        fi
+        if [[ -n "$code" ]]; then
+            printf '%-6s %s exit=%s\n' "${settled_as[$label]}" "$label" "$code"
+            [[ "$code" == 0 ]] || nonzero+=("$label")
+        else
+            printf '%-6s %s\n' "${settled_as[$label]}" "$label"
+        fi
         # La cola se imprime SIEMPRE, no sólo en BAIL. Recoger un trabajo es
         # leer su resultado; un `OK` a secas deja el turno sin la única cifra
         # por la que se esperó — que es literalmente lo que pasó en
@@ -461,6 +475,7 @@ cmd_wait() {
         fi
         rm -f "$f"
     done
+    (( ${#nonzero[@]} == 0 )) || echo "salida distinta de 0: ${#nonzero[@]} (${nonzero[*]})"
     return $(( had_bail ? 2 : 0 ))
 }
 

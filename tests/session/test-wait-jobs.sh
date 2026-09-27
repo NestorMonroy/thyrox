@@ -85,6 +85,9 @@ SALIDA=$(bash "$GUION" esperar --timeout 30); COD=$?
 afirmar "un BAIL -> exit 2" 2 "$COD"
 grep -q '^BAIL   muerto' <<<"$SALIDA"; afirmar "nombra al que murió" 0 $?
 grep -q '^OK     vivo'   <<<"$SALIDA"; afirmar "no arrastra al que sí terminó" 0 $?
+grep -qE '^OK +vivo +exit=0$' <<<"$SALIDA"; afirmar "el que terminó bien lleva exit=0" 0 $?
+grep -qE '^BAIL +muerto$' <<<"$SALIDA"; afirmar "un BAIL no inventa salida: no hay marcador" 0 $?
+grep -qF 'salida distinta de 0' <<<"$SALIDA"; afirmar "sin salidas distintas de 0 no hay pie" 1 $?
 
 echo "== 4. CONTROL POSITIVO — el episodio H-DOCS-155 =="
 # La suite TERMINA y escribe su marcador; nadie la recoge; el turno cierra.
@@ -95,6 +98,11 @@ bash "$GUION" registrar suite-api "$LS" 999999 >/dev/null
 afirmar "terminado y SIN RECOGER -> el gate bloquea" "block" "$(decision_del_gate)"
 SALIDA=$(bash "$GUION" esperar --timeout 10)
 grep -q '7 failed' <<<"$SALIDA"; afirmar "la recogida IMPRIME el resultado" 0 $?
+# `OK` dice «asentado con marcador», no «pasó». La salida del marcador va en
+# la MISMA línea del veredicto, y el pie cuenta las distintas de 0: leer sólo
+# la cabecera ya no esconde un `EXIT=1`.
+grep -qE '^OK +suite-api +exit=1$' <<<"$SALIDA"; afirmar "la cabecera lleva la salida del marcador" 0 $?
+grep -qF 'salida distinta de 0: 1 (suite-api)' <<<"$SALIDA"; afirmar "el pie cuenta las salidas distintas de 0" 0 $?
 afirmar "tras recoger, el gate calla" "ninguna" "$(decision_del_gate)"
 
 echo "== 5. el gate no estorba ni reincide =="
@@ -233,7 +241,7 @@ bash "$GUION" status >/dev/null; afirmar "un BAIL real -> status sigue en exit 1
 # RECHACE y que los dos sobrevivan.
 
 contiene_texto() {  # contiene_texto <texto> <patron-ere> -> si|no
-    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+    grep -qE "$2" <<<"$1" && echo si || echo no
 }
 
 # A. nombre corto, sin ambiguedad -> resuelve
