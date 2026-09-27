@@ -1,0 +1,4 @@
+src/__tests__/zz_b_read.test.ts:
+b ve: capturador
+ 16 pass
+ 0 fail

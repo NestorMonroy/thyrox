@@ -1,9 +1,10 @@
 /**
  * Puerto de `ccnmt: packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts`
  * (verbatim en aserciones; el mecanismo de captura cambia: la fuente hace
- * `mock.module('@thyrox/local-observability', ...)`; aquí se instala un
- * logger en el sumidero del original con `installLocalObservability` —
- * sin mockear un import de paquete).
+ * `mock.module('@thyrox/local-observability', ...)`, que reemplaza el módulo
+ * entero en el registro de módulos de bun y se fuga a los archivos que corren
+ * después; aquí se reemplaza sólo el `logger` con `installLocalObservability`
+ * y se restaura al terminar).
  *
  * Tests para `sdkMemorySummary.ts` — corrección del puerto contra ant
  * v2.1.136 2144.js: `Cc_`/`vP9`/`mH8`/`pG1`/`UG1`/`hP9`/`xH8`/`uH8`.
@@ -25,6 +26,7 @@
  *   - vP9 marcar como muerto preserva la contribución de la entrada
  */
 import {
+  afterAll,
   afterEach,
   beforeEach,
   describe,
@@ -36,7 +38,12 @@ import { getLocalObservability, installLocalObservability } from '@thyrox/local-
 type EventPayload = Record<string, unknown>
 const events: { name: string; payload: EventPayload }[] = []
 
-// Los eventos se capturan en el sumidero del original, no en un sustituto.
+// Los eventos se capturan reemplazando el `logger` del runtime de
+// observabilidad por su API de inyección. Ese estado es del módulo y lo ven
+// los archivos que corren después en el mismo proceso de `bun test`, así que
+// el `logger` previo se reinstala al terminar.
+const previousLogger = getLocalObservability().logger
+afterAll(() => installLocalObservability({ logger: previousLogger }))
 installLocalObservability({
   logger: {
     ...getLocalObservability().logger,
