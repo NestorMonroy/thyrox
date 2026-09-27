@@ -43,6 +43,7 @@ import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts
 import { modelsResponse } from './modelsList.ts'
 import { enrich } from './session/enrich.ts'
 import { blamesRequest, type ProviderTraits } from './resilience/errorClassifier.ts'
+import type { RateLimitManager } from './resilience/rateLimitManager.ts'
 import { createRecoverableStream } from './resilience/streamRecovery.ts'
 import { callerScope } from './session/identity.ts'
 import { METADATA_KEYS } from './session/info.ts'
@@ -90,6 +91,11 @@ export type ProxyServerConfig = {
    * ventana de apertura suma hasta `HOLDBACK_MS` al primer token.
    */
   streamRecovery?: { enabled: boolean; maxEarlyRetries?: number }
+  /**
+   * Los límites adaptativos por credencial (`./resilience/rateLimitManager.ts`).
+   * Qué credenciales protege lo decide quien lo construye.
+   */
+  rateLimit?: RateLimitManager
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
@@ -197,11 +203,18 @@ async function forwardBody(
         headers: request.headers,
         signal: request.signal,
       }
-      const response = await config.forward(forwarded)
-      // Un 4xx puede culpar a la petición y no a la credencial; lo decide el
-      // clasificador sobre una copia del cuerpo, que el cliente recibe entero.
-      const blamed = response.status >= 400 && response.status < 500
-        && blamesRequest(response.status, await response.clone().text(), upstream.provider, { traitsOf: config.providerTraits })
+      const limiter = config.rateLimit
+      const response = limiter
+        ? await limiter.withRateLimit(upstream.provider, credential.id, resolved.model, () => config.forward(forwarded), request.signal)
+        : await config.forward(forwarded)
+      // El cuerpo de un 4xx se lee de una copia, que el cliente recibe entera;
+      // el de un 5xx no, porque puede no terminar nunca.
+      const errorText = response.status >= 400 && response.status < 500 ? await response.clone().text() : null
+      limiter?.updateFromHeaders(upstream.provider, credential.id, response.headers, response.status, resolved.model)
+      if (errorText !== null) limiter?.updateFromResponseBody(upstream.provider, credential.id, errorText, response.status, resolved.model)
+      // Un 4xx puede culpar a la petición y no a la credencial.
+      const blamed = errorText !== null
+        && blamesRequest(response.status, errorText, upstream.provider, { traitsOf: config.providerTraits })
       report(response.status < 400, blamed)
       if (fallsOver(response.status)) {
         reasons.push(`${response.status} ${response.statusText}`)

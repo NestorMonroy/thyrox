@@ -143,6 +143,40 @@ describe('startProxyServer', () => {
     expect(calls).toBe(2)
   })
 
+  test('rateLimit protege las credenciales de clave de API y deja pasar las OAuth', async () => {
+    const peakWith = async (providerTraits?: Record<string, { authType: 'oauth' }>) => {
+      let inFlight = 0
+      let peak = 0
+      const server = Bun.serve({
+        port: 0,
+        hostname: '127.0.0.1',
+        async fetch() {
+          inFlight += 1
+          peak = Math.max(peak, inFlight)
+          await new Promise(r => setTimeout(r, 40))
+          inFlight -= 1
+          return Response.json({ type: 'message' })
+        },
+      })
+      stops.push(() => server.stop(true))
+      const proxy = startProxyServer({
+        ...config(`http://127.0.0.1:${server.port}`),
+        providerTraits,
+        rateLimit: { concurrentRequests: 1 },
+      })
+      stops.push(() => proxy.stop())
+      const send = () => fetch(`${proxy.url}/v1/messages`, {
+        method: 'POST',
+        headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+        body: JSON.stringify({ model: 'local-model', messages: [] }),
+      }).then(r => r.text())
+      await Promise.all([send(), send(), send()])
+      return peak
+    }
+    expect(await peakWith()).toBe(1)
+    expect(await peakWith({ anthropic: { authType: 'oauth' } })).toBeGreaterThan(1)
+  })
+
   test('sin la clave local no llega nada al upstream', async () => {
     const upstream = provider()
     const proxy = startProxyServer(config(upstream.baseUrl))

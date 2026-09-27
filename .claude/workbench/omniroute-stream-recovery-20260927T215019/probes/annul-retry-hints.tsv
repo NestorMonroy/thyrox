@@ -1,0 +1,5 @@
+gemini-details	s/if (delay) return { retryAfterMs: parseDelayString(delay), reason: .rate_limit_exceeded. }/void delay/
+openai-message	s/if (retry) return/if (false) return/
+anthropic-type	s/if (String(error.type ?? body.type ?? '') === 'rate_limit_error')/if (false)/
+string-body	s/typeof responseBody === .string. ? JSON.parse(responseBody) : responseBody/responseBody/
+seconds-unit	/\[\/^(\\d+(?:\\.\\d+)?)\\s\*s$\/i, 1000\],/d

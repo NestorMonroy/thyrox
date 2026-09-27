@@ -29,6 +29,7 @@ import {
 } from './credentialSelectors.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
 import type { ProviderTraits } from './resilience/errorClassifier.ts'
+import { RateLimitManager, type RateLimitQueueSettings } from './resilience/rateLimitManager.ts'
 import { createProxyHandler, type ProxyServerConfig } from './server.ts'
 import { SessionAffinitySelector } from './session/affinitySelector.ts'
 import { createHttpForwarder, type RawUpstreamEndpoint } from './upstreamForwarder.ts'
@@ -50,6 +51,12 @@ export type ProxyStartConfig = {
   providerTraits?: Record<string, ProviderTraits | undefined>
   /** Reabrir un SSE que se corta antes del primer byte; sin declarar, apagada. */
   streamRecovery?: ProxyServerConfig['streamRecovery']
+  /**
+   * Los límites adaptativos: sus ajustes de cola. Protege las credenciales de
+   * los proveedores de clave de API; las OAuth quedan fuera, como en OmniRoute.
+   * Sin declarar, apagados.
+   */
+  rateLimit?: RateLimitQueueSettings
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -77,6 +84,15 @@ export function createSelector(name: SelectorName, sessionAffinity?: SessionAffi
   return new SessionAffinitySelector({ fallback: strategy, ttlMs: sessionAffinity.ttlMs, subagentAffinity: sessionAffinity.subagents })
 }
 
+/** El gestor con la protección activada en cada credencial de un proveedor de clave de API. */
+function protectApiKeyCredentials(manager: RateLimitManager, config: ProxyStartConfig): RateLimitManager {
+  for (const upstream of config.routing.upstreams) {
+    if (config.providerTraits?.[upstream.provider]?.authType === 'oauth') continue
+    for (const credential of config.credentials[upstream.name] ?? []) manager.enable(credential.id)
+  }
+  return manager
+}
+
 export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   if (!isLoopbackListenHost(config.host)) {
     throw new Error(`el proxy local sólo escucha en loopback; "${config.host}" no lo es`)
@@ -97,6 +113,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     selector: createSelector(config.selector, config.sessionAffinity),
     providerTraits: provider => config.providerTraits?.[provider],
     streamRecovery: config.streamRecovery,
+    rateLimit: config.rateLimit && protectApiKeyCredentials(new RateLimitManager(config.rateLimit), config),
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,

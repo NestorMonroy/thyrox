@@ -74,3 +74,34 @@ Anulaciones (`outputs/annul-rate-limit-headers*.tsv`,
 El resto del gestor tiene estado: un limitador por proveedor y credencial,
 con concurrencia, intervalo mínimo y cupo que se repone. La referencia lo
 construye sobre `bottleneck`, así que aquí se reimplementa en nativo.
+
+## Límites de tasa: el limitador y el gestor
+
+- `requestLimiter.ts`: el subconjunto de `bottleneck` que el gestor usa, en
+  nativo: concurrencia máxima, intervalo mínimo entre arranques, cupo con
+  reposición, orden de llegada, cancelación por señal y `drop` para lo
+  encolado. Sus 11 casos fijan cada regla (`proxyRequestLimiter.test.ts`).
+- `rateLimitManager.ts` y `retryHints.ts`: el gestor, sin base de datos (el
+  estado vive en la instancia). Casos de `rate-limit-manager.test.ts`,
+  `rate-limit-learned-cap-13594.test.ts`,
+  `rateLimitManager-mintime-floor-9763.test.ts` y `rate-limit-enhanced.test.ts`
+  (`proxyRateLimitManager.test.ts`). Divergencias en la cabecera del módulo:
+  sin persistencia, ajustes de cola por constructor, sin claves por familia de
+  `codex`/`antigravity`, y sin vigilancia de colas atascadas, tope de espera
+  ni expulsión por inactividad.
+- Cableado: `server.ts` pasa cada reenvío de una credencial protegida por su
+  limitador y le enseña las cabeceras y el cuerpo de un 4xx (un 5xx no se lee);
+  `startServer.ts` construye el gestor con `rateLimit` y protege las
+  credenciales de clave de API, no las OAuth, como la referencia.
+
+Anulaciones, con `THYROX_ANNUL_TEST_TIMEOUT=20`:
+- el limitador, 9 de 9;
+- el gestor, 17 de 17, `anthropic-names` desde su caso propio;
+- `retryHints`, 4 de 5. `seconds-unit` es redundante: «33s» cae al número
+  suelto y da lo mismo;
+- el cableado, 4 de 4 en el servidor y 2 de 2 en `startServer`.
+
+Dos variantes (`drop-queue` y `retire-on-429`) dejan una promesa sin
+resolver. `bun test` no las cortaba con su propio plazo, así que el corredor
+giraba hasta el límite de 300 s de `annul_parallel`. De ahí el plazo
+configurable del mecanismo, en su propio commit.
