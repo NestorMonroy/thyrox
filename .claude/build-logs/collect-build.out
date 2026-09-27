@@ -1,0 +1,35 @@
+asentado: after-build -> OK (1 de 6)
+asentado: build-all -> OK (2 de 6)
+asentado: build-three -> OK (3 de 6)
+asentado: emit-green -> OK (4 de 6)
+asentado: emit-red -> OK (5 de 6)
+asentado: emit-rootfiles -> OK (6 de 6)
+== 6 trabajos asentados ==
+OK     after-build
+       | OK     job-20260927T015223_job-003
+       |        | EXIT=0
+       |        memoria pico: 66324 KB (65 MB) · pared 0.08s
+       | OK     job-20260927T015223_job-004
+       |        | EXIT=0
+       |        memoria pico: 221868 KB (217 MB) · pared 1.66s
+       | OK     job-20260927T015223_job-005
+       |        | EXIT=0
+       |        memoria pico: 2376104 KB (2320 MB) · pared 40.68s
+       | __BG_EXIT__=0
+       memoria pico: 2376104 KB (2320 MB) · pared 46.30s
+OK     build-all
+       | replace_literal: 1 reemplazo(s) en /home/user/thyrox/src/typescript/emit_declarations.py
+       | __BG_EXIT__=0
+       memoria pico: 1113428 KB (1087 MB) · pared 278.95s
+OK     build-three
+       | __BG_EXIT__=0
+       memoria pico: 812492 KB (793 MB) · pared 25.02s
+OK     emit-green
+       | __BG_EXIT__=0
+       memoria pico: 149796 KB (146 MB) · pared 10.30s
+OK     emit-red
+       | __BG_EXIT__=1
+       memoria pico: 149616 KB (146 MB) · pared 9.42s
+OK     emit-rootfiles
+       | __BG_EXIT__=0
+       memoria pico: 150256 KB (147 MB) · pared 10.94s
