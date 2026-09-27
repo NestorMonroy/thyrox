@@ -91,6 +91,35 @@ check("y publica cuántos símbolos midió en cuántos archivos", True,
 rc, out = check_stand_ins.run([str(src)])
 check("sin obsoletos sale 0", 0, rc)
 
+print("\n4. Marca el ciclo: importar el original desde un paquete que ya depende del dueño")
+# Retirar un sustituto es importar el original. Si el paquete del original ya
+# depende —directa o transitivamente— del dueño del sustituto, ese import
+# cierra un ciclo, y el sustituto no se retira por import sino bajando el
+# símbolo a un paquete común. El gate tiene que distinguir los dos casos.
+# El ciclo que rompe en ejecución es de MÓDULOS, no de paquetes: dos paquetes
+# que se usan en las dos direcciones por módulos distintos no se encierran.
+# Medido sobre el árbol real, la vara de paquete marcaba 243 de 244 símbolos.
+src = tree()
+write(src / "packages" / "mcp" / "src" / "index.ts", "export const y = 1\n")
+loop = package(src, "packages/loop", "@t/loop", {".": "./index.ts", "./free": "./free.ts"})
+write(loop / "index.ts", "import { x } from '@t/mid'\nexport function loopThing() {}\n")
+write(loop / "free.ts", "export function loopFree() {}\n")
+mid = package(src, "packages/mid", "@t/mid", {".": "./index.ts"})
+write(mid / "index.ts", "import { y } from '@t/mcp'\nexport const x = 1\n")
+write(src / "packages" / "mcp" / "src" / "internal" / "pendingCrossPackageDeps.ts",
+      "export function isEnvDefinedFalsy(v) { return !v }\n"
+      "export function loopThing() {}\nexport function loopFree() {}\n")
+by_symbol = {s.symbol: s for s in check_stand_ins.shadowed(src)}
+check("sin ciclo: config no depende de mcp", (), by_symbol["isEnvDefinedFalsy"].cycle)
+check("con ciclo transitivo de módulos: loop -> mid -> mcp",
+      ("packages/loop/index.ts", "packages/mid/index.ts", "packages/mcp/src/index.ts"),
+      by_symbol["loopThing"].cycle)
+check("ciclo de paquetes sin ciclo de módulos: se puede importar",
+      (), by_symbol["loopFree"].cycle)
+rc, out = check_stand_ins.run([str(src)])
+check("la salida nombra el ciclo",
+      True, "ciclo: packages/loop/index.ts -> packages/mid/index.ts -> packages/mcp/src/index.ts" in out)
+
 print("\n3. Rehúsa sin publicar un cero cuando no hay nada que medir")
 empty = Path(tempfile.mkdtemp(prefix="stand-ins-empty-")) / "src"
 empty.mkdir(parents=True)
