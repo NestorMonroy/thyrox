@@ -1,0 +1,15 @@
+Identify subagent requests from the client
+
+The executable's client constructor tags every request made outside
+the main thread with the subagent id and, when there is one, its parent
+agent id. thyrox already sent the session id but not these, so a proxy
+could not tell a subagent's traffic from its parent's.
+
+getAnthropicClient now sends x-thyrox-agent-id and
+x-thyrox-parent-agent-id, encoded like the reference, taking the agent
+context in progress when the caller passes none. The reference names
+carry the product word the product-word gate rejects; the existing
+session header is untouched.
+
+Extraction with bin/binary and the annulment controls are in the
+session-headers bench.
