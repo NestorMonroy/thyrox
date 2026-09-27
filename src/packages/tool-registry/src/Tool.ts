@@ -667,9 +667,9 @@ export type Tool<
    *
    * Opcional: si se omite → heurística por nombre de campo en
    * transcriptSearch.ts. El drift lo atrapa
-   * test/utils/transcriptSearch.renderFidelity.test.tsx, que renderiza
+   * `src/__tests__/searchTextRenderFidelity.test.tsx`, que renderiza
    * salidas de muestra y marca texto indexado-pero-no-renderizado
-   * (fantasma) o renderizado-pero-no-indexado (aviso de subconteo).
+   * (fantasma). El subconteo está permitido y no se mide.
    */
   extractSearchText?(out: Output): string
   /**
