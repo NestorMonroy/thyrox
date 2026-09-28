@@ -1,0 +1,40 @@
+[uds-messaging] Auto socket path 
+[uds-messaging] Client connected
+[uds-messaging] Client disconnected
+[uds-messaging] Closing a connection that sent no complete line w
+[uds-messaging] Connect when the data is ready (e.g. out=
+[uds-messaging] Connection error: 
+[uds-messaging] Dropped 
+[uds-messaging] Dropping 
+[uds-messaging] Failed to close a silent connection: 
+[uds-messaging] Failed to create server: 
+[uds-messaging] Failed to handle line: 
+[uds-messaging] Failed to materialize file_attachments: 
+[uds-messaging] Failed to parse JSON line: 
+[uds-messaging] Failed to parse final buffer: 
+[uds-messaging] Failed to process message: 
+[uds-messaging] Failed to publish the inbox auth key (refusing to
+[uds-messaging] Failed to publish the inbox auth key; peers will 
+[uds-messaging] Failed to set up sockets directory 
+[uds-messaging] Failed to start: 
+[uds-messaging] Ignoring message without valid type field
+[uds-messaging] Ignoring user message with missing or non-string 
+[uds-messaging] Inject messages (auth line 
+[uds-messaging] Line exceeded 
+[uds-messaging] Listening: 
+[uds-messaging] Reaped stale moved-aside socket 
+[uds-messaging] Received unhandled message type: 
+[uds-messaging] Refusing socket path \u2014 
+[uds-messaging] Routed user message to queue (priority=
+[uds-messaging] Server error: 
+[uds-messaging] Shutting down
+[uds-messaging] Socket path too long (
+[uds-messaging] Unhandled control action: 
+[uds-messaging] artifact_replies_yielded dropped: malformed frame
+[uds-messaging] artifact_replies_yielded dropped: uncorrelated or
+[uds-messaging] hold-receipt send failed to 
+[uds-messaging] hold-receipt skipped: reply address unshaped or o
+[uds-messaging] notify_when_idle dropped: malformed frame
+[uds-messaging] notify_when_idle dropped: own inbox not bound (sh
+[uds-messaging] notify_when_idle dropped: reply address unshaped 
+[uds-messaging] notify_when_idle dropped: reply target is this se
