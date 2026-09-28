@@ -176,6 +176,11 @@
       "types": "./dist/uds/sessionKind.d.ts",
       "default": "./src/uds/sessionKind.ts"
     },
+    "./uds/sessionRegistration.js": {
+      "@thyrox/source": "./src/uds/sessionRegistration.ts",
+      "types": "./dist/uds/sessionRegistration.d.ts",
+      "default": "./src/uds/sessionRegistration.ts"
+    },
     "./uds/sessionRegistryState.js": {
       "@thyrox/source": "./src/uds/sessionRegistryState.ts",
       "types": "./dist/uds/sessionRegistryState.d.ts",

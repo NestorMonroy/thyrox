@@ -34,7 +34,7 @@ export type SessionRegistryDeps = {
 }
 
 /** `Nq`. */
-function stableAddressEnabled(): boolean {
+export function stableAddressEnabled(): boolean {
   try {
     return getFeatureValue_CACHED_MAY_BE_STALE('tengu_session_stable_address', false)
   } catch {

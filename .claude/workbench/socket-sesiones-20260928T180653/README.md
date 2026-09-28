@@ -53,7 +53,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) → `uds/spareSession.ts` | hecha: 11 pruebas; 19 anulaciones (`anulacion-spare-*.txt`) |
 | E | módulo de entrypoints y anfitrión (`chunk-jwddn0q9.js` completo) con las variables `THYROX_CODE_*` y el intérprete de cada una (`str`/`bool`/`triBool` de `chunk-b1cxch1w.js`) → `@thyrox/config: entrypoint.ts` | hecha: 16 pruebas; 27 anulaciones (`anulacion-entrypoint-*.txt`); oráculo `diferencial-entrypoint.txt`, 0 discrepancias en 20000 escenarios |
 | W-2 | nombre derivado de una sesión (`xs`) → `@thyrox/tool-registry: derivedSessionName`; con carpeta sin slug toma el nombre del producto | hecha: 3 pruebas; 5 anulaciones (`anulacion-xs-*.txt`) |
-| F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`) con su archivo pid, limpieza al salir y los avisos de cambio de sesión y de directorio | pendiente |
+| F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`, `lD`, `ZM`, `QM`, `QKn`, `opn`, `xy`, `YKn`, `XKn`, `JKn`, `FNr`, `tUr`) → `uds/sessionRegistration.ts`; el nombre derivado, la limpieza y las señales de sesión y de directorio llegan por `processRegistrationDeps(parts)` | hecha: 25 pruebas; 44 anulaciones (`anulacion-registration-*.txt`) |
+| S | señales de cambio de sesión con motivo y de `originalCwd` (`Sn`/`fn`, `yn`/`hn`, `Zd`, `kzr`) en `@thyrox/app-host`; hoy `onSessionSwitch` entrega sólo el id | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
 | F4c-2f-4e | tipo de sesión por entorno y anfitrión (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`, `NNr`, `qKn`) con `THYROX_CODE_SESSION_KIND`, `THYROX_JOB_DIR` y `THYROX_BG_BACKEND`; `fb`, `Ul`, `dR` y `md` llegan por `configureSessionKindHost` → `uds/sessionKind.ts` | hecha: 9 pruebas; 17 anulaciones (`anulacion-sessionkind-*.txt`) |
 | F4c-2f-4f | sustituir `agent/concurrentSessions.ts` por el registro portado en sus consumidores; alinear `cli/src/bg.ts`, que escribe `CLAUDE_BG_BACKEND=detached` donde la referencia lee `daemon` (`jte`) | pendiente |
@@ -581,3 +582,18 @@ Anulaciones de la suite unitaria: una por variable y por rama de `D` y `NUo`,
 el recorte de `str`, la lista de conocidos, la marca del nombre, y las dos
 condiciones de `P6`. `gestionado` no discriminaba en la primera versión; se
 añadió el caso con `THYROX_CODE_PROVIDER_MANAGED_BY_HOST` apagada.
+
+## F4c-2f-4c-3 — alta en el registro: controles
+
+Una anulación por paso del alta (propiedad del registro, cadena de
+escrituras y su liberación, reserva y su reclamo, nombre de lanzamiento y su
+saneado, salida y limpieza en las dos formas, modo del directorio, nombre
+derivado sólo en interactiva, cada campo condicional del registro, escritura
+en su sitio y su fallo, `registered`, sondeo, no pisar un nombre, `givenAtLaunch`,
+sesión viva), una por rama de la adopción (dirección estable, motivo,
+contador, apartar, apartar con sesión viva, restaurar, sólo cambiar de
+sesión, publicar la sesión y el aparcado), las tres del cambio de directorio,
+`KNt`, y las de `lD`, `QM`, `ZM`, `QKn` y `xy`. `reserva`, `modo` y `trabajo`
+no discriminaban en la primera versión; se añadió el caso de una sesión
+interactiva con `THYROX_BG_SOURCE=spare` y `THYROX_JOB_DIR` sobre un
+directorio ya existente en 0755.
