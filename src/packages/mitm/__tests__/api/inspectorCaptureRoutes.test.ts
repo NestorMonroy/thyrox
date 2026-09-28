@@ -12,13 +12,13 @@ import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 
 import { createApiHandler } from '../../src/api/router.ts'
-import { INSPECTOR_BASE } from '../../src/api/routes/inspector.ts'
+import { INSPECTOR_BASE } from '../../src/api/routes/inspector/basePath.ts'
 import {
-  createInspectorCaptureRoutes,
-  resolveIngestToken,
+  createCaptureModeRoutes,
   systemProxyGuardMinutes,
-  type InspectorCaptureDeps,
-} from '../../src/api/routes/inspectorCapture.ts'
+  type CaptureModeRouteDeps,
+} from '../../src/api/routes/inspector/captureModes.ts'
+import { createIngestRoutes, resolveIngestToken, type IngestRouteDeps } from '../../src/api/routes/inspector/ingest.ts'
 import { TrafficBuffer } from '../../src/inspector/buffer.ts'
 import type { HttpProxyServerHandle } from '../../src/inspector/httpProxyServer.ts'
 import type { SystemProxyState } from '../../src/inspector/captureState.ts'
@@ -32,7 +32,7 @@ let calls: string[]
 let proxyHandle: HttpProxyServerHandle | null
 let systemState: SystemProxyState
 let tls: boolean
-let deps: InspectorCaptureDeps
+let deps: CaptureModeRouteDeps & IngestRouteDeps
 let handle: (request: Request) => Promise<Response>
 
 function fakeHandle(port: number): HttpProxyServerHandle {
@@ -93,7 +93,7 @@ beforeEach(() => {
       },
     },
   }
-  handle = createApiHandler(createInspectorCaptureRoutes(deps), { peerAddress: () => '127.0.0.1' })
+  handle = createApiHandler([...createCaptureModeRoutes(deps), ...createIngestRoutes(deps)], { peerAddress: () => '127.0.0.1' })
 })
 afterEach(() => db.close())
 

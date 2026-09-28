@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { KiroHandler } from "../../src/handlers/kiro.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("kiro handler — forwards Anthropic-style body to OmniRoute /v1/messages", async () => {
   const r = await runHandler(

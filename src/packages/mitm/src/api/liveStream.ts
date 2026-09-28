@@ -11,7 +11,7 @@
 import type { ServerWebSocket } from 'bun'
 
 import type { WsEvent } from '../inspector/types.ts'
-import { INSPECTOR_BASE } from './routes/inspector.ts'
+import { INSPECTOR_BASE } from './routes/inspector/basePath.ts'
 
 export const LIVE_STREAM_PATH = `${INSPECTOR_BASE}/ws`
 

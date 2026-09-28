@@ -8,8 +8,8 @@
  * cert-route-validation,cert-trust-mismatch,dns-route-validation,
  * dns-sudo-gate,dns-params-7271,dns-per-agent-8466,reset-route,
  * repair-route-validation,repair-sudo-gate,server-route-dynamic-import}`,
- * `tproxy-route` y `upstream-ca-test-route-3488` (MIT), con las sondas del
- * sistema como dobles que registran sus llamadas.
+ * `tproxy-route` y `upstream-ca-test-route-3488` (MIT), con las operaciones
+ * del sistema como dobles que registran sus llamadas.
  */
 import { afterAll, beforeAll, beforeEach, afterEach, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
@@ -18,11 +18,21 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { createApiHandler } from '../../src/api/router.ts'
-import { AGENT_BRIDGE_BASE } from '../../src/api/routes/agentBridgeState.ts'
-import {
-  createAgentBridgePrivilegedRoutes,
-  type AgentBridgePrivilegedDeps,
-} from '../../src/api/routes/agentBridgePrivileged.ts'
+import { createAgentDnsRoutes, type AgentDnsRouteDeps } from '../../src/api/routes/agentBridge/agentDns.ts'
+import { AGENT_BRIDGE_BASE } from '../../src/api/routes/agentBridge/basePath.ts'
+import { createCertRoutes, type CertRouteDeps } from '../../src/api/routes/agentBridge/cert.ts'
+import { createDiagnoseRoutes, type DiagnoseRouteDeps } from '../../src/api/routes/agentBridge/diagnose.ts'
+import { createRepairRoutes, type RepairRouteDeps } from '../../src/api/routes/agentBridge/repair.ts'
+import { createServerRoutes, type ServerRouteDeps } from '../../src/api/routes/agentBridge/server.ts'
+import { createTproxyRoutes, type TproxyCapture } from '../../src/api/routes/agentBridge/tproxy.ts'
+import { createUpstreamCaRoutes, type UpstreamCaStore } from '../../src/api/routes/agentBridge/upstreamCa.ts'
+
+/** Lo que piden todos los grupos juntos: un solo doble los alimenta. */
+type AgentBridgePrivilegedDeps = ServerRouteDeps &
+  CertRouteDeps &
+  AgentDnsRouteDeps &
+  RepairRouteDeps &
+  DiagnoseRouteDeps & { upstreamCa: UpstreamCaStore; tproxy: TproxyCapture }
 import type { CertInstallResult } from '../../src/cert/install.ts'
 import { generateMitmCa } from '../../src/dynamicCert.ts'
 import {
@@ -123,7 +133,9 @@ beforeEach(() => {
         record(`dns-remove:${password}:${agentId}`)
         hostsEntries.delete(agentId)
       },
-      flushWindowsCache: () => record('dns-flush'),
+      flushWindowsCache: () => {
+        record('dns-flush')
+      },
       configuredFor: agentId => hostsEntries.has(agentId),
     },
     repair: async password => {
@@ -131,7 +143,7 @@ beforeEach(() => {
       return { repaired: ['dns'] }
     },
     mitmPort: () => 8443,
-    probeTcp: async port => {
+    acceptsConnections: async port => {
       record(`probe:${port}`)
       return true
     },
@@ -155,7 +167,18 @@ beforeEach(() => {
       },
     },
   }
-  handle = createApiHandler(createAgentBridgePrivilegedRoutes(deps), { peerAddress: () => '127.0.0.1' })
+  handle = createApiHandler(
+    [
+      ...createServerRoutes(deps),
+      ...createCertRoutes(deps),
+      ...createAgentDnsRoutes(deps),
+      ...createRepairRoutes(deps),
+      ...createDiagnoseRoutes(deps),
+      ...createUpstreamCaRoutes(deps.upstreamCa),
+      ...createTproxyRoutes(deps.tproxy),
+    ],
+    { peerAddress: () => '127.0.0.1' },
+  )
 })
 afterEach(() => db.close())
 

@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { CopilotHandler } from "../../src/handlers/copilot.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("copilot handler — rewrites model and forwards to /v1/chat/completions", async () => {
   const r = await runHandler(

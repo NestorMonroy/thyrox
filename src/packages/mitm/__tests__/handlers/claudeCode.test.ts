@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { AnthropicCliHandler } from "../../src/handlers/claudeCode.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("claude-code handler — happy path forwards to /v1/messages", async () => {
   const r = await runHandler(

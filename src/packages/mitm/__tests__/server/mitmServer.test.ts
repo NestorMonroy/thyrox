@@ -41,7 +41,7 @@ async function freePort(): Promise<number> {
   return port
 }
 
-async function harness(options: {
+async function startRecordedMitmServer(options: {
   routerStatus?: number
   config?: Partial<MitmServerConfig>
   targetsJson?: unknown
@@ -129,7 +129,7 @@ async function harness(options: {
 const ENVELOPE = { model: 'gemini-x', project: 'p', request: { contents: [{ role: 'user', parts: [{ text: 'hi' }] }] } }
 
 test('a mapped antigravity chat is rewritten and forwarded to the router as cloudcode', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': { model: 'cx/gpt-y', reasoningEffort: 'high' } })
   const response = await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)
   assert.equal(response.status, 200)
@@ -150,7 +150,7 @@ test('a mapped antigravity chat is rewritten and forwarded to the router as clou
 })
 
 test('a chat without an alias passes through to the real host, untouched', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   const response = await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)
   assert.equal(response.status, 201)
   assert.equal(response.headers.get('x-upstream'), 'yes')
@@ -163,7 +163,7 @@ test('a chat without an alias passes through to the real host, untouched', async
 })
 
 test('hosts outside the targets, non-chat URLs and our own traffic pass through', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   setMitmAliasAll(h.db, 'antigravity', { '*': 'cx/any' })
   await (await h.send('other.example.com', CHAT_PATH, ENVELOPE)).text()
   await (await h.send(ANTIGRAVITY_HOST, '/v1internal:loadCodeAssist', ENVELOPE)).text()
@@ -174,7 +174,7 @@ test('hosts outside the targets, non-chat URLs and our own traffic pass through'
 })
 
 test('a model in the URL counts when the body has none', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-url': 'cx/from-url' })
   const response = await h.send(ANTIGRAVITY_HOST, '/v1beta/models/gemini-url:streamGenerateContent', {
     request: { contents: [] },
@@ -184,7 +184,7 @@ test('a model in the URL counts when the body has none', async () => {
 })
 
 test('an agent declared in targets.json that speaks Anthropic goes to /v1/messages', async () => {
-  const h = await harness({ targetsJson: { targets: [{ id: 'claude-code', hosts: ['api.anthropic.com'] }] } })
+  const h = await startRecordedMitmServer({ targetsJson: { targets: [{ id: 'claude-code', hosts: ['api.anthropic.com'] }] } })
   setMitmAliasAll(h.db, 'claude-code', { 'claude-src': 'anthropic/claude-sonnet-5' })
   const response = await h.send('api.anthropic.com', '/v1/messages', { model: 'claude-src', messages: [] })
   await response.text()
@@ -194,7 +194,7 @@ test('an agent declared in targets.json that speaks Anthropic goes to /v1/messag
 })
 
 test('a router failure answers 500 with a sanitized mitm_error', async () => {
-  const h = await harness({ routerStatus: 400 })
+  const h = await startRecordedMitmServer({ routerStatus: 400 })
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
   const response = await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)
   assert.equal(response.status, 500)
@@ -205,7 +205,7 @@ test('a router failure answers 500 with a sanitized mitm_error', async () => {
 })
 
 test('with an ingest token the inspector gets the capture and the final entry', async () => {
-  const h = await harness({ config: { ingestToken: 'ingest-tok' } })
+  const h = await startRecordedMitmServer({ config: { ingestToken: 'ingest-tok' } })
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
   await (await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)).text()
   await Bun.sleep(100)
@@ -229,7 +229,7 @@ test('the capture goes to the MITM API, not to the router', async () => {
     },
   })
   cleanups.push(() => api.stop(true))
-  const h = await harness({ config: { ingestToken: 'ingest-tok', ingestBaseUrl: `http://127.0.0.1:${api.port}` } })
+  const h = await startRecordedMitmServer({ config: { ingestToken: 'ingest-tok', ingestBaseUrl: `http://127.0.0.1:${api.port}` } })
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
   await (await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)).text()
   await Bun.sleep(100)
@@ -239,7 +239,7 @@ test('the capture goes to the MITM API, not to the router', async () => {
 
 
 test('without an ingest token nothing is posted to the inspector', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
   await (await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)).text()
   await Bun.sleep(100)
@@ -248,21 +248,21 @@ test('without an ingest token nothing is posted to the inspector', async () => {
 
 test('the loop guard refuses to dial back into the server itself', async () => {
   const port = await freePort()
-  const h = await harness({ listenPort: port, upstreamPort: port })
+  const h = await startRecordedMitmServer({ listenPort: port, upstreamPort: port })
   const response = await h.send('other.example.com', '/', '')
   assert.equal(response.status, 508)
   assert.equal(await response.text(), 'Loop Detected')
 })
 
 test('with TLS verification on, an untrusted upstream is a 502', async () => {
-  const h = await harness({ config: { disableTlsVerify: false } })
+  const h = await startRecordedMitmServer({ config: { disableTlsVerify: false } })
   const response = await h.send('other.example.com', '/', '')
   assert.equal(response.status, 502)
   assert.equal(h.passthroughSeen.length, 0)
 })
 
 test('stats are counted and written next to the certificates', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
   await (await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)).text()
   await (await h.send('other.example.com', '/', '')).text()
@@ -274,16 +274,16 @@ test('stats are counted and written next to the certificates', async () => {
 })
 
 test('THYROX_MITM_VERBOSE 0 silences the per-request decisions', async () => {
-  const loud = await harness()
+  const loud = await startRecordedMitmServer()
   await (await loud.send('other.example.com', '/', '')).text()
   assert.ok(loud.lines.some(line => line.includes('PASSTHROUGH')))
-  const quiet = await harness({ config: { verbose: 0 } })
+  const quiet = await startRecordedMitmServer({ config: { verbose: 0 } })
   await (await quiet.send('other.example.com', '/', '')).text()
   assert.ok(!quiet.lines.some(line => line.includes('PASSTHROUGH')))
 })
 
 test('the root-CA mode presents one leaf, signed by the stored CA, for every target host', async () => {
-  const h = await harness({
+  const h = await startRecordedMitmServer({
     config: { certMode: 'root-ca' },
     targetsJson: { targets: [{ id: 'cursor', hosts: ['api2.cursor.sh'] }] },
   })
@@ -312,7 +312,7 @@ function connectThrough(port: number, authority: string, ca: string): Promise<{ 
 }
 
 test('a CONNECT to a passthrough host becomes a raw TCP tunnel', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   const echo = net.createServer(socket => socket.on('data', data => socket.write(`echo:${data}`)))
   await new Promise<void>(resolve => echo.listen(0, '127.0.0.1', () => resolve()))
   cleanups.push(() => new Promise<void>(resolve => echo.close(() => resolve())))
@@ -327,7 +327,7 @@ test('a CONNECT to a passthrough host becomes a raw TCP tunnel', async () => {
 })
 
 test('a CONNECT to a target host is decrypted by the server itself', async () => {
-  const h = await harness()
+  const h = await startRecordedMitmServer()
   setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
   const { status, tunnel } = await connectThrough(h.port, `${ANTIGRAVITY_HOST}:443`, h.ca.cert)
   assert.equal(status, 'HTTP/1.1 200 Connection Established')
@@ -356,7 +356,7 @@ test('a CONNECT to a host in bypass.json is tunneled without decryption', async 
   const echo = net.createServer(socket => socket.on('data', data => socket.write(`echo:${data}`)))
   await new Promise<void>(resolve => echo.listen(0, '127.0.0.1', () => resolve()))
   cleanups.push(() => new Promise<void>(resolve => echo.close(() => resolve())))
-  const h = await harness({ bypassJson: { patterns: ['127.0.0.*'] } })
+  const h = await startRecordedMitmServer({ bypassJson: { patterns: ['127.0.0.*'] } })
   const authority = `127.0.0.1:${(echo.address() as net.AddressInfo).port}`
   const { status, tunnel } = await connectThrough(h.port, authority, h.ca.cert)
   assert.equal(status, 'HTTP/1.1 200 Connection Established')

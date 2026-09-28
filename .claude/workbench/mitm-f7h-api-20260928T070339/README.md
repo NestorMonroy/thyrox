@@ -115,3 +115,56 @@ escribir `settings.json`, regenerar con `force`, alias sólo para agentes
 registrados, certificado del modelo vigente.
 
 Anulaciones: `annul-f7h4.sh` → `results-f7h4.txt`, 12 que discriminan.
+
+## F7h-6 — una responsabilidad por módulo de rutas
+
+Los tres módulos grandes de rutas se partieron por responsabilidad, cada uno
+con sus dependencias estrechas y su `real*` por defecto:
+
+| Antes | Después |
+|---|---|
+| `routes/agentBridgeState.ts`, `routes/agentBridgePrivileged.ts` | `routes/agentBridge/{agents,bypass,config,state,server,cert,agentDns,repair,diagnose,upstreamCa,tproxy}.ts` + los compartidos `basePath`, `agentId`, `certStore`, `serverControl`, `dnsStatus` |
+| `routes/inspector.ts`, `routes/inspectorCapture.ts` | `routes/inspector/{requests,sessions,hosts,captureModes,ingest}.ts` + `basePath`, `har` |
+| `routes/mitmSettings.ts` | `routes/settings/{mitmSettings,antigravityCli,mitmAliases}.ts` + `port`, `serverLifecycle`, `startKey`, `stats`, `targets` |
+| `routes/agentBridge/sudoRequest.ts` | `routes/sudoRequest.ts` — la compuerta de sudo la usan también los ajustes |
+
+Los ajustes y la CLI de antigravity pasan ahora por `sudoRequest`, la misma
+compuerta que el resto; su conducta no cambia (las 130 pruebas de rutas
+siguen en verde sin tocarlas más que en su composición).
+
+Nombres: el fixture `_mitmHandlerHarness.ts` es `_runHandler.ts`
+(`HandlerRun`), y el `harness()` de `mitmServer.test.ts` es
+`startRecordedMitmServer()`; «sondas» pasa a «detección»/«consultas al
+sistema». Nombran el papel, no el mecanismo.
+
+Los guiones de anulación localizan solos el módulo que contiene cada texto
+(`annul-lib.sh`): tras el reparto, el archivo de cada mutación ya no es uno.
+
+### Divergencias declaradas (retiradas de las cabeceras)
+
+Las cabeceras declaran interfaz, procedencia e intención; las divergencias
+frente a la referencia viven aquí.
+
+`manager.ts`:
+
+- el estado del puente se lee del store del MITM (`openMitmStateStore`), no de
+  la base de la aplicación; los hosts de `ghe-copilot` los pasa quien tenga
+  las conexiones de proveedor (#106);
+- los archivos viven directamente en el directorio de datos del MITM;
+- el hijo recibe `THYROX_MITM_*` y `THYROX_PROXY_API_KEYS`; no se fija
+  `NODE_ENV`;
+- el servidor de thyrox no rehúsa sin clave (reenvía sin `Authorization`);
+- los pasos con efecto sobre el sistema se inyectan.
+
+Ajustes y CLI de antigravity:
+
+- la autorización de gestión y la de CLI son la guarda de loopback de la API;
+- la contraseña de sudo pasa por la compuerta común (Windows, root,
+  NOPASSWD); `settings/mitm` de la referencia la exigía siempre fuera de
+  Windows y root;
+- la clave del servidor es opcional; un `keyId` que no resuelve, sin clave
+  dada, es un 400;
+- el puerto es siempre 443 y no se escribe `settings.json`;
+- regenerar fuerza un certificado nuevo en vez de borrar y generar;
+- los alias sólo se guardan para un agente de `MITM_AGENT_IDS`;
+- el certificado que se descarga es el del modelo vigente.

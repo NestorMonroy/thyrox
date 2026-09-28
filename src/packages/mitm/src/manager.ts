@@ -14,20 +14,11 @@
  * nadie escuchando y recibe ECONNREFUSED durante toda la ventana entre los dos
  * pasos.
  *
- * Porte de `omniroute: src/mitm/manager.ts` (MIT). Divergencias:
- * - el estado del puente se lee del store del MITM (`openMitmStateStore`), no
- *   de la base de la aplicación; los hosts de `ghe-copilot` los pasa quien
- *   tenga las conexiones de proveedor, porque thyrox aún no las registra;
- * - los archivos viven directamente en el directorio de datos del MITM, que
- *   ya es su propio subdirectorio;
- * - el hijo recibe las variables `THYROX_MITM_*` y la clave del proxy local
- *   (`THYROX_PROXY_API_KEYS`); no se fija `NODE_ENV`;
- * - el servidor de thyrox no rehúsa sin clave (reenvía sin `Authorization`),
- *   así que no hay causa «falta la clave» que interpretar; el token del
- *   inspector se hereda del entorno, porque thyrox no tiene la ruta de ingesta
- *   que la referencia importa para derivarlo;
- * - los pasos con efecto sobre el sistema (confiar en el certificado, poner el
- *   DNS, lanzar el hijo) se inyectan, para probar el ciclo sin tocarlo.
+ * El estado del puente se lee del store del MITM; los pasos con efecto sobre
+ * el sistema —confiar en el certificado, poner el DNS, lanzar el hijo— se
+ * inyectan.
+ *
+ * Porte de `omniroute: src/mitm/manager.ts` (MIT).
  */
 import { spawn, type ChildProcess } from 'node:child_process'
 import fs from 'node:fs'

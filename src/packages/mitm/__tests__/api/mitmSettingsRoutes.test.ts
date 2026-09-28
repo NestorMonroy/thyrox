@@ -17,10 +17,11 @@ import path from 'node:path'
 import { createApiHandler } from '../../src/api/router.ts'
 import {
   ANTIGRAVITY_MITM_BASE,
-  MITM_SETTINGS_PATH,
-  createMitmSettingsRoutes,
-  type MitmSettingsDeps,
-} from '../../src/api/routes/mitmSettings.ts'
+  createAntigravityCliRoutes,
+  type AntigravityCliRouteDeps,
+} from '../../src/api/routes/settings/antigravityCli.ts'
+import { createMitmAliasRoutes } from '../../src/api/routes/settings/mitmAliases.ts'
+import { MITM_SETTINGS_PATH, createSettingsRoutes, type SettingsRouteDeps } from '../../src/api/routes/settings/mitmSettings.ts'
 import { getMitmAlias, setMitmAliasAll } from '../../src/state/mitmAlias.ts'
 import { ensureAgentBridgeSchema } from '../../src/state/schema.ts'
 
@@ -31,7 +32,7 @@ let calls: string[]
 let cachedPassword: string | null
 let running: boolean
 let certOnDisk: boolean
-let deps: MitmSettingsDeps
+let deps: SettingsRouteDeps & AntigravityCliRouteDeps & { db: Database }
 let handle: (request: Request) => Promise<Response>
 
 beforeAll(() => {
@@ -88,7 +89,7 @@ beforeEach(() => {
     lookupKeyById: async id => (id === 'key-1' ? 'sk-from-store' : null),
     sudoPasswordRequired: () => true,
   }
-  handle = createApiHandler(createMitmSettingsRoutes(deps), { peerAddress: () => '127.0.0.1' })
+  handle = createApiHandler([...createSettingsRoutes(deps), ...createAntigravityCliRoutes(deps), ...createMitmAliasRoutes(db)], { peerAddress: () => '127.0.0.1' })
 })
 afterEach(() => db.close())
 

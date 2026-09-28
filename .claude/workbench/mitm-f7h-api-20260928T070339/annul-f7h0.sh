@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Anulaciones de F7h-0: se retira cada mitad de juicio de la guarda y del enrutador.
 set -u
-T=/home/user/thyrox; cd "$T/src/packages/mitm"
+T=${T:-/home/user/thyrox}; cd "$T/src/packages/mitm"
 L=src/api/locality.ts; R=src/api/router.ts
 run() { bun test __tests__/api 2>&1 | grep -E '^\(fail\)|^ *[0-9]+ (pass|fail)$'; }
 annul() { local f=$1; cp "$f" "$f.orig"; OLD="$2" NEW="$3" bash "$T/bin/replace_literal" "$f" >/dev/null && run; mv "$f.orig" "$f"; }

@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { OpenCodeHandler } from "../../src/handlers/openCode.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("open-code handler — happy path forwards Chat Completions payload", async () => {
   const r = await runHandler(

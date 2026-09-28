@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { CodexHandler } from "../../src/handlers/codex.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("codex handler — forwards Chat Completions payload via OmniRoute", async () => {
   const r = await runHandler(

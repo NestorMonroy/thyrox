@@ -15,7 +15,7 @@ import { setAgentBridgeHook } from "../../src/handlers/base.ts";
 import { CodexHandler } from "../../src/handlers/codex.ts";
 import { ensureAgentBridgeSchema } from "../../src/state/schema.ts";
 import { addCustomHost, isCustomHost, toggleCustomHost } from "../../src/state/inspectorCustomHosts.ts";
-import { runHandler } from "../handlers/_mitmHandlerHarness.ts";
+import { runHandler } from "../handlers/_runHandler.ts";
 
 let db: Database;
 let buffer: TrafficBuffer;

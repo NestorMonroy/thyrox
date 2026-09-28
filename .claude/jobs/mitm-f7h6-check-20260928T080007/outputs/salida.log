@@ -1,0 +1,10 @@
+ 766 pass
+ 1 fail
+Ran 767 tests across 101 files. [20.68s]
+BUILD_TSC_EXIT=0
+__tests__/api/mitmApi.test.ts(10,86): error TS2307: Cannot find module '../../src/api/mitmApi.ts' or its corresponding type declarations.
+__tests__/api/mitmApi.test.ts(13,37): error TS2305: Module '"../../src/manager.ts"' has no exported member 'buildServerEnv'.
+__tests__/api/mitmApi.test.ts(13,53): error TS2305: Module '"../../src/manager.ts"' has no exported member 'getInspectorIngest'.
+__tests__/api/mitmApi.test.ts(36,36): error TS7006: Parameter 'r' implicitly has an 'any' type.
+TEST_TSC_EXIT=2
+__BG_EXIT__=0

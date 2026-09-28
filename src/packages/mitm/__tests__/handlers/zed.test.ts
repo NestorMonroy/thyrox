@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { ZedHandler } from "../../src/handlers/zed.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("zed handler — happy path forwards Chat Completions payload", async () => {
   const r = await runHandler(

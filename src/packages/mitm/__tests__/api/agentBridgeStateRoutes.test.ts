@@ -6,17 +6,18 @@
  * Porte de `omniroute: tests/unit/agent-bridge-detected-models-8656.test.ts`,
  * `agent-bridge-state-full-payload-8656.test.ts` y la parte de ruta de
  * `agent-bridge-mappings-sync-8656.test.ts` (MIT), sobre una base en memoria y
- * con las sondas del sistema inyectadas.
+ * con las consultas al sistema inyectadas.
  */
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 
 import { createApiHandler } from '../../src/api/router.ts'
-import {
-  AGENT_BRIDGE_BASE,
-  createAgentBridgeStateRoutes,
-  type AgentBridgeStateDeps,
-} from '../../src/api/routes/agentBridgeState.ts'
+import { createAgentRoutes, type AgentRouteDeps } from '../../src/api/routes/agentBridge/agents.ts'
+import { AGENT_BRIDGE_BASE } from '../../src/api/routes/agentBridge/basePath.ts'
+import { createBypassRoutes } from '../../src/api/routes/agentBridge/bypass.ts'
+import { createConfigRoutes } from '../../src/api/routes/agentBridge/config.ts'
+import { createStateRoutes, type StateRouteDeps } from '../../src/api/routes/agentBridge/state.ts'
+import type { MitmStatus } from '../../src/manager.ts'
 import { TrafficBuffer } from '../../src/inspector/buffer.ts'
 import type { InterceptedRequest } from '../../src/inspector/types.ts'
 import { getMitmAlias } from '../../src/state/mitmAlias.ts'
@@ -28,31 +29,38 @@ import type { AgentId } from '../../src/types.ts'
 
 let db: Database
 let traffic: TrafficBuffer
-let deps: AgentBridgeStateDeps
+let deps: AgentRouteDeps & StateRouteDeps
+let status: MitmStatus
+let certFlags: { exists: boolean; trusted: boolean }
+let configuredFor: (agentId: string) => boolean
 let handle: (request: Request) => Promise<Response>
 
 beforeEach(() => {
   db = new Database(':memory:')
   ensureAgentBridgeSchema(db)
   traffic = new TrafficBuffer(100)
+  status = { running: false, pid: null, dnsConfigured: false, certExists: false, orphanedStateDetected: false }
+  certFlags = { exists: false, trusted: false }
+  configuredFor = () => false
   deps = {
     db,
     traffic,
     detectAgent: (id: AgentId) => ({ installed: id === 'cursor', version: id === 'cursor' ? '1.2.3' : undefined }),
-    mitmStatus: async () => ({
-      running: false,
-      pid: null,
-      dnsConfigured: false,
-      certExists: false,
-      orphanedStateDetected: false,
-    }),
-    certStatus: async () => ({ certExists: false, certTrusted: false }),
-    dnsConfiguredFor: () => false,
+    server: { status: async () => status },
+    cert: {
+      active: () => ({ certPath: '/data/mitm/ca.crt', mode: 'use-root-ca' }),
+      exists: () => certFlags.exists,
+      trusted: async () => certFlags.trusted,
+    },
+    dns: { configuredFor: agentId => configuredFor(agentId) },
     hasCachedPassword: () => false,
     sudoPasswordRequired: () => true,
     platform: 'linux',
   }
-  handle = createApiHandler(createAgentBridgeStateRoutes(deps), { peerAddress: () => '127.0.0.1' })
+  handle = createApiHandler(
+    [...createAgentRoutes(deps), ...createBypassRoutes(db), ...createConfigRoutes(db), ...createStateRoutes(deps)],
+    { peerAddress: () => '127.0.0.1' },
+  )
 })
 afterEach(() => db.close())
 
@@ -293,7 +301,7 @@ test('GET /state returns the bypass patterns as strings', async () => {
 })
 
 test('GET /state keeps certTrusted apart from certExists', async () => {
-  deps.certStatus = async () => ({ certExists: true, certTrusted: false })
+  certFlags = { exists: true, trusted: false }
   const body = await json(await call('GET', '/state'))
   expect(body.server).toMatchObject({ certExists: true, certTrusted: false })
 })
@@ -310,9 +318,9 @@ test('GET /state keeps the legacy keys next to the new ones', async () => {
 test('GET /state: dnsConfigured is true only when an agent with DNS enabled has its hosts entry', async () => {
   upsertAgentBridgeState(db, { agent_id: 'cursor', dns_enabled: true })
   upsertAgentBridgeState(db, { agent_id: 'zed', dns_enabled: false })
-  deps.dnsConfiguredFor = id => id === 'zed'
+  configuredFor = id => id === 'zed'
   expect((await json(await call('GET', '/state'))).server.dnsConfigured).toBe(false)
-  deps.dnsConfiguredFor = id => id === 'cursor'
+  configuredFor = id => id === 'cursor'
   expect((await json(await call('GET', '/state'))).server.dnsConfigured).toBe(true)
 })
 
@@ -330,13 +338,7 @@ test('GET /state: the sudo password is needed only off Windows, uncached and req
 })
 
 test('GET /state carries the server status fields through', async () => {
-  deps.mitmStatus = async () => ({
-    running: true,
-    pid: 42,
-    dnsConfigured: true,
-    certExists: true,
-    orphanedStateDetected: true,
-  })
+  status = { running: true, pid: 42, dnsConfigured: true, certExists: true, orphanedStateDetected: true }
   expect((await json(await call('GET', '/state'))).server).toMatchObject({
     running: true,
     pid: 42,

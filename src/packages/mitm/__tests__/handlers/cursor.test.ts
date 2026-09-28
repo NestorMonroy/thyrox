@@ -2,7 +2,7 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { CursorHandler } from "../../src/handlers/cursor.ts";
-import { runHandler } from "./_mitmHandlerHarness.ts";
+import { runHandler } from "./_runHandler.ts";
 
 test("cursor handler — happy path forwards mapped model", async () => {
   const r = await runHandler(

@@ -1,6 +1,6 @@
 // Portado de omniroute: tests/unit/_mitmHandlerHarness.ts (MIT).
 /**
- * Test harness for MitmHandlerBase subclasses.
+ * Runs a MitmHandlerBase subclass against a fake request and response.
  *
  * Mocks `globalThis.fetch` so handlers exercise their full intercept() path
  * (router round-trip + SSE pipe) without touching the network. Returns the
@@ -11,7 +11,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 import type { MitmHandlerBase } from "../../src/handlers/base.ts";
 
-export interface HarnessResult {
+export interface HandlerRun {
   fetchCalled: boolean;
   fetchUrl: string | null;
   fetchHeaders: Record<string, string>;
@@ -35,8 +35,8 @@ function fakeReq(
   } as unknown as IncomingMessage;
 }
 
-function fakeRes(): { res: ServerResponse; out: HarnessResult } {
-  const out: HarnessResult = {
+function fakeRes(): { res: ServerResponse; out: HandlerRun } {
+  const out: HandlerRun = {
     fetchCalled: false,
     fetchUrl: null,
     fetchHeaders: {},
@@ -93,7 +93,7 @@ export async function runHandler(
     headers?: Record<string, string>;
     url?: string;
   } = {}
-): Promise<HarnessResult> {
+): Promise<HandlerRun> {
   const { res, out } = fakeRes();
   const req = fakeReq(opts.headers, opts.url);
   const buf = Buffer.from(typeof body === "string" ? body : JSON.stringify(body));

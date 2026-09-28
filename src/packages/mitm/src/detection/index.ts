@@ -1,6 +1,6 @@
 /**
  * `detectAgent(id)` dice si el agente de ese destino está instalado en esta
- * máquina. Todas las sondas miran sólo el sistema de archivos: nunca lanzan un
+ * máquina. Toda detección mira sólo el sistema de archivos: nunca lanzan un
  * shell ni interpolan rutas.
  *
  * Trae devuelve `{ installed: false }` a propósito mientras su viabilidad siga
@@ -28,7 +28,7 @@ export const DETECTORS: Record<AgentId, () => DetectionResult> = {
   "claude-code": detectAnthropicCli,
   "open-code": detectOpenCode,
   trae: () => ({ installed: false }),
-  // GHE Copilot no tiene sonda propia: es una conexión a un dominio de empresa,
+  // GHE Copilot no tiene detección propia: es una conexión a un dominio de empresa,
   // no una instalación. La referencia la omite y cae en el mismo `false`.
   "ghe-copilot": () => ({ installed: false }),
 };

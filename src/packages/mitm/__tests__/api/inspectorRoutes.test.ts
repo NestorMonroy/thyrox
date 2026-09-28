@@ -13,7 +13,10 @@ import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 
 import { createApiHandler } from '../../src/api/router.ts'
-import { INSPECTOR_BASE, createInspectorRoutes, type InspectorRouteDeps } from '../../src/api/routes/inspector.ts'
+import { INSPECTOR_BASE } from '../../src/api/routes/inspector/basePath.ts'
+import { createHostRoutes, type HostRouteDeps } from '../../src/api/routes/inspector/hosts.ts'
+import { createRequestRoutes, type RequestRouteDeps } from '../../src/api/routes/inspector/requests.ts'
+import { createSessionRoutes } from '../../src/api/routes/inspector/sessions.ts'
 import { TrafficBuffer } from '../../src/inspector/buffer.ts'
 import type { InterceptedRequest } from '../../src/inspector/types.ts'
 import { listCustomHosts } from '../../src/state/inspectorCustomHosts.ts'
@@ -24,7 +27,7 @@ let db: Database
 let traffic: TrafficBuffer
 let calls: string[]
 let cachedPassword: string | null
-let deps: InspectorRouteDeps
+let deps: RequestRouteDeps & HostRouteDeps
 let handle: (request: Request) => Promise<Response>
 
 beforeEach(() => {
@@ -54,7 +57,7 @@ beforeEach(() => {
       return new Response('{"replayed":true}', { status: 201, headers: { 'content-type': 'application/json' } })
     }) as typeof fetch,
   }
-  handle = createApiHandler(createInspectorRoutes(deps), { peerAddress: () => '127.0.0.1' })
+  handle = createApiHandler([...createRequestRoutes(deps), ...createSessionRoutes(db), ...createHostRoutes(deps)], { peerAddress: () => '127.0.0.1' })
 })
 afterEach(() => db.close())
 
