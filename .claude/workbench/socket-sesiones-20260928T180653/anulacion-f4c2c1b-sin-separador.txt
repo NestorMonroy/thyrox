@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsConfusableTagPatterns.test.ts:
+37 | describe('confusableTagScrubPattern (lz)', () => {
+38 |   const pattern = confusableTagScrubPattern(['system-reminder'])
+39 | 
+40 |   test('encuentra la etiqueta con letras parecidas, separadores y rellenos', () => {
+41 |     expect('x <system-reminder> y'.replace(pattern, escapedOpener)).toBe('x <\\system-reminder> y')
+42 |     expect(matches(pattern, '</ｓystem_reminder>')).toBe(true)
+                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsConfusableTagPatterns.test.ts:42:51)
+(fail) confusableTagScrubPattern (lz) > encuentra la etiqueta con letras parecidas, separadores y rellenos [1.24ms]
+
+ 13 pass
+ 1 fail
+ 37 expect() calls
+Ran 14 tests across 1 file. [56.00ms]

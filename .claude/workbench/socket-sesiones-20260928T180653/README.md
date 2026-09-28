@@ -36,7 +36,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2a | escape del cierre de la etiqueta que envuelve texto ajeno (`Qce`, `CFt`, `PL`, `h`, `H`, `iRe`, `Spt` de `chunk-0grnxhq4.js`) → `uds/tagClose.ts` | hecha |
 | F4c-2b | `chunk-q8a07cv0.js` entero salvo las constantes de equipo (ya en `@thyrox/swarm`): sobre `cross-session-message` → `uds/peerEnvelope.ts`; direcciones de pares → `uds/peerAddress.ts`; lectores con tope y resumen de una línea → `uds/cappedText.ts`; y la rama `win32.normalize` de `_N` que F1 omitía | hecha |
 | F4c-2c-1 | neutralizado de etiquetas por forma (`DLo`, `xu`, `_u`, `D`, `$u`, `W`, `Su`, `Pfn` con las tablas `N` y `M` generadas) → `uds/tagFormScrub.ts`, `uds/confusableTables.ts`; texto de par (`aYe`, `X4n`, `lYe`, `fe`, `Wce`, `m`, `g9r`, `ioe`) → `uds/peerTextScrub.ts`; escapes XML (`qt`, `AYe`, `AFt`, `Do`, `$w`, `ine`) → `uds/xmlText.ts` | hecha |
-| F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `lz`, `Uq`, `Ofn`, `Hfn`, `cu`, `LLo`, `mu`, `yJ`, `RUr`, `CYe` | pendiente |
+| F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `Uq`, `lz`, `RYe`, `cu`, `Ofn`, `Hfn`, `mu`, `LLo`, `yJ`, `CYe`, `RUr` con `y3n`/`sne` y sus clases → `uds/confusableTagPatterns.ts`; `H` general y `OFe`, `sRe`, `F`, `B`, `U`, `uu` → `uds/tagClose.ts`; `sf`, `E`, `R8e`, `t6n`, `Mz` → `uds/unicodeSanitize.ts` | hecha: 19 pruebas; 16 anulaciones (`anulacion-f4c2c1b-*.txt`); oráculo `diferencial-confusable-patterns.txt`, 0 discrepancias |
+| F4c-2c-1c | resto de `chunk-pbnxt79v.js`: `wt`, `cde`, `YH`, `Cy`, `Njr`, `H_`, `wl`, `vUe`, `Tn`, `PJ`, `OJ`, `po`, `QE`, `v6` | pendiente |
 | F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
 | F4c-2d | `session.receive` (`Aot`, `NXe`, `R_e`, `WCt`, `jCt`, `Q0n`, `BXe`, `HXe`, `jXe`, `FXe`, `$Xe`, `Me`) sobre una interfaz `HookSite` → `uds/sessionReceive.ts`; el runtime de módulos que la implementa es la serie MOD | hecha |
 | F4c-2e-0 | predicados de ruta de una copia de transferencia (`Djt`, `nM`, `p9n`, `yN`/`Pt`, `tt`, `GF`, `pn` de `chunk-yqm14hey.js`; `Mur` de `chunk-d6ekr2rh.js`) → `@thyrox/permission: pathSafety.ts`, sobre sus primitivas ya portadas; `local-observability` exporta `./uds/peerAddress.js` para `zF` | hecha |
@@ -371,3 +372,29 @@ mal formada no reproduce el de zod; el prefijo y el desenlace sí.
 vive en `@thyrox/permission`, que depende de este paquete. `G3` usa el
 directorio de uploads de la sesión; el `ujt` de la referencia es el
 argumento `override`.
+
+## F4c-2c-1b — patrones de letras parecidas y encabezados: controles
+
+Anulaciones en `anulacion-f4c2c1b-*.txt`; dieciséis, cada una tumba su
+caso. `sin-parecido-apertura` no discriminaba con la primera suite: la
+clase de apertura ya admite los parecidos de `<`, así que retirar la
+normalización sólo se nota en un `>` o una `/` parecidos. Se añadió ese
+caso.
+
+El oráculo `probes/differential_confusable_patterns.ts` evalúa los tres
+chunks encadenados por sus importaciones (`chunk-vq0drrah.js` →
+`chunk-pbnxt79v.js` → `chunk-0grnxhq4.js`) y compara el texto de seis
+patrones —`LLo` con la especificación que usa el ejecutable
+(`chunk-f31sk9qj.js`)— y la salida de `yJ`, `RUr`, `sf`, `R8e` y de los
+patrones aplicados sobre 20 000 entradas: 0 discrepancias
+(`diferencial-confusable-patterns.txt`). Discrimina: con cuatro unidores
+cambiados a tres, reporta la discrepancia del texto de `LLo`
+(`anulacion-f4c2c1b-oraculo-unidores.txt`).
+
+`H` pasa a ser general (`buildTagScrubPattern`) y `Qce`/`CFt` lo usan con
+sus parámetros; los oráculos de F4c-2a y F4c-2c-1 siguen en 0.
+`HYPHEN_LOOKALIKES` (`B`) vive ahora en `tagClose.ts` y `tagFormScrub.ts`
+lo importa.
+
+`sf` necesita `Mz` y `E`, que se portan aquí; el resto de
+`chunk-pbnxt79v.js` es la fase F4c-2c-1c.

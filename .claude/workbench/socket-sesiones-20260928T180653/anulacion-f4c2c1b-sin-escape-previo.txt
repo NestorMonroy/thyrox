@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsConfusableTagPatterns.test.ts:
+43 |     expect(matches(pattern, '<SYSTEM-REMINDER>')).toBe(true)
+44 |     expect(matches(pattern, '< system​-reminder>')).toBe(true)
+45 |   })
+46 | 
+47 |   test('no toca lo ya escapado, ni otro nombre', () => {
+48 |     expect(matches(pattern, '<\\system-reminder>')).toBe(false)
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsConfusableTagPatterns.test.ts:48:53)
+(fail) confusableTagScrubPattern (lz) > no toca lo ya escapado, ni otro nombre [0.21ms]
+
+ 13 pass
+ 1 fail
+ 37 expect() calls
+Ran 14 tests across 1 file. [64.00ms]

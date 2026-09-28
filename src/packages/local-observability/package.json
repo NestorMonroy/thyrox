@@ -126,6 +126,16 @@
       "types": "./dist/uds/peerFiles.d.ts",
       "default": "./src/uds/peerFiles.ts"
     },
+    "./uds/confusableTagPatterns.js": {
+      "@thyrox/source": "./src/uds/confusableTagPatterns.ts",
+      "types": "./dist/uds/confusableTagPatterns.d.ts",
+      "default": "./src/uds/confusableTagPatterns.ts"
+    },
+    "./uds/unicodeSanitize.js": {
+      "@thyrox/source": "./src/uds/unicodeSanitize.ts",
+      "types": "./dist/uds/unicodeSanitize.d.ts",
+      "default": "./src/uds/unicodeSanitize.ts"
+    },
     "./uds/udsClient.js": {
       "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",

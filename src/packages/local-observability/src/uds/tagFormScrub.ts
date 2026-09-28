@@ -13,10 +13,8 @@
  * fase F4c-2c-1b.
  */
 import { LATIN_CONFUSABLES, SCRIPT_LOOKALIKES } from './confusableTables.ts'
-import { DASHES, INTRA_NAME_FILLER, NAME_END, SEPARATOR_CHARS, TAG_CLASSES, atomicRun } from './tagClose.ts'
+import { DASHES, HYPHEN_LOOKALIKES, INTRA_NAME_FILLER, NAME_END, SEPARATOR_CHARS, TAG_CLASSES, atomicRun } from './tagClose.ts'
 
-/** `B`: caracteres con forma de guion que no están entre los guiones Unicode. */
-const HYPHEN_LOOKALIKES = '⹀゠᐀'
 const NON_ASCII = /[\u0080-\u{10ffff}]/u
 const OPENER = new RegExp(`[${TAG_CLASSES.open}]`, 'u')
 const DASH = new RegExp(`[${DASHES}]`, 'gu')
