@@ -39,7 +39,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `lz`, `Uq`, `Ofn`, `Hfn`, `cu`, `LLo`, `mu`, `yJ`, `RUr`, `CYe` | pendiente |
 | F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
 | F4c-2d | `session.receive` (`Aot`, `NXe`, `R_e`, `WCt`, `jCt`, `Q0n`, `BXe`, `HXe`, `jXe`, `FXe`, `$Xe`, `Me`) sobre una interfaz `HookSite` → `uds/sessionReceive.ts`; el runtime de módulos que la implementa es la serie MOD | hecha |
-| F4c-2e | adjuntos de un par (`nlt`, `chunk-yrfq0b3e.js`) | pendiente |
+| F4c-2e-0 | predicados de ruta de una copia de transferencia (`Djt`, `nM`, `p9n`, `yN`/`Pt`, `tt`, `GF`, `pn` de `chunk-yqm14hey.js`; `Mur` de `chunk-d6ekr2rh.js`) → `@thyrox/permission: pathSafety.ts`, sobre sus primitivas ya portadas; `local-observability` exporta `./uds/peerAddress.js` para `zF` | hecha |
+| F4c-2e-1 | adjuntos de un par (`nlt`, `chunk-yrfq0b3e.js`, `chunk-xqnw10c4.js`) | pendiente |
 | F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
 | F4c-2f-2 | flujos de renombre con el registro de sesiones (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`) | pendiente |
 | F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) | pendiente |
@@ -324,3 +325,23 @@ por construcción: una promesa sólo se asienta una vez, así que la guarda de
 El runtime de módulos que ejecuta la cadena (`Ml`, `Vp`, `Xot`, `EH`, `cB` y
 los chunks `7g2tbnrf`, `cnp2ghvr`, `ss489drq`, unos 215 KB y treinta
 señales) es la serie MOD. `session.receive` lo consume por `HookSite`.
+
+## F4c-2e-0 — predicados de ruta de transferencia: controles
+
+Anulaciones en `anulacion-tps-*.txt`; nueve. `tps-sin-parcial` no
+discrimina, y es por construcción: un prefijo parcial de `tt` sólo aparece
+cuando el primer segmento es `network` (`zF` no lo produce: `Network` no
+está en `wn`), y en ese caso `yN` ya devolvió verdadero antes en `GF`.
+Medido con tres rutas, sin testigo. La misma razón cubre la comprobación
+de un prefijo completo `/network/`. Se portan igual.
+
+`Mur` toma `linux` como plataforma por omisión, como en la referencia: la
+rama de macOS (`GF`) sólo cuenta cuando quien llama la pide.
+
+`@thyrox/permission` depende de `@thyrox/local-observability`, así que los
+predicados viven en `permission`, junto a sus primitivas, y los adjuntos
+(F4c-2e-1) los reciben inyectados.
+
+Los dos errores de tsc de `permission`
+(`__tests__/pathInAllowedWorkingPath.test.ts`, TS2722) son previos: medidos
+iguales sobre un worktree de `HEAD`.

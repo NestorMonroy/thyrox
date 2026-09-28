@@ -116,6 +116,11 @@
       "types": "./dist/uds/udsMessaging.d.ts",
       "default": "./src/uds/udsMessaging.ts"
     },
+    "./uds/peerAddress.js": {
+      "@thyrox/source": "./src/uds/peerAddress.ts",
+      "types": "./dist/uds/peerAddress.d.ts",
+      "default": "./src/uds/peerAddress.ts"
+    },
     "./uds/udsClient.js": {
       "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",

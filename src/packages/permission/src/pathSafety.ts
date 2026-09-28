@@ -38,6 +38,7 @@ import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { foldPathCase } from './pathCase.js'
 import { CONFIG_DIR_NAMES, getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
+import { stripDataVolumePrefix } from '@thyrox/local-observability/uds/peerAddress.js'
 
 export type TrustedNetworkDirectories = Map<string, readonly string[]>
 
@@ -674,4 +675,140 @@ export function checkPathSafetyForAutoEdit(
     }
   }
   return { safe: true }
+}
+
+// ---- Predicados de una copia de transferencia (chunk-yqm14hey.js, chunk-d6ekr2rh.js, 2.1.283) ----
+
+/** Los segmentos de la ruta tras resolver `.` y `..`, sin leer el disco. */
+function lexicalSegments(path: string): string[] {
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+  }
+  return stack
+}
+
+/** `nM`: `\\?\` o `\\.\` al principio. */
+function isWin32DevicePrefix(path: string): boolean {
+  return /^[\\/]{2}[?.][\\/]/.test(path)
+}
+
+/** `p9n`: los prefijos del espacio de nombres de NT. */
+function isNtNamespacePath(path: string): boolean {
+  return /^[\\/](GLOBAL\?\?|GLOBALROOT|DosDevices|Device)[\\/]/i.test(path)
+}
+
+/**
+ * `Djt`: una ruta que puede llegar a otra máquina o a otro nodo sin que su
+ * texto lo diga: UNC (salvo WSL local), automontaje o su mapa `/net`,
+ * prefijos de dispositivo y de NT, y los prefijos que el núcleo de macOS
+ * redirige.
+ */
+export function isNetworkLikePath(path: string): boolean {
+  return (
+    (isUncPath(path) && !isLocalWslUncPath(path)) ||
+    automountRoot(path) !== null ||
+    isAutomountMapRoot(path) ||
+    isWin32DevicePrefix(path) ||
+    isDeviceNamespacePath(path) ||
+    isNtNamespacePath(path) ||
+    isKernelResolvedPath(path)
+  )
+}
+
+/** `yN`/`Pt`: el primer segmento es `network`. */
+export function isNetworkRootPath(path: string): boolean {
+  if (!path.startsWith('/')) return false
+  const first = lexicalSegments(path)[0]
+  return first !== undefined && first.toLowerCase() === 'network'
+}
+
+/** `cn`: segmentos que `tt` examina. */
+const NETWORK_PREFIX_DEPTH = 6
+
+/** `O`: minúsculas sólo en ASCII. */
+function lowerAscii(text: string): string {
+  return text.replace(/[A-Z]/g, character => character.toLowerCase())
+}
+
+/**
+ * `tt`: los prefijos de red de macOS que la ruta atraviesa: `/network/`,
+ * `/network/<a>/` (parciales) y `/network/<a>/<b>` (completos); con
+ * `includeHome`, también `/home/<usuario>`. En darwin cada prefijo se lee
+ * sin el volumen de datos.
+ */
+export function networkPathPrefixes(path: string, platform: string, includeHome: boolean): { complete: string[]; partial: string[] } {
+  const complete: string[] = []
+  const partial: string[] = []
+  if (!path.startsWith('/')) return { complete, partial }
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+    if (stack.length > NETWORK_PREFIX_DEPTH) continue
+    const prefix = `/${stack.join('/')}`
+    const parts = (platform === 'darwin' ? stripDataVolumePrefix(prefix) : prefix).split('/').filter(part => part !== '')
+    const first = parts[0]?.toLowerCase()
+    if (first === 'network') {
+      if (parts.length === 1) partial.push('/network/')
+      else if (parts.length === 2) partial.push(`/network/${lowerAscii(parts[1]!)}/`)
+      else if (parts.length === 3) complete.push(`/network/${lowerAscii(parts[1]!)}/${lowerAscii(parts[2]!)}`)
+    } else if (includeHome && first === 'home' && parts.length === 2) complete.push(`/home/${parts[1]}`)
+  }
+  return { complete, partial }
+}
+
+/** `pn`: el `/home/<usuario>` propio, o null. */
+function ownHomeRoot(): string | null {
+  let home: string
+  try {
+    home = homedir()
+  } catch {
+    return null
+  }
+  const match = /^\/home\/([^/]+)/.exec(stripDataVolumePrefix(home))
+  return match ? `/home/${match[1]}` : null
+}
+
+/**
+ * `GF`: en darwin, una ruta bajo `/network` (o a medio camino de ella), bajo
+ * un prefijo que el núcleo redirige, o bajo el `/home` de otro usuario (que
+ * en macOS es un automontaje).
+ */
+export function isDarwinNetworkPath(
+  path: string,
+  platform = 'linux',
+  includeHome = platform === 'darwin',
+  homeRoot: () => string | null = ownHomeRoot,
+): boolean {
+  if (platform !== 'darwin') return false
+  if (isNetworkRootPath(path) || isKernelResolvedPath(path)) return true
+  if (!path.startsWith('/')) return false
+  const { complete, partial } = networkPathPrefixes(path, platform, includeHome)
+  if (partial.length > 0) return true
+  if (complete.some(prefix => prefix.startsWith('/network/'))) return true
+  const homes = complete.filter(prefix => prefix.startsWith('/home/'))
+  if (homes.length > 0) {
+    const own = homeRoot()
+    if (homes.some(home => home !== own)) return true
+  }
+  return false
+}
+
+/**
+ * `Mur`: una ruta de copia de transferencia que no se debe abrir. Su
+ * plataforma por omisión es `linux`, como en la referencia, así que la rama
+ * de macOS sólo cuenta cuando quien llama la pide.
+ */
+export function isUnsafeTransferPath(path: string, platform = 'linux'): boolean {
+  return isNetworkLikePath(path) || isDarwinNetworkPath(path, platform)
 }
