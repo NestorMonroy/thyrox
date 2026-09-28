@@ -1,7 +1,8 @@
 /**
  * `thyrox providers`: las conexiones de proveedor desde la CLI. `list` las
  * muestra sin secretos; `remove` borra una, resuelta por su selector, tras
- * confirmar. En stdin no interactiva la confirmación sólo la da `--yes`, para
+ * confirmar; `test`, `test-all` y `validate` las prueban o las revisan
+ * (`./providers/testVerbs.ts`). En stdin no interactiva la confirmación sólo la da `--yes`, para
  * que un guion no borre por un `y` que nadie escribió.
  *
  * Porte de `runListCommand` (`omniroute: bin/cli/commands/providers.mjs`) y
@@ -11,21 +12,27 @@
  */
 import { createInterface } from 'node:readline/promises'
 
+import { testProviderApiKey } from '@thyrox/provider/accounts/apiKeyProbe'
+import type { ConnectionTestDeps } from '@thyrox/provider/accounts/connectionTest'
 import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
+import { validateWebCookieProvider } from '@thyrox/provider/accounts/webCookie/webCookieProbe'
 
 import { hasFlag } from '../entry/flags.ts'
 import { EXIT_FAIL, EXIT_OK, EXIT_USAGE } from '../exitCodes.ts'
 import type { ParentCommand } from './parentCommand.js'
 import { resolveConnection } from './providers/connectionSelector.ts'
 import { formatConnectionTable, publicConnection } from './providers/publicConnection.ts'
+import { runTestAllVerb, runTestVerb, runValidateVerb } from './providers/testVerbs.ts'
 
 type Row = Record<string, unknown>
 
 export interface ProvidersCommandDeps {
-  openStore: () => { store: { list(): Row[]; delete(id: string): boolean }; close(): void }
+  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): unknown }; close(): void }
   write: (text: string) => void
   interactive: boolean
   confirm: (question: string) => Promise<boolean>
+  testDeps: ConnectionTestDeps
+  now: () => string
 }
 
 async function askOnTerminal(question: string): Promise<boolean> {
@@ -44,9 +51,14 @@ export const realProvidersCommandDeps: ProvidersCommandDeps = {
     return process.stdin.isTTY === true
   },
   confirm: askOnTerminal,
+  testDeps: { probe: input => testProviderApiKey(input), webCookie: request => validateWebCookieProvider(request) },
+  now: () => new Date().toISOString(),
 }
 
-export const PROVIDERS_VERBS = ['list', 'remove'] as const
+export const PROVIDERS_VERBS = ['list', 'remove', 'test', 'test-all', 'validate'] as const
+type ProvidersVerb = (typeof PROVIDERS_VERBS)[number]
+
+const isProvidersVerb = (verb: string | undefined): verb is ProvidersVerb => (PROVIDERS_VERBS as readonly string[]).includes(verb ?? '')
 
 function listConnections(args: string[], deps: ProvidersCommandDeps, rows: Row[]): number {
   const visible = rows.map(publicConnection)
@@ -97,13 +109,25 @@ async function removeConnection(args: string[], deps: ProvidersCommandDeps, stor
 /** `thyrox providers <verb>` desde la tabla de modos: el verbo es la segunda palabra. */
 export async function providersCommand(argv: string[], deps: ProvidersCommandDeps = realProvidersCommandDeps): Promise<number> {
   const [, verb, ...args] = argv
-  if (verb !== 'list' && verb !== 'remove') {
+  if (!isProvidersVerb(verb)) {
     deps.write(`thyrox providers: unknown verb '${verb ?? ''}'; expected one of: ${PROVIDERS_VERBS.join(', ')}\n`)
     return EXIT_USAGE
   }
   const opened = deps.openStore()
   try {
-    return verb === 'list' ? listConnections(args, deps, opened.store.list()) : await removeConnection(args, deps, opened.store)
+    const testDeps = { store: opened.store, testDeps: deps.testDeps, now: deps.now, write: deps.write }
+    switch (verb) {
+      case 'list':
+        return listConnections(args, deps, opened.store.list())
+      case 'remove':
+        return await removeConnection(args, deps, opened.store)
+      case 'test':
+        return await runTestVerb(args, testDeps)
+      case 'test-all':
+        return await runTestAllVerb(args, testDeps)
+      case 'validate':
+        return runValidateVerb(args, testDeps)
+    }
   } finally {
     opened.close()
   }

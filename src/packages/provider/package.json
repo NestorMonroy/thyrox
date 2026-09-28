@@ -155,6 +155,21 @@
       "types": "./dist/commands/provider.d.ts",
       "default": "./src/commands/provider.ts"
     },
+    "./accounts/apiKeyProbe": {
+      "@thyrox/source": "./src/accounts/apiKeyProbe.ts",
+      "types": "./dist/accounts/apiKeyProbe.d.ts",
+      "default": "./src/accounts/apiKeyProbe.ts"
+    },
+    "./accounts/connectionTest": {
+      "@thyrox/source": "./src/accounts/connectionTest.ts",
+      "types": "./dist/accounts/connectionTest.d.ts",
+      "default": "./src/accounts/connectionTest.ts"
+    },
+    "./accounts/webCookie/webCookieProbe": {
+      "@thyrox/source": "./src/accounts/webCookie/webCookieProbe.ts",
+      "types": "./dist/accounts/webCookie/webCookieProbe.d.ts",
+      "default": "./src/accounts/webCookie/webCookieProbe.ts"
+    },
     "./accounts/connectionStoreHome": {
       "@thyrox/source": "./src/accounts/connectionStoreHome.ts",
       "types": "./dist/accounts/connectionStoreHome.d.ts",

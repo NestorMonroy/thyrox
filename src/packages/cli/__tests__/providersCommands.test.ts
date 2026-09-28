@@ -29,12 +29,14 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}) {
   const questions: string[] = []
   const d: ProvidersCommandDeps = {
     openStore: () => ({
-      store: { list: () => data, delete: (id: string) => (deleted.push(id), true) },
+      store: { list: () => data, delete: (id: string) => (deleted.push(id), true), update: () => null },
       close: () => void closed++,
     }),
     write: text => void out.push(text),
     interactive: true,
     confirm: async question => (questions.push(question), true),
+    testDeps: { probe: async () => ({ valid: true, error: null }) },
+    now: () => 'NOW',
     ...overrides,
   }
   return { d, out, deleted, questions, closed: () => closed }
@@ -97,7 +99,7 @@ describe('thyrox providers list', () => {
   })
 
   test('with no connections says so', async () => {
-    const { d, out } = deps({ openStore: () => ({ store: { list: () => [], delete: () => false }, close: () => {} }) })
+    const { d, out } = deps({ openStore: () => ({ store: { list: () => [], delete: () => false, update: () => null }, close: () => {} }) })
     expect(await providersCommand(['providers', 'list'], d)).toBe(0)
     expect(out.join('')).toBe('No providers configured.\n')
   })
@@ -165,6 +167,6 @@ describe('thyrox providers remove', () => {
   test('an unknown verb is a usage error naming the verbs', async () => {
     const { d, out } = deps()
     expect(await providersCommand(['providers', 'frobnicate'], d)).toBe(2)
-    expect(out.join('')).toContain("thyrox providers: unknown verb 'frobnicate'; expected one of: list, remove")
+    expect(out.join('')).toContain("thyrox providers: unknown verb 'frobnicate'; expected one of: list, remove, test, test-all, validate")
   })
 })
