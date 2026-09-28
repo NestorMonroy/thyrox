@@ -108,11 +108,29 @@ def declared_keys(env_example: pathlib.Path) -> set[str]:
     return keys
 
 
-def read_keys(root: pathlib.Path) -> dict[str, list[str]]:
-    """Las claves leidas del entorno, con el primer archivo que las lee."""
+def tree_files(root: pathlib.Path) -> list[pathlib.Path]:
+    """Todo el árbol: la medición completa."""
+    return sorted(path for path in root.rglob("*")
+                  if path.is_file() and not any(skip in str(path) for skip in SKIP_DIRS))
+
+
+def display_path(path: pathlib.Path, root: pathlib.Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root))
+    except ValueError:
+        return str(path)
+
+
+def read_keys(root: pathlib.Path, paths: list[pathlib.Path] | None = None) -> dict[str, list[str]]:
+    """Las claves leidas del entorno, con el primer archivo que las lee.
+
+    Sin `paths` recorre el árbol entero; con `paths` mide sólo esos archivos,
+    que es lo que el pre-commit necesita: los del commit, no los 60 000 del
+    árbol.
+    """
     by_key: dict[str, list[str]] = {}
-    for path in sorted(root.rglob("*")):
-        if not path.is_file() or any(skip in str(path) for skip in SKIP_DIRS):
+    for path in (tree_files(root) if paths is None else sorted(paths)):
+        if not path.is_file():
             continue
         if is_test(path):
             continue
@@ -133,7 +151,7 @@ def read_keys(root: pathlib.Path) -> dict[str, list[str]]:
         if suffix != ".sh":
             keys = keys | set(NAME_CONSTANT.findall(source))
         for key in keys:
-            by_key.setdefault(key, []).append(str(path.relative_to(root)))
+            by_key.setdefault(key, []).append(display_path(path, root))
     return by_key
 
 
@@ -142,6 +160,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=os.environ.get("THYROX_ROOT", "."))
     parser.add_argument("--env-example", default=None)
     parser.add_argument("--strict", action="store_true", help="exit 1 si falta alguna")
+    parser.add_argument("--files", nargs="+", default=None,
+                        help="mide sólo estos archivos en vez del árbol entero")
     args = parser.parse_args(argv)
 
     root = pathlib.Path(args.root).resolve()
@@ -151,7 +171,8 @@ def main(argv: list[str] | None = None) -> int:
               f"no distinguiria «no falta ninguna» de «no pude medir».", file=sys.stderr)
         return 2
 
-    by_key = read_keys(root)
+    paths = [pathlib.Path(name) for name in args.files] if args.files else None
+    by_key = read_keys(root, paths)
     declared = declared_keys(env_example)
     missing = sorted(key for key in by_key if key not in declared)
 

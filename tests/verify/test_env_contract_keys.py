@@ -65,6 +65,40 @@ class EnvContractKeysGate(unittest.TestCase):
         self.assertNotIn('THYROX_WORKBENCH_ ', result.stdout)
         self.assertNotIn('SIN DECLARAR  THYROX_WORKBENCH_', result.stdout)
 
+    def test_files_measures_only_the_named_files(self):
+        """`--files` mide los archivos del commit, no el árbol entero.
+
+        Con un ejemplo sin `REAL_KEY`, nombrar el archivo que la lee la delata;
+        nombrar uno que no la lee pasa, aunque el resto del árbol sí la lea.
+        """
+        source = (THYROX / '.env.example').read_text()
+        mutated = '\n'.join(
+            line for line in source.splitlines() if not line.startswith(f'{REAL_KEY}=')
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            example = pathlib.Path(tmp) / '.env.example'
+            example.write_text(mutated)
+            reader = pathlib.Path(tmp) / 'reader.py'
+            reader.write_text(f'import os\nos.environ.get("{REAL_KEY}")\n')
+            quiet = pathlib.Path(tmp) / 'quiet.py'
+            quiet.write_text('import os\nos.environ.get("HOME")\n')
+            named = run('--env-example', str(example), '--strict', '--files', str(reader))
+            self.assertEqual(named.returncode, 1, named.stdout + named.stderr)
+            self.assertIn(f'SIN DECLARAR  {REAL_KEY}', named.stdout)
+            other = run('--env-example', str(example), '--strict', '--files', str(quiet))
+            self.assertEqual(other.returncode, 0, other.stdout + other.stderr)
+            self.assertIn('sin declarar: 0', other.stdout)
+
+    def test_files_skips_tests_and_unknown_suffixes(self):
+        """Un archivo de prueba o de otra extensión no crea obligación."""
+        with tempfile.TemporaryDirectory() as tmp:
+            test_file = pathlib.Path(tmp) / 'test_reader.py'
+            test_file.write_text('import os\nos.environ.get("THYROX_ONLY_IN_A_TEST")\n')
+            text_file = pathlib.Path(tmp) / 'notes.txt'
+            text_file.write_text('${THYROX_ONLY_IN_TEXT}\n')
+            result = run('--strict', '--files', str(test_file), str(text_file))
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_sin_archivo_rehusa_sin_emitir_cifra(self):
         """Un 0 sin archivo no distinguiría «no falta ninguna» de «no pude medir»."""
         result = run('--env-example', '/no/existe/.env.example', '--strict')

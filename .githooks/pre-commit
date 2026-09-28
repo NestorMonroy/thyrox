@@ -241,6 +241,24 @@ else
     CODE=1
 fi
 
+# Toda clave THYROX_* que el código lee figura en `.env.example`. Se miden los
+# archivos del commit; si el commit toca `.env.example`, el árbol entero,
+# porque retirar una clave del ejemplo deja sin declarar a lectores que el
+# commit no toca.
+if [[ ${#STAGED[@]} -gt 0 ]]; then
+    env_example_staged=""
+    for f in "${STAGED[@]}"; do [[ "$f" == "$ROOT/.env.example" ]] && env_example_staged=1; done
+    if [[ -n "$env_example_staged" ]]; then
+        python3 "$GATES/check_env_contract_keys.py" --root "$ROOT" --strict || CODE=1
+    else
+        python3 "$GATES/check_env_contract_keys.py" --root "$ROOT" --strict --files "${STAGED[@]}" || CODE=1
+    fi
+fi
+
+# Toda clave de `.env` y `.env.local`, que no se versionan, figura en
+# `.env.example`, que es lo que viaja. Compara nombres; no imprime valores.
+python3 "$GATES/check_env_example_coverage.py" --root "$ROOT" || CODE=1
+
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
 # inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.
