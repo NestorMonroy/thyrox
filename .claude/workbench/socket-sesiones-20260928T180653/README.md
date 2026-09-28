@@ -32,7 +32,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-4 | `notify_when_idle` y `peer_idle_notice` (`qtr`, `aEn`, `Ytr`, `pqt`, `Ktr`, `ibt`, `Jtr`) | pendiente |
 | F4c-5 | `yield`/`unyield_artifact_replies` y `artifact_replies_yielded` (`cno`, `uno`, `bno`, `dno`, `gno`, `hno`, `glr`) | pendiente |
 | F4c-6a | el veredicto «lo envió esta sesión»: `ye`, `Le`, `Ke`, `he`, `Ne`, `hfn` → `uds/peerTrust.ts` | hecha |
-| F4c-6b | `unr`: la política `crossSessionInbound` (`I`, niveles `accept`/`hold`/`refuse`, capas de settings) y el modo de permisos (`C`, `S`, `V1`, `NL`) | pendiente |
+| F4c-6b | `unr`: la política `crossSessionInbound` (`I`, `B`, `O`, `zje`, niveles `accept`/`hold`/`refuse`) y el modo de permisos (`C`, `S`, `V1`, `NL`) → `uds/inboundPolicy.ts`; la clave entra al esquema de `@thyrox/config` | hecha |
+| F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee | pendiente |
+| F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
 | F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
@@ -195,3 +197,18 @@ registrarse en F4c-3..5.
 Anulaciones en `anulacion-trust-*.txt`; diez, y cada una tumba sólo su caso.
 `walkAncestors` se prueba contra el `ps` real del contenedor: la cadena del
 proceso propio empieza por su padre.
+
+## F4c-6b — política de mensajes entrantes: controles
+
+Anulaciones en `anulacion-inbound-*.txt`; diez. Una no discrimina, y es por
+construcción: `sin-modo-conocido` retira la pertenencia del modo a `NL`, pero
+la clase bypass sólo admite `bypassPermissions` y `plan`, que están en `NL`.
+En la referencia esa comprobación es redundante; se porta igual y no tiene
+caso que la separe.
+
+El esquema de settings de thyrox declara sólo las claves que tienen
+consumidor, y `crossSessionInbound` lo tiene ahora (`unr`). Lleva
+`.catch(undefined)`, como en la referencia: un valor inválido cuenta como
+ausente (`sin-catch` 1). El aviso que `B` busca en ese caso lo produce la
+validación de settings de la referencia, y thyrox todavía no lo emite. Eso
+es F4c-6c.

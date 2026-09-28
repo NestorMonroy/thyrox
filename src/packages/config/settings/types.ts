@@ -191,6 +191,8 @@ export const SettingsSchema = lazySchema(() => z
     $schema: z.string().optional(),
     model: IDENTIFICADOR_DE_MODELO.optional(),
     advisorModel: IDENTIFICADOR_DE_MODELO.optional(),
+    /** Mensajes entrantes de otras sesiones: `accept` los entrega, `hold` los retiene para revisarlos, `refuse` los rechaza. Un valor inválido cuenta como ausente. */
+    crossSessionInbound: z.enum(['accept', 'hold', 'refuse']).optional().catch(undefined),
     effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).optional(),
     cacheTtl: z.enum(['5m', '1h']).optional(),
     maxTurns: z.number().int().positive().optional(),
