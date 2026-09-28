@@ -29,8 +29,9 @@
  *   tiene usuarios.
  * - Las ramas de `Fv` por federación de identidad (OIDC) y por proveedor de
  *   nube (`bedrock`, `vertex`, `foundry`) hablan con el SDK del proveedor, no
- *   con HTTP crudo. pendiente: un reenviador por SDK cuando haya un upstream
- *   de nube que servir.
+ *   con HTTP crudo: las de nube las sirve `./sdk/cloudForwarder.ts`, que
+ *   reparte antes de llegar aquí. pendiente: la federación OIDC, sin un
+ *   upstream que la declare todavía.
  * - La `baseUrl` se valida con `isSafeUpstreamUrl` en cada petición, no sólo
  *   al cargar la configuración: el reenviador no sabe de dónde vino.
  */

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bun test $(ls __tests__/*[Pp]roxy*.test.ts)", "started_at": "2026-09-28T00:15:59+00:00"}

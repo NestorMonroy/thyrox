@@ -354,3 +354,62 @@ describe('createSelector', () => {
     ;(selector as SessionAffinitySelector).stop()
   })
 })
+
+describe('upstreams de nube', () => {
+  test('un upstream declarado de nube va por su SDK sin endpoint ni credencial propios', async () => {
+    const seen: string[] = []
+    const cloudFetch = (async (input: string | URL | Request) => {
+      seen.push(String(input))
+      return Response.json({ id: 'msg', type: 'message', role: 'assistant', model: 'real-model', content: [], stop_reason: 'end_turn', usage: { input_tokens: 1, output_tokens: 1 } })
+    }) as typeof globalThis.fetch
+    const proxy = startProxyServer({
+      ...config('http://unused.invalid'),
+      routing: {
+        upstreams: [{ name: 'v', provider: 'vertex' }],
+        models: [{ id: 'local-model', upstream_model: { v: 'real-model' } }],
+        auto_include_builtin_models: false,
+      },
+      endpoints: {},
+      credentials: {},
+      cloud: {
+        upstreams: [{ name: 'v', provider: 'vertex', region: 'us-east5', project_id: 'p', auth: { access_token: 't' } }],
+        fetch: cloudFetch,
+      },
+    })
+    stops.push(() => proxy.stop())
+    const response = await fetch(`${proxy.url}/v1/messages`, {
+      method: 'POST',
+      headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'local-model', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
+    })
+    expect(response.status).toBe(200)
+    expect(((await response.json()) as { id: string }).id).toBe('msg')
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toContain('us-east5-aiplatform.googleapis.com')
+    expect(seen[0]).toContain('/publishers/anthropic/models/real-model:rawPredict')
+  })
+
+  test('el error del SDK lleva el identificador de la petición', async () => {
+    const cloudFetch = (async () => Response.json({ type: 'error', error: { type: 'authentication_error', message: 'bad' } }, { status: 401 })) as unknown as typeof globalThis.fetch
+    const proxy = startProxyServer({
+      ...config('http://unused.invalid'),
+      routing: { upstreams: [{ name: 'v', provider: 'vertex' }], models: [{ id: 'local-model', upstream_model: { v: 'real-model' } }], auto_include_builtin_models: false },
+      endpoints: {},
+      credentials: {},
+      cloud: { upstreams: [{ name: 'v', provider: 'vertex', region: 'us-east5', project_id: 'p', auth: { access_token: 't' } }], fetch: cloudFetch },
+    })
+    stops.push(() => proxy.stop())
+    const response = await fetch(`${proxy.url}/v1/messages`, {
+      method: 'POST',
+      headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'local-model', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
+    })
+    expect(response.status).toBe(401)
+    expect(((await response.json()) as { request_id?: string }).request_id).toBe(response.headers.get('x-request-id')!)
+  })
+
+  test('un upstream que no es de nube y no declara endpoint sigue rehusándose', () => {
+    expect(() => startProxyServer({ ...config('http://unused.invalid'), endpoints: {}, cloud: { upstreams: [] } }))
+      .toThrow('el upstream "up" no declara endpoint')
+  })
+})

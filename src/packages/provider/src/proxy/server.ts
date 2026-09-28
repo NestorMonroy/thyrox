@@ -18,7 +18,8 @@
  * CLIProxyAPI y la pasarela del ejecutable son referencias, no
  * dependencias: todo lo que aquí corre lo implementa thyrox. El servidor
  * decide a quién, con qué modelo y con qué credencial; el reenvío HTTP al
- * upstream es `createHttpForwarder` (`./upstreamForwarder.ts`), y
+ * upstream es `createHttpForwarder` (`./upstreamForwarder.ts`) o, para
+ * los de nube, su SDK (`./sdk/cloudForwarder.ts`), y
  * `startProxyServer` los une. `forward` es un parámetro para poder probar
  * el enrutamiento sin red, no un hueco que llene un tercero.
  *
@@ -80,6 +81,8 @@ export type ForwardRequest = {
   body: Record<string, unknown>
   headers: Headers
   signal: AbortSignal
+  /** El identificador de la petición del cliente, para el cuerpo de un error propio. */
+  requestId?: string
 }
 
 export type ProxyServerConfig = {
@@ -245,6 +248,7 @@ async function forwardBody(
         body: upstreamBody(config, path, upstream.provider, resolved.model, resolved.model === model ? body : { ...body, model: resolved.model }),
         headers: request.headers,
         signal: request.signal,
+        requestId,
       }
       const limiter = config.rateLimit
       const response = limiter

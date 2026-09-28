@@ -1,0 +1,4 @@
+base	21 pass, 0 fail	—
+instanceof-in-forward	20 pass, 1 fail	errores del SDK > el error de la copia del SDK que trae un cliente de nube se reconoce igual
+instanceof-in-stream	20 pass, 1 fail	/v1/messages con stream > el error a mitad del stream de la copia de un SDK de nube conserva su estado
+guard-accepts-any-error	20 pass, 1 fail	errores del SDK > un error que no es del SDK se propaga

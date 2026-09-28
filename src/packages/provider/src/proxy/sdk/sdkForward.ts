@@ -15,7 +15,7 @@
  * conocido conserva el mensaje del upstream, recortado, y si no lo trae se
  * dice qué capacidad se rechazó (`./rejectionKind.ts`).
  */
-import { APIError } from '@anthropic-ai/sdk'
+import type { APIError } from '@anthropic-ai/sdk'
 import { errorResponse } from '../server.ts'
 import { capabilityRejectedMessage, rejectionKind } from './rejectionKind.ts'
 
@@ -97,6 +97,16 @@ function truncateUtf16(text: string, limit: number): string {
 }
 
 /** `Pj`, con `kh`: el mensaje que el cliente recibe por un error del upstream. */
+/**
+ * Si el error es un `APIError` del SDK, reconocido por su forma y no por su
+ * clase: cada SDK de nube instala su propia copia de `@anthropic-ai/sdk`, y
+ * su `APIError` es otra clase aunque la versión coincida. La pasarela del
+ * ejecutable no lo necesita porque empaqueta una sola copia.
+ */
+function isApiError(error: unknown): error is APIError {
+  return error instanceof Error && 'status' in error && 'headers' in error && 'error' in error
+}
+
 function upstreamErrorMessage(status: number, error: APIError, betaHeader: string | undefined): string {
   if (status !== 400 && status !== 413) return ERROR_MESSAGES[status] ?? 'upstream error'
   const body = error.error as { type?: unknown; error?: { type?: unknown; message?: unknown } } | undefined
@@ -171,7 +181,7 @@ export function sseFromEvents(
         lastWrite = Date.now()
       } catch (error) {
         if (finished) return
-        const status = error instanceof APIError ? error.status ?? 500 : 500
+        const status = isApiError(error) ? error.status ?? 500 : 500
         const payload = { type: 'error', ...(requestId && { request_id: requestId }), error: { type: errorTypeOf(status), message: ERROR_MESSAGES[status] ?? 'upstream error' } }
         controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify(payload)}\n\n`))
         finished = true
@@ -214,7 +224,7 @@ export async function forwardThroughSdk(request: SdkForwardRequest): Promise<Res
     }
     return undefined
   } catch (error) {
-    if (!(error instanceof APIError)) throw error
+    if (!isApiError(error)) throw error
     const status = error.status ?? 500
     const response = errorResponse(status, errorTypeOf(status), upstreamErrorMessage(status, error, request.betaHeader), requestId)
     upstreamErrorDetails.set(response, { errorType: error.headers?.get('x-amzn-errortype') ?? undefined, message: error.message })

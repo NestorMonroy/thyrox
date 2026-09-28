@@ -1,8 +1,9 @@
 /**
  * Arranque del proxy local: une el control de acceso (`./access.ts`), el
  * enrutamiento y la conmutación (`./server.ts`), el selector de
- * credenciales (`./credentialSelectors.ts`) y el reenvío HTTP propio
- * (`./upstreamForwarder.ts`) en un `Bun.serve`.
+ * credenciales (`./credentialSelectors.ts`) y el reenvío propio —HTTP
+ * (`./upstreamForwarder.ts`) o por SDK para los upstreams de nube
+ * (`./sdk/cloudForwarder.ts`)— en un `Bun.serve`.
  *
  * Sólo escucha en loopback, y la razón es de thyrox: el proxy lleva las
  * credenciales de sus upstreams, y escuchar fuera de la máquina las
@@ -34,6 +35,8 @@ import type { ProviderTraits } from './resilience/errorClassifier.ts'
 import { RateLimitManager, type RateLimitQueueSettings } from './resilience/rateLimitManager.ts'
 import { createProxyHandler, type ProxyServerConfig } from './server.ts'
 import { SessionAffinitySelector } from './session/affinitySelector.ts'
+import type { CloudClientOptions, CloudUpstreamConfig } from './sdk/cloudClients.ts'
+import { createCloudAwareForwarder } from './sdk/cloudForwarder.ts'
 import { createHttpForwarder, type RawUpstreamEndpoint } from './upstreamForwarder.ts'
 import type { GatewayRoutingConfig } from './upstreamRouting.ts'
 
@@ -77,6 +80,13 @@ export type ProxyStartConfig = {
    * upstream antes de rotar (1 por defecto).
    */
   combos?: { stickyRoundRobinLimit?: number }
+  /**
+   * Los upstreams de nube (Bedrock, Vertex, Foundry), que van por su SDK y no
+   * por HTTP crudo: no declaran endpoint, y su credencial es la de su propia
+   * configuración, así que el selector recibe una sintética si no declaran
+   * otra. `fetch` y `processHeaders` pasan al cliente del SDK.
+   */
+  cloud?: { upstreams: readonly CloudUpstreamConfig[] } & CloudClientOptions
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -113,13 +123,26 @@ function protectApiKeyCredentials(manager: RateLimitManager, config: ProxyStartC
   return manager
 }
 
+/**
+ * Las credenciales del selector, con una sintética para cada upstream de nube
+ * que no declara ninguna: la que usa es la de su configuración, pero el
+ * selector necesita una identidad por la que enfriarla y limitarla.
+ */
+function withCloudCredentials(credentials: ProxyStartConfig['credentials'], cloudNames: readonly string[]): ProxyStartConfig['credentials'] {
+  const declared = { ...credentials }
+  for (const name of cloudNames) if (!declared[name]?.length) declared[name] = [{ id: `cloud:${name}` }]
+  return declared
+}
+
 export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   if (!isLoopbackListenHost(config.host)) {
     throw new Error(`el proxy local sólo escucha en loopback; "${config.host}" no lo es`)
   }
   const keyProvider = createConfigApiKeyProvider(config.accessKeys)
   if (keyProvider === null) throw new Error('el proxy local exige al menos una clave de acceso')
+  const cloud = Object.fromEntries((config.cloud?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
   for (const upstream of config.routing.upstreams) {
+    if (cloud[upstream.name]) continue
     const endpoint = config.endpoints[upstream.name]
     if (!endpoint) throw new Error(`el upstream "${upstream.name}" no declara endpoint`)
     if (!isSafeUpstreamUrl(endpoint.baseUrl, config.env)) {
@@ -129,7 +152,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   const handler = createProxyHandler({
     access: new AccessManager([keyProvider]),
     routing: config.routing,
-    credentials: config.credentials,
+    credentials: withCloudCredentials(config.credentials, Object.keys(cloud)),
     selector: createSelector(config.selector, config.sessionAffinity),
     providerTraits: provider => config.providerTraits?.[provider],
     streamRecovery: config.streamRecovery,
@@ -142,11 +165,15 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
       contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.[model],
       stickyRoundRobinLimit: config.combos?.stickyRoundRobinLimit,
     }),
-    forward: createHttpForwarder({
-      upstreams: config.endpoints,
-      version: config.version,
-      firstByteTimeoutMs: config.firstByteTimeoutMs,
-      env: config.env,
+    forward: createCloudAwareForwarder({
+      http: createHttpForwarder({
+        upstreams: config.endpoints,
+        version: config.version,
+        firstByteTimeoutMs: config.firstByteTimeoutMs,
+        env: config.env,
+      }),
+      cloud,
+      options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },
     }),
   })
   const server = Bun.serve({ hostname: config.host, port: config.port, fetch: handler })

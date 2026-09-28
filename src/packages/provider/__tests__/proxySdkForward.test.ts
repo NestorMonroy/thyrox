@@ -86,6 +86,16 @@ describe('/v1/messages con stream', () => {
     const text = await new Response(sseFromEvents(failing(), { requestId: 'req_9' })).text()
     expect(text).toContain('event: error\ndata: {"type":"error","request_id":"req_9","error":{"type":"overloaded_error","message":"upstream overloaded"}}')
   })
+  test('el error a mitad del stream de la copia de un SDK de nube conserva su estado', async () => {
+    const nested = Bun.resolveSync('@anthropic-ai/sdk', Bun.resolveSync('@anthropic-ai/vertex-sdk', import.meta.dir))
+    const { APIError: NestedApiError } = (await import(nested)) as typeof import('@anthropic-ai/sdk')
+    async function* failing() {
+      yield { type: 'message_start', message: { model: 'x' } }
+      throw NestedApiError.generate(529, { type: 'error', error: { type: 'overloaded_error', message: 'busy' } }, 'busy', new Headers())
+    }
+    const text = await new Response(sseFromEvents(failing(), { requestId: 'req_9' })).text()
+    expect(text).toContain('"error":{"type":"overloaded_error","message":"upstream overloaded"}')
+  })
   test('un silencio largo se rellena con ping', async () => {
     const text = await new Response(sseFromEvents(events([{ type: 'message_stop' }], 120), { keepaliveIntervalMs: 20 })).text()
     expect(text.startsWith('event: ping\ndata: {"type": "ping"}\n\n')).toBe(true)
@@ -162,6 +172,17 @@ describe('errores del SDK', () => {
     const error = APIError.generate(418, { message: 'teapot' }, 'teapot', new Headers())
     const body = (await (await forward(failWith(error)))!.json()) as { error: { type: string; message: string } }
     expect(body.error).toEqual({ type: 'api_error', message: 'upstream error' })
+  })
+  test('el error de la copia del SDK que trae un cliente de nube se reconoce igual', async () => {
+    // Cada SDK de nube instala su propia copia de `@anthropic-ai/sdk`: la
+    // clase del error es otra, aunque la versión sea la misma.
+    const nested = Bun.resolveSync('@anthropic-ai/sdk', Bun.resolveSync('@anthropic-ai/vertex-sdk', import.meta.dir))
+    const { APIError: NestedApiError } = (await import(nested)) as typeof import('@anthropic-ai/sdk')
+    expect(NestedApiError).not.toBe(APIError)
+    const error = NestedApiError.generate(401, { message: 'secret detail' }, 'secret detail', new Headers())
+    const response = await forward(failWith(error))
+    expect(response!.status).toBe(401)
+    expect(((await response!.json()) as { request_id: string }).request_id).toBe('req_1')
   })
   test('un error que no es del SDK se propaga', async () => {
     await expect(forward(failWith(new TypeError('boom')))).rejects.toThrow('boom')
