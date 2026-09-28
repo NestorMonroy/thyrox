@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketPath.test.ts:
+73 |     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\inbox.')).toBe(false)
+74 |     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\inbox ')).toBe(false)
+75 |   })
+76 | 
+77 |   test('una ruta que al normalizarse en Windows cae en el espacio de dispositivos (_N) no lo es', () => {
+78 |     expect(isUsableLocalSocketAddress('/x/../??/c')).toBe(false)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketPath.test.ts:78:54)
+(fail) isUsableLocalSocketAddress (IL) > una ruta que al normalizarse en Windows cae en el espacio de dispositivos (_N) no lo es [0.23ms]
+
+ 13 pass
+ 1 fail
+ 24 expect() calls
+Ran 14 tests across 1 file. [36.00ms]

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerEnvelope.test.ts:
+29 | describe('nombres que viajan en el sobre', () => {
+30 |   test('sanitizeDisplayName (ky) retira controles e invisibles y corta a 64 puntos de código', () => {
+31 |     expect(sanitizeDisplayName('  a​b\u0007c  ')).toBe('abc')
+32 |     expect(sanitizeDisplayName('x'.repeat(64))).toBe('x'.repeat(64))
+33 |     expect(sanitizeDisplayName('😀'.repeat(65))).toBe(`${'😀'.repeat(64)}…`)
+34 |   })
+                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀…"
+Received: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerEnvelope.test.ts:34:49)
+(fail) nombres que viajan en el sobre > sanitizeDisplayName (ky) retira controles e invisibles y corta a 64 puntos de código [0.51ms]
+
+ 15 pass
+ 1 fail
+ 40 expect() calls
+Ran 16 tests across 1 file. [46.00ms]

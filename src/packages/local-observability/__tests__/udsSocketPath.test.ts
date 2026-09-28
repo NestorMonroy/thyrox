@@ -73,6 +73,11 @@ describe('isUsableLocalSocketAddress (IL)', () => {
     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\inbox.')).toBe(false)
     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\inbox ')).toBe(false)
   })
+
+  test('una ruta que al normalizarse en Windows cae en el espacio de dispositivos (_N) no lo es', () => {
+    expect(isUsableLocalSocketAddress('/x/../??/c')).toBe(false)
+    expect(isUsableLocalSocketAddress('/x/??/c.sock')).toBe(true)
+  })
 })
 
 describe('localPipeName (qce)', () => {

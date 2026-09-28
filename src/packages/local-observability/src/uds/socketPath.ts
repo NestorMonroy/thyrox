@@ -8,7 +8,7 @@
  * pares de la misma máquina se buscan entre sí.
  */
 import { tmpdir as systemTmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, resolve, win32 } from 'node:path'
 
 /** Bytes que admite `sun_path` con el terminador, el mismo tope que la referencia. */
 export const MAX_SOCKET_PATH_BYTES = 103
@@ -52,9 +52,14 @@ export function defaultUdsSocketPath(context: SocketPathContext = {}): string {
 
 const DEVICE_NAMESPACE = /^[\\/]\?\?[\\/]/
 
+/** `_N`: el espacio de dispositivos, también si sólo aparece al normalizar la ruta como Windows. */
+function isDeviceNamespacePath(path: string): boolean {
+  return DEVICE_NAMESPACE.test(path) || (path.includes('??') && DEVICE_NAMESPACE.test(win32.normalize(path)))
+}
+
 /** `Ln`: una ruta que empieza por dos separadores (UNC o espacio de dispositivos). */
-function isUncLike(path: string): boolean {
-  return /^[\\/]{2}/.test(path) || DEVICE_NAMESPACE.test(path)
+export function isUncLikePath(path: string): boolean {
+  return /^[\\/]{2}/.test(path) || isDeviceNamespacePath(path)
 }
 
 /**
@@ -72,6 +77,6 @@ export function localPipeName(path: string): string | undefined {
 
 /** `IL`: una ruta local sirve; una UNC, sólo si nombra un pipe local válido. */
 export function isUsableLocalSocketAddress(path: string): boolean {
-  if (!isUncLike(path)) return true
+  if (!isUncLikePath(path)) return true
   return localPipeName(path) !== undefined
 }

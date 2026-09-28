@@ -34,7 +34,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-6a | el veredicto «lo envió esta sesión»: `ye`, `Le`, `Ke`, `he`, `Ne`, `hfn` → `uds/peerTrust.ts` | hecha |
 | F4c-6b | `unr`: la política `crossSessionInbound` (`I`, `B`, `O`, `zje`, niveles `accept`/`hold`/`refuse`) y el modo de permisos (`C`, `S`, `V1`, `NL`) → `uds/inboundPolicy.ts`; la clave entra al esquema de `@thyrox/config` | hecha |
 | F4c-2a | escape del cierre de la etiqueta que envuelve texto ajeno (`Qce`, `CFt`, `PL`, `h`, `H`, `iRe`, `Spt` de `chunk-0grnxhq4.js`) → `uds/tagClose.ts` | hecha |
-| F4c-2b | sobre `cross-session-message` y direcciones de pares (`chunk-q8a07cv0.js`) | pendiente |
+| F4c-2b | `chunk-q8a07cv0.js` entero salvo las constantes de equipo (ya en `@thyrox/swarm`): sobre `cross-session-message` → `uds/peerEnvelope.ts`; direcciones de pares → `uds/peerAddress.ts`; lectores con tope y resumen de una línea → `uds/cappedText.ts`; y la rama `win32.normalize` de `_N` que F1 omitía | hecha |
 | F4c-2c | `ze`/`Oe`/`aEn`: entrega de un `user` a la cola, con sus dependencias inyectadas | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
@@ -238,3 +238,18 @@ Anulaciones en `anulacion-tag-*.txt`; siete, y cada una tumba sólo su caso.
 `sin-parecidos` retira a la vez los parecidos de `<` y de `/`, que caen en el
 mismo caso. La caché de 64 patrones que se vacía al llenarse no tiene caso
 que la separe: sólo cambia cuándo se reconstruye un patrón, no cuál.
+
+## F4c-2b — sobre, direcciones y texto con tope: controles
+
+Anulaciones en `anulacion-env-*`, `anulacion-addr-*`, `anulacion-capped-*` y
+`anulacion-sp-*`; veintidós. Dos no discriminaban en el primer pase y se
+estrecharon con un caso nuevo: `env-sin-compacto` (un resumen de
+compactación después de un mensaje de par; antes el único caso daba
+`undefined` con y sin el salto) y `addr-sin-volumen` (la comparación de dos
+rutas en macOS a través de `/System/Volumes/Data`; antes sólo se probaba la
+función suelta). `env-sin-escape` y `addr-sin-uid` tumban dos casos cada
+una, los dos que dependen de ellas.
+
+F1 portó `Ln` sin la segunda mitad de `_N`: una ruta que sólo cae en el
+espacio de dispositivos al normalizarla como Windows (`/x/../??/c`). Se
+completa aquí, con su caso en `udsSocketPath.test.ts` (`sp-sin-normalizar`).

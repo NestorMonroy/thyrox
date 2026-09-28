@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerEnvelope.test.ts:
+103 | 
+104 |   test('withPluginAttribute (QFr) añade el plugin sólo si no había', () => {
+105 |     expect(withPluginAttribute(withChain, 'p')).toBe(formatEnvelope({ from: 'uds:/a.sock', body: 'b', hopChain: [HOP], fromPlugin: 'p' }))
+106 |     const already = formatEnvelope({ body: 'b', fromPlugin: 'q' })
+107 |     expect(withPluginAttribute(already, 'p')).toBe(already)
+108 |     expect(withPluginAttribute(withChain, undefined)).toBe(withChain)
+                                                    ^
+error: expect(received).toBe(expected)
+
+@@ -1,2 +1,2 @@
+- "<cross-session-message from-plugin="q">
++ "<cross-session-message from-plugin="p">
+  b
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerEnvelope.test.ts:108:47)
+(fail) transformaciones del sobre > withPluginAttribute (QFr) añade el plugin sólo si no había [0.34ms]
+
+ 15 pass
+ 1 fail
+ 39 expect() calls
+Ran 16 tests across 1 file. [40.00ms]

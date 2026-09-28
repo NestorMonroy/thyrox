@@ -19,7 +19,7 @@ function dropLoneSurrogates(text: string): string {
 }
 
 /** `re`: corta en `max` unidades sin partir un par sustituto. */
-function sliceUnits(text: string, max: number): string {
+export function sliceUnits(text: string, max: number): string {
   if (max <= 0) return ''
   if (text.length <= max) return text
   const head = text.slice(0, max)

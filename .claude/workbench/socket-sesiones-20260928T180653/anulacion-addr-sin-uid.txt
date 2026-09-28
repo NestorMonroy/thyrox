@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerAddress.test.ts:
+115 | 
+116 | describe('a quién se puede responder', () => {
+117 |   test('isDefaultDirSocket (D): nombre de socket y directorio por defecto, con uid propio', () => {
+118 |     expect(isDefaultDirSocket('/tmp/cc-socks/12.sock', [])).toBe(true)
+119 |     expect(isDefaultDirSocket('/tmp/cc-socks-1000/12-0123abcd.sock', [1000])).toBe(true)
+120 |     expect(isDefaultDirSocket('/tmp/cc-socks-1000/12.sock', [0])).toBe(false)
+                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerAddress.test.ts:120:67)
+(fail) a quién se puede responder > isDefaultDirSocket (D): nombre de socket y directorio por defecto, con uid propio [0.49ms]
+145 |     const local = '\\\\.\\pipe\\LOCAL\\cc-msg-' + 'a'.repeat(32)
+146 |     expect(mayReplyTo(local, global)).toBe(false)
+147 |     expect(mayReplyTo('/run/a/2.sock', '/run/a/1.sock')).toBe(true)
+148 |     expect(mayReplyTo('/tmp/cc-socks/2.sock', '/run/a/1.sock')).toBe(false)
+149 |     expect(mayReplyTo('/tmp/cc-socks/2.sock', '/run/a/1.sock', [REPLY_ACROSS_DEFAULT_DIRS])).toBe(true)
+150 |     expect(mayReplyTo('/tmp/cc-socks-5/2.sock', '/run/a/1.sock', [REPLY_ACROSS_DEFAULT_DIRS], [6])).toBe(false)
+                                                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerAddress.test.ts:150:101)
+(fail) a quién se puede responder > mayReplyTo (dLo): un pipe global no responde a uno LOCAL; la capacidad abre los directorios por defecto [0.15ms]
+
+ 14 pass
+ 2 fail
+ 65 expect() calls
+Ran 16 tests across 1 file. [36.00ms]
