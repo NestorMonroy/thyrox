@@ -44,9 +44,8 @@ test("loadOrCreateMitmCa: a second call loads the same CA instead of regeneratin
   }
 });
 
-test(
+test.skipIf(process.platform === "win32")(
   "loadOrCreateMitmCa: the written CA private key file mode is 0o600",
-  { skip: process.platform === "win32" },
   async () => {
     const certDir = tmpCertDir();
     try {

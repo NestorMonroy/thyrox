@@ -36,8 +36,10 @@ test("buildElevatedScriptWrapper quotes the script path safely (no shell injecti
 });
 
 test("runElevatedPowerShell writes payload to a temp .ps1 file and unlinks after", async () => {
-  let capturedWrapper: string | null = null;
-  let capturedTempPath: string | null = null;
+  // Se asignan dentro del callback: sin la aserción de tipo, el análisis de flujo las
+  // deja en `null` y lo que se lee de ellas después queda como `never`.
+  let capturedWrapper = null as string | null;
+  let capturedTempPath = null as string | null;
 
   await runElevatedPowerShell(
     "Write-Output 'thyrox regression test'",

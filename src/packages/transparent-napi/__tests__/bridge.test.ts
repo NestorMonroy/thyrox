@@ -24,7 +24,7 @@ async function freePort(): Promise<number> {
 async function headerEchoServer(): Promise<{ server: net.Server; port: number }> {
   const server = net.createServer(socket => {
     let buffered = Buffer.alloc(0)
-    socket.on('data', chunk => {
+    socket.on('data', (chunk: Buffer) => {
       buffered = Buffer.concat([buffered, chunk])
       const parsed = parseProxyV1Header(buffered)
       if (parsed.kind === 'incomplete') return

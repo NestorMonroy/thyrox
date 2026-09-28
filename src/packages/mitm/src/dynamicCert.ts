@@ -92,6 +92,7 @@ export class DynamicCertStore {
   private readonly caName: string
   private caPromise: Promise<CaPair> | null = null
   private readonly contexts = new Map<string, tls.SecureContext>()
+  private readonly leaves = new Map<string, Promise<LeafPair>>()
 
   constructor(caName = 'THYROX MITM CA', existingCa?: CaPair) {
     this.caName = caName
@@ -117,6 +118,19 @@ export class DynamicCertStore {
     const context = tls.createSecureContext({ key: leaf.key, cert: leaf.cert })
     this.contexts.set(hostname, context)
     return context
+  }
+
+  /**
+   * La hoja de un host en PEM, creada y cacheada al primer uso. Es lo que
+   * necesita un servidor TLS por host bajo Bun, que no invoca `SNICallback`.
+   */
+  getLeaf(hostname: string): Promise<LeafPair> {
+    let leaf = this.leaves.get(hostname)
+    if (!leaf) {
+      leaf = this.getCa().then(ca => issueLeafCert(hostname, ca))
+      this.leaves.set(hostname, leaf)
+    }
+    return leaf
   }
 
   /** Cuantos hosts distintos tienen contexto cacheado. */

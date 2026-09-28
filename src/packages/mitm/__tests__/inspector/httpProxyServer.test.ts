@@ -65,7 +65,7 @@ function sendThroughProxy(
     // El servidor node:http de Bun no cierra pese a `Connection: close`: la
     // respuesta se da por completa al leer su `Content-Length` o el último
     // trozo de la codificación chunked, no al cerrarse el socket.
-    socket.on("data", (c) => {
+    socket.on("data", (c: Buffer) => {
       chunks.push(c);
       const raw = Buffer.concat(chunks).toString("utf8");
       const headEnd = raw.indexOf("\r\n\r\n");
