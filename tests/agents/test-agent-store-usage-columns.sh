@@ -234,8 +234,13 @@ python3 "$STORE" registrar-sesion --claude-dir "$CLAUDE_DIR" --agent-id AGP \
 # AGENT_STORE_CLAUDE_DIR desvía el hook al store temporal. Sin ese override el
 # hook escribe en el store REAL de docs (lleva `--repo docs` fijo), así que esta
 # sección o contaminaría el artefacto que audita o mediría la base equivocada.
+# El stderr del hook se conserva: si el escritor falla o agota su plazo, la
+# fila queda sin procedencia y lo único que dice por qué es ese stderr.
 printf '{"agent_id":"AGP","transcript_path":"%s"}' "$TMP/agent-AGP.jsonl" \
-    | AGENT_STORE_CLAUDE_DIR="$CLAUDE_DIR" python3 "$HOOK" >/dev/null 2>&1
+    | AGENT_STORE_CLAUDE_DIR="$CLAUDE_DIR" python3 "$HOOK" >/dev/null 2>"$TMP/hook-agp.err"
+if [[ "$(leer_campo "$DB" AGP source)" != hook ]]; then
+    echo "  stderr del hook (AGP):"; sed 's/^/        /' "$TMP/hook-agp.err"
+fi
 
 afirmar "source registra la vía de captura (hook)" "hook" \
         "$(leer_campo "$DB" AGP source)"
