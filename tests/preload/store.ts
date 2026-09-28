@@ -24,6 +24,10 @@
  * La guarda: si el llamador ya fijo `THYROX_STORE`, gana su decision y este
  * modulo no hace nada.
  *
+ * `bun test` lee sólo el `bunfig.toml` del cwd, así que cada paquete con
+ * pruebas declara en el suyo estos mismos preloads: sin eso, una suite corrida
+ * desde el directorio del paquete escribiría en el store versionado.
+ *
  * Ciega a: una suite de Python o de shell, que no pasa por este preload, y a
  * una suite que abra el store por una ruta literal en vez de `STORE_PATH`.
  * Su control vive en `tests/session/test-store-faucet.sh`.

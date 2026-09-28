@@ -26,18 +26,52 @@ STORE="$ROOT/agent-results/agent_store.sqlite3"
 [[ -f "$STORE" ]] || { echo "test-store-faucet: no existe $STORE — NO se emite conteo" >&2; exit 2; }
 command -v bun >/dev/null || { echo "test-store-faucet: falta bun — NO se emite conteo" >&2; exit 2; }
 
+# El store está en modo WAL: una escritura cae en `-wal` y el archivo principal
+# no cambia hasta el checkpoint. Por eso la huella cubre los dos, el respaldo
+# se toma tras un checkpoint, y al restaurar se retiran `-wal` y `-shm`:
+# restaurar el principal con un `-wal` vivo al lado lo reaplica y desalinea
+# sus índices.
+checkpoint() { python3 -c 'import sqlite3,sys; sqlite3.connect(sys.argv[1]).execute("pragma wal_checkpoint(TRUNCATE)")' "$STORE"; }
+fingerprint() { cat "$STORE" "$STORE-wal" 2>/dev/null | sha1sum | cut -d' ' -f1; }
+checkpoint
 BACKUP="$(mktemp)"
 cp "$STORE" "$BACKUP"
-trap 'cp "$BACKUP" "$STORE"; rm -f "$BACKUP"' EXIT
+trap 'cp "$BACKUP" "$STORE"; rm -f "$BACKUP" "$STORE-wal" "$STORE-shm"' EXIT
 
 # Sin THYROX_STORE heredado: el caso mide el default, que es el que ensuciaba.
-before="$(sha1sum "$STORE" | cut -d' ' -f1)"
+before="$(fingerprint)"
 (cd "$ROOT" && env -u THYROX_STORE bun test src/packages/agent/__tests__/contextPressure.test.ts >/dev/null 2>&1)
-after="$(sha1sum "$STORE" | cut -d' ' -f1)"
+after="$(fingerprint)"
 if [[ "$before" == "$after" ]]; then
   ok "contextPressure.test.ts no cambia el store versionado"
 else
   bad "contextPressure.test.ts cambio el store versionado ($before -> $after)"
+fi
+
+# El mismo grifo cuando la suite se corre desde el directorio de su paquete:
+# `bun test` lee sólo el `bunfig.toml` del cwd, así que el preload de la raíz
+# no llega ahí.
+before="$(fingerprint)"
+(cd "$ROOT/src/packages/agent" && env -u THYROX_STORE bun test __tests__/contextPressure.test.ts >/dev/null 2>&1)
+after="$(fingerprint)"
+if [[ "$before" == "$after" ]]; then
+  ok "desde el paquete, contextPressure.test.ts no cambia el store versionado"
+else
+  bad "desde el paquete, contextPressure.test.ts cambio el store versionado ($before -> $after)"
+fi
+
+# Y que ningún paquete con pruebas quede fuera: cada uno declara los mismos
+# preloads que la raíz, en el mismo orden.
+root_preload="$(grep -E '^preload' "$ROOT/bunfig.toml" | sed 's#\./tests/#../../../tests/#g')"
+missing=()
+while IFS= read -r pkg; do
+  git -C "$ROOT" ls-files "$pkg" | grep -qE '\.test\.tsx?$' || continue
+  [[ "$(grep -E '^preload' "$ROOT/$pkg/bunfig.toml" 2>/dev/null)" == "$root_preload" ]] || missing+=("$pkg")
+done < <(git -C "$ROOT" ls-files 'src/packages/*/package.json' | sed 's#/package.json$##')
+if [[ ${#missing[@]} -eq 0 ]]; then
+  ok "todo paquete con pruebas declara los preloads de la raíz"
+else
+  bad "paquetes sin los preloads de la raíz: ${missing[*]}"
 fi
 
 # La otra mitad: quien lee el esquema real lo sigue viendo.
