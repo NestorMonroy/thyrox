@@ -1,0 +1,69 @@
+== 1: sin abrir el sobre cloudcode-pa
+   (src/handlers/antigravity.ts)
+(fail) convertGeminiToOpenAI — unwraps the cloudcode-pa `.request` envelope [3.74ms]
+(fail) antigravity handler — forwards a cloudcode envelope request with real messages [1.31ms]
+ 19 pass
+ 2 fail
+== 2: el turno model como user
+   (src/handlers/antigravity.ts)
+(fail) convertGeminiToOpenAI — maps Gemini fields to OpenAI chat body [3.77ms]
+(fail) convertGeminiToOpenAI — unwraps the cloudcode-pa `.request` envelope [0.57ms]
+ 19 pass
+ 2 fail
+== 3: sin traducir generationConfig
+   (src/handlers/antigravity.ts)
+(fail) convertGeminiToOpenAI — maps Gemini fields to OpenAI chat body [1.81ms]
+(fail) antigravity handler — converts raw Gemini body before forwarding [1.36ms]
+(fail) convertGeminiToOpenAI — unwraps the cloudcode-pa `.request` envelope [0.33ms]
+(fail) antigravity handler — forwards a cloudcode envelope request with real messages [0.89ms]
+ 17 pass
+ 4 fail
+== 4: stream fijo
+   (src/handlers/antigravity.ts)
+(fail) antigravity handler — non-streaming URL yields stream:false [2.25ms]
+ 20 pass
+ 1 fail
+== 5: un modelo dinámico pisa al nativo
+   (src/handlers/antigravity.ts)
+(fail) mergeAntigravityCatalog — preserves native model metadata when a dynamic id collides [1.68ms]
+ 20 pass
+ 1 fail
+== 6: los inyectados al final del grupo
+   (src/handlers/antigravity.ts)
+(fail) mergeAntigravityCatalog — merges dynamic models and prepends to agentModelSorts [3.52ms]
+(fail) antigravity handler — intercepts fetchAvailableModels and returns merged catalog [1.99ms]
+ 19 pass
+ 2 fail
+== 7: fetchAvailableModels como conversación
+   (src/handlers/antigravity.ts)
+(fail) antigravity handler — intercepts fetchAvailableModels and returns merged catalog [2.46ms]
+ 20 pass
+ 1 fail
+== 8: la copia del inspector sin nombres del CLI
+   (src/handlers/antigravity.ts)
+(fail) antigravity handler — the inspector copy names the tools as the CLI does [2.95ms]
+ 20 pass
+ 1 fail
+== 9: el catálogo del proxy sin su clave
+   (src/handlers/antigravity.ts)
+(fail) the dynamic catalog is the model list the local proxy serves [8.70ms]
+ 20 pass
+ 1 fail
+== 10: el destino sin su handler
+   (src/targets/antigravity.ts)
+(fail) ANTIGRAVITY_TARGET — includes fetchAvailableModels and resolves its handler [0.34ms]
+(fail) every target resolves to its handler class [0.31ms]
+ 19 pass
+ 2 fail
+== restaurado
+ M src/packages/mitm/src/targets/antigravity.ts
+?? src/packages/mitm/src/handlers/antigravity.ts
+?? src/packages/mitm/src/handlers/cliToolNames.ts
+ 21 pass
+ 0 fail
+ 0 fail
+ 712 expect() calls
+Ran 802 tests across 105 files. [23.46s]
+BUILD_TSC=0
+TEST_TSC=0
+__BG_EXIT__=0

@@ -11,16 +11,11 @@ import { MitmHandlerBase } from '../../src/handlers/base.ts'
 import { detectAgent } from '../../src/detection/index.ts'
 import { ALL_TARGETS } from '../../src/targets/index.ts'
 
-test('every ported target resolves to its handler class', async () => {
-  for (const target of ALL_TARGETS.filter(t => t.id !== 'antigravity')) {
+test('every target resolves to its handler class', async () => {
+  for (const target of ALL_TARGETS) {
     const { default: Handler } = await target.handler()
     expect(new Handler()).toBeInstanceOf(MitmHandlerBase)
   }
-})
-
-test('the antigravity target rejects, naming the pending port', async () => {
-  const target = ALL_TARGETS.find(t => t.id === 'antigravity')!
-  await expect(target.handler()).rejects.toThrow(/antigravity no está portado/)
 })
 
 test('no target text names the reference product', () => {

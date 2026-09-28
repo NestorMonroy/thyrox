@@ -10,6 +10,7 @@
  * Porte de `omniroute: src/mitm/targets/antigravity.ts` (MIT).
  */
 import { PRODUCT_NAME } from "@thyrox/config/product";
+import { AntigravityHandler } from "../handlers/antigravity.ts";
 import type { MitmTarget } from "../types.ts";
 
 const HOSTS = [
@@ -47,9 +48,7 @@ export const ANTIGRAVITY_TARGET: MitmTarget = {
     steps: INSTRUCTIONS,
     detection: { command: "which antigravity", platform: "all" },
   },
-  // El handler de antigravity aún no está portado (tarea F2b): el destino
-  // existe para el registro y la detección, y quien lo despache recibe el motivo.
-  handler: () => Promise.reject(new Error('El handler de antigravity no está portado todavía')),
+  handler: () => Promise.resolve({ default: AntigravityHandler }),
   riskNoticeKey: "providers.riskNotice.oauth",
 };
 
