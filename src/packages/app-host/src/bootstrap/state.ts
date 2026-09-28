@@ -20,17 +20,15 @@
  *   -------------------------------------------------------------
  *   TOTAL PORTADO: 60 de 229 símbolos exportados por la fuente.
  *
- * Slice E entró el 2026-09-08 (#262): `handleStopHooks` necesita
- * `getTotalOutputTokens` para el conteo de tokens del objetivo `/goal`, y sin
- * ella el generador no se puede portar. Se trae la slice ENTERA —los cinco
+ * Slice E (#262): `handleStopHooks` necesita `getTotalOutputTokens` para el
+ * conteo de tokens del objetivo `/goal`. Se trae la slice ENTERA —los cinco
  * acumuladores de token, el coste y los dos lectores de uso— en vez del
  * símbolo suelto: portar uno solo dejaría `STATE.modelUsage` sin escritor y
  * los cinco lectores devolviendo cero para siempre, que es el verde que no
  * discrimina.
  *
- * Slice F entró el 2026-09-08 (#234): `imageStore` de `@thyrox/tool-registry`
- * guarda cada imagen bajo el directorio de SU sesión, y sin `getSessionId`
- * el módulo no se puede portar. Se trae la slice ENTERA por el mismo motivo
+ * Slice F (#234): `imageStore` de `@thyrox/tool-registry` guarda cada imagen
+ * bajo el directorio de SU sesión, con `getSessionId`. Se trae la slice ENTERA por el mismo motivo
  * que la E: el `planSlugCache` se purga en `regenerateSessionId` y en
  * `switchSession`, así que traer sólo el lector dejaría un mapa que crece y
  * nadie vacía. `onSessionSwitch` DIVERGE —se reimplementa con un conjunto

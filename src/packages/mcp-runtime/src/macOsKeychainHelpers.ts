@@ -3,26 +3,10 @@
  * `ccnmt: packages/mcp-runtime/src/macOsKeychainHelpers.ts` — sus 6
  * exportaciones, ninguna omitida.
  *
- * `getConfigHomeDir` viene de `@thyrox/config/env/utils`. Hasta el
- * 2026-09-27 era un sustituto local (`internal/pendingCrossPackageDeps.ts`),
- * escrito cuando ese subpath no lo exportaba; `check_stand_ins` midió que ya
- * lo hacía y el sustituto se retiró.
- *
- * `getOauthConfig` (`@claude-code-how-works/provider/oauthConstants`) NO
- * tiene sustituto local: no es una función pura y simple — construye
- * config real (URLs, `CLIENT_ID`) con ~140 líneas de lógica que
- * pertenecen al dominio de `@thyrox/provider`, no al de este paquete
- * (reimplementarla aquí sería scope creep sobre el porte de otro paquete).
- * Se envuelve con `require()` diferido — dentro de la función que la usa,
- * nunca en un `import` estático de nivel de módulo — para que ESTE
- * archivo siga siendo importable aunque esa función en concreto falle al
- * invocarse. Medido antes de la corrección: un `import` estático de
- * `@claude-code-how-works/provider/oauthConstants` hacía fallar la carga
- * del módulo ENTERO (`Cannot find module`, verificado con
- * `bun -e "import(...)"`), no sólo la función que la usa — el mismo
- * patrón que ya evita `appStateHooks.ts` de este puerto con su
- * `require('@thyrox/app-host/state/AppState.js')`
- * diferido.
+ * `getConfigHomeDir` viene de `@thyrox/config/env/utils`. `getOauthConfig`
+ * (`@thyrox/provider/oauthConstants`) construye configuración real (URLs,
+ * `CLIENT_ID`) del dominio de `@thyrox/provider`, y se lee por `require()`
+ * diferido dentro de la función que la usa.
  *
  * Helpers ligeros compartidos entre `keychainPrefetch.ts` y
  * `macOsKeychainStorage.ts` (ninguno de los dos portado aún — ver el

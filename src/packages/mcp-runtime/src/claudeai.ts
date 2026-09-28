@@ -2,27 +2,17 @@
  * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/claudeai.ts` — sus 4
  * exportaciones, ninguna omitida.
  *
- * Repuntados a `@thyrox/local-observability` (subpath verificado en el
- * `exports` del paquete y símbolo confirmado con resolución real —
- * `bun -e "import(...)"`, nunca `grep`): `.` (`logEvent`) y `./debug.js`
- * (`logForDebugging`). El tipo `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`
- * se re-exporta desde la raíz del paquete (declarado en `compat.ts`), igual
- * que ya lo usa `mcpConnectionTelemetry.ts` de este mismo puerto.
+ * De `@thyrox/local-observability`: `.` (`logEvent`) y `./debug.js`
+ * (`logForDebugging`); el tipo
+ * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` se reexporta
+ * desde la raíz del paquete (`compat.ts`), igual que en
+ * `mcpConnectionTelemetry.ts`. `isEnvDefinedFalsy` viene de
+ * `@thyrox/config/env/utils`.
  *
- * `isEnvDefinedFalsy` viene de `@thyrox/config/env/utils`: su sustituto
- * local se retiró el 2026-09-27, cuando `check_stand_ins` midió que el
- * subpath ya lo exportaba (ver H-DOCS-1160 para el repunte falso por `grep`
- * que originó aquel sustituto).
- *
- * `getGlobalConfig`/`saveGlobalConfig` (`@claude-code-how-works/config`),
- * `getOauthConfig` (`@claude-code-how-works/provider/oauthConstants`) y
- * `getClaudeAIOAuthTokens` (`@claude-code-how-works/provider/authAlias.js`)
- * se usan sólo dentro de cuerpos de función (nunca a nivel de módulo), así
- * que se envuelven con `require()` diferido: un `import` estático de un
- * paquete cuya base (`@claude-code-how-works/*`) no existe en este árbol
- * hace fallar la carga del MÓDULO ENTERO (`Cannot find module`, medido con
- * `bun -e "import(...)"` antes de esta corrección), no sólo la función que
- * los usa. Mismo patrón que ya evita `appStateHooks.ts` de este puerto.
+ * `getGlobalConfig`/`saveGlobalConfig` (`@thyrox/config`), `getOauthConfig`
+ * (`@thyrox/provider/oauthConstants`) y `getClaudeAIOAuthTokens`
+ * (`@thyrox/provider/authAlias.js`) se usan sólo dentro de cuerpos de
+ * función y se leen por `require()` diferido, al primer uso.
  */
 
 import axios from 'axios'

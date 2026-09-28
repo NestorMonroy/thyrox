@@ -6,10 +6,8 @@
  * Dos pruebas, dos ejes. `__tests__/gracefulShutdown.behavior.test.ts` fija
  * la FORMA: lee este archivo con `readFileSync` y asevera sobre su texto.
  * `__tests__/gracefulShutdown.test.ts` fija la CONDUCTA: importa el módulo y
- * lo ejecuta con `process.exit` sustituido. Esa segunda estaba pendiente
- * porque el módulo no se podía importar —la lista de abajo enumeraba seis
- * dependencias ausentes—; medido el 2026-09-27, se importa y expone sus siete
- * símbolos, así que la lista es historia del porte, no un bloqueo vigente:
+ * lo ejecuta con `process.exit` sustituido. El módulo importa, por las
+ * mismas rutas que la fuente:
  *
  *   - `chalk` (dim del hint de reanudación)
  *   - `signal-exit` (`onExit`, el pin del workaround de Bun)

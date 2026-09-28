@@ -27,13 +27,11 @@ const BINARY = '/opt/claude-code/bin/claude'
 
 /**
  * Cifras medidas por build. Una entrada se anade SOLO tras medirla; nunca se
- * copia de la anterior. Fuente de 2.1.258: dry-run del probe Python el
- * 2026-09-02.
+ * copia de la anterior. Fuente de 2.1.258: dry-run del probe Python.
  */
 const MEASURED: Record<string, { entries: number; tableBytes: number; extractedBytes: number }> = {
   '2.1.258': { entries: 1802, tableBytes: 93_704, extractedBytes: 38_463_684 },
-  // Medida el 2026-09-06 con `binary info` sobre la build viva, no copiada de
-  // la anterior: 16 entradas mas y 832 B mas de tabla (paso 52, invariante).
+  // Medida con `binary info` sobre la build viva, no copiada de la anterior: 16 entradas mas y 832 B mas de tabla (paso 52, invariante).
   '2.1.263': { entries: 1818, tableBytes: 94_536, extractedBytes: 38_733_511 },
   // Medida el 2026-09-09T18:12:38 con `binary info` sobre la build viva. Nueve entradas
   // mas y 468 B mas de tabla (paso 52, invariante), pero el contenido BAJA en

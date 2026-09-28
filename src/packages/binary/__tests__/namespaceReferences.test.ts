@@ -2,12 +2,13 @@
  * `references` a través de un NAMESPACE: el consumidor no importa el nombre,
  * importa el módulo entero y accede al miembro.
  *
- * Medido sobre 2.1.283 (2026-09-27): `references chunk-z4sfgzqt.js v` daba
- * 0 usos de `microphoneAuthorizationStatus`, y el módulo de audio SÍ tiene
- * consumidor. `chunk-11jfjeh3.js` lo carga con `r=await import(DEF)` dentro
- * de un cargador `f`, y lo usa como `(await f(o)).isNativeAudioAvailable()` o
- * como `i=await f(n); i.startNativeRecording(…)`. El recorrido sólo seguía
- * `import{x}from`, así que las tres formas le eran invisibles.
+ * Sobre 2.1.283, un recorrido que sólo siga `import{x}from` da 0 usos de
+ * `microphoneAuthorizationStatus` (`references chunk-z4sfgzqt.js v`), y el
+ * módulo de audio SÍ tiene consumidor: `chunk-11jfjeh3.js` lo carga con
+ * `r=await import(DEF)` dentro de un cargador `f`, y lo usa como
+ * `(await f(o)).isNativeAudioAvailable()` o como
+ * `i=await f(n); i.startNativeRecording(…)`. Las tres formas son invisibles a
+ * ese recorrido.
  *
  * Los casos 1-3 son una forma cada uno; el 4, que un miembro de OTRO export
  * del namespace no cuenta; el 5 es el control real sobre el corpus.

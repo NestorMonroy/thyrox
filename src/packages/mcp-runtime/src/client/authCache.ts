@@ -5,27 +5,9 @@
  * Cache en disco de "este servidor MCP necesita autenticación", con TTL de
  * 15 minutos, para no repetir el chequeo de auth en cada reconexión.
  *
- * `@thyrox/local-observability/slowOperations.js` SÍ resuelve (pasa el
- * filtro de dos pasos: declara el subpath y exporta `jsonParse`/
- * `jsonStringify`, verificado en runtime con `Bun.resolveSync`) —
- * reapuntado, directiva del ejecutor 2026-09-07.
- *
- * `@claude-code-how-works/config/env/utils` NO se reapunta: aunque
- * `@thyrox/config` declara el subpath `./env/utils`, ese módulo es un
- * PORTE PARCIAL declarado (TASK-DOCS-0200) que sólo trae 3 de los 17
- * símbolos de la fuente — `isEnvTruthy`, `readEnv`, `getAllEnv` — y
- * `getConfigHomeDir` está explícitamente entre los 14 omitidos.
- *
- * CORREGIDO — el especificador original (`@claude-code-how-works/config/
- * env/utils`) ya NO se deja como import estático: la base
- * `@claude-code-how-works/*` no existe en absoluto en este árbol, así que
- * un `import` estático de un subpath inexistente hace fallar la carga del
- * MÓDULO ENTERO (`Cannot find module`), no sólo el símbolo — medido con
- * `bun -e "import(...)"` sobre este mismo archivo antes de la corrección.
- * Hoy viene de `@thyrox/config/env/utils`, que ya exporta
- * `getConfigHomeDir`; el sustituto local que lo cubría se retiró el
- * 2026-09-27 (`check_stand_ins`). Ver H-DOCS-1160 para el episodio que
- * originó la primera mitad de esta corrección.
+ * `jsonParse`/`jsonStringify` vienen de
+ * `@thyrox/local-observability/slowOperations.js` y `getConfigHomeDir` de
+ * `@thyrox/config/env/utils`.
  */
 import { mkdir, readFile, unlink, writeFile } from "fs/promises";
 import { dirname } from "path";

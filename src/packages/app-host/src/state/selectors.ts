@@ -16,18 +16,15 @@
  * (`@thyrox/swarm: src/index.ts:105,107`, reexportados desde
  * `tasks/types.ts`). El TIPO se importa directo (type-only, se borra al
  * transpilar). La FUNCIÓN `isInProcessTeammateTask` también se importa del
- * original: el sustituto local se retiró cuando `@thyrox/swarm` quedó
- * enlazado (ver la nota de 2026-09-24 abajo).
+ * original.
  */
 import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'
 import { isInProcessTeammateTask } from '@thyrox/swarm'
 
-// (2026-09-24) La guarda viene de `@thyrox/swarm`: el symlink ya existe y
-// `require.resolve` lo resuelve desde este paquete, que era la condición de
-// retiro del sustituto local. `LocalAgentTaskState` es el canónico, como
-// import sólo de tipo: la copia estructural local (`{ type: 'local_agent' }`)
-// no tenía los campos del `TaskStateBase` y no casaba con el tipo real.
+// `LocalAgentTaskState` es el canónico, como import sólo de tipo: una copia
+// estructural local (`{ type: 'local_agent' }`) no tendría los campos del
+// `TaskStateBase` y no casaría con el tipo real.
 type AppStateShape = {
   viewingAgentTaskId: string | null | undefined
   tasks: Record<string, { type: string; [key: string]: unknown }>

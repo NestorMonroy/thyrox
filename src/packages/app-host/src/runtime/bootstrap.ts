@@ -173,8 +173,7 @@ export function installRuntimeSkeletonBindings(): void {
   // seam de runtime bootstrap.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./installBridgeBindings.js')
-  // config/plugin (subárbol Wave-1) — cablea los 50+ setters del
-  // subsistema de plugins migrado fuera de src/utils/plugins/ en Round 4.
+  // config/plugin — cablea los 50+ setters del subsistema de plugins.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./installPluginBindings.js')
   // Lector de stdin nativo (stdin-napi) → App de @anthropic/ink. Evita el
