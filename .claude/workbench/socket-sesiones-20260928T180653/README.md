@@ -54,7 +54,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | E | módulo de entrypoints y anfitrión (`chunk-jwddn0q9.js` completo) con las variables `THYROX_CODE_*` y el intérprete de cada una (`str`/`bool`/`triBool` de `chunk-b1cxch1w.js`) → `@thyrox/config: entrypoint.ts` | hecha: 16 pruebas; 27 anulaciones (`anulacion-entrypoint-*.txt`); oráculo `diferencial-entrypoint.txt`, 0 discrepancias en 20000 escenarios |
 | W-2 | nombre derivado de una sesión (`xs`) → `@thyrox/tool-registry: derivedSessionName`; con carpeta sin slug toma el nombre del producto | hecha: 3 pruebas; 5 anulaciones (`anulacion-xs-*.txt`) |
 | F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`, `lD`, `ZM`, `QM`, `QKn`, `opn`, `xy`, `YKn`, `XKn`, `JKn`, `FNr`, `tUr`) → `uds/sessionRegistration.ts`; el nombre derivado, la limpieza y las señales de sesión y de directorio llegan por `processRegistrationDeps(parts)` | hecha: 25 pruebas; 44 anulaciones (`anulacion-registration-*.txt`) |
-| S | señales de cambio de sesión con motivo y de `originalCwd` (`Sn`/`fn`, `yn`/`hn`, `Zd`, `kzr`) en `@thyrox/app-host`; hoy `onSessionSwitch` entrega sólo el id | pendiente |
+| S | señales de cambio de sesión con motivo y de `originalCwd` (`Sn`/`fn`, `yn`/`hn`, `mh`, `Zd`, `kzr`, `oT`, `D1t`) en `@thyrox/app-host`: `switchSession(id, motivo, dir, rutas)` con los ocho motivos de `XGe`, `regenerateSessionId` avisa `clear`, `setOriginalCwd` avisa el valor NFC; llamadores con su motivo (`hydrate`, `resume`/`fork`, `startup_custom_id`). Divergencia: el tercer argumento de `fn` (restauración del modelo de respaldo por rechazo, `mn`) no se emite porque el enclavamiento no existe; es la fase R | hecha |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
 | F4c-2f-4e | tipo de sesión por entorno y anfitrión (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`, `NNr`, `qKn`) con `THYROX_CODE_SESSION_KIND`, `THYROX_JOB_DIR` y `THYROX_BG_BACKEND`; `fb`, `Ul`, `dR` y `md` llegan por `configureSessionKindHost` → `uds/sessionKind.ts` | hecha: 9 pruebas; 17 anulaciones (`anulacion-sessionkind-*.txt`) |
 | F4c-2f-4f | sustituir `agent/concurrentSessions.ts` por el registro portado en sus consumidores; alinear `cli/src/bg.ts`, que escribe `CLAUDE_BG_BACKEND=detached` donde la referencia lee `daemon` (`jte`) | pendiente |
@@ -597,3 +597,14 @@ sesión, publicar la sesión y el aparcado), las tres del cambio de directorio,
 no discriminaban en la primera versión; se añadió el caso de una sesión
 interactiva con `THYROX_BG_SOURCE=spare` y `THYROX_JOB_DIR` sobre un
 directorio ya existente en 0755.
+
+### Controles de la fase S
+
+`bun test src/bootstrap/__tests__/sessionSignals.test.ts` en `@thyrox/app-host`, 10 casos.
+Cada anulación deja su salida en `anulacion-S-<nombre>.txt`; entre paréntesis, los casos que caen:
+motivo (4), clear (1), rutas (1), aviso-cwd (1), orden (1), set-aviso (2), nfc-rutas (1),
+desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
+
+| Fase | Qué | Estado |
+|---|---|---|
+| R | enclavamiento del modelo de respaldo por rechazo (`refusalFallbackModelLatch`, `unlatchRefusalFallbackModel`, `mn`) en la selección de modelo, y su restauración como tercer argumento de la señal de sesión | pendiente |

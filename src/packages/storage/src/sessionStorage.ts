@@ -1272,7 +1272,7 @@ export async function hydrateRemoteSession(
   sessionId: string,
   ingressUrl: string,
 ): Promise<boolean> {
-  switchSession(asSessionId(sessionId))
+  switchSession(asSessionId(sessionId), 'hydrate')
 
   const project = getProject()
 
@@ -1317,7 +1317,7 @@ export async function hydrateFromCCRv2InternalEvents(
   sessionId: string,
 ): Promise<boolean> {
   const startMs = Date.now()
-  switchSession(asSessionId(sessionId))
+  switchSession(asSessionId(sessionId), 'hydrate')
 
   const project = getProject()
   const reader = project.getInternalEventReader()

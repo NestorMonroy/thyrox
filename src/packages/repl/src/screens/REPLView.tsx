@@ -1863,7 +1863,7 @@ export function REPL({
         // Switch session (id + project dir atomically). fullPath may point to
         // a different project (cross-worktree, /branch); null derives from
         // current originalCwd.
-        switchSession(asSessionId(sessionId), log.fullPath ? dirname(log.fullPath) : null);
+        switchSession(asSessionId(sessionId), entrypoint === 'fork' ? 'fork' : 'resume', log.fullPath ? dirname(log.fullPath) : null);
         // Rename asciicast recording to match the resumed session ID
         const { renameRecordingForSession } = await import('@thyrox/output/capture');
         await renameRecordingForSession();

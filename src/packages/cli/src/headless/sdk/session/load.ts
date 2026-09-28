@@ -159,6 +159,7 @@ export async function loadInitialMessages(
           if (result.sessionId) {
             switchSession(
               asSessionId(result.sessionId),
+              'resume',
               result.fullPath ? dirname(result.fullPath) : null,
             )
             if (persistSession) {
@@ -365,6 +366,7 @@ export async function loadInitialMessages(
       if (!options.forkSession && result.sessionId) {
         switchSession(
           asSessionId(result.sessionId),
+          'resume',
           result.fullPath ? dirname(result.fullPath) : null,
         )
         if (persistSession) {

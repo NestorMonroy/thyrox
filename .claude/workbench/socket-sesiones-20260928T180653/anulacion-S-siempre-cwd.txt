@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+81 |   test('sin originalCwd en las rutas no avisa de directorio', () => {
+82 |     const cwds = recordCwds()
+83 |     const before = getOriginalCwd()
+84 |     switchSession(id('r'), 'remote_attach', null, {})
+85 |     switchSession(id('q'), 'resume')
+86 |     expect(cwds).toEqual([])
+                      ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "/home/user/thyrox/src/packages/app-host",
++   "/home/user/thyrox/src/packages/app-host",
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:86:18)
+(fail) switchSession (mh) avisa con el motivo > sin originalCwd en las rutas no avisa de directorio [0.41ms]
+
+ 7 pass
+ 1 fail
+ 11 expect() calls
+Ran 8 tests across 1 file. [132.00ms]

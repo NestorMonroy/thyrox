@@ -638,6 +638,7 @@ export function regenerateSessionId(
   STATE.planSlugCache.delete(STATE.sessionId)
   STATE.sessionId = randomUUID() as SessionId
   STATE.sessionProjectDir = null
+  emitSessionSwitch(STATE.sessionId, 'clear')
   return STATE.sessionId
 }
 
@@ -646,9 +647,34 @@ export function getParentSessionId(): SessionId | undefined {
 }
 
 /**
- * Cambia de sesión ATÓMICAMENTE. `sessionId` y `sessionProjectDir` cambian
- * siempre juntos —no hay setter separado para ninguno— para que no puedan
- * desincronizarse.
+ * Por qué cambió la sesión: los motivos con que 2.1.283 llama a `mh` y a
+ * `fn`. Los oyentes deciden con él —un `cd` o un `hydrate` conservan la
+ * conversación; `clear`, `resume` y `remote_attach` la reinician—.
+ */
+export type SessionSwitchReason =
+  | 'clear'
+  | 'resume'
+  | 'fork'
+  | 'remote_attach'
+  | 'cd'
+  | 'spare_claim'
+  | 'hydrate'
+  | 'startup_custom_id'
+
+export type SessionSwitchListener = (id: SessionId, reason: SessionSwitchReason) => void
+
+/** Las rutas de proyecto que un cambio de sesión puede fijar a la vez (`r` de `mh`). */
+export type SessionSwitchPaths = {
+  originalCwd?: string
+  projectRoot?: string
+  cwd?: string
+}
+
+/**
+ * Cambia de sesión ATÓMICAMENTE (`mh`). `sessionId` y `sessionProjectDir`
+ * cambian siempre juntos —no hay setter separado para ninguno— para que no
+ * puedan desincronizarse. Los oyentes reciben el aviso aunque el id no
+ * cambie: el motivo es parte del mensaje.
  *
  * @param projectDir directorio que contiene `<sessionId>.jsonl`. Omitir (o
  *   `null`) para una sesión del proyecto actual: la ruta se deriva de
@@ -656,15 +682,25 @@ export function getParentSessionId(): SessionId | undefined {
  *   sesión vive en otro proyecto —worktrees de git, reanudación cruzada—.
  *   CADA llamada reinicia el directorio; nunca se arrastra el de la sesión
  *   anterior.
+ * @param paths rutas de proyecto que se fijan con el cambio; si trae
+ *   `originalCwd`, su señal se emite después de la de sesión.
+ *
+ * DIVERGENCIA DECLARADA: la referencia pasa a los oyentes un tercer
+ * argumento cuando deshace el modelo de respaldo por rechazo (`mn`). Este
+ * árbol no tiene ese enclavamiento, así que no hay nada que pasar.
  */
 export function switchSession(
   sessionId: SessionId,
+  reason: SessionSwitchReason,
   projectDir: string | null = null,
+  paths?: SessionSwitchPaths,
 ): void {
-  STATE.planSlugCache.delete(STATE.sessionId)
+  if (STATE.sessionId !== sessionId) STATE.planSlugCache.delete(STATE.sessionId)
   STATE.sessionId = sessionId
   STATE.sessionProjectDir = projectDir
-  for (const listener of sessionSwitchListeners) listener(sessionId)
+  if (paths) applyProjectPaths(paths)
+  emitSessionSwitch(sessionId, reason)
+  if (paths?.originalCwd !== undefined) emitOriginalCwdChange()
 }
 
 /**
@@ -675,14 +711,39 @@ export function switchSession(
  * bootstrap no puede importar a sus oyentes —es hoja del grafo—, así que
  * son ellos los que se registran.
  */
-const sessionSwitchListeners = new Set<(id: SessionId) => void>()
+const sessionSwitchListeners = new Set<SessionSwitchListener>()
+const originalCwdListeners = new Set<(originalCwd: string) => void>()
 
-export function onSessionSwitch(
-  listener: (id: SessionId) => void,
-): () => void {
+/** `fn`. */
+function emitSessionSwitch(sessionId: SessionId, reason: SessionSwitchReason): void {
+  for (const listener of sessionSwitchListeners) listener(sessionId, reason)
+}
+
+/** `hn`: emite el `originalCwd` vigente, no el que se pidió fijar. */
+function emitOriginalCwdChange(): void {
+  for (const listener of originalCwdListeners) listener(STATE.originalCwd)
+}
+
+/** `D1t`: fija las rutas presentes, normalizadas a NFC. */
+function applyProjectPaths(paths: SessionSwitchPaths): void {
+  if (paths.originalCwd !== undefined) STATE.originalCwd = paths.originalCwd.normalize('NFC')
+  if (paths.projectRoot !== undefined) STATE.projectRoot = paths.projectRoot.normalize('NFC')
+  if (paths.cwd !== undefined) STATE.cwd = paths.cwd.normalize('NFC')
+}
+
+/** `Zd`. */
+export function onSessionSwitch(listener: SessionSwitchListener): () => void {
   sessionSwitchListeners.add(listener)
   return () => {
     sessionSwitchListeners.delete(listener)
+  }
+}
+
+/** `kzr`: avisa cada vez que `originalCwd` se fija. */
+export function onOriginalCwdChange(listener: (originalCwd: string) => void): () => void {
+  originalCwdListeners.add(listener)
+  return () => {
+    originalCwdListeners.delete(listener)
   }
 }
 
@@ -732,6 +793,7 @@ export function getProjectRoot(): string {
 
 export function setOriginalCwd(cwd: string): void {
   STATE.originalCwd = cwd.normalize('NFC')
+  emitOriginalCwdChange()
 }
 
 /**
