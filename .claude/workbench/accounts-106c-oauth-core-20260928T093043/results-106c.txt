@@ -1,0 +1,70 @@
+== 1: el verificador ignora su longitud
+(fail) pkce > the challenge is the S256 of the verifier, and the verifier length follows its bytes [0.84ms]
+ 15 pass
+ 1 fail
+== 2: el callback escucha en todas las interfaces
+(fail) callback server > resolves with the query of either callback path, on loopback only [8.83ms]
+ 15 pass
+ 1 fail
+== 3: cualquier ruta cuenta como callback
+(fail) callback server > another path is a 404 and does not resolve [7.06ms]
+ 15 pass
+ 1 fail
+== 4: sin plazo
+(fail) callback server > a timeout rejects [5000.31ms]
+== 5: el puerto ocupado no se nombra
+(fail) callback server > a fixed port already in use names the port [7.71ms]
+ 15 pass
+ 1 fail
+== 6: la importación de token no dice qué hacer
+(fail) oauth flows > an import-token flow is not supported and says what to do instead [0.37ms]
+ 15 pass
+ 1 fail
+== 7: un flujo simple no puede traer su verificador
+(fail) oauth flows > a device-code flow has no URL; a plain flow may replace the verifier and redirect [0.38ms]
+ 15 pass
+ 1 fail
+== 8: device code sin inicio PKCE en el navegador
+(fail) oauth flows > a device-code flow has no URL; a plain flow may replace the verifier and redirect [0.44ms]
+ 15 pass
+ 1 fail
+== 9: pendiente y fallo son lo mismo
+(fail) oauth flows > device code: only a device flow requests it, and polling tells pending from failure [0.99ms]
+ 15 pass
+ 1 fail
+== 10: sin paso posterior al intercambio
+(fail) oauth flows > exchanging runs the post-exchange step and maps the tokens [0.78ms]
+ 15 pass
+ 1 fail
+== 11: el re-login no reactiva
+(fail) persisting an OAuth result > a re-login updates the same account and reactivates it [48.40ms]
+ 15 pass
+ 1 fail
+== 12: un payload sin email casa con una cuenta sin email
+ 16 pass
+ 0 fail
+== 13: Codex casa sólo por email
+(fail) persisting an OAuth result > matching: an email-less payload never matches, Codex needs its workspace or user, Claude its organization [0.44ms]
+ 15 pass
+ 1 fail
+== 14: Claude no separa organizaciones
+(fail) persisting an OAuth result > matching: an email-less payload never matches, Codex needs its workspace or user, Claude its organization [0.66ms]
+ 15 pass
+ 1 fail
+== 15: la caducidad no se refleja en tokenExpiresAt
+(fail) persisting an OAuth result > a new login is created with its expiry mirrored and its email as name [52.62ms]
+ 15 pass
+ 1 fail
+== 16: el id explícito no gana
+(fail) persisting an OAuth result > an explicit connection id wins even without an email [45.53ms]
+ 15 pass
+ 1 fail
+== restaurado
+ 16 pass
+ 0 fail
+== 12, repetida con la fila sin la clave email (la forma que devuelve el store)
+(fail) persisting an OAuth result > matching: an email-less payload never matches, Codex needs its workspace or user, Claude its organization [0.52ms]
+ 15 pass
+ 1 fail
+ 16 pass
+ 0 fail
