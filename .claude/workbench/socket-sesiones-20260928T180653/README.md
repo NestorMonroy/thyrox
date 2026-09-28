@@ -608,7 +608,10 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 | Fase | Qué | Estado |
 |---|---|---|
 | R | enclavamiento del modelo de respaldo por rechazo (`refusalFallbackModelLatch`, `unlatchRefusalFallbackModel`, `mn`) en la selección de modelo, y su restauración como tercer argumento de la señal de sesión → `app-host/src/bootstrap/state.ts`. Redundante por construcción: `a2r` (sin enclavamiento, las dos formas dejan `undefined`) | hecha: 16 pruebas; 13 anulaciones (`anulacion-R-*.txt`) |
-| R-2 | oyentes de la restauración (`Pyt` con `wt` sobre el estado de la aplicación y el evento `tengu_refusal_fallback_latch_reset` con `vV`; `b8r`), `chunk-6ff16z73.js` | pendiente |
+| R-2a | oyentes de la restauración con dependencias inyectadas: `wt` sobre el estado de la aplicación, `sA`, `Pyt` con el evento `tengu_refusal_fallback_latch_reset` y `b8r` (`chunk-6ff16z73.js`) → `app-host/src/state/refusalFallbackRestore.ts`. Redundante por construcción: `aviso` (`sA` ya normaliza con `!!`) | hecha: 12 pruebas; 14 anulaciones (`anulacion-R2a-*.txt`) |
+| R-2b | modo rápido de 2.1.283 (`mo`, `qy` con la capacidad `fast_mode` del catálogo, `Ndn`, `Bk`/`D5`, `Yl`, `oA`, `Dt`, `Ea`) contra `provider/src/fastMode.ts`, que hoy es de una versión anterior | pendiente |
+| R-2c | alcance del modelo de respaldo (`vV`: `ahe`, `$h`/`Be` con `refusal_fallback`, `MNe`, `Tle`, `$5`, `izn`) | pendiente |
+| R-2d | cableado: `Pyt` sobre el `setState` del almacén del REPL y `b8r` en el modo headless (olvida el modelo pedido por el usuario), con las dependencias de R-2b y R-2c | pendiente |
 
 ### Fase C — el módulo cliente y de recibos (`chunk-qcy58j4w.js`)
 
@@ -626,3 +629,11 @@ Casos que caen por anulación: cadena (1), vigente (1), restaura-switch (1),
 olvida-switch (1), restaura-clear (1), olvida-clear (1), dos-args (3, tras
 exigir la longitud: `toEqual` ignora un `undefined` final), origen (1),
 explicito (1), fija (4), suelta (2); `a2r` (0) es redundante por construcción.
+
+### Controles de la fase R-2a
+
+`bun test src/state/__tests__/refusalFallbackRestore.test.ts` en `@thyrox/app-host`.
+Casos que caen: igual (3), origen (2), remoto (1), orden (1), habilitado (1),
+intacto (1), sin-actualizador (1), override (1), pyt-guarda (2), alcance (1),
+motivo (1), explicito (1, tras añadir el caso sin override previo), b8r (1);
+`aviso` (0) es redundante por construcción.

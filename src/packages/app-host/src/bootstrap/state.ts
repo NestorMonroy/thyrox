@@ -680,8 +680,8 @@ export type SessionSwitchReason =
  * regir, para que el oyente restaure su propia copia.
  */
 export type RefusalFallbackRestore = {
-  appStateModel: ModelSetting | undefined
-  forSessionValue: ModelSetting | undefined
+  appStateModel: ModelSetting
+  forSessionValue: ModelSetting
   overrideValue: ModelSetting | undefined
   restoredToExplicitOverride: boolean
   fallbackModel: ModelSetting
@@ -1269,8 +1269,8 @@ export function setMainLoopModelOverride(
 export type RefusalFallbackModelLatch = {
   fallbackModel: ModelSetting
   previousOverride: ModelSetting | undefined
-  previousAppStateModel: ModelSetting | undefined
-  previousModelForSession: ModelSetting | undefined
+  previousAppStateModel: ModelSetting
+  previousModelForSession: ModelSetting
 }
 
 /** `o2r`: el primer id de petición que llegue queda como origen. */

@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+144 |     const { deps, events } = harness({ overrideMainLoopModel: setMainLoopModelOverride })
+145 |     const app = store({ mainLoopModel: 'claude-sonnet-5', mainLoopModelForSession: null, fastMode: false })
+146 |     unsubscribers.push(subscribeRefusalFallbackReset(app.setAppState, deps))
+147 |     latchAndDiverge()
+148 |     switchSession('otra' as SessionId, 'resume')
+149 |     expect(app.get().mainLoopModel).toBe('claude-opus-5')
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "claude-opus-5"
+Received: "claude-sonnet-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:149:37)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > al restaurarse aplica al estado y emite el evento de reinicio [1.08ms]
+157 |     const asked: unknown[] = []
+158 |     const { deps } = harness({ modelScope: model => (asked.push(model), 'other') })
+159 |     unsubscribers.push(subscribeRefusalFallbackReset(store({ mainLoopModel: null, mainLoopModelForSession: null }).setAppState, deps))
+160 |     latchAndDiverge()
+161 |     regenerateSessionId()
+162 |     expect(asked).toEqual(['claude-sonnet-5'])
+                        ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "claude-sonnet-5",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:162:19)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > el alcance del modelo se pide sobre el modelo de respaldo [0.54ms]
+
+ 9 pass
+ 2 fail
+ 18 expect() calls
+Ran 11 tests across 1 file. [69.00ms]

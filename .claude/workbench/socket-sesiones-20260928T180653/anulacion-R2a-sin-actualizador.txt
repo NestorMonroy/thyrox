@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+122 |   })
+123 | 
+124 |   test('un setAppState que no llama al actualizador no avisa, pero fija el override', () => {
+125 |     const { deps, events, overrides } = harness()
+126 |     applyRefusalFallbackRestore(restore({ overrideValue: undefined }), () => {}, deps)
+127 |     expect(events).toEqual([])
+                         ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "tengu_fast_mode_toggled",
++     {
++       "enabled": undefined,
++       "remote": false,
++       "source": "model_switch_downgrade",
++     },
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 10
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:127:20)
+(fail) applyRefusalFallbackRestore (wt) > un setAppState que no llama al actualizador no avisa, pero fija el override [0.44ms]
+
+ 10 pass
+ 1 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [69.00ms]
