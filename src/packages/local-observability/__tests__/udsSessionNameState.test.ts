@@ -89,7 +89,11 @@ describe('SessionNameState (b)', () => {
     state.announceYield('b', 'a')
     state.reset()
     expect(state.correspondents.size).toBe(0)
-    expect([state.userTypedName, state.hasAdopter, state.lastYield, state.senderMode, state.takePendingYield()]).toEqual([undefined, false, undefined, null, undefined])
+    expect(state.userTypedName).toBeUndefined()
+    expect(state.hasAdopter).toBe(false)
+    expect(state.lastYield).toBeUndefined()
+    expect(state.senderMode).toBeNull()
+    expect(state.takePendingYield()).toBeUndefined()
   })
 
   test('PerHost (q) crea uno por anfitrión y lo reutiliza', () => {
