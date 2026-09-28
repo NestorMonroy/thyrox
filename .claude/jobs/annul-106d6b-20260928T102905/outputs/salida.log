@@ -1,0 +1,181 @@
+== 1: sin token no se refresca
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a connection without an access token needs refresh; one without expiry does not; five minutes is the margin [48.94ms]
+ 10 pass
+ 1 fail
+== 2: el margen es estricto
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a connection without an access token needs refresh; one without expiry does not; five minutes is the margin [49.59ms]
+ 10 pass
+ 1 fail
+== 3: sin caducidad se refresca
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a connection without an access token needs refresh; one without expiry does not; five minutes is the margin [53.66ms]
+ 10 pass
+ 1 fail
+== 4: sin etiqueta por defecto
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > the label and the file name part [41.90ms]
+ 10 pass
+ 1 fail
+== 5: los guiones de los bordes se quedan
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > the label and the file name part [41.64ms]
+ 10 pass
+ 1 fail
+== 6: los alcances sin filtrar
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > the payload carries the tokens, the expiry in milliseconds, the scopes and the declared plan [44.65ms]
+ 10 pass
+ 1 fail
+== 7: el nivel en blanco se escribe
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > the payload carries the tokens, the expiry in milliseconds, the scopes and the declared plan [42.22ms]
+ 10 pass
+ 1 fail
+== 8: cualquier proveedor exporta
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > only an Anthropic OAuth connection exports, and a fresh one is not refreshed [58.73ms]
+ 10 pass
+ 1 fail
+== 9: una clave de API exporta
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > only an Anthropic OAuth connection exports, and a fresh one is not refreshed [76.69ms]
+ 10 pass
+ 1 fail
+== 10: siempre se refresca
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > only an Anthropic OAuth connection exports, and a fresh one is not refreshed [56.85ms]
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [50.71ms]
+ 9 pass
+ 2 fail
+== 11: el refresco irrecuperable es un fallo genérico
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > an unrecoverable or empty refresh is refused with its code [42.80ms]
+ 10 pass
+ 1 fail
+== 12: el refresco no se persiste
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a stale connection is refreshed, persisted and exported with the new tokens [43.61ms]
+ 10 pass
+ 1 fail
+== 13: el refresh token viejo se pierde
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a stale connection is refreshed, persisted and exported with the new tokens [50.95ms]
+ 10 pass
+ 1 fail
+== 14: los datos del proveedor se reemplazan
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a stale connection is refreshed, persisted and exported with the new tokens [46.28ms]
+ 10 pass
+ 1 fail
+== 15: la caducidad no se recalcula
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > a stale connection is refreshed, persisted and exported with the new tokens [46.47ms]
+ 10 pass
+ 1 fail
+== 16: el archivo por la etiqueta
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > only an Anthropic OAuth connection exports, and a fresh one is not refreshed [48.64ms]
+ 10 pass
+ 1 fail
+== 17: sin copia al lado
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [52.26ms]
+ 10 pass
+ 1 fail
+== 18: lo demás del archivo se pierde
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [46.98ms]
+ 10 pass
+ 1 fail
+== 19: legible por todos
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [52.03ms]
+ 10 pass
+ 1 fail
+== 20: sin informar lo conservado
+   (src/accounts/imports/anthropicAuthFile.ts)
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [52.08ms]
+ 10 pass
+ 1 fail
+== 21: se importa sin access token
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the file needs both tokens; the expiry becomes ISO and the scopes stay strings [42.18ms]
+ 10 pass
+ 1 fail
+== 22: se importa sin refresh token
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the file needs both tokens; the expiry becomes ISO and the scopes stay strings [43.22ms]
+ 10 pass
+ 1 fail
+== 23: la caducidad numérica queda en milisegundos
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the file needs both tokens; the expiry becomes ISO and the scopes stay strings [41.15ms]
+ 10 pass
+ 1 fail
+== 24: la caducidad en texto sin recortar
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the file needs both tokens; the expiry becomes ISO and the scopes stay strings [42.15ms]
+ 10 pass
+ 1 fail
+== 25: los alcances importados sin filtrar
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the file needs both tokens; the expiry becomes ISO and the scopes stay strings [44.33ms]
+ 10 pass
+ 1 fail
+== 26: un bootstrap caído rompe la importación
+   (src/accounts/imports/anthropicAuthImport.ts)
+ 11 pass
+ 0 fail
+== 27: el nivel del archivo se pierde
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the bootstrap names the account and its organization; a failed one leaves them empty [75.10ms]
+ 10 pass
+ 1 fail
+== 28: sin correo del bootstrap
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the bootstrap names the account and its organization; a failed one leaves them empty [50.58ms]
+ 10 pass
+ 1 fail
+== 29: la cuenta distingue mayúsculas
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the same account again is a duplicate unless overwritten, and overwrite keeps its device identity [46.00ms]
+ 10 pass
+ 1 fail
+== 30: el duplicado se sobrescribe solo
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the same account again is a duplicate unless overwritten, and overwrite keeps its device identity [45.50ms]
+ 10 pass
+ 1 fail
+== 31: la identidad de dispositivo se renueva
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the same account again is a duplicate unless overwritten, and overwrite keeps its device identity [49.89ms]
+ 10 pass
+ 1 fail
+== 32: el nombre existente se pierde
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the same account again is a duplicate unless overwritten, and overwrite keeps its device identity [44.48ms]
+ 10 pass
+ 1 fail
+== 33: sin identidad se importa
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > a new account is created with a device identity; without any identity it needs overwrite [46.36ms]
+ 10 pass
+ 1 fail
+== 34: sin nombre por defecto
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > a new account is created with a device identity; without any identity it needs overwrite [43.39ms]
+ 10 pass
+ 1 fail
+== 35: un fetch que lanza rompe la importación
+   (src/accounts/imports/anthropicAuthImport.ts)
+(fail) import > the bootstrap names the account and its organization; a failed one leaves them empty [49.34ms]
+ 10 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+?? src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+ 11 pass
+ 0 fail
+__BG_EXIT__=0
