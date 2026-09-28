@@ -1,12 +1,14 @@
 /**
  * Lo común a los verbos de `thyrox mitm`: un argumento que no alcanza es un
  * error de uso (exit 2, sin tocar la API); una respuesta se imprime como JSON
- * si es un éxito, o como su mensaje (exit 1) si la API la rechazó.
+ * si es un éxito con contenido, o como su mensaje (exit 1) si la API la
+ * rechazó.
  */
 import { EXIT_OK, EXIT_USAGE } from '../../exitCodes.ts'
 import type { ApiRequest, MitmApiCall } from './inProcessApi.ts'
 
 const EXIT_REFUSED = 1
+const NO_CONTENT = 204
 
 export interface UsageError {
   usage: string
@@ -32,6 +34,7 @@ export async function callAndPrint(
   write: (text: string) => void,
 ): Promise<number> {
   const response = await api(request)
+  if (response.status === NO_CONTENT) return EXIT_OK
   const body = (await response.json().catch(() => null)) as { error?: { message?: string } } | null
   if (!response.ok) {
     write(`thyrox mitm ${verb}: ${body?.error?.message ?? `HTTP ${response.status}`}\n`)

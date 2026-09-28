@@ -188,3 +188,57 @@ test('the sudo password is the first stdin line, without its line break', async 
   expect(await readFirstLine(Readable.from(['s3c', 'ret\nnext line\n']))).toBe('s3cret')
   expect(await readFirstLine(Readable.from(['no-newline']))).toBe('no-newline')
 })
+
+function capturedRequest(id: string) {
+  return {
+    id,
+    source: 'agent-bridge' as const,
+    agent: 'codex' as const,
+    timestamp: '2026-09-28T08:00:00.000Z',
+    method: 'POST',
+    host: 'api.example.com',
+    path: '/v1/responses',
+    requestHeaders: {},
+    requestBody: null,
+    requestSize: 0,
+    responseHeaders: {},
+    responseBody: null,
+    responseSize: 0,
+    status: 200,
+  }
+}
+
+test('inspect verbs read the buffer of the running serve, and tail streams its snapshot', async () => {
+  const traffic = new TrafficBuffer(10)
+  traffic.push(capturedRequest('r1'))
+  const d = deps({ traffic })
+  const exit = mitmServe('0', d.value)
+  while (d.out.length === 0) await Bun.sleep(5)
+
+  d.out.length = 0
+  expect(await mitmCommand(['mitm', 'inspect', 'requests'], d.value)).toBe(0)
+  expect(JSON.parse(d.out.join('')).requests.map((r: { id: string }) => r.id)).toEqual(['r1'])
+
+  const lines: string[] = []
+  let stopTail!: () => void
+  const tailStopped = new Promise<void>(resolve => (stopTail = resolve))
+  const tail = mitmCommand(['mitm', 'inspect', 'tail'], {
+    ...d.value,
+    write: text => {
+      lines.push(text)
+      stopTail()
+    },
+    waitForStop: () => tailStopped,
+  })
+  expect(await tail).toBe(0)
+  expect(JSON.parse(lines[0]!)).toMatchObject({ type: 'snapshot', data: [{ id: 'r1' }] })
+
+  d.stop()
+  await exit
+})
+
+test('the full program exposes inspect under mitm', () => {
+  const program = new Command()
+  registerMitmCommands(program)
+  expect(program.commands.find(c => c.name() === 'mitm')!.commands.map(c => c.name())).toContain('inspect')
+})

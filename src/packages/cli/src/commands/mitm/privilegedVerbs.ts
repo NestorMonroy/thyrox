@@ -6,6 +6,7 @@
  * del proceso del servidor MITM. La contraseña de sudo sólo entra por stdin.
  */
 import type { ApiRequest, MitmApiCall } from './inProcessApi.ts'
+import { publishedApiUrl, type PublishedApiDeps } from './publishedApi.ts'
 import { callAndPrint, isUsageError, reportUsage, usage, type UsageError } from './verbResult.ts'
 
 const BASE = '/api/tools/agent-bridge'
@@ -24,9 +25,7 @@ const TPROXY_OPTIONS: Record<string, string> = {
   '--bypass-mark': 'bypassMark',
 }
 
-export interface PrivilegedVerbDeps {
-  /** La URL de la API en marcha, o `null` si no hay ninguna. */
-  apiUrl: () => string | null
+export interface PrivilegedVerbDeps extends PublishedApiDeps {
   connect: (baseUrl: string) => MitmApiCall
   readSecret: () => Promise<string>
   write: (text: string) => void
@@ -100,8 +99,8 @@ export async function runPrivilegedVerb(args: string[], deps: PrivilegedVerbDeps
   }
   const request = privilegedVerbRequest(args.filter(a => a !== SUDO_FROM_STDIN))
   if (isUsageError(request)) return reportUsage(verb, request, deps.write)
-  const baseUrl = deps.apiUrl()
-  if (!baseUrl) return reportUsage(verb, usage('no MITM API is running; start it with thyrox mitm serve'), deps.write)
+  const baseUrl = publishedApiUrl(deps)
+  if (typeof baseUrl !== 'string') return reportUsage(verb, baseUrl, deps.write)
   if (args.includes(SUDO_FROM_STDIN)) {
     request.body = { ...(request.body as object), sudoPassword: await deps.readSecret() }
   }

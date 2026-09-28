@@ -3,8 +3,8 @@
  * la API local en el puerto pedido, publica su URL en el directorio de datos
  * y la sirve hasta que llega SIGINT o SIGTERM; al parar retira la URL y el
  * destino de ingesta y cierra el store. Los verbos de estado van al store en
- * el mismo proceso; los privilegiados, a la API publicada, que es la dueña del
- * servidor MITM.
+ * el mismo proceso; los privilegiados y los del inspector, a la API publicada,
+ * que es la dueña del servidor MITM y del búfer de tráfico.
  */
 import type { Database } from 'bun:sqlite'
 import fs from 'node:fs'
@@ -18,6 +18,7 @@ import { flag } from '../entry/flags.ts'
 import { EXIT_OK, EXIT_USAGE } from '../exitCodes.ts'
 import { publishApiUrl, readApiUrl, withdrawApiUrl } from './mitm/apiEndpoint.ts'
 import { inProcessApi, type MitmApiCall } from './mitm/inProcessApi.ts'
+import { INSPECT_VERB, runInspectVerb } from './mitm/inspectVerbs.ts'
 import { PRIVILEGED_VERBS, runPrivilegedVerb } from './mitm/privilegedVerbs.ts'
 import { remoteApi } from './mitm/remoteApi.ts'
 import { runStateVerb, STATE_VERBS } from './mitm/stateVerbs.ts'
@@ -91,7 +92,7 @@ export async function mitmServe(portText: string, deps: MitmCommandDeps): Promis
   return EXIT_OK
 }
 
-const VERBS = ['serve', ...STATE_VERBS, ...PRIVILEGED_VERBS] as const
+const VERBS = ['serve', ...STATE_VERBS, ...PRIVILEGED_VERBS, INSPECT_VERB] as const
 
 function isOneOf(verbs: readonly string[], verb: string | undefined): boolean {
   return verbs.includes(verb ?? '')
@@ -112,6 +113,14 @@ export function mitmCommand(argv: string[], deps: MitmCommandDeps = realMitmComm
   const verb = argv[1]
   if (verb === 'serve') return mitmServe(flag(argv, 'port') ?? '0', deps)
   if (isOneOf(STATE_VERBS, verb)) return runStateVerbOnStore(argv.slice(1), deps)
+  if (verb === INSPECT_VERB) {
+    return runInspectVerb(argv.slice(2), {
+      apiUrl: () => readApiUrl(deps.dataDir),
+      connect: deps.connect,
+      write: deps.write,
+      waitForStop: deps.waitForStop,
+    })
+  }
   if (isOneOf(PRIVILEGED_VERBS, verb)) {
     return runPrivilegedVerb(argv.slice(1), {
       apiUrl: () => readApiUrl(deps.dataDir),
@@ -134,7 +143,7 @@ export function registerMitmCommands(program: ParentCommand): void {
       process.exitCode = await mitmServe(options.port, realMitmCommandDeps)
     })
   // Los demás verbos comparten el mismo manejador que la tabla de modos.
-  for (const verb of [...STATE_VERBS, ...PRIVILEGED_VERBS]) {
+  for (const verb of [...STATE_VERBS, ...PRIVILEGED_VERBS, INSPECT_VERB]) {
     mitm
       .command(`${verb} [args...]`)
       .description(`MITM ${verb} (see thyrox mitm ${verb})`)

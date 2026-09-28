@@ -66,3 +66,35 @@ publicaría la URL en el directorio de datos del usuario.
 
 Rojo persistido en `red-f7j3.txt`. Anulaciones: `annul-f7j3.sh`,
 `results-f7j3.txt`.
+
+## F7j-4 — `thyrox mitm inspect` sobre la API publicada
+
+El búfer de tráfico vive en el proceso de `serve`: una CLI de vida corta no
+tiene uno propio que leer. Los verbos del inspector van, como los
+privilegiados, a la API publicada; `publishedApi.ts` es el rechazo común de
+los dos cuando no hay ninguna.
+
+`inspectVerbs.ts` traduce cada verbo a su petición:
+
+| Verbo | Petición |
+|---|---|
+| `requests [--profile --host --agent --status --source --session]` | `GET /requests?…` |
+| `clear` · `show <id>` · `annotate <id> <texto…>` · `replay <id>` | `DELETE /requests` · `GET` · `PUT …/annotation` · `POST …/replay` |
+| `export-har [filtros]` | `GET /export.har?…` |
+| `sessions [start [nombre] \| show \| stop \| rename \| delete \| export-har <id>]` | `/sessions…` |
+| `hosts [add <host> [--label --kind] \| enable \| disable \| remove <host>]` | `/hosts…` |
+| `capture-modes [http-proxy start\|stop \| system-proxy apply [--port --guard-minutes]\|revert \| tls-intercept on\|off]` | `/capture-modes…` |
+
+Las opciones salen de tablas cerradas: una desconocida o sin valor es error de
+uso, no un filtro que se ignora en silencio. Los segmentos de ruta se
+codifican (un id con `/` no escapa a otra ruta).
+
+`liveTail.ts`: `tail` abre el websocket del canal en vivo y escribe una línea
+JSON por evento —`snapshot` al abrir, luego `new`/`update`/`clear`— hasta la
+señal de parar o el cierre del canal.
+
+Una respuesta 204 (`clear`, borrar una sesión o un host) no imprime nada: el
+`null` que salía antes no decía nada que el código de salida no dijera.
+
+Rojo persistido en `red-f7j4.txt`. Anulaciones: `annul-f7j4.sh`,
+`results-f7j4.txt`.
