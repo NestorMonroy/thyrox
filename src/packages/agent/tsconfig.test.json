@@ -70,6 +70,7 @@
     "messages/**/*",
     "messagesMappers.ts",
     "misc/**/*",
+    "modelCapabilities.ts",
     "models.ts",
     "postSamplingHooks.ts",
     "proactive/**/*",

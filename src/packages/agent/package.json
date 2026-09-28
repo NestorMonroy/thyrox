@@ -47,6 +47,11 @@
       "types": "./dist/models.d.ts",
       "default": "./models.ts"
     },
+    "./modelCapabilities": {
+      "@thyrox/source": "./modelCapabilities.ts",
+      "types": "./dist/modelCapabilities.d.ts",
+      "default": "./modelCapabilities.ts"
+    },
     "./taggedId": {
       "@thyrox/source": "./taggedId.ts",
       "types": "./dist/taggedId.d.ts",

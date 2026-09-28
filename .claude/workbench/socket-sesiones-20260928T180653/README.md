@@ -609,6 +609,7 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 |---|---|---|
 | R | enclavamiento del modelo de respaldo por rechazo (`refusalFallbackModelLatch`, `unlatchRefusalFallbackModel`, `mn`) en la selección de modelo, y su restauración como tercer argumento de la señal de sesión → `app-host/src/bootstrap/state.ts`. Redundante por construcción: `a2r` (sin enclavamiento, las dos formas dejan `undefined`) | hecha: 16 pruebas; 13 anulaciones (`anulacion-R-*.txt`) |
 | R-2a | oyentes de la restauración con dependencias inyectadas: `wt` sobre el estado de la aplicación, `sA`, `Pyt` con el evento `tengu_refusal_fallback_latch_reset` y `b8r` (`chunk-6ff16z73.js`) → `app-host/src/state/refusalFallbackRestore.ts`. Redundante por construcción: `aviso` (`sA` ya normaliza con `!!`) | hecha: 12 pruebas; 14 anulaciones (`anulacion-R2a-*.txt`) |
+| R-2b-0 | consulta de capacidades de modelo (`$h`, `UYe` con `THYROX_CODE_MODEL_CAPABILITIES`, `qFt`, `MBr`, `P`/`L`, `h`, `ENo`, `kNo`, `chunk-4h0c4z04.js`) → `agent/modelCapabilities.ts`, sobre el catálogo `MODELS` | hecha: 11 pruebas; 17 anulaciones (`anulacion-R2b0-*.txt`) |
 | R-2b | modo rápido de 2.1.283 (`mo`, `qy` con la capacidad `fast_mode` del catálogo, `Ndn`, `Bk`/`D5`, `Yl`, `oA`, `Dt`, `Ea`) contra `provider/src/fastMode.ts`, que hoy es de una versión anterior | pendiente |
 | R-2c | alcance del modelo de respaldo (`vV`: `ahe`, `$h`/`Be` con `refusal_fallback`, `MNe`, `Tle`, `$5`, `izn`) | pendiente |
 | R-2d | cableado: `Pyt` sobre el `setState` del almacén del REPL y `b8r` en el modo headless (olvida el modelo pedido por el usuario), con las dependencias de R-2b y R-2c | pendiente |
@@ -637,3 +638,11 @@ Casos que caen: igual (3), origen (2), remoto (1), orden (1), habilitado (1),
 intacto (1), sin-actualizador (1), override (1), pyt-guarda (2), alcance (1),
 motivo (1), explicito (1, tras añadir el caso sin override previo), b8r (1);
 `aviso` (0) es redundante por construcción.
+
+### Controles de la fase R-2b-0
+
+`bun test __tests__/modelCapabilities.test.ts` en `@thyrox/agent`. Casos que
+caen: sufijo (4), vacio (1, tras exigir que un patrón vacío no case con un
+modelo vacío), asterisco (1), no-coincide (1), negacion (4), ultima (1),
+env-model (1), catalogo-sufijo (1), gate (2), gate-true (1), servido (1),
+servido-gate (1), servido-args (1), catalogo (3), catalogo-niega (2), orden (1).

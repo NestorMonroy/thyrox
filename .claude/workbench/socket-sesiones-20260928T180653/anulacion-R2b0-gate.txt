@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+68 | })
+69 | 
+70 | describe('isCapabilityGateOpen (P)', () => {
+71 |   test('sin bandera asociada está abierta; con bandera, sólo si la consulta dice true', () => {
+72 |     expect(CAPABILITY_FEATURE_GATES).toEqual({ per_turn_effort: 'tengu_per_turn_effort' })
+73 |     expect(isCapabilityGateOpen('fast_mode')).toBe(true)
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:73:47)
+(fail) isCapabilityGateOpen (P) > sin bandera asociada está abierta; con bandera, sólo si la consulta dice true [0.31ms]
+93 |   })
+94 | 
+95 |   test('la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite', () => {
+96 |     const asked: unknown[] = []
+97 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+98 |     expect(modelHasCapability('claude-fable-5-1[1m]', 'fast_mode', 'fable')).toBe(true)
+                                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:98:78)
+(fail) modelHasCapability ($h) > la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite [0.15ms]
+
+ 9 pass
+ 2 fail
+ 23 expect() calls
+Ran 11 tests across 1 file. [62.00ms]
