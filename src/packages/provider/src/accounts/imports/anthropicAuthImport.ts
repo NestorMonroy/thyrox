@@ -10,7 +10,8 @@ import { randomBytes } from 'node:crypto'
 
 import type { ConnectionStore } from '../connectionStore.ts'
 import type { JsonRecord } from '../oauth/oauthFlows.ts'
-import { ANTHROPIC_PROVIDER_ID, AnthropicAuthFileError } from './anthropicAuthFile.ts'
+import { ANTHROPIC_PROVIDER_ID } from './anthropicAuthFile.ts'
+import { AuthFileError, toNonEmptyString, toRecord } from './cliAuthFileExport.ts'
 
 const BOOTSTRAP_URL = 'https://api.anthropic.com/api/claude_cli/bootstrap'
 const BOOTSTRAP_TIMEOUT_MS = 8000
@@ -40,20 +41,12 @@ export interface CreateConnectionOptions {
   overwriteExisting?: boolean
 }
 
-const toRecord = (value: unknown): JsonRecord => (value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonRecord) : {})
-
-function toNonEmptyString(value: unknown): string | null {
-  if (typeof value !== 'string') return null
-  const trimmed = value.trim()
-  return trimmed || null
-}
-
 export function parseAndValidateAnthropicAuth(raw: unknown): ParsedAnthropicAuth {
   const block = toRecord(toRecord(raw).claudeAiOauth)
   const accessToken = toNonEmptyString(block.accessToken)
   const refreshToken = toNonEmptyString(block.refreshToken)
-  if (!accessToken) throw new AnthropicAuthFileError('accessToken is missing or empty in claudeAiOauth', 400, 'missing_access_token')
-  if (!refreshToken) throw new AnthropicAuthFileError('refreshToken is missing or empty in claudeAiOauth', 400, 'missing_refresh_token')
+  if (!accessToken) throw new AuthFileError('accessToken is missing or empty in claudeAiOauth', 400, 'missing_access_token')
+  if (!refreshToken) throw new AuthFileError('refreshToken is missing or empty in claudeAiOauth', 400, 'missing_refresh_token')
   let expiresAt: string | null = null
   if (typeof block.expiresAt === 'number' && Number.isFinite(block.expiresAt)) expiresAt = new Date(block.expiresAt).toISOString()
   else if (typeof block.expiresAt === 'string' && block.expiresAt.trim()) expiresAt = block.expiresAt.trim()
@@ -138,7 +131,7 @@ export function createConnectionFromAuthFile(store: ConnectionStore, enriched: E
     const existing = findExistingAnthropicConnection(store, enriched.accountUUID)
     if (existing) {
       if (!options.overwriteExisting) {
-        throw new AnthropicAuthFileError('An Anthropic connection for this account already exists. Pass overwriteExisting: true to replace it.', 409, 'duplicate_account')
+        throw new AuthFileError('An Anthropic connection for this account already exists. Pass overwriteExisting: true to replace it.', 409, 'duplicate_account')
       }
       const existingData = toRecord(existing.providerSpecificData)
       const updated = store.update(existing.id as string, {
@@ -156,7 +149,7 @@ export function createConnectionFromAuthFile(store: ConnectionStore, enriched: E
   }
 
   if (!enriched.email && !enriched.accountUUID && !options.overwriteExisting) {
-    throw new AnthropicAuthFileError('Could not verify the account identity (bootstrap failed and no email/accountUUID available). Pass overwriteExisting: true to import anyway.', 409, 'identity_unverified')
+    throw new AuthFileError('Could not verify the account identity (bootstrap failed and no email/accountUUID available). Pass overwriteExisting: true to import anyway.', 409, 'identity_unverified')
   }
   const connection = store.create({
     provider: ANTHROPIC_PROVIDER_ID,
@@ -170,6 +163,6 @@ export function createConnectionFromAuthFile(store: ConnectionStore, enriched: E
     testStatus: 'active',
     providerSpecificData: { ...accountData(enriched, importedAt), cliUserID: newDeviceId() },
   })
-  if (!connection) throw new AnthropicAuthFileError('Could not store the imported connection', 500, 'store_failed')
+  if (!connection) throw new AuthFileError('Could not store the imported connection', 500, 'store_failed')
   return { connection, created: true }
 }

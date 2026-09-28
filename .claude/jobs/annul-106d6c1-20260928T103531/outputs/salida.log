@@ -1,0 +1,198 @@
+== 1: el JWT de cuatro partes
+   (src/accounts/jwtPayload.ts)
+ 38 pass
+ 0 fail
+== 2: un arreglo como cuerpo
+   (src/accounts/jwtPayload.ts)
+ 38 pass
+ 0 fail
+== 3: sin id token se exporta
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the payload needs the three tokens and an account id, from the claim or the workspace [51.34ms]
+ 37 pass
+ 1 fail
+== 4: sin cuenta se exporta
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the payload needs the three tokens and an account id, from the claim or the workspace [49.84ms]
+ 37 pass
+ 1 fail
+== 5: sin la cuenta heredada
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the payload needs the three tokens and an account id, from the claim or the workspace [56.55ms]
+ 37 pass
+ 1 fail
+== 6: sin el espacio de trabajo
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the payload needs the three tokens and an account id, from the claim or the workspace [56.83ms]
+ 37 pass
+ 1 fail
+== 7: el correo guardado gana al del token
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the file is named by the id-token email, then the stored email, then the label [46.72ms]
+ 37 pass
+ 1 fail
+== 8: el archivo por la etiqueta
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the file is named by the id-token email, then the stored email, then the label [46.58ms]
+ 37 pass
+ 1 fail
+== 9: el vencido por exp no mira el margen
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > a stored file is stale by its token exp, else by six hours since its last refresh; unknown is fresh [47.40ms]
+(fail) export > the guarded write leaves a healthy session alone unless forced, and writes an absent or stale one [48.45ms]
+ 36 pass
+ 2 fail
+== 10: sin exp nunca vence
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > a stored file is stale by its token exp, else by six hours since its last refresh; unknown is fresh [56.44ms]
+ 37 pass
+ 1 fail
+== 11: el límite de seis horas es estricto
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > a stored file is stale by its token exp, else by six hours since its last refresh; unknown is fresh [50.51ms]
+ 37 pass
+ 1 fail
+== 12: lo ilegible vence
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > a stored file is stale by its token exp, else by six hours since its last refresh; unknown is fresh [53.89ms]
+ 37 pass
+ 1 fail
+== 13: siempre se escribe
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the guarded write leaves a healthy session alone unless forced, and writes an absent or stale one [59.25ms]
+ 37 pass
+ 1 fail
+== 14: forzar no fuerza
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the guarded write leaves a healthy session alone unless forced, and writes an absent or stale one [49.97ms]
+ 37 pass
+ 1 fail
+== 15: un archivo sin token cuenta como sano
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > the guarded write leaves a healthy session alone unless forced, and writes an absent or stale one [53.21ms]
+ 37 pass
+ 1 fail
+== 16: el archivo de codex se mezcla
+   (src/accounts/imports/codexAuthFile.ts)
+(fail) export > writing replaces the whole file, keeps a side backup and is owner-only [54.50ms]
+ 37 pass
+ 1 fail
+== 17: cualquier auth_mode
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a foreign auth_mode, a missing token or no account id is refused [43.68ms]
+ 37 pass
+ 1 fail
+== 18: un auth_mode nulo se rehúsa
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a foreign auth_mode, a missing token or no account id is refused [43.26ms]
+ 37 pass
+ 1 fail
+== 19: se importa sin id token
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a foreign auth_mode, a missing token or no account id is refused [45.84ms]
+ 37 pass
+ 1 fail
+== 20: se importa sin access token
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a foreign auth_mode, a missing token or no account id is refused [57.59ms]
+ 37 pass
+ 1 fail
+== 21: se importa sin refresh token
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a foreign auth_mode, a missing token or no account id is refused [45.89ms]
+ 37 pass
+ 1 fail
+== 22: se importa sin cuenta
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a foreign auth_mode, a missing token or no account id is refused [47.27ms]
+ 37 pass
+ 1 fail
+== 23: la cuenta del archivo no gana
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > the file names the account, the user and the expiry of the access token first [44.20ms]
+ 37 pass
+ 1 fail
+== 24: el usuario sin el sub
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > the file names the account, the user and the expiry of the access token first [42.88ms]
+ 37 pass
+ 1 fail
+== 25: la caducidad del id token primero
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > the file names the account, the user and the expiry of the access token first [47.91ms]
+ 37 pass
+ 1 fail
+== 26: sin respaldo en el id token
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > the file names the account, the user and the expiry of the access token first [60.53ms]
+ 37 pass
+ 1 fail
+== 27: otro usuario del mismo espacio se pisa
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > another user of the same workspace is a new account; a legacy row without user keeps its stored one [43.44ms]
+ 37 pass
+ 1 fail
+== 28: el duplicado se sobrescribe solo
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > a new account is created; the same user again is a duplicate unless overwritten [58.35ms]
+ 37 pass
+ 1 fail
+== 29: el usuario guardado se pierde
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > another user of the same workspace is a new account; a legacy row without user keeps its stored one [44.20ms]
+ 37 pass
+ 1 fail
+== 30: el nombre existente se pierde
+   (src/accounts/imports/codexAuthImport.ts)
+(fail) import > another user of the same workspace is a new account; a legacy row without user keeps its stored one [58.17ms]
+ 37 pass
+ 1 fail
+== 31: el refresco ignora su propia caducidad
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > a refresh that returns its own expiry keeps it [43.10ms]
+ 37 pass
+ 1 fail
+== 32: común — el margen es estricto
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > a connection without an access token needs refresh; one without expiry does not; five minutes is the margin [43.31ms]
+ 37 pass
+ 1 fail
+== 33: común — sin copia al lado
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [56.08ms]
+ 37 pass
+ 1 fail
+== 34: común — legible por todos
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > writing replaces the whole file, keeps a side backup and is owner-only [60.04ms]
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [51.33ms]
+ 36 pass
+ 2 fail
+== 35: común — el refresco no se persiste
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > a refresh that returns its own expiry keeps it [43.34ms]
+(fail) export > a stale connection is refreshed, persisted and exported with the new tokens [47.32ms]
+ 36 pass
+ 2 fail
+== 36: común — cualquier proveedor exporta
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > the file is named by the id-token email, then the stored email, then the label [46.95ms]
+(fail) export > only an Anthropic OAuth connection exports, and a fresh one is not refreshed [42.51ms]
+ 36 pass
+ 2 fail
+== 37: común — lo anterior no se ofrece a render
+   (src/accounts/imports/cliAuthFileExport.ts)
+(fail) export > writing keeps what the CLI stored beside the tokens, backs up the old file and leaves it owner-only [52.57ms]
+ 37 pass
+ 1 fail
+== restaurado
+ M src/packages/provider/src/accounts/grok/grokTokens.ts
+ M src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+ M src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+?? src/packages/provider/src/accounts/imports/cliAuthFileExport.ts
+?? src/packages/provider/src/accounts/imports/codexAuthFile.ts
+?? src/packages/provider/src/accounts/imports/codexAuthImport.ts
+?? src/packages/provider/src/accounts/jwtPayload.ts
+ 38 pass
+ 0 fail
+__BG_EXIT__=0

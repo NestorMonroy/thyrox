@@ -15,7 +15,8 @@ import { join } from 'node:path'
 
 import { createConnectionStore, type ConnectionStore } from '../../../src/accounts/connectionStore.ts'
 import { createFieldCipher } from '../../../src/accounts/fieldCipher.ts'
-import { anthropicConnectionLabel, buildAnthropicAuthFile, buildAnthropicAuthPayload, sanitizeFileNamePart, shouldRefreshAnthropicConnection, writeAnthropicAuthFile } from '../../../src/accounts/imports/anthropicAuthFile.ts'
+import { anthropicConnectionLabel, buildAnthropicAuthFile, buildAnthropicAuthPayload, writeAnthropicAuthFile } from '../../../src/accounts/imports/anthropicAuthFile.ts'
+import { sanitizeFileNamePart, shouldRefreshConnection } from '../../../src/accounts/imports/cliAuthFileExport.ts'
 import { createConnectionFromAuthFile, enrichWithBootstrap, parseAndValidateAnthropicAuth } from '../../../src/accounts/imports/anthropicAuthImport.ts'
 
 const NOW = Date.parse('2026-09-28T10:00:00.000Z')
@@ -45,11 +46,11 @@ const inMinutes = (minutes: number) => new Date(NOW + minutes * 60_000).toISOStr
 
 describe('export', () => {
   test('a connection without an access token needs refresh; one without expiry does not; five minutes is the margin', () => {
-    expect(shouldRefreshAnthropicConnection({ accessToken: ' ' }, NOW)).toBe(true)
-    expect(shouldRefreshAnthropicConnection({ accessToken: 'a' }, NOW)).toBe(false)
-    expect(shouldRefreshAnthropicConnection({ accessToken: 'a', expiresAt: 'garbage' }, NOW)).toBe(false)
-    expect(shouldRefreshAnthropicConnection({ accessToken: 'a', expiresAt: inMinutes(5) }, NOW)).toBe(true)
-    expect(shouldRefreshAnthropicConnection({ accessToken: 'a', expiresAt: inMinutes(6) }, NOW)).toBe(false)
+    expect(shouldRefreshConnection({ accessToken: ' ' }, NOW)).toBe(true)
+    expect(shouldRefreshConnection({ accessToken: 'a' }, NOW)).toBe(false)
+    expect(shouldRefreshConnection({ accessToken: 'a', expiresAt: 'garbage' }, NOW)).toBe(false)
+    expect(shouldRefreshConnection({ accessToken: 'a', expiresAt: inMinutes(5) }, NOW)).toBe(true)
+    expect(shouldRefreshConnection({ accessToken: 'a', expiresAt: inMinutes(6) }, NOW)).toBe(false)
   })
 
   test('the label and the file name part', () => {

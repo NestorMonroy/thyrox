@@ -9,6 +9,7 @@
  * `extractTokenAndRefresh`, `parseJwtPayload`, `resolveGrokIdentity`,
  * `resolveGrokExpiresIn` y `mapImportedToken` de `grok-cli.ts` (MIT).
  */
+import { decodeJwtPayload } from '../jwtPayload.ts'
 import { decodeXaiIdTokenIdentity } from '../oauth/flows/xaiOAuthFlow.ts'
 import type { JsonRecord } from '../oauth/oauthFlows.ts'
 import { GROK_BUILD_OAUTH_ISSUER } from './grokBuild.ts'
@@ -17,7 +18,6 @@ export const GROK_BUILD_BROWSER_SCOPE = 'openid profile email offline_access gro
 const DEFAULT_TTL_SECONDS = 21600
 const MIN_TTL_SECONDS = 1
 const MILLISECONDS_PER_SECOND = 1000
-const JWT_PARTS = 3
 const JWT_PREFIX = 'eyJ'
 
 interface PastedToken {
@@ -52,16 +52,6 @@ export function mapGrokBuildBrowserTokens(tokens: JsonRecord): JsonRecord {
   }
 }
 
-function decodeJwtPayload(token: string): JsonRecord | null {
-  const parts = token.split('.')
-  if (parts.length !== JWT_PARTS) return null
-  try {
-    const payload = JSON.parse(Buffer.from(parts[1]!, 'base64url').toString('utf-8')) as unknown
-    return payload && typeof payload === 'object' && !Array.isArray(payload) ? (payload as JsonRecord) : null
-  } catch {
-    return null
-  }
-}
 
 /** El token de lo pegado: un JWT suelto, `{ accessToken }` o el `auth.json` del CLI. */
 function extractPastedToken(input: unknown, clientId: string | null): PastedToken {
