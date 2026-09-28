@@ -32,6 +32,7 @@ export const FOREIGN_CONSTANTS: ReadonlySet<string> = new Set([
   'CLAUDE_CODE_DOCS_MAP_URL', // mapa de su documentación
   'CLAUDE_CODE_GUIDE_AGENT', // agente guía de ese cliente
   'CLAUDE_CODE_GUIDE_AGENT_TYPE', // su tipo, 'claude-code-guide'
+  'CLAUDE_CODE_TARGET', // destino MITM que intercepta a ese cliente
 ])
 
 function renameToken(token: string, rest: string): string {

@@ -289,16 +289,29 @@ test('the root-CA mode presents one leaf, signed by the stored CA, for every tar
   })
   const ca = await loadOrCreateMitmCa(h.dataDir)
   for (const servername of [ANTIGRAVITY_HOST, 'api2.cursor.sh']) {
-    const authorized = await new Promise<boolean>(resolve => {
-      const socket = tls.connect({ host: '127.0.0.1', port: h.port, servername, ca: ca.cert }, () => {
-        resolve(socket.authorized)
-        socket.destroy()
-      })
-      socket.on('error', () => resolve(false))
-    })
-    assert.equal(authorized, true, servername)
+    assert.equal(await authorizedTrustingOnly(h.port, servername, ca.cert), 'true', servername)
   }
 })
+
+/**
+ * Si un cliente que confía SÓLO en `caPem` acepta el certificado del servidor.
+ * Corre en un proceso aparte sin `SSL_CERT_FILE` ni `NODE_EXTRA_CA_CERTS`: el
+ * TLS del runtime suma ese almacén del anfitrión a `ca`, y una CA ajena con el
+ * mismo nombre que la nuestra gana la elección de emisor. La prueba mide
+ * nuestra CA, no el almacén de la máquina donde corre.
+ */
+async function authorizedTrustingOnly(port: number, servername: string, caPem: string): Promise<string> {
+  const client = `const tls = require('node:tls');
+const s = tls.connect({ host: '127.0.0.1', port: ${port}, servername: ${JSON.stringify(servername)}, ca: process.env.PROBE_CA, rejectUnauthorized: false }, () => {
+  process.stdout.write(String(s.authorized) + (s.authorizationError ? ' ' + s.authorizationError : '')); s.destroy()
+});
+s.on('error', e => process.stdout.write('error ' + e.message));`
+  const { SSL_CERT_FILE: _file, NODE_EXTRA_CA_CERTS: _extra, ...env } = process.env
+  const child = Bun.spawn([process.execPath, '-e', client], { env: { ...env, PROBE_CA: caPem }, stdout: 'pipe', stderr: 'pipe' })
+  const out = await new Response(child.stdout).text()
+  await child.exited
+  return out.trim()
+}
 
 function connectThrough(port: number, authority: string, ca: string): Promise<{ status: string; tunnel: tls.TLSSocket }> {
   return new Promise((resolve, reject) => {

@@ -9,8 +9,9 @@ import {
   getVertexRegionForModel,
   isBareMode,
   shouldMaintainProjectWorkingDir,
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
 } from '@thyrox/config/env/utils'
+import { resolveConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ─── isEnvTruthy ───────────────────────────────────────────────────────
 
@@ -318,25 +319,28 @@ describe('shouldMaintainProjectWorkingDir', () => {
   })
 })
 
-// ─── getClaudeConfigHomeDir ────────────────────────────────────────────
+// ─── getConfigHomeDir ─────────────────────────────────────────────────
 
-describe('getClaudeConfigHomeDir', () => {
-  const saved = process.env.THYROX_CONFIG_DIR
+describe('getConfigHomeDir', () => {
+  const saved = { own: process.env.THYROX_CONFIG_DIR, legacy: process.env.CLAUDE_CONFIG_DIR }
 
   afterEach(() => {
-    if (saved === undefined) delete process.env.THYROX_CONFIG_DIR
-    else process.env.THYROX_CONFIG_DIR = saved
+    for (const [name, value] of [['THYROX_CONFIG_DIR', saved.own], ['CLAUDE_CONFIG_DIR', saved.legacy]] as const) {
+      if (value === undefined) delete process.env[name]
+      else process.env[name] = value
+    }
   })
 
   test('uses THYROX_CONFIG_DIR when set', () => {
-    process.env.THYROX_CONFIG_DIR = '/tmp/test-claude'
-    // Memoized by THYROX_CONFIG_DIR key, so changing env gives fresh value
-    expect(getClaudeConfigHomeDir()).toBe('/tmp/test-claude')
+    process.env.THYROX_CONFIG_DIR = '/tmp/test-thyrox'
+    // Memoizado por la clave del entorno: cambiarlo da un valor nuevo.
+    expect(getConfigHomeDir()).toBe('/tmp/test-thyrox')
   })
 
-  test('returns a string ending with .claude by default', () => {
-    delete process.env.THYROX_CONFIG_DIR
-    const result = getClaudeConfigHomeDir()
-    expect(result).toMatch(/\.claude$/)
+  test('without a declared directory it is .thyrox, and .claude only when that is the one present', () => {
+    const exists = (present: string[]) => (path: string) => present.includes(path)
+    expect(resolveConfigHomeDir({ env: {}, home: '/h', exists: exists([]) })).toBe('/h/.thyrox')
+    expect(resolveConfigHomeDir({ env: {}, home: '/h', exists: exists(['/h/.claude']) })).toBe('/h/.claude')
+    expect(resolveConfigHomeDir({ env: {}, home: '/h', exists: exists(['/h/.claude', '/h/.thyrox']) })).toBe('/h/.thyrox')
   })
 })
