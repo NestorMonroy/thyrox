@@ -243,3 +243,28 @@ export function withoutShadowedAllowlists(
   for (const key of shadowed) delete kept[key]
   return kept
 }
+
+/** `SRe`: las variables de credencial AWS que un par puede nombrar. */
+const AWS_CREDENTIAL_VARIABLES = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN']
+/** `Rt`. */
+const PARENT_PAIR_SUPPRESSOR = '_PARENT_PAIR_SUPPRESSOR_'
+
+/** `hd`: las variables que un par de credenciales nombra. */
+function pairVariables(pair: unknown): string[] {
+  if (typeof pair !== 'object' || pair === null || Array.isArray(pair)) return []
+  const { accessKeyIdVar, secretAccessKeyVar, sessionTokenVar } = pair as PolicyDocument
+  return [accessKeyIdVar, secretAccessKeyVar, sessionTokenVar].filter((name): name is string => typeof name === 'string')
+}
+
+/**
+ * `Pd`: cada variable AWS estándar que los pares de abajo nombran y los de
+ * arriba no, suprimida con un par que la toma como clave y apunta el secreto
+ * a una variable que nadie define; así la credencial de abajo no se filtra
+ * por la variable estándar.
+ */
+export function suppressedAwsPairs(lower: readonly unknown[], upper: readonly unknown[]): PolicyDocument[] {
+  const named = new Set(upper.flatMap(pairVariables))
+  return [...new Set(lower.flatMap(pairVariables))]
+    .filter(name => AWS_CREDENTIAL_VARIABLES.includes(name) && !named.has(name))
+    .map((name, index) => ({ accessKeyIdVar: name, secretAccessKeyVar: `${PARENT_PAIR_SUPPRESSOR}${index + 1}_` }))
+}

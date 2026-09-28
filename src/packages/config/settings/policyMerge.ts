@@ -9,14 +9,10 @@
  * La regla que atraviesa el módulo: en las claves que restringen, gana el
  * valor más restrictivo de cualquier escalón, aunque el escalón superior diga
  * otra cosa. En el resto gana el superior, y las listas se unen.
- *
- * pendiente: la reescritura de `awsPairs` (`Pd`), que renombra los pares de
- * credenciales AWS de los escalones inferiores; aquí se reemplazan como
- * cualquier otra lista de `xd`.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
 import type { Platform } from '../platform.ts'
-import { getAtPath, inheritModelOverrides, NON_POLICY_KEYS, POLICY_HELPER_KEYS, setAtPath } from './policyComposition.ts'
+import { getAtPath, inheritModelOverrides, NON_POLICY_KEYS, POLICY_HELPER_KEYS, setAtPath, suppressedAwsPairs } from './policyComposition.ts'
 
 type PolicyDocument = Record<string, unknown>
 type Restrictive = boolean | string | readonly string[]
@@ -119,10 +115,14 @@ function mergeListFirst(target: unknown, source: unknown, key: string): unknown 
   return mergeManagedValue(target, source, key)
 }
 
-/** `xd`: el valor se reemplaza entero, con copia de sus listas. */
-function replaceValue(target: unknown, source: unknown): unknown {
+/**
+ * `xd`: el valor se reemplaza entero, con copia de sus listas. En
+ * `awsPairs` se añaden los pares que suprimen las variables AWS que sólo
+ * nombraba el valor reemplazado.
+ */
+function replaceValue(target: unknown, source: unknown, key: string): unknown {
   if (source === undefined) return target
-  if (Array.isArray(source)) return [...source]
+  if (Array.isArray(source)) return key === 'awsPairs' && Array.isArray(target) ? [...source, ...suppressedAwsPairs(target, source)] : [...source]
   if (!isPlainObject(source)) return source
   return Object.fromEntries(Object.entries(source).map(([key, value]) => [key, Array.isArray(value) ? [...value] : value]))
 }
@@ -130,14 +130,14 @@ function replaceValue(target: unknown, source: unknown): unknown {
 /** `ks`: la fusión entre escalones. */
 export function mergeTierValue(target: unknown, source: unknown, key: string): unknown {
   if ((REPLACED_ALLOWLISTS as readonly string[]).includes(key) || (REPLACED_TIER_LISTS as readonly string[]).includes(key)) {
-    return replaceValue(target, source)
+    return replaceValue(target, source, key)
   }
   return mergeListFirst(target, source, key)
 }
 
 /** `Wy`: la fusión del escalón superior sobre la instantánea remota. */
 export function mergeSlotValue(target: unknown, source: unknown, key: string): unknown {
-  if ((REPLACED_ALLOWLISTS as readonly string[]).includes(key)) return replaceValue(target, source)
+  if ((REPLACED_ALLOWLISTS as readonly string[]).includes(key)) return replaceValue(target, source, key)
   return mergeListFirst(target, source, key)
 }
 

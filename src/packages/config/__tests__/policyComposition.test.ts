@@ -177,3 +177,16 @@ describe('constantes', () => {
     expect(P.SLOT_FALLBACK_KEYS).toEqual(['allowedMcpServers', 'availableModels', 'strictKnownMarketplaces'])
   })
 })
+
+describe('los pares AWS suprimidos (Pd)', () => {
+  test('cada variable AWS que abajo se nombra y arriba no, se suprime con un par propio', () => {
+    expect(P.suppressedAwsPairs([{ accessKeyIdVar: 'AWS_ACCESS_KEY_ID', secretAccessKeyVar: 'AWS_SECRET_ACCESS_KEY' }, { accessKeyIdVar: 'MY_KEY' }], []))
+      .toEqual([
+        { accessKeyIdVar: 'AWS_ACCESS_KEY_ID', secretAccessKeyVar: '_PARENT_PAIR_SUPPRESSOR_1_' },
+        { accessKeyIdVar: 'AWS_SECRET_ACCESS_KEY', secretAccessKeyVar: '_PARENT_PAIR_SUPPRESSOR_2_' },
+      ])
+  })
+  test('las que arriba ya se nombran no se suprimen', () => {
+    expect(P.suppressedAwsPairs([{ sessionTokenVar: 'AWS_SESSION_TOKEN' }], [{ sessionTokenVar: 'AWS_SESSION_TOKEN' }])).toEqual([])
+  })
+})

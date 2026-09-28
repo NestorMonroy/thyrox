@@ -94,3 +94,16 @@ afloja una restricción» no tenía caso y se añadió; y el borrado final de
 restricción ya lo retira con la misma condición, igual que en la fuente—, así
 que se retiró del archivo y queda declarado aquí. El control de la fase B se
 repitió con la fusión nueva (`fragment-merge-default`).
+
+## Fase C.2a: lo que aporta el proceso padre
+
+`config: settings/policyParent.ts` porta `J2o` (la porción del padre), `Hy`,
+`Zl` y `J1r`; `Pd` (la supresión de pares AWS) queda en
+`settings/policyComposition.ts`, y con ella `xd` completa el reemplazo de
+`awsPairs` en `settings/policyMerge.ts`, que deja de ser pendiente. Las tres
+claves `*ThyroxAi*` siguen la decisión de nombre de la fase C.1.
+
+Controles: `probes/annul-phase-c2a*.tsv`, salidas en
+`outputs/annul-phase-c2a*.out`; caen todas. Una variante se retiró por
+equivalente: filtrar `path[0] === "sandbox"` en `Hy` no cambia nada, porque
+la función devuelve sólo `kept.sandbox` y las demás rutas se descartan igual.

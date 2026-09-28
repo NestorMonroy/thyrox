@@ -83,6 +83,14 @@ describe('cómo se funde un valor (S6, Md, xd, ks, Wy)', () => {
     expect(copied).toEqual({ a: [1] })
     expect(copied.a).not.toBe(map.a)
   })
+  test('awsPairs se reemplaza, suprimiendo las variables AWS que sólo nombraba el de abajo', () => {
+    const below = [{ accessKeyIdVar: 'AWS_ACCESS_KEY_ID' }]
+    const above = [{ accessKeyIdVar: 'MY_KEY' }]
+    expect(M.mergeTierValue(below, above, 'awsPairs')).toEqual([
+      { accessKeyIdVar: 'MY_KEY' },
+      { accessKeyIdVar: 'AWS_ACCESS_KEY_ID', secretAccessKeyVar: '_PARENT_PAIR_SUPPRESSOR_1_' },
+    ])
+  })
   test('ks reemplaza también awsPairs y ripgrep; Wy no', () => {
     expect(M.mergeTierValue(['a'], ['b'], 'ripgrep')).toEqual(['b'])
     expect(M.mergeSlotValue(['a'], ['b'], 'ripgrep')).toEqual(['b', 'a'])

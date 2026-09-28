@@ -1,0 +1,27 @@
+trailers-bool-ignored	s/^  if (typeof trailers === 'boolean') return .*//
+trailers-empty-commit	s/return attribution.commit === '' ? 'disabled' : 'implicit-enabled'/return 'implicit-enabled'/
+trailers-coauthored-ignored	s/^  if (includeCoAuthoredBy !== undefined) return .*//
+templates-pr-ignored	s/ || attribution.pr !== undefined$//
+exception-rule-kept	s/^      if (!EXCEPTION_RULE.test(rule)) return true$/      return true/
+exception-no-dot	s/^const EXCEPTION_RULE = .*/const EXCEPTION_RULE = \/^(?:Read|Edit)\\(!\//
+bypass-dropped	s/^  if (permissions.disableBypassPermissionsMode === 'disable') .*//
+block-reads-dropped	s/^  if (permissions.blockReadsOutsideWorkingDirectories === true) .*//
+allow-always	s/^  if (admin.allowManagedPermissionRulesOnly !== true) {$/  if (true) {/
+allow-ignores-domains	s/if (allow \&\& admin.sandbox?.network?.allowManagedDomainsOnly !== true) slice.allow = allow/if (allow) slice.allow = allow/
+mask-keeps-hosts	s/{ path: file.path, mode: 'mask', injectHosts: \[\] }/{ ...file }/
+env-inject-kept	s/^    .filter(variable => variable.mode === 'deny')$//
+sigv4-allow-kept	s/if (sigv4\[flavor\] === 'deny') denied\[flavor\] = 'deny'/denied[flavor] = sigv4[flavor]/
+pairs-dropped	s/^  if (pairs.length > 0) slice.awsPairs = pairs$//
+domains-ignore-admin	s/if (network \&\& admin.sandbox?.network?.allowManagedDomainsOnly !== true \&\& network.allowedDomains)/if (network \&\& network.allowedDomains)/
+reads-ignore-admin	s/if (filesystem \&\& admin.sandbox?.filesystem?.allowManagedReadPathsOnly !== true \&\& filesystem.allowRead)/if (filesystem \&\& filesystem.allowRead)/
+sandbox-restrictive-dropped	s/^  mergeWith(slice, restrictiveSandbox(parent))$//
+flags-false-copied	s/^    if (parent\[key\] === true) slice\[key\] = true$/    if (parent[key] !== undefined) slice[key] = parent[key]/
+skills-sync-dropped	s/^  if (parent.syncThyroxAiSkills === false) .*//
+unattended-dropped	s/^  if (asObject(parent.remoteTools)?.allowUnattendedServing === false) {$/  if (false) {/
+share-full-kept	s/if (shareHostProfile === 'off' || shareHostProfile === 'basic')/if (shareHostProfile !== undefined)/
+session-url-dropped	s/^  if (attribution?.sessionUrl === false) .*//
+strict-empty-kept	s/if (strict === true || (Array.isArray(strict) \&\& strict.length > 0))/if (strict !== undefined)/
+blocked-empty-kept	s/if (Array.isArray(parent.blockedMarketplaces) \&\& parent.blockedMarketplaces.length > 0)/if (parent.blockedMarketplaces)/
+org-overrides-admin	s/if (admin.forceLoginOrgUUID === undefined \&\& parent.forceLoginOrgUUID)/if (parent.forceLoginOrgUUID)/
+allowlists-override-admin	s/if (admin\[key\] === undefined \&\& parent\[key\])/if (parent[key])/
+match-prefix-kept	s/^  if (parent.availableModelsMatch === 'exact') slice.availableModelsMatch = 'exact'$/  if (parent.availableModelsMatch) slice.availableModelsMatch = parent.availableModelsMatch/
