@@ -46,7 +46,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-2 | flujos de renombre (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`, `z`, `T`) y saneado de nombre (`li`, `AY`) sobre un `RenameContext` inyectado → `uds/sessionRename.ts` | hecha: 22 pruebas; 19 anulaciones (`anulacion-f4c2f2-*.txt`); oráculo por escenarios `diferencial-session-rename.txt`, 0 discrepancias en 3000 |
 | F4c-2f-4 | el registro de sesiones de 2.1.283 (`HH`/`eD`, `kv`, `Cut`, `eF`/`Vt`, `D3`) que los flujos reciben inyectado; hoy sólo existe `agent/concurrentSessions.ts`, un porte anterior más simple. Partida en 4a–4f | en curso |
 | F4c-2f-4a | estado del registro (`By`, `eD`, `HH`, `Y5o`, `kv`, `Cut`) con `JM`, `KKn`, `XM` y la bandera `Nq` → `uds/sessionRegistryState.ts` | hecha: 14 pruebas; 16 anulaciones (`anulacion-registry-*.txt`); oráculo `diferencial-registry-state.txt`, 0 discrepancias en 3000 secuencias |
-| F4c-2f-4b | escritura del archivo pid (`Vt`) y nombre registrado (`eF`, `Rut`, `X5o`, `ipn`, `GNr`, `apn`, `kCe`, `rD`, `Wy`, `ud`) | pendiente |
+| F4c-2f-4b | escritura del archivo pid (`Vt`, `Ms`) y lo que la sesión publica en él (`eF`, `Rut`, `X5o`, `ipn`, `GNr`, `apn`, `kCe`, `rD`, `Wy`, `ud`) → `uds/pidFileRecord.ts`; `ud` llega como sonda que instala F4c-2f-4g | hecha: 23 pruebas; 30 anulaciones (`anulacion-pidfile-*.txt`) |
+| F4c-2f-4g | sesión hija y contexto de equipo (`kFe`, `nUr`, `cFt`, `dF`, `tl`, sonda ambiente de tmux, `chunk-jzycvw5e.js`) en `@thyrox/swarm`, con `THYROX_CODE_CHILD_SESSION` y `THYROX_CODE_FORCE_SESSION_PERSISTENCE`; su veredicto es la sonda de `ud` | pendiente |
 | F4c-2f-4c | alta de la sesión (`nD`, `KNt`), latido (`ld`, `Ms`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`) y sesión de reserva (`jy`, `iD`, `sD`) | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
 | F4c-2f-4e | tipo de sesión por entorno (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`) con variables `THYROX_*` | pendiente |
@@ -492,3 +493,22 @@ la misma anulación da 99 de 3000 (`anulacion-registry-oraculo-tope.txt`).
 | `memo` | la memoización del sondeo de barrido | 1 |
 | `registrado` | esperar al alta en curso en `Cut` | 1 |
 | `emit-cambio` / `launched` | el aviso sin cambio de nombre y el `givenAtLaunch` heredado | 1 / 1 |
+
+## F4c-2f-4b — archivo pid del registro: controles
+
+`ud` (`Vk()==null && !kFe()`) lee el contexto de equipo y la marca de sesión
+hija, que viven en `@thyrox/swarm`; ese paquete depende de éste, así que la
+sonda se instala desde fuera (`setRegistryOwnershipProbe`) y su porte es
+F4c-2f-4g.
+
+| Anulación | Qué retira | Caen |
+|---|---|---|
+| `cadena` | encadenar la escritura siguiente detrás de la anterior | 1 |
+| `try-catch` | que un fallo de lectura o de JSON se registre y no rompa la cadena | 5 |
+| `mezcla-local` | mezclar el parche sobre el registro leído | 8 |
+| `storage-lectura` / `storage-encontrado` / `storage-escritura` / `en-sitio` | las tres salidas de la rama de storage y la escritura en su sitio | 1 / 1 / 1 / 1 |
+| `nombre-vacio` / `ud-ef` / `aviso` / `anteriores` | el nombre vacío, el éxito cuando el registro no es propio, el nivel del aviso y omitir la lista vacía | 1 / 1 / 1 / 1 |
+| `espera-alta` / `derivado` / `auto-distinto` | esperar al alta y las dos condiciones de sustitución | 1 / 4 / 1 |
+| `revierte` / `revierte-ajeno` / `revierte-held` / `revierte-former` / `revierte-emit` | la vuelta atrás, su guarda y sus tres efectos | 1 cada una |
+| `hora-estado` / `deja-reserva` / `wy-publicado` / `ud-kce` / `rd` / `wy` / `sonda` | la hora del estado, la salida de reserva, su condición de publicado, el éxito ajeno, la guarda de `rD`, el `clearInterval` y el instalador de la sonda | 1 cada una |
+| `vacio-rut` | la guarda de nombre vacío de `Rut` | 0 — redundante por construcción: `eF` rehúsa el nombre vacío antes de tocar el estado, y sin cambio de estado no hay vuelta atrás |

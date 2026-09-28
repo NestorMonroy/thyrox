@@ -151,6 +151,11 @@
       "types": "./dist/uds/renameNotice.d.ts",
       "default": "./src/uds/renameNotice.ts"
     },
+    "./uds/pidFileRecord.js": {
+      "@thyrox/source": "./src/uds/pidFileRecord.ts",
+      "types": "./dist/uds/pidFileRecord.d.ts",
+      "default": "./src/uds/pidFileRecord.ts"
+    },
     "./uds/sessionRegistryState.js": {
       "@thyrox/source": "./src/uds/sessionRegistryState.ts",
       "types": "./dist/uds/sessionRegistryState.d.ts",

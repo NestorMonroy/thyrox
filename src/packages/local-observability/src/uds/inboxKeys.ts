@@ -131,7 +131,7 @@ export async function readKeyPidDomain(path: string): Promise<string | undefined
 }
 
 /** `Re.session`. */
-const sessionKey = (file: string): SessionStorageKey => ({ namespace: 'session', file })
+export const sessionKey = (file: string): SessionStorageKey => ({ namespace: 'session', file })
 
 /** `rt`: el error de storage en una línea, con su clase, su código y su causa. */
 export function formatStorageError(error: StorageError): string {
