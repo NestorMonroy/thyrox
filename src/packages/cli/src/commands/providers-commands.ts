@@ -2,7 +2,8 @@
  * `thyrox providers`: las conexiones de proveedor desde la CLI. `list` las
  * muestra sin secretos; `remove` borra una, resuelta por su selector, tras
  * confirmar; `test`, `test-all` y `validate` las prueban o las revisan
- * (`./providers/testVerbs.ts`). En stdin no interactiva la confirmación sólo la da `--yes`, para
+ * (`./providers/testVerbs.ts`); `add`, `edit` e `import` las escriben
+ * (`./providers/writeVerbs.ts`). En stdin no interactiva la confirmación sólo la da `--yes`, para
  * que un guion no borre por un `y` que nadie escribió.
  *
  * Porte de `runListCommand` (`omniroute: bin/cli/commands/providers.mjs`) y
@@ -10,6 +11,7 @@
  * (`bin/cli/commands/provider-crud.mjs`), MIT. Aquí el store es local: no
  * hay servidor remoto al que pedir el borrado.
  */
+import fs from 'node:fs'
 import { createInterface } from 'node:readline/promises'
 
 import { testProviderApiKey } from '@thyrox/provider/accounts/apiKeyProbe'
@@ -22,17 +24,29 @@ import { EXIT_FAIL, EXIT_OK, EXIT_USAGE } from '../exitCodes.ts'
 import type { ParentCommand } from './parentCommand.js'
 import { resolveConnection } from './providers/connectionSelector.ts'
 import { formatConnectionTable, publicConnection } from './providers/publicConnection.ts'
+import { promptHidden } from './providers/secretPrompt.ts'
 import { runTestAllVerb, runTestVerb, runValidateVerb } from './providers/testVerbs.ts'
+import { runAddVerb, runEditVerb, runImportVerb } from './providers/writeVerbs.ts'
 
 type Row = Record<string, unknown>
 
 export interface ProvidersCommandDeps {
-  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): unknown }; close(): void }
+  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null | unknown; create(data: Row): Row | null }; close(): void }
   write: (text: string) => void
   interactive: boolean
   confirm: (question: string) => Promise<boolean>
   testDeps: ConnectionTestDeps
   now: () => string
+  env: Record<string, string | undefined>
+  readStdin: () => Promise<string>
+  promptSecret: (question: string) => Promise<string>
+  readFile: (path: string) => string
+}
+
+async function readAllStdin(): Promise<string> {
+  let text = ''
+  for await (const chunk of process.stdin) text += String(chunk)
+  return text
 }
 
 async function askOnTerminal(question: string): Promise<boolean> {
@@ -53,9 +67,13 @@ export const realProvidersCommandDeps: ProvidersCommandDeps = {
   confirm: askOnTerminal,
   testDeps: { probe: input => testProviderApiKey(input), webCookie: request => validateWebCookieProvider(request) },
   now: () => new Date().toISOString(),
+  env: process.env,
+  readStdin: readAllStdin,
+  promptSecret: question => promptHidden(question, process.stdin, process.stdout),
+  readFile: path => fs.readFileSync(path, 'utf8'),
 }
 
-export const PROVIDERS_VERBS = ['list', 'remove', 'test', 'test-all', 'validate'] as const
+export const PROVIDERS_VERBS = ['list', 'add', 'edit', 'import', 'remove', 'test', 'test-all', 'validate'] as const
 type ProvidersVerb = (typeof PROVIDERS_VERBS)[number]
 
 const isProvidersVerb = (verb: string | undefined): verb is ProvidersVerb => (PROVIDERS_VERBS as readonly string[]).includes(verb ?? '')
@@ -127,6 +145,12 @@ export async function providersCommand(argv: string[], deps: ProvidersCommandDep
         return await runTestAllVerb(args, testDeps)
       case 'validate':
         return runValidateVerb(args, testDeps)
+      case 'add':
+        return await runAddVerb(args, { ...deps, store: opened.store })
+      case 'edit':
+        return await runEditVerb(args, { ...deps, store: opened.store })
+      case 'import':
+        return runImportVerb(args, { ...deps, store: opened.store })
     }
   } finally {
     opened.close()

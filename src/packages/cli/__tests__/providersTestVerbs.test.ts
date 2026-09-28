@@ -24,7 +24,7 @@ function deps(rows: Row[] = data()) {
   const updates: Array<[string, Row]> = []
   const d: ProvidersCommandDeps = {
     openStore: () => ({
-      store: { list: () => rows, delete: () => true, update: (id: string, fields: Row) => (updates.push([id, fields]), fields) },
+      store: { list: () => rows, delete: () => true, update: (id: string, fields: Row) => (updates.push([id, fields]), fields), create: () => null },
       close: () => {},
     }),
     write: text => void out.push(text),
@@ -32,6 +32,10 @@ function deps(rows: Row[] = data()) {
     confirm: async () => false,
     testDeps: { probe: async input => (input.apiKey === 'sk-good' ? { valid: true, error: null, statusCode: 200 } : { valid: false, error: 'Invalid API key', statusCode: 401 }) },
     now: () => 'NOW',
+    env: {},
+    readStdin: async () => '',
+    promptSecret: async () => '',
+    readFile: () => '',
   }
   return { d, out, updates }
 }
