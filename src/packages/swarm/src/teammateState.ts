@@ -48,14 +48,22 @@ type InProcessTeammateTaskLike = {
 type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 /**
- * Devuelve el session ID del padre para este teammate. Para teammates
+ * Devuelve el session ID del padre (`zE`). Para teammates
  * in-process, es el session ID del team lead. Prioridad: AsyncLocalStorage
- * (in-process) > dynamicTeamContext (teammates tmux).
+ * (in-process) > dynamicTeamContext (teammates tmux) > línea de comandos.
  */
 export function getParentSessionId(): string | undefined {
   const inProcessCtx = getTeammateContext()
   if (inProcessCtx) return inProcessCtx.parentSessionId
-  return dynamicTeamContext?.parentSessionId
+  return dynamicTeamContext?.parentSessionId ?? cliParentSessionId
+}
+
+/** El padre que la línea de comandos declaró (`--parent-session-id`); el último recurso. */
+let cliParentSessionId: string | undefined
+
+/** `nYo`. */
+export function setCliParentSessionId(sessionId: string | undefined): void {
+  cliParentSessionId = sessionId
 }
 
 /**
@@ -150,7 +158,7 @@ export function isTeammate(): boolean {
 /**
  * Devuelve el color asignado al teammate, o `undefined` si no corre como
  * teammate o no tiene color asignado. Prioridad: AsyncLocalStorage
- * (in-process) > dynamicTeamContext (teammates tmux).
+ * (in-process) > dynamicTeamContext (teammates tmux) > línea de comandos.
  */
 export function getTeammateColor(): string | undefined {
   const inProcessCtx = getTeammateContext()

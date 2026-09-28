@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+166 |   test('un padre declarado, un teammate o una hija', () => {
+167 |     expect(isModelDrivenSession('p', host())).toBe(true)
+168 |     expect(isModelDrivenSession(undefined, host())).toBe(false)
+169 |     expect(isModelDrivenSession(undefined, host({ env: { THYROX_CODE_CHILD_SESSION: 'true' } }))).toBe(true)
+170 |     setDynamicTeamContext({ agentId: 'a@e', agentName: 'a', teamName: 'e', planModeRequired: false })
+171 |     expect(isModelDrivenSession(undefined, host())).toBe(true)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:171:53)
+(fail) isModelDrivenSession (dF) > un padre declarado, un teammate o una hija [0.34ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [131.00ms]

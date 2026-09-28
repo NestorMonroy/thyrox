@@ -62,6 +62,11 @@
       "types": "./dist/src/teammateContextAlias.d.ts",
       "default": "./src/teammateContextAlias.ts"
     },
+    "./childSession.js": {
+      "@thyrox/source": "./src/childSession.ts",
+      "types": "./dist/src/childSession.d.ts",
+      "default": "./src/childSession.ts"
+    },
     "./teammateState.js": {
       "@thyrox/source": "./src/teammateState.ts",
       "types": "./dist/src/teammateState.d.ts",
