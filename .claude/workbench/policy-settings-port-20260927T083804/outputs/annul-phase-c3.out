@@ -1,3 +1,6 @@
-base	3 pass, 0 fail	—
-source-returns-null	1 pass, 2 fail	policySettings cableada > la capa remota en caché es la fuente policySettings | policySettings cableada > en la fusión de todas las fuentes, la política gana a las del usuario
-merge-skips-policy	2 pass, 1 fail	policySettings cableada > en la fusión de todas las fuentes, la política gana a las del usuario
+base	5 pass, 0 fail	—
+source-returns-null	3 pass, 2 fail	policySettings cableada > la capa remota en caché es la fuente policySettings | policySettings cableada > en la fusión de todas las fuentes, la política gana a las del usuario
+merge-skips-policy	4 pass, 1 fail	policySettings cableada > en la fusión de todas las fuentes, la política gana a las del usuario
+parent-not-read	4 pass, 1 fail	los ajustes administrados del proceso padre > el anfitrión los pasa por su binding y llegan como escalón de política
+tiers-without-parent	4 pass, 1 fail	los ajustes administrados del proceso padre > el anfitrión los pasa por su binding y llegan como escalón de política
+admin-from-hkcu-always	3 pass, 2 fail	los ajustes administrados del proceso padre > el anfitrión los pasa por su binding y llegan como escalón de política | los ajustes administrados del proceso padre > sin binding no hay escalones ni administrador

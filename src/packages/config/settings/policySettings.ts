@@ -18,14 +18,11 @@
  * cableado de `settings.ts` deciden de dónde sale cada fuente.
  *
  * Divergencias declaradas:
- * - `MRe` (servidores MCP del anfitrión) se decide con
- *   `honorsHostMcpServers`; en el ejecutable lo decide el punto de entrada.
- * - `Rz` (el anfitrión administra el gateway) se inyecta con
- *   `hostManagesGateway`: su lectura del entorno no se porta todavía.
  * - La caché de lecturas por sesión (`store.parsedFiles`, el listado del
  *   directorio) no se porta; la del asistente fundido sí.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
+import { tryGetConfigHostBindings } from '../host.ts'
 import { getPlatform, type Platform } from '../platform.ts'
 import { getPolicyHelperManagedSettings } from '../policyHelper.ts'
 import { getHkcuSettings, getMdmSettings } from './mdm/settings.ts'
@@ -79,14 +76,36 @@ export function resetPolicyStoreForTesting(): void {
   sessionStore = createPolicyStore()
 }
 
+type Environment = Record<string, string | undefined>
+
+/** `EYn`: los escritorios desde los que el anfitrión administra el gateway. */
+const DESKTOP_ENTRYPOINTS = new Set(['claude-desktop', 'claude-desktop-3p'])
+/** El conjunto de `ixe`: los puntos de entrada cuyos servidores MCP se respetan. */
+const HOST_MCP_ENTRYPOINTS = new Set(['claude-desktop-3p', 'local-agent'])
+
+/**
+ * `Rz`: el anfitrión administra el proveedor y el gateway, lanzado desde un
+ * escritorio o con el linaje de gateway y su archivo de credenciales. Con él,
+ * los ajustes del padre se funden por defecto (`parentSettingsBehavior`).
+ */
+export function hostManagesGateway(env: Environment = process.env): boolean {
+  const entrypoint = env.THYROX_CODE_ENTRYPOINT
+  const fromDesktop = entrypoint !== undefined && DESKTOP_ENTRYPOINTS.has(entrypoint)
+  const fromLineage = Boolean(env.THYROX_CODE_HOST_GATEWAY_LINEAGE) && Boolean(env.THYROX_CODE_HOST_CREDS_FILE)
+  return Boolean(env.THYROX_CODE_PROVIDER_MANAGED_BY_HOST) && Boolean(env.THYROX_CODE_USE_GATEWAY) && (fromDesktop || fromLineage)
+}
+
+/** `ixe`, que `MRe` consulta: desde qué puntos de entrada el padre aporta servidores MCP. */
+export function honorsHostMcpServers(env: Environment = process.env): boolean {
+  const entrypoint = env.THYROX_CODE_ENTRYPOINT
+  return entrypoint !== undefined && HOST_MCP_ENTRYPOINTS.has(entrypoint)
+}
+
 /**
  * Las fuentes de esta sesión: la plataforma detectada, la caché remota (la
  * lectura por defecto de `readRemotePolicy`), la MDM y HKCU ya cargadas, el
  * archivo administrado de la plataforma y la salida del asistente, si corrió.
  *
- * pendiente: de qué fuente se armó el asistente (`helperArmedFromRemote`),
- * si funde su salida y los ajustes que pasa el proceso padre; sin ellos el
- * asistente ocupa la ranura remota y el padre no aporta.
  */
 export function defaultPolicyContext(): PolicyContext {
   return {
@@ -97,7 +116,17 @@ export function defaultPolicyContext(): PolicyContext {
       return { settings, errors }
     },
     hkcu: () => getHkcuSettings(),
+    parentManaged: tryGetConfigHostBindings()?.getParentManagedSettings?.(),
+    hostManagedProvider: Boolean(process.env.THYROX_CODE_PROVIDER_MANAGED_BY_HOST),
     helper: () => getPolicyHelperManagedSettings(),
+    // `nr`/`rr` de 2.1.283 leen `armedFromRemote` y `mergesOutput` del estado
+    // del asistente. El de este paquete sólo se arma desde plist, HKLM o el
+    // archivo (`ALLOWED_POLICY_HELPER_SOURCES`) y no funde su salida: compone
+    // siempre como escalón propio.
+    helperArmedFromRemote: () => false,
+    helperMergesOutput: () => false,
+    hostManagesGateway: () => hostManagesGateway(),
+    honorsHostMcpServers: () => honorsHostMcpServers(),
   }
 }
 
@@ -427,4 +456,20 @@ export function policyMergedSources(context: PolicyContext): TierSource[] | null
   if (!merged) return null
   const label = mdmLabel(context.platform)
   return [...(composed.remote ? ['remote' as const] : []), ...(composed.mdm ? [label] : []), ...(composed.file ? ['file' as const] : [])]
+}
+
+/**
+ * `fu` → `mgn`: los escalones de política de la sesión, lo que cada
+ * comprobación de política recorre (una bandera restringe si algún escalón la
+ * pone). En el ejecutable se recuerdan en la sesión hasta que la capa remota
+ * los invalida; aquí se componen en cada lectura, porque esa invalidación no
+ * está portada.
+ */
+export function getPolicyTiers(): PolicyDocument[] {
+  return policyTierDocuments(defaultPolicyContext())
+}
+
+/** `fBr` → `vjr`: el documento administrado de la sesión, con la misma salvedad. */
+export function getAdminAuthoredPolicy(): PolicyDocument | null {
+  return policySettingsDocument(defaultPolicyContext())
 }

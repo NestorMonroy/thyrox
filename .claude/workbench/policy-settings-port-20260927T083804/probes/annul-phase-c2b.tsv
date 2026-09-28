@@ -31,3 +31,10 @@ document-parent-not-null	s/^  if (parentSlice) return null$//
 document-hkcu-empty	s/^  return hkcu \&\& Object.keys(hkcu.settings).length > 0 ? hkcu.settings : null$/  return hkcu ? hkcu.settings : null/
 tiers-no-parent	s/^  return parentSlice ? \[...tiers, parentSlice\] : tiers$/  return tiers/
 merged-sources-always	s/^  if (!merged) return null$//
+rz-ignores-desktop	s/^  const fromDesktop = entrypoint !== undefined \&\& DESKTOP_ENTRYPOINTS.has(entrypoint)$/  const fromDesktop = false/
+rz-lineage-no-creds	s/ \&\& Boolean(env.THYROX_CODE_HOST_CREDS_FILE)$//
+rz-ignores-provider	s/Boolean(env.THYROX_CODE_PROVIDER_MANAGED_BY_HOST) \&\& //
+rz-ignores-gateway	s/ \&\& Boolean(env.THYROX_CODE_USE_GATEWAY) \&\& / \&\& /
+mcp-any-entrypoint	s/^  return entrypoint !== undefined \&\& HOST_MCP_ENTRYPOINTS.has(entrypoint)$/  return entrypoint !== undefined/
+context-no-rz	s/^    hostManagesGateway: () => hostManagesGateway(),$//
+context-no-mre	s/^    honorsHostMcpServers: () => honorsHostMcpServers(),$//

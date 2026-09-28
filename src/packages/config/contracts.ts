@@ -36,6 +36,8 @@ export type ConfigHostBindings = {
   getSessionTrustAccepted?: () => boolean
   getFlagSettingsPath?: () => string | undefined
   getFlagSettingsInline?: () => Record<string, unknown> | null
+  /** Los ajustes administrados que pasa el proceso padre (`TVr` de 2.1.283). */
+  getParentManagedSettings?: () => Record<string, unknown> | undefined
   getUseCoworkPlugins?: () => boolean
   // V7 §8.6 — event logging bridge (config cannot import eventLogger).
   logEvent?: (event: string, metadata?: Record<string, unknown>) => void

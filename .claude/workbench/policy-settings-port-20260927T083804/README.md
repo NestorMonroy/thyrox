@@ -162,3 +162,30 @@ sustituto no está medido.
 
 Pendiente, en `defaultPolicyContext`: de qué fuente se armó el asistente, si
 funde su salida y los ajustes del proceso padre.
+
+## El contexto de la sesión
+
+`defaultPolicyContext` lee ahora del entorno `Rz` (`hostManagesGateway`: el
+anfitrión administra proveedor y gateway, desde un escritorio o con el linaje
+de gateway y su archivo de credenciales) y `MRe`/`ixe`
+(`honorsHostMcpServers`), y del anfitrión los ajustes administrados del padre
+(`TVr`, el binding opcional `getParentManagedSettings`). El contexto de 2.1.283
+es `F` (`symbol-helper-context.txt`).
+
+El asistente de política compone siempre como escalón propio: `nr`/`rr` leen
+`armedFromRemote` y `mergesOutput` de su estado, y el asistente de este
+paquete sólo se arma desde plist, HKLM o el archivo y no funde su salida.
+
+La porción del padre no entra en `getSettings`: en 2.1.283 llega por los
+lectores de escalones (`fu` → `mgn` → `Jy`), que cada comprobación recorre.
+`getPolicyTiers` y `getAdminAuthoredPolicy` son esos lectores, sin la caché de
+sesión del ejecutable, porque su invalidación no está portada
+(`symbol-policy-readers.txt`).
+
+Pendiente: el estado de carga remota (`agn`, `jx`, `S$o`) no existe en
+`remote/` de este paquete.
+
+Controles: las variantes de `Rz`/`MRe` y del contexto están en
+`probes/annul-phase-c2b.tsv`; las del padre y de los lectores, en
+`probes/annul-phase-c3.tsv`, que ahora nombra el archivo de cada variante.
+Caen todas.

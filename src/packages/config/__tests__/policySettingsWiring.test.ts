@@ -13,7 +13,7 @@ import { installConfigHostBindings } from '../host.js'
 import { getSettingsPath, resetSyncCache, setEligibility } from '../remote/syncCacheState.js'
 import { getSettingsForSource, getSettingsWithErrors } from '../settings/settings.js'
 import { resetSettingsCache } from '../settings/settingsCache.js'
-import { resetPolicyStoreForTesting } from '../settings/policySettings.js'
+import { getAdminAuthoredPolicy, getPolicyTiers, resetPolicyStoreForTesting } from '../settings/policySettings.js'
 import { InMemoryConfig } from '../testing/index.js'
 
 const home = mkdtempSync(join(tmpdir(), 'policy-wiring-'))
@@ -50,5 +50,17 @@ describe('policySettings cableada', () => {
     const { settings } = getSettingsWithErrors()
     expect(settings.model).toBe('claude-opus-5')
     expect(settings.cleanupPeriodDays).toBe(3)
+  })
+})
+
+describe('los ajustes administrados del proceso padre', () => {
+  test('el anfitrión los pasa por su binding y llegan como escalón de política', () => {
+    installConfigHostBindings({ ...new InMemoryConfig({ configHomeDir: home }).bindings, getParentManagedSettings: () => ({ allowManagedHooksOnly: true }) })
+    expect(getPolicyTiers()).toEqual([{ allowManagedHooksOnly: true }])
+    expect(getAdminAuthoredPolicy()).toBeNull()
+  })
+  test('sin binding no hay escalones ni administrador', () => {
+    expect(getPolicyTiers()).toEqual([])
+    expect(getAdminAuthoredPolicy()).toBeNull()
   })
 })

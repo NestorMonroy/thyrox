@@ -213,3 +213,40 @@ describe('rutas de Windows vistas desde WSL', () => {
     expect(U.wslMountOf('C:\\Program Files\\Tool')).toBe('/mnt/c/Program Files/Tool')
   })
 })
+
+describe('lo que decide el entorno (Rz, MRe)', () => {
+  const managed = { THYROX_CODE_PROVIDER_MANAGED_BY_HOST: '1', THYROX_CODE_USE_GATEWAY: '1' }
+  test('el anfitrión administra el gateway desde un escritorio', () => {
+    expect(U.hostManagesGateway({ ...managed, THYROX_CODE_ENTRYPOINT: 'claude-desktop' })).toBe(true)
+    expect(U.hostManagesGateway({ ...managed, THYROX_CODE_ENTRYPOINT: 'claude-desktop-3p' })).toBe(true)
+    expect(U.hostManagesGateway({ ...managed, THYROX_CODE_ENTRYPOINT: 'cli' })).toBe(false)
+  })
+  test('o con el linaje de gateway y su archivo de credenciales', () => {
+    expect(U.hostManagesGateway({ ...managed, THYROX_CODE_HOST_GATEWAY_LINEAGE: '1', THYROX_CODE_HOST_CREDS_FILE: '/c' })).toBe(true)
+    expect(U.hostManagesGateway({ ...managed, THYROX_CODE_HOST_GATEWAY_LINEAGE: '1' })).toBe(false)
+  })
+  test('sin proveedor administrado o sin gateway, no', () => {
+    expect(U.hostManagesGateway({ THYROX_CODE_USE_GATEWAY: '1', THYROX_CODE_ENTRYPOINT: 'claude-desktop' })).toBe(false)
+    expect(U.hostManagesGateway({ THYROX_CODE_PROVIDER_MANAGED_BY_HOST: '1', THYROX_CODE_ENTRYPOINT: 'claude-desktop' })).toBe(false)
+  })
+  test('los servidores MCP del anfitrión se respetan sólo desde sus puntos de entrada', () => {
+    expect(U.honorsHostMcpServers({ THYROX_CODE_ENTRYPOINT: 'local-agent' })).toBe(true)
+    expect(U.honorsHostMcpServers({ THYROX_CODE_ENTRYPOINT: 'claude-desktop-3p' })).toBe(true)
+    expect(U.honorsHostMcpServers({ THYROX_CODE_ENTRYPOINT: 'claude-desktop' })).toBe(false)
+    expect(U.honorsHostMcpServers({})).toBe(false)
+  })
+  test('el contexto de la sesión los lee del entorno del proceso', () => {
+    const saved = { ...process.env }
+    try {
+      Object.assign(process.env, managed, { THYROX_CODE_ENTRYPOINT: 'claude-desktop-3p' })
+      const ctx = U.defaultPolicyContext()
+      expect(ctx.hostManagesGateway?.()).toBe(true)
+      expect(ctx.honorsHostMcpServers?.()).toBe(true)
+      expect(ctx.helperArmedFromRemote?.()).toBe(false)
+      expect(ctx.helperMergesOutput?.()).toBe(false)
+    } finally {
+      for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key]
+      Object.assign(process.env, saved)
+    }
+  })
+})

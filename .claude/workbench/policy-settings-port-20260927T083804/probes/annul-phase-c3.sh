@@ -10,13 +10,13 @@ export ROOT="$PWD/.claude/cache/policy-wiring-annul/$$"
 trap 'rm -rf "${ROOT:?}"; rmdir "${ROOT%/*}" 2>/dev/null || true' EXIT
 mkdir -p "$ROOT"
 run() {
-  local label="$1" expr="$2" dir="$ROOT/$1/config"
+  local label="$1" file="$2" expr="$3" dir="$ROOT/$1/config"
   mkdir -p "$ROOT/$1" && cp -a src/packages/config "$dir"
-  sed -i -e "$expr" "$dir/settings/settings.ts"
-  if [[ "$label" != base ]] && cmp -s src/packages/config/settings/settings.ts "$dir/settings/settings.ts"; then
+  sed -i -e "$expr" "$dir/$file"
+  if [[ "$label" != base ]] && cmp -s "src/packages/config/$file" "$dir/$file"; then
     printf '%s\tNO-CAMBIO\n' "$label"; return
   fi
   printf '%s\t%s\n' "$label" "$(cd "$dir" && timeout 120 bun test __tests__/policySettingsWiring.test.ts 2>&1 | gawk '/^ *[0-9]+ pass/ {p=$1} /^ *[0-9]+ fail/ {f=$1} /^\(fail\)/ {sub(/^\(fail\) /,""); sub(/ \[[0-9.]+ms\]$/,""); n = n s $0; s=" | "} END {printf "%d pass, %d fail\t%s", p, f, (n==""?"—":n)}')"
 }
 export -f run
-gawk -F'\t' '{print $1"\t"$2}' $W/probes/annul-phase-c3.tsv | parallel -j3 -k --colsep '\t' run {1} {2} > "$W/outputs/annul-phase-c3.out"
+parallel -j3 -k --colsep '\t' run {1} {2} {3} < $W/probes/annul-phase-c3.tsv > "$W/outputs/annul-phase-c3.out"
