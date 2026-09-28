@@ -9,7 +9,7 @@ import type { JsonRecord, OAuthProviderFlow } from '../oauthFlows.ts'
 import { type ClientIdSource, type Environment, readVariable, requireClientId } from './clientId.ts'
 
 const AUTHORIZE_URL = 'https://openference.com/app/oauth/authorize'
-const TOKEN_URL = 'https://openference.com/oauth/token'
+export const OPENFERENCE_TOKEN_URL = 'https://openference.com/oauth/token'
 const USERINFO_URL = 'https://openference.com/oauth/userinfo'
 const SCOPE = 'openid profile email model:invoke offline_access'
 const LOOPBACK_PORT = 56123
@@ -67,7 +67,7 @@ export function createOpenferenceFlow(deps: { config: ClientIdSource; fetch?: ty
     },
 
     async exchangeToken(config, code, redirectUri, codeVerifier) {
-      const response = await fetch(TOKEN_URL, {
+      const response = await fetch(OPENFERENCE_TOKEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
         body: new URLSearchParams({ grant_type: 'authorization_code', client_id: requireClientId(config), code, redirect_uri: redirectUri, code_verifier: codeVerifier }),

@@ -10,7 +10,7 @@ import type { JsonRecord, OAuthProviderFlow, PollResult } from '../oauthFlows.ts
 import { type ClientIdSource, type Environment, readVariable, requireClientId } from './clientId.ts'
 
 const DEVICE_CODE_URL = 'https://auth.kimi.com/api/oauth/device_authorization'
-const TOKEN_URL = 'https://auth.kimi.com/api/oauth/token'
+export const KIMI_CODING_TOKEN_URL = 'https://auth.kimi.com/api/oauth/token'
 const DEVICE_GRANT = 'urn:ietf:params:oauth:grant-type:device_code'
 const DEFAULT_POLL_INTERVAL_SECONDS = 5
 
@@ -62,7 +62,7 @@ export function createKimiCodingFlow(deps: KimiCodingFlowDeps): OAuthProviderFlo
     },
 
     async pollToken(config, deviceCode): Promise<PollResult> {
-      const response = await fetch(TOKEN_URL, {
+      const response = await fetch(KIMI_CODING_TOKEN_URL, {
         method: 'POST',
         headers: headers(),
         body: new URLSearchParams({ client_id: requireClientId(config), device_code: deviceCode, grant_type: DEVICE_GRANT }),

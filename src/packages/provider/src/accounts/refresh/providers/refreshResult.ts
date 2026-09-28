@@ -31,3 +31,15 @@ export interface RefreshDeps {
 }
 
 export const FORM_HEADERS = { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' } as const
+
+/** El código de error de un cuerpo JSON: `error.code` o `error` como texto. */
+export function jsonErrorCode(errorText: string): string | null {
+  try {
+    const parsed = JSON.parse(errorText) as { error?: unknown }
+    const nested = (parsed?.error as { code?: unknown } | undefined)?.code
+    if (typeof nested === 'string' && nested) return nested
+    return typeof parsed?.error === 'string' ? parsed.error : null
+  } catch {
+    return null
+  }
+}
