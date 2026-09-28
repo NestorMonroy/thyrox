@@ -18,10 +18,10 @@ function harness(overrides: Partial<InboxRoutingDeps> = {}) {
     state: createInboxState(),
     sessionId: () => 'session-a',
     warn: message => void warnings.push(message),
-    deliverUserMessage: async message => void calls.push(`user:${(message as { tag?: string }).tag}`),
+    deliverUserMessage: async message => void calls.push(`user:${String(message.tag)}`),
     onRename: name => void calls.push(`rename:${name}`),
     controlActions: {
-      peer_message_status: async message => void calls.push(`status:${(message as { tag?: string }).tag}`),
+      peer_message_status: async message => void calls.push(`status:${String(message.tag)}`),
     },
     ...overrides,
   }
@@ -108,7 +108,7 @@ describe('routeInboxMessage (Qe)', () => {
     const order: string[] = []
     const { deps } = harness({
       deliverUserMessage: async message => {
-        const tag = (message as { tag: string }).tag
+        const tag = String(message.tag)
         if (tag === 'slow') await Bun.sleep(30)
         order.push(tag)
       },
@@ -123,7 +123,7 @@ describe('routeInboxMessage (Qe)', () => {
     const order: string[] = []
     const { deps } = harness({
       deliverUserMessage: async message => {
-        const tag = (message as { tag: string }).tag
+        const tag = String(message.tag)
         if (tag === 'slow') await Bun.sleep(40)
         order.push(tag)
       },
@@ -147,7 +147,7 @@ describe('routeInboxMessage (Qe)', () => {
     const order: string[] = []
     const { deps, warnings } = harness({
       deliverUserMessage: async message => {
-        const tag = (message as { tag: string }).tag
+        const tag = String(message.tag)
         if (tag === 'bad') throw new Error('boom')
         order.push(tag)
       },
