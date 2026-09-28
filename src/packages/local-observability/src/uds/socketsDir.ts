@@ -12,6 +12,7 @@ import type { Stats } from 'node:fs'
 import { chmod, lstat, mkdir, readlink, realpath } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, join } from 'node:path'
 
+import { getErrnoCode, isENOENT } from '../errorHelpers.ts'
 import { sanitizeForDisplay, shellQuote } from './displayText.ts'
 import { TRUSTED_SYSTEM_DIRS, probeUidNamespace, type UidNamespace } from './uidNamespace.ts'
 
@@ -49,14 +50,6 @@ const STICKY_BIT = 0o1000
 const WORLD_WRITABLE = 0o002
 const GROUP_WRITABLE = 0o020
 const MAX_SYMLINK_DEPTH = 16
-
-function errorCode(error: unknown): string | undefined {
-  return (error as NodeJS.ErrnoException | undefined)?.code
-}
-
-function isMissing(error: unknown): boolean {
-  return errorCode(error) === 'ENOENT'
-}
 
 /** `V`: el componente rehusado, tal como se describe en el error. */
 function componentOf(path: string, stats: Stats, ownerRefused?: boolean): RefusedComponent {
@@ -118,7 +111,7 @@ export async function prepareSocketsDirectory(dir: string, deps: SocketsDirDeps 
       try {
         stats = await lstat(path)
       } catch (error) {
-        if (!isMissing(error)) throw error
+        if (!isENOENT(error)) throw error
       }
       if (stats !== undefined) {
         deepestExisting ??= path
@@ -157,7 +150,7 @@ export async function prepareSocketsDirectory(dir: string, deps: SocketsDirDeps 
   try {
     leaf = await lstat(dir)
   } catch (error) {
-    if (!isMissing(error)) throw error
+    if (!isENOENT(error)) throw error
   }
   if (parentMissing && walk.deepestExisting === parent) throw danglingLink()
   if (parentMissing) {
@@ -167,8 +160,8 @@ export async function prepareSocketsDirectory(dir: string, deps: SocketsDirDeps 
       try {
         await mkdir(path, { mode: PRIVATE_DIR_MODE })
       } catch (error) {
-        if (isMissing(error) && walk.sawSymlink) throw danglingLink()
-        if (errorCode(error) !== 'EEXIST') throw error
+        if (isENOENT(error) && walk.sawSymlink) throw danglingLink()
+        if (getErrnoCode(error) !== 'EEXIST') throw error
         const raced = await lstat(path)
         if (!raced.isDirectory() || (uid !== undefined && !ownedByUs(raced.uid))) {
           throw new SocketsDirError('raced', 'a sockets-directory component appeared while being created and is not our directory — refusing to use it')
@@ -181,7 +174,7 @@ export async function prepareSocketsDirectory(dir: string, deps: SocketsDirDeps 
     try {
       await mkdir(dir, { mode: PRIVATE_DIR_MODE })
     } catch (error) {
-      if (errorCode(error) !== 'EEXIST') throw error
+      if (getErrnoCode(error) !== 'EEXIST') throw error
     }
     leaf = await lstat(dir)
   }
@@ -206,7 +199,7 @@ export function canFallBackToPerUid(error: unknown): boolean {
     case undefined:
       break
   }
-  const code = errorCode(error)
+  const code = getErrnoCode(error)
   return code !== undefined && FALLBACK_ERRNOS.has(code)
 }
 
@@ -233,7 +226,7 @@ export function socketsDirHint(error: unknown): string {
     case undefined:
       break
   }
-  switch (errorCode(error)) {
+  switch (getErrnoCode(error)) {
     case 'ENOTDIR': return NOT_DIRECTORY_HINT
     case 'ELOOP': return SYMLINK_LOOP_HINT
     case 'EACCES': case 'EPERM':

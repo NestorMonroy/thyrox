@@ -16,7 +16,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F2a | `me`, `ne`, `tn`, `sn`, `rn`, `B`/`H`: vida del socket, bind sin robar, rutas apartadas, cierre | hecha: 10 pruebas; anulaciones en `anulacion-f2a-*.txt` |
 | F2b-1 | espacio de nombres de uid (`F`, `h`, `R`, `B`, `bko`, `LOt`, `A`) | hecha: 15 pruebas; 4 anulaciones, cada una su caso |
 | F2b-2 | verificación del directorio de sockets (`Re`) con sus mensajes (`Te`, `De`, `fn`, `an`, `qr`) | hecha: 18 pruebas; 9 anulaciones, cada una su caso (`anulacion-f2b2-*.txt`) |
-| F2b-3 | ruta explícita (`G1o`) | pendiente |
+| F2b-3 | ruta explícita (`G1o`) con `CliUserError` (`_m`) | hecha: 7 pruebas; 7 anulaciones, cada una su caso (`anulacion-f2b3-*.txt`) |
 | F2c | orquestación de `mn` | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
 | F4 | protocolo y entrega del sobre cross-session-message | pendiente |

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsExplicitPath.test.ts:
+41 |     expect(await refusal('/tmp/a/')).toContain('must name a socket file inside a directory')
+42 |     expect(await refusal('/tmp/a/.')).toContain('must name a socket file inside a directory')
+43 |   })
+44 | 
+45 |   test('una ruta UNC no es local', async () => {
+46 |     expect(await refusal('//server/share/x.sock')).toContain('must be a local socket path')
+                                                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "must be a local socket path"
+Received: "aceptada"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsExplicitPath.test.ts:46:52)
+(fail) validateExplicitSocketPath (G1o): forma de la ruta > una ruta UNC no es local [3.71ms]
+
+ 6 pass
+ 1 fail
+ 34 expect() calls
+Ran 7 tests across 1 file. [102.00ms]

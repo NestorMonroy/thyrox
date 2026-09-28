@@ -11,6 +11,7 @@ import { readdir, unlink } from 'node:fs/promises'
 import { Socket, type Server } from 'node:net'
 import { basename, dirname, join } from 'node:path'
 
+import { getErrnoCode } from '../errorHelpers.ts'
 import type { InboxState } from './inboxState.ts'
 import { MAX_SOCKET_PATH_BYTES } from './socketPath.ts'
 
@@ -33,16 +34,12 @@ export function isSocketLive(path: string): Promise<'live' | 'dead'> {
   })
 }
 
-function errorCode(error: unknown): string | undefined {
-  return (error as NodeJS.ErrnoException | undefined)?.code
-}
-
 /** `ne`: escucha en la ruta; `false` si otra sesión ya escucha ahí. */
 export async function listenOn(server: Server, path: string): Promise<boolean> {
   if ((await isSocketLive(path)) === 'live') return false
   return new Promise((resolve, reject) => {
     const onError = (error: unknown) => {
-      if (errorCode(error) === 'EADDRINUSE') resolve(false)
+      if (getErrnoCode(error) === 'EADDRINUSE') resolve(false)
       else reject(error)
     }
     server.once('error', onError)
