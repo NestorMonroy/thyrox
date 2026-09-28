@@ -136,3 +136,25 @@ export class DynamicCertStore {
     }
   }
 }
+
+/**
+ * Emite UNA hoja para varios hosts, con todos como SAN y el primero como CN,
+ * firmada por `ca`. Es la que presenta el servidor MITM: Bun no invoca
+ * `SNICallback`, así que no puede elegir hoja por host, y el
+ * conjunto de hosts de destino se conoce al arrancar. Los repetidos, sin
+ * distinguir mayúsculas, se quitan.
+ */
+export async function issueLeafCertForHosts(hostnames: readonly string[], ca: CaPair): Promise<LeafPair> {
+  const hosts = [...new Set(hostnames.map(h => h.toLowerCase()))]
+  if (hosts.length === 0) throw new Error('issueLeafCertForHosts: hace falta al menos un host')
+  const notAfter = new Date()
+  notAfter.setFullYear(notAfter.getFullYear() + 1)
+  const pems = await selfsigned.generate([{ name: 'commonName', value: hosts[0]! }], {
+    keySize: 2048,
+    algorithm: 'sha256',
+    notAfterDate: notAfter,
+    extensions: [{ name: 'subjectAltName', altNames: hosts.map(value => ({ type: 2, value })) }],
+    ca: { key: ca.key, cert: ca.cert },
+  })
+  return { key: pems.private, cert: `${pems.cert.trim()}\n${ca.cert.trim()}\n` }
+}
