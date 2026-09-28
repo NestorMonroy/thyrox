@@ -104,3 +104,14 @@ no lo hacía: la guarda «token sin destino» en `mitmServer.ts` repetía la que
 tiene `postIngestEntry`, y sin ninguna de las dos el `fetch` de una URL
 relativa lanza y se atrapa. Se retiró la guarda y su prueba, que no podía
 fallar.
+
+## F7h-4 — ajustes del MITM y CLI de antigravity
+
+`src/api/routes/mitmSettings.ts`: settings/mitm GET (+download=cert) PUT POST,
+cli-tools/antigravity-mitm GET POST DELETE y su /alias GET PUT. Divergencias
+en la cabecera: autorización = loopback, misma compuerta de sudo que el resto,
+clave opcional (el hijo hereda `THYROX_PROXY_API_KEYS`), puerto fijo 443 sin
+escribir `settings.json`, regenerar con `force`, alias sólo para agentes
+registrados, certificado del modelo vigente.
+
+Anulaciones: `annul-f7h4.sh` → `results-f7h4.txt`, 12 que discriminan.

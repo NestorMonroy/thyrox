@@ -1,0 +1,52 @@
+== 1: cualquier puerto
+(fail) PUT settings refuses any port but 443 [13.70ms]
+ 15 pass
+ 1 fail
+== 2: encender sin compuerta de sudo
+(fail) PUT settings without a password when one is required is a 400 and starts nothing [1.42ms]
+ 15 pass
+ 1 fail
+== 3: keyId que no resuelve aceptado
+(fail) PUT settings with a key id that does not resolve and no key is a 400 [1.00ms]
+ 15 pass
+ 1 fail
+== 4: regenerar con el servidor en marcha
+(fail) POST settings regenerates the certificate only while the server is stopped [1.70ms]
+ 15 pass
+ 1 fail
+== 5: estadísticas sin comprobar el tipo
+(fail) GET settings reads the stats the MITM server writes [1.12ms]
+ 15 pass
+ 1 fail
+== 6: contraseña sin pedir aunque no esté guardada
+(fail) GET antigravity-mitm reports the status and whether a password will be asked [1.21ms]
+ 15 pass
+ 1 fail
+== 7: alias sin validar el esfuerzo
+(fail) alias PUT rejects an unknown reasoning effort and an unknown tool [1.65ms]
+ 15 pass
+ 1 fail
+== 8: alias para un agente desconocido
+(fail) alias PUT rejects an unknown reasoning effort and an unknown tool [1.13ms]
+ 15 pass
+ 1 fail
+== 9: alias guardados sin normalizar
+(fail) alias PUT normalizes the mappings and stores them for the tool [3.23ms]
+ 15 pass
+ 1 fail
+== 10: lectura de un alias sin actualizar la forma heredada
+(fail) alias GET upgrades the legacy strings of one tool, and without a tool lists them all [1.09ms]
+ 15 pass
+ 1 fail
+== 11: arrancar sin recordar la contraseña dada
+(fail) POST antigravity-mitm starts with the given key and caches the password [2.08ms]
+ 15 pass
+ 1 fail
+== 12: descarga sin comprobar el certificado
+(fail) GET settings?download=cert serves the active certificate, or 404 [0.97ms]
+ 15 pass
+ 1 fail
+== restaurado
+?? src/packages/mitm/src/api/routes/mitmSettings.ts
+ 16 pass
+ 0 fail
