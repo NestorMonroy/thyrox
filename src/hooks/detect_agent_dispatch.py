@@ -119,9 +119,9 @@ def detect(payload: dict) -> str | None:
     if not isinstance(tool_input, dict):
         return None
 
-    # Solo un despacho de subagente es sujeto. La guarda anterior confiaba en
-    # que un `Bash` no trae texto, y si lo trae: su `description`. Medido
-    # 2026-09-24 al cablear `PreToolUse`, el aviso salio sobre un `Bash`.
+    # Solo un despacho de subagente es sujeto. No basta suponer que otra
+    # herramienta no trae texto: un `Bash` trae su `description`, y el aviso
+    # saldria sobre el.
     if payload.get("tool_name") not in DISPATCH_TOOLS:
         return None
 

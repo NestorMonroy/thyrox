@@ -98,14 +98,14 @@ def matched_families(command: str) -> list[str]:
             if any(re.match(pattern, head) for head in heads)]
 
 
-#: Las esperas que BLOQUEAN hasta que un trabajo termina. Nombran el
-#: mecanismo, y por eso el descuento de ``ALREADY_BACKGROUND`` las eximia:
-#: medido 2026-09-24, un ``thyrox-bg wait`` en primer plano retuvo el turno
-#: varios minutos sin aviso. Directiva del ejecutor: una espera es un comando
-#: largo; va al segundo plano del cliente, que notifica al terminar.
 #: El cuerpo de un heredoc, que se escribe como dato y no se ejecuta.
 _HEREDOC_BODY = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?\n\s*\1\s*(?:\n|$)", re.S)
 
+#: Las esperas que BLOQUEAN hasta que un trabajo termina. Nombran el mecanismo
+#: de segundo plano, así que el descuento de ``ALREADY_BACKGROUND`` las
+#: eximiría; se miden aparte porque una espera es un comando largo y va al
+#: segundo plano del cliente, que notifica al terminar (directiva del
+#: ejecutor).
 BLOCKING_WAIT = re.compile(
     r"\b(?:(?:thyrox-bg|bg\.sh)\s+wait|wait-jobs(?:\.sh)?\s+wait|marker_wait)\b"
 )
