@@ -12,7 +12,7 @@ export function githubOAuthConfig(env: Environment = process.env): GithubDeviceC
   return { clientId: readVariable(env, 'THYROX_GITHUB_OAUTH_CLIENT_ID'), clientIdVariable: 'THYROX_GITHUB_OAUTH_CLIENT_ID', scopes: 'read:user' }
 }
 
-const GITHUB_ENDPOINTS = {
+export const GITHUB_OAUTH_ENDPOINTS = {
   deviceCodeUrl: 'https://github.com/login/device/code',
   tokenUrl: 'https://github.com/login/oauth/access_token',
   copilotTokenUrl: 'https://api.github.com/copilot_internal/v2/token',
@@ -26,5 +26,5 @@ export interface GithubFlowDeps {
 }
 
 export function createGithubFlow(deps: GithubFlowDeps): OAuthProviderFlow<GithubDeviceConfig> {
-  return createGithubDeviceFlow({ ...deps, endpoints: () => GITHUB_ENDPOINTS })
+  return createGithubDeviceFlow({ ...deps, endpoints: () => GITHUB_OAUTH_ENDPOINTS })
 }

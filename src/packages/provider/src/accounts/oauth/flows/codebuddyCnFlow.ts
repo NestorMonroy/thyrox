@@ -11,7 +11,7 @@ import type { JsonRecord, OAuthProviderFlow, PollResult } from '../oauthFlows.ts
 
 const STATE_URL = 'https://copilot.tencent.com/v2/plugin/auth/state'
 const TOKEN_URL = 'https://copilot.tencent.com/v2/plugin/auth/token'
-const USER_AGENT = 'CLI/2.108.1 CodeBuddy/2.108.1'
+export const CODEBUDDY_CN_USER_AGENT = 'CLI/2.108.1 CodeBuddy/2.108.1'
 const PLATFORM = 'CLI'
 const STATE_EXPIRES_IN_SECONDS = 600
 const POLL_INTERVAL_SECONDS = 5
@@ -20,7 +20,7 @@ const SUCCESS = 0
 
 /** Las cabeceras de anonimato que el servicio exige antes de haber sesión. */
 const ANONYMOUS_HEADERS = {
-  'User-Agent': USER_AGENT,
+  'User-Agent': CODEBUDDY_CN_USER_AGENT,
   'X-Requested-With': 'XMLHttpRequest',
   'X-Domain': 'copilot.tencent.com',
   'X-No-Authorization': 'true',
