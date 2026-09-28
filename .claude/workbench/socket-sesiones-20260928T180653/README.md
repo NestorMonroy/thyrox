@@ -20,7 +20,10 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3a | tokens y marcos: `ofn`, `YDo`, `zFr`, `eLo`, `tLo`, `v0`, `Iv`, `J`, `Q` | hecha: 9 pruebas; 5 anulaciones (`anulacion-f3a-*.txt`) |
 | F3b | identidad de proceso: `b`/`Zne`, `n6`, `Hx`, `TFe`, `mfn`, `Nh`, `nc`/`Pv`, `_Lo`/`HP` | hecha: 10 pruebas; 7 anulaciones, cada una su caso (`anulacion-f3b-*.txt`) |
 | F3c-1 | escritura atómica con modo: `An`, `Jne`, `Kx`, `kA`, `j`, `XL`, `We`, `Ye`, `R`, `XS` → `uds/atomicWrite.ts` | hecha |
-| F3c-2 | clave publicada y leída: `XDo`, `be`, `ifn`, `JDo`, `QDo` | pendiente |
+| F3c-2 | clave publicada y leída: `XDo`, `sz`, `be`, `ifn`, `JDo`, `QDo`, `W`, `cl` → `uds/inboxKeys.ts` (rama de archivos locales) | hecha |
+| F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` y el token de Windows `procStartFt` (`f()`, `n6`/`Hx` con FILETIME) | pendiente |
+| F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`, `ve`, `Fe`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`) y `we`/`ce` de Windows | pendiente |
+| F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n` y `Ee` de `QDo` | pendiente |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
 | F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
@@ -74,3 +77,16 @@ antes con `EISDIR`, así que el caso sólo mide que el temporal se retira. El
 `ENXIO` de la referencia protege un destino que se abre para escritura y no es
 regular ni dispositivo de caracteres (un FIFO con lector), y ese camino queda
 sin prueba.
+
+## F3c-2 — clave publicada: controles
+
+Anulaciones en `anulacion-inboxkeys-*.txt`; once, y cada una tumba sólo sus
+casos. `sin-filtro-key` no discriminaba en su primera forma, porque el
+temporal ya lo descarta `endsWith`. Se añadió el caso que exige la regex, un
+nombre con el sufijo de la dirección y sin pid numérico, y con él tumba 1.
+
+## Fases F3d — las divergencias declaradas se implementan
+
+Directiva del ejecutor: una rama que la compilación de Linux de la
+referencia no alcanza no es razón para no portarla. Las ramas que los
+docstrings de F3a–F3c declaraban «no se porta» pasan a las fases F3d-1..3.
