@@ -19,7 +19,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F2b-3 | ruta explícita (`G1o`) con `CliUserError` (`_m`) | hecha: 7 pruebas; 7 anulaciones, cada una su caso (`anulacion-f2b3-*.txt`) |
 | F3a | tokens y marcos: `ofn`, `YDo`, `zFr`, `eLo`, `tLo`, `v0`, `Iv`, `J`, `Q` | hecha: 9 pruebas; 5 anulaciones (`anulacion-f3a-*.txt`) |
 | F3b | identidad de proceso: `b`/`Zne`, `n6`, `Hx`, `TFe`, `mfn`, `Nh`, `nc`/`Pv`, `_Lo`/`HP` | hecha: 10 pruebas; 7 anulaciones, cada una su caso (`anulacion-f3b-*.txt`) |
-| F3c | clave publicada y leída: `XDo`, `be`, `ifn`, `JDo`, `QDo`, con la escritura atómica `Jne` | pendiente |
+| F3c-1 | escritura atómica con modo: `An`, `Jne`, `Kx`, `kA`, `j`, `XL`, `We`, `Ye`, `R`, `XS` → `uds/atomicWrite.ts` | hecha |
+| F3c-2 | clave publicada y leída: `XDo`, `be`, `ifn`, `JDo`, `QDo` | pendiente |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
 | F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
@@ -60,3 +61,16 @@ en `mn`: el literal vive dentro de una plantilla, y `literal` no la ve
   frente a un esperado no vacío ya falla por longitud, y un esperado vacío lo
   rechaza `!expected`. Es redundante en la referencia y se conserva por
   fidelidad (`anulacion-f3a-vacio.txt`, 0 casos).
+
+## F3c-1 — escritura atómica: controles
+
+Anulaciones en `anulacion-atomicwrite-*.txt`; cada una tumba sólo sus casos:
+`sin-xs` 5, `sin-restaurar` 1, `sin-conservar` 2, `sin-nofollow` 1,
+`sin-reintento` 2, `sin-modo` 1.
+
+Control que no discrimina, declarado: el caso «rehúsa un destino que no es
+archivo regular» no llega al `ENXIO`. Abrir un directorio con `O_WRONLY` falla
+antes con `EISDIR`, así que el caso sólo mide que el temporal se retira. El
+`ENXIO` de la referencia protege un destino que se abre para escritura y no es
+regular ni dispositivo de caracteres (un FIFO con lector), y ese camino queda
+sin prueba.
