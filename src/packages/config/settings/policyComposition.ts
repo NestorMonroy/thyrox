@@ -29,13 +29,19 @@ export type PolicyRead = {
   userWritable?: boolean
 }
 
-/** Un error de política: el de la validación más su gravedad (2.1.283). */
+/**
+ * Un error de política: el de la validación más lo que 2.1.283 le añade. La
+ * gravedad falta en los errores de esquema; `startupFatal` marca el documento
+ * que no se pudo leer como objeto, y `errorClass` el archivo ilegible.
+ */
 export type PolicyError = {
   file: string
   path: string
   message: string
-  severity: 'fatal' | 'error' | 'warning'
+  severity?: 'fatal' | 'error' | 'warning'
   statusOnly?: boolean
+  startupFatal?: boolean
+  errorClass?: 'unreadable'
 }
 
 /** `lt`: las claves que gobiernan la composición y no son política. */

@@ -45,3 +45,32 @@ Controles de la fase A: `probes/annul-phase-a.tsv`, salida en
 *Métrica:* aserciones que caen por variante.
 *Ciega a:* la composición real, que aún no existe: las piezas se prueban
 sueltas, no en el orden en que `UP` las llama.
+
+## Fase B: la lectura de cada fuente
+
+`config: settings/policySources.ts` lee la remota (`Qq`), la MDM (`Os`) y el
+archivo con sus fragmentos (`njr`), y valida cada documento (`HRe`/`Ty`/`gd`).
+La forma de sus errores sale del ejecutable (`symbol-UP-level3.txt` y la
+extracción de `Gye`, `Cd`, `ugn`, `BUt`): el documento que no es un objeto
+JSON lleva `startupFatal`, el ilegible `severity: "fatal"` con
+`errorClass: "unreadable"`, y el fallo de esquema no trae gravedad. Un
+`ENOENT` es ausencia; cualquier otro error de lectura deja la fuente
+`didNotLoad`, para fallar cerrado.
+
+Sus divergencias están en la cabecera del módulo: la validación es el
+`SettingsSchema` de este paquete y no el esquema de rescate de 2.1.283 (sin
+sustitutos, sin `removed`, sin el suelo `pd`), `Ed` no se porta, y la capa
+remota no lee el estado de la sesión remota (aviso de servidores MCP
+retenidos, fallos `ruled_empty`, `servedSnapshot`).
+
+Controles: `probes/annul-phase-b.tsv`, salida en `outputs/annul-phase-b.out`.
+La primera pasada dejó cinco variantes en pie; cuatro eran huecos de la
+prueba (la copia de la caché, el documento JSON que no es objeto, el orden
+de los fragmentos con un listado desordenado y el fragmento oculto con una
+clave propia) y se cerraron con casos. La quinta —la remota vacía sin el
+atajo `Object.keys(...).length === 0`— es equivalente: validar `{}` da el
+mismo resultado, y el atajo sólo ahorra la validación. Se retiró del
+archivo de variantes y queda declarada aquí.
+
+Las pruebas corren como root en este contenedor, así que un `chmod 000` no
+niega nada: el `EACCES` se provoca inyectando el lector (`PolicyFiles`).
