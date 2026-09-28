@@ -443,6 +443,7 @@ TECHNICAL_VOCABULARY = frozenset({
     'eur',       # código de divisa ISO 4217
     'napi',      # la interfaz N-API de Node
     'uds',       # *Unix domain socket*
+    'trae',      # un editor de ByteDance, nombre de producto (`mitm/handlers/trae.ts`)
     'windsurf',  # un editor, nombre de producto
     'yates',     # el barajado de Fisher-Yates
 })
