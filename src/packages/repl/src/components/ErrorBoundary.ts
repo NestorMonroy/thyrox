@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { logError } from '@thyrox/local-observability/log.js'
+import { recordError } from '@thyrox/local-observability/errorRecorder.js'
 
 interface Props {
   children: React.ReactNode
@@ -13,7 +13,7 @@ interface State {
 
 /**
  * Aísla un componente que falla al renderizar: lo retira de la pantalla en vez
- * de tumbar el REPL entero, y deja el error en el registro local.
+ * de tumbar el REPL entero, y guarda el error en la base local de errores.
  */
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -26,7 +26,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    logError(new Error(`[${this.props.name ?? 'ErrorBoundary'}] ${error.message}${errorInfo.componentStack ?? ''}`, { cause: error }))
+    recordError('component_boundary', error, {
+      componentBoundary: this.props.name ?? 'ErrorBoundary',
+      componentStack: errorInfo.componentStack,
+    })
   }
 
   render(): React.ReactNode {

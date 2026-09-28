@@ -175,6 +175,21 @@
       "@thyrox/source": "./src/logging/error-log.ts",
       "types": "./dist/logging/error-log.d.ts",
       "default": "./src/logging/error-log.ts"
+    },
+    "./errorRecorder.js": {
+      "@thyrox/source": "./src/errorStore/errorRecorder.ts",
+      "types": "./dist/errorStore/errorRecorder.d.ts",
+      "default": "./src/errorStore/errorRecorder.ts"
+    },
+    "./errorStore.js": {
+      "@thyrox/source": "./src/errorStore/errorStoreHome.ts",
+      "types": "./dist/errorStore/errorStoreHome.d.ts",
+      "default": "./src/errorStore/errorStoreHome.ts"
+    },
+    "./errorStoreDb.js": {
+      "@thyrox/source": "./src/errorStore/errorStore.ts",
+      "types": "./dist/errorStore/errorStore.d.ts",
+      "default": "./src/errorStore/errorStore.ts"
     }
   },
   "dependencies": {

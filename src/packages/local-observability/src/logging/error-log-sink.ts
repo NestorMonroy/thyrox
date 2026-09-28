@@ -12,7 +12,6 @@
  * from app-host/bootstrap, debug logger from this package.
  */
 
-import axios from 'axios'
 import { dirname, join } from 'path'
 
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
@@ -21,6 +20,9 @@ import { CACHE_PATHS } from '@thyrox/storage/cache-paths'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
 import { logForDebugging } from '../debug.js'
+import { httpErrorContext } from './httpErrorContext.js'
+import { enableErrorRecording } from '../errorStore/errorRecorder.js'
+import { openLazyErrorStore } from '../errorStore/errorStoreHome.js'
 import { jsonStringify } from '../slowOperations.js'
 
 // Local shim wrapping CACHE_PATHS into the lazy-call shape this module
@@ -183,23 +185,6 @@ function appendToLog(path: string, message: object): void {
   getLogWriter(path).write(messageWithTimestamp)
 }
 
-function extractServerMessage(data: unknown): string | undefined {
-  if (typeof data === 'string') return data
-  if (data && typeof data === 'object') {
-    const obj = data as Record<string, unknown>
-    if (typeof obj.message === 'string') return obj.message
-    if (
-      typeof obj.error === 'object' &&
-      obj.error &&
-      'message' in obj.error &&
-      typeof (obj.error as Record<string, unknown>).message === 'string'
-    ) {
-      return (obj.error as Record<string, unknown>).message as string
-    }
-  }
-  return undefined
-}
-
 // ---------------------------------------------------------------------------
 // Sink implementations
 // ---------------------------------------------------------------------------
@@ -207,18 +192,9 @@ function extractServerMessage(data: unknown): string | undefined {
 function logErrorImpl(error: Error): void {
   const errorStr = error.stack || error.message
 
-  let context = ''
-  if (axios.isAxiosError(error) && error.config?.url) {
-    const parts = [`url=${error.config.url}`]
-    if (error.response?.status !== undefined) {
-      parts.push(`status=${error.response.status}`)
-    }
-    const serverMessage = extractServerMessage(error.response?.data)
-    if (serverMessage) {
-      parts.push(`body=${serverMessage}`)
-    }
-    context = `[${parts.join(',')}] `
-  }
+  const http = httpErrorContext(error)
+  const parts = Object.entries(http).map(([key, value]) => `${key}=${value}`)
+  const context = parts.length > 0 ? `[${parts.join(',')}] ` : ''
 
   logForDebugging(`${error.name}: ${context}${errorStr}`, { level: 'error' })
 
@@ -271,6 +247,12 @@ export function initializeErrorLogSink(): void {
     logMCPDebug: logMCPDebugImpl,
     getErrorsPath,
     getMCPLogsPath,
+  })
+
+  enableErrorRecording({
+    store: openLazyErrorStore(),
+    sessionId: getSessionId,
+    version: typeof MACRO !== 'undefined' ? MACRO.VERSION : null,
   })
 
   logForDebugging('Error log sink initialized')

@@ -118,6 +118,15 @@
       ],
       "@thyrox/local-observability/logging/error-log.js": [
         "./src/logging/error-log.ts"
+      ],
+      "@thyrox/local-observability/errorRecorder.js": [
+        "./src/errorStore/errorRecorder.ts"
+      ],
+      "@thyrox/local-observability/errorStore.js": [
+        "./src/errorStore/errorStoreHome.ts"
+      ],
+      "@thyrox/local-observability/errorStoreDb.js": [
+        "./src/errorStore/errorStore.ts"
       ]
     }
   },
