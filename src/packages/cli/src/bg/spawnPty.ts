@@ -138,7 +138,7 @@ export function spawnPtyHost(opts: {
     COLORTERM: 'truecolor',
     BROWSER: 'true',
     THYROX_JOB_DIR: opts.jobDir,
-    CLAUDE_BG_BACKEND: 'pty',
+    THYROX_BG_BACKEND: 'pty',
     // Rendezvous control socket the inner REPL binds (ant eaK sets the same
     // THYROX_BG_RENDEZVOUS_SOCK env). The bg REPL's useBgRendezvousServer
     // hook reads this to start the out-of-band control channel; absent it,

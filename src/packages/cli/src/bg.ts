@@ -544,7 +544,7 @@ export async function spawnBgJob(opts: {
 
   // Marker env (parity with ant 4706.js xXK):
   // - THYROX_CODE_SESSION_KIND/THYROX_CODE_BG_JOB_SHORT: read by
-  //   concurrentSessions.isBgSession() and by ps reconciliation.
+  //   isBackgroundSession() in @thyrox/local-observability and by ps reconciliation.
   // - FORCE_COLOR/COLORTERM/BROWSER: child stdio is wired to a file fd
   //   (non-TTY), so chalk would strip colors and any "open in browser"
   //   path would try to spawn a browser. Force colors on, browser off.
@@ -555,7 +555,7 @@ export async function spawnBgJob(opts: {
     ...process.env,
     THYROX_CODE_SESSION_KIND: 'bg', THYROX_CODE_BG_JOB_SHORT: short,
     FORCE_COLOR: '3', COLORTERM: 'truecolor', BROWSER: 'true',
-    THYROX_JOB_DIR: jobDir, CLAUDE_BG_BACKEND: 'detached',
+    THYROX_JOB_DIR: jobDir, THYROX_BG_BACKEND: 'detached',
     THYROX_BG_SOURCE: 'cli', CLAUDE_ENABLE_STREAM_WATCHDOG: '1',
     THYROX_CODE_SESSION_NAME: short,
   }

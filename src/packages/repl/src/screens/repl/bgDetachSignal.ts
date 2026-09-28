@@ -3,7 +3,7 @@
  * on an empty prompt inside a PTY-attached bg session.
  *
  * Source: ant 4177.js `$1H()`:
- *   if (!PF_()) return                     // PF_() = CLAUDE_BG_BACKEND==="daemon"
+ *   if (!PF_()) return                     // PF_() = THYROX_BG_BACKEND==="daemon"
  *   let H = f4K()                          // detach message
  *   ri({type:"detach-request", msg:H})    // daemon RPC
  *   process.stdout.write(w_H(H))          // APC wire format

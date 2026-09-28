@@ -14,7 +14,7 @@ import { getShortcutDisplay } from '../keybindings/shortcutFormat.js'
 import { isKairosCronEnabled } from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'
 import { is1PApiCustomer } from '@thyrox/provider/authAlias.js'
 import { getInvokedBinaryName } from '@thyrox/config'
-import { countConcurrentSessions } from '@thyrox/agent/concurrentSessions.js'
+import { sweepRegistry } from '@thyrox/local-observability/uds/registrySweep.js'
 import { getGlobalConfig } from '@thyrox/config'
 import {
   getEffortEnvOverride,
@@ -181,7 +181,7 @@ const externalTips: TipEntry[] = [
     cooldownSessions: 10,
     isRelevant: async () => {
       if (getCurrentSessionAgentColor()) return false
-      const count = await countConcurrentSessions()
+      const count = await sweepRegistry()
       return count >= 2
     },
   },

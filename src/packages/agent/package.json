@@ -487,11 +487,6 @@
       "types": "./dist/compaction/snipProjection.d.ts",
       "default": "./compaction/snipProjection.ts"
     },
-    "./concurrentSessions.js": {
-      "@thyrox/source": "./concurrentSessions.ts",
-      "types": "./dist/concurrentSessions.d.ts",
-      "default": "./concurrentSessions.ts"
-    },
     "./constants/github-app.js": {
       "@thyrox/source": "./constants/github-app.ts",
       "types": "./dist/constants/github-app.d.ts",

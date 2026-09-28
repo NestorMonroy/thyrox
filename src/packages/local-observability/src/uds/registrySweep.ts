@@ -287,7 +287,7 @@ function isNotFound(error: unknown): boolean {
  * retira los registros y las claves de las muertas de este dominio. Avisa
  * una vez por archivo de cada interactiva que salió sin cerrar.
  */
-export async function sweepRegistry(storage: RegistryStorage | undefined, deps: RegistrySweepDeps = processRegistrySweepDeps): Promise<number> {
+export async function sweepRegistry(storage?: RegistryStorage, deps: RegistrySweepDeps = processRegistrySweepDeps): Promise<number> {
   const dir = deps.sessionsDir()
   let names: string[]
   if (storage !== undefined) {

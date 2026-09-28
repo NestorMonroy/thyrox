@@ -1,4 +1,4 @@
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import type { Command } from '../../runtime.js'
 
 /**
@@ -17,7 +17,7 @@ const stop = {
   name: 'stop',
   description:
     'Stop this background session; transcript and worktree are kept',
-  isEnabled: () => isBgSession(),
+  isEnabled: () => isBackgroundSession(),
   load: () => import('./stop.js'),
 } satisfies Command
 

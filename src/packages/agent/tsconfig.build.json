@@ -305,9 +305,6 @@
       "@thyrox/agent/compaction/snipProjection.js": [
         "./compaction/snipProjection.ts"
       ],
-      "@thyrox/agent/concurrentSessions.js": [
-        "./concurrentSessions.ts"
-      ],
       "@thyrox/agent/constants/github-app.js": [
         "./constants/github-app.ts"
       ],
@@ -712,7 +709,6 @@
     "combinedAbortSignal.ts",
     "command.ts",
     "commitAttribution.ts",
-    "concurrentSessions.ts",
     "contentArray.ts",
     "context.ts",
     "coordinatorMode.ts",

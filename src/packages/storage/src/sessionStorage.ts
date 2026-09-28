@@ -88,7 +88,7 @@ import type {
 import type { QueueOperationMessage } from '@thyrox/agent/messageQueueTypes'
 import { uniq } from '@thyrox/tool-registry/utils/array.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
-import { updateSessionName } from '@thyrox/agent/concurrentSessions.js'
+import { setSessionName } from '@thyrox/local-observability/uds/pidFileRecord.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
@@ -2338,7 +2338,7 @@ export async function saveAgentName(
   // Cache for current session only (for immediate visibility)
   if (sessionId === getSessionId()) {
     getProject().currentSessionAgentName = agentName
-    void updateSessionName(agentName)
+    void setSessionName(agentName)
   }
   logEvent('tengu_agent_name_set', {
     source:

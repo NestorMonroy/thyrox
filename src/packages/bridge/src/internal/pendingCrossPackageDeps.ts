@@ -88,32 +88,6 @@ export function setGetClaudeAIOAuthTokensFn(fn: () => OAuthTokens | null): void 
 }
 
 /**
- * `updateSessionBridgeId` — de
- * `@claude-code-how-works/agent/concurrentSessions.js:145-149`. Escribe
- * `{bridgeSessionId}` al pid-file de la sesión (vía `updatePidFile`, un
- * mecanismo interno de ese mismo archivo) para que `claude ps` pueda
- * deduplicar sesiones bridge locales. Punto de inyección — default no-op:
- * `setReplBridgeHandle` sigue funcionando sin publicar el id al pid-file;
- * la única consecuencia es que otro peer local no la deduplique de su
- * lista. Se retira cuando `@thyrox/agent` porte `concurrentSessions.ts` Y
- * `@thyrox/bridge` sea miembro del workspace.
- */
-let _updateSessionBridgeId: (bridgeSessionId: string | null) => Promise<void> =
-  async () => {}
-
-export function updateSessionBridgeId(
-  bridgeSessionId: string | null,
-): Promise<void> {
-  return _updateSessionBridgeId(bridgeSessionId)
-}
-
-export function setUpdateSessionBridgeIdFn(
-  fn: (bridgeSessionId: string | null) => Promise<void>,
-): void {
-  _updateSessionBridgeId = fn
-}
-
-/**
  * `redactSecrets` — de `@claude-code-how-works/storage/secretsRegistry.js`.
  * Ya existe idéntica en `@thyrox/storage: src/secretsRegistry.ts` (porte
  * COMPLETO, 121 líneas fuente, verificado). Se reimplementa aquí VERBATIM

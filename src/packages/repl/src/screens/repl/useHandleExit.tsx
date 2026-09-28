@@ -1,7 +1,7 @@
 import { useCallback, type ReactNode } from 'react'
 import { spawnSync } from 'child_process'
 import { feature } from 'bun:bundle'
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import { getCurrentWorktreeSession } from '@thyrox/swarm'
 import { ExitFlow } from '../../components/ExitFlow.js'
 import exit from '../../commands/exit/index.js'
@@ -24,7 +24,7 @@ export function useHandleExit(
     // In bg sessions, always detach instead of kill — even when a worktree is
     // active. Without this guard, the worktree branch below short-circuits into
     // ExitFlow (which calls gracefulShutdown) before exit.tsx is ever loaded.
-    if (feature('BG_SESSIONS') && isBgSession()) {
+    if (feature('BG_SESSIONS') && isBackgroundSession()) {
       spawnSync('tmux', ['detach-client'], { stdio: 'ignore' })
       setIsExiting(false)
       return

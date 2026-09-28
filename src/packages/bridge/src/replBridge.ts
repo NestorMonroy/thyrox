@@ -51,7 +51,6 @@ import {
   logEvent,
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   registerCleanup,
-  updateSessionBridgeId,
   updateSessionIngressAuthToken,
   isInProtectedNamespace,
   errorMessage,
@@ -73,6 +72,7 @@ import {
   buildCCRv2SdkUrl,
   sameSessionId,
 } from './workSecret.js'
+import { recordBridgeSessionId } from '@thyrox/local-observability/uds/pidFileRecord.js'
 import { toCompatSessionId, toInfraSessionId } from './sessionIdCompat.js'
 import { getTrustedDeviceToken } from './trustedDevice.js'
 import type { HybridTransport } from '@thyrox/cli/transports/HybridTransport.js'
@@ -906,7 +906,7 @@ export async function initBridgeCore(
     // Re-publica en el archivo PID para que la deduplicación de peers
     // (peerRegistry.ts) recoja el ID nuevo — setReplBridgeHandle sólo se
     // dispara al iniciar/apagar, no al reconectar.
-    void updateSessionBridgeId(toCompatSessionId(newSessionId)).catch(() => {})
+    void recordBridgeSessionId(toCompatSessionId(newSessionId)).catch(() => {})
     // Reinicia el estado de transporte por sesión de INMEDIATO tras el
     // intercambio de sesión, antes de cualquier await. Si esto corre
     // después del `await writeBridgePointer` de abajo, hay una ventana

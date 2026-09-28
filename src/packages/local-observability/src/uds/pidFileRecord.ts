@@ -104,7 +104,7 @@ export function updatePidFile(patch: PidFilePatch, storage?: PidFileStorage, dep
 
 /** `eF`: registra el nombre y lo publica; si el registro no se actualiza, lo avisa. */
 export async function setSessionName(
-  name: string,
+  name: string | undefined,
   storage?: PidFileStorage,
   source = 'user',
   givenAtLaunch?: boolean,
@@ -170,7 +170,7 @@ export async function publishMessagingSocketPath(socketPath: string, storage?: P
 }
 
 /** `ipn`. */
-export async function recordBridgeSessionId(bridgeSessionId: string, storage?: PidFileStorage, deps: PidFileDeps = processPidFileDeps): Promise<void> {
+export async function recordBridgeSessionId(bridgeSessionId: string | null, storage?: PidFileStorage, deps: PidFileDeps = processPidFileDeps): Promise<void> {
   await updatePidFile({ bridgeSessionId }, storage, deps)
 }
 

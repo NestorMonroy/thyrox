@@ -33,7 +33,6 @@
     "commands/**/*",
     "commitAttribution.ts",
     "compaction/**/*",
-    "concurrentSessions.ts",
     "constants/**/*",
     "contentArray.ts",
     "context.ts",

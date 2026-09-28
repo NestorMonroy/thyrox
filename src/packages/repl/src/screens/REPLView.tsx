@@ -366,7 +366,7 @@ import {
   restoreWorktreeForResume,
   exitRestoredWorktree,
 } from '@thyrox/storage/sessionRestore.js';
-import { updateSessionName, updateSessionActivity } from '@thyrox/agent/concurrentSessions.js';
+import { setSessionName, updateSessionStatus } from '@thyrox/local-observability/uds/pidFileRecord.js';
 import { isInProcessTeammateTask, type InProcessTeammateTaskState } from '@thyrox/swarm';
 import { restoreRemoteAgentTasks } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js';
 import { useInboxPoller } from '../hooks/useInboxPoller.js';
@@ -1151,7 +1151,7 @@ export function REPL({
   // back to transcript-tail derivation when this is missing/stale.
   useEffect(() => {
     if (feature('BG_SESSIONS')) {
-      void updateSessionActivity({ status: sessionStatus, waitingFor });
+      void updateSessionStatus({ status: sessionStatus, waitingFor });
     }
   }, [sessionStatus, waitingFor]);
 
@@ -1839,7 +1839,7 @@ export function REPL({
               }
             : undefined,
         }));
-        void updateSessionName(log.agentName);
+        void setSessionName(log.agentName);
 
         // Restore read file state from the message history
         restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
@@ -3884,7 +3884,7 @@ export function REPL({
    */
   const handleLeftArrowOnEmpty = useCallback(() => {
     // Source: ant 4177.js `$1H()`:
-    //   if (!PF_()) return                     // PF_() = CLAUDE_BG_BACKEND==="daemon"
+    //   if (!PF_()) return                     // PF_() = THYROX_BG_BACKEND==="daemon"
     //   let H = f4K()                          // detach message
     //   ri({type:"detach-request", msg:H})    // daemon RPC (ccb has no daemon)
     //   process.stdout.write(w_H(H))          // APC wire format

@@ -141,6 +141,7 @@ describe('setSessionName (eF)', () => {
 
   test('un nombre vacío no hace nada', async () => {
     expect(await setSessionName('', undefined, undefined, undefined, deps())).toBe(false)
+    expect(await setSessionName(undefined, undefined, undefined, undefined, deps())).toBe(false)
     expect(state.registeredName).toBeUndefined()
   })
 
@@ -226,6 +227,11 @@ describe('los demás campos del registro', () => {
     clock += 5
     await clearParkedJob(undefined, deps())
     expect(readRecord()).toEqual({ pid: 4242, messagingSocketPath: '/tmp/s.sock', bridgeSessionId: 'bridge_1', updatedAt: clock })
+  })
+
+  test('recordBridgeSessionId (ipn) con null limpia la sesión de puente', async () => {
+    await recordBridgeSessionId(null, undefined, deps())
+    expect(readRecord()).toEqual({ pid: 4242, bridgeSessionId: null })
   })
 
   test('updateSessionStatus (kCe) sella la hora del estado y publica el parche', async () => {

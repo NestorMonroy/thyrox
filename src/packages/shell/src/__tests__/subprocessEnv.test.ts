@@ -198,15 +198,15 @@ describe('subprocessEnv — process-control marker scrub (always)', () => {
     ).toBeUndefined()
   })
 
-  test('strips THYROX_BG_SOURCE/ISOLATION/BACKEND', () => {
+  test('strips THYROX_BG_SOURCE, CLAUDE_BG_ISOLATION and THYROX_BG_BACKEND', () => {
     const env = subprocessEnv({
       THYROX_BG_SOURCE: 'cli',
       CLAUDE_BG_ISOLATION: 'worktree',
-      CLAUDE_BG_BACKEND: 'detached',
+      THYROX_BG_BACKEND: 'detached',
     })
     expect(env.THYROX_BG_SOURCE).toBeUndefined()
     expect(env.CLAUDE_BG_ISOLATION).toBeUndefined()
-    expect(env.CLAUDE_BG_BACKEND).toBeUndefined()
+    expect(env.THYROX_BG_BACKEND).toBeUndefined()
   })
 
   test('strips THYROX_CODE_BG_JOB_SHORT (set by handleBgFlag)', () => {

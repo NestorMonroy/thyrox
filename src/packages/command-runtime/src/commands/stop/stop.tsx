@@ -14,13 +14,13 @@ import * as React from 'react'
 import { logEvent } from '@thyrox/local-observability'
 
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
-import { isBgSession } from '@thyrox/agent/concurrentSessions.js'
+import { isBackgroundSession } from '@thyrox/local-observability/uds/sessionKind.js'
 import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 
 export async function call(
   onDone: LocalJSXCommandOnDone,
 ): Promise<React.ReactNode> {
-  if (!isBgSession()) {
+  if (!isBackgroundSession()) {
     onDone('/stop is only available inside a background session.', {
       display: 'system',
     })
