@@ -53,8 +53,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) | pendiente |
 | F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`) con su archivo pid, limpieza al salir y los avisos de cambio de sesión y de directorio | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
-| F4c-2f-4e | tipo de sesión por entorno (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`) con variables `THYROX_*` | pendiente |
-| F4c-2f-4f | sustituir `agent/concurrentSessions.ts` por el registro portado en sus consumidores | pendiente |
+| F4c-2f-4e | tipo de sesión por entorno y anfitrión (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`, `NNr`, `qKn`) con `THYROX_CODE_SESSION_KIND`, `THYROX_JOB_DIR` y `THYROX_BG_BACKEND`; `fb`, `Ul`, `dR` y `md` llegan por `configureSessionKindHost` → `uds/sessionKind.ts` | hecha: 9 pruebas; 17 anulaciones (`anulacion-sessionkind-*.txt`) |
+| F4c-2f-4f | sustituir `agent/concurrentSessions.ts` por el registro portado en sus consumidores; alinear `cli/src/bg.ts`, que escribe `CLAUDE_BG_BACKEND=detached` donde la referencia lee `daemon` (`jte`) | pendiente |
 | W-1 | `@thyrox/tool-registry: words.ts`: `TDo` → `shortWordSlugFromSeed`, `E$t` → `slugFromText` con `c`; `M4n` y `Q5` ya eran `generateWordSlug` y `generateShortWordSlug`, ahora nombrados; `Q5` llega inyectado a los flujos de renombre porque `tool-registry` depende de `local-observability` | hecha: 5 pruebas nuevas; 7 anulaciones (`anulacion-w1-*.txt`); oráculo `diferencial-words.txt`, 0 discrepancias |
 | F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) sobre `RenameNoticeDeps` (envío `VOt`, registro `D3`, `Ws`, `DV` inyectados) → `uds/renameNotice.ts` | hecha: 7 pruebas; 10 anulaciones (`anulacion-f4c2f3-*.txt`) |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
@@ -542,3 +542,10 @@ recorte del espacio final, el oráculo da 911 discrepancias
 | `seg-*` / `segs-vacio` | cada condición de un segmento válido y la lista vacía | 1 cada una |
 | `opcional` / `journal` / `sessionjournal` / `copia` / `meta` / `hwm` / `capa-user` / `borrador` / `relpath` / `vuo` | los campos opcionales y cada rama con alternativa de la forma canónica | 1 cada una |
 | `punto-inicial` | el atajo de `qBt` para nombres sin punto inicial | 0 — redundante por construcción: la expresión de apartado exige `^\.`, y ninguna variante (minúsculas, recorte del final, prefijo antes de `:`) añade un punto al principio |
+
+## F4c-2f-4e — tipo de sesión: controles
+
+Una anulación por condición de cada predicado (`bg` tumba 5 porque todos
+parten de `oJ`), más las dos de `qKn` —segmento válido y colgar directamente
+de la raíz de trabajos— y el instalador del anfitrión: cada una cae en su
+caso (`anulacion-sessionkind-*.txt`), ninguna en cero.

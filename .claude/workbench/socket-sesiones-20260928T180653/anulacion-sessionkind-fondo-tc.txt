@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+60 | 
+61 |   test('hasBackgroundJob (tc): sesión de fondo, o una toma de control de un trabajo', () => {
+62 |     expect(hasBackgroundJob(host())).toBe(false)
+63 |     expect(hasBackgroundJob(host({ bgTakeover: () => ({ jobDir: '/j' }) }))).toBe(true)
+64 |     expect(hasBackgroundJob(host({ bgTakeover: () => ({}) }))).toBe(true)
+65 |     expect(hasBackgroundJob(host({ env: { THYROX_CODE_SESSION_KIND: 'bg' } }))).toBe(true)
+                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:65:81)
+(fail) sessionKind (oJ) y los predicados por tipo > hasBackgroundJob (tc): sesión de fondo, o una toma de control de un trabajo [0.27ms]
+
+ 8 pass
+ 1 fail
+ 37 expect() calls
+Ran 9 tests across 1 file. [40.00ms]
