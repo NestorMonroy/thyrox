@@ -29,6 +29,7 @@
  * de la maquina, y el modulo por si solo no la hace confiable para nadie —
  * instalarla en el almacen del sistema es un acto aparte y explicito.
  */
+import { randomBytes } from 'node:crypto'
 import tls from 'node:tls'
 import selfsigned from 'selfsigned'
 
@@ -46,8 +47,23 @@ export interface LeafPair {
   cert: string
 }
 
+/** El prefijo que identifica a toda CA que el MITM genera. */
+export const MITM_CA_NAME_PREFIX = 'THYROX MITM CA'
+
+/** Bytes aleatorios del sufijo: 8 dígitos hexadecimales bastan para no repetir. */
+const CA_NAME_SUFFIX_BYTES = 4
+
+/**
+ * Un nombre de CA propio de esta generación (H-THYROX-236). BoringSSL, bajo
+ * Bun, elige el emisor por nombre dentro de `SSL_CERT_FILE`: con un nombre
+ * fijo, una CA vieja que siga en el almacén tapa a la nueva.
+ */
+export function uniqueMitmCaName(): string {
+  return `${MITM_CA_NAME_PREFIX} ${randomBytes(CA_NAME_SUFFIX_BYTES).toString('hex')}`
+}
+
 /** Genera una CA local de vida larga (`basicConstraints` CA, `keyCertSign`). */
-export async function generateMitmCa(name = 'THYROX MITM CA'): Promise<CaPair> {
+export async function generateMitmCa(name = uniqueMitmCaName()): Promise<CaPair> {
   const notAfter = new Date()
   notAfter.setFullYear(notAfter.getFullYear() + 10)
   const pems = await selfsigned.generate([{ name: 'commonName', value: name }], {
@@ -89,12 +105,12 @@ export async function issueLeafCert(hostname: string, ca: CaPair): Promise<LeafP
  * instalarla en el almacen de confianza cada vez.
  */
 export class DynamicCertStore {
-  private readonly caName: string
+  private readonly caName: string | undefined
   private caPromise: Promise<CaPair> | null = null
   private readonly contexts = new Map<string, tls.SecureContext>()
   private readonly leaves = new Map<string, Promise<LeafPair>>()
 
-  constructor(caName = 'THYROX MITM CA', existingCa?: CaPair) {
+  constructor(caName?: string, existingCa?: CaPair) {
     this.caName = caName
     if (existingCa) this.caPromise = Promise.resolve(existingCa)
   }
