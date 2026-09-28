@@ -1,0 +1,39 @@
+# primera pasada
+== 1: sin variable declarada -> 2
+== 2: variable sin recortar -> 1
+== 3: hogar de configuración ignora env -> 1
+== 4: sin chmod -> 0
+== 5: modo abierto -> 1
+== 6: sin cifrado -> 1
+== 7: sin id exacto -> 0
+== 8: sin prefijo -> 3
+== 9: sin nombre -> 5
+== 10: sin proveedor -> 1
+== 11: sin minúsculas -> 0
+== 12: sin recorte -> 1
+== 13: ambigüedad elige el primero -> 2
+== 14: selector vacío -> 1
+== 15: secretos en la vista -> 1
+== 16: sin unknown -> 1
+== 17: id completo -> 1
+== 18: sin mensaje vacío -> 1
+== 19: json de list -> 1
+== 20: sin cerrar -> 1
+== 21: sin selector aceptado -> 1
+== 22: ambigüedad no reportada -> 3
+== 23: desconocido borra -> 1
+== 24: dry-run borra -> 1
+== 25: yes pregunta -> 1
+== 26: no interactivo pregunta -> 1
+== 27: sin confirmar -> 2
+== 28: json de remove -> 1
+== 29: remove muestra secretos -> 1
+== 30: sin modo propio -> 1
+== 31: verbo desconocido abre -> 1
+== restaurado -> 0
+# repetición tras afinar las pruebas de 4, 7 y 11
+== 4: sin chmod -> 1
+== 7: sin id exacto -> 1
+== 11: sin minúsculas -> 1
+== restaurado -> 0
+31 de 31 discriminan tras afinar: la 4 necesitaba un directorio previo con otro modo; la 7, un id que fuera prefijo de otro; la 11, datos guardados con mayúsculas.

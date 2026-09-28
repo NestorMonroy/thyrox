@@ -37,6 +37,7 @@ export const MODE_KINDS = [
   'configOrigin',
   'sessions',
   'mitm',
+  'providers',
   'help',
   'loop',
   'print',
@@ -62,6 +63,7 @@ export type Mode = {
 export function detectMode(argv: string[]): Mode {
   // Un subcomando nombrado en la primera palabra gana sobre cualquier bandera.
   if (argv[0] === 'mitm') return { kind: 'mitm' }
+  if (argv[0] === 'providers') return { kind: 'providers' }
   if (hasFlag(argv, 'workbench-new') || hasFlag(argv, 'workbench-check')) {
     return { kind: 'workbench' }
   }

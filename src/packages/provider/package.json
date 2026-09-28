@@ -155,6 +155,11 @@
       "types": "./dist/commands/provider.d.ts",
       "default": "./src/commands/provider.ts"
     },
+    "./accounts/connectionStoreHome": {
+      "@thyrox/source": "./src/accounts/connectionStoreHome.ts",
+      "types": "./dist/accounts/connectionStoreHome.d.ts",
+      "default": "./src/accounts/connectionStoreHome.ts"
+    },
     "./connections": {
       "@thyrox/source": "./src/connections.ts",
       "types": "./dist/connections.d.ts",

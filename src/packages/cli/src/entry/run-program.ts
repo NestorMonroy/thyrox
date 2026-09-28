@@ -36,6 +36,7 @@ import { runModeDispatch } from './mode-dispatch.js'
 import type { PendingHandles } from './preprocess-argv.js'
 import { registerMcpCommands } from '../commands/mcp-commands.js'
 import { registerMitmCommands } from '../commands/mitm-commands.js'
+import { registerProvidersCommands } from '../commands/providers-commands.js'
 import { registerMiscCommands } from '../commands/misc-commands.js'
 import { registerProjectCommands } from '../commands/project-commands.js'
 
@@ -422,6 +423,7 @@ export async function runCliProgram(
   registerProjectCommands(program)
 
   registerMitmCommands(program)
+  registerProvidersCommands(program)
 
   profileCheckpoint('run_before_parse')
   await program.parseAsync(process.argv)
