@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxRouting.test.ts:
+146 |   test('un fallo al procesar se avisa y la cadena sigue', async () => {
+147 |     const order: string[] = []
+148 |     const { deps, warnings } = harness({
+149 |       deliverUserMessage: async message => {
+150 |         const tag = (message as { tag: string }).tag
+151 |         if (tag === 'bad') throw new Error('boom')
+                                           ^
+error: boom
+      at deliverUserMessage (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxRouting.test.ts:151:38)
+      at handleInboxMessage (/home/user/thyrox/src/packages/local-observability/src/uds/inboxRouting.ts:69:16)
+(fail) routeInboxMessage (Qe) > un fallo al procesar se avisa y la cadena sigue [0.80ms]
+
+ 11 pass
+ 1 fail
+ 19 expect() calls
+Ran 12 tests across 1 file. [117.00ms]

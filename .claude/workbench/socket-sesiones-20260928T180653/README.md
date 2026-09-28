@@ -26,7 +26,12 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n`, `Ee`, `Ks`, `rt` y el contrato `SessionKeyStorage` que consumen → `uds/inboxKeys.ts` | hecha |
 | F4a | credenciales del par: `lsn`, `te`, `Yce`, `aUr`; `Bun.ant.getPeerPid` sustituido por `getsockopt` (`SO_PEERCRED` en Linux, `LOCAL_PEERPID` en macOS) por `bun:ffi` → `uds/peerCredentials.ts` | hecha (H-THYROX-241) |
 | F4b | el manejador de conexión `en`: plazo de primera línea, marco de auth, tope `WOt` de 1 MiB, líneas JSON, fragmento final, `TB`/`Bf`, telemetría `_`/`m`/`p` → `uds/inboxConnection.ts`, `uds/logRedaction.ts`, `uds/featureTelemetry.ts` | hecha |
-| F4c | el enrutado `Qe`/`be`/`ze`/`Ie` y la confianza por ancestría en modo bypass (`unr`) | pendiente |
+| F4c-1 | despacho: `Qe` (inmediato o en cadena), `be` por tipo y acción, `Ie` (session_id), acción `rename` → `uds/inboxRouting.ts` | hecha |
+| F4c-2 | entrega de un mensaje `user` a la cola de la sesión: `ze` (`C7e`, `E2e`, `g9r`, `pYe`, `Aot`, `zce`, `fbt`, `gE`, `Oe`) y adjuntos (`chunk-yrfq0b3e.js`) | pendiente |
+| F4c-3 | `peer_message_status` (`WRr`, `GRr`, `jRr`, `R1n`, `Cko`) | pendiente |
+| F4c-4 | `notify_when_idle` y `peer_idle_notice` (`qtr`, `aEn`, `Ytr`, `pqt`, `Ktr`, `ibt`, `Jtr`) | pendiente |
+| F4c-5 | `yield`/`unyield_artifact_replies` y `artifact_replies_yielded` (`cno`, `uno`, `bno`, `dno`, `gno`, `hno`, `glr`) | pendiente |
+| F4c-6 | el veredicto de confianza del par: `ce`/`ye` y `unr` (modo de permisos bypass) | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
 | F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
@@ -175,3 +180,11 @@ versión de la prueba afirmaba en cuanto el CLIENTE veía `close`, y en Bun ese
 `close` puede llegar antes de que el servidor procese sus `data`: la prueba
 veía cero mensajes enrutados. Desde entonces el arnés espera el `close` del
 socket del servidor. La prueba se corrió tres veces seguidas en verde.
+
+## F4c-1 — despacho: controles
+
+Anulaciones en `anulacion-routing-*.txt`; nueve, y cada una tumba sólo su
+caso. Las guardas de `be` —por ejemplo `peer_message_status` sólo con un
+`status` conocido— hacen que un mensaje que no las cumple caiga en «acción
+sin manejar». Aquí eso lo expresa `accepts`, que declara cada acción al
+registrarse en F4c-3..5.
