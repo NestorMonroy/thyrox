@@ -42,6 +42,8 @@ export interface OAuthProviderFlow<Config = unknown> {
   requestDeviceCode?(config: Config, codeChallenge: string): Promise<unknown>
   pollToken?(config: Config, deviceCode: string, codeVerifier?: string, extraData?: unknown): Promise<PollResult>
   postExchange?(tokens: JsonRecord, extraData?: unknown): Promise<unknown>
+  /** Para un flujo de importación: si el token pegado se puede aceptar. */
+  validateImportToken?(token: string): { valid: boolean; reason?: string }
   mapTokens(tokens: JsonRecord, extra: unknown): JsonRecord
 }
 
