@@ -1,0 +1,10 @@
+OK   ruta absoluta del mecanismo: el gate MIDE
+OK   ruta absoluta del SKILL.md derivado: el gate MIDE
+OK   ruta relativa del mecanismo: el gate MIDE
+OK   archivo fuera de la superficie: el gate SE EXIME
+FALLA árbol limpio: exit 0 — esperado '0', obtenido '1'
+FALLA publica su denominador (N definición(es); M con diferencia) — esperado 'si', obtenido 'no'
+OK   divergencia forzada + --strict: exit 1
+OK   restaurado byte a byte tras la anulación (md5sum)
+
+aserciones: 6 de 8 · fallos: 2

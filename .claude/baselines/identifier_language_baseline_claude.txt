@@ -48,7 +48,9 @@ src/agents/agent_store.py::_orden_id
 src/agents/agent_store.py::_tabla_de_sesion
 src/agents/agent_store.py::activa
 src/agents/agent_store.py::actualizadas
+src/agents/agent_store.py::actualizar-sesion
 src/agents/agent_store.py::agregado
+src/agents/agent_store.py::agregar-hallazgo
 src/agents/agent_store.py::aguja
 src/agents/agent_store.py::ahora
 src/agents/agent_store.py::antes
@@ -56,13 +58,19 @@ src/agents/agent_store.py::asignaciones
 src/agents/agent_store.py::aviso
 src/agents/agent_store.py::bloqueada
 src/agents/agent_store.py::bruto
+src/agents/agent_store.py::buscar-hallazgos
+src/agents/agent_store.py::buscar-tareas
 src/agents/agent_store.py::candidatas
 src/agents/agent_store.py::capa
 src/agents/agent_store.py::capas
 src/agents/agent_store.py::catalogo
+src/agents/agent_store.py::censo-medicion
+src/agents/agent_store.py::censo-stop-reason
+src/agents/agent_store.py::censo-tablas
 src/agents/agent_store.py::cero
 src/agents/agent_store.py::cita
 src/agents/agent_store.py::citas_antes
+src/agents/agent_store.py::clasificar-documentos
 src/agents/agent_store.py::clave
 src/agents/agent_store.py::cmd_render_tablero
 src/agents/agent_store.py::columna
@@ -79,6 +87,7 @@ src/agents/agent_store.py::crudo
 src/agents/agent_store.py::crudo_commit
 src/agents/agent_store.py::declarada
 src/agents/agent_store.py::del_dia
+src/agents/agent_store.py::derivar-capa
 src/agents/agent_store.py::desglose
 src/agents/agent_store.py::destino
 src/agents/agent_store.py::destinos
@@ -93,6 +102,8 @@ src/agents/agent_store.py::estado
 src/agents/agent_store.py::etiqueta
 src/agents/agent_store.py::existentes
 src/agents/agent_store.py::fecha
+src/agents/agent_store.py::fechar-apertura
+src/agents/agent_store.py::fechar-documentos
 src/agents/agent_store.py::fechas
 src/agents/agent_store.py::ficha
 src/agents/agent_store.py::fila
@@ -112,6 +123,7 @@ src/agents/agent_store.py::intactas
 src/agents/agent_store.py::largo
 src/agents/agent_store.py::linea
 src/agents/agent_store.py::lineas
+src/agents/agent_store.py::listar-sesiones
 src/agents/agent_store.py::marca
 src/agents/agent_store.py::marcas
 src/agents/agent_store.py::maximo
@@ -139,6 +151,8 @@ src/agents/agent_store.py::prefijo
 src/agents/agent_store.py::puestas
 src/agents/agent_store.py::raiz
 src/agents/agent_store.py::reemplazo
+src/agents/agent_store.py::registrar-sesion
+src/agents/agent_store.py::render-tablero
 src/agents/agent_store.py::respetadas
 src/agents/agent_store.py::rotulo
 src/agents/agent_store.py::ruta
@@ -160,6 +174,7 @@ src/agents/agent_store.py::sin_incorporar
 src/agents/agent_store.py::sin_medir
 src/agents/agent_store.py::sin_modelo
 src/agents/agent_store.py::sin_seccion
+src/agents/agent_store.py::snapshot-tareas
 src/agents/agent_store.py::sombras
 src/agents/agent_store.py::sujeto_acunado
 src/agents/agent_store.py::tabla
@@ -213,7 +228,6 @@ src/agents/backfill_agent_sessions.py::texto_final
 src/agents/backfill_agent_sessions.py::ts_ahora
 src/agents/backfill_agent_sessions.py::ultimo
 src/agents/backfill_agent_sessions.py::uso
-src/agents/classify_agents.py::CANT_PROCEED_RE
 src/agents/classify_agents.py::origen
 src/agents/classify_agents.py::sin_texto
 src/agents/drain_spool.py::abandonados
@@ -299,7 +313,6 @@ src/agents/merge_sqlite_union.py::tablas_virtuales
 src/agents/merge_sqlite_union.py::tiene_clave_primaria
 src/agents/merge_sqlite_union.py::unir
 src/agents/merge_sqlite_union.py::virtuales
-src/agents/merge_stores.py::Resolver
 src/agents/merge_stores.py::actualizadas
 src/agents/merge_stores.py::cita_d
 src/agents/merge_stores.py::cita_o
@@ -318,10 +331,7 @@ src/agents/merge_stores.py::modo
 src/agents/merge_stores.py::nombres
 src/agents/merge_stores.py::omitida
 src/agents/merge_stores.py::reales
-src/agents/merge_stores.py::register_resolver
 src/agents/merge_stores.py::resolvedor
-src/agents/merge_stores.py::resolver
-src/agents/merge_stores.py::resolver_for
 src/agents/merge_stores.py::ruta
 src/agents/merge_stores.py::tabla
 src/agents/model_catalog.py::RAIZ
@@ -335,6 +345,7 @@ src/agents/model_catalog.py::ficha
 src/agents/model_catalog.py::leer
 src/agents/model_catalog.py::medidos
 src/agents/model_catalog.py::motivo
+src/agents/model_catalog.py::por-modelo
 src/agents/model_catalog.py::sesion
 src/agents/model_catalog.py::universo
 src/agents/reconcile_store.py::SILENCIO_MAXIMO_S
@@ -465,6 +476,10 @@ src/corpus/backfill_findings_history.py::procesados
 src/corpus/backfill_findings_history.py::razon
 src/corpus/backfill_findings_history.py::ruta
 src/corpus/backfill_findings_history.py::texto
+src/corpus/bie_series.py::cuarto
+src/corpus/bie_series.py::primer
+src/corpus/bie_series.py::segundo
+src/corpus/bie_series.py::tercer
 src/corpus/census_counterparts.py::alcanzables
 src/corpus/census_counterparts.py::candidatas
 src/corpus/census_counterparts.py::conteo
@@ -534,12 +549,8 @@ src/corpus/markdown_to_rst.py::cuerpo
 src/corpus/markdown_to_rst.py::protegida
 src/corpus/markdown_to_rst.py::siguiente
 src/corpus/migration_report.py::fallidos
-src/corpus/migration_report.py::linea
-src/corpus/migration_report.py::lineas
-src/corpus/migration_report.py::marca
 src/corpus/migration_report.py::opciones
 src/corpus/migration_report.py::proceso
-src/corpus/migration_report.py::resultados
 src/corpus/migration_report.py::salida
 src/docs/check_role_abstraction.py::ATRIBUTOS_OBSOLETOS
 src/docs/check_role_abstraction.py::ORM_ESPECIFICO
@@ -564,11 +575,10 @@ src/docs/check_role_abstraction.py::regla
 src/docs/check_role_abstraction.py::reportadas_b
 src/docs/check_role_abstraction.py::resultado
 src/docs/check_role_abstraction.py::texto
-src/docs/test_unwrap_rst.py::ConstructosIntactos
-src/docs/test_unwrap_rst.py::ProsaUnida
-src/docs/test_unwrap_rst.py::divergentes
-src/docs/test_unwrap_rst.py::test_hay_corpus_que_medir
-src/docs/test_unwrap_rst.py::test_preserva_el_parseo_y_es_idempotente
+src/docs/scaffold_initiative.py::alcance
+src/docs/scaffold_initiative.py::tareas
+src/hallazgo/hallazgo_ids.py::acunar
+src/hallazgo/hallazgo_ids.py::verificar
 src/hooks/bridge_hooks.py::antes
 src/hooks/flow_selection.py::archivo
 src/hooks/flow_selection.py::carpeta
@@ -581,8 +591,8 @@ src/hooks/maintenance_chain.py::partes
 src/hooks/stop_gate.py::cuales
 src/hooks/stop_gate.py::hallado
 src/hooks/stop_gate.py::ruta
-src/hooks/stop_pending_work.py::sep
 src/hooks/stop_tests.py::entorno
+src/measurement/normalizer_magnitude.py::FLOAT64_MIN_SUBNORMAL
 src/packages/agent/bin/extract_model_registry.py::ANCLA
 src/packages/agent/bin/extract_model_registry.py::abre
 src/packages/agent/bin/extract_model_registry.py::ancla
@@ -590,7 +600,6 @@ src/packages/agent/bin/extract_model_registry.py::bloque
 src/packages/agent/bin/extract_model_registry.py::bloque_balanceado
 src/packages/agent/bin/extract_model_registry.py::catalogo
 src/packages/agent/bin/extract_model_registry.py::cierra
-src/packages/agent/bin/extract_model_registry.py::combinado
 src/packages/agent/bin/extract_model_registry.py::comilla
 src/packages/agent/bin/extract_model_registry.py::destino
 src/packages/agent/bin/extract_model_registry.py::escapado
@@ -608,7 +617,6 @@ src/packages/agent/bin/extract_model_registry.py::salida_modelos
 src/packages/agent/bin/extract_model_registry.py::sin_tier
 src/packages/agent/bin/extract_model_registry.py::texto
 src/packages/agent/bin/extract_model_registry.py::valor
-src/paths/declarations.py::resolver
 src/paths/reach.py::cuenta
 src/paths/reach.py::declaradas
 src/paths/reach.py::del_entorno
@@ -631,7 +639,19 @@ src/session/background.py::salida
 src/session/clone_bootstrap.py::_comentario
 src/session/clone_bootstrap.py::bajo_raiz
 src/session/clone_bootstrap.py::resultado
-src/session/job_ledger.py::sep
+src/session/generate_bin.py::aviso
+src/session/generate_bin.py::cubiertos
+src/session/generate_bin.py::del_proveedor
+src/session/generate_bin.py::entorno
+src/session/generate_bin.py::fallos
+src/session/generate_bin.py::forma
+src/session/generate_bin.py::fuera
+src/session/generate_bin.py::hecho
+src/session/generate_bin.py::linea
+src/session/generate_bin.py::nombre
+src/session/generate_bin.py::objetivo
+src/session/generate_bin.py::raiz_src
+src/session/generate_bin.py::razon
 src/session/job_runs.py::ancla
 src/session/job_runs.py::manifiesto
 src/session/job_runs.py::presentes
@@ -730,6 +750,10 @@ src/task/asignadas.py::ASIGNADAS
 src/task/asignadas.py::DEVUELTAS
 src/task/asignadas.py::DUENOS
 src/task/asignadas.py::TRABAJO_PARCIAL
+src/task/board_sync.py::acunar-tarjeta
+src/task/board_sync.py::reconciliar-estados
+src/task/board_sync.py::reconciliar-todo
+src/task/board_sync.py::sincronizar-board
 src/task/closure_graph.py::amb
 src/task/closure_graph.py::con
 src/task/implementation_order.py::_cita
@@ -746,17 +770,21 @@ src/task/render_tablero_asignadas.py::identidad
 src/task/render_tablero_asignadas.py::porque
 src/task/render_tablero_asignadas.py::que
 src/task/render_tablero_asignadas.py::redacta
-src/task/task_ids.py::KEY_SEP
 src/task/task_ids.py::_cmd_acunar
 src/task/task_ids.py::_cmd_censo
 src/task/task_ids.py::_cmd_duplicados
 src/task/task_ids.py::_cmd_ingerir_board
+src/task/task_ids.py::acunar
 src/task/task_ids.py::antes
 src/task/task_ids.py::candidatos
 src/task/task_ids.py::capa
+src/task/task_ids.py::censo
 src/task/task_ids.py::cita
 src/task/task_ids.py::columnas
+src/task/task_ids.py::corregir-capa
+src/task/task_ids.py::duplicados
 src/task/task_ids.py::filas
+src/task/task_ids.py::ingerir-board
 src/task/task_ids.py::nuevos
 src/task/task_ids.py::p_acunar
 src/task/task_ids.py::p_censo
@@ -891,7 +919,6 @@ src/verify/check_corpus_al_dia.py::versiones
 src/verify/check_corpus_al_dia.py::versiones_extraidas
 src/verify/check_corpus_al_dia.py::viva
 src/verify/check_eventos_hook.py::ANCLAS
-src/verify/check_eventos_hook.py::ARBOL
 src/verify/check_eventos_hook.py::SECUENCIA
 src/verify/check_eventos_hook.py::archivos
 src/verify/check_eventos_hook.py::binario
@@ -917,14 +944,14 @@ src/verify/check_eventos_hook.py::sin_consumir
 src/verify/check_eventos_hook.py::universo
 src/verify/check_eventos_hook.py::universo_del_binario
 src/verify/check_eventos_hook.py::version_del_binario
-src/verify/check_githooks_activos.py::ARBOL
 src/verify/check_githooks_activos.py::ESPERADO
-src/verify/check_githooks_activos.py::clon
+src/verify/check_githooks_activos.py::ausentes
 src/verify/check_githooks_activos.py::detalle
 src/verify/check_githooks_activos.py::estado
 src/verify/check_githooks_activos.py::filas
-src/verify/check_githooks_activos.py::malos
+src/verify/check_githooks_activos.py::inactivos
 src/verify/check_githooks_activos.py::marca
+src/verify/check_githooks_activos.py::nombre
 src/verify/check_githooks_activos.py::raiz
 src/verify/check_githooks_activos.py::valor
 src/verify/check_githooks_activos.py::veredicto
@@ -1094,27 +1121,12 @@ src/verify/check_script_naming.py::ruta
 src/verify/check_script_naming.py::scan_idioma
 src/verify/check_suite_discrimina.py::INSERTADA
 src/verify/check_suite_discrimina.py::MARCA
-src/verify/check_suite_discrimina.py::anotados
 src/verify/check_suite_discrimina.py::archivo
-src/verify/check_suite_discrimina.py::con_marca
-src/verify/check_suite_discrimina.py::declarados
 src/verify/check_suite_discrimina.py::desde
-src/verify/check_suite_discrimina.py::estado
-src/verify/check_suite_discrimina.py::fila
 src/verify/check_suite_discrimina.py::funcion
-src/verify/check_suite_discrimina.py::medidos
-src/verify/check_suite_discrimina.py::nombre
-src/verify/check_suite_discrimina.py::podadas
 src/verify/check_suite_discrimina.py::propio
 src/verify/check_suite_discrimina.py::sentencia
-src/verify/check_suite_discrimina.py::sin_cobertura
-src/verify/check_suite_discrimina.py::sin_discriminar
-src/verify/check_suite_discrimina.py::sin_suite
-src/verify/check_suite_discrimina.py::sucios
 src/verify/check_suite_discrimina.py::texto
-src/verify/check_suite_discrimina.py::veredicto
-src/verify/check_suite_discrimina.py::vivas
-src/verify/check_suite_discrimina.py::vivos
 src/verify/check_unreachable_rules.py::raices
 src/verify/check_unreachable_rules.py::raices_medidas
 src/verify/check_veredicto_de_gate.py::ASIGNA
@@ -1247,6 +1259,7 @@ tests/agents/test_model_catalog_paths.py::del_proceso
 tests/agents/test_model_catalog_paths.py::otro
 tests/agents/test_model_catalog_paths.py::previo
 tests/agents/test_model_catalog_paths.py::ruta
+tests/agents/test_model_catalog_tokens.py::fuente
 tests/agents/test_payload_sin_transcript.py::FALLOS
 tests/agents/test_payload_sin_transcript.py::esperado
 tests/agents/test_payload_sin_transcript.py::etiqueta
@@ -1299,20 +1312,6 @@ tests/agents/test_store_home.py::test_8_el_hook_del_consumidor_invocado_DE_VERDA
 tests/agents/test_store_home.py::vacias
 tests/board/test_graph.py::ciclico
 tests/corpus/test_censar_scripts.py::censar
-tests/corpus/test_censo_contraparte.py::CENSO
-tests/corpus/test_censo_contraparte.py::DOMINIO
-tests/corpus/test_censo_contraparte.py::FUENTE
-tests/corpus/test_censo_contraparte.py::REFERENCIA
-tests/corpus/test_censo_contraparte.py::codigo
-tests/corpus/test_censo_contraparte.py::con_modelo
-tests/corpus/test_censo_contraparte.py::entorno
-tests/corpus/test_censo_contraparte.py::entorno_limpio
-tests/corpus/test_censo_contraparte.py::hecho
-tests/corpus/test_censo_contraparte.py::linea
-tests/corpus/test_censo_contraparte.py::recortada
-tests/corpus/test_censo_contraparte.py::rota
-tests/corpus/test_censo_contraparte.py::salida
-tests/corpus/test_censo_contraparte.py::sin_raices
 tests/corpus/test_list_corpus_builds.py::entradas
 tests/corpus/test_list_corpus_builds.py::entradas_anuladas
 tests/corpus/test_list_corpus_builds.py::entradas_restauradas
@@ -1325,6 +1324,10 @@ tests/corpus/test_list_corpus_builds.py::por_nombre_anulado
 tests/corpus/test_list_corpus_builds.py::por_nombre_restaurado
 tests/corpus/test_list_corpus_builds.py::raiz
 tests/corpus/test_list_corpus_builds.py::resumen
+tests/corpus/test_term_census.py::ano
+tests/corpus/test_term_census.py::credito
+tests/corpus/test_term_census.py::digitaliza
+tests/corpus/test_term_census.py::nada
 tests/hooks/test_detect_foreground_long_command.py::aviso
 tests/hooks/test_flow_selection.py::archivos
 tests/hooks/test_flow_selection.py::carga
@@ -1571,6 +1574,32 @@ tests/session/test_background.py::muerto
 tests/session/test_background.py::plazo
 tests/session/test_background.py::salida
 tests/session/test_background.py::vacio
+tests/session/test_generate_bin.py::arbol
+tests/session/test_generate_bin.py::biblioteca
+tests/session/test_generate_bin.py::ciego_plano
+tests/session/test_generate_bin.py::ciego_rel
+tests/session/test_generate_bin.py::con_relativo
+tests/session/test_generate_bin.py::cuerpo_plano
+tests/session/test_generate_bin.py::cuerpo_rel
+tests/session/test_generate_bin.py::de_paquete
+tests/session/test_generate_bin.py::del_proveedor
+tests/session/test_generate_bin.py::destino
+tests/session/test_generate_bin.py::entorno
+tests/session/test_generate_bin.py::esperado
+tests/session/test_generate_bin.py::fallos
+tests/session/test_generate_bin.py::fallos_ciego
+tests/session/test_generate_bin.py::hecho
+tests/session/test_generate_bin.py::huerfanos
+tests/session/test_generate_bin.py::libreria
+tests/session/test_generate_bin.py::marcado
+tests/session/test_generate_bin.py::marcador
+tests/session/test_generate_bin.py::nombre
+tests/session/test_generate_bin.py::objetivos
+tests/session/test_generate_bin.py::proceso
+tests/session/test_generate_bin.py::punteado
+tests/session/test_generate_bin.py::relativo
+tests/session/test_generate_bin.py::ruidosos
+tests/session/test_generate_bin.py::salida
 tests/session/test_installed_hooks_resolve.py::TOPOLOGIA_CONTRARIA
 tests/session/test_installed_hooks_resolve.py::contrario
 tests/session/test_installed_hooks_resolve.py::destino
@@ -1603,7 +1632,6 @@ tests/session/test_job_ledger.py::veredictos
 tests/session/test_job_runs.py::ausentes
 tests/session/test_job_runs.py::dos
 tests/session/test_job_runs.py::faltan
-tests/session/test_job_runs.py::segundo
 tests/session/test_job_runs.py::uno
 tests/session/test_jobs_home.py::AnclaDelArchivo
 tests/session/test_jobs_home.py::DeclaracionEnElArchivo
@@ -1616,7 +1644,6 @@ tests/session/test_jobs_home.py::clave
 tests/session/test_jobs_home.py::declarado
 tests/session/test_jobs_home.py::hogar_api
 tests/session/test_jobs_home.py::hogar_docs
-tests/session/test_jobs_home.py::linea
 tests/session/test_jobs_home.py::pares
 tests/session/test_jobs_home.py::previo
 tests/session/test_jobs_home.py::test_cada_clon_resuelve_su_propio_hogar
@@ -1966,6 +1993,7 @@ tests/verify/test_identifier_language_baseline.py::destino
 tests/verify/test_identifier_language_baseline.py::entorno_limpio
 tests/verify/test_identifier_language_baseline.py::esperado
 tests/verify/test_identifier_language_baseline.py::fallos
+tests/verify/test_identifier_language_baseline.py::listado
 tests/verify/test_identifier_language_baseline.py::obtenido
 tests/verify/test_identifier_language_baseline.py::salida
 tests/verify/test_identifier_language_corpus.py::falsos
@@ -1992,6 +2020,8 @@ tests/verify/test_pathspec_commit.py::esperado
 tests/verify/test_pathspec_commit.py::fallos
 tests/verify/test_pathspec_commit.py::obtenido
 tests/verify/test_pathspec_commit.py::repo_nuevo
+tests/verify/test_pool_pipeline.py::fix_generico
+tests/verify/test_pool_pipeline.py::senal_del_verificador
 tests/verify/test_pre_commit_hook.py::banco
 tests/verify/test_pre_commit_hook.py::test_el_clon_real_lo_tiene_activado
 tests/verify/test_pre_commit_hook.py::test_sin_bancos_el_commit_pasa
@@ -2075,77 +2105,3 @@ tests/workbench/test_manifest.py::nombre
 tests/workbench/test_manifest.py::por_mtime
 tests/workbench/test_paths.py::anotados
 tests/workbench/test_provider_evidence.py::_vacio
-
-# --- 2026-09-19: lo que el barrido NO renombra, y por que ---
-# Nombres de ARTEFACTO del consumidor: la clave nombra el .rst que se
-# emite y cuyo nombre fija `metadata-standards.md` —`alcance-<slug>.rst`,
-# `tareas-<slug>.rst`—. Traducir la clave y dejar el valor en español
-# rompe la correspondencia que hace legible la tabla.
-src/docs/scaffold_initiative.py::alcance
-src/docs/scaffold_initiative.py::tareas
-# FALSO AMIGO del lexico: `subnormal` es el termino IEEE 754, en ingles.
-# El identificador YA esta en ingles; el gate lo marca por su lexico
-# probabilistico. Sucesor del eje: TASK-THYROX-0309.
-src/measurement/normalizer_magnitude.py::FLOAT64_MIN_SUBNORMAL
-# FREEZE de generate_bin.py: la directiva prohibe tocar el generador ni
-# bin/ hasta que TypeScript, Python y shell esten en verde. No es deuda
-# heredada: es un bloqueo nombrado que se destapa cuando el freeze caiga.
-src/session/generate_bin.py::cubiertos
-src/session/generate_bin.py::fuera
-src/session/generate_bin.py::raiz_src
-src/session/generate_bin.py::entorno
-src/session/generate_bin.py::linea
-src/session/generate_bin.py::fallos
-src/session/generate_bin.py::del_proveedor
-src/session/generate_bin.py::hecho
-src/session/generate_bin.py::aviso
-src/session/generate_bin.py::razon
-src/session/generate_bin.py::forma
-src/session/generate_bin.py::objetivo
-src/session/generate_bin.py::nombre
-tests/session/test_generate_bin.py::marcador
-tests/session/test_generate_bin.py::destino
-tests/session/test_generate_bin.py::arbol
-tests/session/test_generate_bin.py::entorno
-tests/session/test_generate_bin.py::hecho
-tests/session/test_generate_bin.py::salida
-tests/session/test_generate_bin.py::libreria
-tests/session/test_generate_bin.py::esperado
-tests/session/test_generate_bin.py::biblioteca
-tests/session/test_generate_bin.py::huerfanos
-tests/session/test_generate_bin.py::objetivos
-tests/session/test_generate_bin.py::relativo
-tests/session/test_generate_bin.py::plano
-tests/session/test_generate_bin.py::punteado
-tests/session/test_generate_bin.py::cuerpo_rel
-tests/session/test_generate_bin.py::cuerpo_plano
-tests/session/test_generate_bin.py::fuera
-tests/session/test_generate_bin.py::con_relativo
-tests/session/test_generate_bin.py::rehusa
-tests/session/test_generate_bin.py::fallos
-tests/session/test_generate_bin.py::del_proveedor
-tests/session/test_generate_bin.py::ruidosos
-tests/session/test_generate_bin.py::de_paquete
-tests/session/test_generate_bin.py::ciego_rel
-tests/session/test_generate_bin.py::ciego_plano
-tests/session/test_generate_bin.py::nombre
-tests/session/test_generate_bin.py::envoltorio
-tests/session/test_generate_bin.py::proceso
-tests/session/test_generate_bin.py::fallos_ciego
-tests/session/test_generate_bin.py::marcado
-# Datos en español, no identificadores: el gate cuenta la clave de un dict
-# como atributo, y aquí la clave ES el sujeto que el código lee. ORDINALS
-# parsea los trimestres que INEGI publica en español («primer trimestre»);
-# test_term_census cuenta términos españoles y probar el plegado de la ñ
-# exige la palabra española. Traducirlos cambiaría lo que se mide.
-src/corpus/bie_series.py::primer
-src/corpus/bie_series.py::segundo
-src/corpus/bie_series.py::tercer
-src/corpus/bie_series.py::cuarto
-tests/corpus/test_term_census.py::credito
-tests/corpus/test_term_census.py::ano
-tests/corpus/test_term_census.py::digitaliza
-tests/corpus/test_term_census.py::nada
-tests/agents/test_model_catalog_tokens.py::fuente
-tests/verify/test_pool_pipeline.py::fix_generico
-tests/verify/test_pool_pipeline.py::senal_del_verificador
