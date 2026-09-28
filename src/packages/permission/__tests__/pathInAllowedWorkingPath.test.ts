@@ -51,7 +51,7 @@ describe('pathInAllowedWorkingPath — con getPathsForPermissionCheck identidad'
 
   beforeEach(() => {
     llamadas = 0
-    getResolvedWorkingDirPaths.cache.clear()
+    getResolvedWorkingDirPaths.cache.clear!()
     installPermissionHostBindings({
       getOriginalCwd: () => RAIZ,
       expandPath: (p: string) => p,
@@ -112,7 +112,7 @@ describe('pathInAllowedWorkingPath — control: sin getPathsForPermissionCheck',
     // Aisla del describe anterior: `getResolvedWorkingDirPaths` es un
     // memoize de MÓDULO — sin limpiar, `RAIZ` seguiría cacheado con el
     // stub identidad de arriba y este control no mediría nada.
-    getResolvedWorkingDirPaths.cache.clear()
+    getResolvedWorkingDirPaths.cache.clear!()
   })
 
   test('7. CONTROL — sin el binding, pathsToCheck vacío da allow vacuo', () => {
