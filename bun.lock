@@ -479,7 +479,10 @@
       "name": "@thyrox/mitm",
       "version": "0.1.0",
       "dependencies": {
+        "@thyrox/agent": "0.4.0",
+        "@thyrox/config": "0.1.0",
         "@thyrox/provider": "0.1.0",
+        "zod": "^4.3.6",
       },
     },
     "src/packages/modifiers-napi": {
