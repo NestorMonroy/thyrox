@@ -7,6 +7,7 @@
 import { randomUUID } from 'node:crypto'
 
 import { sanitizeErrorMessage } from '@thyrox/provider/sanitize/errorSanitization'
+import { z } from 'zod'
 
 export type ApiErrorType = 'invalid_request' | 'not_found' | 'conflict' | 'server_error'
 
@@ -49,5 +50,27 @@ export async function readJsonBody(request: Request): Promise<JsonBody> {
     return { ok: true, body: await request.json() }
   } catch {
     return { ok: false, response: errorResponse({ status: 400, message: 'Invalid JSON body' }) }
+  }
+}
+
+export type ParsedBody<T> = { ok: true; data: T } | { ok: false; response: Response }
+
+/**
+ * El cuerpo leído como JSON y validado con `schema`: malformado es «Invalid
+ * JSON body», y uno que no pasa el esquema es «Invalid request body» con sus
+ * errores por campo en `details`.
+ */
+export async function parseJsonBody<T>(request: Request, schema: z.ZodType<T>): Promise<ParsedBody<T>> {
+  const read = await readJsonBody(request)
+  if (!read.ok) return read
+  const parsed = schema.safeParse(read.body)
+  if (parsed.success) return { ok: true, data: parsed.data }
+  return {
+    ok: false,
+    response: errorResponse({
+      status: 400,
+      message: 'Invalid request body',
+      details: z.flattenError(parsed.error),
+    }),
   }
 }

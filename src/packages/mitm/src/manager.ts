@@ -335,6 +335,11 @@ function rootCaEnabled(): boolean {
   return process.env.THYROX_MITM_ROOT_CA_ENABLED === 'true'
 }
 
+/** El certificado que el modelo vigente instala: la CA o la hoja heredada. */
+export function activeCertPath(): string {
+  return resolveActiveCertPath(resolveMitmDataDir(), rootCaEnabled()).certPath
+}
+
 /**
  * El estado del MITM. El servidor cuenta si hay proceso en memoria o un
  * archivo de PID con un proceso vivo; un PID muerto se borra y marca el estado
@@ -363,7 +368,7 @@ export async function getMitmStatus(agentId?: string, dnsOptions?: DnsHostsFileO
     // Sin archivo de hosts legible, el DNS no está puesto.
   }
 
-  const certExists = fs.existsSync(resolveActiveCertPath(resolveMitmDataDir(), rootCaEnabled()).certPath)
+  const certExists = fs.existsSync(activeCertPath())
   return { running, pid, dnsConfigured, certExists, orphanedStateDetected }
 }
 

@@ -23,3 +23,19 @@ La tercera —un par desconocido cuenta como local— **no discriminaba** en la
 primera pasada: la prueba construía la petición sin `Host`, así que la guarda
 del Host la rechazaba y el par nunca decidía. Se le dio un `Host` de loopback
 explícito; ahora cae exactamente ese caso.
+
+## F7h-1 — rutas de estado del AgentBridge
+
+`src/api/routes/agentBridgeState.ts` (agents, agents/:id GET+PATCH, detect,
+detected-models, mappings GET+PUT, bypass GET+POST+DELETE, config GET+POST,
+state) y `src/client/normalizeState.ts`. Las sondas del sistema se inyectan
+(`AgentBridgeStateDeps`); `defaultAgentBridgeStateDeps(db)` cablea las reales.
+
+Divergencias declaradas en la cabecera del módulo: `GET /agents/:id` busca por
+id (la referencia usaba `resolveTarget`, que busca por host, y respondía 404
+siempre) y toda ruta por agente rehúsa un id fuera de `MITM_AGENT_IDS`.
+
+Anulaciones: `annul-f7h1.sh` → `results-f7h1.txt`. Las 14 discriminan: cae
+exactamente la aserción que depende de cada mitad. Una vista `targetView` que
+quitaba `handler` no discriminaba (la serialización JSON ya omite funciones)
+y se retiró antes de anular.
