@@ -55,7 +55,7 @@ Cada developer responde, en función del **Sprint Goal**, no de su agenda person
 | **2. Replanificar el día** | Plan del día acordado entre developers | Reasignar foco, emparejar (pairing) donde haya riesgo, mover el trabajo de mayor valor para el Goal |
 | **3. Actualizar el Sprint Backlog** | Estados de los items al día | Mover tarjetas (To Do → In Progress → Done), añadir trabajo descubierto, retirar lo que ya no aporta al Goal |
 | **4. Actualizar el burndown** | Gráfico de trabajo restante refrescado | Recalcular el trabajo pendiente; comparar la línea real contra la ideal |
-| **5. Registrar y escalar impedimentos** | Lista de impedimentos con dueño + fecha | Anotar cada bloqueo; asignar un responsable de removerlo y una fecha objetivo |
+| **5. Registrar y escalar impedimentos** | Lista de impedimentos con dueño + fecha | Anotar cada bloqueo; asignar un responsable de retirarlo y una fecha objetivo |
 
 ---
 
@@ -82,7 +82,7 @@ Cada impedimento registrado en el Daily debe tener:
 | **Dueño** (quién lo remueve) | Sí | Scrum Master / un developer nombrado |
 | **Fecha objetivo** de remoción | Sí | 2026-06-03 |
 | **Impacto en el Sprint Goal** | Sí | "Bloquea el cierre de la épica de checkout" |
-| **Estado** | Sí | Abierto / En progreso / Removido |
+| **Estado** | Sí | Abierto / En progreso / Retirado |
 
 Un impedimento sin dueño y sin fecha **no está gestionado** — solo está anunciado. El Scrum Master facilita la remoción, pero el dueño es siempre una persona concreta.
 

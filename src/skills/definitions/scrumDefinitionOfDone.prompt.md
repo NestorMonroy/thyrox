@@ -48,7 +48,7 @@ La DoD se alinea con los gates **reales** de este proyecto — medidos sobre una
 | 7 | Documentación de impacto actualizada | UC / FR / ADR tocados según las 8 capas, cuando aplica |
 | 8 | Changelog del WP actualizado | entrada en `progreso-<slug>.rst` |
 
-**Regla de oro:** la DoD es un AND lógico. Un incremento con 7 de 8 items cumplidos NO está done — está al 0% de done, porque "casi terminado" no es un estado entregable.
+**Criterio rector:** la DoD es un AND lógico. Un incremento con 7 de 8 items cumplidos NO está done — está al 0% de done, porque "casi terminado" no es un estado entregable.
 
 ---
 
@@ -75,7 +75,7 @@ La DoD se alinea con los gates **reales** de este proyecto — medidos sobre una
 
 **Requiere más iteración:**
 - Items de la DoD que nadie sabe cómo verificar — no son DoD, son deseos
-- "Done" declarado con la suite roja o con OpenAPI en drift — viola la regla de oro
+- "Done" declarado con la suite roja o con OpenAPI en drift — viola ese criterio rector
 - La DoD existe en un documento pero nadie la consulta al cerrar historias
 
 ---

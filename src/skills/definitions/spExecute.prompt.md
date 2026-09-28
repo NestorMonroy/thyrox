@@ -103,7 +103,7 @@ La ejecución estratégica siempre implica cambio. Sin gestión del cambio, la r
 | **A**wareness | ¿Saben todos por qué cambiamos? | Comunicación de la estrategia y el contexto |
 | **D**esire | ¿Quieren cambiar? | Involucrar a líderes de opinión; WIIFM (what's in it for me) |
 | **K**nowledge | ¿Saben cómo cambiar? | Capacitación, herramientas, procesos documentados |
-| **A**bility | ¿Pueden cambiar? | Remover barreras; coaching; tiempo y recursos |
+| **A**bility | ¿Pueden cambiar? | Retirar barreras; coaching; tiempo y recursos |
 | **R**einforcement | ¿Se refuerza el cambio? | Reconocimiento; ajustes de procesos permanentes |
 
 **Plan de gestión del cambio por iniciativa:**

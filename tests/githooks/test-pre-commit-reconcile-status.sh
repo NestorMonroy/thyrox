@@ -15,12 +15,9 @@ trap 'rm -rf "$TMP"' EXIT
 cd "$TMP" && git init -q && git config user.email t@t && git config user.name t
 mkdir -p .githooks src/verify src/task agent-results
 cp "$HERE/.githooks/pre-commit" .githooks/pre-commit
-for gate in check-agent-artifacts.sh check-cli-typecheck.sh check-cross-model-read.sh; do
-    printf '#!/usr/bin/env bash\nexit 0\n' > "src/verify/$gate"
-done
-for gate in check_provider_evidence.py check_bench_untracked.py check_cache_layout.py check_single_workspace_root.py check_product_word.py commit_identity.py check_lint_zero.py check_identifier_language.py; do
-    printf 'import sys\nsys.exit(0)\n' > "src/verify/$gate"
-done
+# shellcheck source=tests/githooks/stub_hook_gates.sh
+source "$HERE/tests/githooks/stub_hook_gates.sh"
+stub_hook_gates .githooks/pre-commit .
 printf 'import sys\nsys.exit(2)\n' > src/task/board_sync.py
 printf 'store\n' > agent-results/agent_store.sqlite3
 git add -A
