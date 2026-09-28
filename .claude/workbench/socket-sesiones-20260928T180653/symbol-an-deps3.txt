@@ -1,0 +1,17 @@
+==== N: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js variable N [1025,1028)
+N=4
+==== b: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js variable b [938,1024)
+b=/\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\x1b[\]PX^_][^\x1b\x07]*(?:\x07|\x1b\\)/g
+symbol: 2 de 2 nombre(s) resueltos
+==== l: 1 definicion(es) de nivel superior
+---- chunk-vq0drrah.js variable l [1999,2117)
+l=typeof String.prototype.isWellFormed==="function"?Function.prototype.call.bind(String.prototype.isWellFormed):void 0
+==== a: 1 definicion(es) de nivel superior
+---- chunk-vq0drrah.js variable a [1923,1998)
+a=/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g
+==== f: 1 definicion(es) de nivel superior
+---- chunk-vq0drrah.js function f [1540,1639)
+function f(t){if(typeof Buffer<"u")return Buffer.from(t,"utf16le").toString("utf16le");return x(t)}
+symbol: 3 de 3 nombre(s) resueltos

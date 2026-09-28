@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUidNamespace.test.ts:
+ 97 |     expect(await hostUidForPeerDirs(readers(undefined, '65534', 1000))).toBeUndefined()
+ 98 |     expect(await hostUidForPeerDirs(readers('0 1000 1', '65534', 65534))).toBeUndefined()
+ 99 |   })
+100 | 
+101 |   test('si el overflowuid cae dentro del mapa, el uid no se traduce', async () => {
+102 |     expect(await hostUidForPeerDirs(readers('0 200000 70000', '65534', 7))).toBe(7)
+                                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 7
+Received: 200007
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUidNamespace.test.ts:102:77)
+(fail) hostUidForPeerDirs (LOt) > si el overflowuid cae dentro del mapa, el uid no se traduce [0.26ms]
+
+ 14 pass
+ 1 fail
+ 21 expect() calls
+Ran 15 tests across 1 file. [37.00ms]

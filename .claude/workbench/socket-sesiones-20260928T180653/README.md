@@ -14,7 +14,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 |---|---|---|
 | F1 | ruta (`W1o`, `p9r`, `z`=103), validez (`IL`, `qce`, `Ln`, `_N`) | hecha: 13 pruebas, 3 anulaciones (`anulacion-f1-*.txt`), cada una tumba sólo su caso |
 | F2a | `me`, `ne`, `tn`, `sn`, `rn`, `B`/`H`: vida del socket, bind sin robar, rutas apartadas, cierre | hecha: 10 pruebas; anulaciones en `anulacion-f2a-*.txt` |
-| F2b | verificación del directorio de sockets (`Re`) y de la ruta explícita (`G1o`) | pendiente |
+| F2b-1 | espacio de nombres de uid (`F`, `h`, `R`, `B`, `bko`, `LOt`, `A`) | hecha: 15 pruebas; 4 anulaciones, cada una su caso |
+| F2b-2 | verificación del directorio de sockets (`Re`) con sus mensajes (`Te`, `De`, `fn`, `an`, `qr`) | pendiente |
+| F2b-3 | ruta explícita (`G1o`) | pendiente |
 | F2c | orquestación de `mn` | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
 | F4 | protocolo y entrega del sobre cross-session-message | pendiente |
@@ -36,3 +38,7 @@ en `mn`: el literal vive dentro de una plantilla, y `literal` no la ve
 - La rama de `rn` que borra un socket muerto antes de reintentar **no
   discrimina** bajo Bun (`anulacion-f2a-muertoretirado.txt`, 0 casos): Bun ya
   escribe encima de un archivo muerto. Se conserva por fidelidad al porte.
+- En F2b-1, la anulación de «el overflowuid cae dentro del mapa» no
+  discriminaba con un mapa de `hostStart` 0: traducir y no traducir daban el
+  mismo uid. Se cambió el mapa de la prueba a `0 200000 70000`, y ahora la
+  anulación tumba su caso (`anulacion-f2b-sobredentro.txt`).
