@@ -1,0 +1,39 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+78 |     release()
+79 |     await Promise.all([first, second])
+80 |     expect(order).toEqual(['otra', 'uno', 'dos'])
+81 |     await locks.settle()
+82 |     expect(locks.size).toBe(0)
+83 |     await expect(locks.run('k', async () => { throw new Error('x') })).rejects.toThrow('x')
+                                                             ^
+error: x
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:83:57)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:83:80)
+78 |     release()
+79 |     await Promise.all([first, second])
+80 |     expect(order).toEqual(['otra', 'uno', 'dos'])
+81 |     await locks.settle()
+82 |     expect(locks.size).toBe(0)
+83 |     await expect(locks.run('k', async () => { throw new Error('x') })).rejects.toThrow('x')
+                                                             ^
+error: x
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:83:57)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:83:80)
+78 |     release()
+79 |     await Promise.all([first, second])
+80 |     expect(order).toEqual(['otra', 'uno', 'dos'])
+81 |     await locks.settle()
+82 |     expect(locks.size).toBe(0)
+83 |     await expect(locks.run('k', async () => { throw new Error('x') })).rejects.toThrow('x')
+                                                             ^
+error: x
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:83:57)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:83:80)
+(fail) createKeyedLocks (Fm) > serializa por clave, libera la clave al terminar y sigue tras un fallo [1.00ms]
+
+ 9 pass
+ 1 fail
+ 36 expect() calls
+Ran 10 tests across 1 file. [58.00ms]

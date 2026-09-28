@@ -161,6 +161,11 @@
       "types": "./dist/uds/fleetHeartbeat.d.ts",
       "default": "./src/uds/fleetHeartbeat.ts"
     },
+    "./uds/messagingState.js": {
+      "@thyrox/source": "./src/uds/messagingState.ts",
+      "types": "./dist/uds/messagingState.d.ts",
+      "default": "./src/uds/messagingState.ts"
+    },
     "./uds/pidFileRecord.js": {
       "@thyrox/source": "./src/uds/pidFileRecord.ts",
       "types": "./dist/uds/pidFileRecord.d.ts",
