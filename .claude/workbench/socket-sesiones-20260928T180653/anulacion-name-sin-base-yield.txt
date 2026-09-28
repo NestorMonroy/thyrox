@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+171 |   test('keptYieldName (fDe) reconoce el último cambio cedido por su base', () => {
+172 |     const state = new SessionNameState()
+173 |     state.lastYield = { base: 'work', name: 'work-calm-fox' }
+174 |     expect(keptYieldName('work', 'Work-Calm-Fox', state, isSlug)).toBe('Work-Calm-Fox')
+175 |     expect(keptYieldName('work-brave-otter', 'work-calm-fox', state, isSlug)).toBe('work-calm-fox')
+176 |     expect(keptYieldName('other', 'work-calm-fox', state, isSlug)).toBeUndefined()
+                                                                         ^
+error: expect(received).toBeUndefined()
+
+Received: "work-calm-fox"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:176:68)
+(fail) sufijos de slug (A/C/U/fDe) > keptYieldName (fDe) reconoce el último cambio cedido por su base [0.35ms]
+
+ 14 pass
+ 1 fail
+ 43 expect() calls
+Ran 15 tests across 1 file. [66.00ms]

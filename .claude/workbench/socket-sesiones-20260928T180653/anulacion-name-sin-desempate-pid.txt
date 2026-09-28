@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+129 |   })
+130 | 
+131 |   test('un rival sin procStart o sin nombre no cuenta; el desempate es inicio, procStart y pid', () => {
+132 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, { ...older, procStart: undefined }], moment: 'rename', slug: () => 'x-y' })).toEqual({ kind: 'keep' })
+133 |     const tie: LiveSession = { pid: 9, name: 'work', procStart: 's10', startedAt: 200 }
+134 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, tie], moment: 'startup', slug: () => 'x-y' }).kind).toBe('yield')
+                                                                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "yield"
+Received: "keep"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:134:126)
+(fail) decideNameCollision (B) > un rival sin procStart o sin nombre no cuenta; el desempate es inicio, procStart y pid [0.43ms]
+
+ 14 pass
+ 1 fail
+ 44 expect() calls
+Ran 15 tests across 1 file. [70.00ms]

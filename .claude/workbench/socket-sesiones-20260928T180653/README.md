@@ -40,7 +40,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
 | F4c-2d | `session.receive` (`Aot`) y su reserva de cola | pendiente |
 | F4c-2e | adjuntos de un par (`nlt`, `chunk-yrfq0b3e.js`) | pendiente |
-| F4c-2f | registro de correspondientes (`Wkr`, `wS`, `chunk-bhsyyycy.js`) | pendiente |
+| F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
+| F4c-2f-2 | flujos de renombre con el registro de sesiones (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`) | pendiente |
+| F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
@@ -294,3 +296,17 @@ dependen del mismo corte).
 Cada subsistema que decide un paso llega como dependencia y tiene su fase:
 F4d (`C7e`, `nSe`, `kJr`, `fbt`), F4c-2d (`Aot`), F4c-2e (adjuntos),
 F4c-2f (`Wkr`) y F6 (la cola de la sesión, `gE`).
+
+## F4c-2f-1 — estado de nombre y colisión: controles
+
+Anulaciones en `anulacion-name-*.txt`; trece, todas discriminan.
+`name-sin-numerar` no cae con un rojo: sin el sufijo numérico, el bucle de
+nombres libres gira sin fin cuando los dieciséis intentos con slug chocan, y
+la anulación se corta con `timeout` (exit 124, anotado en su archivo). Ese
+cuelgue es la conducta que el caso de la prueba existe para impedir.
+
+Episodio de método, sin efecto en el árbol: la primera pasada colgó en esa
+anulación; al matar el proceso, un `pkill` en bucle mató también la
+siguiente (`name-sin-recorte`) y la dio por verde. Se repitieron las dos con
+`timeout 30`. El archivo se restauró entero en los dos casos (0 restos de
+la anulación, medido con `grep -c`).

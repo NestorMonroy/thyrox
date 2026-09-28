@@ -85,3 +85,15 @@ export function generateWordSlug(): string {
 export function generateShortWordSlug(): string {
   return `${pickRandom(ADJECTIVES)}-${pickRandom(NOUNS)}`
 }
+
+const ADJECTIVE_SET: ReadonlySet<string> = new Set(ADJECTIVES)
+const NOUN_SET: ReadonlySet<string> = new Set(NOUNS)
+
+/**
+ * `ADo` (`chunk-fvmr4qjr.js` de 2.1.283): si el texto tiene la forma de
+ * `generateShortWordSlug` con estas listas.
+ */
+export function isShortWordSlug(text: string): boolean {
+  const [adjective, noun, ...rest] = text.split('-')
+  return rest.length === 0 && adjective !== undefined && noun !== undefined && ADJECTIVE_SET.has(adjective) && NOUN_SET.has(noun)
+}

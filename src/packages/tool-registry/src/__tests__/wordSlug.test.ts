@@ -8,8 +8,11 @@
  */
 import { describe, expect, test } from 'bun:test'
 import {
+  ADJECTIVES,
+  NOUNS,
   generateShortWordSlug,
   generateWordSlug,
+  isShortWordSlug,
 } from '../words.js'
 
 describe('generateWordSlug — adjective-verb-noun shape', () => {
@@ -76,5 +79,19 @@ describe('generateShortWordSlug — adjective-noun shape', () => {
     // guarantee. Lock the structural difference (2 parts vs 3).
     expect(generateShortWordSlug().split('-')).toHaveLength(2)
     expect(generateWordSlug().split('-')).toHaveLength(3)
+  })
+})
+
+describe('isShortWordSlug (ADo) — reconoce adjetivo-sustantivo de estas listas', () => {
+  test('lo que genera generateShortWordSlug se reconoce', () => {
+    for (let i = 0; i < 50; i++) expect(isShortWordSlug(generateShortWordSlug())).toBe(true)
+  })
+
+  test('exactamente dos partes, en su orden y de sus listas', () => {
+    expect(isShortWordSlug(`${ADJECTIVES[0]}-${NOUNS[0]}`)).toBe(true)
+    expect(isShortWordSlug(`${NOUNS[0]}-${ADJECTIVES[0]}`)).toBe(false)
+    expect(isShortWordSlug(`${ADJECTIVES[0]}-${NOUNS[0]}-x`)).toBe(false)
+    expect(isShortWordSlug(ADJECTIVES[0])).toBe(false)
+    expect(isShortWordSlug(`${ADJECTIVES[0]}-zzzz`)).toBe(false)
   })
 })
