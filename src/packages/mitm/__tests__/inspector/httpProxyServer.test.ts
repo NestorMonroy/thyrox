@@ -5,6 +5,12 @@ import http from "node:http";
 import net from "node:net";
 import { defaultHttpProxyPort, startHttpProxyServer } from "../../src/inspector/httpProxyServer.ts";
 import { globalTrafficBuffer } from "../../src/inspector/buffer.ts";
+import fs from "node:fs";
+import https from "node:https";
+import os from "node:os";
+import path from "node:path";
+import { generateMitmCa, issueLeafCert } from "../../src/dynamicCert.ts";
+import { configureUpstreamCa, resetUpstreamCaForTest } from "../../src/upstreamTrust.ts";
 
 async function withUpstream(
   handler: (req: http.IncomingMessage, res: http.ServerResponse) => void
@@ -233,5 +239,38 @@ test("HTTP direct forwards the request body and records it", async () => {
   } finally {
     await proxy.stop();
     await upstream.close();
+  }
+});
+
+test("HTTP direct to an https upstream trusts the configured corporate CA", async () => {
+  const ca = await generateMitmCa("corporate CA");
+  const leaf = await issueLeafCert("localhost", ca);
+  const upstream = https.createServer({ key: leaf.key, cert: leaf.cert }, (_q, r) => r.end("secure"));
+  await new Promise<void>((resolve) => upstream.listen(0, "127.0.0.1", resolve));
+  const port = (upstream.address() as { port: number }).port;
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "thyrox-proxy-ca-"));
+  fs.writeFileSync(path.join(dir, "ca.pem"), ca.cert);
+  const proxy = await startHttpProxyServer(0);
+  const get = () =>
+    new Promise<number>((resolve, reject) => {
+      const socket = net.connect(proxy.port, "127.0.0.1");
+      socket.once("error", reject);
+      socket.once("connect", () =>
+        socket.write(`GET https://localhost:${port}/ HTTP/1.1\r\nHost: localhost:${port}\r\nConnection: close\r\n\r\n`)
+      );
+      socket.once("data", (c) => {
+        socket.destroy();
+        resolve(Number(c.toString("utf8").match(/^HTTP\/1\.1\s+(\d+)/)?.[1] ?? 0));
+      });
+    });
+  try {
+    assert.equal(await get(), 502);
+    configureUpstreamCa(path.join(dir, "ca.pem"));
+    assert.equal(await get(), 200);
+  } finally {
+    resetUpstreamCaForTest();
+    await proxy.stop();
+    upstream.close();
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });

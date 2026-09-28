@@ -22,6 +22,7 @@ import { isForbiddenUpstreamHeaderName } from "@thyrox/provider/proxy/upstreamHe
 import { sanitizeHeaders } from "../sanitizeHeaders.ts";
 import { maskSecret } from "../maskSecrets.ts";
 import { applyIdleTimeout, MITM_IDLE_TIMEOUT_MS } from "../socketTimeouts.ts";
+import { upstreamTls } from "../upstreamTrust.ts";
 import { globalTrafficBuffer } from "./buffer.ts";
 import type { InterceptedRequest } from "./types.ts";
 
@@ -117,6 +118,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
         headers: upstreamHeaders,
         body: body.length > 0 ? new Uint8Array(body) : undefined,
         redirect: "manual",
+        ...upstreamTls(),
       });
 
       const respBuf = Buffer.from(await upstream.arrayBuffer());
