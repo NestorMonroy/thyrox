@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+ 424 pass
+ 0 fail
+ 75 expect() calls
+Ran 424 tests across 63 files. [12.73s]
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+tsc_errors=0
+__BG_EXIT__=0

@@ -347,3 +347,4 @@ test('a CONNECT to a host in bypass.json is tunneled without decryption', async 
   assert.equal(reply, 'echo:ping')
   assert.ok(h.lines.some(line => line.includes(`${authority} → BYPASS`)), h.lines.join('\n'))
 })
+

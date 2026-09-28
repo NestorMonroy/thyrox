@@ -1,0 +1,22 @@
+== base
+ 4 pass
+ 0 fail
+== anulado:   process.on('SIGTERM', shutdown)
+(fail) the process listens on THYROX_MITM_LOCAL_PORT and exits 0 on SIGTERM [944.33ms]
+ 3 pass
+ 1 fail
+== anulado:   process.on('SIGINT', shutdown)
+(fail) SIGINT also closes the server cleanly [913.31ms]
+ 3 pass
+ 1 fail
+== anulado:   if (error.code === 'EADDRINUSE') return `Port ${port} already in use`
+(fail) a port held by another process exits 1 and says it is in use [815.81ms]
+ 3 pass
+ 1 fail
+== anulado:     process.stderr.write(`[MITM] ${sanitizeErrorMessage(error)}\n`)
+(fail) a missing certificate exits 1 with a sanitized message [692.35ms]
+ 3 pass
+ 1 fail
+== base final
+ 4 pass
+ 0 fail
