@@ -13,7 +13,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | Fase | Qué | Estado |
 |---|---|---|
 | F1 | ruta (`W1o`, `p9r`, `z`=103), validez (`IL`, `qce`, `Ln`, `_N`) | hecha: 13 pruebas, 3 anulaciones (`anulacion-f1-*.txt`), cada una tumba sólo su caso |
-| F2 | servidor `mn`: bind, socket vivo, permisos, respaldo, apagado | pendiente |
+| F2a | `me`, `ne`, `tn`, `sn`, `rn`, `B`/`H`: vida del socket, bind sin robar, rutas apartadas, cierre | hecha: 10 pruebas; anulaciones en `anulacion-f2a-*.txt` |
+| F2b | verificación del directorio de sockets (`Re`) y de la ruta explícita (`G1o`) | pendiente |
+| F2c | orquestación de `mn` | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
 | F4 | protocolo y entrega del sobre cross-session-message | pendiente |
 | F5 | cliente `uds:<ruta>` y descubrimiento de pares | pendiente |
@@ -22,3 +24,15 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 *Ciega a:* `bin/binary literal 'uds-messaging'` da 0 aunque la cadena está
 en `mn`: el literal vive dentro de una plantilla, y `literal` no la ve
 (`censo.txt`).
+
+## Lo que las sondas de F2a midieron sobre Bun 1.3.11
+
+- `probe-bun-hijack.txt` (H-THYROX-239): un segundo `listen` sobre un socket
+  vivo sale bien y se queda con los clientes; Node 22 da `EADDRINUSE`. La
+  referencia confía en `EADDRINUSE` (`ne`), así que el porte mide la vida del
+  socket antes de escuchar. Anular esa medida tumba 2 casos.
+- `probe-bun-unix.txt`: `close()` no borra el archivo del socket; `closeInbox`
+  lo borra. Anularlo tumba 1 caso.
+- La rama de `rn` que borra un socket muerto antes de reintentar **no
+  discrimina** bajo Bun (`anulacion-f2a-muertoretirado.txt`, 0 casos): Bun ya
+  escribe encima de un archivo muerto. Se conserva por fidelidad al porte.
