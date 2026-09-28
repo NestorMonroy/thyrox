@@ -17,7 +17,11 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F2b-1 | espacio de nombres de uid (`F`, `h`, `R`, `B`, `bko`, `LOt`, `A`) | hecha: 15 pruebas; 4 anulaciones, cada una su caso |
 | F2b-2 | verificación del directorio de sockets (`Re`) con sus mensajes (`Te`, `De`, `fn`, `an`, `qr`) | hecha: 18 pruebas; 9 anulaciones, cada una su caso (`anulacion-f2b2-*.txt`) |
 | F2b-3 | ruta explícita (`G1o`) con `CliUserError` (`_m`) | hecha: 7 pruebas; 7 anulaciones, cada una su caso (`anulacion-f2b3-*.txt`) |
-| F2c | orquestación de `mn` | pendiente |
+| F3a | tokens y marcos: `ofn`, `YDo`, `zFr`, `eLo`, `tLo`, `v0`, `Iv`, `J`, `Q` | hecha: 9 pruebas; 5 anulaciones (`anulacion-f3a-*.txt`) |
+| F3b | identidad de proceso: `b`/`Zne`, `n6`, `_Lo`/`HP`, `Nh`, `nc`/`Pv` | pendiente |
+| F3c | clave publicada y leída: `XDo`, `be`, `ifn`, `JDo`, `QDo`, con la escritura atómica `Jne` | pendiente |
+| F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
+| F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
 | F4 | protocolo y entrega del sobre cross-session-message | pendiente |
 | F5 | cliente `uds:<ruta>` y descubrimiento de pares | pendiente |
@@ -52,3 +56,7 @@ en `mn`: el literal vive dentro de una plantilla, y `literal` no la ve
 - La guarda «la hoja es un enlace» no discriminaba por clase de rechazo (un
   enlace tampoco es directorio y el rechazo salía igual); la prueba exige
   ahora el mensaje del enlace.
+- En F3a, la guarda «candidato vacío» de `v0` no puede discriminar: un vacío
+  frente a un esperado no vacío ya falla por longitud, y un esperado vacío lo
+  rechaza `!expected`. Es redundante en la referencia y se conserva por
+  fidelidad (`anulacion-f3a-vacio.txt`, 0 casos).
