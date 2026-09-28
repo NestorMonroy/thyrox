@@ -56,6 +56,7 @@ import {
 type AppState = import('../state/AppState.js').AppState
 import { runCleanupFunctions } from './cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { flushErrorRecording } from '@thyrox/local-observability/errorRecorder.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getInvokedBinaryName } from '@thyrox/config'
@@ -638,10 +639,11 @@ export async function gracefulShutdown(
     })
   }
 
-  // Vacía los sinks locales restantes — acotado a 500ms.
+  // Vacía los sinks locales restantes y los registros de error pendientes —
+  // acotado a 500ms.
   try {
     await Promise.race([
-      shutdownEventLoggers(),
+      Promise.all([shutdownEventLoggers(), flushErrorRecording()]),
       sleep(500),
     ])
   } catch {

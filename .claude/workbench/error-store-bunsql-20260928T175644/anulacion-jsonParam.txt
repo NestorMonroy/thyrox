@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/errorStore.postgres.test.ts:
+44 |         await sql.unsafe(`CREATE SCHEMA ${schema}`)
+45 |         await sql.unsafe(`SET search_path TO ${schema}`)
+46 |         const store = await openErrorStoreOn(sql, 'postgres')
+47 |         await store.record({ occurredAt: new Date().toISOString(), sessionId: null, version: null, source: 'log_error', error: new Error('boom'), context: { status: 529 }, actions: [] })
+48 |         const [row] = await sql`SELECT jsonb_typeof(context) AS kind, context->>'status' AS status FROM errors`
+49 |         expect(row).toEqual({ kind: 'object', status: '529' })
+                         ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "kind": "object",
+-   "status": "529",
++   "kind": "string",
++   "status": null,
+  }
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/errorStore.postgres.test.ts:49:21)
+(fail) base de errores — postgres, lo guardado > el contexto se guarda como objeto JSONB consultable [36.54ms]
+
+ 7 pass
+ 1 fail
+ 11 expect() calls
+Ran 8 tests across 1 file. [338.00ms]

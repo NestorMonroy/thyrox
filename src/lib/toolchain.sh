@@ -339,6 +339,75 @@ function thyrox_toolchain_require_rsync() {
 }
 export -f thyrox_toolchain_require_rsync
 
+# @description El `pg_config` que dice que servidor hay y donde viven sus
+# extensiones. Declarado para que un control apunte a uno falso.
+export THYROX_TOOLCHAIN_PG_CONFIG_BIN="${THYROX_TOOLCHAIN_PG_CONFIG_BIN:-pg_config}"
+
+# @description La version mayor del servidor que `pg_config` declara
+# (`PostgreSQL 16.13 …` -> `16`). El paquete de pgvector depende de ella.
+# @stdout La version mayor. @exitcode 1 Sin `pg_config` o sin version legible.
+function thyrox_toolchain_pg_major() {
+  local version
+  version="$("$THYROX_TOOLCHAIN_PG_CONFIG_BIN" --version 2>/dev/null)" || return 1
+  [[ "$version" =~ PostgreSQL\ ([0-9]+) ]] || return 1
+  printf '%s' "${BASH_REMATCH[1]}"
+}
+export -f thyrox_toolchain_pg_major
+
+# @description El comando que instala pgvector: el declarado en
+# THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD, o el paquete de la version mayor.
+function thyrox_toolchain_pgvector_install_cmd() {
+  if [[ -n "${THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD:-}" ]]; then
+    printf '%s' "$THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD"; return 0
+  fi
+  local major; major="$(thyrox_toolchain_pg_major)" || return 1
+  printf 'sudo apt-get install -y postgresql-%s-pgvector' "$major"
+}
+export -f thyrox_toolchain_pgvector_install_cmd
+
+# @description Asegura la extension pgvector del servidor local. No es un
+# binario: lo que su paquete entrega es `vector.control` en el directorio de
+# extensiones (`pg_config --sharedir`/extension), y eso es lo que se
+# re-comprueba. Mismo contrato que `thyrox_toolchain_require_rsync`: instalar
+# es opt-in (`THYROX_INSTALL_PGVECTOR=1`), el rechazo no emite conteo y el
+# exito no se lee del exit del instalador.
+#
+# No instala el servidor: sin `pg_config` rehusa nombrandolo.
+#
+# Ciega a: que la base concreta tenga la extension creada. Eso lo hace
+# `CREATE EXTENSION vector`, que exige una conexion y privilegios que esta
+# cadena no tiene.
+# @noargs
+# @exitcode 0 La extension esta disponible para el servidor.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_pgvector() {
+  local sharedir control major
+  if ! sharedir="$("$THYROX_TOOLCHAIN_PG_CONFIG_BIN" --sharedir 2>/dev/null)" || [[ -z "$sharedir" ]]; then
+    echo "thyrox_toolchain: pg_config ('$THYROX_TOOLCHAIN_PG_CONFIG_BIN') no resuelve: no hay servidor PostgreSQL" >&2
+    echo "                  al que añadir pgvector. Esta cadena no instala el servidor." >&2
+    return 2
+  fi
+  control="$sharedir/extension/vector.control"
+  [[ -f "$control" ]] && return 0
+  major="$(thyrox_toolchain_pg_major)" || major="<mayor>"
+  if [[ "${THYROX_INSTALL_PGVECTOR:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta pgvector (paquete postgresql-$major-pgvector) y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_PGVECTOR=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+  local cmd; cmd="$(thyrox_toolchain_pgvector_install_cmd)" || return 2
+  $cmd >&2 2>&1 || true
+  if [[ ! -f "$control" ]]; then
+    echo "thyrox_toolchain: el instalador termino y '$control' sigue sin existir." >&2
+    echo "                  Se re-comprueba la extension, no se lee su exit." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_pgvector
+
 # @description El comando que instala iproute2. Declarado para que un control
 # pueda inyectar un instalador que MIENTA y probar que el exito se
 # re-comprueba.

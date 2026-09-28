@@ -46,6 +46,16 @@ describe('gracefulShutdown — source pins', () => {
     })
   })
 
+  describe('Local error store', () => {
+    test('the bounded flush drains pending error records', () => {
+      // Un registro de error es fire-and-forget: sin esperarlo aquí, el que
+      // ocurre justo antes de salir se pierde con el proceso.
+      expect(source).toMatch(
+        /Promise\.race\(\[\s*\n?\s*Promise\.all\(\[shutdownEventLoggers\(\), flushErrorRecording\(\)\]\),\s*\n?\s*sleep\(500\)/,
+      )
+    })
+  })
+
   describe('SIGINT print-mode skip', () => {
     test('SIGINT early-return when -p or --print in argv', () => {
       // Pin: print.ts registers its own SIGINT handler. The global one

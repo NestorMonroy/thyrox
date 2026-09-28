@@ -1,0 +1,8 @@
+== local-observability build
+== local-observability test
+== repl build
+== repl test
+== app-host build
+== app-host test
+src/commands/__tests__/initCommand.test.ts(25,46): error TS2554: Expected 0 arguments, but got 2.
+src/commands/__tests__/initCommand.test.ts(28,46): error TS2554: Expected 0 arguments, but got 2.

@@ -91,7 +91,10 @@ defecto — `which parallel` falla. Ya existe su instalador idempotente,
 opt-in y con re-verificación del binario (no del exit code del `apt`):
 `src/lib/toolchain.sh::thyrox_toolchain_require_parallel` (`THYROX_INSTALL_PARALLEL=1`).
 `rsync` tampoco viene por defecto; su instalador, con el mismo contrato, es
-`thyrox_toolchain_require_rsync` (`THYROX_INSTALL_RSYNC=1`).
+`thyrox_toolchain_require_rsync` (`THYROX_INSTALL_RSYNC=1`). La extensión
+pgvector del PostgreSQL local, lo mismo: `thyrox_toolchain_require_pgvector`
+(`THYROX_INSTALL_PGVECTOR=1`), que deriva el paquete de la versión mayor de
+`pg_config` y re-comprueba `vector.control`, no el exit de `apt`.
 El mecanismo de lotes de este árbol, `src/session/run-task-pool.sh`
 (`trabajo-en-segundo-plano.md`), **es** GNU Parallel: lo resuelve con ese
 instalador y rehúsa con exit 4 si falta. Parallel ejerce la anchura
