@@ -67,3 +67,19 @@ closes the server cleanly». Aislado pasaba 3/3; bajo carga (16 ejecuciones,
 SIGINT, o sea sin manejador. `main()` los instalaba tras `await
 handle.listen()`, y la prueba manda la señal al leer «ready on». Con los
 manejadores antes de escuchar: 16/16. El antes/después es el control.
+
+## F7h-3a — rutas del inspector: peticiones, sesiones y hosts
+
+`src/api/routes/inspector.ts`: requests GET+DELETE, requests/:id,
+requests/:id/annotation, requests/:id/replay (contra el proxy local, con
+`x-thyrox-source: inspector-replay`), export.har, sessions GET+POST,
+sessions/:id GET+PATCH+DELETE, sessions/:id/requests, sessions/:id/export.har,
+hosts GET+POST y hosts/:host PATCH+DELETE.
+
+Divergencia de seguridad: un host propio se valida como nombre de host. La
+referencia sólo pedía uno no vacío y ese texto va a `sudo tee -a /etc/hosts`;
+con un salto de línea escribía una entrada arbitraria.
+
+Anulaciones: `annul-f7h3a.sh` → `results-f7h3a.txt`, 13 que discriminan. Una
+prueba estaba mal escrita, no el código: suponía que `?host=` filtra por
+subcadena, y el búfer (como la referencia) filtra por host exacto.
