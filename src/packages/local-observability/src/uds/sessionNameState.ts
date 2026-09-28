@@ -137,7 +137,8 @@ export class SessionNameState {
   }
 }
 
-const processHost = {}
+/** `j().host`: el anfitrión de este proceso, compartido por los estados por anfitrión. */
+export const processHost: object = {}
 const statesPerHost = new PerHost(() => new SessionNameState())
 
 /** `wS`: el estado del anfitrión; por omisión, el de este proceso. */

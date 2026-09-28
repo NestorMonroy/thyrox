@@ -44,7 +44,13 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2e-1 | adjuntos de un par: `chunk-xqnw10c4.js` entero con los nombres que exporta `chunk-yrfq0b3e.js`, `ZOe`/`Dur`, `met`, `G3`, y la bandera `nlt`/`Ws` (`THYROX_CODE_HARBOR_KITE`) → `uds/peerFiles.ts`, exportado como `./uds/peerFiles.js` | hecha: 18 pruebas; 14 anulaciones (`anulacion-f4c2e1-*.txt`) |
 | F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
 | F4c-2f-2 | flujos de renombre (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`, `z`, `T`) y saneado de nombre (`li`, `AY`) sobre un `RenameContext` inyectado → `uds/sessionRename.ts` | hecha: 22 pruebas; 19 anulaciones (`anulacion-f4c2f2-*.txt`); oráculo por escenarios `diferencial-session-rename.txt`, 0 discrepancias en 3000 |
-| F4c-2f-4 | el registro de sesiones de 2.1.283 (`HH`/`eD`, `kv`, `Cut`, `eF`/`Vt`, `D3`) que los flujos reciben inyectado; hoy sólo existe `agent/concurrentSessions.ts`, un porte anterior más simple | pendiente |
+| F4c-2f-4 | el registro de sesiones de 2.1.283 (`HH`/`eD`, `kv`, `Cut`, `eF`/`Vt`, `D3`) que los flujos reciben inyectado; hoy sólo existe `agent/concurrentSessions.ts`, un porte anterior más simple. Partida en 4a–4f | en curso |
+| F4c-2f-4a | estado del registro (`By`, `eD`, `HH`, `Y5o`, `kv`, `Cut`) con `JM`, `KKn`, `XM` y la bandera `Nq` → `uds/sessionRegistryState.ts` | hecha: 14 pruebas; 16 anulaciones (`anulacion-registry-*.txt`); oráculo `diferencial-registry-state.txt`, 0 discrepancias en 3000 secuencias |
+| F4c-2f-4b | escritura del archivo pid (`Vt`) y nombre registrado (`eF`, `Rut`, `X5o`, `ipn`, `GNr`, `apn`, `kCe`, `rD`, `Wy`, `ud`) | pendiente |
+| F4c-2f-4c | alta de la sesión (`nD`, `KNt`), latido (`ld`, `Ms`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`) y sesión de reserva (`jy`, `iD`, `sD`) | pendiente |
+| F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
+| F4c-2f-4e | tipo de sesión por entorno (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`) con variables `THYROX_*` | pendiente |
+| F4c-2f-4f | sustituir `agent/concurrentSessions.ts` por el registro portado en sus consumidores | pendiente |
 | W-1 | `@thyrox/tool-registry: words.ts`: `TDo` → `shortWordSlugFromSeed`, `E$t` → `slugFromText` con `c`; `M4n` y `Q5` ya eran `generateWordSlug` y `generateShortWordSlug`, ahora nombrados; `Q5` llega inyectado a los flujos de renombre porque `tool-registry` depende de `local-observability` | hecha: 5 pruebas nuevas; 7 anulaciones (`anulacion-w1-*.txt`); oráculo `diferencial-words.txt`, 0 discrepancias |
 | F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) sobre `RenameNoticeDeps` (envío `VOt`, registro `D3`, `Ws`, `DV` inyectados) → `uds/renameNotice.ts` | hecha: 7 pruebas; 10 anulaciones (`anulacion-f4c2f3-*.txt`) |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
@@ -461,3 +467,28 @@ socket y sólo el esquema la descarta.
 `l` y `v` de `chunk-ern0s5ks.js` son `errorMessage` y `getErrnoCode`, ya
 portados en `errorHelpers.ts`; `mJ` es `mayBeSameSocket` y `Bf` es
 `withholdTokenText`.
+
+## F4c-2f-4a — estado del registro de sesiones: controles
+
+El oráculo extrae la clase `By` de `chunk-t6pwageh.js` [386532, 388790) y le
+aplica las mismas secuencias que al porte, con el mismo reloj, sesión y
+bandera; compara nombre registrado, anteriores, retenidos, apartados y avisos.
+
+Su primer generador era un LCG en coma flotante: el producto supera 2^53,
+pierde bits y cae en un ciclo corto. Con él, ninguna secuencia pasaba de tres
+nombres anteriores y el oráculo no discriminaba el tope (`.slice(0, 4)` daba
+0 discrepancias). Con mulberry32 (`Math.imul`) las secuencias llegan a ocho y
+la misma anulación da 99 de 3000 (`anulacion-registry-oraculo-tope.txt`).
+
+| Anulación | Qué retira | Caen |
+|---|---|---|
+| `mismo-nombre` | la rama que conserva `since` al repetir el nombre | 1 |
+| `held-set` / `held-delete` | registrar y liberar el nombre retenido | 2 / 1 |
+| `umbral` | los 10 s mínimos para recordar un nombre anterior | 2 |
+| `derivado` / `estable` | la exclusión de `derived` y su excepción por `Nq` | 1 / 1 |
+| `tope-anteriores` / `filtro-anteriores` | el tope de tres y el retiro del nombre nuevo de la lista | 1 / 1 |
+| `borra-vivo` | olvidar el apartado de la conversación viva | 1 |
+| `tope-conversaciones` / `keepid` / `reinsercion` | el tope de ocho, la conversación protegida y el reordenado | 1 / 1 / 1 |
+| `memo` | la memoización del sondeo de barrido | 1 |
+| `registrado` | esperar al alta en curso en `Cut` | 1 |
+| `emit-cambio` / `launched` | el aviso sin cambio de nombre y el `givenAtLaunch` heredado | 1 / 1 |
