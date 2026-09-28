@@ -3,8 +3,8 @@
  * store, sin tabla de migraciones, porque la base es propia del MITM y nace
  * con este esquema.
  *
- * Porte de `omniroute: src/lib/db/migrations/080_agent_bridge.sql` y
- * `081_inspector_custom_hosts.sql` (MIT). La referencia guarda los alias en
+ * Porte de `omniroute: src/lib/db/migrations/080_agent_bridge.sql`,
+ * `081_inspector_custom_hosts.sql` y `082_inspector_sessions.sql` (MIT). La referencia guarda los alias en
  * la tabla genérica `key_value` con `namespace = 'mitmAlias'`; aquí, sin esa
  * tabla compartida, tienen la suya (`mitm_alias`).
  */
@@ -51,6 +51,24 @@ CREATE TABLE IF NOT EXISTS mitm_alias (
   agent_id TEXT PRIMARY KEY,
   mappings TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS inspector_sessions (
+  id TEXT PRIMARY KEY,
+  name TEXT,
+  started_at TEXT NOT NULL,
+  ended_at TEXT,
+  request_count INTEGER NOT NULL DEFAULT 0,
+  profile TEXT CHECK (profile IN ('llm','custom','all'))
+);
+
+CREATE TABLE IF NOT EXISTS inspector_session_requests (
+  session_id TEXT NOT NULL REFERENCES inspector_sessions(id) ON DELETE CASCADE,
+  seq INTEGER NOT NULL,
+  payload TEXT NOT NULL,
+  PRIMARY KEY (session_id, seq)
+);
+
+CREATE INDEX IF NOT EXISTS idx_inspector_session_requests_sid ON inspector_session_requests(session_id);
 `
 
 export function ensureAgentBridgeSchema(db: Database): void {

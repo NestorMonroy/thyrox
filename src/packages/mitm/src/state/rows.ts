@@ -33,6 +33,17 @@ export interface AgentBridgeBypassRow {
 
 export type CustomHostKind = 'llm' | 'app' | 'custom'
 
+export type InspectorSessionProfile = 'llm' | 'custom' | 'all'
+
+export interface InspectorSessionRow {
+  id: string
+  name: string | null
+  started_at: string
+  ended_at: string | null
+  request_count: number
+  profile: InspectorSessionProfile | null
+}
+
 export interface InspectorCustomHostRow {
   host: string
   enabled: boolean

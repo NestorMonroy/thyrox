@@ -66,6 +66,8 @@ test('schema — applying it twice is a no-op', () => {
     'agent_bridge_mappings',
     'agent_bridge_state',
     'inspector_custom_hosts',
+    'inspector_session_requests',
+    'inspector_sessions',
     'mitm_alias',
   ])
 })
