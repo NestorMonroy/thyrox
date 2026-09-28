@@ -790,7 +790,7 @@ def repoint_manifest(package_dir: Path) -> bool:
         # `types`. Lleva espacio de nombres porque `source` a secas tambien
         # lo publican paquetes de `node_modules` hacia su `.ts`.
         # Un `default` que ya apunta al `.js` de `dist/` lo puso el build JS
-        # (`build_javascript.py`); reescribirlo al fuente desharia ese repunte
+        # (`buildJavascript.ts`); reescribirlo al fuente desharia ese repunte
         # en cada emision de declaraciones.
         built = entry.get("default") if isinstance(entry, dict) else None
         keep_built = isinstance(built, str) and built.startswith(f"./{OUTPUT_DIR}/") and built.endswith(".js")
