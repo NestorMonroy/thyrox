@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+173 |     const counting = { ...context, registry: { ...context.registry, listLive: async () => (queries++, live) } }
+174 |     scheduleNameRecheck({ name: 'otro', onYield: async name => void yields.push(name) }, counting)
+175 |     scheduled[0]!()
+176 |     await settle()
+177 |     expect(yields).toEqual([])
+178 |     expect(queries).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:178:21)
+(fail) runStartupNaming (Gkr) y scheduleNameRecheck (Vtn) > la revisión no hace nada si el nombre ya cambió [0.36ms]
+
+ 21 pass
+ 1 fail
+ 58 expect() calls
+Ran 22 tests across 1 file. [56.00ms]

@@ -141,6 +141,11 @@
       "types": "./dist/uds/stringUnits.d.ts",
       "default": "./src/uds/stringUnits.ts"
     },
+    "./uds/sessionRename.js": {
+      "@thyrox/source": "./src/uds/sessionRename.ts",
+      "types": "./dist/uds/sessionRename.d.ts",
+      "default": "./src/uds/sessionRename.ts"
+    },
     "./uds/udsClient.js": {
       "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",

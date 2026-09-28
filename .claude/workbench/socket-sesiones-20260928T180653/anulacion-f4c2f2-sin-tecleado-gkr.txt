@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+126 |     live.push(holder('foo'))
+127 |     const renamed: Array<[string, string]> = []
+128 |     await runStartupNaming({ sessionNameArg: 'foo', interactive: true, writeName: (name, source) => context.writeName(name, 'sess', source), onRenamed: (name, before) => renamed.push([name, before]) }, context)
+129 |     expect(writes).toEqual([['foo', 'sess', 'user'], ['foo-brave-otter', 'sess', 'collision']])
+130 |     expect(renamed).toEqual([['foo-brave-otter', 'foo']])
+131 |     expect(context.state.userTypedName).toBe('foo-brave-otter')
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "foo-brave-otter"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:131:41)
+(fail) runStartupNaming (Gkr) y scheduleNameRecheck (Vtn) > escribe el nombre pedido, cede si está ocupado, avisa y programa una revisión [0.99ms]
+
+ 21 pass
+ 1 fail
+ 55 expect() calls
+Ran 22 tests across 1 file. [60.00ms]

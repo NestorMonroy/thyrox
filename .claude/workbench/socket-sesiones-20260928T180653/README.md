@@ -43,7 +43,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2e-0 | predicados de ruta de una copia de transferencia (`Djt`, `nM`, `p9n`, `yN`/`Pt`, `tt`, `GF`, `pn` de `chunk-yqm14hey.js`; `Mur` de `chunk-d6ekr2rh.js`) → `@thyrox/permission: pathSafety.ts`, sobre sus primitivas ya portadas; `local-observability` exporta `./uds/peerAddress.js` para `zF` | hecha |
 | F4c-2e-1 | adjuntos de un par: `chunk-xqnw10c4.js` entero con los nombres que exporta `chunk-yrfq0b3e.js`, `ZOe`/`Dur`, `met`, `G3`, y la bandera `nlt`/`Ws` (`THYROX_CODE_HARBOR_KITE`) → `uds/peerFiles.ts`, exportado como `./uds/peerFiles.js` | hecha: 18 pruebas; 14 anulaciones (`anulacion-f4c2e1-*.txt`) |
 | F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
-| F4c-2f-2 | flujos de renombre con el registro de sesiones (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`) | pendiente |
+| F4c-2f-2 | flujos de renombre (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`, `z`, `T`) y saneado de nombre (`li`, `AY`) sobre un `RenameContext` inyectado → `uds/sessionRename.ts` | hecha: 22 pruebas; 19 anulaciones (`anulacion-f4c2f2-*.txt`); oráculo por escenarios `diferencial-session-rename.txt`, 0 discrepancias en 3000 |
+| F4c-2f-4 | el registro de sesiones de 2.1.283 (`HH`/`eD`, `kv`, `Cut`, `eF`/`Vt`, `D3`) que los flujos reciben inyectado; hoy sólo existe `agent/concurrentSessions.ts`, un porte anterior más simple | pendiente |
+| W-1 | `@thyrox/tool-registry: words.ts`: `TDo`, `E$t`, `M4n` (`chunk-fvmr4qjr.js`); `Q5` es `generateShortWordSlug` y llega inyectado porque `tool-registry` depende de este paquete | pendiente |
 | F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
@@ -416,3 +418,25 @@ oráculos anteriores siguen en 0 tras mover `sliceUnits` a `stringUnits.ts`.
 
 `@thyrox/mcp-runtime` tenía un porte anterior de `Njr`/`H_` que no retiraba
 los sustitutos sueltos; ahora delega, y sus 25 pruebas siguen en verde.
+
+## F4c-2f-2 — flujos de renombre: controles
+
+Anulaciones en `anulacion-f4c2f2-*.txt`; diecinueve, cada una tumba su caso.
+`sin-nombre-vigente-vtn` no discriminaba con la primera suite: si el nombre
+ya cambió, la segunda comprobación también impide ceder. Lo que la primera
+evita es consultar el registro; la prueba ahora cuenta esas consultas.
+
+El oráculo `probes/differential_session_rename.ts` corre `tPt`, `sae` y
+`Gkr` de la referencia y el porte sobre el mismo registro falso en 3000
+escenarios generados (sesiones vivas con y sin `procStart`, nombre
+registrado y su fuente, bandera, fallo del registro, adopciones y
+restauraciones concurrentes, `lastYield` y nombre tecleado previos), y en
+`Gkr` además ejecuta la primera revisión programada con una sesión nueva que
+toma el nombre: 0 discrepancias en nombre, escrituras, aviso de cesión,
+nombre tecleado, registros, eventos y contadores. Discrimina: retirada la
+retención del sufijo da 728 discrepancias, la guarda de restauración
+obsoleta 202 y la revisión de `Gkr` 1764 (`anulacion-f4c2f2-oraculo-*.txt`).
+
+La referencia sólo cuenta como rival a una sesión con `procStart` (`L`); el
+primer juego de fixtures no lo traía y la prueba no detectaba ninguna
+colisión.
