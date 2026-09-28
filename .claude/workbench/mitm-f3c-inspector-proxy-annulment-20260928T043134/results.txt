@@ -1,0 +1,15 @@
+== A1 reenvío sin la lista de cabeceras prohibidas
+(fail) HTTP direct forwards the auth header but no hop-by-hop or origin header [10.27ms]
+ 136 pass
+ 1 fail
+== A2 puerto leído sin el prefijo
+(fail) THYROX_INSPECTOR_HTTP_PROXY_PORT sets the default port, a bad value falls back [1.52ms]
+ 136 pass
+ 1 fail
+== A3 apply sin sanear el error
+(fail) apply throws sanitized error when exec fails [1.41ms]
+ 136 pass
+ 1 fail
+== restored
+ 137 pass
+ 0 fail
