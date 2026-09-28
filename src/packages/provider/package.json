@@ -270,6 +270,11 @@
       "types": "./dist/fastMode.d.ts",
       "default": "./src/fastMode.ts"
     },
+    "./fastModeAvailability.js": {
+      "@thyrox/source": "./src/fastModeAvailability.ts",
+      "types": "./dist/fastModeAvailability.d.ts",
+      "default": "./src/fastModeAvailability.ts"
+    },
     "./fileConstants.js": {
       "@thyrox/source": "./src/fileConstants.ts",
       "types": "./dist/fileConstants.d.ts",

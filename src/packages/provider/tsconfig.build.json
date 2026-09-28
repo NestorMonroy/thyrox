@@ -176,6 +176,9 @@
       "@thyrox/provider/fastMode.js": [
         "./src/fastMode.ts"
       ],
+      "@thyrox/provider/fastModeAvailability.js": [
+        "./src/fastModeAvailability.ts"
+      ],
       "@thyrox/provider/fileConstants.js": [
         "./src/fileConstants.ts"
       ],

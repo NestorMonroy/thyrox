@@ -611,7 +611,8 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 | R-2a | oyentes de la restauración con dependencias inyectadas: `wt` sobre el estado de la aplicación, `sA`, `Pyt` con el evento `tengu_refusal_fallback_latch_reset` y `b8r` (`chunk-6ff16z73.js`) → `app-host/src/state/refusalFallbackRestore.ts`. Redundante por construcción: `aviso` (`sA` ya normaliza con `!!`) | hecha: 12 pruebas; 14 anulaciones (`anulacion-R2a-*.txt`) |
 | R-2b-0 | consulta de capacidades de modelo (`$h`, `UYe` con `THYROX_CODE_MODEL_CAPABILITIES`, `qFt`, `MBr`, `P`/`L`, `h`, `ENo`, `kNo`, `chunk-4h0c4z04.js`) → `agent/modelCapabilities.ts`, sobre el catálogo `MODELS` | hecha: 11 pruebas; 17 anulaciones (`anulacion-R2b0-*.txt`) |
 | R-2b-1 | puertas del modo rápido: `mo` (primera parte y cualquier valor de `THYROX_CODE_DISABLE_FAST_MODE` lo apaga) y `qy` (capacidad `fast_mode` y, si no consta, Opus 4.8 / Opus 5 por el nombre) en `provider/src/fastMode.ts` | hecha: 8 pruebas; 8 anulaciones (`anulacion-R2b1-*.txt`) |
-| R-2b-2 | disponibilidad del modo rápido: `gL` (lista de modelos permitidos `Vr`, preferencias de política y de bandera, opt-in del SDK, estado de la organización con su origen), `aC`, `D5`, `Bk`, `$g`, `Wg`, `Yi`, `Yg`, `rn`; sustituye a `getFastModeUnavailableReason` | pendiente |
+| R-2b-2 | disponibilidad del modo rápido sobre un contexto explícito: `gL`, `aC`, `$g`, `Wg`, `D5`, `Bk`, `Yi`, `Yg` → `provider/src/fastModeAvailability.ts`. Redundantes por construcción: `unknown-oauth` (`$g('unknown')` no depende del tipo de autenticación) y `bk` (`gL` ya devuelve causa con el modo rápido apagado) | hecha: 14 pruebas; 27 anulaciones (`anulacion-R2b2-*.txt`) |
+| R-2b-2b | contexto de disponibilidad armado desde el proceso (`Vr` con `isModelAllowed`, `Rte`, `K$`, preferencias por origen, `Te`/`ijt`, `rn` con `uc`/`Iz`/`eo`, créditos de uso `_6e`/`hy`/`Ex`/`Run`), `orgStatus` con `source`, y reemplazo de `getFastModeUnavailableReason` | pendiente |
 | R-2b-3 | `Yl` (preferencia con opt-in por sesión), `Ndn`, `oA`, `Dt` (espacio remoto), `Ea` (canal de control remoto) | pendiente |
 | R-2b-4 | modelo y nombre visible del modo rápido (`Rte`, `K$`); 2.1.283 ya no tiene la anulación a Opus 4.6 que `getFastModeModel` y `agent/prompts.ts` conservan | pendiente |
 | R-2c | alcance del modelo de respaldo (`vV`: `ahe`, `$h`/`Be` con `refusal_fallback`, `MNe`, `Tle`, `$5`, `izn`) | pendiente |
@@ -657,3 +658,10 @@ Casos que caen: primera-parte (1), cualquier-valor (1), capacidad (2),
 canonico (1), opus-5 (1), opus-48 (1), minusculas (1), habilitado-qy (1).
 La expectativa de la consulta servida se deriva de `parseUserSpecifiedModel`:
 otra prueba del mismo proceso deja activo el sufijo `[1m]`.
+
+### Controles de la fase R-2b-2
+
+`bun test src/__tests__/fastModeAvailability.test.ts` en `@thyrox/provider`.
+Cada anulación cae en uno o dos casos, salvo `unknown-oauth` y `bk` (0,
+redundantes por construcción); `extra` cae en 1 tras añadir el caso con
+instrucción de créditos.

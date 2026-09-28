@@ -1,0 +1,43 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+60 |     const denyOpus = context({ isModelAllowed: model => (asked.push(model), model !== 'opus'), supportsFastMode: () => true })
+61 |     expect(fastModeUnavailabilityCause(undefined, {}, denyOpus)).toBeNull()
+62 |     expect(asked).toEqual(['opus', 'main-loop'])
+63 |     expect(fastModeUnavailabilityCause(null, {}, context({ isModelAllowed: model => model !== 'opus', resolveModel: m => (m === null ? 'default-setting' : 'x') }))).toBeNull()
+64 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ isModelAllowed: () => false }))).toBe('model_not_allowed')
+65 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ isModelAllowed: m => m !== 'opus', supportsFastMode: () => false }))).toBe('model_not_allowed')
+                                                                                                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "model_not_allowed"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:65:135)
+(fail) fastModeUnavailabilityCause (gL) > modelo no permitido: sólo si el modelo del modo rápido no lo está [0.32ms]
+70 |     const seen: unknown[] = []
+71 |     const ctx = context({ isModelAllowed: m => m !== 'opus', supportsFastMode: m => (seen.push(m), true) })
+72 |     fastModeUnavailabilityCause('pedido', {}, ctx)
+73 |     fastModeUnavailabilityCause(null, {}, ctx)
+74 |     fastModeUnavailabilityCause(undefined, {}, ctx)
+75 |     expect(seen).toEqual(['pedido', 'default-setting', 'main-loop'])
+                      ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "pedido",
+-   "default-setting",
+-   "main-loop",
+- ]
++ []
+
+- Expected  - 5
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:75:18)
+(fail) fastModeUnavailabilityCause (gL) > el modelo que se consulta es el pedido: null es el de la configuración, undefined el del bucle [0.12ms]
+
+ 12 pass
+ 2 fail
+ 52 expect() calls
+Ran 14 tests across 1 file. [63.00ms]

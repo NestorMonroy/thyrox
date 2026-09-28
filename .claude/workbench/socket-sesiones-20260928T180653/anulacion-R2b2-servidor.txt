@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+100 |   test('deshabilitado por la organización', () => {
+101 |     const disabled = (reason: 'free' | 'network_error' | 'unknown', source?: 'server') =>
+102 |       ({ orgStatus: { status: 'disabled', reason, ...(source && { source }) } as const })
+103 |     expect(fastModeUnavailabilityCause(undefined, {}, context(disabled('free')))).toBe('free')
+104 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ ...disabled('free'), skipOrgCheckEnv: true }))).toBeNull()
+105 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ ...disabled('free', 'server'), skipOrgCheckEnv: true }))).toBe('free')
+                                                                                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "free"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:105:123)
+(fail) fastModeUnavailabilityCause (gL) > deshabilitado por la organización [0.32ms]
+
+ 13 pass
+ 1 fail
+ 48 expect() calls
+Ran 14 tests across 1 file. [47.00ms]

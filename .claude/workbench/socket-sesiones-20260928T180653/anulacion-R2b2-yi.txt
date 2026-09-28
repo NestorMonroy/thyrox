@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+90 | 
+91 |   test('estado pendiente: salvo que se salte la comprobación o se haya optado fuera de lo remoto', () => {
+92 |     const pending = { orgStatus: { status: 'pending' } as const }
+93 |     expect(fastModeUnavailabilityCause(undefined, {}, context(pending))).toBe('pending')
+94 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ ...pending, skipOrgCheckEnv: true }))).toBeNull()
+95 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ ...pending, skipOrgCheckEnv: true, remoteManaged: true }))).toBe('pending')
+                                                                                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "pending"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:95:125)
+(fail) fastModeUnavailabilityCause (gL) > estado pendiente: salvo que se salte la comprobación o se haya optado fuera de lo remoto [0.31ms]
+
+ 13 pass
+ 1 fail
+ 51 expect() calls
+Ran 14 tests across 1 file. [46.00ms]
