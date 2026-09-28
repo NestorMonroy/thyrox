@@ -1,0 +1,58 @@
+== base
+ 12 pass
+ 0 fail
+== anulado en src/repair.ts: const TRUSTED_CERT_FILES = ['ca.crt', 'server.crt']
+(fail) repair undoes DNS, both certificates on disk and the system proxy [4.73ms]
+(fail) with only the root CA installed, repair still untrusts it [0.98ms]
+ 10 pass
+ 2 fail
+== anulado en src/repair.ts:       for (const host of gheCopilotHostsFrom(source.gheCopilotProviderData ?? [])) hosts.add(host)
+(fail) collectManagedHosts takes every target host, GHE hosts and every custom host [7.17ms]
+ 11 pass
+ 1 fail
+== anulado en src/repair.ts:     for (const custom of withStore(source.db, db => listCustomHosts(db))) hosts.add(custom.host)
+(fail) collectManagedHosts takes every target host, GHE hosts and every custom host [9.66ms]
+ 11 pass
+ 1 fail
+== anulado en src/repair.ts:     await revert(state.previousState)
+(fail) the default proxy step reverts a proxy applied in this process [4.01ms]
+ 11 pass
+ 1 fail
+== anulado en src/repair.ts:         removed = true
+(fail) repair undoes DNS, both certificates on disk and the system proxy [4.44ms]
+(fail) with only the root CA installed, repair still untrusts it [1.12ms]
+ 10 pass
+ 2 fail
+== anulado en src/repair.ts:   } catch (err) {
+(fail) collectManagedHosts takes every target host, GHE hosts and every custom host [7.86ms]
+(fail) an unreadable custom host store does not drop the target hosts [1.05ms]
+(fail) buildRepairPlan removes the managed host set, the CA and the system proxy [0.74ms]
+(fail) repair undoes DNS, both certificates on disk and the system proxy [1.97ms]
+(fail) with only the root CA installed, repair still untrusts it [0.89ms]
+(fail) each step is best-effort and reports only what it repaired [0.76ms]
+(fail) without certificate files there is no cert step [0.75ms]
+(fail) the default proxy step reverts a proxy applied in this process [1.47ms]
+ 4 pass
+ 8 fail
+== anulado en src/inspector/captureState.ts:   if (guardTimer) {
+ 12 pass
+ 0 fail
+== anulado en src/inspector/captureState.ts:     if (previous) revert(previous).catch(() => {})
+(fail) the guard reverts the system proxy on expiry, and clear cancels it [163.13ms]
+ 11 pass
+ 1 fail
+== anulado en src/inspector/captureState.ts:   return tlsInterceptOverride ?? process.env.THYROX_INSPECTOR_TLS_INTERCEPT === 'true'
+(fail) TLS interception follows THYROX_INSPECTOR_TLS_INTERCEPT until set explicitly [1.51ms]
+ 11 pass
+ 1 fail
+== anulado (rehecho) en src/repair.ts:     logError('collectManagedHosts: failed to read custom hosts (continuing)', err)
+(fail) an unreadable custom host store does not drop the target hosts [0.87ms]
+ 12 pass
+ 1 fail
+== anulado (rehecho) en src/inspector/captureState.ts:     clearTimeout(guardTimer)
+(fail) clearing the system proxy cancels the guard, so it no longer holds the process [6030.96ms]
+ 12 pass
+ 1 fail
+== base final
+ 13 pass
+ 0 fail
