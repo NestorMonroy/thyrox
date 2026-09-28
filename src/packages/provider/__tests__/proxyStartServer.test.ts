@@ -413,3 +413,67 @@ describe('upstreams de nube', () => {
       .toThrow('el upstream "up" no declara endpoint')
   })
 })
+
+describe('startProxyServer: credenciales del store de conexiones', () => {
+  const send = (url: string) => fetch(`${url}/v1/messages`, {
+    method: 'POST',
+    headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'local-model', messages: [] }),
+  })
+  const connection = (overrides: Record<string, unknown> = {}) => ({ id: 's1', provider: 'anthropic', authType: 'apikey', priority: 1, isActive: true, apiKey: 'sk-store', ...overrides })
+  const storeOf = (rows: Record<string, unknown>[]) => {
+    const asked: unknown[] = []
+    return { asked, list: (filter?: { provider?: string }) => (asked.push(filter), rows.filter(row => !filter?.provider || row.provider === filter.provider)) }
+  }
+  const withoutDeclared = (baseUrl: string) => ({ ...config(baseUrl), credentials: {} })
+
+  test('un upstream sin credenciales declaradas usa las de su proveedor en el store', async () => {
+    const upstream = provider()
+    const store = storeOf([connection(), connection({ id: 'x', provider: 'openai', apiKey: 'sk-other' })])
+    const proxy = startProxyServer({ ...withoutDeclared(upstream.baseUrl), connections: store })
+    stops.push(() => proxy.stop())
+    expect((await send(proxy.url)).status).toBe(200)
+    expect(upstream.keys).toEqual(['sk-store'])
+    expect(store.asked).toContainEqual({ provider: 'anthropic' })
+  })
+
+  test('el store se relee en cada petición: una conexión nueva sirve sin reiniciar', async () => {
+    const upstream = provider()
+    const rows = [connection({ isActive: false })]
+    const proxy = startProxyServer({ ...withoutDeclared(upstream.baseUrl), connections: storeOf(rows) })
+    stops.push(() => proxy.stop())
+    expect((await send(proxy.url)).status).not.toBe(200)
+    rows.push(connection({ id: 's2', apiKey: 'sk-new' }))
+    expect((await send(proxy.url)).status).toBe(200)
+    expect(upstream.keys).toEqual(['sk-new'])
+  })
+
+  test('las credenciales declaradas ganan sobre el store', async () => {
+    const upstream = provider()
+    const proxy = startProxyServer({ ...config(upstream.baseUrl), connections: storeOf([connection()]) })
+    stops.push(() => proxy.stop())
+    await send(proxy.url)
+    expect(upstream.keys).toEqual(['sk-upstream'])
+  })
+
+  test('rateLimit protege también las credenciales de clave de API del store', async () => {
+    let inFlight = 0
+    let peak = 0
+    const server = Bun.serve({
+      port: 0,
+      hostname: '127.0.0.1',
+      async fetch() {
+        inFlight += 1
+        peak = Math.max(peak, inFlight)
+        await new Promise(r => setTimeout(r, 40))
+        inFlight -= 1
+        return Response.json({ type: 'message' })
+      },
+    })
+    stops.push(() => server.stop(true))
+    const proxy = startProxyServer({ ...withoutDeclared(`http://127.0.0.1:${server.port}`), connections: storeOf([connection()]), rateLimit: { concurrentRequests: 1 } })
+    stops.push(() => proxy.stop())
+    await Promise.all([send(proxy.url), send(proxy.url), send(proxy.url)].map(p => p.then(r => r.text())))
+    expect(peak).toBe(1)
+  })
+})

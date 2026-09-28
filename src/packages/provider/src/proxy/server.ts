@@ -90,6 +90,8 @@ export type ProxyServerConfig = {
   access: AccessManager
   routing: GatewayRoutingConfig
   credentials: Record<string, ProxyCredential[] | undefined>
+  /** Si está, las credenciales de un upstream se piden aquí en cada petición en vez de a `credentials`. */
+  credentialsOf?: (upstreamName: string) => ProxyCredential[]
   selector: CredentialSelector
   forward: (request: ForwardRequest) => Promise<Response>
   /** Los rasgos de cada proveedor que el clasificador de errores necesita. */
@@ -232,10 +234,11 @@ async function forwardBody(
     const report = (success: boolean, skipCooldown = false) =>
       config.selector.onResult?.({ authId: credential.id, provider: upstream.provider, model: resolved.model, success, skipCooldown, options: selection })
     let credential: ProxyCredential
+    const pool = config.credentialsOf?.(upstream.name) ?? config.credentials[upstream.name] ?? []
     try {
-      credential = config.selector.pick(upstream.provider, resolved.model, config.credentials[upstream.name] ?? [], new Date(), selection)
+      credential = config.selector.pick(upstream.provider, resolved.model, pool, new Date(), selection)
     } catch (error) {
-      if (error instanceof ModelCooldownError) cooling = { error, credentials: config.credentials[upstream.name] ?? [] }
+      if (error instanceof ModelCooldownError) cooling = { error, credentials: pool }
       reasons.push(`${upstream.name}: ${error instanceof Error ? error.message : String(error)}`)
       continue
     }
