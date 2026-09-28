@@ -5,16 +5,7 @@
  * PORTE COMPLETO de `ccnmt: packages/storage/src/sessionStorage.ts`, hecho por
  * FUSION y no por copia — ver «SIMBOLOS PROPIOS» al final.
  *
- * Por que se completo: el porte anterior era parcial y su PREMISA declarada
- * —«ningun test aqui mide» el resto, «este paquete no importa @thyrox/agent
- * todavia (DEC-04)»— resulto FALSA al medirla. `storage/package.json` ya
- * declara `@thyrox/agent`, y `toolResultStorage.ts:47-48` ya lo importa. El
- * bloqueo no existia; lo que existia era la falta de medicion.
- *
- * Divergencias declaradas — CORREGIDO 2026-09-19: este parrafo decia «la
- * unica», y era falso. Medirlo por conducta destapo que el modulo NO CARGABA,
- * y que el typecheck agregado no podia verlo: el arbol ya tenia 787 TS2307, asi
- * que cinco nuevos quedaron dentro del ruido mientras la cifra mejoraba.
+ * Divergencias declaradas:
  *
  * 1. `bun:bundle` — la fuente lo importa y NO es un modulo de Node sino una
  *    capacidad del runtime de Bun. Medido por conducta: `import('bun:bundle')`
@@ -24,22 +15,12 @@
  * 2. `@thyrox/agent/fileHistory.js` — la fuente nombra el modulo
  *    `file-history`; aqui el archivo se llama `fileHistory.ts` y es donde vive
  *    `FileHistorySnapshot`. Es un repunte de specifier, no un recorte.
- * 3. El sustituto por inyeccion de `builtInCommandNames` se RETIRO. Era
- *    andamiaje del porte parcial: el porte completo importa el simbolo real de
- *    `@thyrox/command-runtime/runtime` (:54), asi que mantener los dos era una
- *    colision de declaracion —enmascarada solo mientras el TS2307 impedia que
- *    el import resolviera—. Su unico consumidor era un test, que ahora mockea
- *    el subpath, que es lo que la fuente ya hacia.
+ * `builtInCommandNames` se importa del original,
+ * `@thyrox/command-runtime/runtime`; su prueba mockea ese subpath, como la
+ * fuente.
  *
- * Lo que este modulo NO cierra, medido y con sucesor: cargarlo exige el grafo
- * transitivo, y ahi habia OCHO bloqueos en tres clases —manifiesto sin
- * declarar (TASK-THYROX-0208), alcance inexistente (TASK-THYROX-0209) y porte
- * parcial—. Los ocho se cerraron en este pase salvo la brecha de
- * `agent/messages.ts` (43 de 108 exports), que tiene la suya: TASK-THYROX-0212.
- *
- * El alcance de los imports se reescribio `@claude-code-how-works/*` ->
- * `@thyrox/*` con el mismo criterio que TASK-THYROX-0169 aplico a
- * `src/packages`.
+ * Lo que este modulo NO cierra: la brecha de exports de `agent/messages.ts`,
+ * con sucesor TASK-THYROX-0212.
  */
 import { feature } from 'bun:bundle'
 import type { UUID } from 'crypto'

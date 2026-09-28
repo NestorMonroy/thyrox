@@ -606,12 +606,10 @@ export type EventLoggerLike = {
     attributes: Record<string, unknown>
   }): void
 }
-// CORREGIDO 2026-09-24. El default devolvía `null` porque
-// `app-host/bootstrap/state.js` «no estaba exportado»; lo está desde que se
-// cerraron los `exports`. Como NADIE llama a `setGetEventLoggerFn` en
-// producción, con `null` todo evento OTel de este paquete se descartaba
-// siempre. El default lee ahora el estado real de `app-host`, perezoso porque
-// `app-host` depende de este paquete; el setter queda para las pruebas.
+// El default lee el estado real de `app-host`, perezoso porque `app-host`
+// depende de este paquete. Nadie llama a `setGetEventLoggerFn` en producción,
+// así que un default `null` descartaría todo evento OTel; el setter queda
+// para las pruebas.
 function appHostState(): {
   getEventLogger?: () => EventLoggerLike | null
   getPromptId?: () => string | null

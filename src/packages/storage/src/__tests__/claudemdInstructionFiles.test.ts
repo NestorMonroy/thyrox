@@ -1,8 +1,7 @@
 /**
- * El archivo de instrucciones migra a `THYROX.md` (decisión del ejecutor
- * 2026-09-27, «Migrar a .thyrox»). En cada ranura se lee el nombre propio y,
- * si no existe, el heredado: un proyecto que sólo tiene `THYROX.md` sigue
- * cargándolo, y uno que tiene los dos carga sólo el propio.
+ * El archivo de instrucciones es `THYROX.md`. En cada ranura se lee el nombre
+ * propio y, si no existe, el heredado: un proyecto que sólo tiene `CLAUDE.md` (thyrox-rename: keep — respaldo heredado)
+ * sigue cargándolo, y uno que tiene los dos carga sólo el propio.
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'

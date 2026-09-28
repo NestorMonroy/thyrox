@@ -10,8 +10,8 @@
  * `POLICY_HELPER_CLAUDE_MD_SENTINEL`), el tipo `MemoryFileInfo`/`MemoryType`,
  * y las cuatro funciones puras `stripHtmlComments`, `isMemoryFilePath`,
  * `getLargeMemoryFiles`, `filterInjectedMemoryFiles`. El descubrimiento de
- * archivos, `@include` y el frontmatter `paths:` se portan al final
- * (2026-09-24) desde 2.1.275: `getMemoryFiles`, `getClaudeMds`,
+ * archivos, `@include` y el frontmatter `paths:` se portan al final desde
+ * 2.1.275: `getMemoryFiles`, `getClaudeMds`,
  * `clearMemoryFileCaches`, `resetGetMemoryFilesCache`; lo que de ellos queda
  * pendiente lo declara su bloque. El truncado de MEMORY.md sigue sin portar.
  *
@@ -251,7 +251,7 @@ export function filterInjectedMemoryFiles(
 }
 
 // ---------------------------------------------------------------------------
-// Cargador de la jerarquía de THYROX.md — porte de 2.1.275 (2026-09-24):
+// Cargador de la jerarquía de THYROX.md — porte de 2.1.275:
 // `ob`/`qwo` (orden de capas y memoización), `hF` (un archivo y sus
 // `@include`), `AEe` (directorio de reglas), `x7e`/`Gtn` (lectura y
 // análisis), `Iwo` (`paths:` del frontmatter), `Hwo` (rutas `@`) y `Qtn`

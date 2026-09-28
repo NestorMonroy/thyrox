@@ -76,9 +76,8 @@ export function memoize<Args extends unknown[], Result>(
  * `memoizeWithLRU` — caché LRU por `Map` (recency por reinserción, desalojo
  * del más antiguo al superar `maxCacheSize`).
  *
- * AMPLIADO: expone su `.cache`. La versión anterior lo omitía declarando que
- * «ningún test de este porte lo usa», y esa razón caducó: `git.ts` publica
- * `findCanonicalGitRoot.cache` como parte de su superficie —quien invalida la
+ * Expone su `.cache`: `git.ts` publica `findCanonicalGitRoot.cache` como
+ * parte de su superficie —quien invalida la
  * identidad de proyecto lo hace por ahí— así que el envoltorio tiene que
  * poder entregarla.
  */

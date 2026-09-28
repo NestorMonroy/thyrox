@@ -2,10 +2,10 @@
  * Utilidad de espera sobre streams tipo stdin.
  *
  * `registerProcessOutputErrorHandlers`, `writeToStdout` y `writeToStderr`
- * se portan (2026-09-24) desde 2.1.275 (`pur`, `dr`, `OX` y sus auxiliares
+ * se portan desde 2.1.275 (`pur`, `dr`, `OX` y sus auxiliares
  * `pkt`, `v`, `HQe` en `chunk-q4s29khb.js`). `exitWithError` (`tlo`) y
- * su marcador de causa de salida `writeExitCause` (`Om`) se portan
- * (2026-09-25) al aparecer su consumidor, `cli/src/entry/cli.tsx`. De la
+ * su marcador de causa de salida `writeExitCause` (`Om`) se portan para su
+ * consumidor, `cli/src/entry/cli.tsx`. De la
  * contabilidad de vaciado de stdout sólo se porta el conteo de bytes
  * pendientes: la espera de vaciado al salir (`OQe`) vive con el cierre del
  * proceso, que no está.
