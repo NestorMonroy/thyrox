@@ -40,7 +40,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
 | F4c-2d | `session.receive` (`Aot`, `NXe`, `R_e`, `WCt`, `jCt`, `Q0n`, `BXe`, `HXe`, `jXe`, `FXe`, `$Xe`, `Me`) sobre una interfaz `HookSite` → `uds/sessionReceive.ts`; el runtime de módulos que la implementa es la serie MOD | hecha |
 | F4c-2e-0 | predicados de ruta de una copia de transferencia (`Djt`, `nM`, `p9n`, `yN`/`Pt`, `tt`, `GF`, `pn` de `chunk-yqm14hey.js`; `Mur` de `chunk-d6ekr2rh.js`) → `@thyrox/permission: pathSafety.ts`, sobre sus primitivas ya portadas; `local-observability` exporta `./uds/peerAddress.js` para `zF` | hecha |
-| F4c-2e-1 | adjuntos de un par (`nlt`, `chunk-yrfq0b3e.js`, `chunk-xqnw10c4.js`) | pendiente |
+| F4c-2e-1 | adjuntos de un par: `chunk-xqnw10c4.js` entero con los nombres que exporta `chunk-yrfq0b3e.js`, `ZOe`/`Dur`, `met`, `G3`, y la bandera `nlt`/`Ws` (`THYROX_CODE_HARBOR_KITE`) → `uds/peerFiles.ts`, exportado como `./uds/peerFiles.js` | hecha: 18 pruebas; 14 anulaciones (`anulacion-f4c2e1-*.txt`) |
 | F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
 | F4c-2f-2 | flujos de renombre con el registro de sesiones (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`) | pendiente |
 | F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) | pendiente |
@@ -345,3 +345,29 @@ predicados viven en `permission`, junto a sus primitivas, y los adjuntos
 Los dos errores de tsc de `permission`
 (`__tests__/pathInAllowedWorkingPath.test.ts`, TS2722) son previos: medidos
 iguales sobre un worktree de `HEAD`.
+
+## F4c-2e-1 — adjuntos de un par: controles
+
+Anulaciones en `anulacion-f4c2e1-*.txt`; catorce, cada una tumba su caso.
+`sin-wx` no discriminaba con la primera suite: ningún caso encontraba un
+archivo previo en uploads. Se añadió el que lo encuentra y la anulación
+ahora lo tumba.
+
+Dos guardas no tienen testigo, y es por construcción:
+
+- `dot > 0` en `sanitizePeerFileName`: con el punto en la posición 0 y el
+  nombre de 16 caracteres o menos, la extensión es el nombre entero y el
+  tallo queda vacío, así que el resultado es el mismo con la guarda o sin
+  ella; con más de 16, la extensión se descarta en los dos casos.
+- el `overLimit` de la lectura acotada: `stat` y `fstat` ya rechazaron un
+  archivo mayor que el tope antes de leer. Sólo cuenta si el archivo crece
+  entre `fstat` y la lectura, una carrera que la suite no reproduce.
+
+El esquema de la lista (`V`/`Z`, zod en la referencia) se valida a mano:
+`local-observability` no depende de zod. El texto del registro de una lista
+mal formada no reproduce el de zod; el prefijo y el desenlace sí.
+
+`Mur` entra como dependencia (`processPeerFileDeps(isUnsafeTransferPath)`):
+vive en `@thyrox/permission`, que depende de este paquete. `G3` usa el
+directorio de uploads de la sesión; el `ujt` de la referencia es el
+argumento `override`.
