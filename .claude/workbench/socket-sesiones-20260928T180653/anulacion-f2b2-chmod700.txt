@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketsDir.test.ts:
+73 |     const dir = join(tempDir(), 'cc-socks')
+74 |     mkdirSync(dir, { mode: 0o755 })
+75 |     chmodSync(dir, 0o755)
+76 |     await prepareSocketsDirectory(dir, deps())
+77 |     expect(statSync(dir).mode & 0o777).toBe(0o700)
+78 |   })
+                                            ^
+error: expect(received).toBe(expected)
+
+Expected: 448
+Received: 493
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketsDir.test.ts:78:40)
+(fail) prepareSocketsDirectory (Re) > cierra a 0700 un directorio propio que estaba abierto [1.02ms]
+
+ 17 pass
+ 1 fail
+ 33 expect() calls
+Ran 18 tests across 1 file. [64.00ms]
