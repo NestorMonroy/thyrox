@@ -10,7 +10,8 @@ import { lstat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { isENOENT } from '../errorHelpers.ts'
-import type { HeartbeatStorage } from './fleetHeartbeat.ts'
+import type { StorageKey } from '../storageKeys.ts'
+import type { StorageResult } from './inboxKeys.ts'
 import { type PidFileDeps, type PidFileStorage, processPidFileDeps, releaseSpare, stopSpareClaimPoll } from './pidFileRecord.ts'
 import type { SessionRegistryState } from './sessionRegistryState.ts'
 import { type SessionKindHost, currentJobDir, jobStorageKey, processSessionKindHost } from './sessionKind.ts'
@@ -21,7 +22,7 @@ export const SPARE_CLAIM_POLL_MS = 1000
 /** El archivo que el trabajo escribe al reclamar la sesión. */
 const CLAIM_FILE = 'state.json'
 
-export type SpareStorage = PidFileStorage & Pick<HeartbeatStorage, 'statMeta'>
+export type SpareStorage = PidFileStorage & { statMeta(key: StorageKey): Promise<StorageResult<{ mtimeMs: number }>> }
 
 export type SpareDeps = PidFileDeps & {
   kindHost: () => SessionKindHost
