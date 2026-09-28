@@ -18,6 +18,7 @@
 import * as Sentry from '@sentry/node'
 import { readEnv } from '@thyrox/config/env/utils'
 import { logForDebugging } from './debug.js'
+import { registerSentryCloser } from './sentryShutdown.js'
 
 // Constante de build-time inyectada vía Bun.build({ define }) en
 // build.ts, o undefined en tiempo de desarrollo. Declarada en línea para
@@ -99,6 +100,10 @@ export function initSentry(): void {
   })
 
   initialized = true
+  registerSentryCloser(async timeoutMs => {
+    await Sentry.close(timeoutMs)
+    logForDebugging('[sentry] Closed successfully')
+  })
   logForDebugging('[sentry] Initialized successfully')
 }
 
@@ -162,23 +167,8 @@ export function setUser(user: {
   }
 }
 
-/**
- * Flushea los eventos pendientes de Sentry y cierra el cliente.
- * Llamar durante el apagado ordenado para asegurar que los eventos se
- * envíen.
- */
-export async function closeSentry(timeoutMs = 2000): Promise<void> {
-  if (!initialized) {
-    return
-  }
-
-  try {
-    await Sentry.close(timeoutMs)
-    logForDebugging('[sentry] Closed successfully')
-  } catch {
-    // Ignorar — ya nos estamos apagando de todas formas.
-  }
-}
+/** El cierre vive en `./sentryShutdown.ts`, para que el apagado no cargue Sentry. */
+export { closeSentry } from './sentryShutdown.js'
 
 /**
  * Verifica si Sentry está inicializado. Útil para renderizado

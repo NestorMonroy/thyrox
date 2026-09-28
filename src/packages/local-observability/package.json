@@ -86,6 +86,11 @@
       "types": "./dist/sentry.d.ts",
       "default": "./src/sentry.ts"
     },
+    "./sentryShutdown.js": {
+      "@thyrox/source": "./src/sentryShutdown.ts",
+      "types": "./dist/sentryShutdown.d.ts",
+      "default": "./src/sentryShutdown.ts"
+    },
     "./betaSessionTracing.js": {
       "@thyrox/source": "./src/betaSessionTracing.ts",
       "types": "./dist/betaSessionTracing.d.ts",

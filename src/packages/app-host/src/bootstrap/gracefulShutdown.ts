@@ -61,7 +61,7 @@ import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getInvokedBinaryName } from '@thyrox/config'
 import { getCurrentSessionTitle, sessionIdExists } from '@thyrox/storage/sessionStorage.js'
 import { sleep } from '@thyrox/config/sleep'
-import { closeSentry } from '@thyrox/local-observability/sentry.js'
+import { closeSentry } from '@thyrox/local-observability/sentryShutdown.js'
 import { profileReport } from '../startup/startupProfiler.js'
 
 /**
