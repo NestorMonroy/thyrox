@@ -1,0 +1,5 @@
+      at /$bunfs/root/thyrox:762723:64
+      at loadAndEvaluateModule (2:1)
+
+Bun v1.3.11 (Linux x64)
+version_exit=1

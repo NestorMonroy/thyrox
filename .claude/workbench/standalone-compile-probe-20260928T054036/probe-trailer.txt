@@ -1,0 +1,14 @@
+{
+  fileLength: 129549033,
+  magicAt: 129549009,
+  tailU64: 129549033,
+}
+24 fuera 670045151588
+28 fuera 129937415132413950
+32 30253569 99295456 {
+  tableOffset: 30253412,
+  tableLength: 156,
+  entryPointId: 12,
+} null
+36 fuera 129938089442344980
+40 fuera 281517926383616

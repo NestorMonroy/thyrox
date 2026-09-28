@@ -27,8 +27,8 @@
  * cifra.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { findSection } from '../src/elf.ts'
-import { BUNFS_PREFIX, SECTION_HEADER, deriveVersion, readModuleTable } from '../src/bunfs.ts'
+import { BUNFS_PREFIX, deriveVersion, readModuleTable } from '../src/bunfs.ts'
+import { locatePayload } from '../src/payload.ts'
 import { buildGraph } from '../src/graph.ts'
 import { writeCorpus } from '../src/corpus.ts'
 import { corpusVersion, freshness } from '../src/freshness.ts'
@@ -56,21 +56,25 @@ function open(argv: string[]) {
   const binaryPath = option(argv, '--bin', DEFAULT_BINARY)
   if (!existsSync(binaryPath)) guard(`no existe el ejecutable ${binaryPath}`)
   const bytes = readFileSync(binaryPath)
-  const section = findSection(bytes, '.bun')
-  if (section === null) guard(`${binaryPath} no declara una seccion .bun`)
-  const payload = bytes.subarray(section.offset + SECTION_HEADER, section.offset + section.size)
-  const version = deriveVersion(bytes.subarray(section.offset, section.offset + section.size))
-  if (version === null) guard('el payload no declara su version')
-  const table = readModuleTable(payload)
+  const located = locatePayload(bytes)
+  if (located === null) guard(`${binaryPath} no trae payload de Bun: ni seccion .bun ni apendice`)
+  // Una compilacion propia puede no declarar su version en el payload; quien
+  // llama la declara con --declared-version, y la salida dice de donde salio.
+  const derived = deriveVersion(located.region)
+  const declared = option(argv, '--declared-version', '')
+  const version = derived ?? (declared !== '' ? declared : null)
+  if (version === null) guard('el payload no declara su version y no se paso --declared-version')
+  const versionSource = derived !== null ? 'declarada por el payload, no por --version' : 'declarada por quien llama (--declared-version)'
+  const table = readModuleTable(located.payload)
   if (table === null) guard('no se pudo derivar la forma de la tabla de modulos')
-  return { binaryPath, bytes, section, payload, version, table }
+  return { binaryPath, bytes, located, payload: located.payload, version, versionSource, table }
 }
 
 const argv = process.argv.slice(2)
 const command = argv[0] ?? 'info'
 
 if (command === 'info') {
-  const { binaryPath, section, version, table } = open(argv)
+  const { binaryPath, located, version, versionSource, table } = open(argv)
   const byKind = new Map<string, number>()
   for (const e of table.entries) {
     const ext = e.name.match(/\.[a-z0-9]+$/i)?.[0] ?? '(sin)'
@@ -78,8 +82,8 @@ if (command === 'info') {
   }
   const bytes = table.entries.reduce((n, e) => n + e.length, 0)
   console.log(`ejecutable  ${binaryPath}`)
-  console.log(`version     ${version}   (declarada por el payload, no por --version)`)
-  console.log(`seccion     .bun en ${section.offset}, ${section.size} B`)
+  console.log(`version     ${version}   (${versionSource})`)
+  console.log(`payload     ${located.form === 'section' ? 'seccion .bun' : 'apendice'} en ${located.offset}, ${located.payload.length} B`)
   console.log(`tabla       ${table.entries.length} entradas, paso ${table.stride}, ${table.tableLength} B`)
   console.log(`contenido   ${bytes} B`)
   console.log(`por tipo    ${[...byKind].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`)

@@ -24,6 +24,9 @@ export type Section = { offset: number; size: number }
 
 const ELF_MAGIC = Buffer.from([0x7f, 0x45, 0x4c, 0x46]) // "\x7fELF"
 
+/** Lo que mide el encabezado ELF64; sus campos de secciones terminan en 0x40. */
+const ELF64_HEADER_BYTES = 0x40
+
 /** Si el buffer arranca con el magic de ELF. No valida nada mas. */
 export function isElf(bytes: Buffer): boolean {
   return bytes.length >= 4 && bytes.subarray(0, 4).equals(ELF_MAGIC)
@@ -38,13 +41,16 @@ export function isElf(bytes: Buffer): boolean {
  * lectura valida — que es lo que un offset 0 si haria.
  */
 export function findSection(bytes: Buffer, name: string): Section | null {
-  if (!isElf(bytes)) return null
+  if (!isElf(bytes) || bytes.length < ELF64_HEADER_BYTES) return null
 
   const shoff = Number(bytes.readBigUInt64LE(0x28))
   const shentsize = bytes.readUInt16LE(0x3a)
   const shnum = bytes.readUInt16LE(0x3c)
   const shstrndx = bytes.readUInt16LE(0x3e)
   if (shoff <= 0 || shentsize <= 0 || shnum <= 0) return null
+  // Un encabezado que apunta fuera del archivo es un ELF truncado o que no
+  // es lo que dice: se trata como ausencia de la seccion, no como error.
+  if (shoff + shnum * shentsize > bytes.length || shstrndx >= shnum) return null
 
   // La seccion de nombres: su sh_offset es la base de todos los sh_name.
   const strTableOffset = Number(bytes.readBigUInt64LE(shoff + shstrndx * shentsize + 0x18))
