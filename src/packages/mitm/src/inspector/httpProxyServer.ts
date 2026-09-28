@@ -25,18 +25,13 @@ import { applyIdleTimeout, MITM_IDLE_TIMEOUT_MS } from "../socketTimeouts.ts";
 import { upstreamTls } from "../upstreamTrust.ts";
 import { globalTrafficBuffer } from "./buffer.ts";
 import type { InterceptedRequest } from "./types.ts";
+import { parseEnvNumber } from "../envNumber.ts";
 
 /** El puerto por defecto del proxy: `THYROX_INSPECTOR_HTTP_PROXY_PORT`, o 8080. */
 export function defaultHttpProxyPort(): number {
   return parseEnvNumber(process.env.THYROX_INSPECTOR_HTTP_PROXY_PORT, 8080);
 }
 
-function parseEnvNumber(value: string | undefined, fallback: number): number {
-  if (!value) return fallback;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return parsed;
-}
 
 export interface HttpProxyServerHandle {
   port: number;

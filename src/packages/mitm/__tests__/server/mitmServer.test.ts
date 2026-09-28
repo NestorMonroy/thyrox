@@ -104,6 +104,7 @@ async function harness(options: {
     verbose: 1,
     disableTlsVerify: true,
     ingestToken: '',
+    ingestBaseUrl: `http://127.0.0.1:${router.port}`,
     ...options.config,
   }
   const mitm: MitmServerHandle = await createMitmServer(config, {
@@ -216,6 +217,26 @@ test('with an ingest token the inspector gets the capture and the final entry', 
   assert.equal(final.mappedModel, 'cx/y')
   assert.equal(final.responseBody, 'data: {"ok":true}\n\n')
 })
+
+test('the capture goes to the MITM API, not to the router', async () => {
+  const received: Record<string, unknown>[] = []
+  const api = Bun.serve({
+    port: 0,
+    hostname: '127.0.0.1',
+    async fetch(request) {
+      if (new URL(request.url).pathname === INGEST_PATH) received.push((await request.json()) as Record<string, unknown>)
+      return new Response('{}')
+    },
+  })
+  cleanups.push(() => api.stop(true))
+  const h = await harness({ config: { ingestToken: 'ingest-tok', ingestBaseUrl: `http://127.0.0.1:${api.port}` } })
+  setMitmAliasAll(h.db, 'antigravity', { 'gemini-x': 'cx/y' })
+  await (await h.send(ANTIGRAVITY_HOST, CHAT_PATH, ENVELOPE)).text()
+  await Bun.sleep(100)
+  assert.equal(received.length, 2)
+  assert.equal(h.ingested.length, 0)
+})
+
 
 test('without an ingest token nothing is posted to the inspector', async () => {
   const h = await harness()

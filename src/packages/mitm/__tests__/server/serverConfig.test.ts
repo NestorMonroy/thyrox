@@ -20,6 +20,7 @@ test('the defaults: port 443, legacy certs, verbose 1, TLS verified, no ingest',
   assert.equal(config.verbose, 1)
   assert.equal(config.disableTlsVerify, false)
   assert.equal(config.ingestToken, '')
+  assert.equal(config.ingestBaseUrl, '')
   assert.equal(config.dataDir, '/data/mitm')
   assert.equal(config.routerBaseUrl, 'http://127.0.0.1:20128')
   assert.equal(config.apiKey, '')
@@ -85,4 +86,10 @@ test('a missing or malformed targets.json keeps only the baseline', () => {
   assert.equal(loadTargetHosts('/nonexistent/targets.json').size, 4)
   assert.equal(loadTargetHosts(tempFile('{not json')).size, 4)
   assert.equal(loadTargetHosts(tempFile('{"targets":"x"}')).size, 4)
+})
+
+test('THYROX_MITM_API_URL is where the capture goes, apart from the router', () => {
+  const config = readMitmServerConfig({ THYROX_MITM_API_URL: 'http://127.0.0.1:4455/', THYROX_PROXY_PORT: '3030' })
+  assert.equal(config.ingestBaseUrl, 'http://127.0.0.1:4455')
+  assert.equal(config.routerBaseUrl, 'http://127.0.0.1:3030')
 })

@@ -32,7 +32,7 @@ export interface ApiHandlerOptions {
   peerAddress: (request: Request) => string | null
 }
 
-function localOnlyRejection(): Response {
+export function localOnlyRejection(): Response {
   return Response.json(
     { error: { code: 'LOCAL_ONLY', message: 'This endpoint requires localhost access', correlation_id: randomUUID() } },
     { status: 403 },

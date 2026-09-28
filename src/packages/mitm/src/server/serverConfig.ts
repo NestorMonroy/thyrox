@@ -30,6 +30,12 @@ export interface MitmServerConfig {
   verbose: number
   disableTlsVerify: boolean
   ingestToken: string
+  /**
+   * La API local del MITM, donde vive el búfer del inspector. En la referencia
+   * era la misma base que el enrutador; aquí son dos servidores distintos.
+   * Vacía, `postIngestEntry` no publica nada aunque haya token.
+   */
+  ingestBaseUrl: string
 }
 
 const DEFAULT_LOCAL_PORT = 443
@@ -49,6 +55,7 @@ export function readMitmServerConfig(env: ProxyEnv = process.env): MitmServerCon
     verbose: parseVerboseLevel(env.THYROX_MITM_VERBOSE),
     disableTlsVerify: env.THYROX_MITM_DISABLE_TLS_VERIFY === '1',
     ingestToken: env.THYROX_INSPECTOR_INTERNAL_INGEST_TOKEN ?? '',
+    ingestBaseUrl: (env.THYROX_MITM_API_URL ?? '').replace(/\/+$/, ''),
   }
 }
 

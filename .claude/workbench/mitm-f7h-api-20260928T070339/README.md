@@ -83,3 +83,24 @@ con un salto de línea escribía una entrada arbitraria.
 Anulaciones: `annul-f7h3a.sh` → `results-f7h3a.txt`, 13 que discriminan. Una
 prueba estaba mal escrita, no el código: suponía que `?host=` filtra por
 subcadena, y el búfer (como la referencia) filtra por host exacto.
+
+## F7h-3b — modos de captura, ingesta y canal en vivo
+
+`src/api/routes/inspectorCapture.ts`: capture-modes, capture-modes/http-proxy,
+capture-modes/system-proxy (guarda con `THYROX_INSPECTOR_SYSTEM_PROXY_GUARD_MINUTES`),
+capture-modes/tls-intercept e internal/ingest (token + saneado de cabeceras y
+enmascarado de cuerpos). `src/api/liveStream.ts` + `server.ts`: el websocket
+del inspector sobre `Bun.serve`, con la misma guarda de loopback.
+`src/envNumber.ts` junta el `parseEnvNumber` que estaba copiado en `buffer.ts`
+y `httpProxyServer.ts`.
+
+Hallazgo de diseño: el servidor MITM publicaba la ingesta en `routerBaseUrl`,
+el proxy local. En la referencia el enrutador y la API son el mismo servidor
+Next; en thyrox son dos, y el proxy no tiene esa ruta. La ingesta va ahora a
+`THYROX_MITM_API_URL` (`MitmServerConfig.ingestBaseUrl`).
+
+Anulaciones: `annul-f7h3b.sh` → `results-f7h3b.txt`, 13 que discriminan. Una
+no lo hacía: la guarda «token sin destino» en `mitmServer.ts` repetía la que ya
+tiene `postIngestEntry`, y sin ninguna de las dos el `fetch` de una URL
+relativa lanza y se atrapa. Se retiró la guarda y su prueba, que no podía
+fallar.

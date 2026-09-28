@@ -15,15 +15,10 @@
 import { computeContextKey } from "./contextKey.ts";
 import { detectKind } from "./kindDetector.ts";
 import type { InterceptedRequest, ListFilters, WsEvent } from "./types.ts";
+import { parseEnvNumber } from "../envNumber.ts";
 
 const TRUNCATION_MARKER = "\n…(truncated for performance)";
 
-function parseEnvNumber(value: string | undefined, fallback: number): number {
-  if (!value) return fallback;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return parsed;
-}
 
 function getMaxBodyBytes(): number {
   const kb = parseEnvNumber(process.env.THYROX_INSPECTOR_MAX_BODY_KB, 1024);

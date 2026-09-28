@@ -287,7 +287,7 @@ export async function createMitmServer(config: MitmServerConfig, deps: MitmServe
         proxyLatencyMs: o.proxyLatencyMs,
         upstreamLatencyMs: o.upstreamLatencyMs,
       })
-      void postIngestEntry(config.routerBaseUrl, config.ingestToken, entry, fetchImpl)
+      void postIngestEntry(config.ingestBaseUrl, config.ingestToken, entry, fetchImpl)
     } catch {
       // La captura es de mejor esfuerzo: nunca rompe el tráfico.
     }
