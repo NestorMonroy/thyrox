@@ -16,6 +16,7 @@
     "@thyrox/config": "0.1.0",
     "@thyrox/local-observability": "0.1.0",
     "@thyrox/provider": "0.1.0",
+    "@thyrox/store": "0.1.0",
     "zod": "^4.3.6"
   }
 }
