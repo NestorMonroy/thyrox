@@ -1,0 +1,155 @@
+== 1: el plan no se lee del token
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the id token names the account, its workspace and plan [1.02ms]
+(fail) bulk records > the id token wins over the flat fields; the declared expiry wins over the token; otherwise ten days [0.33ms]
+ 8 pass
+ 2 fail
+== 2: sin recortar el correo
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > a flat record becomes a clean, active connection with its workspace mirrored [0.93ms]
+ 9 pass
+ 1 fail
+== 3: la caducidad declarada no gana
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the id token wins over the flat fields; the declared expiry wins over the token; otherwise ten days [0.38ms]
+(fail) bulk records > the CLI auth.json nesting and the camelCase export both read the same [0.25ms]
+ 8 pass
+ 2 fail
+== 4: una caducidad ilegible pasa
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the id token wins over the flat fields; the declared expiry wins over the token; otherwise ten days [0.43ms]
+ 9 pass
+ 1 fail
+== 5: sin diez días por defecto
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the id token wins over the flat fields; the declared expiry wins over the token; otherwise ten days [0.41ms]
+ 9 pass
+ 1 fail
+== 6: sin aplanar el auth.json
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the CLI auth.json nesting and the camelCase export both read the same [0.32ms]
+ 9 pass
+ 1 fail
+== 7: tokens anidados sin access token se aplanan
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the CLI auth.json nesting and the camelCase export both read the same [0.61ms]
+ 9 pass
+ 1 fail
+== 8: camelCase pisa snake_case
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the CLI auth.json nesting and the camelCase export both read the same [0.37ms]
+ 9 pass
+ 1 fail
+== 9: sin la cuenta camelCase
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the CLI auth.json nesting and the camelCase export both read the same [0.69ms]
+ 9 pass
+ 1 fail
+== 10: cualquier tipo
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > another type, a missing token or a missing email is refused; a bad priority is dropped [0.66ms]
+ 9 pass
+ 1 fail
+== 11: sin campos obligatorios
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > another type, a missing token or a missing email is refused; a bad priority is dropped [1.15ms]
+ 9 pass
+ 1 fail
+== 12: sin correo se importa
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > another type, a missing token or a missing email is refused; a bad priority is dropped [1.21ms]
+ 9 pass
+ 1 fail
+== 13: el correo plano gana al del token
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the id token wins over the flat fields; the declared expiry wins over the token; otherwise ten days [0.35ms]
+ 9 pass
+ 1 fail
+== 14: la cuenta no es el espacio de trabajo
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > a flat record becomes a clean, active connection with its workspace mirrored [0.84ms]
+(fail) bulk records > the id token wins over the flat fields; the declared expiry wins over the token; otherwise ten days [0.27ms]
+(fail) bulk records > the CLI auth.json nesting and the camelCase export both read the same [0.20ms]
+(fail) bulk records > a re-import keeps the stored provider data and drops its priority; another account is untouched [0.22ms]
+ 6 pass
+ 4 fail
+== 15: sin tokenExpiresAt
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > a flat record becomes a clean, active connection with its workspace mirrored [0.83ms]
+ 9 pass
+ 1 fail
+== 16: una prioridad fraccionaria pasa
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > another type, a missing token or a missing email is refused; a bad priority is dropped [0.38ms]
+ 9 pass
+ 1 fail
+== 17: datos del proveedor vacíos se escriben
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > another type, a missing token or a missing email is refused; a bad priority is dropped [0.79ms]
+ 9 pass
+ 1 fail
+== 18: la reimportación pisa lo guardado
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > a re-import keeps the stored provider data and drops its priority; another account is untouched [0.47ms]
+ 9 pass
+ 1 fail
+== 19: la reimportación conserva la prioridad
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > a re-import keeps the stored provider data and drops its priority; another account is untouched [0.51ms]
+ 9 pass
+ 1 fail
+== 20: otra cuenta se toca
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > a re-import keeps the stored provider data and drops its priority; another account is untouched [0.68ms]
+ 9 pass
+ 1 fail
+== 21: un texto es un registro
+   (src/accounts/imports/codexBulkImport.ts)
+(fail) bulk records > the upload is one record or a list of them [0.65ms]
+ 9 pass
+ 1 fail
+== 22: un arreglo es una sesión
+   (src/accounts/imports/codexSessionImport.ts)
+ 10 pass
+ 0 fail
+== 23: sin el nombre de sesión
+   (src/accounts/imports/codexSessionImport.ts)
+(fail) session json > the access token is found under its names and the user email comes along [0.62ms]
+ 9 pass
+ 1 fail
+== 24: sin tokens anidados
+   (src/accounts/imports/codexSessionImport.ts)
+(fail) session json > the access token is found under its names and the user email comes along [0.98ms]
+ 9 pass
+ 1 fail
+== 25: cualquier token es un JWT
+   (src/accounts/imports/codexSessionImport.ts)
+(fail) session json > no object, no token, a non-JWT token or an expired session is refused [0.25ms]
+ 9 pass
+ 1 fail
+== 26: el expires no vence
+   (src/accounts/imports/codexSessionImport.ts)
+(fail) session json > no object, no token, a non-JWT token or an expired session is refused [0.33ms]
+ 9 pass
+ 1 fail
+== 27: el exp no vence
+   (src/accounts/imports/codexSessionImport.ts)
+(fail) session json > no object, no token, a non-JWT token or an expired session is refused [0.40ms]
+ 9 pass
+ 1 fail
+== 28: sin el correo del usuario
+   (src/accounts/imports/codexSessionImport.ts)
+(fail) session json > the access token is found under its names and the user email comes along [0.48ms]
+ 9 pass
+ 1 fail
+== restaurado
+ M src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+ M src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+?? src/packages/provider/src/accounts/imports/cliAuthFileExport.ts
+?? src/packages/provider/src/accounts/imports/codexAuthFile.ts
+?? src/packages/provider/src/accounts/imports/codexAuthImport.ts
+?? src/packages/provider/src/accounts/imports/codexBulkImport.ts
+?? src/packages/provider/src/accounts/imports/codexSessionImport.ts
+ 10 pass
+ 0 fail
+__BG_EXIT__=0
