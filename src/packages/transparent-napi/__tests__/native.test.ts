@@ -16,7 +16,15 @@ import {
   TRANSPARENT_ADDON_CANDIDATES,
 } from '../src/index.ts'
 
-const WELL_SHAPED = { createTransparentListener: () => 42, setSocketMark: () => {}, connectMarked: () => 7 }
+const WELL_SHAPED = {
+  createTransparentListener: () => 42,
+  setSocketMark: () => {},
+  connectMarked: () => 7,
+  startTransparentBridge: () => 0,
+  startMarkedEgress: () => ({ handle: 1, port: 2 }),
+  stopRelay: () => {},
+  relayStats: () => ({ accepted: 0, rejectedHeaders: 0, lastUpstreamMark: 0 }),
+}
 
 test('fuera de Linux no hay addon: IP_TRANSPARENT es sólo de Linux', () => {
   assert.equal(loadTransparentAddon(() => WELL_SHAPED, () => 'darwin', () => 'x64'), null)
@@ -34,7 +42,7 @@ test('un addon presente y con las tres funciones se devuelve', () => {
   assert.equal(addon, WELL_SHAPED)
 })
 
-for (const missing of ['createTransparentListener', 'setSocketMark', 'connectMarked'] as const) {
+for (const missing of Object.keys(WELL_SHAPED)) {
   test(`un módulo sin ${missing} se rechaza`, () => {
     const partial: Record<string, unknown> = { ...WELL_SHAPED }
     delete partial[missing]
@@ -76,7 +84,7 @@ async function freePort(): Promise<number> {
   return port
 }
 
-// Bun no adopta el descriptor con listen({ fd }) (H-THYROX-233): el socket se usa por el
+// Bun no adopta el descriptor con listen({ fd }): el socket lo usa el
 // puente en C (transparent bridge). Aquí se mide sólo que el addon lo crea y escucha.
 test('crea el socket IP_TRANSPARENT a la escucha: una conexión al puerto se completa', async () => {
   if (process.platform !== 'linux' || process.arch !== 'x64') return

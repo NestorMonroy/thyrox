@@ -76,7 +76,7 @@ export function buildTransparentNative(packageRoot: string, deps: BuildTranspare
 
   const output = path.join(packageRoot, 'vendor', `${arch}-linux`, 'transparent.node')
   try {
-    run('cc', ['-shared', '-fPIC', '-O2', '-Wall', `-I${headersDir}`, source, '-o', output])
+    run('cc', ['-shared', '-fPIC', '-O2', '-Wall', '-pthread', `-I${headersDir}`, source, '-o', output])
   } catch (err) {
     return { built: false, reason: `toolchain/build failed: ${err instanceof Error ? err.message : String(err)}` }
   }

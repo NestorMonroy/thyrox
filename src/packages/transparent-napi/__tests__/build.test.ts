@@ -51,7 +51,7 @@ test('compila con cc contra los encabezados y deja el .node de su plataforma', (
   assert.equal(res.output, OUT)
   assert.equal(calls.length, 1)
   assert.equal(calls[0]!.cmd, 'cc')
-  assert.deepEqual(calls[0]!.args, ['-shared', '-fPIC', '-O2', '-Wall', `-I${HEADERS}`, SOURCE, '-o', OUT])
+  assert.deepEqual(calls[0]!.args, ['-shared', '-fPIC', '-O2', '-Wall', '-pthread', `-I${HEADERS}`, SOURCE, '-o', OUT])
 })
 
 test('la plataforma del directorio de salida sale de la arquitectura', () => {

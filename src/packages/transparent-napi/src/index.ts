@@ -23,11 +23,34 @@
  */
 import { platform, arch } from 'node:os'
 
+export interface RelayStats {
+  /** Conexiones aceptadas desde que arrancó. */
+  accepted: number
+  /** Conexiones de la salida marcada cerradas por no traer una cabecera PROXY válida. */
+  rejectedHeaders: number
+  /** La marca leída de vuelta del último socket de salida (0 si ninguno). */
+  lastUpstreamMark: number
+}
+
 export interface TransparentAddon {
   createTransparentListener(ip: string, port: number): number
   setSocketMark(fd: number, mark: number): void
   connectMarked(ip: string, port: number, mark: number): number
+  startTransparentBridge(ip: string, port: number, targetPort: number): number
+  startMarkedEgress(mark: number): { handle: number; port: number }
+  stopRelay(handle: number): void
+  relayStats(handle: number): RelayStats
 }
+
+const ADDON_FUNCTIONS = [
+  'createTransparentListener',
+  'setSocketMark',
+  'connectMarked',
+  'startTransparentBridge',
+  'startMarkedEgress',
+  'stopRelay',
+  'relayStats',
+] as const
 
 const VENDOR_X64_LINUX = '../vendor/x64-linux/transparent.node'
 const LOCAL_BUILD = '../native/build/Release/transparent.node'
@@ -51,13 +74,8 @@ function requireCandidate(candidate: string): unknown {
 }
 
 function isAddon(mod: unknown): mod is TransparentAddon {
-  const candidate = mod as Partial<TransparentAddon> | null | undefined
-  return (
-    !!candidate &&
-    typeof candidate.createTransparentListener === 'function' &&
-    typeof candidate.setSocketMark === 'function' &&
-    typeof candidate.connectMarked === 'function'
-  )
+  const candidate = mod as Record<string, unknown> | null | undefined
+  return !!candidate && ADDON_FUNCTIONS.every(name => typeof candidate[name] === 'function')
 }
 
 /** El addon, o `null` fuera de Linux, sin `.node`, o con uno que no trae las tres funciones. */
@@ -104,4 +122,34 @@ export function setSocketMark(fd: number, mark: number): void {
 export function connectMarked(ip: string, port: number, mark: number): number {
   if (!loaded) throw unavailable('connectMarked')
   return loaded.connectMarked(ip, port, mark)
+}
+
+/**
+ * Arranca el puente: acepta en un socket IP_TRANSPARENT en `ip:port` y entrega
+ * cada conexión a `127.0.0.1:targetPort` precedida de una cabecera PROXY v1
+ * con el destino original. Devuelve el handle para `stopRelay`.
+ */
+export function startTransparentBridge(ip: string, port: number, targetPort: number): number {
+  if (!loaded) throw unavailable('startTransparentBridge')
+  return loaded.startTransparentBridge(ip, port, targetPort)
+}
+
+/**
+ * Arranca la salida marcada: un puerto en loopback donde cada conexión anuncia
+ * su destino con una cabecera PROXY v1, y el addon conecta a él con `mark` en
+ * SO_MARK antes del connect.
+ */
+export function startMarkedEgress(mark: number): { handle: number; port: number } {
+  if (!loaded) throw unavailable('startMarkedEgress')
+  return loaded.startMarkedEgress(mark)
+}
+
+export function stopRelay(handle: number): void {
+  if (!loaded) throw unavailable('stopRelay')
+  loaded.stopRelay(handle)
+}
+
+export function relayStats(handle: number): RelayStats {
+  if (!loaded) throw unavailable('relayStats')
+  return loaded.relayStats(handle)
 }
