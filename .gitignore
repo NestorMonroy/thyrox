@@ -5,13 +5,10 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Environment variables
-# `.env` NO se ignora — directiva del ejecutor 2026-09-10. Sus seis claves son
-# rutas del arbol, no secretos (medido: 0 credenciales en sus 8 lineas), y el
-# archivo es la entrada B de la DEC-04: sin el versionar, el contrato existe y
-# su valor vigente no. El costo se declara en `.env.example`, no se oculta.
-# Las variantes `*.local` SIGUEN ignoradas: son la sobreescritura del
-# consumidor, que es justo lo que la DEC-04 dice que no viaja.
+# `.env` es del consumidor y puede llevar secretos: no se versiona. Cada clave
+# que asigne tiene que figurar en `.env.example`, que sí viaja
+# (`src/verify/check_env_example_coverage.py`).
+.env
 .env.local
 .env.*.local
 

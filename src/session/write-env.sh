@@ -6,10 +6,9 @@
 # declaraba nada, así que la segunda entrada era una rama que nunca se ejecutó y
 # todo consumidor caía al ascenso, que es el último recurso.
 #
-# `.env` se versiona (directiva del ejecutor), aunque por DEC-04 su valor es
-# del CONSUMIDOR: un clon en otra ruta hereda el `THYROX_ROOT` de este árbol,
-# y quien clone corre `--force` para reescribirlo. El contrato es
-# `.env.example`; el `.env` versionado da el valor vigente.
+# `.env` no se versiona: por DEC-04 su valor es del CONSUMIDOR y puede llevar
+# secretos. El contrato es `.env.example`, que declara cada clave; este guion
+# escribe el valor vigente de las que se derivan del árbol.
 #
 # Salidas: 0 escrito · 1 ya existía y no se pisa (usar --force) · 2 no pudo
 # derivar la raíz.

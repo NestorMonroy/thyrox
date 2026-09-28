@@ -4,7 +4,7 @@
 # =============================================================================
 #
 # Origen: hallazgo de un bot de revisión sobre el PR #7 (`chatgpt-codex-connector`,
-# P1 en `.env:3`). `.env` se versiona desde 2026-09-10 con
+# P1 en `.env:3`). `.env` se versionaba entonces con
 # THYROX_ROOT=/home/user/thyrox committeado (directiva del ejecutor,
 # ver `.env.example`). El costo declarado ahí es que un clon en otra ruta
 # hereda ese valor equivocado, y la recuperación documentada es

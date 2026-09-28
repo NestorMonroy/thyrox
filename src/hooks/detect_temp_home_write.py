@@ -95,8 +95,8 @@ def detect(payload: dict) -> str | None:
         "va cada cosa: la evidencia de un banco en `THYROX_WORKBENCH_DIR`, lo "
         "regenerable en `THYROX_CACHE_DIR` y los logs en "
         "`THYROX_BACKGROUND_LOG_DIR`. Una copia del árbol (`git worktree`) "
-        "fuera del clon además hereda el `.env` versionado y actúa sobre el "
-        "clon original."
+        "fuera del clon no trae el `.env`, que no se versiona, así que sus "
+        "lectores caen al ascenso."
     )
 
 

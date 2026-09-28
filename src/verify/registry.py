@@ -140,6 +140,8 @@ CHECKS: list[Check] = [
           'la precedencia se deriva recorriendo ramas, no líneas'),
     Check('env-contract-keys', 'Herramienta', 'config', 'check_env_contract_keys.py',
           'DEC-04 — una clave THYROX_* que se lee sin figurar en .env.example'),
+    Check('env-example-coverage', 'Herramienta', 'config', 'check_env_example_coverage.py',
+          'una clave del .env ignorado que no figura en .env.example no viaja'),
 
     # ── Alcance ─────────────────────────────────────────────────────────
     Check('provider-evidence', 'Alcance', 'workbench',
