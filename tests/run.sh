@@ -88,8 +88,7 @@ only="${1:-}"
 #
 # Una suite larga mide un arbol que puede cambiar mientras corre: una edicion
 # del orquestador, un commit de otro escritor, el mutante que otra suite deja
-# a medias (2026-09-26: `classify_agents.py` aparecio modificado a mitad de un
-# cierre). Si el arbol del final no es el del principio, el veredicto no
+# a medias. Si el arbol del final no es el del principio, el veredicto no
 # corresponde a ningun estado: se sale 3 y se dice cual habria sido, en vez de
 # publicarlo como rojo o verde. Alcance y ceguera: `src/verify/tree_fingerprint.py`.
 huella() { "$PYTHON_BIN" -m verify.tree_fingerprint . 2>/dev/null; }
@@ -118,9 +117,9 @@ veredicto_final() {
 # comando: derivar el subconjunto costaba dos greps a mano, asi que lo barato
 # era lanzar todo.
 #
-# Medido el 2026-09-06 sobre un cambio de tres archivos: la suite completa
-# tardo 110 s y el subconjunto derivado 0.359 s —308x— y NINGUNO de los 97
-# rojos que publico venia del cambio. Ver :ref:`h-docs-1130`.
+# La suite completa sin baseline previo no atribuye sus rojos al cambio; el
+# subconjunto derivado si, y cuesta ordenes de magnitud menos. La medicion
+# que lo sostiene: :ref:`h-docs-1130`.
 #
 # Que deriva: los archivos que el arbol tiene tocados (sin publicar o sin
 # commitear) y, por cada uno, las suites que MENCIONAN su nombre de modulo.
@@ -219,9 +218,8 @@ fi
 # measure_half <etiqueta> <interprete> <descubridor> — corre una mitad con
 # `src/verify/run_suites_isolated.sh`: un proceso por suite, repartidas con GNU
 # parallel y con tope por suite (`THYROX_SUITE_TIMEOUT`, `THYROX_SUITE_WIDTH`).
-# En serie y sin tope, una suite colgada dejaba la ejecucion entera esperando
-# para siempre (`test-toolchain-manifests.sh`, 2026-09-27); con el tope es un
-# rojo con nombre.
+# En serie y sin tope, una suite colgada deja la ejecucion entera esperando
+# para siempre; con el tope es un rojo con nombre.
 #
 # Exit 2 NO es rojo: es «rehuso, no emito veredicto» — el contrato que
 # `check_script_naming.py` y `tests/verify/test-pre-commit-docs.sh` usan cuando

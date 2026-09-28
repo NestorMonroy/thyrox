@@ -9,9 +9,9 @@
  * clase —procedimiento de construccion, no producto ni estado— y vivia en
  * `src/<dominio>/` a nivel de raiz, con su suite en `tests/<dominio>/`.
  * `triple.ts` tomo la misma forma: `src/reference/triple.ts` +
- * `tests/reference/`. El 2026-09-27 el workbench paso a ser el paquete
- * `src/packages/workbench` (directiva del ejecutor); la triple sigue sin
- * manifiesto ni consumidor y se queda donde esta.
+ * `tests/reference/`. El workbench es hoy el paquete `src/packages/workbench`
+ * porque tiene manifiesto y consumidores; la triple no tiene ninguno de los
+ * dos y por eso se queda en su raiz de dominio.
  *
  * Las otras dos suites del paquete —`claims` y `branchIntegration`— ya no
  * miden nada que viva en el: sus imports apuntan a `coordination` desde
@@ -35,10 +35,9 @@ const ROOT = thyroxRoot()
 describe('the harness package ceases to exist', () => {
   test('1. the reference triple lives in src/reference', () => {
     expect(existsSync(join(ROOT, 'src', 'reference', 'triple.ts'))).toBe(true)
-    // El precedente que fijaba esta forma —`workbench` en `src/<dominio>/`—
-    // se invirtió el 2026-09-27: el workbench es hoy el paquete
-    // `src/packages/workbench`. La triple no tiene manifiesto ni consumidor,
-    // así que no es un paquete y se queda en su raíz de dominio.
+    // El workbench es un paquete (`src/packages/workbench`) porque tiene
+    // manifiesto y consumidores. La triple no tiene ninguno de los dos, así
+    // que no es un paquete y se queda en su raíz de dominio.
     expect(existsSync(join(ROOT, 'src', 'packages', 'workbench', 'manifest.ts'))).toBe(true)
   })
 

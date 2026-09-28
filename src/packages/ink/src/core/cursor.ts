@@ -10,11 +10,8 @@ import type { Point } from './layout/geometry.js'
  * `new VirtualScreen(origin: Point, …)`, que es lo que obliga a que extienda
  * `Point` en vez de declarar dos numeros sueltos.
  *
- * Antes era `export type Cursor = unknown`, un stub auto-generado. No era una
- * omision de nuestro porte —la fuente lo tiene igual— asi que no habia de
- * donde copiarlo: se derivo del uso. Ese `unknown` producia quince TS18046 y
- * un TS2345 en dos archivos, o sea **dieciseis de los treinta y siete**
- * errores del paquete.
+ * La fuente lo declara `unknown`, asi que no hay de donde copiarlo: el tipo se
+ * deriva del uso, que es lo que tiene que cubrir.
  *
  * NO confundir con el cursor de TEXTO (`@thyrox/repl/Cursor.js`), que es otro
  * tipo y otra cosa: lleva `offset`, `startOfLogicalLine`, `nextWord` y demas,

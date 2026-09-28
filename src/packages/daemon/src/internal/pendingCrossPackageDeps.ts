@@ -6,14 +6,9 @@
  * `@thyrox/local-observability: src/internal/pendingCrossPackageDeps.ts` y
  * `@thyrox/headless-sdk: src/internal/pendingCrossPackageDeps.ts`: un
  * archivo consolidado, cada entrada documentada con su cita de origen, su
- * divergencia exacta y su condición de retiro. `@thyrox/daemon` no era
- * miembro del agregador anidado `src/packages/package.json` (retirado en la
- * tarea #62; hoy `@thyrox/*` resuelve desde aquí, medido 2026-09-27, y el
- * reemplazo de estos envoltorios es la tarea #53) — se probó en
- * vivo antes de escribir este archivo (`Cannot find module
- * '@thyrox/local-observability'` al resolver desde `src/packages/daemon`) —
- * así que ningún `@thyrox/*` resuelve desde este paquete aunque el hermano
- * ya exporte el símbolo real.
+ * divergencia exacta y su condición de retiro. `@thyrox/*` resuelve desde
+ * este paquete, así que cada envoltorio se retira importando el símbolo real
+ * que el hermano ya exporta.
  *
  * Una sola forma aquí — PUNTO DE INYECCIÓN, no reimplementación: `logEvent`
  * pertenece de verdad al pipeline de telemetría de `local-observability`.

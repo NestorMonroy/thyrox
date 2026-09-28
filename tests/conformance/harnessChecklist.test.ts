@@ -1,9 +1,6 @@
 /**
  * El manifiesto de conformidad contra el apéndice A de `hbooks: book1`.
  *
- * Directiva del ejecutor 2026-09-08: «tienes que analizar e implementar lo que
- * dice thyrox/_references/harness-books y harness-engineering/book» (#267).
- *
  * `book1/appendix-a-checklists.md` convierte los principios de los nueve
  * capítulos en **50 predicados** repartidos en 8 secciones, y lo justifica en
  * su primer párrafo: «If principles cannot be turned into checklists, they

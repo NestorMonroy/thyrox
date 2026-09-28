@@ -726,11 +726,10 @@ def main():
 
     # --- los paquetes salen del árbol de fuente, no de un glob ni de workspaces ---
     #
-    # Medido 2026-09-27: `_packages` buscaba sólo `src/packages/*` y los cinco
-    # paquetes de fuera (`src/paths`, `src/store`, `src/task`,
-    # `src/coordination`, `src/workbench`) nunca se emitían ni recibían sus
-    # proyectos. Tampoco se toma de `workspaces`: los proyectos por paquete
-    # existen para retirarlo. Criterio: `package.json` bajo `src/` con `exports`.
+    # Un paquete es todo `package.json` bajo `src/` con `exports`, dentro o
+    # fuera de `src/packages/` (`src/paths`, `src/store`, `src/task`…): un glob
+    # sobre `src/packages/*` deja fuera a los segundos. Tampoco se toma de
+    # `workspaces`: los proyectos por paquete existen para retirarlo.
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         def write_manifest(rel, body):

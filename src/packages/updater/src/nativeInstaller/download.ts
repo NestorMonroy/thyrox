@@ -482,7 +482,7 @@ async function downloadVersionFromGithubReleases(
   //   - Otras formas de tag no reconocidas: fallback solo-TLS (defensivo
   //     — no deberia ocurrir en la practica ya que la descarga esta
   //     gateada por isVersionNewer).
-  // Corrida de auditoria 2026-05-04: 107/107 releases chequeados, solo
+  // Auditoria de la fuente (2026-05-04): 107/107 releases chequeados, solo
   // v1.carus.000 carece de .sha256 — confirma la seguridad de este gate.
   const expectedChecksum = await fetchAssetSha256(tag, assetName)
   // Major >= 10. Excluye v1.x (carus legacy + ant upstream) y v2-v9.

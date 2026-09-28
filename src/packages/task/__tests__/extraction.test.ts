@@ -1,21 +1,9 @@
 /**
  * Control del paquete `@thyrox/task` en `src/packages/task/`.
  *
- * Historia, porque el control cambió de sujeto dos veces y conviene que se
- * lea:
- *
- * 1. Controlaba una EXTRACCIÓN: que `tasks` saliera del bucle a un paquete.
- * 2. Pasó a controlar su DISOLUCIÓN en `src/task/`. El análisis de la
- *    referencia (`analisis-flujo-de-tareas-en-ccnmt.rst`) midió cero paquetes
- *    con el nombre del sujeto, y la forma elegida fue una raíz por rol, con los
- *    módulos TypeScript junto a sus hermanos Python.
- * 3. Directiva del ejecutor 2026-09-27: *«lo que está dentro de
- *    thyrox/src/packages/ se tiene que quedar»*, precisada como mudar los
- *    cinco sueltos (`paths`, `store`, `task`, `coordination`, `workbench`) a
- *    `src/packages/`, y confirmada frente a la decisión anterior: *«son
- *    paquetes»*. La cara TypeScript es el paquete `@thyrox/task`; la cara
- *    Python se queda en `src/task/`, porque es un paquete Python importado por
- *    nombre (`from task import …`).
+ * La cara TypeScript de las tareas es el paquete `@thyrox/task`; la cara
+ * Python se queda en `src/task/`, porque es un paquete Python importado por
+ * nombre (`from task import …`).
  *
  * Qué haría fallar este control:
  *

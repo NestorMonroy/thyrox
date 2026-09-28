@@ -2,11 +2,9 @@
  * El hogar de los comandos, en sus dos lados.
  *
  * `COMMANDS_SOURCE_DIR` es la FUENTE (`src/commands/`), y el destino es el
- * `.claude/commands/` que el cliente lee. Medido 2026-09-07: ese destino esta
- * VACIO en thyrox y en kaupamex-docs, y tiene 26 archivos en kaupamex-api y
- * kaupamex-ui — copias byte a byte de la fuente, mas el `loop-analyze.md` que
- * solo esta aqui. O sea: la fuente ya es la fuente; lo que faltaba era el
- * emisor y su destino declarado.
+ * `.claude/commands/` que el cliente lee. Donde ese destino está lleno, son
+ * copias byte a byte de la fuente: por eso se emite desde aquí, con su destino
+ * declarado, en vez de mantenerse a mano en cada clon.
  *
  * Dos entradas de entorno para el destino, en el orden que fija `envValue`
  * (proceso, luego `.env`), igual que `skills/paths.ts`. Sin ninguna, el hogar

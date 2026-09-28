@@ -157,9 +157,9 @@ describe('analyzeCompactions — supervivencia y fabricación', () => {
 /**
  * Los dos defectos que la medición de #21 destapó — y por qué importan.
  *
- * Corrida del 2026-09-02T20:06:33 sobre 9420 líneas: **6 cifras del resumen
- * sin antecedente**, presentadas como fabricadas. Verificadas una a una
- * contra la fuente, **las seis existían**. Un instrumento que dice
+ * Una cifra del resumen sin antecedente en la ventana medida no es por eso
+ * fabricada: puede existir en la fuente fuera de esa ventana, y así ocurrió
+ * con las seis que la medición de #21 señaló. Un instrumento que dice
  * «fabricada» sobre algo que la fuente contiene mide el fenómeno equivocado:
  * es el sub-patrón D de `metrica-decide-la-conclusion.md` con el signo
  * invertido — no un verde que no discrimina, un rojo que no discrimina.

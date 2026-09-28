@@ -1,9 +1,9 @@
 // El contrato de los comandos vive en `@thyrox/agent/command.js`, que es la
-// forma que la fuente declara. Este archivo lo había copiado reducido —campos
-// `unknown`, un índice abierto, `Promise<unknown>`— y los comandos, escritos
-// contra el contrato completo, no le asignaban (H-THYROX-176). Se re-exporta
-// sólo como tipos: la dependencia mutua entre los dos paquetes no crea ciclo
-// en tiempo de ejecución.
+// forma que la fuente declara, y se re-exporta entero: una copia reducida
+// —campos `unknown`, un índice abierto— no admite los comandos escritos
+// contra el contrato completo (H-THYROX-176). Se re-exporta sólo como tipos:
+// la dependencia mutua entre los dos paquetes no crea ciclo en tiempo de
+// ejecución.
 import type { CommandBase } from '@thyrox/agent/command.js'
 
 export type {

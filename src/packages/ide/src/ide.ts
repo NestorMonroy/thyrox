@@ -74,7 +74,7 @@ const ideOnboardingDialog = (): { hasIdeOnboardingDialogBeenShown(): boolean } =
 // src/sentry.ts` — así este paquete no depende de un `.d.ts` global.
 declare const MACRO: { VERSION: string } | undefined
 
-// ide antes tenía su propia copia. Se usa el probe canónico de shell —
+// Se usa el probe canónico de shell, no una copia propia —
 // misma semántica (EPERM → false, conservador para recuperación de lockfiles).
 function isProcessRunning(pid: number): boolean {
   if (pid <= 1) return false

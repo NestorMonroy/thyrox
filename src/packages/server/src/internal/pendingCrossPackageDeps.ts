@@ -1,22 +1,11 @@
 /**
  * Puerto de `ccnmt: packages/server/**`.
  *
- * Verificado en este turno (`Bun.resolveSync`, 2026-09-07): los once
- * especificadores `@thyrox/{agent,app-host,config,local-observability,
- * provider}/...` que el paquete original importa **no resuelven** desde
- * `/home/user/thyrox/src/packages/server` — los once dan
- * `Cannot find module '...' from '/home/user/thyrox/src/packages/server'`.
- * La causa NO es que el módulo no esté portado: los cinco paquetes
- * hermanos existen en este árbol (`src/packages/{agent,app-host,config,
- * local-observability,provider}`) y sus símbolos concretos también. La
- * causa es que `@thyrox/server` no era miembro del agregador anidado
- * `src/packages/package.json` (retirado en la tarea #62; hoy resuelve,
- * medido 2026-09-27, y el reemplazo es la tarea #53) — sin eso, `node_modules/@thyrox/*` no tiene el symlink que el
- * resolver de Bun necesita para el especificador con paquete.
- *
- * Por eso las secciones 1 se resuelven con `require()` diferido (Rule 3):
- * el módulo SÍ existe, sólo que el especificador con paquete no resuelve
- * desde aquí. La sección 2 es reimplementación fiel recortada de
+ * Los once especificadores `@thyrox/{agent,app-host,config,local-observability,
+ * provider}/...` que el paquete original importa apuntan a paquetes hermanos
+ * que existen en este árbol, y resuelven desde aquí. Las secciones 1 los
+ * llaman con `require()` diferido (Rule 3); cada una se retira importando el
+ * símbolo de forma estática. La sección 2 es reimplementación fiel recortada de
  * `fromSDKCompactMetadata` (`agent/messagesMappers.ts` no existe en este
  * árbol como archivo propio — sólo el símbolo que server consume). La
  * sección 3 es el punto de inyección para `sendEventToRemoteSession`

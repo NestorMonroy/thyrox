@@ -5,9 +5,9 @@
  * bloqueaba y qué afirma haber hecho, en el momento en que alguien la escribió.
  * Leerla no mide el árbol de hoy. Ese estado —persistido, declarado, sin
  * verificar— es el nivel 3 de `niveles-de-retencion.md`, y consumirlo como si
- * fuera un 2 es lo que produjo tres episodios en esta iniciativa: una tarea
- * bloqueada por una credencial que sólo bloqueaba la mitad, una cerrada cuyo
- * enunciado nombraba un símbolo ausente, y tres nunca medidas.
+ * fuera un 2 deja pasar una tarea bloqueada por una credencial que sólo
+ * bloquea la mitad, una cerrada cuyo enunciado nombra un símbolo ausente o
+ * una que nadie midió.
  *
  * El mecanismo es **abstracto**: ningún término de este proyecto entra en los
  * tipos. Lo único que toca el mundo es `PremiseIo`, y se inyecta.
