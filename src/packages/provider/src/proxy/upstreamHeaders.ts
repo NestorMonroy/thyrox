@@ -3,6 +3,10 @@
  * salto a salto (RFC 7230 §6.1) y las que revelan la IP de origen del
  * cliente.
  *
+ * Es la lista de la PETICIÓN hacia el proveedor. No coincide con
+ * `DROPPED_RESPONSE_HEADERS` (`upstreamForwarder.ts`, lado de la respuesta)
+ * ni con las reservadas de `netGuards.ts`, que son las que fija la pasarela.
+ *
  * Porte de `omniroute: src/shared/constants/upstreamHeaders.ts` (MIT).
  */
 const FORBIDDEN = new Set(

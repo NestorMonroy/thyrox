@@ -5,6 +5,12 @@
  * regulares, y el Bearer gana sobre las otras dos para que ningún sufijo de
  * la credencial sobreviva a una coincidencia parcial.
  *
+ * No sustituye a los `redactSecrets` del árbol, que resuelven otra cosa:
+ * `@thyrox/storage/secretsRegistry` aplica patrones con nombre y confianza,
+ * `@thyrox/memory/teamMemSecretScanner` reglas tipo gitleaks y
+ * `@thyrox/bridge/debugUtils` campos JSON con nombre de secreto. Éste deja
+ * visible un fragmento de la credencial, que es lo que muestra el inspector.
+ *
  * Porte de `omniroute: src/mitm/maskSecrets.ts` (MIT).
  */
 const PREFIXED_KEY_BODY_MIN = 16;
