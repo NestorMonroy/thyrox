@@ -127,6 +127,10 @@ function especificadoresExternos(texto: string): string[] {
       // (`shell/.../loadFigSpec.test.ts:29`): `LLAMADA` no distingue código de
       // comentario, y ésta es la barrera barata que sí es una regla real.
       if (spec.startsWith('-')) continue
+      // Un import no admite interpolación: un especificador con `${` es texto
+      // de una plantilla (`binary/__tests__/namespaceReferences.test.ts` arma
+      // así sus módulos de prueba), nunca un import que resolver.
+      if (spec.includes('${')) continue
       fuera.push(spec)
     }
   }
@@ -244,6 +248,15 @@ describe('el detector discrimina — control positivo y negativo', () => {
       'export function b() {}\n' +
       '/**\n * Copy from "otro documento" doc\n */\n' +
       'export const c = 2\n')
+    const { noResuelven } = clasificar(dir, new Set())
+    expect([...noResuelven]).toEqual([])
+  })
+
+  test('NEGATIVO: un «from"${X}"» dentro de una plantilla es texto, no un import', () => {
+    // El caso real: `binary/__tests__/references.test.ts` arma módulos de
+    // prueba en una plantilla. Un import estático no admite interpolación,
+    // así que un especificador con `${` sólo puede ser texto de una plantilla.
+    const dir = fixture('const DEF = "./def.js"\nexport const code = `import{Pf as q}from"${DEF}";let m=await import("${DEF}")`\n')
     const { noResuelven } = clasificar(dir, new Set())
     expect([...noResuelven]).toEqual([])
   })

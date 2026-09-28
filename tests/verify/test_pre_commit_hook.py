@@ -19,6 +19,7 @@ import pathlib
 import sqlite3
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -35,7 +36,65 @@ PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-cli-typecheck.sh')
 # `check_bench_untracked.py` y `check_cache_layout.py` entraron al hook sin
 # entrar al fixture— y cada vez el commit semilla moria en setUp: todos los
 # casos rojos por deriva del fixture, no por el contrato que dicen medir.
-HOOK_GATES = tuple(sorted(set(re.findall(r'\$GATES/([\w.-]+)', HOOK.read_text()))))
+HOOK_GATES_NAMED = tuple(sorted(set(re.findall(r'\$GATES/([\w.-]+)', HOOK.read_text()))))
+
+
+def with_sibling_imports(gates: tuple[str, ...]) -> tuple[str, ...]:
+    """Los gates y, transitivamente, los módulos hermanos que importan.
+
+    El hook nombra `checkEnvPrefix.ts`, que importa `./renameEnvPrefix.ts`, y
+    `check_identifier_language.py`, que lanza `ts_declared_identifiers.ts`:
+    copiar sólo lo nombrado dejaba el gate sin su módulo («Cannot find
+    module»). Se deriva del texto de cada gate, igual que la lista de gates se
+    deriva del hook.
+    """
+    found: list[str] = []
+    pending = list(gates)
+    while pending:
+        name = pending.pop()
+        if name in found:
+            continue
+        found.append(name)
+        if name.endswith(('.ts', '.py')):
+            text = (THYROX / 'src' / 'verify' / name).read_text()
+            pending.extend(sibling for sibling in re.findall(r'([\w.-]+\.ts)\b', text)
+                           if (THYROX / 'src' / 'verify' / sibling).is_file())
+    return tuple(sorted(found))
+
+
+def freeze_whole_tree_baselines(repo: pathlib.Path) -> None:
+    """Deja listos los gates que miden el árbol ENTERO: sus raíces y su línea base.
+
+    `check_product_word` y `checkEnvPrefix` no miden lo que se commitea sino
+    todo `src/`, y la línea base del proveedor describe el árbol del
+    proveedor: en un árbol parcial sobran entradas y faltan pruebas. Estas
+    suites no miden esos gates, así que el fixture hace lo que haría un
+    consumidor al adoptarlos: congelar su deuda de partida con el propio gate.
+    """
+    # `check_md_relative_links` rehúsa sin sus dos raíces: el árbol las tiene.
+    for home in ('skills', 'rules'):
+        (repo / '.claude' / home).mkdir(parents=True, exist_ok=True)
+        (repo / '.claude' / home / '.keep').write_text('')
+    # El recorrido de los .ts carga `typescript`: se enlaza el del proveedor.
+    (repo / 'node_modules').symlink_to(THYROX / 'node_modules', target_is_directory=True)
+    with (repo / '.gitignore').open('a') as ignore:
+        ignore.write('node_modules\n')
+    (repo / IDENTIFIER_BASELINE).parent.mkdir(parents=True, exist_ok=True)
+    (repo / IDENTIFIER_BASELINE).write_text('')
+    verify = repo / 'src' / 'verify'
+    for command in (
+        [sys.executable, str(verify / 'check_product_word.py'), '--repo', str(repo), '--write-baseline'],
+        ['bun', str(verify / 'checkEnvPrefix.ts'), '--root', str(repo), '--write-baseline'],
+    ):
+        frozen = subprocess.run(command, capture_output=True, text=True)
+        if frozen.returncode != 0:
+            raise RuntimeError(f'{command[1]}: {frozen.stdout}{frozen.stderr}')
+
+
+HOOK_GATES = with_sibling_imports(HOOK_GATES_NAMED)
+
+
+IDENTIFIER_BASELINE = pathlib.Path('.claude') / 'baselines' / 'identifier_language_baseline.txt'
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
@@ -44,7 +103,9 @@ def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
     # con exit 2 en el commit semilla y los doce casos caían en setUp.
     env = {**os.environ, 'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
            'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t',
-           'THYROX_LINT_BIN_DIR': str(THYROX / '.venv' / 'bin')}
+           'THYROX_LINT_BIN_DIR': str(THYROX / '.venv' / 'bin'),
+           # El repo sintético no hereda deuda de idioma: su línea base, vacía y declarada.
+           'IDENTIFIER_LANGUAGE_BASELINE': str(repo / IDENTIFIER_BASELINE)}
     return subprocess.run(['git', '-C', str(repo), *args],
                           capture_output=True, text=True, env=env)
 
@@ -71,6 +132,9 @@ class PreCommitHook(unittest.TestCase):
         os.chmod(self.repo / '.githooks' / 'pre-commit', 0o755)
         git(self.repo, 'init', '-q')
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
+        git(self.repo, 'add', '-A')
+        # Los gates de árbol entero miden lo versionado: se congela tras el add.
+        freeze_whole_tree_baselines(self.repo)
         git(self.repo, 'add', '-A')
         # La semilla monta el fixture y no es lo que se prueba: sin
         # `--no-verify` le pasaban todos los gates del hook, y el lint medía la
@@ -289,6 +353,9 @@ class PreCommitReconcilesBoard(unittest.TestCase):
 
         git(self.repo, 'init', '-q')
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
+        git(self.repo, 'add', '-A')
+        # Los gates de árbol entero miden lo versionado: se congela tras el add.
+        freeze_whole_tree_baselines(self.repo)
         git(self.repo, 'add', '-A')
         # La semilla monta el fixture y no es lo que se prueba: sin
         # `--no-verify` le pasaban todos los gates del hook, y el lint medía la

@@ -107,6 +107,30 @@
       "@thyrox/provider/commands/provider.js": [
         "./src/commands/provider.ts"
       ],
+      "@thyrox/provider/accounts/apiKeyProbe": [
+        "./src/accounts/apiKeyProbe.ts"
+      ],
+      "@thyrox/provider/accounts/connectionTest": [
+        "./src/accounts/connectionTest.ts"
+      ],
+      "@thyrox/provider/accounts/webCookie/webCookieProbe": [
+        "./src/accounts/webCookie/webCookieProbe.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/loginRunner": [
+        "./src/accounts/oauth/loginRunner.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/flowRegistry": [
+        "./src/accounts/oauth/flowRegistry.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/oauthFlows": [
+        "./src/accounts/oauth/oauthFlows.ts"
+      ],
+      "@thyrox/provider/accounts/oauth/callbackServer": [
+        "./src/accounts/oauth/callbackServer.ts"
+      ],
+      "@thyrox/provider/accounts/connectionStoreHome": [
+        "./src/accounts/connectionStoreHome.ts"
+      ],
       "@thyrox/provider/connections": [
         "./src/connections.ts"
       ],

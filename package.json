@@ -149,6 +149,8 @@
     "./packages/config/sync": "./src/packages/config/sync/index.ts",
     "./packages/image-processor-napi/src": "./src/packages/image-processor-napi/src/index.ts",
     "./packages/mcp-runtime/src": "./src/packages/mcp-runtime/src/index.ts",
+    "./packages/mitm/src/detection": "./src/packages/mitm/src/detection/index.ts",
+    "./packages/mitm/src/targets": "./src/packages/mitm/src/targets/index.ts",
     "./packages/modifiers-napi/src": "./src/packages/modifiers-napi/src/index.ts",
     "./packages/output/src/render": "./src/packages/output/src/render/index.ts",
     "./packages/permission/src/commands": "./src/packages/permission/src/commands/index.ts",
@@ -197,6 +199,7 @@
     "./packages/tool-registry/src/tools/WebSearchTool/adapters": "./src/packages/tool-registry/src/tools/WebSearchTool/adapters/index.ts",
     "./packages/tool-registry/src/tools/WorkflowTool/bundled": "./src/packages/tool-registry/src/tools/WorkflowTool/bundled/index.ts",
     "./packages/tool-registry/src/tools/registry": "./src/packages/tool-registry/src/tools/registry/index.ts",
+    "./packages/transparent-napi/src": "./src/packages/transparent-napi/src/index.ts",
     "./packages/url-handler-napi/src": "./src/packages/url-handler-napi/src/index.ts"
   },
   "scripts": {

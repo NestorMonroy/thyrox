@@ -38,8 +38,21 @@ los rojos; `rerun-red.sh` los relanza uno por uno.
     usando una CA nueva en vez de la guardada, cae exactamente esa prueba.
     `mitm-suite-trust-watch.sh` corrió la suite de `mitm` vigilando el
     almacén del sistema: no instaló nada.
-- **Pendientes:** `dependencies` (`@thyrox/binary`), `exports` (índices de
-  `mitm` y `transparent-napi`), `sibling_exports` (declaraciones de
-  `provider`), `test_env_contract_keys`, `test_path_arithmetic`,
-  `test_pre_commit_hook`, `test_runner`, los dos githooks,
-  `check-skill-artifacts`, `script-naming` y `suite-discrimina`.
+- **Segundo tramo:**
+  - `exports`: faltaban en el mapa de la raíz los índices de
+    `mitm/src/detection`, `mitm/src/targets` y `transparent-napi/src`.
+  - `dependencies`: el escáner leía como import el `import("${DEF}")` de una
+    plantilla en las pruebas de `binary`. Un import no admite interpolación;
+    control rojo en `red-template-specifier.txt`.
+  - `sibling_exports`: el `dist/` de `provider` no tenía las declaraciones de
+    sus exportaciones nuevas; `bin/emit_declarations provider` las emitió y
+    añadió sus rutas a `tsconfig.build.json`.
+  - `test_pre_commit_hook`: el fixture no seguía el paso de los gates que el
+    hook ganó. Ahora copia también los `.ts` hermanos que cada gate nombra,
+    congela la línea base de los gates de árbol entero tras el `add`, crea las
+    raíces de `check_md_relative_links`, declara una línea base de idioma
+    vacía y enlaza `node_modules`. Anulación: sin el recorrido de hermanos,
+    los 12 casos caen.
+- **Pendientes:** `test_env_contract_keys`, `test_path_arithmetic`,
+  `test_runner`, los dos githooks, `check-skill-artifacts`, `script-naming` y
+  `suite-discrimina`.

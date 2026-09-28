@@ -1,0 +1,12 @@
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:257:30)
+(fail) el detector discrimina — control positivo y negativo > NEGATIVO: un «from"${X}"» dentro de una plantilla es texto, no un import [7.29ms]
+
+ 0 pass
+ 106 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [46.00ms]
