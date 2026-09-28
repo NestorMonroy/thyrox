@@ -535,10 +535,12 @@
         "@thyrox/tool-registry": "workspace:*",
         "chalk": "^4.1.2",
         "ignore": "^7.0.8",
+        "lodash-es": "^4.18.1",
         "zod": "^4.3.6",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
+        "@types/lodash-es": "^4.17.12",
       },
     },
     "src/packages/plan": {

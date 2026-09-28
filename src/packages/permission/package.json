@@ -292,7 +292,8 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.0"
+    "@types/bun": "^1.4.0",
+    "@types/lodash-es": "^4.17.12"
   },
   "dependencies": {
     "@ant/computer-use-mcp": "workspace:*",
@@ -316,6 +317,7 @@
     "@thyrox/tool-registry": "workspace:*",
     "chalk": "^4.1.2",
     "ignore": "^7.0.8",
+    "lodash-es": "^4.18.1",
     "zod": "^4.3.6"
   },
   "types": "./dist/src/permission.d.ts"

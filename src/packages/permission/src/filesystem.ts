@@ -1,127 +1,59 @@
 /**
- * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/filesystem.ts`
- * (1785 líneas, 29 exports, licencia UNLICENSED — reimplementación, no
- * copia). El objetivo de este pase es la cadena que
- * `@thyrox/app-host/src/init.ts:108-112` consume realmente —
- * `import { ensureScratchpadDir, isScratchpadEnabled } from '@thyrox/permission/filesystem'`
- * — más sus dependencias transitivas y un puñado de funciones puras
- * hermanas sin costo adicional.
+ * Porte de `ccnmt: packages/permission/src/filesystem.ts` (1785 líneas, 29
+ * exports, licencia UNLICENSED — reimplementación, no copia). Sus 29 exports
+ * están aquí o se reexportan desde el módulo que los aloja:
  *
- * PORTADAS (25 de 29):
+ *   aquí       `DANGEROUS_FILES` · `DANGEROUS_DIRECTORIES` ·
+ *              `normalizeCaseForComparison` · `relativePath` · `toPosixPath` ·
+ *              `getSessionMemoryDir` · `getSessionMemoryPath` ·
+ *              `isScratchpadEnabled` · `getClaudeTempDirName` ·
+ *              `getClaudeTempDir` · `getProjectTempDir` · `getScratchpadDir` ·
+ *              `ensureScratchpadDir` · `allWorkingDirectories` ·
+ *              `pathInWorkingPath` · `getResolvedWorkingDirPaths` ·
+ *              `pathInAllowedWorkingPath` (TASK-DOCS-0526)
+ *   reexport   `matchingRuleForInput` · `getFileReadIgnorePatterns` ·
+ *              `normalizePatternsToPath` (`./ruleMatching.ts`) ·
+ *              `checkPathSafetyForAutoEdit` · `isSettingsFilePath`
+ *              (`./pathSafety.ts`) · `checkEditableInternalPath` ·
+ *              `checkReadableInternalPath` · `getBundledSkillsRoot`
+ *              (`./internalPaths.ts`) · `checkReadPermissionForTool` ·
+ *              `checkWritePermissionForTool` · `generateSuggestions` ·
+ *              `getClaudeSkillScope` (`./fileToolPermissions.ts`, desde el
+ *              contrato de 2.1.275: `_w`, `Wy`, `gyt`, `ku`)
  *
- *   `DANGEROUS_FILES` · `DANGEROUS_DIRECTORIES` · `normalizeCaseForComparison`
- *   · `relativePath` · `toPosixPath` · `getSessionMemoryDir` ·
- *   `getSessionMemoryPath` · `isScratchpadEnabled` · `getClaudeTempDirName` ·
- *   `getClaudeTempDir` · `getProjectTempDir` · `getScratchpadDir` ·
- *   `ensureScratchpadDir` (los dos últimos, el objetivo del pase) ·
- *   `allWorkingDirectories` · `pathInWorkingPath` (pase de 2026-09-08) ·
- *   `getResolvedWorkingDirPaths` · `pathInAllowedWorkingPath`
- *   (TASK-DOCS-0526, pase de 2026-09-09 — ver la divergencia del séptimo
- *   binding, abajo) · `matchingRuleForInput` · `getFileReadIgnorePatterns` ·
- *   `normalizePatternsToPath` (reexportadas de `./ruleMatching.ts`, porte del
- *   contrato de 2.1.275 — ver su cabecera) · `checkPathSafetyForAutoEdit`
- *   e `isSettingsFilePath` (reexportadas de `./pathSafety.ts`) ·
- *   `checkEditableInternalPath` · `checkReadableInternalPath` ·
- *   `getBundledSkillsRoot` (reexportadas de `./internalPaths.ts`) — las
- *   tres, porte del contrato de 2.1.275; ver sus cabeceras
+ * `init.ts` de `@thyrox/app-host` consume `ensureScratchpadDir` e
+ * `isScratchpadEnabled`.
  *
- * OMITIDAS: ninguna desde 2026-09-24. Las cuatro que lo estaban:
- *
- *   - `checkReadPermissionForTool`, `checkWritePermissionForTool`,
- *     `generateSuggestions` y `getClaudeSkillScope` — PORTADAS el
- *     2026-09-24 en `./fileToolPermissions.ts` desde el contrato de 2.1.275
- *     (`_w`, `Wy`, `gyt`, `ku`), y reexportadas abajo. La omisión anterior
- *     citaba `SandboxManager` y `containsVulnerableUncPath` como bloqueo;
- *     en 2.1.275 ninguna de las cuatro los llama, y la guarda de UNC que
- *     sí llaman (`k_n`) ya tenía sus predicados en `pathSafety.ts`. Sus
- *     negativos apuntan a rutas que existen fuera del trabajo
- *     (`__tests__/fileToolPermissions.test.ts`). `pathInAllowedWorkingPath` y
- *     `getResolvedWorkingDirPaths` (filesystem.ts:674-716) figuraban aquí
- *     por vecindad — el mismo defecto de atribución que ya se corrigió una
- *     vez para `allWorkingDirectories`/`pathInWorkingPath` (ver la
- *     divergencia de abajo). Medido al intentar portarlas (TASK-DOCS-0526):
- *     su cierre transitivo es sólo un binding nuevo (`getPathsForPermissionCheck`,
- *     `filesystem.ts:34`) y un memoize de aridad uno — ninguna de las dos
- *     toca `SandboxManager` ni `containsVulnerableUncPath`. Ya están
- *     portadas arriba.
- *
- * Divergencias medidas en lo portado:
+ * Divergencias medidas:
  *
  * - El shim `_b()` de la fuente expone 19 métodos vía host bindings; este
- *   puerto reproduce los SEIS que el subconjunto portado llamaba antes de
- *   este pase — `getOriginalCwd`, `getSessionId`, `getFsImplementation`,
- *   `getPlatform`, `expandPath`, `containsPathTraversal` — con el mismo
- *   patrón `_b().foo?.() ?? respaldo` y el mismo cast a `any` que la fuente usa
- *   deliberadamente (ver docstring de `contracts.ts`, hermano de este
- *   archivo). `./host.js`/`./errors.js` son imports estáticos: son
- *   ficheros del MISMO paquete, y la resolución relativa dentro de un
- *   paquete no depende de `"workspaces"` en la raíz (a diferencia de
- *   `@thyrox/*`, que sí).
+ *   puerto reproduce los SIETE que llama —`getOriginalCwd`, `getSessionId`,
+ *   `getFsImplementation`, `getPlatform`, `expandPath`,
+ *   `containsPathTraversal` y `getPathsForPermissionCheck`
+ *   (`filesystem.ts:34`)— con el mismo patrón `_b().foo?.() ?? respaldo` y el
+ *   mismo cast a `any` que la fuente usa deliberadamente (ver el docstring de
+ *   `contracts.ts`). Sin binding instalado, `getPathsForPermissionCheck` da
+ *   `[]`.
  * - `sanitizePath`: su respaldo NO es la identidad (`p => p`, lo que la
- *   fuente haría con un binding ausente) sino `@thyrox/storage`'s
- *   `sanitizePath` real (`sessionStoragePortable.ts:264`, ya portado y
- *   probado ahí) vía `require()` diferido — con caída a identidad sólo si
- *   ESE require también falla. Es más fiel al comportamiento observable de
- *   la fuente (que si acaso instala un binding real, no la identidad).
- * - `memoize` de `lodash-es/memoize.js` no resuelve en este árbol (medido:
- *   `Bun.resolveSync` falla, no hay `node_modules/lodash-es`). Se sustituye
- *   por un memoize local de aridad cero (`memoizeOnce`, 8 líneas): las dos
- *   únicas funciones que la fuente memoiza aquí (`getClaudeTempDir`,
- *   `getBundledSkillsRoot`) no toman argumentos, así que un cache de una
- *   sola entrada es fiel a la semántica de la fuente sin necesitar la
- *   API completa de `lodash-es/memoize`.
- * - `allWorkingDirectories` y `pathInWorkingPath` figuraban arriba entre las
- *   omitidas, con el bloqueo de `SandboxManager` que comparten sus vecinas de
- *   `filesystem.ts:627-1785`. Medido al necesitarlas: NINGUNA de las dos lo
- *   toca — la primera pide `getOriginalCwd` (ya cableado aquí) y las claves
- *   del contexto; la segunda, `expandPath` y `containsPathTraversal`, que en
- *   la fuente son shims del anfitrión igual que los cuatro ya presentes. El
- *   bloqueo era de sus vecinas y se les había atribuido por vecindad. Llegan
- *   al necesitarlas `commands/add-dir/validation.ts`, y el aviso se corrige
- *   en vez de dejarlo pudrirse.
- * - `checkStatsigFeatureGate_CACHED_MAY_BE_STALE` se repunta a
- *   `@thyrox/config/feature-flags.js` (mismo nombre, misma firma
- *   `(gate: string) => boolean`, ya portado — verificado leyendo su
- *   fuente). `require()` diferido (esta sí es una raíz `@thyrox/*`, no
- *   resuelve hasta que exista `"workspaces"`), con respaldo `false`
- *   (fail-closed: el scratchpad queda deshabilitado si el binding no
- *   resuelve).
- * - `getPathsForPermissionCheck` (`filesystem.ts:34`) es el SÉPTIMO binding
- *   `_b()` que este puerto reproduce — sin binding instalado, `[]` (misma
- *   forma `_b().foo?.(...) ?? []` que sus seis hermanos). Su memoize
- *   (`getResolvedWorkingDirPaths = memoize(getPathsForPermissionCheck)` en
- *   la fuente) NO reusa `memoizeOnce` (aridad cero): la fuente lo llama con
- *   un argumento (`wp: string`) por cada directorio de trabajo, así que
- *   memoizar sin distinguir el argumento colapsaría todos los directorios
- *   al primero consultado. `memoizeByStringArg` — un `Map` por cadena — es
- *   la forma mínima fiel; sus llamadores en el árbol de la fuente siempre
- *   pasan un directorio ya resuelto (`string`), nunca un objeto.
- * - `pathInAllowedWorkingPath` NO recibe el tipo `ToolPermissionContext`
- *   con nombre que el resto del paquete declara por archivo (p. ej.
- *   `PermissionUpdate.ts:61`, `permissionSetup.ts:80` — mismo shape,
- *   `{ permissionRules: unknown; [key: string]: unknown }`, repetido en
- *   cada uno de sus archivos, igual que en la fuente). Aquí se deriva con
- *   `Parameters<typeof allWorkingDirectories>[0]` en vez de declararlo de
- *   nuevo — misma forma estructural, una sola fuente de verdad dentro de
- *   este archivo, sin tocar la firma ya probada de `allWorkingDirectories`.
+ *   fuente haría con un binding ausente) sino el `sanitizePath` real de
+ *   `@thyrox/storage` (`sessionStoragePortable.ts`) vía `require()` diferido,
+ *   con caída a identidad sólo si ESE require también falla. Es más fiel al
+ *   comportamiento observable de la fuente, que instala un binding real.
+ * - `checkStatsigFeatureGate_CACHED_MAY_BE_STALE` se lee de
+ *   `@thyrox/config/feature-flags.js` (mismo nombre y firma
+ *   `(gate: string) => boolean`) por `require()` diferido, con respaldo
+ *   `false`: si no resuelve, el scratchpad queda deshabilitado.
+ * - `pathInAllowedWorkingPath` deriva su contexto con
+ *   `Parameters<typeof allWorkingDirectories>[0]` en vez de declarar otra vez
+ *   el `ToolPermissionContext` que cada archivo del paquete repite (igual que
+ *   la fuente): misma forma estructural, una sola fuente de verdad aquí.
  */
+import memoize from 'lodash-es/memoize.js'
 import * as nodeFs from 'node:fs'
 import * as nodeOs from 'node:os'
 import { join, posix, sep } from 'node:path'
 import { getPermissionHostBindings } from './host.js'
 import { ContextError } from './errors.js'
-
-function memoizeOnce<T>(fn: () => T): () => T {
-  let cached: T | undefined
-  let has = false
-  return () => {
-    if (!has) {
-      cached = fn()
-      has = true
-    }
-    return cached as T
-  }
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _b = () => getPermissionHostBindings() as any
@@ -265,7 +197,7 @@ export function getClaudeTempDirName(): string {
  * Usa `THYROX_CODE_TMPDIR` si está definida; si no, `/tmp` en Unix o
  * `tmpdir()` en Windows.
  */
-export const getClaudeTempDir = memoizeOnce((): string => {
+export const getClaudeTempDir = memoize((): string => {
   const baseTmpDir =
     process.env.THYROX_CODE_TMPDIR ||
     (getPlatformDeferred() === 'windows' ? nodeOs.tmpdir() : '/tmp')
@@ -352,37 +284,6 @@ function getPathsForPermissionCheckDeferred(path: string): string[] {
   }
 }
 
-/** Firma que expone `.cache` — mismo contrato que `lodash-es/memoize.js`
- * (su `MapCache` ya implementa `get`/`has`/`set`/`delete`/`clear`, que es
- * exactamente la superficie de un `Map` nativo). */
-type MemoizedByStringArg<T> = ((arg: string) => T) & { cache: Map<string, T> }
-
-/**
- * Memoize de aridad UNO, keyed por el propio argumento — distinto de
- * `memoizeOnce` (aridad cero, usado por `getClaudeTempDir`). `lodash-es`
- * no resuelve en este árbol (ver divergencia arriba); un `Map` por clave de
- * cadena es fiel a lo que la fuente pide de `memoize(getPathsForPermissionCheck)`
- * — sus llamadores siempre pasan un `string` (un directorio de trabajo ya
- * resuelto), nunca un objeto que necesitaría una clave estructural.
- *
- * Expone `.cache` (un `Map` nativo) en la función devuelta, igual que
- * `lodash-es/memoize.js` — es lo que hace fiel el comentario de la fuente en
- * `getResolvedWorkingDirPaths`: "Exported for test/preload.ts cache
- * clearing (shard-isolation)". Sin `.cache.clear()` expuesto, esa promesa de
- * la fuente sería un porte parcial silencioso del propio memoize.
- */
-function memoizeByStringArg<T>(fn: (arg: string) => T): MemoizedByStringArg<T> {
-  const cache = new Map<string, T>()
-  const memoized = (arg: string): T => {
-    if (!cache.has(arg)) {
-      cache.set(arg, fn(arg))
-    }
-    return cache.get(arg) as T
-  }
-  memoized.cache = cache
-  return memoized
-}
-
 /**
  * Todos los directorios de trabajo de una sesión.
  *
@@ -410,7 +311,7 @@ type ToolPermissionContext = Parameters<typeof allWorkingDirectories>[0]
  * Exportado (como en la fuente) para que un test/preload pueda limpiar la
  * caché entre shards.
  */
-export const getResolvedWorkingDirPaths = memoizeByStringArg(
+export const getResolvedWorkingDirPaths = memoize(
   getPathsForPermissionCheckDeferred,
 )
 
