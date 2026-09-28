@@ -38,7 +38,8 @@ function sendThroughProxy(
   proxyPort: number,
   upstreamPort: number,
   method = "GET",
-  extraHeaders = ""
+  extraHeaders = "",
+  requestBody = ""
 ): Promise<{ status: number; body: string }> {
   // La petición en forma absoluta se escribe a mano sobre el socket, como lo
   // hace un cliente con HTTP_PROXY: el `http.request` de Bun, con un `path`
@@ -51,7 +52,8 @@ function sendThroughProxy(
     socket.once("connect", () => {
       socket.write(
         `${method} http://127.0.0.1:${upstreamPort}/test HTTP/1.1\r\n` +
-          `Host: 127.0.0.1:${upstreamPort}\r\nConnection: close\r\n${extraHeaders}\r\n`
+          `Host: 127.0.0.1:${upstreamPort}\r\nConnection: close\r\n${extraHeaders}` +
+          (requestBody ? `Content-Length: ${Buffer.byteLength(requestBody)}\r\n\r\n${requestBody}` : "\r\n")
       );
     });
     // El servidor node:http de Bun no cierra pese a `Connection: close`: la
@@ -203,6 +205,31 @@ test("HTTP direct forwards the auth header but no hop-by-hop or origin header", 
     assert.equal(seen.authorization, "Bearer keep-me");
     assert.equal(seen["proxy-authorization"], undefined);
     assert.equal(seen["x-forwarded-for"], undefined);
+  } finally {
+    await proxy.stop();
+    await upstream.close();
+  }
+});
+
+test("HTTP direct forwards the request body and records it", async () => {
+  let received = "";
+  const upstream = await withUpstream((req, res) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (c) => chunks.push(c));
+    req.on("end", () => {
+      received = Buffer.concat(chunks).toString("utf8");
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end("done");
+    });
+  });
+  const proxy = await startHttpProxyServer(0);
+  try {
+    const { status } = await sendThroughProxy(proxy.port, upstream.port, "POST", "", '{"q":1}');
+    assert.equal(status, 200);
+    assert.equal(received, '{"q":1}');
+    await new Promise((r) => setTimeout(r, 30));
+    const entry = globalTrafficBuffer.list().find((e) => e.method === "POST");
+    assert.equal(entry?.requestBody, '{"q":1}');
   } finally {
     await proxy.stop();
     await upstream.close();

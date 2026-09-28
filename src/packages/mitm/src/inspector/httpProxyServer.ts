@@ -115,7 +115,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
       const upstream = await fetch(target.toString(), {
         method: req.method ?? "GET",
         headers: upstreamHeaders,
-        body: body.length > 0 ? body : undefined,
+        body: body.length > 0 ? new Uint8Array(body) : undefined,
         redirect: "manual",
       });
 
