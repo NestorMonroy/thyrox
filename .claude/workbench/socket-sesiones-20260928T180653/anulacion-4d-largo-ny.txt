@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+ 98 |         requests.push(items)
+ 99 |         return { ok: true, value: { items: [{ found: true, value: bytes(JSON.stringify(record(7))) }] } }
+100 |       },
+101 |     } as unknown as RegistryStorage
+102 |     expect(await readRegistryRecordFromStorage(storage, '7.json')).toEqual(record(7))
+103 |     expect(requests).toEqual([[{ key: { namespace: 'session', file: '7.json' }, offset: 0, length: REGISTRY_RECORD_MAX_BYTES + 1 }]])
+                           ^
+error: expect(received).toEqual(expected)
+
+@@ -7,3 +7,3 @@
+        },
+-       "length": 262145,
++       "length": 262144,
+        "offset": 0,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:103:22)
+(fail) lectura y borrado por el storage (Ny, Fy) > Ny lee una sola vez hasta el tope más uno y descarta lo que lo excede [1.01ms]
+
+ 27 pass
+ 1 fail
+ 78 expect() calls
+Ran 28 tests across 1 file. [200.00ms]

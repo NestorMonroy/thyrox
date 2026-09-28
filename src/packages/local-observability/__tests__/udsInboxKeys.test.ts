@@ -11,6 +11,7 @@ import { join } from 'node:path'
 import { inboxKeyFileName } from '../src/uds/inboxAuth.ts'
 import {
   type InboxKeyDeps,
+  listSessionKeyNames,
   paginateStorage,
   publishInboxKey,
   type SessionKeyStorage,
@@ -366,5 +367,44 @@ describe('paginateStorage (Ks)', () => {
     expect(await paginateStorage(async () => ({ ok: true, value: { items: [], cursor: 'x' } }), () => {}, { maxPages: 2 })).toEqual({ status: 'capped' })
     const error = { code: 'EIO' }
     expect(await paginateStorage(async () => ({ ok: false, error }), () => {})).toEqual({ status: 'error', error })
+  })
+})
+
+describe('listSessionKeyNames (J4n)', () => {
+  const entry = (file: string, kind = 'key', namespace = 'session') => ({ kind, key: { namespace, file } })
+  const listing = (pages: Array<{ items: ReturnType<typeof entry>[]; cursor?: string }>) => {
+    let index = 0
+    return { listEntries: async () => ({ ok: true as const, value: pages[index++]! }) } as unknown as Parameters<typeof listSessionKeyNames>[0]
+  }
+
+  test('junta los nombres de claves del ámbito de sesiones de todas las páginas', async () => {
+    const storage = listing([{ items: [entry('1.json'), entry('d', 'dir'), entry('x', 'key', 'other')], cursor: 'c' }, { items: [entry('2.json')] }])
+    expect(await listSessionKeyNames(storage)).toEqual(['1.json', '2.json'])
+  })
+
+  test('en el tope avisa; devuelve lo visto sólo con partialOnCap', async () => {
+    const issues: Array<[string, string | undefined]> = []
+    const onIssue = (message: string, level?: string) => void issues.push([message, level])
+    const capped = () => listing([{ items: [entry('1.json')], cursor: 'c' }])
+    expect(await listSessionKeyNames(capped(), { maxPages: 1, onIssue })).toBeUndefined()
+    expect(await listSessionKeyNames(capped(), { maxPages: 1, partialOnCap: true, onIssue })).toEqual(['1.json'])
+    expect(issues).toEqual([
+      ['truncated at 1 pages; 1 names seen', 'warn'],
+      ['truncated at 1 pages; 1 names seen', 'warn'],
+    ])
+  })
+
+  test('un error o una excepción del listado se avisan y dan undefined', async () => {
+    const issues: string[] = []
+    const onIssue = (message: string) => void issues.push(message)
+    const failing = { listEntries: async () => ({ ok: false, error: { code: 'EIO' } }) } as unknown as Parameters<typeof listSessionKeyNames>[0]
+    const throwing = {
+      listEntries: async () => {
+        throw new Error('down')
+      },
+    } as unknown as Parameters<typeof listSessionKeyNames>[0]
+    expect(await listSessionKeyNames(failing, { onIssue })).toBeUndefined()
+    expect(await listSessionKeyNames(throwing, { onIssue })).toBeUndefined()
+    expect(issues).toEqual(['failed: EIO', 'failed: down'])
   })
 })

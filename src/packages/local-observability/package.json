@@ -166,6 +166,16 @@
       "types": "./dist/uds/pidFileRecord.d.ts",
       "default": "./src/uds/pidFileRecord.ts"
     },
+    "./uds/registrySweep.js": {
+      "@thyrox/source": "./src/uds/registrySweep.ts",
+      "types": "./dist/uds/registrySweep.d.ts",
+      "default": "./src/uds/registrySweep.ts"
+    },
+    "./uds/registrySweepPermission.js": {
+      "@thyrox/source": "./src/uds/registrySweepPermission.ts",
+      "types": "./dist/uds/registrySweepPermission.d.ts",
+      "default": "./src/uds/registrySweepPermission.ts"
+    },
     "./uds/spareSession.js": {
       "@thyrox/source": "./src/uds/spareSession.ts",
       "types": "./dist/uds/spareSession.d.ts",

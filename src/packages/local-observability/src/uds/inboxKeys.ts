@@ -110,7 +110,7 @@ function parseKeyRecord(text: string): InboxKeyRecord | undefined {
 }
 
 /** `cl`: el texto de un archivo regular de hasta `maxBytes`, o `null`. */
-async function readBoundedFile(path: string, maxBytes: number): Promise<string | null> {
+export async function readBoundedFile(path: string, maxBytes: number): Promise<string | null> {
   try {
     const stats = await stat(path)
     if (!stats.isFile() || stats.size > maxBytes) return null
@@ -161,8 +161,19 @@ export async function paginateStorage<T>(
   return { status: 'capped' }
 }
 
-/** `J4n`: los nombres del ámbito de sesiones; `undefined` si el listado no terminó. */
-async function listSessionKeyNames(storage: SessionKeyStorage, maxPages: number): Promise<string[] | undefined> {
+export type SessionKeyListOptions = {
+  maxPages?: number
+  /** Con el tope de páginas alcanzado, devuelve lo visto en vez de `undefined`. */
+  partialOnCap?: boolean
+  onIssue?: (message: string, level?: 'warn') => void
+}
+
+/**
+ * `J4n`: los nombres del ámbito de sesiones; `undefined` si el listado falló,
+ * o si se cortó en el tope y no se pidió el parcial.
+ */
+export async function listSessionKeyNames(storage: SessionKeyStorage, options: SessionKeyListOptions = {}): Promise<string[] | undefined> {
+  const maxPages = options.maxPages ?? STORAGE_PAGE_LIMIT
   const names: string[] = []
   let outcome: PaginationOutcome
   try {
@@ -173,10 +184,20 @@ async function listSessionKeyNames(storage: SessionKeyStorage, maxPages: number)
       },
       { maxPages },
     )
-  } catch {
+  } catch (error) {
+    options.onIssue?.(`failed: ${error instanceof Error ? error.message : String(error)}`)
     return undefined
   }
-  return outcome.status === 'done' ? names : undefined
+  switch (outcome.status) {
+    case 'done':
+      return names
+    case 'error':
+      options.onIssue?.(`failed: ${formatStorageError(outcome.error)}`)
+      return undefined
+    case 'capped':
+      options.onIssue?.(`truncated at ${maxPages} pages; ${names.length} names seen`, 'warn')
+      return options.partialOnCap ? names : undefined
+  }
 }
 
 /** `Ee`: el texto de una clave por el storage, o `null` si falta o excede el tope. */
@@ -293,7 +314,7 @@ export async function readPeerToken(
   const storage = deps.storageBackendActive() ? options?.storage : undefined
   let names: string[]
   if (storage !== undefined) {
-    const listed = await listSessionKeyNames(storage, deps.storagePageLimit ?? STORAGE_PAGE_LIMIT)
+    const listed = await listSessionKeyNames(storage, { maxPages: deps.storagePageLimit ?? STORAGE_PAGE_LIMIT })
     if (listed === undefined) return { kind: 'unusable' }
     names = listed
   } else {
