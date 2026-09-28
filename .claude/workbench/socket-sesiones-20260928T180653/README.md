@@ -37,7 +37,10 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2b | `chunk-q8a07cv0.js` entero salvo las constantes de equipo (ya en `@thyrox/swarm`): sobre `cross-session-message` → `uds/peerEnvelope.ts`; direcciones de pares → `uds/peerAddress.ts`; lectores con tope y resumen de una línea → `uds/cappedText.ts`; y la rama `win32.normalize` de `_N` que F1 omitía | hecha |
 | F4c-2c-1 | neutralizado de etiquetas por forma (`DLo`, `xu`, `_u`, `D`, `$u`, `W`, `Su`, `Pfn` con las tablas `N` y `M` generadas) → `uds/tagFormScrub.ts`, `uds/confusableTables.ts`; texto de par (`aYe`, `X4n`, `lYe`, `fe`, `Wce`, `m`, `g9r`, `ioe`) → `uds/peerTextScrub.ts`; escapes XML (`qt`, `AYe`, `AFt`, `Do`, `$w`, `ine`) → `uds/xmlText.ts` | hecha |
 | F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `lz`, `Uq`, `Ofn`, `Hfn`, `cu`, `LLo`, `mu`, `yJ`, `RUr`, `CYe` | pendiente |
-| F4c-2c | `ze`/`Oe`/`aEn`: entrega de un `user` a la cola, con sus dependencias inyectadas | pendiente |
+| F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
+| F4c-2d | `session.receive` (`Aot`) y su reserva de cola | pendiente |
+| F4c-2e | adjuntos de un par (`nlt`, `chunk-yrfq0b3e.js`) | pendiente |
+| F4c-2f | registro de correspondientes (`Wkr`, `wS`, `chunk-bhsyyycy.js`) | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
@@ -278,3 +281,16 @@ etiqueta que sólo se completa con el salto de línea entre dos bloques) y
 que no pasa a `-` cae en la rama de separador y se lee como `_`, que la
 clase de `_u` para `-` también admite. Medido sin testigo: ningún carácter
 de U+0080 a U+2FFFF cambia de veredicto (`probes/dash_fold_witness.ts`).
+
+## F4c-2c — entrega de un `user`: controles
+
+Anulaciones en `anulacion-ze-*.txt`; dieciocho, y cada una tumba sólo su
+caso. `ze-sin-adjuntos-cero` no discriminaba en el primer pase: se añadió el
+caso de un lote de adjuntos que no deja ninguno. `ze-sin-soltar` y
+`ze-sin-replicable` tumban dos cada una (la reserva se suelta también cuando
+la aceptación retiene; el directorio por defecto y el de otro directorio
+dependen del mismo corte).
+
+Cada subsistema que decide un paso llega como dependencia y tiene su fase:
+F4d (`C7e`, `nSe`, `kJr`, `fbt`), F4c-2d (`Aot`), F4c-2e (adjuntos),
+F4c-2f (`Wkr`) y F6 (la cola de la sesión, `gE`).

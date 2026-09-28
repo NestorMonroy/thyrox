@@ -39,6 +39,10 @@ export type InboxState = {
   silentDropReported: boolean
   authDropReported: boolean
   authOkReported: boolean
+  /** Los uid dueños de los directorios por defecto donde se buscan los pares. */
+  peerDirOwnerUids: number[] | undefined
+  /** `onEnqueue`: se llama tras encolar un mensaje de un par. */
+  onEnqueue: (() => void) | undefined
 }
 
 export function createInboxState(): InboxState {
@@ -56,6 +60,8 @@ export function createInboxState(): InboxState {
     silentDropReported: false,
     authDropReported: false,
     authOkReported: false,
+    peerDirOwnerUids: undefined,
+    onEnqueue: undefined,
   }
 }
 
