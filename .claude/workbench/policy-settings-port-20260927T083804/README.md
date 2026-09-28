@@ -107,3 +107,31 @@ Controles: `probes/annul-phase-c2a*.tsv`, salidas en
 `outputs/annul-phase-c2a*.out`; caen todas. Una variante se retiró por
 equivalente: filtrar `path[0] === "sandbox"` en `Hy` no cambia nada, porque
 la función devuelve sólo `kept.sandbox` y las demás rutas se descartan igual.
+
+## Fase C.2b: la composición
+
+`config: settings/policySettings.ts` porta `UP` y sus consumidores `Zy` (el
+documento de la fuente `policySettings`), `Jy` (los escalones, con la porción
+del padre al final) y `Gy` (qué fuentes aportaron a una fusión), más `BL`
+(el asistente de política y su fusión, una vez por sesión, con `Id`, `eVo`,
+`Vy` y `Xy`), `lft` (el padre) y `aft` (la rama WSL). Los consumidores salen
+de `symbol-UP-consumers.txt`.
+
+La ruta Windows administrada sale de `config: settings/managedPath.ts`
+(`WINDOWS_MANAGED_DIRECTORY`) y WSL la lee por su montaje: el literal de la
+referencia vive en un solo sitio.
+
+Divergencias, en la cabecera del módulo: `MRe` y `Rz` se inyectan
+(`honorsHostMcpServers`, `hostManagesGateway`) en vez de leer el punto de
+entrada y el entorno, y la caché de lecturas por sesión no se porta.
+
+Controles: `probes/annul-phase-c2b.tsv`, salida en
+`outputs/annul-phase-c2b.out`. La primera pasada dejó siete variantes en pie:
+seis eran huecos de la prueba (la comparación sin mayúsculas de `env`, el
+asistente como escalón frente al archivo, la porción vacía del padre, el
+padre con HKCU, la fuente fundida que sólo trae claves del escalón superior
+y las fuentes fundidas sin fusión) y se cerraron con casos. La séptima —qué
+fuente se nombra como suplente cuando la remota pierde teniendo valores— no
+se alcanza en este porte: la remota perdería sólo con sustitutos, y sin el
+esquema de rescate de 2.1.283 no los hay. Se retiró del archivo y queda
+declarada aquí; se vuelve alcanzable con esa fase.

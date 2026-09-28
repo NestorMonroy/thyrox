@@ -1,0 +1,33 @@
+wsl-mount-no-lower	s/\/mnt\/\${drive.toLowerCase()}/\/mnt\/${drive}/
+mdm-label-fixed	s/^  return platform === 'macos' ? 'plist' : 'hklm'$/  return 'hklm'/
+wsl-branch-ignored	s/^  if (context.platform !== 'wsl') return linux()$/  return linux()/
+wsl-mdm-ignored	s/^  if (mdmBinds) return { settings: null, errors: \[\], documentHasPolicyContent: false, loadState: 'absent' }$//
+wsl-windows-always	s/^    if (bindsAsAdminSource(windows) || mdmBinds) return windows$/    return windows/
+parent-warning-dropped	s/^    if (read.settings?.\[key\] !== undefined \&\& !honored(key)) {$/    if (false) {/
+helper-env-case	s/byUpper.get(name.toUpperCase())/byUpper.get(name)/
+helper-env-plain	s/^  if (baseEnv \&\& helperEnv) merged.env = mergeHelperEnv(baseEnv, helperEnv)$//
+helper-keeps-helper-keys	s/^  const withoutHelper = omit(base ?? {}, POLICY_HELPER_KEYS)$/  const withoutHelper = { ...(base ?? {}) }/
+helper-tier-as-slot	s/context.helperArmedFromRemote?.() === false ? 'tier' : 'remoteSlot'/'remoteSlot'/
+helper-no-merge	s/^  if (context.helperMergesOutput?.() !== true) return { composes, helper, mergedOver: null }$/  return { composes, helper, mergedOver: null }/
+helper-not-cached	s/^  if (!context.store.policy.mergedHelper) {$/  {/
+helper-merged-over-always	s/mergedOver: Object.keys(omit(base ?? {}, POLICY_HELPER_KEYS)).length > 0 ? mergedOver : null,/mergedOver,/
+parent-default-merge	s/(context.hostManagesGateway?.() ? 'merge' : 'first-wins')/'first-wins'/
+slot-not-helper	s/^  const slotDocument = inRemoteSlot ? slot.helper : policyOrNull(remoteSettings)$/  const slotDocument = policyOrNull(remoteSettings)/
+rank-ignores-authored	s/^  const fileRank = policyRank(fileDocument, fileAuthored)$/  const fileRank = policyRank(fileDocument, false)/
+slot-binds-always	s/^  const slotBinds = slotDocument !== null \&\& slotRank >= Math.max(mdmRank, fileRank)$/  const slotBinds = slotDocument !== null/
+mdm-binds-always	s/^  const mdmBinds = mdmDocument !== null \&\& mdmRank >= fileRank$/  const mdmBinds = mdmDocument !== null/
+mode-from-any	s/? binds : settings.managedSourcesBehavior !== undefined || binds))/? binds : settings.managedSourcesBehavior !== undefined))/
+lost-dropped	s/^    beside.push(\[document, source\])$//
+lost-warning-dropped	s/^    if (!hasPolicyValues(document)) continue$/    continue/
+parent-errors-dropped	s/^  errors.push(...parent.errors)$//
+held-empty-dropped	s/^  const admin = merged ?? (heldBy ? {} : null)$/  const admin = merged/
+present-ignores-held	s/mdm: mdmTier !== null || heldBy === mdm,/mdm: mdmTier !== null,/
+never-shut-out-ignores-file	s/ \&\& !fileAuthored$//
+parent-always-included	s/^  const parentIncluded = merged === null || parentMerges(merged, context) || parentNeverShutOut$/  const parentIncluded = true/
+parent-slice-empty-kept	s/parentSlice: slice \&\& Object.keys(slice).length > 0 ? slice : null,/parentSlice: slice,/
+overlay-ignores-host	s/hostModelOverlay(parentSettings, context.hostManagedProvider === true)/hostModelOverlay(parentSettings, true)/
+contributes-top-only-keys	s/Object.keys(omit(document, TOP_TIER_ONLY_KEYS)).length > 0/Object.keys(document).length > 0/
+document-parent-not-null	s/^  if (parentSlice) return null$//
+document-hkcu-empty	s/^  return hkcu \&\& Object.keys(hkcu.settings).length > 0 ? hkcu.settings : null$/  return hkcu ? hkcu.settings : null/
+tiers-no-parent	s/^  return parentSlice ? \[...tiers, parentSlice\] : tiers$/  return tiers/
+merged-sources-always	s/^  if (!merged) return null$//
