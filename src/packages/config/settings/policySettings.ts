@@ -26,7 +26,9 @@
  *   directorio) no se porta; la del asistente fundido sí.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
-import type { Platform } from '../platform.ts'
+import { getPlatform, type Platform } from '../platform.ts'
+import { getPolicyHelperManagedSettings } from '../policyHelper.ts'
+import { getHkcuSettings, getMdmSettings } from './mdm/settings.ts'
 import { getManagedFilePath, WINDOWS_MANAGED_DIRECTORY } from './managedPath.ts'
 import {
   bindsAsAdminSource,
@@ -69,6 +71,34 @@ export type PolicyStore = { policy: { mergedHelper?: { helper: PolicyDocument; m
 
 export function createPolicyStore(): PolicyStore {
   return { policy: {} }
+}
+
+let sessionStore = createPolicyStore()
+
+export function resetPolicyStoreForTesting(): void {
+  sessionStore = createPolicyStore()
+}
+
+/**
+ * Las fuentes de esta sesión: la plataforma detectada, la caché remota (la
+ * lectura por defecto de `readRemotePolicy`), la MDM y HKCU ya cargadas, el
+ * archivo administrado de la plataforma y la salida del asistente, si corrió.
+ *
+ * pendiente: de qué fuente se armó el asistente (`helperArmedFromRemote`),
+ * si funde su salida y los ajustes que pasa el proceso padre; sin ellos el
+ * asistente ocupa la ranura remota y el padre no aporta.
+ */
+export function defaultPolicyContext(): PolicyContext {
+  return {
+    platform: getPlatform(),
+    store: sessionStore,
+    mdm: () => {
+      const { settings, errors } = getMdmSettings()
+      return { settings, errors }
+    },
+    hkcu: () => getHkcuSettings(),
+    helper: () => getPolicyHelperManagedSettings(),
+  }
 }
 
 export type PolicyContext = PolicySourceContext & {

@@ -8,7 +8,7 @@
  * are deterministic. Per memory `bun mock.module is GLOBAL across
  * the test run` — mocks here only override what we install.
  */
-import { describe, expect, mock, test, beforeEach } from 'bun:test'
+import { afterAll, describe, expect, mock, test, beforeEach } from 'bun:test'
 
 type EnabledMap = Record<string, boolean | undefined>
 type LayerName =
@@ -21,11 +21,25 @@ type LayerName =
 const layers: Partial<Record<LayerName, EnabledMap | undefined>> = {}
 let enabledSources: LayerName[] = []
 
+// `mock.module` es global en la ejecución y no se deshace: el sustituto
+// conserva las exportaciones reales (copiadas antes de sustituir) y, cuando
+// este archivo termina, delega en ellas, para que las pruebas que corren
+// después lean los settings de verdad.
+const realSettings = { ...(await import('../../settings/settings.js')) }
+const realConstants = { ...(await import('../../settings/constants.js')) }
+let substituting = true
+afterAll(() => {
+  substituting = false
+})
+
 mock.module('../../settings/settings.js', () => ({
+  ...realSettings,
   getSettings() {
+    if (!substituting) return realSettings.getSettings()
     return {}
   },
   getSettingsForSource(src: LayerName) {
+    if (!substituting) return realSettings.getSettingsForSource(src)
     if (!(src in layers)) return null
     const ep = layers[src]
     return ep ? { enabledPlugins: ep } : null
@@ -33,7 +47,9 @@ mock.module('../../settings/settings.js', () => ({
 }))
 
 mock.module('../../settings/constants.js', () => ({
+  ...realConstants,
   getEnabledSettingSources() {
+    if (!substituting) return realConstants.getEnabledSettingSources()
     return enabledSources
   },
 }))

@@ -135,3 +135,30 @@ fuente se nombra como suplente cuando la remota pierde teniendo valores— no
 se alcanza en este porte: la remota perdería sólo con sustitutos, y sin el
 esquema de rescate de 2.1.283 no los hay. Se retiró del archivo y queda
 declarada aquí; se vuelve alcanzable con esa fase.
+
+## Fase C.3: el cableado
+
+`getSettingsForSource('policySettings')` devuelve ahora el documento de la
+composición (`Zy`) con el contexto de la sesión (`defaultPolicyContext`: la
+plataforma, la caché remota, la MDM y HKCU cargadas, el archivo administrado
+y la salida del asistente), y `loadSettingsFromDisk` funde esa fuente en su
+lugar y suma sus errores. La prueba de integración que
+`remoteSettingsFirstHitFlush.test.ts` declaraba pendiente es
+`config: __tests__/policySettingsWiring.test.ts`.
+
+Controles: `probes/annul-phase-c3.sh` anula en copias del paquete —la prueba
+importa `settings.ts` por ruta relativa—; caen las dos variantes
+(`outputs/annul-phase-c3.out`).
+
+**Lo que el subconjunto destapó.** Con el cableado, siete pruebas de
+permisos fallaban al correr detrás de
+`config: plugin/__tests__/ineffectiveDisables.test.ts`, y en `HEAD` no
+(`outputs/wiring-subset-fails.txt` contra `wiring-subset-fails-baseline.txt`).
+La causa era esa prueba: su `mock.module` de `settings.js` es global en la
+ejecución, no se deshace y dejaba un módulo con sólo dos funciones. Ahora el
+sustituto conserva las exportaciones reales y, al terminar el archivo, delega
+en ellas. Por qué el cableado cambió qué instancia del módulo recibía el
+sustituto no está medido.
+
+Pendiente, en `defaultPolicyContext`: de qué fuente se armó el asistente, si
+funde su salida y los ajustes del proceso padre.

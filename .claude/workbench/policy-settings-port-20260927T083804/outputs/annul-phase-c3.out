@@ -1,0 +1,3 @@
+base	3 pass, 0 fail	—
+source-returns-null	1 pass, 2 fail	policySettings cableada > la capa remota en caché es la fuente policySettings | policySettings cableada > en la fusión de todas las fuentes, la política gana a las del usuario
+merge-skips-policy	2 pass, 1 fail	policySettings cableada > en la fusión de todas las fuentes, la política gana a las del usuario

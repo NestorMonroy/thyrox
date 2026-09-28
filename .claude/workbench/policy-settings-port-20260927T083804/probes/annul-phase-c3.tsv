@@ -1,0 +1,3 @@
+base	s/^$//
+source-returns-null	s/^    return policySettingsDocument(defaultPolicyContext()) as SettingsJson | null$/    return null/
+merge-skips-policy	s/^        if (policy) mergedSettings = mergeWith(mergedSettings, policy, settingsMergeCustomizer)$//

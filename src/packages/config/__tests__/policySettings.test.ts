@@ -173,7 +173,7 @@ describe('el asistente de política (BL)', () => {
     let helper: Record<string, unknown> = { permissions: { allow: ['Edit'] }, env: { a: '2', B: '3' } }
     const ctx = context({ store, helperMergesOutput: () => true, helper: () => helper, remote: () => ({ permissions: { allow: ['Read'] }, env: { A: '1', c: '4', b: '5' }, policyHelper: { path: '/h' } }) })
     const slot = U.helperSlot(ctx) as { helper: unknown }
-    expect(slot).toEqual({ composes: 'remoteSlot', mergedOver: 'remote', helper: { permissions: { allow: ['Edit', 'Read'] }, env: { A: '2', c: '4', b: '3', a: '2', B: '3' } } })
+    expect(slot as unknown).toEqual({ composes: 'remoteSlot', mergedOver: 'remote', helper: { permissions: { allow: ['Edit', 'Read'] }, env: { A: '2', c: '4', b: '3', a: '2', B: '3' } } })
     helper = { model: OPUS }
     expect((U.helperSlot(ctx) as { helper: unknown }).helper).toEqual(slot.helper)
   })

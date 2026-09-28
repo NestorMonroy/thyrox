@@ -22,16 +22,13 @@
  * `settingsMergeCustomizer`, `getSettingsWithErrors`, `getInitialSettings`,
  * `getSettings` (alias).
  *
+ * La fuente `policySettings` es la composición de `./policySettings.ts`
+ * (`UP` y `Zy` de 2.1.283): remota o asistente, MDM, archivo administrado,
+ * proceso padre y HKCU como último recurso. Sus errores entran en
+ * `getSettingsWithErrors` junto a los de las demás fuentes.
+ *
  * NO portados — bloqueado, declarado por nombre:
  *
- * - Resolución de `policySettings` (remote > MDM/plist/HKLM >
- *   managed-settings.json > HKCU). Sus tres dependencias YA existen en
- *   `@thyrox/config` —`../remote/syncCacheState.js`, `./mdm/settings.js` y
- *   `./managedPath.js` (medido 2026-09-27)—; lo que falta es la composición
- *   misma, que en 2.1.283 es `UP` (con `Qq` para la capa remota y `Os` para
- *   MDM), extraída en `.claude/workbench/policy-settings-port-*`. Hasta
- *   portarla, `getSettingsForSource('policySettings')` devuelve `null`, el
- *   mismo valor que la fuente cuando las capas están vacías.
  * - Capa de plugin settings (`getPluginSettingsBase`, `plugin/*` como base
  *   de menor precedencia): no portada. `loadSettingsFromDisk` arranca el
  *   merge desde `{}` en vez de la base de plugins.
@@ -82,6 +79,7 @@ import {
 } from './validation.ts'
 import { SETTING_SOURCES, type SettingSource } from './constants.ts'
 import { getManagedFilePath } from './managedPath.ts'
+import { composePolicySettings, defaultPolicyContext, policySettingsDocument } from './policySettings.ts'
 import { SettingsSchema, type Settings as SettingsJson } from './types.ts'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
 import { feature } from 'bun:bundle'
@@ -265,11 +263,8 @@ export function getSettingsFilePathForSource(
 function getSettingsForSourceUncached(
   source: SettingSource,
 ): SettingsJson | null {
-  // policySettings: la cadena remote > MDM/plist > managed-settings.json >
-  // HKCU no está portada (ver docstring del módulo) — se devuelve `null`,
-  // el mismo valor que la fuente cuando las cuatro capas están vacías.
   if (source === 'policySettings') {
-    return null
+    return policySettingsDocument(defaultPolicyContext()) as SettingsJson | null
   }
 
   const settingsFilePath = getSettingsFilePathForSource(source)
@@ -435,7 +430,15 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
     // portada) — se recorren TODAS las fuentes declaradas.
     for (const source of SETTING_SOURCES) {
       if (source === 'policySettings') {
-        // Cadena remote/MDM/managed-file/HKCU no portada — 0 aporte.
+        for (const error of composePolicySettings(defaultPolicyContext()).errors) {
+          const errorKey = `${error.file}:${error.path}:${error.message}`
+          if (!seenErrors.has(errorKey)) {
+            seenErrors.add(errorKey)
+            allErrors.push(error)
+          }
+        }
+        const policy = getSettingsForSource('policySettings')
+        if (policy) mergedSettings = mergeWith(mergedSettings, policy, settingsMergeCustomizer)
         continue
       }
 

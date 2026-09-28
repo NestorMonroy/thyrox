@@ -1,0 +1,123 @@
+bun test v1.3.11 (af24e281)
+
+permission/__tests__/permissionPersistence.test.ts:
+133 |       directories: ['/ya'],
+134 |       destination: 'localSettings',
+135 |     })
+136 |     // La guarda de «nada que añadir» evita una escritura de disco que no
+137 |     // cambia nada — y con ella, invalidar cachés río abajo por gusto.
+138 |     expect(statSync(rutaLocal()).mtimeMs).toBe(antes)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: 1790556226876.9036
+Received: 1790556226878.916
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionPersistence.test.ts:138:43)
+(fail) persistPermissionUpdate — sólo los destinos con archivo detrás > 3. si TODOS los directorios ya estaban, no reescribe [6.41ms]
+145 |       type: 'removeDirectories',
+146 |       directories: ['/b'],
+147 |       destination: 'localSettings',
+148 |     })
+149 |     const p = leerLocal().permissions as { additionalDirectories: string[] }
+150 |     expect(p.additionalDirectories).toEqual(['/a', '/c'])
+                                          ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "/a",
+-   "/c",
+- ]
++ []
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionPersistence.test.ts:150:37)
+(fail) persistPermissionUpdate — sólo los destinos con archivo detrás > 4. quitar directorios deja los que no se nombraron [1.50ms]
+192 |       type: 'removeRules',
+193 |       rules: [{ toolName: 'Bash' }],
+194 |       behavior: 'deny',
+195 |       destination: 'localSettings',
+196 |     })
+197 |     expect((leerLocal().permissions as { deny: string[] }).deny).toEqual([
+                                                                       ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "Read(//otro)",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionPersistence.test.ts:197:66)
+(fail) persistPermissionUpdate — sólo los destinos con archivo detrás > 7. quitar reglas COMPARA NORMALIZADO, no por cadena cruda [1.07ms]
+
+permission/__tests__/permissionsLoader.test.ts:
+69 |         deny: ['Bash(rm:*)'],
+70 |         ask: ['Write'],
+71 |       },
+72 |     })
+73 |     const reglas = getPermissionRulesForSource('localSettings')
+74 |     expect(reglas.map(r => r.ruleBehavior).sort()).toEqual([
+                                                        ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "allow",
+-   "ask",
+-   "deny",
+- ]
++ []
+
+- Expected  - 5
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionsLoader.test.ts:74:52)
+(fail) getPermissionRulesForSource — de JSON a reglas > 1. lee los TRES comportamientos, no sólo permitir y denegar [1.87ms]
+84 |     )
+85 |     await sembrar('localSettings', {
+86 |       permissions: { allow: ['Bash(git status:*)'] },
+87 |     })
+88 |     const [r] = getPermissionRulesForSource('localSettings')
+89 |     expect(r!.source).toBe('localSettings')
+                ^
+TypeError: undefined is not an object (evaluating 'r.source')
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionsLoader.test.ts:89:12)
+(fail) getPermissionRulesForSource — de JSON a reglas > 2. cada regla lleva su fuente y su valor ya parseado [1.09ms]
+131 |       '../src/permissionsLoader.ts'
+132 |     )
+133 |     await sembrar('localSettings', { permissions: { allow: ['Bash(ls:*)'] } })
+134 |     await sembrar('userSettings', { permissions: { deny: ['Bash(rm:*)'] } })
+135 |     const fuentes = loadAllPermissionRulesFromDisk().map(r => r.source)
+136 |     expect(fuentes).toContain('localSettings')
+                          ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "localSettings"
+Received: []
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionsLoader.test.ts:136:21)
+(fail) loadAllPermissionRulesFromDisk — todas las fuentes > 6. junta las reglas de varias fuentes [1.27ms]
+252 |     const ok = deletePermissionRuleFromSettings({
+253 |       source: 'localSettings',
+254 |       ruleBehavior: 'allow',
+255 |       ruleValue: { toolName: 'Bash' },
+256 |     })
+257 |     expect(ok).toBe(true)
+                     ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/permissionsLoader.test.ts:257:16)
+(fail) deletePermissionRuleFromSettings — borrar la que existe > 12. borra por forma NORMALIZADA, no por cadena cruda [0.87ms]
+
+ 509 pass
+ 7 fail
+ 828 expect() calls
+Ran 516 tests across 36 files. [3.05s]
+__BG_EXIT__=1
