@@ -72,6 +72,7 @@ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
+import { isBareMode } from '@thyrox/config/env/utils'
 const execFileAsync = promisify(execFile)
 
 const DEFAULT_API_KEY_HELPER_TTL = 5 * 60 * 1000
@@ -143,10 +144,6 @@ function checkHasTrustDialogAccepted(): boolean {
     return true
   }
 }
-function isBareMode(): boolean {
-  return isEnvTruthy(process.env.THYROX_CODE_SIMPLE) || process.argv.includes('--bare')
-}
-
 // `./mockRateLimits.js` es ant-only; USER_TYPE 'ant' nunca es true fuera de
 // Anthropic. Sustituto trivial fiel a ese camino frío.
 function shouldUseMockSubscription(): boolean {

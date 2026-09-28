@@ -26,13 +26,7 @@
 
 import { getCwd } from '../../bootstrap/cwd.js'
 
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 export type DiagnosticsLevel = 'info' | 'warn' | 'error'
 
 export type PrefetchDeps = {

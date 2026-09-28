@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@alcalzone/ansi-tokenize": "^0.1.3",
+    "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/output": "workspace:*",
     "@thyrox/repl": "workspace:*",

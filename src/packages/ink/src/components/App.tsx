@@ -54,9 +54,6 @@ export function setAppCallbacks(cb: AppCallbacks): void {
   Object.assign(defaultCallbacks, cb)
 }
 
-function isEnvTruthy(value: string | undefined): boolean {
-  return value === '1' || value === 'true'
-}
 import { EventEmitter } from '../core/events/emitter.js'
 import { InputEvent } from '../core/events/input-event.js'
 import { TerminalFocusEvent } from '../core/events/terminal-focus-event.js'
@@ -111,6 +108,7 @@ import StdinContext from './StdinContext.js'
 import { TerminalFocusProvider } from './TerminalFocusContext.js'
 import { TerminalSizeContext } from './TerminalSizeContext.js'
 
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 // Platforms that support Unix-style process suspension (SIGSTOP/SIGCONT)
 const SUPPORTS_SUSPEND = process.platform !== 'win32'
 

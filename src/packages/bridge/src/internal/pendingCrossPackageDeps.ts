@@ -33,6 +33,7 @@ import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { toCompatSessionId } from '../sessionIdCompat.js'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
+export { isEnvTruthy } from '@thyrox/config/env/utils'
 /**
  * `getOauthConfig` — de `@claude-code-how-works/provider/oauthConstants`.
  * Ya existe idéntica en `@thyrox/provider: src/oauthConstants.ts:155`
@@ -440,19 +441,6 @@ export function getDynamicConfig_CACHED_MAY_BE_STALE<T>(
   defaultValue: T,
 ): T {
   return getFeatureValue_CACHED_MAY_BE_STALE(configName, defaultValue)
-}
-
-/**
- * `isEnvTruthy` — de `@claude-code-how-works/config/env/utils`. Ya
- * existe idéntica en `@thyrox/config: env/utils.ts:25`. Reimplementación
- * fiel VERBATIM (pura, 5 líneas). Se retira cuando `@thyrox/bridge` sea
- * miembro del workspace.
- */
-export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
 }
 
 /**

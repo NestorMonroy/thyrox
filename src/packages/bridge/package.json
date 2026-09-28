@@ -146,6 +146,7 @@
     "@thyrox/agent": "workspace:*",
     "@thyrox/cli": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
+    "@thyrox/config": "workspace:*",
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/storage": "workspace:*",

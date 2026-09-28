@@ -17,13 +17,8 @@
 
 import { createHash } from 'crypto'
 
+export { isEnvTruthy } from '@thyrox/config/env/utils'
 // ── Env utils ────────────────────────────────────────────────────────────────
-
-export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  return ['1', 'true', 'yes', 'on'].includes(envVar.toLowerCase().trim())
-}
 
 export function isEnvDefinedFalsy(
   envVar: string | boolean | undefined,

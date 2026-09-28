@@ -255,18 +255,13 @@ async function getDynamicConfig_BLOCKS_ON_INIT<T>(
   return getFeatureValue_CACHED_MAY_BE_STALE<T>(key, fallback)
 }
 
-function isEnvTruthy(value: string | boolean | undefined): boolean {
-  if (!value) return false
-  if (typeof value === 'boolean') return value
-  return ['1', 'true', 'yes', 'on'].includes(String(value).toLowerCase().trim())
-}
-
 /**
  * El contexto de permisos, con la misma forma laxa que usa
  * `PermissionUpdate.ts`: el tipo completo vive en el consumidor, y este
  * paquete sólo necesita saber que es un objeto indexable.
  */
 import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 type ToolPermissionRulesBySource = Record<string, string[]>
 
 const AGENT_TOOL_NAME = 'Agent'

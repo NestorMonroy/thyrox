@@ -44,14 +44,7 @@ import { mkdirSync, writeFileSync as writeFileSyncNode } from 'node:fs'
 import { formatMs, formatTimelineLine, getPerformance } from './profilerBase.js'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
-
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 export type TelemetrySink = (event: string, metadata: Record<string, unknown>) => void
 export type DebugSink = (message: string) => void
 

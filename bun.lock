@@ -158,6 +158,7 @@
         "@thyrox/agent": "workspace:*",
         "@thyrox/cli": "workspace:*",
         "@thyrox/command-runtime": "workspace:*",
+        "@thyrox/config": "workspace:*",
         "@thyrox/headless-sdk": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/storage": "workspace:*",
@@ -382,6 +383,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@alcalzone/ansi-tokenize": "^0.1.3",
+        "@thyrox/config": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/output": "workspace:*",
         "@thyrox/repl": "workspace:*",

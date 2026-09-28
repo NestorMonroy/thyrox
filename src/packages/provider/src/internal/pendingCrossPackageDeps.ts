@@ -108,11 +108,6 @@ export function getLocalISODate(): string {
   return `${y}-${m}-${d}`
 }
 
-// ── ccnmt: packages/config/env/utils.ts → isBareMode ─────────────────────
-export function isBareMode(): boolean {
-  return isEnvTruthy(process.env.THYROX_CODE_SIMPLE) || process.argv.includes('--bare')
-}
-
 // ── ccnmt: packages/config/env/git-settings.ts → shouldIncludeGitInstructions
 // La fuente además consulta `getInitialSettings().includeGitInstructions`
 // (config/settings, no portado). Sin ese árbol el default es `true`, igual
@@ -274,3 +269,5 @@ export function jsonParse(text: string): unknown {
 // como ausente en vez de honrarlo. Se reexporta el canónico.
 import { getConfigHomeDir } from '@thyrox/config/env/utils'
 export { getConfigHomeDir }
+// `isBareMode` tiene su hogar en el mismo módulo canónico.
+export { isBareMode } from '@thyrox/config/env/utils'

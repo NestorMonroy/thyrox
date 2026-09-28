@@ -58,17 +58,10 @@ import { dirname, join } from 'node:path'
 import { MODELS } from './models.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 /** Wrapper trivial sobre `process.env` — mismo contrato que el de config/env/utils. */
 function readEnv(name: string): string | undefined {
   return process.env[name]
-}
-
-/** Normaliza a booleano un valor de variable de entorno. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
 }
 
 /** Directorio de trabajo actual — stub de `app-host/bootstrap/cwd.js`. */

@@ -1,3 +1,4 @@
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 // Adaptación de @claude-code-how-works/app-host: src/startup/apiPreconnect.ts.
 // Capa 1 (con cita al `fetch` nativo — no es paquete hermano).
 //
@@ -24,13 +25,6 @@ const DEFAULT_ANTHROPIC_BASE_URL = 'https://api.anthropic.com'
 
 function readEnv(name: string): string | undefined {
   return process.env[name]
-}
-
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
 }
 
 let fired = false

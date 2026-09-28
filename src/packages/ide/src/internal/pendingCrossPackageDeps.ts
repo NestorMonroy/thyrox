@@ -32,6 +32,7 @@ import { join as pathJoin } from 'node:path'
 import type { StructuredPatchHunk } from '@thyrox/agent/diff.js'
 import type { IdeType } from '../ide.js'
 
+export { isBareMode } from '@thyrox/config/env/utils'
 // ─────────────────────────────────────────────────────────────────────────
 // 1. Envoltorios de require() diferido — el paquete hermano YA existe
 // ─────────────────────────────────────────────────────────────────────────
@@ -230,19 +231,6 @@ export function isEnvDefinedFalsy(
   if (!envVar) return false
   const normalizedValue = envVar.toLowerCase().trim()
   return ['0', 'false', 'no', 'off'].includes(normalizedValue)
-}
-
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts` (`isBareMode`). `--bare` /
- * `THYROX_CODE_SIMPLE`: sin LSP, porque LSP es para integración de editor
- * (diagnostics, hover, ir-a-definición) y las llamadas `-p` guionadas no lo
- * usan.
- */
-export function isBareMode(): boolean {
-  return (
-    requireConfigEnvUtils().isEnvTruthy(process.env.THYROX_CODE_SIMPLE) ||
-    process.argv.includes('--bare')
-  )
 }
 
 export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'

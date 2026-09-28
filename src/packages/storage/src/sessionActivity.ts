@@ -28,15 +28,11 @@
  *    `delete`).
  *  - `logForDiagnosticsNoPII` (`local-observability/logging`) — no-op con
  *    setter `setLogForDiagnosticsNoPIIFn`.
- *  - `isEnvTruthy` (`@thyrox/config: env/utils.ts`, que sí existe de
- *    verdad en este monorepo) — no se importa por el mismo motivo de
- *    aislamiento de paquete; se reimplementa fiel a esa fuente real
- *    (`1`/`true`/`yes`/`on`, sin distinguir mayúsculas).
  *
- * `readEnv` SÍ se reusa de verdad: se importa del original,
- * `@thyrox/config/env/utils`.
+ * `readEnv` e `isEnvTruthy` se importan del original,
+ * `@thyrox/config/env/utils`, un módulo hoja.
  */
-import { readEnv } from '@thyrox/config/env/utils'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 // ---------------------------------------------------------------------------
 // Sustitutos — ver docstring del archivo.
@@ -61,14 +57,6 @@ export function setLogForDiagnosticsNoPIIFn(
   fn: typeof _logForDiagnosticsNoPII,
 ): void {
   _logForDiagnosticsNoPII = fn
-}
-
-/** Fiel a `@thyrox/config: env/utils.ts::isEnvTruthy` — ver docstring. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
 }
 
 // ---------------------------------------------------------------------------

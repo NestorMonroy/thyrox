@@ -15,15 +15,11 @@
  *  - `enqueueSdkEvent` (`agent/sdkEventQueue.js`) — no-op con setter de
  *    inyección `setEnqueueSdkEventFn`, para poder verificar en el test
  *    qué evento se intentó encolar sin el subsistema SDK real.
- *  - `isEnvTruthy` (`@thyrox/config: env/utils.ts`, que existe de verdad
- *    en este monorepo) — no se importa cruzando de paquete (mismo
- *    criterio que `sessionActivity.ts`); se reimplementa fiel a esa
- *    fuente.
  *
- * `readEnv` SÍ se reusa de verdad: se importa del original,
- * `@thyrox/config/env/utils`.
+ * `readEnv` e `isEnvTruthy` se importan del original,
+ * `@thyrox/config/env/utils`, un módulo hoja.
  */
-import { readEnv } from '@thyrox/config/env/utils'
+import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 export type SessionState = 'idle' | 'running' | 'requires_action'
 
@@ -52,14 +48,6 @@ export type RequiresActionDetails = {
 }
 
 type PermissionMode = string
-
-/** Fiel a `@thyrox/config: env/utils.ts::isEnvTruthy` — ver docstring. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalized = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalized)
-}
 
 let _enqueueSdkEvent: (event: Record<string, unknown>) => void = () => {}
 export function setEnqueueSdkEventFn(

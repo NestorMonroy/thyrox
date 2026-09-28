@@ -1,3 +1,4 @@
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 // Adaptación de @claude-code-how-works/app-host: src/main/cli/runtimeActivation.ts.
 // Capa 1 — porte PARCIAL declarado.
 //
@@ -21,13 +22,6 @@
 // inyectado: no está exportado todavía por nuestro `bootstrap/state.ts`.
 // `isEnvTruthy` se reimplementa localmente (verbatim de
 // `ccnmt: packages/config/env/utils.ts:43-48`).
-
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
 
 export type ProactiveDeps = {
   isProactiveActive?: () => boolean

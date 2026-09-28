@@ -2,12 +2,8 @@
  * Utilidades de teammate para la coordinación del swarm de agentes —
  * porte de `ccnmt: packages/swarm/src/teammateState.ts`.
  *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `isEnvTruthy` de
- * `@claude-code-how-works/config/env/utils`, paquete `config` que en este
- * árbol (`@thyrox/config`) no expone ese módulo (medido con
- * `ls src/packages/config`). Se reimplementa localmente — mismo criterio
- * que `api: agent/internalUtils.ts:59` ya declara para su propia
- * reimplementación del mismo wrapper trivial sobre variables de entorno.
+ * `isEnvTruthy` se importa de `@thyrox/config/env/utils`, como en la
+ * fuente.
  *
  * `AppState` se tipa localmente como `{ tasks: Record<string, unknown> }`
  * — la fuente lo importa de `adapters/appRuntime.ts` (donde también es
@@ -41,14 +37,7 @@ export {
 import { getTeammateContext } from './teammateContextAlias.js'
 import type { InProcessTeammateTaskState } from './tasks/types.js'
 
-/** Reimplementación local mínima de `isEnvTruthy` (ver divergencia arriba). */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 type InProcessTeammateTaskLike = {
   type: string
   status: string
