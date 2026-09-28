@@ -34,22 +34,11 @@ está fuera de las rutas asignadas al agente que escribió este paquete. Este
 recibe: el nombre `cli` ya está reservado para "argumentos, códigos de salida
 y punto de entrada", que es exactamente lo que esos dos archivos son.
 
-## Puente temporal: import relativo en `argv.ts`
+## `argv.ts` reexporta por nombre de paquete
 
-`argv.ts` reexporta desde `../../app-host/src/cliArgs.ts` (ruta relativa),
-no desde `@thyrox/app-host/cliArgs.js` (nombre de paquete) — aunque
-`package.json` SÍ declara la dependencia real
-(`@thyrox/app-host: workspace:*`). La razón: `@thyrox/cli` no resuelve por
-nombre desde ningún sitio mientras el lockfile no registrara este workspace,
-y el lockfile de entonces (`src/packages/bun.lock`, de un manifiesto anidado)
-no estaba entre las rutas de la tarea que creó este paquete.
-
-Hoy ya no aplica: el workspace, sus dependencias y su lockfile viven sólo en
-la raíz (`package.json` y `bun.lock`; el manifiesto y el lockfile anidados se
-retiraron en la tarea #62, y `check_single_workspace_root` impide que vuelvan),
-y `@thyrox/cli` resuelve por nombre desde el paquete y desde `tests/`
-(medido con `import.meta.resolve`). Pasar el reexport a nombre de paquete es
-un cambio de una línea.
+`argv.ts` reexporta desde `@thyrox/app-host/cliArgs.js`, que `package.json`
+declara por la versión exacta del hermano. El workspace y su lockfile viven
+sólo en la raíz (`check_single_workspace_root` impide uno anidado).
 
 ## Verificación
 

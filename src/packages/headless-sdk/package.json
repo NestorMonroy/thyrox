@@ -80,7 +80,7 @@
     "zod": "^4.3.6",
     "@anthropic-ai/sdk": "^0.124.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@thyrox/config": "workspace:*",
-    "@thyrox/local-observability": "workspace:*"
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-observability": "0.1.0"
   }
 }

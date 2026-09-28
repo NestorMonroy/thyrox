@@ -17,9 +17,9 @@
     }
   },
   "dependencies": {
-    "@thyrox/observability": "workspace:*",
-    "@thyrox/paths": "workspace:*",
-    "@thyrox/store": "workspace:*"
+    "@thyrox/observability": "0.1.0",
+    "@thyrox/paths": "0.1.0",
+    "@thyrox/store": "0.1.0"
   },
   "types": "./dist/index.d.ts"
 }

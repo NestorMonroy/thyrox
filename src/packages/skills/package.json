@@ -30,7 +30,7 @@
     "@types/bun": "^1.4.0"
   },
   "dependencies": {
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/paths": "workspace:*"
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/paths": "0.1.0"
   }
 }

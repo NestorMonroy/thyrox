@@ -6,10 +6,11 @@ El fenomeno, medido
 --------------------
 
 Un typecheck del paquete `cli` publica 2821 errores y **76 % de ellos no son
-suyos**: viven en veinte paquetes hermanos. La causa no es el protocolo
-`workspace:*` —que es lo que materializa los 37 enlaces de `node_modules`, y
-sin el no resolveria nada: los 42 manifiestos declaran `private: true`— sino
-lo que cada hermano expone en su `exports`. Los 42 resuelven a `./src/index.ts`
+suyos**: viven en veinte paquetes hermanos. La causa no es cómo se declara el
+hermano —la raíz declara el workspace y cada importador pide la versión exacta
+del hermano, que Bun enlaza al miembro local; sin eso no resolvería nada: los
+manifiestos declaran `private: true`— sino lo que cada hermano expone en su
+`exports`. Los 42 resuelven a `./src/index.ts`
 o `./index.ts`, o sea a **fuente**, asi que el compilador del consumidor la
 compila entera bajo SUS opciones.
 

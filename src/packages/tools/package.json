@@ -58,14 +58,14 @@
   },
   "devDependencies": {
     "@types/bun": "^1.4.0",
-    "@thyrox/provider": "workspace:*"
+    "@thyrox/provider": "0.1.0"
   },
   "dependencies": {
-    "@thyrox/agent": "workspace:*",
-    "@thyrox/observability": "workspace:*",
-    "@thyrox/plan": "workspace:*",
-    "@thyrox/skills": "workspace:*",
-    "@thyrox/task": "workspace:*",
-    "@thyrox/store": "workspace:*"
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/observability": "0.1.0",
+    "@thyrox/plan": "0.1.0",
+    "@thyrox/skills": "0.1.0",
+    "@thyrox/task": "0.1.0",
+    "@thyrox/store": "0.1.0"
   }
 }

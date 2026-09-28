@@ -12,6 +12,6 @@
     }
   },
   "dependencies": {
-    "@thyrox/paths": "workspace:*"
+    "@thyrox/paths": "0.1.0"
   }
 }
