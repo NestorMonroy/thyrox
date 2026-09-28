@@ -141,7 +141,7 @@ o si contradice una decisión anterior (`symbol-dVn.txt`). `N()` tiene 559 usos
 en 128 chunks, así que el backend es un subsistema transversal de
 almacenamiento remoto del proveedor, no algo propio del buzón.
 
-Anulaciones de la bandera en `anulacion-pin-*.txt`: `sin-primero` 2,
+Anulaciones de la bandera en `anulacion-pin-*.txt`: `sin-primero` 3,
 `sin-solo-true` 1, `sin-aviso-tipo` 1.
 
 La bandera se porta. El backend no se porta contra el servicio del
