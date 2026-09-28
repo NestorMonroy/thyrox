@@ -1,0 +1,91 @@
+== base
+ 26 pass
+ 0 fail
+== anulado en src/server/bypass.ts:   if (shouldBypass(h, userBypassPatterns)) return 'bypass'
+(fail) routeBypass: bypass beats target, and unknown hosts pass through [1.58ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/bypass.ts:   const h = hostname.toLowerCase()
+(fail) routeBypass: bypass beats target, and unknown hosts pass through [1.86ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/bypass.ts:   return isLoopbackIp(targetIp) && Number(destPort) === Number(localPort)
+(fail) isSelfLoopDestination loops only for loopback on the listen port [3.42ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/bypass.ts:   if (ip === '::1' 
+ 21 pass
+ 1 fail
+== anulado en src/server/bypass.ts:   return Number.isInteger(n) && n >= 0 ? n : 1
+(fail) parseVerboseLevel defaults to 1 and keeps explicit levels, 0 included [2.44ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/bypass.ts: .map(p => p.toLowerCase())
+(fail) parseBypassJson keeps non-empty string patterns, lowercased [3.07ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/forwardTarget.ts:   if (getAgentRouteConfig(options.agentId).routerPath === '/v1/messages') {
+ 26 pass
+ 0 fail
+== anulado en src/server/forwardTarget.ts:     return mappings[model] ?? mappings['*'] ?? null
+(fail) the mapped override comes from the agent namespace, then its wildcard [4.90ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/forwardTarget.ts:   return AGENT_ROUTE_CONFIG[agentId] ?? AGENT_ROUTE_CONFIG.antigravity!
+(fail) the route config maps claude-code and kiro to /v1/messages, unknown to antigravity [3.16ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/forwardTarget.ts:   } catch {
+(fail) an unreadable store yields no override instead of throwing [0.54ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/ingest.ts:     entry.totalLatencyMs = o.proxyLatencyMs + o.upstreamLatencyMs
+(fail) buildIngestEntry produces a schema-valid agent-bridge entry [9.40ms]
+ 25 pass
+ 1 fail
+== anulado en src/server/ingest.ts:   if (!token 
+ 22 pass
+ 1 fail
+== anulado en src/server/ingest.ts:     return res?.ok === true
+(fail) postIngestEntry never throws: no token, a non-2xx or a network error are false [1.34ms]
+ 25 pass
+ 1 fail
+== anulado en src/aliasConfig.ts:   const result: T & { model?: unknown; reasoningEffortOverride?: EffortLevel } = { ...body }
+(fail) applyAntigravityOverride swaps the model and sets reasoningEffortOverride on a copy [1.50ms]
+ 25 pass
+ 1 fail
+replace_literal: NO se pudo medir — OLD vacio o sin declarar. No se emite conteo.
+NO APLICA
+== anulado (rehecho) en src/server/bypass.ts: 
+ 26 pass
+ 0 fail
+replace_literal: NO se pudo medir — OLD vacio o sin declarar. No se emite conteo.
+NO APLICA
+== anulado (rehecho) en src/server/ingest.ts: 
+ 26 pass
+ 0 fail
+replace_literal: NO se pudo medir — OLD vacio o sin declarar. No se emite conteo.
+NO APLICA
+== anulado (rehecho) en src/server/forwardTarget.ts: 
+ 26 pass
+ 0 fail
+== base final
+ 26 pass
+ 0 fail
+== anulado (tercer intento) en src/server/bypass.ts:   if (ip === '::1' || ip === '::ffff:127.0.0.1') return true
+
+(fail) isSelfLoopDestination loops only for loopback on the listen port [1.76ms]
+ 25 pass
+ 1 fail
+== anulado (tercer intento) en src/server/ingest.ts:   if (!token || !baseUrl) return false
+
+(fail) postIngestEntry never throws: no token, a non-2xx or a network error are false [1.28ms]
+ 25 pass
+ 1 fail
+== anulado (tercer intento) en src/server/forwardTarget.ts:   if (getAgentRouteConfig(options.agentId).routerPath === '/v1/messages') {
+(fail) agents are forwarded by their router path, not by a hardcoded id [2.73ms]
+ 25 pass
+ 1 fail
+== base final
+ 26 pass
+ 0 fail

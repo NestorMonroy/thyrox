@@ -83,3 +83,22 @@ export function hasInvalidReasoningEffort(mappings: unknown): boolean {
     return normalizeReasoningEffort(raw) === undefined
   })
 }
+
+/**
+ * Aplica un alias al cuerpo crudo (todavía en forma cloudcode) que el
+ * servidor reenvía: cambia `model` si el alias lo trae y fija
+ * `reasoningEffortOverride` al mismo nivel que `model`, que es donde lo lee
+ * el traductor antigravity→openai. Devuelve una copia superficial.
+ *
+ * Porte de `applyAntigravityOverride` de
+ * `omniroute: src/mitm/_internal/aliasConfig.cjs` (MIT).
+ */
+export function applyAntigravityOverride<T extends Record<string, unknown>>(
+  body: T,
+  override: MitmAliasEntry | null | undefined,
+): T & { model?: unknown; reasoningEffortOverride?: EffortLevel } {
+  const result: T & { model?: unknown; reasoningEffortOverride?: EffortLevel } = { ...body }
+  if (override?.model) result.model = override.model
+  if (override?.reasoningEffort) result.reasoningEffortOverride = override.reasoningEffort
+  return result
+}
