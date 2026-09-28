@@ -28,3 +28,26 @@ En la primera ejecución dos no discriminaban:
   nunca se perdía. Se añadió el caso con un `unshare` lento (0.3 s).
 - **el error de arranque guardado**: era redundante con la rama de pid
   ausente. Se retiró; esa rama espera el evento `error` y lo nombra.
+
+## F7e-2c — las reglas TPROXY reales, aplicadas y revertidas
+
+`__tests__/tproxy/realTproxyRules.test.ts` corre `applyTproxy` y
+`revertTproxy` —sin cambiar una línea de ellos— contra el kernel real,
+dentro de un espacio de red de F7e-2b. `ip` se instaló con el instalador de
+F7e-2a (`THYROX_INSTALL_IPROUTE2=1`, iproute2 6.1.0; el éxito se comprobó
+re-leyendo el binario).
+
+Lo que la prueba comprueba: el apply deja la marca en `mangle OUTPUT` con la
+exclusión de la marca propia, el TPROXY en `mangle PREROUTING`, la regla
+`fwmark 0x11 lookup 117` y la ruta `local default dev lo table 117`; el
+revert devuelve el espacio a su estado previo; un apply que falla en su
+último paso no deja nada; y el anfitrión no cambia en ningún momento.
+
+Una lectura de la prueba se corrigió en la primera ejecución:
+`ip route show table 117` sale con error si la tabla aún no existe, así que
+se lee `table all` y se filtran las filas de la 117.
+
+Anulaciones (`annul-f7e2c.sh`, `results-f7e2c.txt`): las cinco discriminan.
+Retirar del revert la regla de política o la ruta local tumba dos casos cada
+una (el revert y el apply a medias), porque los dos pasan por el mismo
+revert.
