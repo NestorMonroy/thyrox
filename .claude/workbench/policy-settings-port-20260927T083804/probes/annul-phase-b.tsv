@@ -9,7 +9,7 @@ enoent-fails-closed	s/^    if (errnoOf(error) === 'ENOENT') return { settings: n
 unreadable-absent	s/^    return { settings: null, errors: \[unreadable(path, error)\], loadState: 'didNotLoad' }$/    return { settings: null, errors: [], loadState: 'absent' }/
 blank-not-empty	s/^  if (content.trim() === '') return .*$//
 not-object-accepted	s/^  if (typeof document !== 'object' || document === null || Array.isArray(document)) {$/  if (document === null) {/
-array-concat-dupes	s/\[...new Set(\[...target, ...source\])\]/[...target, ...source]/
+fragment-merge-default	s/^    merged = mergeWith(merged, settings, mergeManagedValue)$/    merged = mergeWith(merged, settings)/
 fragments-unsorted	s/.map(entry => entry.name).sort()$/.map(entry => entry.name)/
 hidden-fragments	s/ \&\& !entry.name.startsWith('.')$//
 non-json-fragments	s/ \&\& entry.name.endsWith('.json') \&\& / \&\& /

@@ -138,6 +138,13 @@ describe('el archivo administrado (njr)', () => {
     const reversed = { ...S.NODE_POLICY_FILES, listDirectory: (path: string) => S.NODE_POLICY_FILES.listDirectory(path).reverse() }
     expect(S.readFilePolicy(dir, reversed).settings).toEqual({ model: 'claude-opus-4-8' })
   })
+  test('los mapas de servidores MCP administrados se funden por servidor, sin mezclar su contenido', () => {
+    const dir = managedDir({
+      'managed-settings.json': JSON.stringify({ managedMcpServers: { a: { command: 'x', args: ['1'] }, b: { command: 'y' } } }),
+      'managed-settings.d/a.json': JSON.stringify({ managedMcpServers: { a: { command: 'z' } } }),
+    })
+    expect(S.readFilePolicy(dir).settings).toEqual({ managedMcpServers: { a: { command: 'z' }, b: { command: 'y' } } })
+  })
   test('un archivo vacío carga sin aportar nada', () => {
     const read = S.readFilePolicy(managedDir({ 'managed-settings.json': '  ' }))
     expect(read).toMatchObject({ settings: null, loadState: 'loaded' })

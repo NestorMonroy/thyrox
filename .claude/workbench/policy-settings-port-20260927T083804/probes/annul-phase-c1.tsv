@@ -1,0 +1,26 @@
+restrictive-first-value	s/^    const best = Math.min(/    const best = Math.max(/
+restrictive-no-retire	s/^    else if (getAtPath(first, path) === undefined \&\& getAtPath(target, path) !== undefined) setAtPath(target, path, undefined)$//
+restrictive-false-key	s/^  ].map(key => ({ path: \[key\], restrictive: false })),$/  ].map(key => ({ path: [key], restrictive: true })),/
+effort-order-reversed	s/^const EFFORT_LEVELS = \['low', 'medium', 'high', 'xhigh', 'max'\] as const$/const EFFORT_LEVELS = ['max', 'xhigh', 'high', 'medium', 'low'] as const/
+nested-path-dropped	s/^  { path: \['sandbox', 'network', 'allowManagedDomainsOnly'\], restrictive: true },$//
+strict-lists-not-joined	s/if (lists.length > 0) target.strictPluginOnlyCustomization = lists$/if (lists.length > 0) {}/
+strict-true-overwritten	s/^  if (target.strictPluginOnlyCustomization !== true) {$/  if (true) {/
+picker-shared	s/^  if (key === 'modelPicker' \&\& source !== undefined) return copyModelPicker(source)$//
+fallback-joined	s/return key === 'fallbackModel' ? source : unique(\[...target, ...source\])/return unique([...target, ...source])/
+maps-deep-merged	s/^  if ((key === 'extraKnownMarketplaces' || key === 'managedMcpServers') \&\& isPlainObject(target) \&\& isPlainObject(source)) {$/  if (false) {/
+list-first-reversed	s/unique(\[...source, ...target\])/unique([...target, ...source])/
+list-first-fallback	s/ \&\& key !== 'fallbackModel') return unique/) return unique/
+replace-shares-list	s/^  if (Array.isArray(source)) return \[...source\]$/  if (Array.isArray(source)) return source/
+replace-undefined-drops	s/^  if (source === undefined) return target$/  if (source === undefined) return undefined/
+replace-map-shared	s/\[key, Array.isArray(value) ? \[...value\] : value\]/[key, value]/
+tier-ripgrep-joined	s/ || (REPLACED_TIER_LISTS as readonly string\[\]).includes(key)) {$/) {/
+slot-allowlist-joined	s/^  if ((REPLACED_ALLOWLISTS as readonly string\[\]).includes(key)) return replaceValue(target, source)$//
+single-tier-keeps-mode	s/return { admin: managedSourcesBehavior === undefined ? top : withoutMode, merged: false }/return { admin: top, merged: false }/
+extra-ignored	s/^  if (!merging \&\& extraCount === 0) return/  if (!merging) return/
+top-only-kept	s/^  const kept: PolicyDocument = keepAll ? .*$/  const kept: PolicyDocument = { ...tier }/
+top-only-paths-kept	s/^  if (!keepAll) for (const path of TOP_TIER_ONLY_PATHS) .*$//
+snapshot-ignored	s/lowerTier(tier, merging \&\& snapshotFirst \&\& index === 0, platform)/lowerTier(tier, false, platform)/
+platform-ignored	s/^  else if (platforms !== undefined) delete kept.sandbox$//
+platform-list-kept	s/^  if (Array.isArray(platforms) \&\& platforms.includes(platform)) setAtPath(kept, \['sandbox', 'enabledPlatforms'\], undefined)$/  if (Array.isArray(platforms) \&\& platforms.includes(platform)) {}/
+merged-no-restrictive	s/^  applyMostRestrictive(admin, \[top, ...lower\])$//
+merged-no-overrides	s/^  inheritModelOverrides(admin, \[top, ...lower\], snapshotFirst)$//

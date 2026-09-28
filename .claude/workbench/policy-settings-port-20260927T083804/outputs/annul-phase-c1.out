@@ -1,0 +1,27 @@
+base	22 pass, 0 fail	—
+restrictive-first-value	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > en una escala gana el valor más bajo de la escala
+restrictive-no-retire	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > sin valor restrictivo, lo que el primer escalón no escribe se retira
+restrictive-false-key	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > en una clave cuyo valor restrictivo es false, gana false
+effort-order-reversed	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > en una escala gana el valor más bajo de la escala
+nested-path-dropped	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > las rutas anidadas también
+strict-lists-not-joined	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > las listas de strictPluginOnlyCustomization se unen
+strict-true-overwritten	21 pass, 1 fail	el valor más restrictivo de cada clave (_d) > true en strictPluginOnlyCustomization no se toca
+picker-shared	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > S6: modelPicker se copia; fallbackModel se reemplaza; las listas se unen
+fallback-joined	20 pass, 2 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > S6: modelPicker se copia; fallbackModel se reemplaza; las listas se unen | cómo se funde un valor (S6, Md, xd, ks, Wy) > Md: entre escalones la lista del que se funde va primero
+maps-deep-merged	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > S6: modelPicker se copia; fallbackModel se reemplaza; las listas se unen
+list-first-reversed	19 pass, 3 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > Md: entre escalones la lista del que se funde va primero | cómo se funde un valor (S6, Md, xd, ks, Wy) > ks reemplaza también awsPairs y ripgrep; Wy no | la fusión de escalones (jy) > con fusión, el superior gana y las listas se unen desde abajo
+list-first-fallback	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > Md: entre escalones la lista del que se funde va primero
+replace-shares-list	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > xd: una lista de permitidos se reemplaza entera, sin compartirla
+replace-undefined-drops	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > xd: una lista de permitidos se reemplaza entera, sin compartirla
+replace-map-shared	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > xd: una lista de permitidos se reemplaza entera, sin compartirla
+tier-ripgrep-joined	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > ks reemplaza también awsPairs y ripgrep; Wy no
+slot-allowlist-joined	21 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > ks reemplaza también awsPairs y ripgrep; Wy no
+single-tier-keeps-mode	21 pass, 1 fail	la fusión de escalones (jy) > un escalón solo es el administrador, sin su clave de modo
+extra-ignored	21 pass, 1 fail	la fusión de escalones (jy) > sin fusión, el primero gana pero toma lo más restrictivo de los extra
+top-only-kept	21 pass, 1 fail	la fusión de escalones (jy) > las claves que sólo lee el escalón superior no suben desde abajo
+top-only-paths-kept	21 pass, 1 fail	la fusión de escalones (jy) > defaultMode y replaceBuiltInOptions no suben desde abajo
+snapshot-ignored	21 pass, 1 fail	la fusión de escalones (jy) > con la instantánea primero, el escalón bajo el superior conserva sus claves
+platform-ignored	21 pass, 1 fail	la fusión de escalones (jy) > un sandbox de otra plataforma se descarta; el de esta pierde su lista
+platform-list-kept	21 pass, 1 fail	la fusión de escalones (jy) > un sandbox de otra plataforma se descarta; el de esta pierde su lista
+merged-no-restrictive	21 pass, 1 fail	la fusión de escalones (jy) > con fusión, el superior no afloja una restricción de abajo
+merged-no-overrides	21 pass, 1 fail	la fusión de escalones (jy) > con fusión, modelOverrides se hereda según availableModels

@@ -24,9 +24,6 @@
  *   `agn`) ni los fallos `ruled_empty` del último intento (`jx`), y
  *   `servedSnapshot` es siempre falso: esos tres leen el estado de la sesión
  *   remota, que este paquete aún no modela.
- * - La fusión de fragmentos sigue `S6` salvo `modelPicker` (`Hd`) y los
- *   mapas `extraKnownMarketplaces`/`managedMcpServers` (`uft`), que se funden
- *   en profundidad. pendiente: con esos dos auxiliares.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
 import { type Dirent, readdirSync, readFileSync } from 'node:fs'
@@ -44,6 +41,7 @@ import {
   type PolicyLoadState,
   type PolicyRead,
 } from './policyComposition.ts'
+import { mergeManagedValue } from './policyMerge.ts'
 import { SettingsSchema } from './types.ts'
 import { formatZodError } from './validation.ts'
 
@@ -172,14 +170,6 @@ function readManagedDocument(path: string, files: PolicyFiles): PolicySourceRead
   return readPolicyDocument(document as PolicyDocument, path)
 }
 
-/** `S6`: cómo se funde un fragmento sobre lo anterior. */
-function mergeFragment(target: unknown, source: unknown, key: string): unknown {
-  if (Array.isArray(target) && Array.isArray(source)) {
-    return key === 'fallbackModel' ? source : [...new Set([...target, ...source])]
-  }
-  return undefined
-}
-
 /** `V2o`/`b6`: un fragmento es un `.json` visible, archivo o enlace. */
 function isFragment(entry: Pick<Dirent, 'name' | 'isFile' | 'isSymbolicLink'>): boolean {
   return (entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith('.json') && !entry.name.startsWith('.')
@@ -200,7 +190,7 @@ export function readFilePolicy(directory: string, files: PolicyFiles = NODE_POLI
     loadState = combineLoadState(loadState, loadStateOf(read))
     const { settings } = read
     if (!settings || Object.keys(settings).length === 0) return
-    merged = mergeWith(merged, settings, mergeFragment)
+    merged = mergeWith(merged, settings, mergeManagedValue)
     found = true
     if (hasPolicyValues(settings) && !read.onlySubstitutes) authored = true
   }

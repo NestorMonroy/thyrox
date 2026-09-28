@@ -74,3 +74,23 @@ archivo de variantes y queda declarada aquí.
 
 Las pruebas corren como root en este contenedor, así que un `chmod 000` no
 niega nada: el `EACCES` se provoca inyectando el lector (`PolicyFiles`).
+
+## Fase C.1: la fusión por restricción
+
+`config: settings/policyMerge.ts` porta `jy`, `_d`, `ks`, `Wy`, `xd`, `Md`,
+`S6` y las listas `Qe` (las claves que restringen, con su valor restrictivo),
+`tVo` (lo que sólo aporta el escalón superior), `X2o`, `Td` y `$y`
+(`symbol-UP-level4.txt`, `symbol-UP-level5.txt`). Con `S6` completa, la
+fusión de fragmentos de la fase B deja de ser provisional: `managedMcpServers`
+y `extraKnownMarketplaces` se funden por clave y `modelPicker` se copia.
+
+Pendiente, declarado en la cabecera: la reescritura de `awsPairs` (`Pd`).
+
+Controles: `probes/annul-phase-c1.tsv`, salida en
+`outputs/annul-phase-c1.out`. La primera pasada dejó tres variantes mal
+formadas o en pie: una rompía la sintaxis y se reescribió; «el superior
+afloja una restricción» no tenía caso y se añadió; y el borrado final de
+`strictPluginOnlyCustomization` sin listas es equivalente —el bucle de
+restricción ya lo retira con la misma condición, igual que en la fuente—, así
+que se retiró del archivo y queda declarado aquí. El control de la fase B se
+repitió con la fusión nueva (`fragment-merge-default`).
