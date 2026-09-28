@@ -243,8 +243,8 @@ def run_copy_step(dest: Path, source: Path, files: list[str], before_lines: list
         # diagnóstico nuevo casi siempre importa la copia que lo rompió. Cada
         # ronda culpa a las importadas y se queda con el retiro si lo nuevo
         # baja, aunque no llegue a cero; sólo el residuo que ningún import
-        # explica se biseca. Antes era todo o nada: un solo culpable
-        # transitivo tiraba la atribución entera y se bisecaba el lote.
+        # explica se biseca: con todo o nada, un solo culpable transitivo
+        # tiraría la atribución entera y se bisecaría el lote.
         while new and applied:
             _, by_file = _new_diagnostics(before_lines, after)
             suspects = imported_copies(cwd, set(by_file), applied, dest)

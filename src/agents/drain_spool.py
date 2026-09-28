@@ -44,17 +44,14 @@ import sys
 # que contaba niveles del árbol de ORIGEN y quedó rota en la mudanza.
 from agents import agents_paths  # noqa: E402
 
-# El hogar de los hooks es del CONSUMIDOR, y desde el 2026-09-07
-# `consumer_root()` rehusa en vez de devolver la raiz del proveedor cuando no
-# puede saberlo. Su comentario anterior ya declaraba que eso no debia reventar
-# el import —«este modulo tambien se importa desde thyrox para medirlo»— y la
-# implementacion lo contradecia: capturaba la excepcion para `HOOKS` y acto
-# seguido la re-lanzaba desde el `from hook_error_log import`. La intencion
-# estaba escrita y no ejercida; medido por `tests/agents/test_agents_module_paths.py`,
-# que importa cada modulo de `src/agents/` en un subproceso con cwd=thyrox.
+# El hogar de los hooks es del CONSUMIDOR, y `consumer_root()` rehusa en vez
+# de devolver la raiz del proveedor cuando no puede saberlo. Eso no debe
+# reventar el import: este modulo tambien se importa desde thyrox para medirlo
+# (`tests/agents/test_agents_module_paths.py` importa cada modulo de
+# `src/agents/` en un subproceso con cwd=thyrox).
 #
-# La resolucion se DIFIERE a la primera llamada que la necesita. Importar el
-# modulo vuelve a ser inerte; drenar sigue exigiendo el consumidor, y rehusa
+# Por eso la resolucion se DIFIERE a la primera llamada que la necesita.
+# Importar el modulo es inerte; drenar exige el consumidor, y rehusa
 # nombrando la causa en vez de con un `ModuleNotFoundError` pelado, que mandaria
 # a buscar un modulo ausente cuando lo que falta es saber de que clon son los
 # hooks.

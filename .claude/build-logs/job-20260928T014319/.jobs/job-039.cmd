@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/corpus/test_docx_charts.py

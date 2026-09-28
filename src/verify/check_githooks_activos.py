@@ -35,14 +35,12 @@ invisible en el árbol.
 Qué clones, y por qué dos cifras
 ================================
 
-**Corregido 2026-09-27.** El gate recorría cinco nombres fijos con el prefijo
-``kaupamex-`` escrito en el código, y no medía al proveedor. Ahora el roster es
-el de ``paths.reach`` —declarado en ``THYROX_REACH_ROOTS`` o derivado de los
-hermanos— más el proveedor; sin roster rehúsa con exit 2 y sin cifra.
+El roster es el de ``paths.reach`` —declarado en ``THYROX_REACH_ROOTS`` o
+derivado de los hermanos— más el proveedor; ningún nombre de clon se escribe
+en el código. Sin roster rehúsa con exit 2 y sin cifra.
 
-Y publicaba «4 clones con los hooks inactivos» cuando incumplían 3: sumaba a
-los inactivos un clon que no existe en el árbol. Un clon AUSENTE no tiene los
-hooks inactivos, no está; se cuenta aparte y no bloquea ``--strict``.
+Un clon AUSENTE no tiene los hooks inactivos, no está: se cuenta aparte y no
+bloquea ``--strict``. Sumarlo a los inactivos inflaría el conteo.
 
 Uso::
 

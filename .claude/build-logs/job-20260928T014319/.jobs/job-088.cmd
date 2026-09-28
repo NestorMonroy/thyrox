@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/verify/test-gitattributes.sh

@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/session/test-gnu-time-launchers.sh

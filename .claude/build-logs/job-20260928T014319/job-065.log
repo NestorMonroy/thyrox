@@ -1,0 +1,9 @@
+== 1. dos admisiones simultáneas de 3000 con 5000 libres: entra una ==
+OK   una admitida y otra esperó
+== 2. soltada la reserva, la otra entra ==
+OK   admit sale 0 tras el release
+== 3. sin sitio y con plazo corto, admit sale 3 ==
+OK   vencido: exit 3
+
+aserciones: 3 de 3 · fallos: 0
+EXIT=0

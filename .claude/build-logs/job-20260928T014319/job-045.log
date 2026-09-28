@@ -1,0 +1,38 @@
+== 0. sintaxis ==
+  ok    error_log.py parsea
+  ok    register_session.py parsea
+== 1. returncode != 0 (fallo real, no fabricado: exit 1) SÍ se registra ==
+returncode: 1
+  ok    log existe tras un fallo real
+  ok    el log nombra el hook que falló
+  ok    el log trae el returncode
+== 2. returncode == 0 (éxito) NO ensucia el log ==
+stdout: hola
+  ok    éxito no crea el log
+== 3. el comando ni siquiera puede lanzarse (binario ausente) — se registra y devuelve None ==
+  ok    run_and_log devuelve None si no pudo lanzar
+  ok    el binario ausente igual se registra
+== 4. nunca lanza — timeout se atrapa y registra, no propaga ==
+resultado: None
+  ok    timeout se registra (no excepción sin atrapar)
+== 5. control positivo real: el fallo que register_agent_session.py --stop puede pisar ==
+  ok    actualizar-sesion con agent_id inexistente falla de verdad (exit 1)
+  ok    el mensaje de error es el esperado
+== 6. puente CLI: un comando que falla propaga su returncode y deja rastro ==
+  ok    el puente propaga el returncode del comando
+  ok    el fallo dejó rastro en el log
+  ok    el rastro nombra la etiqueta que pasó el hook
+  ok    el rastro trae el stderr real del comando
+== 7. contra-control: el éxito NO deja rastro, y reemite el stdout ==
+  ok    el puente devuelve 0 cuando el comando tuvo éxito
+  ok    el puente reemite el stdout del comando
+  ok    el éxito NO crea el log
+== 8. puente CLI: el comando ni siquiera se lanza — 127, como un shell ==
+  ok    binario ausente devuelve 127
+  ok    y aun así deja rastro
+== 9. puente CLI: uso incorrecto (sin --) devuelve 2 y no ejecuta nada ==
+  ok    sin separador -- devuelve 2
+  ok    y no registra nada (no llegó a ejecutar un comando)
+
+22 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/measurement/test_residual_structure.py

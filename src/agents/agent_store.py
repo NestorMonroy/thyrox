@@ -101,9 +101,8 @@ SCRIPT_PATH = Path(__file__).resolve()
 
 # El alcance a un repo hermano NO se deriva aqui: lo resuelve ``reach_roots``,
 # que es el stub de reexportacion del duenno canonico (``thyrox: src/paths/reach.py``).
-# Antes este modulo componia su propia raiz (``DOCS_ROOT.parent``) y su propio
-# prefijo (``kaupamex-<repo>``) — dos copias de una verdad que ya vivia en otro
-# sitio, y que ningun ``.env`` podia redirigir. Ver H-DOCS-1074.
+# Componer aqui una raiz o un prefijo propios duplicaria esa verdad, y ningun
+# ``.env`` podria redirigir la copia. Ver H-DOCS-1074.
 
 from paths import reach_roots  # noqa: E402
 from paths.reach import per_clone_base  # noqa: E402

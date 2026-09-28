@@ -265,9 +265,8 @@ def cmd_shared_plan(args) -> int:
 
 
 # Ruta 3: el ítem es un archivo y un trozo de sus diagnósticos, con el código
-# que los rodea. Antes vivía como guion de banco (step-120/build_items.py): el
-# contexto en el ítem evita que el `thyrox -p` gaste turnos leyendo, lo que en
-# el paso 114 dejó sin salida 19 de 29 ítems.
+# que los rodea: el contexto en el ítem evita que el `thyrox -p` gaste turnos
+# leyendo, que es lo que deja un ítem sin salida (paso 114).
 LOCAL_CONTEXT_LINES = 10
 LOCAL_HEAD = re.compile(r"^(?P<file>[^\s(]+)\((?P<line>\d+),(?P<col>\d+)\): error TS\d+:")
 

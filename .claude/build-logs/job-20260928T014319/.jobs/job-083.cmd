@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/task/test_board_sync.py

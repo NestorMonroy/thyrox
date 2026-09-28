@@ -38,9 +38,8 @@ Sólo el **escritor sin fin por construcción**: ``yes``, ``tail -f``,
 ``/dev/urandom`` y hermanos. Ahí la inversión no depende de un tamaño que
 haya que adivinar.
 
-**Corregido 2026-09-27.** La fila de ``echo`` de 5 MB decía «0 de 20» y no se
-reprodujo: medido sin exportar la variable, invierte 20/20, y ``echo``/``printf``
-invierten desde 107 KB. El umbral es el búfer del pipe (64 KiB), no el tipo de
+``echo``/``printf`` también invierten en cuanto su salida supera el búfer del
+pipe (64 KiB; medido desde 107 KB): el umbral es el tamaño, no el tipo de
 escritor. Esa clase —escritor de tamaño desconocido— la mide
 ``check_unsized_writer_pipe.py``; este gate conserva sólo la del escritor sin
 fin, que no necesita adivinar ningún tamaño.

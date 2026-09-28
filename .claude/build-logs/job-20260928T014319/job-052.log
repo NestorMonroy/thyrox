@@ -1,0 +1,2 @@
+test_pyproject_declares_imports: 4 import(s) de terceros, 0 sin declarar (alcance medido: src/**/*.py fuera de src/packages/computer-use-mcp/src/legacy/win32)
+EXIT=0

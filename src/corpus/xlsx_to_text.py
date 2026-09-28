@@ -20,10 +20,8 @@ paquetes               **0**           2, o 54 si se usa LibreOffice
 precedente en el arbol **si**          no
 =====================  ==============  ================================
 
-**Corregido 2026-09-21.** Aqui decia *"LibreOffice ya esta instalado —215 154
-KB en 54 paquetes— y convierte .xlsx a CSV sin instalar nada"*. Las dos
-mitades eran falsas, y por la misma razon: se midio el **nombre** y se
-concluyo sobre la **capacidad**.
+**LibreOffice no es una via disponible aunque su nombre resuelva.** Que el
+comando exista mide el **nombre**, no la **capacidad**:
 
 - ``command -v libreoffice`` resuelve, y es un enlace a un envoltorio de
   6656 bytes. El filtro de Calc (``libscfiltlo.so``) **no existe**.
@@ -34,9 +32,8 @@ concluyo sobre la **capacidad**.
   real sale **0** y no produce ni un archivo; con el perfil explicito imprime
   ``Error: source file could not be loaded`` **y sigue saliendo 0**.
 
-La cifra no se sustituye por otra: **se retira y se nombra el comando**, que
-es lo que `calibration-verified-numbers.md` exige para una propiedad de un
-artefacto vivo. Quien quiera el estado de hoy lo mide::
+El estado de hoy no se transcribe: se mide con el comando
+(`calibration-verified-numbers.md`)::
 
     bash src/verify/check-toolchain-ready.sh          # la sonda, por conducta
     dpkg-query -W -f='${Package} ${Status}\n' 'libreoffice*' | gawk '$3=="installed"'

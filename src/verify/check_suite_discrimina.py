@@ -89,11 +89,11 @@ MARCA = "# MUTANTE"
 #: existe para que la prueba pueda montar un árbol sintético: un test que midiera
 #: las raíces reales no podría fabricar un superviviente sin ensuciarlas, y sin
 #: superviviente no hay control que pueda fallar.
-#: Las raíces del universo. Desde la organización por clase (2026-08-27) este
-#: guion vive en `scripts/gates/`, así que `HERE` dejó de ser la raíz de los
-#: guiones: sería una **raíz muerta** que mide 22 de los 82 archivos y publica
-#: su cero como si fuera del árbol. Se declara `scripts/` y `hooks/`, y el
-#: recorrido de `candidates()` baja por los subdirectorios de clase.
+#: Las raíces del universo. No es `HERE`: este script vive en un subdirectorio
+#: de clase, y tomarlo como raíz mediría una fracción de los archivos y
+#: publicaría su cero como si fuera del árbol. Se declaran `src/` y
+#: `src/hooks/`, y el recorrido de `candidates()` baja por los subdirectorios
+#: de clase.
 #:
 #: `tests/` queda FUERA por construcción: es el instrumento con el que este
 #: juez mide, no el sujeto medido. Incluirlo preguntaría «¿qué suite cubre a

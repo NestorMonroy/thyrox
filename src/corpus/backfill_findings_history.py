@@ -183,11 +183,10 @@ def main() -> int:
         if store_dir.name != "agent-results":
             store_dir = store_dir / "agent-results"
     else:
-        # El hogar unico del store es el del PROVEEDOR (decision del ejecutor
-        # 2026-09-07: «solo se llena uno, para que no existan silos»). Componer
-        # aqui `DOCS_ROOT / ".claude" / "agent-results"` era la segunda fuente de
-        # verdad que produjo el silo de :ref:`h-docs-1237`. Se delega en el
-        # localizador declarado, que es la unica composicion de esta ruta.
+        # El hogar unico del store es el del PROVEEDOR (decision del ejecutor:
+        # «solo se llena uno, para que no existan silos»). Componer aqui otra
+        # ruta seria una segunda fuente de verdad (:ref:`h-docs-1237`): se
+        # delega en el localizador declarado, la unica composicion de esta ruta.
         store_dir = agents_paths.agent_store_path().parent
     procesados = 0
     omitidos: list[str] = []

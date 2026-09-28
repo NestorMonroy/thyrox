@@ -66,9 +66,8 @@ import os
 import re
 import sys
 
-# El lector único (`task_source`) vive en `scripts/task/`, no junto a este
-# guion: desde la organización por clase (2026-08-27) este archivo es un gate y
-# aquél es del subsistema de tareas. Se resuelve por __file__ y no por CWD,
+# El lector único (`task_source`) vive en `src/task/`, no junto a este
+# script: este archivo es un gate y aquél es del subsistema de tareas. Se resuelve por __file__ y no por CWD,
 # porque los tests cargan estos módulos por ruta con importlib.
 _SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for _sub in ('task', 'verify'):
@@ -169,11 +168,10 @@ BARE_IDENTIFIER = re.compile(r'\b([a-z_]{3,}(?:[_.][a-z_]{2,})+)\b')
 
 #: Ruta de archivo citada en la ficha.
 #:
-#: Las extensiones de TypeScript se anadieron el 2026-09-02: el harness entero
-#: es `.ts`, asi que sin ellas S2 era ciego a toda ficha suya — y son la mayoria
-#: del tablero. Lo destapo un fixture que citaba `src/inexistente.ts` esperando
-#: senal y no la recibia. Anadir una extension solo puede convertir un silencio
-#: en senal: una ruta que si resuelve sigue sin producirla.
+#: Incluye las extensiones de TypeScript: el harness entero es `.ts`, y sin
+#: ellas S2 seria ciego a toda ficha suya, que son la mayoria del tablero.
+#: Anadir una extension solo puede convertir un silencio en senal: una ruta que
+#: si resuelve sigue sin producirla.
 FILE_PATH = re.compile(
     r'\b((?:src|addons|tests|scripts|source|provisioners|config|bin|__tests__)/[\w./-]+'
     r'\.(?:py|sh|rst|js|jsx|ts|tsx|mjs|sql|conf|json))')

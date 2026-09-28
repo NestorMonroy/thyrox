@@ -131,8 +131,8 @@ else
 fi
 
 echo "=== 8. Variables de entorno del board declaradas en el bundle ==="
-# Añadidas 2026-08-12 al revisar docs@fbf6f38: el análisis original no las
-# cubría, y una de ellas (TASK_LIST_ID) es el lever contra H-DOCS-119.
+# Las variables que gobiernan el board; TASK_LIST_ID es la palanca contra
+# H-DOCS-119.
 for _v in CLAUDE_CODE_ENABLE_TASKS CLAUDE_CODE_TASK_LIST_ID CLAUDE_CODE_DISABLE_BACKGROUND_TASKS; do
   _n=$(grep -oc "$_v" "$CLI_JS" 2>/dev/null || echo 0)
   if [[ "$_n" -gt 0 ]]; then

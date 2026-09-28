@@ -1,0 +1,20 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. los índices declarados en CORE_SCHEMA existen de verdad ==
+  ok    idx_agent_sessions_status creado
+  ok    idx_agent_sessions_started_at creado
+== 3. caso normal: fts5 disponible, buscar-hallazgos funciona ==
+  ok    buscar-hallazgos encuentra el hallazgo recien indexado
+== 4. simular un SQLite sin fts5 compilado (control positivo, no fabricado a mano) ==
+AVISO: FTS5 no disponible en este SQLite (no such module: modulo_inexistente_fts5) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+AVISO: FTS5 no disponible en este SQLite (no such module: modulo_inexistente_fts5) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+ERROR: FTS5 no disponible en este SQLite — buscar-hallazgos requiere fts5 (ver _create_fts_schema)
+AVISO: FTS5 no disponible en este SQLite (no such module: modulo_inexistente_fts5) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+  ok    fts_available() es False cuando fts5 falla al crearse
+  ok    agent_sessions sigue aceptando escrituras sin fts5
+  ok    findings_history sigue aceptando escrituras sin fts5
+  ok    buscar-hallazgos sale con error controlado (exit 1), no traceback
+  ok    auto-recall (hook) queda en silencio, no revienta el turno
+
+9 ok, 0 fallos
+EXIT=0

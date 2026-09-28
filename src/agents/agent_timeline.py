@@ -36,9 +36,8 @@ import sys
 #: El patrón con que el harness nombra el transcript de un subagente, RELATIVO
 #: al hogar de transcripts. El slug del proyecto va como comodín y no como
 #: literal: el cliente lo deriva del cwd, así que una misma sesión escribe bajo
-#: varios —medido el 2026-09-23, ésta escribió bajo dos—. Antes el slug estaba
-#: incrustado (`/root/.claude/projects/-home-user`) y la búsqueda no veía nada
-#: de lo que el cliente hubiera abierto bajo el otro.
+#: varios. Con el slug incrustado, la búsqueda no vería nada de lo que el
+#: cliente hubiera abierto bajo otro.
 ROSTER_PATTERN = '*/*/subagents/agent-{agent_id}.jsonl'
 
 

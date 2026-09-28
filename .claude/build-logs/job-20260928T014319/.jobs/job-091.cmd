@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/verify/test-mutante-en-staging.sh

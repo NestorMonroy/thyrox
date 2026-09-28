@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/task/test_task_source_citas.py

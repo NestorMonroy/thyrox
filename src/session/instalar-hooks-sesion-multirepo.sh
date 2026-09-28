@@ -49,12 +49,9 @@ THYROX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Este guion aporta lo que es PARAMETRO del consumidor (DEC-04) —contra que
 # clon se resuelven las rutas y que modelo asesora— y nada mas.
 #
-# Antes componia sus propios seis comandos, apuntando a los stubs de
-# `<consumidor>/.claude/hooks/`. Esa topologia fue correcta mientras el
-# mecanismo vivio ahi; el 2026-09-07 los tres se mudaron a `thyrox:
-# src/agents/` y `declared_wiring()` reapunto al productor, pero este guion
-# no. Quedaron DOS cableados contradictorios y ningun control los separaba:
-# los seis archivos existen, asi que la alcanzabilidad da 0 para los dos.
+# Componer aqui otros comandos crearia un segundo cableado que contradiga al
+# del proveedor, y ningun control los separaria: si los archivos de los dos
+# existen, la alcanzabilidad da 0 para ambos.
 #
 # El consumidor es un parametro: `--consumidor <ruta>` gana, si no la raiz
 # que `reach` declare para el clon de docs.

@@ -108,8 +108,8 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 # con Anthropic u otro proveedor es trabajo de thyrox —sus traductores y su
 # selección de credenciales—, no de un segundo cliente. `HEADLESS_POOL_RUNNER`
 # sólo declara un doble que habla el contrato de `thyrox -p` (pruebas, el
-# arnés de GPU). `HEADLESS_POOL_CLAUDE`, que permitía correr `claude -p`, se
-# retiró por directiva del ejecutor 2026-09-27 y rehúsa abajo.
+# arnés de GPU). `HEADLESS_POOL_CLAUDE` (correr `claude -p`) no se admite y
+# rehúsa abajo (directiva del ejecutor).
 RUNNER_BIN="${HEADLESS_POOL_RUNNER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"

@@ -94,11 +94,10 @@ CREATION_EVENTS = ("TaskCreate", "TaskCreated")
 #: ``citation_id`` ni ``task_id``: eso es identidad, y reescribirla es el daño
 #: que este modulo existe para evitar.
 #:
-#: ``description`` entra el 2026-09-12 por un episodio medido: el board #364 se
-#: corrigio con ``TaskUpdate`` porque su premisa mezclaba dos poblaciones, y
-#: sincronizar llevo el sujeto nuevo dejando **la descripcion falsa intacta**.
-#: La fila quedo diciendo dos cosas que se contradicen, y la falsa es la que
-#: lleva el detalle que alguien leeria para trabajar. Ver :ref:`h-docs-1260`.
+#: ``description`` se sincroniza junto al sujeto: si una tarjeta se corrige con
+#: ``TaskUpdate``, llevar sólo el sujeto dejaria **la descripcion vieja
+#: intacta**, y la fila diria dos cosas que se contradicen — con la falsa
+#: llevando el detalle que alguien leeria para trabajar. Ver :ref:`h-docs-1260`.
 #:
 #: Los tres comparten semantica a proposito: la tarjeta es la fuente, asi que
 #: una descripcion vacia **vacia** la fila igual que un sujeto vacio lo haria.
