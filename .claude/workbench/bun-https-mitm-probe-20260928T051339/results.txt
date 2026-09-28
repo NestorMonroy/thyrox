@@ -1,0 +1,21 @@
+{
+  "bun": "1.3.11",
+  "sniCallback": "seen=[] cn= verified-ok=false",
+  "request": "ERR Hostname/IP does not match certificate's altnames: Host: b.test. is not in the cert's altnames: DNS:a.test",
+  "connectEvent": "fired=true reply=\"HTTP/1.1 200 Connection Established\""
+}
+{
+  "bun": "1.3.11",
+  "tlsServerSniCallback": "cn=a.test seen=[]",
+  "httpsAddContext": "throws h2.addContext is not a function. (In 'h2.addContext(\"b.test\", { key: leafB.key, cert: leafB.cert })', 'h2.addContext' is undefined) cn=a.test",
+  "bunServeTlsArray": "cn=b.test / a=a.test"
+}
+{
+  "bun": "1.3.11",
+  "multiSanLeaf": {
+    "a.test": "verified authorized=true",
+    "b.test": "verified authorized=true",
+    "c.example.com": "verified authorized=true",
+    "d.test": "ERR Hostname/IP does not match certificate's altnames: Host: d.t"
+  }
+}
