@@ -233,6 +233,34 @@ test("the forward dials its upstream through connectRaw — the bypass-marked se
   }
 });
 
+test("the upstream's hop-by-hop Connection header does not reach the client", async () => {
+  const certStore = new DynamicCertStore("THYROX MITM CA (test)");
+  const caPem = await certStore.getCaCertPem();
+  const forward = async () => ({
+    status: 200,
+    headers: { connection: "upstream-only", "content-type": "text/plain" },
+    body: Buffer.from("decrypted-roundtrip:ok"),
+  });
+  const engine = await startEngineListener(
+    certStore,
+    { ip: "127.0.0.1", port: 1 },
+    forward as ReturnType<typeof createForward>
+  );
+
+  try {
+    const response = await tlsRequest(
+      engine.port,
+      "api.example.com",
+      caPem,
+      "GET /hop HTTP/1.1\r\nHost: api.example.com\r\n\r\n"
+    );
+    assert.match(response, /decrypted-roundtrip:ok/);
+    assert.doesNotMatch(response, /upstream-only/i);
+  } finally {
+    await engine.close();
+  }
+});
+
 test("a forward failure is recorded as an error entry and the client gets 502", async () => {
   globalTrafficBuffer.clear();
   const certStore = new DynamicCertStore("THYROX MITM CA (test)");

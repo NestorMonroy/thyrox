@@ -51,3 +51,40 @@ Anulaciones (`annul-f7e2c.sh`, `results-f7e2c.txt`): las cinco discriminan.
 Retirar del revert la regla de política o la ruta local tumba dos casos cada
 una (el revert y el apply a medias), porque los dos pasan por el mismo
 revert.
+
+## F7e-2d — la captura de extremo a extremo, con descifrado
+
+`__tests__/tproxy/tproxyCaptureEndToEnd.test.ts` lanza con `nsenter`, dentro
+de un espacio de red propio, `fixtures/captureInNamespace.ts`. El fixture:
+
+- levanta un upstream HTTPS en `10.77.0.1:443`, con una CA propia que el
+  proceso confía vía `NODE_EXTRA_CA_CERTS`;
+- arranca la captura TPROXY real con descifrado (`startTproxyCapture`: reglas
+  reales, puente transparente y salida marcada del nativo);
+- hace una petición HTTPS a `10.77.0.1` con SNI `api.example.test`, confiando
+  sólo en la CA de la sesión.
+
+Comprueba que el cliente recibe la respuesta del upstream, que la conexión se
+interceptó una vez y que el búfer registra `POST api.example.test
+/v1/messages 200`.
+
+### Dos hallazgos al medir
+
+1. **El primer rojo era de la prueba.** `https.request` de Bun va sobre
+   `fetch` y construye la URL con la cabecera `Host`: intentaba resolver
+   `api.example.test` por DNS y recibía «refused» sin abrir TCP. Medido con
+   `probes/capture-diagnostics.ts`: 2 paquetes de 50 bytes en `mangle OUTPUT`,
+   ninguno TCP 443. El cliente pasó a `tls.connect` a la IP con SNI y una
+   petición HTTP escrita, que es lo que pone en el cable un agente cuyo DNS ya
+   resolvió.
+2. **El segundo era del motor.** Con el cliente arreglado, la captura
+   funcionaba entera, pero la conexión quedaba abierta aunque el cliente pidió
+   `Connection: close`: RFC 9112 §9.6 obliga al servidor a cerrarla tras la
+   respuesta final, y un cliente que lee hasta el cierre se queda esperando.
+   `handleDecryptedRequest` responde ahora con `Connection: close` y cierra el
+   socket al terminar, y ya no copia al cliente la cabecera `connection` del
+   upstream, que es de salto a salto.
+
+Anulaciones (`annul-f7e2d.sh`, `results-f7e2d.txt`): las cinco discriminan.
+La tercera —la `connection` del upstream copiada— no tenía caso en la primera
+ejecución; se añadió en `tlsCapture.test.ts`.

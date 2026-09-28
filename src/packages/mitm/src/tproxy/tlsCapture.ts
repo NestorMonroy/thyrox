@@ -113,6 +113,23 @@ export function buildForwardHeaders(raw: http.IncomingHttpHeaders, host: string)
   return out
 }
 
+function asksToClose(req: http.IncomingMessage): boolean {
+  return String(req.headers.connection ?? '')
+    .split(',')
+    .some(option => option.trim().toLowerCase() === 'close')
+}
+
+/**
+ * Un cliente que pidió `Connection: close` espera que el servidor cierre tras
+ * la respuesta final (RFC 9112 §9.6); si lee hasta el cierre, sin él se queda
+ * esperando.
+ */
+function closeAfterResponseIfAsked(req: http.IncomingMessage, res: http.ServerResponse): void {
+  if (!asksToClose(req)) return
+  res.setHeader('connection', 'close')
+  res.once('finish', () => req.socket.end())
+}
+
 /** Captura y reenvía una petición ya descifrada. */
 export function handleDecryptedRequest(
   req: http.IncomingMessage,
@@ -120,6 +137,7 @@ export function handleDecryptedRequest(
   dest: DecryptedDest,
   deps: TlsCaptureDeps,
 ): void {
+  closeAfterResponseIfAsked(req, res)
   const startedAt = deps.now()
   const host = resolveCaptureHost(dest.sni, req.headers.host, dest.ip)
   const path = req.url ?? '/'
@@ -160,7 +178,7 @@ export function handleDecryptedRequest(
       const safeHeaders: Record<string, string> = {}
       for (const [k, v] of Object.entries(result.headers)) {
         const lk = k.toLowerCase()
-        if (lk !== 'content-length' && lk !== 'transfer-encoding') safeHeaders[k] = v
+        if (lk !== 'content-length' && lk !== 'transfer-encoding' && lk !== 'connection') safeHeaders[k] = v
       }
       res.writeHead(result.status, safeHeaders)
       res.end(result.body)
