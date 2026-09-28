@@ -9,6 +9,11 @@
  * es `THYROX_MITM_NO_SUDO`, leída con el `isEnvTruthy` canónico; y la prueba
  * de la elevación inyecta su ejecutor en `runElevatedPowerShell` en vez de
  * duplicar la función en una variante sólo para pruebas.
+ *
+ * Cada proceso hijo recibe `env: process.env` explícito: medido, sin él Bun
+ * resuelve el ejecutable y hereda el entorno de ARRANQUE del proceso, no el
+ * actual, así que un PATH cambiado en tiempo de ejecución no llega al hijo;
+ * Node sí lo hace llegar.
  */
 import { execFile, execFileSync, spawn } from 'node:child_process'
 import crypto from 'node:crypto'
@@ -36,7 +41,7 @@ export function isRoot(): boolean {
 export function isSudoAvailable(): boolean {
   if (os.platform() === 'win32') return false
   try {
-    execFileSync('sh', ['-c', 'command -v sudo'], { stdio: 'ignore' })
+    execFileSync('sh', ['-c', 'command -v sudo'], { stdio: 'ignore', env: process.env })
     return true
   } catch {
     return false
@@ -45,7 +50,7 @@ export function isSudoAvailable(): boolean {
 
 export function execFileText(command: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    execFile(command, args, { encoding: 'utf8' }, (error, stdout, stderr) => {
+    execFile(command, args, { encoding: 'utf8', env: process.env }, (error, stdout, stderr) => {
       if (error) {
         // El mensaje de `execFile` ya dice «Command failed: …» o «spawn … ENOENT»:
         // no se vuelve a prefijar, y sólo se añade stderr si trae algo.
@@ -144,7 +149,11 @@ function runStep(step: SudoStep, spawnImpl: SpawnLike): Promise<StepResult> {
   return new Promise(resolve => {
     // `spawn` y no `exec`: cada argumento es una entrada del arreglo y ningún
     // metacarácter se expande.
-    const child = spawnImpl(step.command, step.args, { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] })
+    const child = spawnImpl(step.command, step.args, {
+      windowsHide: true,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: process.env,
+    })
     let stdout = ''
     let stderr = ''
     let settled = false
