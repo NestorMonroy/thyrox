@@ -22,6 +22,8 @@ import re
 import sys
 from pathlib import Path
 
+from paths import reach  # noqa: E402
+
 LINK = re.compile(r"\]\(([^()\s]+)(?:\s+\"[^\"]*\")?\)")
 CODE_SPAN = re.compile(r"`+[^`]*`+")
 FENCE = re.compile(r"^\s*(```|~~~)")
@@ -46,7 +48,7 @@ def relative_targets(text: str):
 
 
 def main(argv: list[str]) -> int:
-    top = Path(__file__).resolve().parents[2]
+    top = reach.thyrox_root()
     roots = [Path(a) for a in argv] or [top / ".claude" / "skills"]
     missing_roots = [r for r in roots if not r.is_dir()]
     if missing_roots:

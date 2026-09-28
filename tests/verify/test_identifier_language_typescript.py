@@ -22,7 +22,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 # Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
 GATE = Path(os.environ.get('IDENTIFIER_GATE_MODULE') or ROOT / 'src' / 'verify' / 'check_identifier_language.py')
 

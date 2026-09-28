@@ -22,8 +22,11 @@ import tempfile
 from pathlib import Path
 
 # Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
 MODULE = os.environ.get("CHECK_MD_LINKS_MODULE") or str(
-    Path(__file__).resolve().parents[2] / "src" / "verify" / "check_md_relative_links.py")
+    reach.thyrox_root() / "src" / "verify" / "check_md_relative_links.py")
 spec = importlib.util.spec_from_file_location("check_md_relative_links", MODULE)
 assert spec and spec.loader
 links = importlib.util.module_from_spec(spec)

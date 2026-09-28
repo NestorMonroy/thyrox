@@ -25,8 +25,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 from verify import check_single_workspace_root as gate
 
 ok_count = 0

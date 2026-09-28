@@ -14,8 +14,10 @@ import shutil
 import subprocess
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 _MODULE = pathlib.Path(os.environ.get("HOOK_MIGRATION_MODULE") or ROOT / "src/session/hook_migration.py")
 _spec = importlib.util.spec_from_file_location("hook_migration", _MODULE)
 assert _spec is not None and _spec.loader is not None
