@@ -484,6 +484,7 @@
         "@thyrox/local-observability": "0.1.0",
         "@thyrox/provider": "0.1.0",
         "@thyrox/store": "0.1.0",
+        "@thyrox/transparent-napi": "1.0.0",
         "selfsigned": "^5.5.0",
         "zod": "^4.3.6",
       },
@@ -830,6 +831,10 @@
         "@thyrox/provider": "0.1.0",
         "@types/bun": "^1.4.0",
       },
+    },
+    "src/packages/transparent-napi": {
+      "name": "@thyrox/transparent-napi",
+      "version": "1.0.0",
     },
     "src/packages/updater": {
       "name": "@thyrox/updater",
@@ -1296,6 +1301,8 @@
     "@thyrox/tool-registry": ["@thyrox/tool-registry@workspace:src/packages/tool-registry"],
 
     "@thyrox/tools": ["@thyrox/tools@workspace:src/packages/tools"],
+
+    "@thyrox/transparent-napi": ["@thyrox/transparent-napi@workspace:src/packages/transparent-napi"],
 
     "@thyrox/updater": ["@thyrox/updater@workspace:src/packages/updater"],
 
