@@ -23,7 +23,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3c-2 | clave publicada y leída: `XDo`, `sz`, `be`, `ifn`, `JDo`, `QDo`, `W`, `cl` → `uds/inboxKeys.ts` (rama de archivos locales) | hecha |
 | F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` (`lxe`, `RGr`, `ya`) y la forma de Windows de `n6`/`Hx` → `uds/processIdentity.ts` | hecha; la fuente del token en Windows, DESCONOCIDO |
 | F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`), `we`/`Ie` por plataforma y `ce`/`Ez`/`Le` como `shouldRetryRename` → `uds/atomicWrite.ts` | hecha |
-| F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n` y `Ee` de `QDo` | pendiente |
+| F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n`, `Ee`, `Ks`, `rt` y el contrato `SessionKeyStorage` que consumen → `uds/inboxKeys.ts` | hecha |
+| F3d-4 | el backend de storage que activa `N()` e implementa el contrato completo (`Re`, `ensureScope`, `write` con `publishDiscipline`, `listEntries`, `readText`) | pendiente |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
 | F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
@@ -121,3 +122,11 @@ ejecutado como root, que las pruebas usan:
   constantes `false` en la compilación de Linux. `uhn` depende además de una
   bandera de ejecución (`te`/`fUo`). Aquí son opciones con esos mismos
   valores por omisión.
+
+## F3d-3 — rama de storage de la clave: controles
+
+Anulaciones en `anulacion-keystorage-*.txt`; doce, y cada una tumba sólo sus
+casos. El storage de las pruebas es un doble en memoria con la forma de
+resultados de la referencia (`{ok, value}` / `{ok:false, error}`, páginas
+con `cursor`, lecturas con `found` y `totalBytes`). Lo que ese doble no puede
+probar es que un backend real cumpla el contrato. Eso lo cierra F3d-4.

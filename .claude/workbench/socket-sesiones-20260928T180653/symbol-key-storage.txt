@@ -1,0 +1,34 @@
+==== J4n: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function J4n [3566,4031)
+async function J4n(e,n){let r=[],i;try{i=await Ks((d)=>e.listEntries({namespace:"session"},{cursor:d,skipKeyStats:!0}),(d)=>{for(let a of d)if(a.kind==="key"&&a.key.namespace==="session")r.push(a.key.file)})}catch(d){n.onIssue?.(`failed: ${l(d)}`);return}switch(i.status){case"done":return r;case"error":n.onIssue?.(`failed: ${rt(i.error)}`);return;case"capped":return n.onIssue?.(`truncated at ${dp} pages; ${r.length} names seen`,"warn"),n.partialOnCap?r:void 0}}
+==== Ee: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function Ee [7661,7872)
+async function Ee(e,n){try{let r=await e.readText([{key:Re.session(n),offset:0,length:x+1}]);if(!r.ok)return null;let i=r.value.items[0];if(!i.found||i.totalBytes>x)return null;return i.value}catch{return null}}
+==== Re: 1 definicion(es) de nivel superior
+---- chunk-qbkceaaj.js variable Re [1906,4479)
+Re={transcript:f,journal:(e,n,a)=>({namespace:"transcript",projectKey:e,sessionId:n,agentRelPath:a,journal:!0}),sessionJournal:(e,n,a)=>({namespace:"transcript",projectKey:e,sessionId:n,sessionJournal:a}),history:()=>({namespace:"history"}),log:h,globalConfig:()=>({namespace:"globalConfig"}),globalConfigCopy:(e,n)=>({namespace:"globalConfig",kind:e,stamp:n}),userSettings:()=>({namespace:"settings",layer:"user"}),projectSettings:(e)=>({namespace:"settings",layer:"project",projectKey:e}),localSettings:(e)=>({namespace:"settings",layer:"local",consentRootKey:e}),task:(e,n)=>({namespace:"task",listId:e,taskId:n}),taskListMeta:(e)=>({namespace:"task",listId:e,meta:!0}),taskListHighWaterMark:(e)=>({namespace:"task",listId:e,highWaterMark:!0}),memory:(e,n)=>({namespace:"memory",projectKey:e,relPath:n}),pluginRegistry:(e)=>({namespace:"pluginRegistry",file:e}),marketplaceCache:(e,n)=>({namespace:"marketplaceCache",marketplace:e,form:n}),marketplaceTree:(e,n)=>({namespace:"marketplaceCache",marketplace:e,relPath:n}),pluginCache:(e,n,a,t)=>({namespace:"pluginCache",marketplace:e,plugin:n,version:a,relPath:t}),cache:(e,n)=>({namespace:"cache",store:e,id:n}),paste:(e)=>({namespace:"paste",id:e}),state:(e)=>({namespace:"state",id:e}),pluginAssetCache:(e)=>({namespace:"pluginAssetCache",digest:e}),plan:(e)=>({namespace:"plan",name:e}),daemon:(e)=>({namespace:"daemon",relPath:e}),feedbackDraft:(e)=>({namespace:"feedbackDraft",draftId:e}),agentMemory:(e,n)=>({namespace:"agentMemory",layer:"user",agentType:e,relPath:n}),identity:()=>({namespace:"identity"}),team:(e)=>({namespace:"team",team:e}),sidecar:(e,n,a)=>({namespace:"sidecar",projectKey:e,sessionId:n,relPath:a}),mailbox:(e,n)=>({namespace:"mailbox",team:e,teammate:n}),scratch:(e,n)=>({namespace:"scratch",sessionId:e,relPath:n}),userConfigDir:(e,n)=>({namespace:"userConfigDir",dir:e,relPath:n}),fileHistory:(e,n)=>({namespace:"fileHistory",sessionId:e,backupFileName:n}),job:(e,n)=>({namespace:"job",jobId:e,relPath:n}),jobTimeline:(e)=>({namespace:"jobTimeline",jobId:e}),recording:(e,n,a)=>({namespace:"recording",projectKey:e,sessionId:n,stamp:a}),sessionLog:(e,n,a)=>({namespace:"sessionLog",projectKey:e,year:n.year,month:n.month,day:n.day,logName:a}),jobPins:()=>({namespace:"jobsRoot",file:"pins"}),jobDraft:(e)=>({namespace:"jobsRoot",draftKey:e}),session:(e)=>({namespace:"session",file:e}),bridgePointer:(e)=>({namespace:"bridgePointer",projectKey:e}),sessionAliases:(e)=>({namespace:"sessionAliases",projectKey:e}),dirSyncRecord:(e,n)=>({namespace:"dirSyncRecord",projectKey:e,sessionId:n})}
+==== pe: 1 definicion(es) de nivel superior
+---- path external basename [4147,4204)
+import{basename as pe,join as _,resolve as ge}from"path";
+==== rt: 1 definicion(es) de nivel superior
+---- chunk-nwpc1c89.js function rt [1656,1838)
+function rt(e){return e.code+("failureClass"in e?` ${e.failureClass}`:"")+("telemetryCode"in e&&e.telemetryCode?` ${e.telemetryCode}`:"")+("cause"in e&&e.cause?`: ${i(e.cause)}`:"")}
+symbol: 5 de 5 nombre(s) resueltos
+==== N: 1 definicion(es) de nivel superior
+---- chunk-8nz62976.js function N [1137,1164)
+function N(){return t===!0}
+==== t: 1 definicion(es) de nivel superior
+---- chunk-8nz62976.js variable t [1135,1136)
+t
+symbol: 2 de 2 nombre(s) resueltos
+==== Ks: 1 definicion(es) de nivel superior
+---- chunk-mp7hmykc.js function Ks [626,1006)
+async function Ks(e,r,t){let s=Math.max(1,Math.floor(t?.maxPages??1e4)),u;for(let a=0;a<s;a++){if(t?.budget!==void 0){if(t.budget.pagesLeft<1)return{status:"capped"};t.budget.pagesLeft--}let n=await e(u);if(!n.ok)return{status:"error",error:n.error};if(await r(n.value.items),t?.until?.())return{status:"done"};if(u=n.value.cursor,!u)return{status:"done"}}return{status:"capped"}}
+==== dp: 1 definicion(es) de nivel superior
+---- chunk-mp7hmykc.js variable dp [619,625)
+dp=1e4
+symbol: 2 de 2 nombre(s) resueltos
+==== i: 1 definicion(es) de nivel superior
+---- chunk-nwpc1c89.js function i [1838,1898)
+function i(e){return e instanceof Error?e.message:String(e)}
+symbol: 1 de 1 nombre(s) resueltos
