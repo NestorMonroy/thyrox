@@ -9,6 +9,7 @@
  */
 import { sanitizeErrorMessage } from '../../sanitize/errorSanitization.ts'
 import { WEB_COOKIE_PROBE_BASE_URLS, WEB_COOKIE_PROVIDERS_WITH_UNRELIABLE_MODELS_PROBE, WEB_COOKIE_PROVIDERS_WITHOUT_AUTH_PROBE, WEB_COOKIE_PROVIDERS_WITHOUT_MODELS_API } from './webCookieProviders.ts'
+import { validateChatGptWebProvider } from './chatgptWebStorageState.ts'
 import { extractZaiToken } from './zaiToken.ts'
 
 const STANDARD_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36'
@@ -30,6 +31,9 @@ export type WebCookieValidator = (request: { provider: string; apiKey?: string }
 
 const UNSUPPORTED: WebCookieValidation = { valid: false, error: 'Provider validation not supported', unsupported: true }
 
+/** Los validadores sin red que se usan cuando el llamador no inyecta los suyos. */
+const DEFAULT_SPECIAL_VALIDATORS: Readonly<Record<string, WebCookieValidator>> = { 'chatgpt-web': validateChatGptWebProvider }
+
 export function resolveWebCookieProbe(provider: string, cookie: string): WebCookieProbeTarget {
   if (!Object.hasOwn(WEB_COOKIE_PROBE_BASE_URLS, provider)) return { rejection: { valid: false, error: 'Provider not found in registry', unsupported: true } }
   if (!cookie) return { rejection: { valid: false, error: 'Cookie required for web-cookie provider', unsupported: false } }
@@ -48,14 +52,14 @@ export function resolveWebCookieProbe(provider: string, cookie: string): WebCook
 
 export interface WebCookieProbeDeps {
   fetch?: typeof globalThis.fetch
-  /** Proveedores que se validan sin red y a su manera; hoy, `chatgpt-web`. */
+  /** Proveedores que se validan sin red y a su manera; sin inyectar, `chatgpt-web` usa su storage state. */
   specialValidators?: Readonly<Record<string, WebCookieValidator>>
 }
 
 export async function validateWebCookieProvider(request: { provider: string; apiKey?: string }, deps: WebCookieProbeDeps = {}): Promise<WebCookieValidation> {
   const { provider, apiKey } = request
   if (provider === 'chatgpt-web') {
-    const special = deps.specialValidators?.[provider]
+    const special = (deps.specialValidators ?? DEFAULT_SPECIAL_VALIDATORS)[provider]
     return special ? special(request) : UNSUPPORTED
   }
   const fetch = deps.fetch ?? globalThis.fetch

@@ -137,9 +137,9 @@ describe('validating a web-cookie provider', () => {
     expect(await validate('deepseek-web', 'sid=1')).toEqual({ valid: false, error: 'Validation failed', unsupported: false })
   })
 
-  test('chatgpt-web goes to its own validator, and without one it is unsupported', async () => {
+  test('chatgpt-web goes to its own validator, and an injected map without one leaves it unsupported', async () => {
     const { calls, validate } = prober(() => new Response(''))
-    expect(await validate('chatgpt-web', '{}')).toEqual(UNSUPPORTED)
+    expect(await validate('chatgpt-web', '{}', {})).toEqual(UNSUPPORTED)
     expect(await validate('chatgpt-web', '{}', { 'chatgpt-web': () => ({ valid: true, error: null, unsupported: false }) })).toEqual({ valid: true, error: null, unsupported: false })
     expect(calls).toEqual([])
   })
