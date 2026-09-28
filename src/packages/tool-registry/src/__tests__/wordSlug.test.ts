@@ -10,9 +10,12 @@ import { describe, expect, test } from 'bun:test'
 import {
   ADJECTIVES,
   NOUNS,
+  VERBS,
   generateShortWordSlug,
   generateWordSlug,
   isShortWordSlug,
+  shortWordSlugFromSeed,
+  slugFromText,
 } from '../words.js'
 
 describe('generateWordSlug — adjective-verb-noun shape', () => {
@@ -93,5 +96,48 @@ describe('isShortWordSlug (ADo) — reconoce adjetivo-sustantivo de estas listas
     expect(isShortWordSlug(`${ADJECTIVES[0]}-${NOUNS[0]}-x`)).toBe(false)
     expect(isShortWordSlug(ADJECTIVES[0])).toBe(false)
     expect(isShortWordSlug(`${ADJECTIVES[0]}-zzzz`)).toBe(false)
+  })
+})
+
+describe('shortWordSlugFromSeed (TDo) — el slug corto que una semilla fija', () => {
+  test('toma el adjetivo y el sustantivo de los dos primeros u32 big-endian', () => {
+    const seed = new Uint8Array([0, 0, 0, 1, 0, 0, 0, 2])
+    expect(shortWordSlugFromSeed(seed)).toBe(`${ADJECTIVES[1]}-${NOUNS[2]}`)
+    const wrap = new Uint8Array(8)
+    new DataView(wrap.buffer).setUint32(0, ADJECTIVES.length + 3)
+    new DataView(wrap.buffer).setUint32(4, NOUNS.length * 2)
+    expect(shortWordSlugFromSeed(wrap)).toBe(`${ADJECTIVES[3]}-${NOUNS[0]}`)
+  })
+
+  test('respeta el desplazamiento de la vista y exige ocho bytes', () => {
+    const backing = new Uint8Array([9, 9, 0, 0, 0, 4, 0, 0, 0, 5])
+    expect(shortWordSlugFromSeed(backing.subarray(2))).toBe(`${ADJECTIVES[4]}-${NOUNS[5]}`)
+    expect(() => shortWordSlugFromSeed(new Uint8Array(7))).toThrow('shortWordSlugFromSeed needs at least 8 seed bytes')
+    expect(isShortWordSlug(shortWordSlugFromSeed(backing.subarray(2)))).toBe(true)
+  })
+})
+
+describe('slugFromText (E$t) — un slug a partir de texto libre', () => {
+  test('primeras cuatro palabras, en minúsculas, con guiones, sin marcas de pegado', () => {
+    expect(slugFromText('Fix the Login Bug in production now')).toBe('fix-the-login-bug')
+    expect(slugFromText('[Pasted text #1 +3 lines] Revisa esto [Image #2] ya')).toBe('revisa-esto-ya')
+    expect(slugFromText('[...Truncated text #4 +10 lines...] [Audio #1] hola')).toBe('hola')
+    expect(slugFromText('  ¡Hola, mundo!  ')).toBe('hola-mundo')
+  })
+
+  test('opciones de palabras y largo, sin guiones en los bordes', () => {
+    expect(slugFromText('uno dos tres', { words: 2 })).toBe('uno-dos')
+    expect(slugFromText('abcdefghij klm', { maxLen: 11 })).toBe('abcdefghij')
+    expect(slugFromText('---')).toBe('')
+  })
+})
+
+describe('generateWordSlug (M4n)', () => {
+  test('adjetivo-verbo-sustantivo de estas listas', () => {
+    const [adjective, verb, noun, ...rest] = generateWordSlug().split('-')
+    expect(rest).toEqual([])
+    expect(ADJECTIVES as readonly string[]).toContain(adjective!)
+    expect(VERBS as readonly string[]).toContain(verb!)
+    expect(NOUNS as readonly string[]).toContain(noun!)
   })
 })

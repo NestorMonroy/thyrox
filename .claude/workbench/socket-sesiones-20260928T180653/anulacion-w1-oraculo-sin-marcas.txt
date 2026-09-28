@@ -1,0 +1,9 @@
+entradas=20000 discrepancias=10740
+E$t "---mundo![Pasted text #1 +3 lines]" {"words":2,"maxLen":28}
+E$t "[Image #]¡Hola,[Audio #9]themundo![Image #2]ñandú¡Hola,\n Fix" {"words":4,"maxLen":31}
+E$t "mundo!MAYÚS[Image #][Image #][Audio #9][Image #] [Image #2]" {}
+E$t "[Pasted text #1 +3 lines][Audio #9][Audio #9][Image #]" {"words":4,"maxLen":13}
+E$t "x_y\nFix[...Truncated text #4 +10 lines...]FixFix---[...Truncated text #4 +10 lines...]  " {}
+E$t "[...Truncated text #4 +10 lines...][...Truncated text #4 +10 lines...]ñandú" {"words":2,"maxLen":9}
+E$t "MAYÚSFixMAYÚS [Audio #9]" {}
+E$t "ñandú[...Truncated text #4 +10 lines...][Audio #9]¡Hola,---[Image #][Image #2] ---ñandú" {"words":2,"maxLen":41}

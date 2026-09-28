@@ -45,7 +45,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
 | F4c-2f-2 | flujos de renombre (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`, `z`, `T`) y saneado de nombre (`li`, `AY`) sobre un `RenameContext` inyectado → `uds/sessionRename.ts` | hecha: 22 pruebas; 19 anulaciones (`anulacion-f4c2f2-*.txt`); oráculo por escenarios `diferencial-session-rename.txt`, 0 discrepancias en 3000 |
 | F4c-2f-4 | el registro de sesiones de 2.1.283 (`HH`/`eD`, `kv`, `Cut`, `eF`/`Vt`, `D3`) que los flujos reciben inyectado; hoy sólo existe `agent/concurrentSessions.ts`, un porte anterior más simple | pendiente |
-| W-1 | `@thyrox/tool-registry: words.ts`: `TDo`, `E$t`, `M4n` (`chunk-fvmr4qjr.js`); `Q5` es `generateShortWordSlug` y llega inyectado porque `tool-registry` depende de este paquete | pendiente |
+| W-1 | `@thyrox/tool-registry: words.ts`: `TDo` → `shortWordSlugFromSeed`, `E$t` → `slugFromText` con `c`; `M4n` y `Q5` ya eran `generateWordSlug` y `generateShortWordSlug`, ahora nombrados; `Q5` llega inyectado a los flujos de renombre porque `tool-registry` depende de `local-observability` | hecha: 5 pruebas nuevas; 7 anulaciones (`anulacion-w1-*.txt`); oráculo `diferencial-words.txt`, 0 discrepancias |
 | F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
@@ -440,3 +440,12 @@ obsoleta 202 y la revisión de `Gkr` 1764 (`anulacion-f4c2f2-oraculo-*.txt`).
 La referencia sólo cuenta como rival a una sesión con `procStart` (`L`); el
 primer juego de fixtures no lo traía y la prueba no detectaba ninguna
 colisión.
+
+## W-1 — slugs de `words.ts`: controles
+
+Anulaciones en `anulacion-w1-*.txt`; siete, cada una tumba su caso. El
+oráculo `probes/differential_words.ts` evalúa `chunk-fvmr4qjr.js` con las
+listas de thyrox en lugar de las suyas —las listas son divergencia
+declarada de datos— y compara `E$t` y `TDo` sobre 20 000 entradas: 0
+discrepancias. Discrimina: sin retirar las marcas de pegado, 10 740
+(`anulacion-w1-oraculo-sin-marcas.txt`).
