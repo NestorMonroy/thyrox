@@ -1,0 +1,37 @@
+# primera medición
+== 1: agy es gemini -> 2
+== 2: medio cliente vale -> 1
+== 3: configurado sin secreto -> 2
+== 4: error sin variables -> 1
+== 5: builtin de gemini ignorado -> 3
+== 6: retirado se refresca -> 1
+== 7: gemini sin cliente de Google -> 4
+== 8: amazon-q al genérico -> 1
+== 9: clinepass al genérico -> 1
+== 10: github sin secreto -> 1
+== 11: kiro sin datos -> 1
+== 12: gitlab sin datos -> 1
+== 13: kimi sin datos -> 1
+== 14: kimi sin host inyectado -> 0
+== 15: genérico sin extremo -> 1
+== 16: gemini recupera proyecto -> 1
+== 17: fallo recupera proyecto -> 1
+== 18: manual se redescubre -> 1
+== 19: columna de proyecto ignorada -> 1
+== 20: proyecto de datos ignorado -> 1
+== 21: proyecto en blanco vale -> 1
+== 22: sin guardar -> 1
+== 23: guarda sin conexión -> 1
+== 24: fallo de descubrimiento lanza -> 1
+== 25: datos previos perdidos -> 1
+== 26: sin projectId en la raíz -> 3
+== 27: perfil fijo -> 0
+== 28: soporte sin lista -> 1
+== 29: extremo vacío soporta -> 1
+== 30: proyecto en blanco usable -> 2
+== restaurado -> 0
+
+# re-medición tras afinar
+== 14: kimi sin host inyectado -> 1
+== 27: perfil fijo -> 1
+== restaurado -> 0
