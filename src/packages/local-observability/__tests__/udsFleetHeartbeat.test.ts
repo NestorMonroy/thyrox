@@ -192,6 +192,6 @@ describe('isWatchedFromStorage (qNt)', () => {
       return { ok: true, value: { mtimeMs: -10_000 } }
     })
     expect(await isWatchedFromStorage(newer, deps())).toBe(false)
-    expect(state.watchedCache).toEqual({ at: 150, value: true })
+    expect(state.watchedCache as unknown).toEqual({ at: 150, value: true })
   })
 })
