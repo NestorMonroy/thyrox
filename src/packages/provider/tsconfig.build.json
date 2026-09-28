@@ -340,6 +340,24 @@
       ],
       "@thyrox/provider/workloadContext.js": [
         "./src/workloadContext.ts"
+      ],
+      "@thyrox/provider/proxy/upstreamHeaders": [
+        "./src/proxy/upstreamHeaders.ts"
+      ],
+      "@thyrox/provider/proxy/proxyEndpoint": [
+        "./src/proxy/proxyEndpoint.ts"
+      ],
+      "@thyrox/provider/sanitize/credentialPatterns": [
+        "./src/sanitize/credentialPatterns.ts"
+      ],
+      "@thyrox/provider/sanitize/errorPathRedaction": [
+        "./src/sanitize/errorPathRedaction.ts"
+      ],
+      "@thyrox/provider/sanitize/errorSanitization": [
+        "./src/sanitize/errorSanitization.ts"
+      ],
+      "@thyrox/provider/sanitize/upstreamErrorPassthrough": [
+        "./src/sanitize/upstreamErrorPassthrough.ts"
       ]
     }
   },
