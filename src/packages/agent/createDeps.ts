@@ -2,11 +2,11 @@
  * Frontera SDK ↔ runtime del agente — porte de
  * `ccnmt: packages/agent/createDeps.ts` (471 líneas en la fuente).
  *
- * PORTE COMPLETO desde 2026-09-08 (#263). Entran `createProductionDeps` y
- * sus siete clases `*DepImpl` —`ProviderDepImpl`, `ToolDepImpl`,
- * `PermissionDepImpl`, `OutputDepImpl`, `HookDepImpl`, `ContextDepImpl`,
- * `SessionDepImpl`— junto a los tres símbolos autocontenidos que ya estaban
- * (`fromAgentEvent`, `toCoreMessages`, `fromCoreMessages`).
+ * PORTE COMPLETO: `createProductionDeps` y sus siete clases `*DepImpl`
+ * —`ProviderDepImpl`, `ToolDepImpl`, `PermissionDepImpl`, `OutputDepImpl`,
+ * `HookDepImpl`, `ContextDepImpl`, `SessionDepImpl`— junto a los tres
+ * símbolos autocontenidos (`fromAgentEvent`, `toCoreMessages`,
+ * `fromCoreMessages`).
  *
  * SU LISTA DE BLOQUEOS ESTABA MAL EN LOS TRES PUNTOS, y la corrección es la
  * que autoriza el porte:

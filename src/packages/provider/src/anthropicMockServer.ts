@@ -2,8 +2,8 @@
  * Servidor local (loopback) con la forma de la Messages API de Anthropic,
  * para que `AnthropicHttpProvider` le pegue de verdad en pruebas -- via
  * `--connection <id>` cuyo `endpoint` apunte aqui -- en vez de contra
- * `https://api.anthropic.com`. Pedido del ejecutor 2026-09-13, con
- * `OmniRoute/bin/cli/utils/serverHost.mjs` como precedente de forma.
+ * `https://api.anthropic.com`, con `OmniRoute/bin/cli/utils/serverHost.mjs`
+ * como precedente de forma.
  *
  * `resolveMockServerHost`/`resolveMockServerExposureWarning` son un PORTE
  * fiel de `resolveServerHost`/`resolveExposureWarning` de esa fuente: misma

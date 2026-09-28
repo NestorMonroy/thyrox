@@ -42,8 +42,8 @@ export function openSession(opts: { cwd: string; transcriptDir: string; resume?:
   }
   // Al reanudar NO se relee el archivo en crudo: se reconcilia. `previous` sale
   // del pipeline del bloque 21 —frontera respetada, `tool_use` huérfanos
-  // retirados— en vez del `readTranscript` lineal, que reintroducía el contexto
-  // compactado y podía dejar un `tool_use` sin par que el API rechaza.
+  // retirados— en vez del `readTranscript` lineal, que reintroduciría el
+  // contexto compactado y podría dejar un `tool_use` sin par que el API rechaza.
   const lines = readTranscriptLines(transcriptPath)
   const desdeFrontera = resumableMessages(lines)
   const previous = filterUnresolvedToolUses(desdeFrontera)

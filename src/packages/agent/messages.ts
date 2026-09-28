@@ -1618,7 +1618,7 @@ export function withMemoryCorrectionHint(message: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Índices de mensajes — porte de 2.1.275 (2026-09-24): `eP` y `EUt`, `d6e`
+// Índices de mensajes — porte de 2.1.275: `eP` y `EUt`, `d6e`
 // (subagente), la clase `_ot` con `Qke` y `finish` (vista completa, aquí sin
 // su cache incremental `Bee`), y los lectores `n3n`/`r3n`/`x$r`/`J7t`.
 // pendiente: la negativa del asesor (`Epe`, `iKe(e)==="refusal"`) como
@@ -1901,7 +1901,7 @@ export function getToolUseIDs(message: AnyMessage): string[] {
 }
 
 // ---------------------------------------------------------------------------
-// Filtros de reanudación — porte de 2.1.275 (2026-09-24), `chunk-q2gh92k2.js`:
+// Filtros de reanudación — porte de 2.1.275, `chunk-q2gh92k2.js`:
 // `blr`, `_lr` (con `nEt`, `ylr`, `ILs` y la fusión `kde`) y `Oi`/`m6e`.
 // pendiente: la rama de `blr` que conserva un thinking seguido de un
 // mensaje `resumedFromIncompleteThinking`, y la telemetría de cada filtro.

@@ -160,10 +160,8 @@ describe('evaluateStopHookBlockOutcome', () => {
  * `stopHookBlockCapMessage` — el mensaje de override que el cap emite al
  * dispararse.
  *
- * PORQUE LLEGA AHORA Y NO ANTES: el docstring de `internal/stopHooksCore.ts`
- * lo omitia junto a `handleStopHooks`, «su unico consumidor». Ese motivo era
- * debil —el simbolo es autocontenido, sin una sola dependencia— y la re-
- * medicion del 2026-09-08 lo confirma: no tiene nada que lo bloquee. Se porta.
+ * Se porta aunque `handleStopHooks`, su unico consumidor, viva aparte: el
+ * simbolo es autocontenido, sin una sola dependencia que lo bloquee.
  *
  * MITAD ROJA: estas cuatro aserciones se escribieron antes que el simbolo y
  * fallaban por el import ausente.

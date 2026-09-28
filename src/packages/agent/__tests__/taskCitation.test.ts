@@ -1,8 +1,7 @@
 /**
  * El identificador de cita segmentado en el recordatorio de tareas.
  *
- * Decisión del ejecutor (2026-09-05): **el ID segmentado debe verse en el
- * Plan**. Cuál es «el Plan» lo mide
+ * **El ID segmentado debe verse en el Plan**. Cuál es «el Plan» lo mide
  * ``docs: …/construir-harness-propio/analisis-las-tres-superficies-que-el-binario-llama-plan.rst``
  * sobre el ejecutable 2.1.261 — son tres superficies distintas:
  *

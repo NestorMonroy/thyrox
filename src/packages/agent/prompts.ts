@@ -13,11 +13,10 @@
  * `computeEnvInfo` y `computeSimpleEnvInfo`— con los helpers que ambos
  * consumen directamente (`getUnameSR`, `prependBullets`). El resto de la
  * fuente (`getSessionSpecificGuidanceSection`, `getScratchpadInstructions`,
- * `CLAUDE_CODE_DOCS_MAP_URL`) queda fuera; `getSystemPrompt` se porta al
- * final (2026-09-24) con la forma de 2.1.275 y texto propio
- * (`enhanceSystemPromptWithEnvDetails` y `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`
- * se portan al final, 2026-09-24, desde 2.1.275): ninguno tiene consumidor en este cierre y cada uno arrastra su
- * propio arbol de paquetes hermanos. `DEFAULT_AGENT_PROMPT` si esta, al
+ * `CLAUDE_CODE_DOCS_MAP_URL`) queda fuera: ninguno tiene consumidor y cada
+ * uno arrastra su propio arbol de paquetes hermanos. `getSystemPrompt`,
+ * `enhanceSystemPromptWithEnvDetails` y `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` se
+ * portan al final con la forma de 2.1.275 y texto propio. `DEFAULT_AGENT_PROMPT` si esta, al
  * final: lo consume `runAgent` de tool-registry, y su texto es propio.
  *
  * EL CONTRATO QUE EL TEST FIJA (H-CCNMT: fuga de `<connId>:<modelId>` al

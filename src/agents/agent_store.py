@@ -505,11 +505,8 @@ def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
 #: Columnas de costo/uso de ``agent_sessions`` — agregadas via ALTER TABLE
 #: (no en CORE_SCHEMA/CREATE TABLE) porque el archivo ya existia en produccion
 #: cuando se anadieron: ``CREATE TABLE IF NOT EXISTS`` no altera una tabla
-#: ya creada. Ver H-DOCS-168 — el ejecutor senalo que el costo real de un
-#: subagente (visible en el bloque ``<usage>`` del harness, p. ej. 301 172
-#: tokens de un solo agente de prueba) no se guardaba en ningun lado
-#: consultable, solo en la prosa del log crudo que ``save-agent-result.mjs``
-#: ya escribe (H-DOCS-135/H-DOCS-136 fijaron ahi la formula: dedup por
+#: ya creada. Guardan el costo real de un subagente (H-DOCS-168), el mismo que
+#: ``save-agent-result.mjs`` escribe en prosa (H-DOCS-135/H-DOCS-136: dedup por
 #: ``message.id``, ponderado input 1x / cache_creation 1.25x / cache_read
 #: 0.1x / output 5x). Este migrado le da esa misma cifra una columna SQL
 #: consultable por workflow, en vez de solo texto para humanos.
@@ -588,11 +585,10 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: y se promueve a columna cuando alguien lo consulte.
     "metadata_json": "TEXT",
     #: --- LO QUE EL TITULAR DEL HARNESS MUESTRA Y EL STORE NO GUARDABA.
-    #: Directiva del ejecutor 2026-08-19: el harness rotula cada subagente en
-    #: vuelo con «24 min · 540k tokens · 90 usos de la herramienta bash», y de
-    #: esas tres cifras el store sólo tenía la de tokens. Las otras dos se
-    #: derivan del transcript —que ya se lee para el costo— así que no
-    #: guardarlas era una pérdida, no una imposibilidad.
+    #: El harness rotula cada subagente en vuelo con duración, tokens y usos de
+    #: herramienta («24 min · 540k tokens · 90 usos de la herramienta bash»).
+    #: Las tres se derivan del transcript —que ya se lee para el costo—, así
+    #: que el store guarda las tres.
     #:
     #: Duración en segundos entre el primer y el último `timestamp` del
     #: transcript. NO se deriva de `updated_at - started_at`: esas dos son
@@ -618,11 +614,10 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: repo». Lo escribe el reconciliador en 3 o 4 según lo que puede medir;
     #: la promoción a 2 la hace quien verifica, nunca el propio agente.
     "retention_level": "INTEGER",
-    #: --- SENALES DE EJECUCION (:ref:`h-docs-222`, 2026-08-20). Las declara el
-    #: transcript en cada linea y el recorrido las descartaba sin verlas: el
-    #: extractor filtraba por ``type == assistant`` ANTES de mirarlas, y todas
-    #: viven en el nivel superior. No son columnas "por si acaso" — cada una
-    #: responde una pregunta que hoy esta abierta.
+    #: --- SENALES DE EJECUCION (:ref:`h-docs-222`). Las declara el transcript
+    #: en el nivel superior de cada linea, asi que se leen ANTES de filtrar por
+    #: ``type == assistant``. No son columnas "por si acaso" — cada una
+    #: responde una pregunta abierta.
     #:
     #: Los tres ejes que hacen COMPARABLES dos filas. Sin ellos, dos agentes
     #: con el mismo modelo y distinto esfuerzo, build o tier de facturacion se
@@ -814,12 +809,9 @@ _TASK_LAYER_COLUMNS = {
 #: ``findings_history.submodule`` y que el segmento ``<submodulo>`` de la ruta
 #: de un hallazgo, y por eso el cruce entre las dos tablas es directo.
 #:
-#: ``thyrox`` entro el 2026-09-08, y llega TARDE: el cambio de eje —capa del
-#: producto a repo— es del 2026-09-07 y toco ``task_ids.LAYERS`` sin tocar
-#: esta lista ni la de ``--repo``. Medido al corregirlo: **102 de 1565** tareas
-#: derivan a ``thyrox`` y ninguna lo declaraba, porque ademas el derivador
-#: estaba apagado (ver ``LAYER_SIGNALS_VAR``). Dos omisiones del mismo cambio,
-#: en dos archivos, y ninguna delataba a la otra.
+#: La lista es de REPOS, no de capas del producto, y tiene que coincidir con
+#: ``task_ids.LAYERS`` y con la de ``--repo``: un repo que falte en una de las
+#: tres deja sus tareas sin capa derivable (ver ``LAYER_SIGNALS_VAR``).
 SUBMODULES = ("api", "db", "docs", "server", "thyrox", "ui")
 
 #: Columna del ID DE CITA de ``tasks`` — el ``KX-<CAPA>-NNNN`` estable y
@@ -1870,9 +1862,6 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
         # con los mismos ordinales no mueve el id — mueve el SUJETO debajo, y
         # `TASK-API-0001` pasa a nombrar otra cosa sin que nada falle.
         #
-        # Medido el 2026-09-05: 92 de 93 tareas vivas cargaban un sujeto
-        # distinto del que el store tenía bajo el mismo ordinal.
-        #
         # Se mide ANTES de escribir nada y se rehúsa el volcado ENTERO: un
         # volcado a medias deja unas citas movidas y otras no, que es peor que
         # ninguno porque no se sabe cuáles.
@@ -1983,8 +1972,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # `ahora` está a segundos del TaskCreate y ES la apertura.
                     #
                     # Un volcado de reconciliación corre el mismo INSERT sobre
-                    # fichas viejas —medido: 525 en un solo día del 2026-08-18—
-                    # y ahí `ahora` es la INGESTIÓN, que es exactamente el
+                    # fichas viejas, y ahí `ahora` es la INGESTIÓN, que es exactamente el
                     # defecto que `created_at` ya tiene. Por eso discrimina el
                     # `--source` y no la novedad de la fila.
                     ahora if sella_apertura else None,
@@ -2609,11 +2597,10 @@ def _orden_id(texto: str) -> tuple:
 def firma_estados(tasks_dir: Path) -> str:
     """sha256 de ``id:status:base64(subject + " " + description)`` del directorio VIVO.
 
-    **El texto entra desde H-DOCS-183.** Hasta entonces la firma leía sólo
-    ``status``, así que una tarea RE-DEFINIDA —mismo id, mismo estado, otro
-    enunciado— daba hash idéntico: el hook no disparaba, el volcado al store no
-    corría, y la re-definición se quedaba sólo en el directorio del cliente, que
-    es efímero POR SESIÓN. Medido con control positivo y negativo.
+    **La firma incluye el texto** (H-DOCS-183): con sólo ``status``, una tarea
+    RE-DEFINIDA —mismo id, mismo estado, otro enunciado— daría hash idéntico,
+    el volcado al store no correría y la re-definición se quedaría sólo en el
+    directorio del cliente, que es efímero POR SESIÓN.
 
     **Mide el directorio del cliente, NO el store**, y esa elección es el punto
     delicado de todo el render. ``stop-gate-tablero-desactualizado.sh`` compara

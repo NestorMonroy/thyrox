@@ -2,7 +2,7 @@
 // import src/state/AppState at top level. Forwards args verbatim.
 import type { Context, ReactNode } from 'react'
 
-// ESTRECHADO 2026-09-19 (TASK-THYROX-0203), no portado verbatim.
+// ESTRECHADO (TASK-THYROX-0203), no portado verbatim.
 //
 // La referencia declara los dos como `unknown`
 // (`ccnmt: packages/repl/src/appStateHooks.ts:5-6`). Su propio THYROX.md:274

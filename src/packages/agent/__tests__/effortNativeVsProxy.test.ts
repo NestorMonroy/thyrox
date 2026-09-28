@@ -109,11 +109,10 @@ describe('modelSupportsXhighEffort — más angosto que max', () => {
   })
 
   test('proxy de protocolo anthropic de DeepSeek → true: el binario confia en el proveedor', () => {
-    // Corregido contra 2.1.275: `s3` (xhigh) tiene la MISMA forma que `Dj`
+    // En 2.1.275 `s3` (xhigh) tiene la MISMA forma que `Dj`
     // (max) — exclusiones, catalogo, mythos-5 y luego `M0(cc(model))`, que
     // confia en un proveedor firstParty sin mirar el endpoint. La asimetria
-    // que este caso fijaba («xhigh no confia en proxies») era de `ccnmt`; la
-    // build medida no la tiene. Lo que SI la separa de max es la lista de
+    // «xhigh no confia en proxies» es de `ccnmt`, no de esta build. Lo que SI la separa de max es la lista de
     // exclusiones, y la mide el caso de Sonnet 4.6 de arriba.
     process.env.ANTHROPIC_BASE_URL = 'https://api.deepseek.com/anthropic'
     expect(modelSupportsXhighEffort('deepseek-v4-pro[1m]')).toBe(true)

@@ -8,57 +8,26 @@
  * puerto es reimplementacion bajo UNLICENSED, no copia— pero miden los mismos
  * quince invariantes, uno a uno y en el mismo orden.
  *
- * NO ES MITAD ROJA, y no se finge que lo sea: `providers.ts` ya estaba
- * portado cuando esta suite llego. Es cobertura de contrato retroactiva — el
- * modulo no tenia ninguna—, y su valor es el control de anulacion, que si se
- * midio y esta al pie.
+ * No es una mitad roja: es cobertura de contrato de un `providers.ts` ya
+ * portado, y su valor es el control de anulación del pie.
  *
- * COMO SE AISLA DEL ENTORNO: `providers.ts` lee la configuracion global por
- * `require` diferido; la suite INTERCEPTABA el modulo con `mock.module`
- * y le da un objeto de conexiones que cada caso escribe. Es la misma costura
- * que usa la fuente.
+ * COMO SE AISLA DEL ENTORNO: el registro de conexiones es el REAL. Bajo
+ * `NODE_ENV=test`, `saveGlobalConfig` escribe en un objeto de módulo y
+ * `getGlobalConfig` lo devuelve —la vía que la fuente dejó para esto—, así
+ * que cada caso fija sus conexiones sin doble. Un `mock.module` sobre la raíz
+ * de `@thyrox/config` alcanzaría también a `global/config.ts`, que la barrica
+ * reexporta, y el orden de ejecución decidiría el veredicto de otras suites;
+ * `mock.module` sólo intercepta un `require` posterior cuando se le da un
+ * subpath (`@thyrox/config/settings`), no la raíz del paquete (tarea #261).
  *
- * LOS CINCO CASOS BLOQUEADOS —4, 5, 6, 12 y 13— ESTAN VIVOS desde el
- * 2026-09-08. Su bloqueo era que `getGlobalConfig` no existia en
- * `@thyrox/config`, asi que `getEnabledConnections()` devolvia `[]` siempre y
- * todo caia a la rama de variables de entorno. #260 porto el registro global;
- * estos cinco dejan de ser `test.todo`.
+ * CONTROL DE ANULACION, medido sobre los quince casos:
  *
- * Y CON EL PORTE, EL DOBLE SOBRA — y ademas hacia dano. El `mock.module` sobre
- * `@thyrox/config` que esta suite instalaba alcanzaba tambien a
- * `global/config.ts`, porque la barrica lo reexporta: medido, la suite del
- * registro global recibia `{connections: []}` —un objeto de UNA clave— en vez
- * de su default. Seis casos verdes por separado y rojos juntos, o sea el orden
- * de ejecucion decidiendo el veredicto.
- *
- * Se sustituye por el mecanismo que la propia fuente construyo para esto:
- * bajo `NODE_ENV=test` su `saveGlobalConfig` escribe en un objeto de modulo y
- * su `getGlobalConfig` lo devuelve. La suite conduce el registro REAL, sin
- * doble, y de paso deja de medirse contra si misma.
- *
- * El hallazgo de instrumentacion del pase anterior se conserva porque sigue
- * siendo cierto y es la razon de la fuga: `mock.module` SI intercepta un
- * `require` posterior cuando se le da un subpath (`@thyrox/config/settings`
- * devolvio el valor marcador), y NO cuando se le da la raiz del paquete —ni
- * por specifier ni por ruta absoluta—. Por
- * eso la costura de configuracion global de esta suite no llega. Tarea #261.
- *
- * CONTROL DE ANULACION, medido sobre los diez que si corren: se retira la rama
- * `case 'anthropic'` del `switch` de `getProviderForModel` —de modo que un
- * protocolo anthropic caiga al `default`— y caen **0 de 10**. Y ese cero es el
- * hallazgo, no un fallo del control: con el registro vacio ningun caso llega
- * al `switch`, asi que la suite NO puede medir hoy la fuga del literal
- * `'anthropic'` que la fuente documenta. Es la ceguera declarada de este
- * instrumento, y se levanta con la tarea #260.
- *
- * El control que SI discrimina sobre lo que queda: se cambia el `return true`
- * por `return false` en la rama sin `ANTHROPIC_BASE_URL` de
- * `isFirstPartyAnthropicBaseUrl` y caen **3 de 10**: los casos 8, 11 y 15.
- *
- * Que el 11 caiga es evidencia adicional del mismo bloqueo, no ruido: ese caso
- * dice medir una conexion anthropic en api.anthropic.com, y con el registro
- * vacio no llega a mirarla — sale por la misma rama de entorno que el 8 y el
- * 15. Cuando la tarea #260 cierre, el 11 dejara de caer con esta anulacion.
+ *   - sin la rama `case 'anthropic'` de `getProviderForModel` caen el 2 y el
+ *     3: un protocolo anthropic deja de dar `firstParty`;
+ *   - con `return false` en la rama sin `ANTHROPIC_BASE_URL` de
+ *     `isFirstPartyAnthropicBaseUrl` caen el 8 y el 15. El 11 no cae: mide
+ *     una conexión anthropic en api.anthropic.com, que se resuelve por la
+ *     conexión y no por la variable de entorno.
  */
 import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { ConnectionRecord } from '../src/connections.js'

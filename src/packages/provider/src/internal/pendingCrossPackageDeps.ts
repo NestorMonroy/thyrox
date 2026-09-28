@@ -55,24 +55,12 @@ function getPackageVersion(): string {
 }
 
 // ── ccnmt: packages/provider/src/fastMode.ts → isFastModeEnabled ────────
-// CORREGIDO en un pase posterior al que escribió esta nota:
-// `fastMode.ts` YA se portó ENTERO (todos sus 15 símbolos de valor + 2
-// tipos) — esta nota decía "NO está asignado a este pase", que dejó de
-// ser cierto y no se actualizó al portarlo, dos fuentes de verdad para el
-// mismo predicado. Verificado byte a byte: el cuerpo de este sustituto y
-// el de `fastMode.ts:isFastModeEnabled` son IDÉNTICOS (misma expresión
-// exacta) — no hubo divergencia de comportamiento en el tiempo que
-// estuvieron duplicados.
-//
-// `costTracker.ts` ya se re-apuntó a `./fastMode.ts` directo (sin ciclo:
-// `fastMode.ts` no importa `costTracker.ts`) y dejó de usar este
-// sustituto. Este sustituto SIGUE VIVO sólo porque `model.ts` SÍ formaría
-// un ciclo si importara de `fastMode.ts` — `fastMode.ts` importa
+// `fastMode.ts` está portado entero, y este sustituto repite su predicado
+// con la misma expresión. Sigue vivo sólo para `model.ts`, que formaría un
+// ciclo si importara de `fastMode.ts`: `fastMode.ts` importa
 // `getDefaultMainLoopModelSetting`/`isOpus1mMergeEnabled`/
-// `parseUserSpecifiedModel` de `./model.ts` (verificado con grep). Romper
-// ese ciclo (extraer esos tres símbolos a un tercer módulo hoja) es
-// trabajo de refactor que excede el alcance de "portar lo que falta"; se
-// deja declarado aquí en vez de silenciado.
+// `parseUserSpecifiedModel` de `./model.ts`. Retirarlo exige extraer esos tres
+// símbolos a un módulo hoja (#53).
 export function isFastModeEnabled(): boolean {
   return !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FAST_MODE'))
 }

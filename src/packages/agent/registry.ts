@@ -44,8 +44,7 @@ export type BuildResult =
  * duplicado en un registro que emitimos nosotros no es ambigüedad heredada de
  * dos directorios — es un defecto de nuestro árbol, y silenciarlo publicaría
  * una definición que nadie escribió a propósito. Medido en
- * `analisis-flujo-carga-de-agentes-en-el-binario.rst` (H-DOCS-1005 corrige
- * la redacción anterior de este comentario, que decía «gana el primero»).
+ * `analisis-flujo-carga-de-agentes-en-el-binario.rst` (H-DOCS-1005).
  */
 export function buildRegistry(definitions: AgentDefinition[]): BuildResult {
   const registry: AgentRegistry = {}

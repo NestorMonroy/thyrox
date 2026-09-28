@@ -3,7 +3,7 @@
  * porte de `ccnmt: packages/agent/claudeInChromeCommon.ts`.
  *
  * La detección de navegador, las rutas de mensajería nativa, los sockets
- * del puente y `openInChrome` se portaron el 2026-09-24 desde el contrato de
+ * del puente y `openInChrome` se portan desde el contrato de
  * 2.1.275 (`chunk-g0b24p3s.js`) — ver el bloque del final. Divergencias
  * declaradas ahí.
  */

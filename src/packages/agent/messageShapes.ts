@@ -238,9 +238,9 @@ export type MessageOrigin = {
 }
 /**
  * La forma que `createCompactBoundaryMessage` escribe (`messages.ts`) mas el
- * tramo preservado que la compactacion parcial anade. Antes era
- * `Record<string, unknown>`, y cada lector tenia que re-afirmar `trigger` y
- * `preTokens`: el unico constructor los fija, asi que se declaran aqui.
+ * tramo preservado que la compactacion parcial anade. El unico constructor
+ * fija `trigger` y `preTokens`, asi que se declaran aqui y ningun lector
+ * tiene que re-afirmarlos.
  */
 export type CompactMetadata = {
   trigger: 'manual' | 'auto'

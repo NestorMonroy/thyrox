@@ -19,9 +19,8 @@ import type { CountTokensCommandInput } from '@aws-sdk/client-bedrock-runtime'
  * (mismo archivo) estiman un bloque y un contenido; `dAo`/`Vm`
  * (`chunk-q2gh92k2.js`) un mensaje y una lista.
  *
- * CORREGIDO 2026-09-24 contra el binario. Esta cabecera conservaba «verbatim»
- * un ajuste de 1.5 tokens por carácter CJK traído de ccnmt, y lo llamaba «el
- * comportamiento». Los dos estimadores de tokens de 2.1.275 no lo tienen:
+ * Sin ajuste por carácter CJK: ccnmt trae uno de 1.5 tokens por carácter,
+ * pero los dos estimadores de tokens de 2.1.275 no lo tienen:
  * `xu` es `round(len/n)` y `s3n` es `ceil(len/4)`. El binario SÍ trata el
  * CJK en otros tres sitios, ninguno de tokens: `nt`/`tt`/`ot` cuentan
  * palabras (han = 1/2, fonético = 1/4) sólo para descartar sugerencias de

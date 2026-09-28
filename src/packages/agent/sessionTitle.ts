@@ -8,10 +8,9 @@
  * mensajes a un texto único, saltando lo no-humano/meta, y recorta por la
  * COLA a 1000 caracteres — el contexto reciente pesa más que el inicial.
  *
- * `generateSessionTitle` y su prompt se portaron el 2026-09-24 desde el
- * contrato de 2.1.275 (`chunk-tzezahz4.js`: `XJ`, `w`, `y`), al aparecer
- * sus cuatro consumidores (REPL, sesión remota, SDK y puente). Ver su
- * bloque al final.
+ * `generateSessionTitle` y su prompt se portan desde el contrato de 2.1.275
+ * (`chunk-tzezahz4.js`: `XJ`, `w`, `y`) para sus cuatro consumidores (REPL,
+ * sesión remota, SDK y puente). Ver su bloque al final.
  */
 
 import { getInitialSettings } from '@thyrox/config/settings'

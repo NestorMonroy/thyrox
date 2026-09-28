@@ -35,9 +35,8 @@
  *     no necesitan el esquema — son guardas estructurales puras sobre la
  *     clave `async`.
  *   - `HookCallbackContext`, `HookCallback`, `HookCallbackMatcher` —
- *     PORTADOS 2026-09-19 (TASK-THYROX-0201). Estaban aquí como omitidos
- *     por falta de consumidor; el consumidor apareció:
- *     `app-host/bootstrap/state.ts` tipa `registeredHooks` con
+ *     PORTADOS (TASK-THYROX-0201) para su consumidor,
+ *     `app-host/bootstrap/state.ts`, que tipa `registeredHooks` con
  *     `HookCallbackMatcher | PluginHookMatcher`, igual que la fuente
  *     (`ccnmt: packages/app-host/src/bootstrap/state.ts:12,22,27`). Con
  *     ellos viajan `HookInput` —stub estructural, vecino de los de

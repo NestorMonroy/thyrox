@@ -20,13 +20,10 @@
  *   - `claimTask()`/`claimTaskWithBusyCheck()` y sus tipos
  *     `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita y
  *     dependen del mismo sustrato ausente. (`resetTaskList` se porta al
- *     final, 2026-09-24, desde 2.1.275.)
+ *     final, desde 2.1.275.)
  *
- * AVISO RETIRADO 2026-09-08: `isTodoV2Enabled()` figuraba aqui como NO
- * portada, bloqueada en `getIsNonInteractiveSession()`. El bloqueo era REAL
- * —medido, la funcion no existia en ningun paquete de este arbol— y cae al
- * portar la slice de sesion interactiva de `app-host/bootstrap/state.ts`.
- * La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
+ * `isTodoV2Enabled()` lee `getIsNonInteractiveSession()` de la slice de sesion
+ * interactiva de `app-host/bootstrap/state.ts`. La importacion cruza el ciclo `agent` <-> `app-host` que ya declaran los
  * dos manifiestos y que la fuente tiene igual (`ccnmt: agent/tasks.ts:4`).
  *
  * REIMPLEMENTADO LOCALMENTE (la logica es trivial; no amerita traer una

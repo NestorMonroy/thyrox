@@ -6,12 +6,8 @@
  * fronteras V7 (§8 — `agent` no puede importar de `app-compat`); estas
  * implementaciones locales son el patrón aprobado para utilidades puras.
  *
- * Recorte declarado, REVISADO 2026-09-08 (#262): la fuente traía además
- * `isBareMode` y `pathExists`. `isBareMode` **ya entra**: su bloqueo era
- * `readEnv` de `config/env`, que hoy existe en este árbol
- * (`@thyrox/config/env/utils.ts:43`) — se declaraba ausente y la medición
- * lo desmiente. `pathExists` entró el 2026-09-24: `internal/fileHistoryCore.ts`
- * la importa, así que la razón de dejarla fuera —«sin consumidor»— caducó.
+ * Trae también `isBareMode` (sobre `readEnv` de `@thyrox/config/env/utils`)
+ * y `pathExists`, que importa `internal/fileHistoryCore.ts`.
  */
 import { readEnv } from '@thyrox/config/env/utils'
 import { stat } from 'node:fs/promises'

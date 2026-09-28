@@ -32,8 +32,7 @@ describe('distinctiveNumbers — qué cuenta como un hecho rastreable', () => {
 
   test('una lista {408,429,500} son cifras separadas, no un número de 18 dígitos (#38)', () => {
     // El separador de millar y el de lista son el mismo carácter. Dentro de una
-    // colección, la coma NO agrupa millares. Medido: 1 de 256, la única cifra
-    // sin antecedente que quedaba en la corrida 2026-09-02.
+    // colección, la coma NO agrupa millares.
     const s = distinctiveNumbers('los códigos {408,429,500,502,503,529}')
     expect(s.has('408429500502503529')).toBe(false)
     expect(s.has('408')).toBe(true)

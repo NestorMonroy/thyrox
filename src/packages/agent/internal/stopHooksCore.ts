@@ -26,20 +26,16 @@
  * `evaluateStopHookBlockOutcome`— y ninguno ejecuta código fuera de
  * esas dos funciones puras.
  *
- * PORTE COMPLETO desde 2026-09-08 (#262). El único símbolo que faltaba
- * —`handleStopHooks`, el generador de integración— entra en este pase, con
- * sus cuatro bloqueos cerrados en el mismo commit:
+ * PORTE COMPLETO, con `handleStopHooks`, el generador de integración. Sus
+ * dependencias:
  *
- *   · las **once** llamadas que hace sobre `getAgentHostBindings()` están
- *     ahora declaradas en `../host.ts`, no sólo dos;
- *   · `getTotalOutputTokens` llegó a `@thyrox/app-host` con la slice E
- *     entera de `bootstrap/state.ts`;
- *   · `isBareMode` entró en `../internalUtils.ts` — su bloqueo era `readEnv`,
- *     que ya existe;
- *   · `@thyrox/memory` se declaró como dependencia y re-exporta
- *     `executeExtractMemories` / `isExtractModeActive` desde su raíz, que es
- *     de donde la fuente los importa.
- *
+ *   · las **once** llamadas sobre `getAgentHostBindings()`, declaradas en
+ *     `../host.ts`;
+ *   · `getTotalOutputTokens`, de `@thyrox/app-host` (slice E de
+ *     `bootstrap/state.ts`);
+ *   · `isBareMode`, de `../internalUtils.ts`;
+ *   · `executeExtractMemories` / `isExtractModeActive`, re-exportados por la
+ *     raíz de `@thyrox/memory`, que es de donde la fuente los importa.
  * Lo que NO viaja, declarado: las tres banderas de compilación de la fuente
  * (`feature('TEMPLATES')`, `feature('EXTRACT_MEMORIES')`,
  * `feature('CHICAGO_MCP')`) provienen de `bun:bundle`, que este árbol no

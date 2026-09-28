@@ -692,7 +692,7 @@ export function createAttachmentMessage<T extends { type: string }>(attachment: 
 }
 
 // ---------------------------------------------------------------------------
-// Estado del listado de skills — porte de 2.1.275 (2026-09-24): la clase
+// Estado del listado de skills — porte de 2.1.275: la clase
 // `xJn` por sesión y `VB`, `I1r`, `P1r`, `M6n`, `O6n`, `eCs`
 // (`chunk-q2gh92k2.js`). Recuerda qué skills se anunciaron a cada agente
 // (clave vacía = hilo principal) para anunciar sólo las nuevas.

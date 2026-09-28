@@ -34,8 +34,7 @@
  *     try/catch, y los deltas de pause/resume que ningún test verifica en
  *     detalle).
  *   - `AttachmentMessage` se importa de `./messageShapes.js`, como en la
- *     fuente. Hasta 2026-09-25 se declaraba aquí porque aquel archivo aún no
- *     lo tenía; ya lo tiene, y la copia local competía con él.
+ *     fuente; una copia local competiría con él.
  *   - `readEnv` — la fuente envuelve `isEnvTruthy`/`isEnvDefinedFalsy` con
  *     `readEnv('VAR')` de `@claude-code-how-works/config/env/utils`. Las
  *     versiones de este árbol (`../internalUtils.ts`) ya aceptan

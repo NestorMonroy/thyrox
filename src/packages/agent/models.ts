@@ -14,7 +14,7 @@
  * el cargador JSON de bun (`import … with { type: 'json' }`), que exige un
  * documento único: lee el archivo y reconstruye el catálogo línea a línea.
  *
- * Por qué el paquete lo necesita (directiva del ejecutor 2026-09-02): un agente
+ * Por qué el paquete lo necesita: un agente
  * NO se nombra por alias, porque el alias resuelve a tiers distintos según el
  * proveedor — `sonnet` es `claude-sonnet-5` (tier_2_10, ventana 1 M) en
  * first-party y `claude-sonnet-4-5` (tier_3_15, 200 k) en Bedrock. Con el

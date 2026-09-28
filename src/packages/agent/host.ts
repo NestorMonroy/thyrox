@@ -11,10 +11,8 @@
  * que la consume, nunca aquí.
  *
  * `AgentHostBindings` se importa de `./contracts.ts`, como en la fuente.
- * Hasta 2026-09-25 este archivo declaraba un subconjunto local porque
- * `contracts.ts` no estaba portado; ya lo está (85 bindings, que contienen
- * los 65 del subconjunto), y la copia reducida hacía fallar a los
- * consumidores de los bindings que le faltaban.
+ * Un subconjunto local haría fallar a los consumidores de los bindings que le
+ * faltaran.
  *
  * `./internalTypes.ts` SÍ está portado (es autocontenido, sin
  * dependencias externas) — por eso `AgentMessage` se importa de ahí en
