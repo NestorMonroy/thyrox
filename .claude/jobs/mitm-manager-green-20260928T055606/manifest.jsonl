@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/mitm && bun test __tests__/manager 2>&1 | grep -E '^\\(fail\\)|error:|pass$|fail$|Ran' | head -40", "started_at": "2026-09-28T05:56:06+00:00"}

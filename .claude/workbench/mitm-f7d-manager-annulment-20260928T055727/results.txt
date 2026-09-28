@@ -1,0 +1,36 @@
+== base
+ 33 pass
+ 0 fail
+== anulada: DNS antes de matar
+(fail) arranca el servidor con el puerto, el modelo de certificado y la clave, y deja el PID [436.52ms]
+(fail) stopMitm retira el DNS antes de matar el proceso del servidor [1.03ms]
+(fail) sin permiso para el paso privilegiado no toca el DNS, pero detiene el servidor [0.44ms]
+ 30 pass
+ 3 fail
+== anulada: candado de arranque
+(fail) startMitm rehúsa con el candado tomado, y no lo suelta al rehusar [745.73ms]
+ 32 pass
+ 1 fail
+== anulada: fallo dentro del plazo de gracia
+(fail) un servidor que muere al arrancar se informa con su causa y no deja PID [135.65ms]
+ 32 pass
+ 1 fail
+== anulada: THYROX_MITM_ROOT_CA_ENABLED
+(fail) con THYROX_MITM_ROOT_CA_ENABLED instala ca.crt y el hijo recibe el modo root-ca [407.70ms]
+(fail) certExists mira el certificado del modelo activo: la hoja anterior, o ca.crt con THYROX_MITM_ROOT_CA_ENABLED [0.90ms]
+ 31 pass
+ 2 fail
+== anulada: PID muerto marca huérfano
+(fail) un PID muerto se borra y marca estado huérfano; repairMitm lo limpia [3.77ms]
+ 32 pass
+ 1 fail
+== restaurado
+ 33 pass
+ 0 fail
+== reordenada: matar antes que el DNS
+(fail) stopMitm retira el DNS antes de matar el proceso del servidor [1.50ms]
+ 32 pass
+ 1 fail
+== restaurado de nuevo
+ 33 pass
+ 0 fail
