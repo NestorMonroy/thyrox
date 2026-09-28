@@ -607,7 +607,8 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 
 | Fase | Qué | Estado |
 |---|---|---|
-| R | enclavamiento del modelo de respaldo por rechazo (`refusalFallbackModelLatch`, `unlatchRefusalFallbackModel`, `mn`) en la selección de modelo, y su restauración como tercer argumento de la señal de sesión | pendiente |
+| R | enclavamiento del modelo de respaldo por rechazo (`refusalFallbackModelLatch`, `unlatchRefusalFallbackModel`, `mn`) en la selección de modelo, y su restauración como tercer argumento de la señal de sesión → `app-host/src/bootstrap/state.ts`. Redundante por construcción: `a2r` (sin enclavamiento, las dos formas dejan `undefined`) | hecha: 16 pruebas; 13 anulaciones (`anulacion-R-*.txt`) |
+| R-2 | oyentes de la restauración (`Pyt` con `wt` sobre el estado de la aplicación y el evento `tengu_refusal_fallback_latch_reset` con `vV`; `b8r`), `chunk-6ff16z73.js` | pendiente |
 
 ### Fase C — el módulo cliente y de recibos (`chunk-qcy58j4w.js`)
 
@@ -617,3 +618,11 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 | C-1 | admisión de pares (`LRr`, `csn`, `ke`, `Cko`, `H`, `M`, `B`, `_e`), aviso de descartes (`URr`, `Ee`, `Rko`, `X`), límites por bandera (`zOt`) y ritmo de salida (`ie`) | pendiente |
 | C-2 | lectura del registro para pares (`F`, `Z`, `Ge`, `Je`, `KOt`, `YOt`, `G3o`, `we`, `D3`, `ee`, `Y`, `qRr`, `XOt`, `VRr`, `qe`, `q`, `qOt`, `zRr`, `V`, `ne`) | pendiente |
 | C-3 | envío (`Pe`, `ye`, `VOt`, `kee`, `iat`), errores (`ce`, `fe`, `j`, `MV`, `cG`, `Mae`, `A1n`, `C1n`, `R4e`, `x4e`, `I4e`, `dsn`), redacción (`Bf`, `TB`), recibos (`Xe`, `ze`, `WRr`, `GRr`), ritmo (`je`, `We`, `jRr`, `R1n`, `Se`), fichas propias (`$Rr`, `GOt`, `FRr`), `DV`, `K`, `Ako`; reemplaza el `udsClient.ts` provisional | pendiente |
+
+### Controles de la fase R
+
+`bun test src/bootstrap/__tests__/refusalFallback.test.ts` en `@thyrox/app-host`.
+Casos que caen por anulación: cadena (1), vigente (1), restaura-switch (1),
+olvida-switch (1), restaura-clear (1), olvida-clear (1), dos-args (3, tras
+exigir la longitud: `toEqual` ignora un `undefined` final), origen (1),
+explicito (1), fija (4), suelta (2); `a2r` (0) es redundante por construcción.

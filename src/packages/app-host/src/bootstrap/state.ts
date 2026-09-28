@@ -208,6 +208,12 @@ type State = {
   // Slice I — modelo del bucle principal
   mainLoopModelOverride: ModelSetting | undefined
   initialMainLoopModel: ModelSetting
+  // Fase R — enclavamiento del modelo de respaldo por rechazo
+  refusalFallbackOccurred: boolean
+  refusalFallbackHeaderArmed: boolean
+  refusalFallbackLatchOriginRequestId: string | undefined
+  silentLaneServerArmed: boolean
+  refusalFallbackModelLatch: RefusalFallbackModelLatch | undefined
   modelStrings: ModelStrings | null
   sdkBetas: string[] | undefined
   mainThreadAgentType: string | undefined
@@ -351,6 +357,11 @@ function getInitialState(): State {
     promptId: null,
     mainLoopModelOverride: undefined,
     initialMainLoopModel: null,
+    refusalFallbackOccurred: false,
+    refusalFallbackHeaderArmed: false,
+    refusalFallbackLatchOriginRequestId: undefined,
+    silentLaneServerArmed: false,
+    refusalFallbackModelLatch: undefined,
     modelStrings: null,
     sdkBetas: undefined,
     mainThreadAgentType: undefined,
@@ -636,9 +647,11 @@ export function regenerateSessionId(
     STATE.parentSessionId = STATE.sessionId
   }
   STATE.planSlugCache.delete(STATE.sessionId)
+  forgetRefusalFallbackOccurred()
+  const restore = restoreRefusalFallbackModel()
   STATE.sessionId = randomUUID() as SessionId
   STATE.sessionProjectDir = null
-  emitSessionSwitch(STATE.sessionId, 'clear')
+  emitSessionSwitch(STATE.sessionId, 'clear', restore)
   return STATE.sessionId
 }
 
@@ -661,7 +674,25 @@ export type SessionSwitchReason =
   | 'hydrate'
   | 'startup_custom_id'
 
-export type SessionSwitchListener = (id: SessionId, reason: SessionSwitchReason) => void
+/**
+ * Lo que `mn` devuelve al deshacer el modelo de respaldo: el modelo previo
+ * del estado de la aplicación, el de la sesión y el override que vuelve a
+ * regir, para que el oyente restaure su propia copia.
+ */
+export type RefusalFallbackRestore = {
+  appStateModel: ModelSetting | undefined
+  forSessionValue: ModelSetting | undefined
+  overrideValue: ModelSetting | undefined
+  restoredToExplicitOverride: boolean
+  fallbackModel: ModelSetting
+}
+
+/** El tercer argumento sólo llega cuando un cambio de sesión deshizo el respaldo. */
+export type SessionSwitchListener = (
+  id: SessionId,
+  reason: SessionSwitchReason,
+  restore?: RefusalFallbackRestore,
+) => void
 
 /** Las rutas de proyecto que un cambio de sesión puede fijar a la vez (`r` de `mh`). */
 export type SessionSwitchPaths = {
@@ -685,9 +716,9 @@ export type SessionSwitchPaths = {
  * @param paths rutas de proyecto que se fijan con el cambio; si trae
  *   `originalCwd`, su señal se emite después de la de sesión.
  *
- * DIVERGENCIA DECLARADA: la referencia pasa a los oyentes un tercer
- * argumento cuando deshace el modelo de respaldo por rechazo (`mn`). Este
- * árbol no tiene ese enclavamiento, así que no hay nada que pasar.
+ * Al pasar a OTRA sesión se olvida el rechazo y se deshace el modelo de
+ * respaldo (`mn`); si hubo restauración, los oyentes la reciben como tercer
+ * argumento.
  */
 export function switchSession(
   sessionId: SessionId,
@@ -695,11 +726,16 @@ export function switchSession(
   projectDir: string | null = null,
   paths?: SessionSwitchPaths,
 ): void {
-  if (STATE.sessionId !== sessionId) STATE.planSlugCache.delete(STATE.sessionId)
+  let restore: RefusalFallbackRestore | undefined
+  if (STATE.sessionId !== sessionId) {
+    STATE.planSlugCache.delete(STATE.sessionId)
+    forgetRefusalFallbackOccurred()
+    restore = restoreRefusalFallbackModel()
+  }
   STATE.sessionId = sessionId
   STATE.sessionProjectDir = projectDir
   if (paths) applyProjectPaths(paths)
-  emitSessionSwitch(sessionId, reason)
+  emitSessionSwitch(sessionId, reason, restore)
   if (paths?.originalCwd !== undefined) emitOriginalCwdChange()
 }
 
@@ -715,8 +751,15 @@ const sessionSwitchListeners = new Set<SessionSwitchListener>()
 const originalCwdListeners = new Set<(originalCwd: string) => void>()
 
 /** `fn`. */
-function emitSessionSwitch(sessionId: SessionId, reason: SessionSwitchReason): void {
-  for (const listener of sessionSwitchListeners) listener(sessionId, reason)
+function emitSessionSwitch(
+  sessionId: SessionId,
+  reason: SessionSwitchReason,
+  restore: RefusalFallbackRestore | undefined,
+): void {
+  for (const listener of sessionSwitchListeners) {
+    if (restore) listener(sessionId, reason, restore)
+    else listener(sessionId, reason)
+  }
 }
 
 /** `hn`: emite el `originalCwd` vigente, no el que se pidió fijar. */
@@ -1213,6 +1256,115 @@ export function setMainLoopModelOverride(
   model: ModelSetting | undefined,
 ): void {
   STATE.mainLoopModelOverride = model
+}
+
+// ---------------------------------------------------------------------------
+// Fase R — modelo de respaldo por rechazo
+// ---------------------------------------------------------------------------
+
+/**
+ * El modelo que regía antes de que un rechazo cambiara al de respaldo, con
+ * las dos copias que el estado de la aplicación guardaba.
+ */
+export type RefusalFallbackModelLatch = {
+  fallbackModel: ModelSetting
+  previousOverride: ModelSetting | undefined
+  previousAppStateModel: ModelSetting | undefined
+  previousModelForSession: ModelSetting | undefined
+}
+
+/** `o2r`: el primer id de petición que llegue queda como origen. */
+export function markRefusalFallbackOccurred(requestId: string | undefined): void {
+  STATE.refusalFallbackOccurred = true
+  STATE.refusalFallbackLatchOriginRequestId ??= requestId
+}
+
+/** `MF`. */
+export function hasRefusalFallbackOccurred(): boolean {
+  return STATE.refusalFallbackOccurred
+}
+
+/** `xmt`. */
+export function armRefusalFallbackHeader(requestId: string | undefined): void {
+  STATE.refusalFallbackHeaderArmed = true
+  STATE.refusalFallbackLatchOriginRequestId ??= requestId
+}
+
+/** `Txe`. */
+export function isRefusalFallbackHeaderArmed(): boolean {
+  return STATE.refusalFallbackHeaderArmed
+}
+
+/** `s2r`. */
+export function armSilentLaneFromServer(): void {
+  STATE.silentLaneServerArmed = true
+}
+
+/** `m8n`. */
+export function isSilentLaneServerArmed(): boolean {
+  return STATE.silentLaneServerArmed
+}
+
+/** `i2r`. */
+export function getRefusalFallbackLatchOriginRequestId(): string | undefined {
+  return STATE.refusalFallbackLatchOriginRequestId
+}
+
+/** `l2r`: olvida las marcas del rechazo; el enclavamiento del modelo se conserva. */
+export function forgetRefusalFallbackOccurred(): void {
+  STATE.refusalFallbackOccurred = false
+  STATE.refusalFallbackHeaderArmed = false
+  STATE.silentLaneServerArmed = false
+  STATE.refusalFallbackLatchOriginRequestId = undefined
+}
+
+/**
+ * `Imt`. Si el modelo vigente es todavía el de respaldo enclavado, un
+ * respaldo nuevo sólo cambia el modelo de respaldo: el previo sigue siendo
+ * el que regía antes del primer rechazo.
+ */
+export function latchRefusalFallbackModel(latch: RefusalFallbackModelLatch): void {
+  const current = STATE.refusalFallbackModelLatch
+  if (current && STATE.mainLoopModelOverride === current.fallbackModel) {
+    STATE.refusalFallbackModelLatch = { ...current, fallbackModel: latch.fallbackModel }
+    return
+  }
+  STATE.refusalFallbackModelLatch = latch
+}
+
+/** `a2r`. */
+export function setRefusalFallbackPreviousOverride(model: ModelSetting | undefined): void {
+  const current = STATE.refusalFallbackModelLatch
+  if (current) STATE.refusalFallbackModelLatch = { ...current, previousOverride: model }
+}
+
+/** `fre`. */
+export function unlatchRefusalFallbackModel(): void {
+  STATE.refusalFallbackModelLatch = undefined
+}
+
+/** `n7`. */
+export function getRefusalFallbackModelLatch(): RefusalFallbackModelLatch | undefined {
+  return STATE.refusalFallbackModelLatch
+}
+
+/**
+ * `mn`: suelta el enclavamiento y, si el modelo vigente sigue siendo el de
+ * respaldo, vuelve al override previo y devuelve lo restaurado. Si el
+ * usuario cambió de modelo entretanto, su elección se respeta.
+ */
+export function restoreRefusalFallbackModel(): RefusalFallbackRestore | undefined {
+  const latch = STATE.refusalFallbackModelLatch
+  unlatchRefusalFallbackModel()
+  if (!latch || STATE.mainLoopModelOverride !== latch.fallbackModel) return undefined
+  setMainLoopModelOverride(latch.previousOverride)
+  return {
+    appStateModel: latch.previousAppStateModel,
+    forSessionValue: latch.previousModelForSession,
+    overrideValue: latch.previousOverride,
+    restoredToExplicitOverride: latch.previousOverride !== undefined,
+    fallbackModel: latch.fallbackModel,
+  }
 }
 
 export function setInitialMainLoopModel(model: ModelSetting): void {
