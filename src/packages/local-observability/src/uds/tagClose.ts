@@ -18,15 +18,17 @@ const INVISIBLE =
 const COMBINING_MARKS =
   '\\u0300-\\u0344\\u0346-\\u036f\\u0483-\\u0489\\u0591-\\u05bd\\u05bf\\u05c1\\u05c2\\u05c4\\u05c5\\u05c7\\u0610-\\u061a\\u064b-\\u065f\\u0670\\u06d6-\\u06dc\\u06df-\\u06e4\\u06e7\\u06e8\\u06ea-\\u06ed\\u1ab0-\\u1aff\\u1dc0-\\u1dff\\u20d0-\\u20ff\\u3099\\u309a\\ufe20-\\ufe2f'
 /** `_`: lo que puede ir entre dos letras de un nombre sin verse. */
-const INTRA_NAME_FILLER = `${INVISIBLE}${COMBINING_MARKS}\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f-\\x9f\\u2028\\u2029`
+export const INTRA_NAME_FILLER = `${INVISIBLE}${COMBINING_MARKS}\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f-\\x9f\\u2028\\u2029`
 /** `C`: los caracteres de un nombre de etiqueta. */
 const NAME_CHARS = 'A-Za-z0-9_\\-'
 /** `z`: el nombre termina donde deja de haber caracteres de nombre. */
-const NAME_END = `(?:[^${NAME_CHARS}]|$)`
+export const NAME_END = `(?:[^${NAME_CHARS}]|$)`
 /** `bpt`: guiones. */
-const DASHES = '\\p{Pd}\\u2212\\u207b\\u208b\\u02d7\\u2796\\u2043\\u30fc\\uff70'
-/** `h3n`/`G`: lo que ocupa la posición de un guion o un guion bajo. */
-const SEPARATOR = `[_\\p{Pc}\\u2017\\u02cd\\u07fa\\u0640${DASHES}]`
+export const DASHES = '\\p{Pd}\\u2212\\u207b\\u208b\\u02d7\\u2796\\u2043\\u30fc\\uff70'
+/** `h3n`: lo que ocupa la posición de un guion o un guion bajo. */
+export const SEPARATOR_CHARS = `_\\p{Pc}\\u2017\\u02cd\\u07fa\\u0640${DASHES}`
+/** `G`. */
+const SEPARATOR = `[${SEPARATOR_CHARS}]`
 
 /** `O`: los caracteres que se leen como `<`, `>` o `/`. */
 const LOOKALIKES: Readonly<Record<string, '<' | '>' | '/'>> = {
@@ -39,11 +41,12 @@ const LOOKALIKES: Readonly<Record<string, '<' | '>' | '/'>> = {
 }
 
 /** `i`: las clases de apertura y barra, con sus parecidos, y el relleno entre `<` y el nombre. */
-const TAG_CLASSES = (() => {
+export const TAG_CLASSES = (() => {
   const members: Record<'<' | '>' | '/', string> = { '<': '<', '>': '>', '/': '/' }
   for (const [lookalike, ascii] of Object.entries(LOOKALIKES)) members[ascii] += lookalike
   return {
     open: members['<'],
+    close: members['>'],
     slash: members['/'],
     filler: `^${NAME_CHARS}${members['<']}${members['>']}`,
     lookalikePattern: new RegExp(`[${Object.keys(LOOKALIKES).join('')}]`, 'g'),
@@ -51,7 +54,7 @@ const TAG_CLASSES = (() => {
 })()
 
 /** `iRe`: una repetición atómica de `characters`: la captura `group` se consume entera. */
-function atomicRun(characters: string, group: number): string {
+export function atomicRun(characters: string, group: number): string {
   return `(?=([${characters}]*))(?:\\${group})`
 }
 

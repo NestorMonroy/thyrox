@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTextScrub.test.ts:
+66 |   test('el atributo from-plugin del emisor se retira', () => {
+67 |     expect(scrubPeerMessageText(`<cross-session-message from="x" from-plugin="p">\nb\n${CLOSE}`)).toBe(`<cross-session-message from="x">\nb\n${CLOSE}`)
+68 |   })
+69 | 
+70 |   test('si tras retirarlo aún nombra from-plugin, el sobre entero se neutraliza', () => {
+71 |     expect(scrubPeerMessageText(`<cross-session-message from="from-plugin">\nb\n${CLOSE}`)).toBe(`<\\cross-session-message from="from-plugin">\nb\n<\\/cross-session-message>`)
+                                                                                                 ^
+error: expect(received).toBe(expected)
+
+- "<\cross-session-message from="from-plugin">
++ "<cross-session-message from="from-plugin">
+  b
+- <\/cross-session-message>"
++ </cross-session-message>"
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTextScrub.test.ts:71:93)
+(fail) scrubEnvelopeContent (m) y scrubPeerMessageText (g9r) > si tras retirarlo aún nombra from-plugin, el sobre entero se neutraliza [0.28ms]
+
+ 17 pass
+ 1 fail
+ 25 expect() calls
+Ran 18 tests across 1 file. [54.00ms]

@@ -35,6 +35,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-6b | `unr`: la política `crossSessionInbound` (`I`, `B`, `O`, `zje`, niveles `accept`/`hold`/`refuse`) y el modo de permisos (`C`, `S`, `V1`, `NL`) → `uds/inboundPolicy.ts`; la clave entra al esquema de `@thyrox/config` | hecha |
 | F4c-2a | escape del cierre de la etiqueta que envuelve texto ajeno (`Qce`, `CFt`, `PL`, `h`, `H`, `iRe`, `Spt` de `chunk-0grnxhq4.js`) → `uds/tagClose.ts` | hecha |
 | F4c-2b | `chunk-q8a07cv0.js` entero salvo las constantes de equipo (ya en `@thyrox/swarm`): sobre `cross-session-message` → `uds/peerEnvelope.ts`; direcciones de pares → `uds/peerAddress.ts`; lectores con tope y resumen de una línea → `uds/cappedText.ts`; y la rama `win32.normalize` de `_N` que F1 omitía | hecha |
+| F4c-2c-1 | neutralizado de etiquetas por forma (`DLo`, `xu`, `_u`, `D`, `$u`, `W`, `Su`, `Pfn` con las tablas `N` y `M` generadas) → `uds/tagFormScrub.ts`, `uds/confusableTables.ts`; texto de par (`aYe`, `X4n`, `lYe`, `fe`, `Wce`, `m`, `g9r`, `ioe`) → `uds/peerTextScrub.ts`; escapes XML (`qt`, `AYe`, `AFt`, `Do`, `$w`, `ine`) → `uds/xmlText.ts` | hecha |
+| F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `lz`, `Uq`, `Ofn`, `Hfn`, `cu`, `LLo`, `mu`, `yJ`, `RUr`, `CYe` | pendiente |
 | F4c-2c | `ze`/`Oe`/`aEn`: entrega de un `user` a la cola, con sus dependencias inyectadas | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
@@ -253,3 +255,26 @@ una, los dos que dependen de ellas.
 F1 portó `Ln` sin la segunda mitad de `_N`: una ruta que sólo cae en el
 espacio de dispositivos al normalizarla como Windows (`/x/../??/c`). Se
 completa aquí, con su caso en `udsSocketPath.test.ts` (`sp-sin-normalizar`).
+
+## F4c-2c-1 — neutralizado por forma y texto de par: controles
+
+Dos oráculos diferenciales evalúan los chunks de la referencia con sus
+importaciones sustituidas y comparan con el porte sobre 20 000 entradas
+generadas cada uno: `probes/differential_tag_scrub.ts` (`DLo`, `Pfn`,
+`Qce`, `CFt`, `PL`) y `probes/differential_peer_text_scrub.ts` (`aYe`,
+`X4n`, `lYe`, `Wce`, `g9r`, `ioe`). Los dos dan 0 discrepancias
+(`diferencial-*.txt`). Las tablas de confundibles se generan del chunk con
+`probes/extract_confusable_tables.ts`; no se transcriben.
+
+El oráculo no sustituye a las pruebas: mide la coincidencia en la población
+que genera, y esa población casi nunca produce las condiciones de cada rama.
+Con las nueve anulaciones de `peerTextScrub.ts` el oráculo sólo cae con
+`scrub-sin-json`; las nueve las tumban las pruebas unitarias. Dos de ellas
+no lo hacían en el primer pase y se estrecharon: `scrub-sin-salto` (una
+etiqueta que sólo se completa con el salto de línea entre dos bloques) y
+`scrub-sin-escape-simple` (una barra escapada antes de `u003c`).
+
+`form-sin-guion-parecido` no tumba nada, y es por construcción: un guion
+que no pasa a `-` cae en la rama de separador y se lee como `_`, que la
+clase de `_u` para `-` también admite. Medido sin testigo: ningún carácter
+de U+0080 a U+2FFFF cambia de veredicto (`probes/dash_fold_witness.ts`).
