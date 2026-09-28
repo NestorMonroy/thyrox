@@ -20,6 +20,7 @@ import { getPlatform } from '@thyrox/config/platform'
 
 import { logForDebugging } from '../debug.ts'
 import { writeFileAtomicWithMode } from './atomicWrite.ts'
+import { storageBackendPin } from './storageBackendPin.ts'
 import { INBOX_KEY_FILE, INBOX_KEY_TEMP_FILE, inboxKeyFileName, inboxKeySuffix } from './inboxAuth.ts'
 import {
   currentPidDomain,
@@ -80,7 +81,7 @@ export function defaultSessionsDir(): string {
 
 export const processInboxKeyDeps: InboxKeyDeps = {
   sessionsDir: defaultSessionsDir,
-  storageBackendActive: () => false,
+  storageBackendActive: () => storageBackendPin.isActive(),
   get pid() {
     return process.pid
   },

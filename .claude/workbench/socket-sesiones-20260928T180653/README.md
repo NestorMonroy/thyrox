@@ -24,7 +24,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` (`lxe`, `RGr`, `ya`) y la forma de Windows de `n6`/`Hx` → `uds/processIdentity.ts` | hecha; la fuente del token en Windows, DESCONOCIDO |
 | F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`), `we`/`Ie` por plataforma y `ce`/`Ez`/`Le` como `shouldRetryRename` → `uds/atomicWrite.ts` | hecha |
 | F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n`, `Ee`, `Ks`, `rt` y el contrato `SessionKeyStorage` que consumen → `uds/inboxKeys.ts` | hecha |
-| F3d-4 | el backend de storage que activa `N()` e implementa el contrato completo (`Re`, `ensureScope`, `write` con `publishDiscipline`, `listEntries`, `readText`) | pendiente |
+| F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
+| F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
 | F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
 | F3 | autenticación: tokens, clave en el registro de sesiones | pendiente |
@@ -130,3 +131,19 @@ casos. El storage de las pruebas es un doble en memoria con la forma de
 resultados de la referencia (`{ok, value}` / `{ok:false, error}`, páginas
 con `cursor`, lecturas con `found` y `totalBytes`). Lo que ese doble no puede
 probar es que un backend real cumpla el contrato. Eso lo cierra F3d-4.
+
+## F3d-4 — qué activa `N()`, medido
+
+`N()` devuelve la bandera `t` de `chunk-8nz62976.js`. Sólo `DBo` la fija
+(`references-DBo.txt`: 1 uso), y a `DBo` sólo la llama `dVn`, que lee la
+bandera remota `tengu_hover_rest` y avisa si el valor servido no es booleano
+o si contradice una decisión anterior (`symbol-dVn.txt`). `N()` tiene 559 usos
+en 128 chunks, así que el backend es un subsistema transversal de
+almacenamiento remoto del proveedor, no algo propio del buzón.
+
+Anulaciones de la bandera en `anulacion-pin-*.txt`: `sin-primero` 2,
+`sin-solo-true` 1, `sin-aviso-tipo` 1.
+
+La bandera se porta. El backend no se porta contra el servicio del
+proveedor, porque exigiría su credencial. Decidir si thyrox tiene un
+backend propio que cumpla `SessionKeyStorage` corresponde al ejecutor.
