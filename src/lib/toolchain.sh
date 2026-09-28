@@ -339,6 +339,25 @@ function thyrox_toolchain_require_rsync() {
 }
 export -f thyrox_toolchain_require_rsync
 
+# @description El comando que instala iproute2. Declarado para que un control
+# pueda inyectar un instalador que MIENTA y probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD="${THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD:-sudo apt-get install -y iproute2}"
+
+# @description Asegura `ip` (iproute2), que la captura TPROXY necesita para su
+# regla de politica y su ruta local (`ip rule`, `ip route`). Mismo contrato
+# que `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_IPROUTE2=1`), el rechazo no emite conteo y el exito se
+# prueba re-comprobando el binario, no leyendo el exit del instalador.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_iproute2() {
+  thyrox_toolchain_acquire_binary "${THYROX_TOOLCHAIN_IP_BIN:-ip}" \
+    THYROX_INSTALL_IPROUTE2 "$THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD" iproute2
+}
+export -f thyrox_toolchain_require_iproute2
+
 # @description El comando que instala GNU Time. Declarado por la misma razon
 # que sus hermanos: un control necesita un instalador que MIENTA.
 export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-sudo apt-get install -y time}"
