@@ -15,10 +15,9 @@
  *
  * DIVERGENCIA DE SITIO, declarada. La fuente parte el subsistema en dos
  * —`mitm/cert/` para el estatico heredado y `mitm/tproxy/` para el dinamico—
- * porque conserva los dos. Aqui llega SOLO el dinamico, asi que el nivel
- * `tproxy/` no tendria hermano con el que contrastar y el modulo vive en
- * `mitm/` a secas. Si algun dia llega la capa de socket transparente, ese es
- * el momento de reintroducir el nivel, no antes.
+ * porque conserva los dos. El estatico ya esta en `cert/`; este modulo sigue
+ * en `mitm/` a secas porque la capa de socket transparente (`tproxy/`) aun no
+ * llega, y es al llegar ella cuando el nivel tiene sentido.
  *
  * LO QUE ESTE MODULO NO CIERRA, con su sucesor. Emite y cachea; no instala la
  * CA en el almacen de confianza del sistema ni levanta ningun listener. La
@@ -31,6 +30,7 @@
  * instalarla en el almacen del sistema es un acto aparte y explicito.
  */
 import tls from 'node:tls'
+import selfsigned from 'selfsigned'
 
 export interface CaPair {
   /** Clave privada en PEM. */
@@ -48,7 +48,6 @@ export interface LeafPair {
 
 /** Genera una CA local de vida larga (`basicConstraints` CA, `keyCertSign`). */
 export async function generateMitmCa(name = 'THYROX MITM CA'): Promise<CaPair> {
-  const { default: selfsigned } = await import('selfsigned')
   const notAfter = new Date()
   notAfter.setFullYear(notAfter.getFullYear() + 10)
   const pems = await selfsigned.generate([{ name: 'commonName', value: name }], {
@@ -69,7 +68,6 @@ export async function generateMitmCa(name = 'THYROX MITM CA'): Promise<CaPair> {
  * confianza.
  */
 export async function issueLeafCert(hostname: string, ca: CaPair): Promise<LeafPair> {
-  const { default: selfsigned } = await import('selfsigned')
   const notAfter = new Date()
   notAfter.setFullYear(notAfter.getFullYear() + 1)
   const pems = await selfsigned.generate([{ name: 'commonName', value: hostname }], {
