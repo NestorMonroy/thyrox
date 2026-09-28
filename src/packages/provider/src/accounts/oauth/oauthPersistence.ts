@@ -68,8 +68,11 @@ export interface PersistOptions {
   now?: () => number
 }
 
+/** Lo que la persistencia usa del store. */
+export type OAuthConnectionWriter = Pick<ConnectionStore, 'list' | 'create' | 'update'>
+
 export function persistOAuthConnection(
-  store: ConnectionStore,
+  store: OAuthConnectionWriter,
   provider: string,
   tokenData: JsonRecord,
   options: PersistOptions = {},

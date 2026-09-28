@@ -16,10 +16,9 @@
  * `omniroute: src/app/api/oauth/[provider]/[action]/route.ts` (MIT). Lo que
  * allí hace el servidor aquí lo hace el mismo proceso.
  */
-import type { ConnectionStore } from '../connectionStore.ts'
 import type { CallbackServer, CallbackServerOptions } from './callbackServer.ts'
 import type { JsonRecord, OAuthFlows, OAuthProviderFlow } from './oauthFlows.ts'
-import { persistOAuthConnection, safeEqual } from './oauthPersistence.ts'
+import { type OAuthConnectionWriter, persistOAuthConnection, safeEqual } from './oauthPersistence.ts'
 
 const DEFAULT_TIMEOUT_MS = 300_000
 const DEFAULT_DEVICE_INTERVAL_SECONDS = 5
@@ -34,7 +33,7 @@ const DEVICE_ANSWER_AS_EXTRA = new Set(['kiro', 'amazon-q'])
 
 export interface LoginRunnerDeps {
   flows: OAuthFlows
-  store: ConnectionStore
+  store: OAuthConnectionWriter
   write: (text: string) => void
   openBrowser: (url: string) => Promise<void>
   readToken: () => Promise<string>

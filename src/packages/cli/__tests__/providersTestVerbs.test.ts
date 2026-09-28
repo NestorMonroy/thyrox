@@ -36,6 +36,7 @@ function deps(rows: Row[] = data()) {
     readStdin: async () => '',
     promptSecret: async () => '',
     readFile: () => '',
+    login: async () => ({ ok: false, error: 'not under test' }),
   }
   return { d, out, updates }
 }

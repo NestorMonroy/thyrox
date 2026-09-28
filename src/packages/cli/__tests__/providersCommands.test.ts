@@ -41,6 +41,7 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}) {
     readStdin: async () => '',
     promptSecret: async () => '',
     readFile: () => '',
+    login: async () => ({ ok: false, error: 'not under test' }),
     ...overrides,
   }
   return { d, out, deleted, questions, closed: () => closed }
@@ -171,6 +172,25 @@ describe('thyrox providers remove', () => {
   test('an unknown verb is a usage error naming the verbs', async () => {
     const { d, out } = deps()
     expect(await providersCommand(['providers', 'frobnicate'], d)).toBe(2)
-    expect(out.join('')).toContain("thyrox providers: unknown verb 'frobnicate'; expected one of: list, add, edit, import, remove, test, test-all, validate")
+    expect(out.join('')).toContain("thyrox providers: unknown verb 'frobnicate'; expected one of: list, add, edit, import, remove, test, test-all, validate, login")
+  })
+})
+
+describe('providers login', () => {
+  test('runs the login dependency against the opened store and closes it', async () => {
+    const seen: { options: unknown; listed: number }[] = []
+    const { d, out, closed } = deps({
+      login: async (store, options) => (seen.push({ options, listed: store.list().length }), { ok: true, connection: { id: 'new-1', provider: 'codex', name: 'codex' } }),
+    })
+    expect(await providersCommand(['providers', 'login', 'codex', '--no-browser', '--json'], d)).toBe(0)
+    expect(seen).toEqual([{ options: { provider: 'codex', browser: false }, listed: 2 }])
+    expect(JSON.parse(out.join('')).connection.id).toBe('new-1')
+    expect(closed()).toBe(1)
+  })
+
+  test('refuses a provider that has no login flow', async () => {
+    const { d, out } = deps()
+    expect(await providersCommand(['providers', 'login', 'openai'], d)).toBe(2)
+    expect(out.join('')).toContain("Unknown login provider 'openai'")
   })
 })

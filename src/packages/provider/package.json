@@ -170,6 +170,26 @@
       "types": "./dist/accounts/webCookie/webCookieProbe.d.ts",
       "default": "./src/accounts/webCookie/webCookieProbe.ts"
     },
+    "./accounts/oauth/loginRunner": {
+      "@thyrox/source": "./src/accounts/oauth/loginRunner.ts",
+      "types": "./dist/accounts/oauth/loginRunner.d.ts",
+      "default": "./src/accounts/oauth/loginRunner.ts"
+    },
+    "./accounts/oauth/flowRegistry": {
+      "@thyrox/source": "./src/accounts/oauth/flowRegistry.ts",
+      "types": "./dist/accounts/oauth/flowRegistry.d.ts",
+      "default": "./src/accounts/oauth/flowRegistry.ts"
+    },
+    "./accounts/oauth/oauthFlows": {
+      "@thyrox/source": "./src/accounts/oauth/oauthFlows.ts",
+      "types": "./dist/accounts/oauth/oauthFlows.d.ts",
+      "default": "./src/accounts/oauth/oauthFlows.ts"
+    },
+    "./accounts/oauth/callbackServer": {
+      "@thyrox/source": "./src/accounts/oauth/callbackServer.ts",
+      "types": "./dist/accounts/oauth/callbackServer.d.ts",
+      "default": "./src/accounts/oauth/callbackServer.ts"
+    },
     "./accounts/connectionStoreHome": {
       "@thyrox/source": "./src/accounts/connectionStoreHome.ts",
       "types": "./dist/accounts/connectionStoreHome.d.ts",

@@ -47,6 +47,7 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}, rows: Row[] = []) {
     readStdin: async () => '  sk-from-stdin\n',
     promptSecret: async question => (prompts.push(question), 'sk-typed'),
     readFile: () => { throw new Error('no such file') },
+    login: async () => ({ ok: false, error: 'not under test' }),
     ...overrides,
   }
   return { d, out, created, updates, prompts }

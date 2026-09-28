@@ -3,7 +3,8 @@
  * muestra sin secretos; `remove` borra una, resuelta por su selector, tras
  * confirmar; `test`, `test-all` y `validate` las prueban o las revisan
  * (`./providers/testVerbs.ts`); `add`, `edit` e `import` las escriben
- * (`./providers/writeVerbs.ts`). En stdin no interactiva la confirmación sólo la da `--yes`, para
+ * (`./providers/writeVerbs.ts`); `login` inicia sesión en un proveedor OAuth
+ * (`./providers/loginVerb.ts`). En stdin no interactiva la confirmación sólo la da `--yes`, para
  * que un guion no borre por un `y` que nadie escribió.
  *
  * Porte de `runListCommand` (`omniroute: bin/cli/commands/providers.mjs`) y
@@ -16,6 +17,8 @@ import { createInterface } from 'node:readline/promises'
 
 import { testProviderApiKey } from '@thyrox/provider/accounts/apiKeyProbe'
 import type { ConnectionTestDeps } from '@thyrox/provider/accounts/connectionTest'
+import { OAUTH_LOGIN_PROVIDERS } from '@thyrox/provider/accounts/oauth/flowRegistry'
+import type { LoginOptions, LoginOutcome, LoginRunnerDeps } from '@thyrox/provider/accounts/oauth/loginRunner'
 import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { validateWebCookieProvider } from '@thyrox/provider/accounts/webCookie/webCookieProbe'
 
@@ -27,11 +30,13 @@ import { formatConnectionTable, publicConnection } from './providers/publicConne
 import { promptHidden } from './providers/secretPrompt.ts'
 import { runTestAllVerb, runTestVerb, runValidateVerb } from './providers/testVerbs.ts'
 import { runAddVerb, runEditVerb, runImportVerb } from './providers/writeVerbs.ts'
+import { runLoginVerb } from './providers/loginVerb.ts'
+import { createOAuthLogin } from './providers/oauthLogin.ts'
 
 type Row = Record<string, unknown>
 
 export interface ProvidersCommandDeps {
-  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null | unknown; create(data: Row): Row | null }; close(): void }
+  openStore: () => { store: { list(): Row[]; delete(id: string): boolean; update(id: string, fields: Row): Row | null; create(data: Row): Row | null }; close(): void }
   write: (text: string) => void
   interactive: boolean
   confirm: (question: string) => Promise<boolean>
@@ -41,6 +46,8 @@ export interface ProvidersCommandDeps {
   readStdin: () => Promise<string>
   promptSecret: (question: string) => Promise<string>
   readFile: (path: string) => string
+  /** Inicia sesión en un proveedor y guarda la cuenta en el store abierto. */
+  login: (store: LoginRunnerDeps['store'], options: LoginOptions) => Promise<LoginOutcome>
 }
 
 async function readAllStdin(): Promise<string> {
@@ -71,9 +78,16 @@ export const realProvidersCommandDeps: ProvidersCommandDeps = {
   readStdin: readAllStdin,
   promptSecret: question => promptHidden(question, process.stdin, process.stdout),
   readFile: path => fs.readFileSync(path, 'utf8'),
+  login: (store, options) =>
+    createOAuthLogin({
+      write: realProvidersCommandDeps.write,
+      interactive: realProvidersCommandDeps.interactive,
+      promptSecret: realProvidersCommandDeps.promptSecret,
+      readStdin: realProvidersCommandDeps.readStdin,
+    })(store, options),
 }
 
-export const PROVIDERS_VERBS = ['list', 'add', 'edit', 'import', 'remove', 'test', 'test-all', 'validate'] as const
+export const PROVIDERS_VERBS = ['list', 'add', 'edit', 'import', 'remove', 'test', 'test-all', 'validate', 'login'] as const
 type ProvidersVerb = (typeof PROVIDERS_VERBS)[number]
 
 const isProvidersVerb = (verb: string | undefined): verb is ProvidersVerb => (PROVIDERS_VERBS as readonly string[]).includes(verb ?? '')
@@ -151,6 +165,13 @@ export async function providersCommand(argv: string[], deps: ProvidersCommandDep
         return await runEditVerb(args, { ...deps, store: opened.store })
       case 'import':
         return runImportVerb(args, { ...deps, store: opened.store })
+      case 'login':
+        return await runLoginVerb(args, {
+          store: opened.store,
+          write: deps.write,
+          login: options => deps.login(opened.store, options),
+          providers: OAUTH_LOGIN_PROVIDERS,
+        })
     }
   } finally {
     opened.close()
