@@ -1,0 +1,23 @@
+==== te: 1 definicion(es) de nivel superior
+---- chunk-qcy58j4w.js function te [2700,2770)
+function te(e){let n=e._handle;return typeof n?.fd==="number"?n.fd:-1}
+==== Kr: 1 definicion(es) de nivel superior
+---- chunk-vq0drrah.js function Kr [1013,1128)
+function Kr(t,n){if(t.length<=n)return t;let e=[];for(let r of t){if(e.length>=n)break;e.push(r)}return e.join("")}
+==== se: 1 definicion(es) de nivel superior
+---- chunk-qcy58j4w.js function se [9245,9303)
+function se(e){return e.replace(Oe,(n)=>`<hex:${pn(n)}>`)}
+symbol: 3 de 3 nombre(s) resueltos
+==== zje: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function zje [3111,3143)
+function zje(){return I().value}
+==== C: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function C [5161,5439)
+function C(){let e=ti().inbound.getCurrentMode;if(e===null)return t("[cross-session-inbound] permission-mode getter not wired (fail-closed \u2192 hold)"),null;try{return e()}catch(n){return t(`[cross-session-inbound] mode getter threw (${l(n)}; fail-closed \u2192 hold)`),null}}
+==== y: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js variable y [1586,1599)
+y=new Set(KE)
+==== S: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function S [4947,5044)
+function S(e){return e.mode==="bypassPermissions"||V1(e.mode,e.isBypassPermissionsModeAvailable)}
+symbol: 4 de 4 nombre(s) resueltos

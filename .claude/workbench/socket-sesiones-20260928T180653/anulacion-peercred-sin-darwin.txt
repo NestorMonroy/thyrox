@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerCredentials.test.ts:
+117 |   test('Linux pide SO_PEERCRED en SOL_SOCKET a libc.so.6, un ucred de 12 bytes', () => {
+118 |     expect(peerCredentialQuery('linux')).toEqual({ library: 'libc.so.6', level: 1, option: 17, bytes: 12 })
+119 |   })
+120 | 
+121 |   test('macOS pide LOCAL_PEERPID en SOL_LOCAL a libSystem, un pid de 4 bytes', () => {
+122 |     expect(peerCredentialQuery('darwin')).toEqual({ library: '/usr/lib/libSystem.B.dylib', level: 0, option: 2, bytes: 4 })
+                                                ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "bytes": 4,
+-   "level": 0,
+-   "library": "/usr/lib/libSystem.B.dylib",
+-   "option": 2,
+- }
++ null
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerCredentials.test.ts:122:43)
+(fail) peerCredentialQuery: la consulta de getsockopt por plataforma > macOS pide LOCAL_PEERPID en SOL_LOCAL a libSystem, un pid de 4 bytes [0.29ms]
+
+ 12 pass
+ 1 fail
+ 30 expect() calls
+Ran 13 tests across 1 file. [139.00ms]

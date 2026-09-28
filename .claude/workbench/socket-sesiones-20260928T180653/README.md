@@ -24,6 +24,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` (`lxe`, `RGr`, `ya`) y la forma de Windows de `n6`/`Hx` → `uds/processIdentity.ts` | hecha; la fuente del token en Windows, DESCONOCIDO |
 | F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`), `we`/`Ie` por plataforma y `ce`/`Ez`/`Le` como `shouldRetryRename` → `uds/atomicWrite.ts` | hecha |
 | F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n`, `Ee`, `Ks`, `rt` y el contrato `SessionKeyStorage` que consumen → `uds/inboxKeys.ts` | hecha |
+| F4a | credenciales del par: `lsn`, `te`, `Yce`, `aUr`; `Bun.ant.getPeerPid` sustituido por `getsockopt` (`SO_PEERCRED` en Linux, `LOCAL_PEERPID` en macOS) por `bun:ffi` → `uds/peerCredentials.ts` | hecha (H-THYROX-241) |
+| F4b | el manejador de conexión `en`: plazo de primera línea, marco de auth, tope `WOt` de 1 MiB, líneas JSON, fragmento final, `TB`/`Bf` | pendiente |
+| F4c | el enrutado `Qe`/`be`/`ze`/`Ie` y la confianza por ancestría en modo bypass (`unr`) | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
 | F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
@@ -147,3 +150,16 @@ Anulaciones de la bandera en `anulacion-pin-*.txt`: `sin-primero` 3,
 La bandera se porta. El backend no se porta contra el servicio del
 proveedor, porque exigiría su credencial. Decidir si thyrox tiene un
 backend propio que cumpla `SessionKeyStorage` corresponde al ejecutor.
+
+## F4a — credenciales del par: controles
+
+La sonda `probe-peer-pid.ts` → `probe-peer-pid.txt` confirma dos cosas en el
+Bun 1.3.11 del árbol: un socket aceptado expone `_handle.fd` como número, y
+`getsockopt(SOL_SOCKET, SO_PEERCRED)` por `bun:ffi` devuelve el pid del par.
+La prueba real conecta desde un proceso hijo y obtiene su pid y nuestro uid.
+
+Anulaciones en `anulacion-peercred-*.txt`. Dos no discriminaban en su
+primera forma y se endurecieron sus casos: `sin-corte-init` (el doble no
+tenía padre para init) y `sin-vacio` (ningún caso producía un campo 22
+vacío). La rama de macOS se mide sólo por la consulta que elige, porque este
+contenedor no puede ejecutarla.
