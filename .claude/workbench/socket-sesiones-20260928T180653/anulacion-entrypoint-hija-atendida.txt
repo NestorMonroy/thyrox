@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+121 |     expect(isAttendedSession(context({}, { state, teammateAgentId: () => '' }))).toBe(false)
+122 |     const hosted = new EntrypointHostState()
+123 |     hosted.setEntrypoint('ssh-remote')
+124 |     expect(isAttendedSession(context({}, { state: hosted }))).toBe(true)
+125 |     hosted.setChildSession(true)
+126 |     expect(isAttendedSession(context({}, { state: hosted }))).toBe(false)
+                                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:126:63)
+(fail) las demás variables del anfitrión > THYROX_CODE_SESSION_KIND y el teammate descartan una sesión atendida [0.84ms]
+
+ 15 pass
+ 1 fail
+ 90 expect() calls
+Ran 16 tests across 1 file. [60.00ms]

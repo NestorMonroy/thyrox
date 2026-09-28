@@ -51,6 +51,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-4c-1 | latido del tablero (`ld`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`, `Ds`, `tD`, `Gy`, `fBe`) → `uds/fleetHeartbeat.ts` | hecha: 11 pruebas; 16 anulaciones (`anulacion-heartbeat-*.txt`) |
 | K | catálogo de claves del storage (`chunk-qbkceaaj.js` completo: `Re`, `K`, `mhn`, `SUo`, `bUo`, `wUo`, `vUo`, `jn`, `sR`, `qBt`, `_Uo`, `KBt`, `cK`, `YBt`) → `storageKeys.ts` | hecha: 11 pruebas; 24 anulaciones (`anulacion-storagekeys-*.txt`); oráculo `diferencial-storage-keys.txt`, 0 discrepancias en 20000 nombres y 20000 claves |
 | F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) → `uds/spareSession.ts` | hecha: 11 pruebas; 19 anulaciones (`anulacion-spare-*.txt`) |
+| E | módulo de entrypoints y anfitrión (`chunk-jwddn0q9.js` completo) con las variables `THYROX_CODE_*` y el intérprete de cada una (`str`/`bool`/`triBool` de `chunk-b1cxch1w.js`) → `@thyrox/config: entrypoint.ts` | hecha: 16 pruebas; 27 anulaciones (`anulacion-entrypoint-*.txt`); oráculo `diferencial-entrypoint.txt`, 0 discrepancias en 20000 escenarios |
 | F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`) con su archivo pid, limpieza al salir y los avisos de cambio de sesión y de directorio | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
 | F4c-2f-4e | tipo de sesión por entorno y anfitrión (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`, `NNr`, `qKn`) con `THYROX_CODE_SESSION_KIND`, `THYROX_JOB_DIR` y `THYROX_BG_BACKEND`; `fb`, `Ul`, `dR` y `md` llegan por `configureSessionKindHost` → `uds/sessionKind.ts` | hecha: 9 pruebas; 17 anulaciones (`anulacion-sessionkind-*.txt`) |
@@ -560,3 +561,22 @@ el intervalo y guardar el temporizador) cae en su caso. `con-storage` y
 `reclamado` no discriminaban en la primera versión de la suite; se añadieron
 el caso de backend activo sin storage y el de una reserva sin reclamo con su
 archivo pid presente.
+
+## E — entrypoints y anfitrión: controles
+
+El oráculo evalúa el chunk con sus importaciones sustituidas: `a` lee el
+mismo entorno generado con el nombre `THYROX_CODE_*` y el intérprete que el
+ejecutable declara para cada variable (`str` recorta y trata vacía como
+ausente; `bool` sólo acepta 1/true/yes/on; `triBool` distingue además el
+falso declarado), `q`/`j` dan un anfitrión propio por escenario, y `Te`/`dR`
+salen del escenario. En cada uno corre `NUo` en los dos lados y compara el
+entorno resultante (las normalizaciones de `D`) y los 32 predicados exportados,
+más `P6`, `l`, `i1t`, `xUo` y `$Uo`. El nombre del anfitrión se compara sin la
+marca, que el porte sustituye por la del producto. Anulada la excepción del
+editor en `P6`, el oráculo da 198 discrepancias
+(`anulacion-entrypoint-oraculo-vscode.txt`).
+
+Anulaciones de la suite unitaria: una por variable y por rama de `D` y `NUo`,
+el recorte de `str`, la lista de conocidos, la marca del nombre, y las dos
+condiciones de `P6`. `gestionado` no discriminaba en la primera versión; se
+añadió el caso con `THYROX_CODE_PROVIDER_MANAGED_BY_HOST` apagada.

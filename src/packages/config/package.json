@@ -142,6 +142,16 @@
       "types": "./dist/dxt/zip.d.ts",
       "default": "./dxt/zip.ts"
     },
+    "./entrypoint": {
+      "@thyrox/source": "./entrypoint.ts",
+      "types": "./dist/entrypoint.d.ts",
+      "default": "./entrypoint.ts"
+    },
+    "./entrypoint.js": {
+      "@thyrox/source": "./entrypoint.ts",
+      "types": "./dist/entrypoint.d.ts",
+      "default": "./entrypoint.ts"
+    },
     "./embeddedTools.js": {
       "@thyrox/source": "./embeddedTools.ts",
       "types": "./dist/embeddedTools.d.ts",
