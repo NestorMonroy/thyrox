@@ -43,3 +43,26 @@ tabla (`STATE_VERBS`), y cada verbo cierra el store al terminar.
 
 Anulaciones (`annul-f7j2.sh`, `results-f7j2.txt`): las ocho discriminan; cada
 una tumba exactamente su caso, y el árbol restaurado vuelve a 16/0.
+
+## F7j-3 — verbos privilegiados sobre la API publicada
+
+El servidor MITM es un proceso hijo de quien lo arranca; una CLI de vida corta
+se lo llevaría al salir. Por eso los verbos privilegiados —`start`, `stop`,
+`restart`, `trust-cert`, `regenerate-cert`, `cert`, `untrust-cert`,
+`dns <id> on|off`, `reset <id>`, `repair`, `diagnose`, `upstream-ca`,
+`tproxy`— no montan la API en proceso: van por HTTP a la que sirve
+`thyrox mitm serve`, que es la dueña del hijo.
+
+- `apiEndpoint.ts`: `serve` publica su URL en `api.url` del directorio de
+  datos (modo 0600) al arrancar y la retira al parar.
+- `privilegedVerbs.ts`: traduce cada verbo a su petición; sin URL publicada
+  rehúsa con exit 2 nombrando `thyrox mitm serve`.
+- `stdinSecret.ts`: la contraseña de sudo es la primera línea de stdin
+  (`--sudo-password-stdin`); `--sudo-password` en argv se rehúsa, porque ahí
+  queda a la vista de `ps` y del historial.
+
+La prueba del lanzador real corre con `THYROX_MITM_DATA_DIR` propio: sin él,
+publicaría la URL en el directorio de datos del usuario.
+
+Rojo persistido en `red-f7j3.txt`. Anulaciones: `annul-f7j3.sh`,
+`results-f7j3.txt`.

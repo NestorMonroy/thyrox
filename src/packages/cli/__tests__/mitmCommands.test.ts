@@ -12,27 +12,42 @@ import { __resetMitmManagerForTest, getInspectorIngest } from '@thyrox/mitm/mana
 import { ensureAgentBridgeSchema } from '@thyrox/mitm/state/schema'
 
 import { spawn } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
+import { Readable } from 'node:stream'
 
-import { mitmCommand, mitmServe, registerMitmCommands, type MitmServeDeps } from '../src/commands/mitm-commands.ts'
+import { mitmCommand, mitmServe, registerMitmCommands, type MitmCommandDeps } from '../src/commands/mitm-commands.ts'
+import { readApiUrl } from '../src/commands/mitm/apiEndpoint.ts'
+import { remoteApi } from '../src/commands/mitm/remoteApi.ts'
+import { readFirstLine } from '../src/commands/mitm/stdinSecret.ts'
 import { detectMode } from '../src/entry/detect-mode.ts'
 
 const THYROX_ROOT = path.resolve(import.meta.dir, '..', '..', '..', '..')
 
-afterEach(() => __resetMitmManagerForTest())
+const dataDirs: string[] = []
+afterEach(() => {
+  __resetMitmManagerForTest()
+  for (const dir of dataDirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true })
+})
 
-function deps(overrides: Partial<MitmServeDeps> = {}) {
+function deps(overrides: Partial<MitmCommandDeps> = {}) {
   let stop!: () => void
   const stopped = new Promise<void>(resolve => (stop = resolve))
   const out: string[] = []
   const db = new Database(':memory:')
   ensureAgentBridgeSchema(db)
-  const value: MitmServeDeps = {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'thyrox-mitm-cli-'))
+  dataDirs.push(dataDir)
+  const value: MitmCommandDeps = {
     openDb: () => db,
     traffic: new TrafficBuffer(10),
     write: text => out.push(text),
     readFile: () => '{}',
     waitForStop: () => stopped,
+    dataDir,
+    connect: remoteApi,
+    readSecret: async () => 's3cret',
     ...overrides,
   }
   return { value, stop, out, db }
@@ -98,8 +113,12 @@ test('an unknown mitm verb refuses with a usage exit, naming the verbs', async (
 })
 
 test('thyrox mitm serve runs through the real launcher and stops on SIGTERM', async () => {
+  // El directorio de datos propio evita publicar la URL en el del usuario.
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'thyrox-mitm-launcher-'))
+  dataDirs.push(dataDir)
   const child = spawn('bash', [path.join(THYROX_ROOT, 'bin', 'cli'), 'mitm', 'serve', '--port', '0'], {
     stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, THYROX_MITM_DATA_DIR: dataDir },
   })
   let out = ''
   child.stdout.on('data', chunk => (out += chunk))
@@ -107,9 +126,11 @@ test('thyrox mitm serve runs through the real launcher and stops on SIGTERM', as
   const deadline = Date.now() + 20_000
   while (!/listening on http/.test(out) && Date.now() < deadline) await Bun.sleep(50)
   expect(out).toContain('MITM API listening on http://127.0.0.1:')
+  expect(readApiUrl(dataDir)).toStartWith('http://127.0.0.1:')
 
   child.kill('SIGTERM')
   expect(await exited).toBe(0)
+  expect(readApiUrl(dataDir)).toBeNull()
 }, 30_000)
 
 test('a state verb runs against the store and closes it afterwards', async () => {
@@ -124,4 +145,46 @@ test('the full program exposes every state verb under mitm', () => {
   registerMitmCommands(program)
   const names = program.commands.find(c => c.name() === 'mitm')!.commands.map(c => c.name())
   for (const verb of ['status', 'agents', 'agent', 'detect', 'mappings', 'bypass', 'config']) expect(names).toContain(verb)
+})
+
+test('serve publishes its URL in the data dir while it serves, and withdraws it on stop', async () => {
+  const d = deps()
+  const exit = mitmServe('0', d.value)
+  while (d.out.length === 0) await Bun.sleep(5)
+  const url = d.out[0]!.match(/http:\/\/127\.0\.0\.1:\d+/)![0]
+  expect(readApiUrl(d.value.dataDir)).toBe(url)
+  d.stop()
+  await exit
+  expect(readApiUrl(d.value.dataDir)).toBeNull()
+})
+
+test('a privileged verb reaches the API that serve published', async () => {
+  const d = deps()
+  const exit = mitmServe('0', d.value)
+  while (d.out.length === 0) await Bun.sleep(5)
+  d.out.length = 0
+  expect(await mitmCommand(['mitm', 'cert'], d.value)).toBe(0)
+  expect(JSON.parse(d.out.join(''))).toHaveProperty('exists')
+  d.stop()
+  await exit
+})
+
+test('a privileged verb without a running API refuses, naming serve', async () => {
+  const d = deps()
+  expect(await mitmCommand(['mitm', 'repair'], d.value)).toBe(2)
+  expect(d.out.join('')).toContain('thyrox mitm serve')
+})
+
+test('the full program exposes every privileged verb under mitm', () => {
+  const program = new Command()
+  registerMitmCommands(program)
+  const names = program.commands.find(c => c.name() === 'mitm')!.commands.map(c => c.name())
+  for (const verb of ['start', 'stop', 'restart', 'trust-cert', 'cert', 'dns', 'reset', 'repair', 'diagnose', 'upstream-ca', 'tproxy']) {
+    expect(names).toContain(verb)
+  }
+})
+
+test('the sudo password is the first stdin line, without its line break', async () => {
+  expect(await readFirstLine(Readable.from(['s3c', 'ret\nnext line\n']))).toBe('s3cret')
+  expect(await readFirstLine(Readable.from(['no-newline']))).toBe('no-newline')
 })
