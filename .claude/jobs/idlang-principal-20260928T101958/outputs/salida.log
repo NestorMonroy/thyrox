@@ -1,0 +1,17 @@
+== tests/verify/test_identifier_language.py
+  ok    sin declaracion el conjunto es vacio, no un default inventado
+
+25 ok, 0 fallos (alcance medido: 25 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+== tests/verify/test_identifier_language_baseline.py
+  ok    una lista explícita sin .py sale 0
+
+16 ok, 0 fallos (alcance medido: 16 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+== tests/verify/test_identifier_language_corpus.py
+  OK   con lexico el veredicto es 1, no 2
+
+23 ok, 0 fallos (alcance medido: 23 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+== tests/verify/test_identifier_language_typescript.py
+  ok    sin el recorrido de TypeScript rehúsa con exit 2
+  ok    y no publica un conteo
+test_identifier_language_typescript: 23 aserciones — 23 ok, 0 falla(s)
+__BG_EXIT__=0

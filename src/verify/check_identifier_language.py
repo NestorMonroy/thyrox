@@ -447,6 +447,7 @@ TECHNICAL_VOCABULARY = frozenset({
     'nss',       # Network Security Services, la base de certificados de Chromium y Firefox (`mitm/cert/install.ts`)
     'windsurf',  # un editor, nombre de producto
     'yates',     # el barajado de Fisher-Yates
+    'principal', # la identidad de seguridad; se escribe igual en inglés (`principal_type` de xAI)
 })
 
 #: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no
