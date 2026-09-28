@@ -125,6 +125,11 @@ function mappingPairs(db: Database, agentId: string) {
   return getMappingsForAgent(db, agentId).map(m => ({ source: m.source_model, target: m.target_model }))
 }
 
+/** ¿Algún agente con el DNS activado tiene de verdad sus hosts redirigidos? */
+export function anyAgentDnsConfigured(db: Database, configuredFor: (agentId: string) => boolean): boolean {
+  return getAllAgentBridgeStates(db).some(s => s.dns_enabled && configuredFor(s.agent_id))
+}
+
 /**
  * El estado del servidor enriquecido con lo que el tablero necesita: la
  * confianza real del certificado aparte de su existencia, el DNS de cualquier
@@ -132,9 +137,7 @@ function mappingPairs(db: Database, agentId: string) {
  */
 async function enrichedServerState(deps: AgentBridgeStateDeps) {
   const [status, cert] = await Promise.all([deps.mitmStatus(), deps.certStatus()])
-  const dnsConfigured = getAllAgentBridgeStates(deps.db).some(
-    s => s.dns_enabled && deps.dnsConfiguredFor(s.agent_id),
-  )
+  const dnsConfigured = anyAgentDnsConfigured(deps.db, deps.dnsConfiguredFor)
   const isWin = deps.platform === 'win32'
   const hasCachedPassword = deps.hasCachedPassword()
   return {

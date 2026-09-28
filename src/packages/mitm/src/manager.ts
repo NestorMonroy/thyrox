@@ -194,6 +194,13 @@ export function clearCachedPassword(): void {
   cachedPassword = null
 }
 
+/** Guarda la ruta de la CA del upstream que elige la interfaz; gana la variable de entorno. */
+export function writeStoredUpstreamCaPath(caPath: string): void {
+  const dir = resolveMitmDataDir()
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, UPSTREAM_CA_PATH_FILE), `${caPath}\n`)
+}
+
 function readStoredUpstreamCaPath(): string | null {
   try {
     const raw = fs.readFileSync(path.join(resolveMitmDataDir(), UPSTREAM_CA_PATH_FILE), 'utf8').trim()

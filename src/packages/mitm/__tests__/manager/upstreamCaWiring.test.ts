@@ -8,8 +8,11 @@
  * rutas de API.
  */
 import { expect, test } from 'bun:test'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
-import { applyUpstreamCa, resolveUpstreamCaPath } from '../../src/manager.ts'
+import { applyUpstreamCa, resolveUpstreamCaPath, writeStoredUpstreamCaPath } from '../../src/manager.ts'
 
 test('THYROX_MITM_UPSTREAM_CA_CERT wins over the stored path', () => {
   expect(resolveUpstreamCaPath({ THYROX_MITM_UPSTREAM_CA_CERT: '/env/ca.pem' }, () => '/stored/ca.pem')).toBe('/env/ca.pem')
@@ -38,4 +41,18 @@ test('no path configures nothing and logs nothing', () => {
   const lines: string[] = []
   applyUpstreamCa(null, message => lines.push(message))
   expect(lines).toEqual([])
+})
+
+test('the path the API stores is the one the next start reads', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'thyrox-upstream-ca-'))
+  const previous = process.env.THYROX_MITM_DATA_DIR
+  process.env.THYROX_MITM_DATA_DIR = path.join(dir, 'nested')
+  try {
+    writeStoredUpstreamCaPath('/etc/ssl/corp-ca.pem')
+    expect(resolveUpstreamCaPath({})).toBe('/etc/ssl/corp-ca.pem')
+  } finally {
+    if (previous === undefined) delete process.env.THYROX_MITM_DATA_DIR
+    else process.env.THYROX_MITM_DATA_DIR = previous
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
 })

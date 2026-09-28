@@ -62,8 +62,22 @@ export type ParsedBody<T> = { ok: true; data: T } | { ok: false; response: Respo
  */
 export async function parseJsonBody<T>(request: Request, schema: z.ZodType<T>): Promise<ParsedBody<T>> {
   const read = await readJsonBody(request)
-  if (!read.ok) return read
-  const parsed = schema.safeParse(read.body)
+  return read.ok ? validateBody(read.body, schema) : read
+}
+
+/** Como `parseJsonBody`, pero un cuerpo vacío vale `{}`: para las rutas que admiten no mandar nada. */
+export async function parseOptionalJsonBody<T>(request: Request, schema: z.ZodType<T>): Promise<ParsedBody<T>> {
+  const text = await request.text()
+  if (text.trim() === '') return validateBody({}, schema)
+  try {
+    return validateBody(JSON.parse(text), schema)
+  } catch {
+    return { ok: false, response: errorResponse({ status: 400, message: 'Invalid JSON body' }) }
+  }
+}
+
+function validateBody<T>(body: unknown, schema: z.ZodType<T>): ParsedBody<T> {
+  const parsed = schema.safeParse(body)
   if (parsed.success) return { ok: true, data: parsed.data }
   return {
     ok: false,
