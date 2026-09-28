@@ -554,6 +554,26 @@
       "@thyrox/source": "./src/proxy/proxyEndpoint.ts",
       "types": "./dist/proxy/proxyEndpoint.d.ts",
       "default": "./src/proxy/proxyEndpoint.ts"
+    },
+    "./sanitize/credentialPatterns": {
+      "@thyrox/source": "./src/sanitize/credentialPatterns.ts",
+      "types": "./dist/sanitize/credentialPatterns.d.ts",
+      "default": "./src/sanitize/credentialPatterns.ts"
+    },
+    "./sanitize/errorPathRedaction": {
+      "@thyrox/source": "./src/sanitize/errorPathRedaction.ts",
+      "types": "./dist/sanitize/errorPathRedaction.d.ts",
+      "default": "./src/sanitize/errorPathRedaction.ts"
+    },
+    "./sanitize/errorSanitization": {
+      "@thyrox/source": "./src/sanitize/errorSanitization.ts",
+      "types": "./dist/sanitize/errorSanitization.d.ts",
+      "default": "./src/sanitize/errorSanitization.ts"
+    },
+    "./sanitize/upstreamErrorPassthrough": {
+      "@thyrox/source": "./src/sanitize/upstreamErrorPassthrough.ts",
+      "types": "./dist/sanitize/upstreamErrorPassthrough.d.ts",
+      "default": "./src/sanitize/upstreamErrorPassthrough.ts"
     }
   },
   "scripts": {
