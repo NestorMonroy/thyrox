@@ -80,6 +80,8 @@ import {
   parseUserSpecifiedModel,
 } from './model.ts'
 import { getAPIProvider } from './providers.ts'
+import { modelHasCapability } from '@thyrox/agent/modelCapabilities'
+import { canonicalModelName } from '@thyrox/agent/models'
 import {
   getInitialSettings,
   getSettingsForSource,
@@ -121,8 +123,13 @@ function requireBundledMode(): { isInBundledMode: () => boolean } {
   }
 }
 
+/**
+ * `mo`: sólo con el API de primera parte, y cualquier valor de
+ * `THYROX_CODE_DISABLE_FAST_MODE` lo apaga, "0" incluido.
+ */
 export function isFastModeEnabled(): boolean {
-  return !isEnvTruthy(readEnv('THYROX_CODE_DISABLE_FAST_MODE'))
+  if (getAPIProvider() !== 'firstParty') return false
+  return !readEnv('THYROX_CODE_DISABLE_FAST_MODE')
 }
 
 export function isFastModeAvailable(): boolean {
@@ -257,6 +264,10 @@ export function getInitialFastModeSetting(model: ModelSetting): boolean {
   return settings.fastMode === true
 }
 
+/**
+ * `qy`: primero la capacidad `fast_mode` (entorno, consulta servida,
+ * catálogo); si ninguna fuente la afirma ni la niega, el nombre decide.
+ */
 export function isFastModeSupportedByModel(
   modelSetting: ModelSetting,
 ): boolean {
@@ -265,12 +276,10 @@ export function isFastModeSupportedByModel(
   }
   const model = modelSetting ?? getDefaultMainLoopModelSetting()
   const parsedModel = parseUserSpecifiedModel(model)
+  const declared = modelHasCapability(canonicalModelName(parsedModel), 'fast_mode', parsedModel)
+  if (declared !== undefined) return declared
   const normalized = parsedModel.toLowerCase()
-  return (
-    normalized.includes('opus-4-8') ||
-    normalized.includes('opus-4-7') ||
-    normalized.includes('opus-4-6')
-  )
+  return normalized.includes('opus-4-8') || normalized.includes('opus-5')
 }
 
 // --- Estado runtime de fast mode ---
