@@ -1,0 +1,2 @@
+1 episodio(s); 6 rechazo(s) sin veredicto sobre 16564 resultado(s) de Bash
+- 2026-09-28T06:38:24.756Z → 2026-09-28T06:40:51.739Z: 6 rechazo(s) {'transient': 6} {'error': 6}; último Bash bien 2026-09-28T06:38:05.438Z; recuperado 2026-09-28T06:42:08.783Z; pasaron mientras tanto: Edit 3, Grep 11, Read 7, Write 9

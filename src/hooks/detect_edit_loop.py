@@ -18,21 +18,18 @@ revisar la hipótesis.
 
 *Ciega a:* la edición hecha con un guion (``python3 - <<EOF``, ``cat >``), cuyo
 destino no se lee de la línea de comando, y al bucle repartido en varios
-archivos. Lee sólo la cola del transcript (``TAIL_BYTES``): un turno más largo
+archivos. Lee sólo la cola del transcript (``transcript_tail.TAIL_BYTES``): un turno más largo
 que eso se mide desde su tramo final.
 """
 from __future__ import annotations
 
-import json
-import os
 import re
 import shlex
 
+from hooks.transcript_tail import current_turn, tail_entries
+
 #: Ediciones del mismo archivo en un turno a partir de las que se avisa.
 THRESHOLD = 5
-
-#: Cuánto del final del transcript se lee.
-TAIL_BYTES = 4 * 1024 * 1024
 
 _FILE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 _SED_INPLACE = re.compile(r"(?:^|[;&|]\s*)sed\s+(?:-[a-zA-Z]*i|--in-place)")
@@ -54,40 +51,9 @@ def _target(name: str, tool_input: dict) -> str | None:
     return None
 
 
-def _tail_entries(path: str) -> list[dict]:
-    try:
-        size = os.path.getsize(path)
-        with open(path, "rb") as fh:
-            fh.seek(max(0, size - TAIL_BYTES))
-            raw = fh.read().decode("utf-8", errors="replace")
-    except OSError:
-        return []
-    lines = raw.splitlines()
-    if size > TAIL_BYTES and lines:
-        lines = lines[1:]             # la primera puede venir cortada
-    entries = []
-    for line in lines:
-        try:
-            entries.append(json.loads(line))
-        except ValueError:
-            continue
-    return entries
-
-
-def _is_genuine_user(entry: dict) -> bool:
-    if entry.get("type") != "user":
-        return False
-    content = (entry.get("message") or {}).get("content")
-    if isinstance(content, str):
-        return True
-    return isinstance(content, list) and bool(content) and all(
-        isinstance(b, dict) and b.get("type") == "text" for b in content)
-
-
 def _turn_targets(entries: list[dict]) -> list[str]:
-    last = max((i for i, e in enumerate(entries) if _is_genuine_user(e)), default=-1)
     targets = []
-    for entry in entries[last + 1:]:
+    for entry in current_turn(entries):
         if entry.get("type") != "assistant":
             continue
         for block in (entry.get("message") or {}).get("content") or []:
@@ -104,7 +70,7 @@ def detect(payload: dict) -> str | None:
     transcript = payload.get("transcript_path")
     if not target or not isinstance(transcript, str):
         return None
-    count = _turn_targets(_tail_entries(transcript)).count(target) + 1
+    count = _turn_targets(tail_entries(transcript)).count(target) + 1
     if count < THRESHOLD:
         return None
     return (

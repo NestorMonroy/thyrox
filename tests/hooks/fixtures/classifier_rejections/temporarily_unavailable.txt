@@ -1,0 +1,1 @@
+The server-side auto mode classifier is temporarily unavailable (rate-limited), so auto mode cannot determine the safety of Bash right now. Wait a moment and then try this action again.
