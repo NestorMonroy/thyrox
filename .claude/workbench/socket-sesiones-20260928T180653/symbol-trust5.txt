@@ -1,0 +1,7 @@
+==== Le: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js function Le [3209,3295)
+function Le(e,n=process.pid){if(n===1)return!1;return Array.isArray(e)&&e.includes(n)}
+==== Ke: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js function Ke [3295,3796)
+async function Ke(e,n=Ne){if(e===void 0||!Number.isInteger(e)||e<=0)return"no-evidence";let i;try{i=await n.readStartToken(e)}catch{i=void 0}if(i===void 0)return"no-evidence";let r=`${e}:${i}`,d=Pe.of(j().host),s=d.lookup(r);if(s!==void 0)return s?"self":"not-self";let w;try{w=await n.readAncestors(e)}catch{return"no-evidence"}let o;try{o=await n.readStartToken(e)}catch{o=void 0}if(o!==i)return"no-evidence";let g=process.pid!==1&&w.includes(process.pid);return d.remember(r,g),g?"self":"not-self"}
+symbol: 2 de 2 nombre(s) resueltos

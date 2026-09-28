@@ -31,7 +31,8 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-3 | `peer_message_status` (`WRr`, `GRr`, `jRr`, `R1n`, `Cko`) | pendiente |
 | F4c-4 | `notify_when_idle` y `peer_idle_notice` (`qtr`, `aEn`, `Ytr`, `pqt`, `Ktr`, `ibt`, `Jtr`) | pendiente |
 | F4c-5 | `yield`/`unyield_artifact_replies` y `artifact_replies_yielded` (`cno`, `uno`, `bno`, `dno`, `gno`, `hno`, `glr`) | pendiente |
-| F4c-6 | el veredicto de confianza del par: `ce`/`ye` y `unr` (modo de permisos bypass) | pendiente |
+| F4c-6a | el veredicto «lo envió esta sesión»: `ye`, `Le`, `Ke`, `he`, `Ne`, `hfn` → `uds/peerTrust.ts` | hecha |
+| F4c-6b | `unr`: la política `crossSessionInbound` (`I`, niveles `accept`/`hold`/`refuse`, capas de settings) y el modo de permisos (`C`, `S`, `V1`, `NL`) | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
 | F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
@@ -188,3 +189,9 @@ caso. Las guardas de `be` —por ejemplo `peer_message_status` sólo con un
 `status` conocido— hacen que un mensaje que no las cumple caiga en «acción
 sin manejar». Aquí eso lo expresa `accepts`, que declara cada acción al
 registrarse en F4c-3..5.
+
+## F4c-6a — veredicto del par: controles
+
+Anulaciones en `anulacion-trust-*.txt`; diez, y cada una tumba sólo su caso.
+`walkAncestors` se prueba contra el `ps` real del contenedor: la cadena del
+proceso propio empieza por su padre.

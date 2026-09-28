@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTrust.test.ts:
+37 | 
+38 |   test('END: completa; FAIL o código distinto de 0: fallo; ni una ni otra: truncada', async () => {
+39 |     const run = (stdout: string, code = 0) => async () => ({ code, stdout })
+40 |     expect(await walkAncestors(9, 10, run('30\n20\nEND\n'))).toEqual({ ancestors: [30, 20], readFailed: false, truncated: false })
+41 |     expect(await walkAncestors(9, 10, run('30\nFAIL\n'))).toEqual({ ancestors: [30], readFailed: true, truncated: false })
+42 |     expect(await walkAncestors(9, 10, run('30\n', 1))).toEqual({ ancestors: [30], readFailed: true, truncated: false })
+                                                            ^
+error: expect(received).toEqual(expected)
+
+@@ -4,3 +4,3 @@
+    ],
+-   "readFailed": true,
++   "readFailed": false,
+    "truncated": false,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTrust.test.ts:42:56)
+(fail) walkAncestors (hfn) > END: completa; FAIL o código distinto de 0: fallo; ni una ni otra: truncada [0.76ms]
+
+ 16 pass
+ 1 fail
+ 48 expect() calls
+Ran 17 tests across 1 file. [137.00ms]
