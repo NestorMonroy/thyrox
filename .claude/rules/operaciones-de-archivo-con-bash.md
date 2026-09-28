@@ -90,6 +90,8 @@ Python o con una herramienta dedicada vuelve por la puerta de atrás.
 defecto — `which parallel` falla. Ya existe su instalador idempotente,
 opt-in y con re-verificación del binario (no del exit code del `apt`):
 `src/lib/toolchain.sh::thyrox_toolchain_require_parallel` (`THYROX_INSTALL_PARALLEL=1`).
+`rsync` tampoco viene por defecto; su instalador, con el mismo contrato, es
+`thyrox_toolchain_require_rsync` (`THYROX_INSTALL_RSYNC=1`).
 El mecanismo de lotes de este árbol, `src/session/run-task-pool.sh`
 (`trabajo-en-segundo-plano.md`), **es** GNU Parallel: lo resuelve con ese
 instalador y rehúsa con exit 4 si falta. Parallel ejerce la anchura

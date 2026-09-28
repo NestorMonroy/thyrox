@@ -320,6 +320,25 @@ function thyrox_toolchain_require_pdf_text() {
 }
 export -f thyrox_toolchain_require_pdf_text
 
+# @description El comando que instala rsync. Declarado para que un control
+# pueda inyectar un instalador que MIENTA y probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD="${THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD:-sudo apt-get install -y rsync}"
+
+# @description Asegura `rsync`, que copia un arbol respetando exclusiones
+# (`--exclude node_modules`) sin rodearlo con `cp` o `tar`. Mismo contrato que
+# `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_RSYNC=1`), el rechazo no emite conteo y el exito se prueba
+# re-comprobando el binario, no leyendo el exit del instalador.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_rsync() {
+  thyrox_toolchain_acquire_binary "${THYROX_TOOLCHAIN_RSYNC_BIN:-rsync}" \
+    THYROX_INSTALL_RSYNC "$THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD" rsync
+}
+export -f thyrox_toolchain_require_rsync
+
 # @description El comando que instala GNU Time. Declarado por la misma razon
 # que sus hermanos: un control necesita un instalador que MIENTA.
 export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-sudo apt-get install -y time}"
