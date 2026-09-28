@@ -1,0 +1,122 @@
+== 1: cualquier prefijo
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > decoding refuses another prefix, a non-base64url payload, bad JSON, another version and missing fields [0.47ms]
+ 8 pass
+ 1 fail
+== 2: el salto final rompe el blob
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > a blob round-trips with a trimmed provider and survives a trailing newline [1.20ms]
+ 8 pass
+ 1 fail
+== 3: cualquier alfabeto
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > decoding refuses another prefix, a non-base64url payload, bad JSON, another version and missing fields [0.46ms]
+ 8 pass
+ 1 fail
+== 4: cualquier versión
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > decoding refuses another prefix, a non-base64url payload, bad JSON, another version and missing fields [0.47ms]
+ 8 pass
+ 1 fail
+== 5: un proveedor en blanco basta
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > decoding refuses another prefix, a non-base64url payload, bad JSON, another version and missing fields [0.59ms]
+ 8 pass
+ 1 fail
+== 6: sin tokens no es error
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > decoding refuses another prefix, a non-base64url payload, bad JSON, another version and missing fields [0.51ms]
+ 8 pass
+ 1 fail
+== 7: sin access_token no es error
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > decoding refuses another prefix, a non-base64url payload, bad JSON, another version and missing fields [0.79ms]
+ 8 pass
+ 1 fail
+== 8: el proveedor se codifica sin recortar
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > a blob round-trips with a trimmed provider and survives a trailing newline [0.96ms]
+ 8 pass
+ 1 fail
+== 9: se codifica sin proveedor
+   (src/accounts/imports/credentialBlob.ts)
+(fail) credential blob > encoding needs a provider and a tokens object [0.28ms]
+ 8 pass
+ 1 fail
+== 10: cualquier proveedor admite el pegado
+   (src/accounts/imports/pasteCredentials.ts)
+(fail) paste credentials > only the native-loopback providers take a pasted blob, and it must be for the same provider [0.29ms]
+ 8 pass
+ 1 fail
+== 11: el blob de otro proveedor se acepta
+   (src/accounts/imports/pasteCredentials.ts)
+(fail) paste credentials > only the native-loopback providers take a pasted blob, and it must be for the same provider [0.41ms]
+ 8 pass
+ 1 fail
+== 12: sólo la forma key
+   (src/accounts/imports/grokCliPaste.ts)
+(fail) grok auth.json paste > an object needs a JWT and, on the same entry, a refresh token [0.86ms]
+ 8 pass
+ 1 fail
+== 13: sin exigir refresco
+   (src/accounts/imports/grokCliPaste.ts)
+(fail) grok auth.json paste > an object needs a JWT and, on the same entry, a refresh token [0.34ms]
+ 8 pass
+ 1 fail
+== 14: el JWT suelto se lee como basura
+   (src/accounts/imports/grokCliPaste.ts)
+(fail) grok auth.json paste > empty, bare JWT, garbage, broken JSON and arrays are refused with their reason [0.33ms]
+ 8 pass
+ 1 fail
+== 15: lo vacío sin recortar
+   (src/accounts/imports/grokCliPaste.ts)
+(fail) grok auth.json paste > empty, bare JWT, garbage, broken JSON and arrays are refused with their reason [0.38ms]
+(fail) grok auth.json paste > an object needs a JWT and, on the same entry, a refresh token [0.53ms]
+ 7 pass
+ 2 fail
+== 16: todos los archivos del ZIP
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > the JSON entries come back by base name; other files are ignored [13.47ms]
+(fail) json zip > a corrupt archive, one without JSON and one with too many are refused [4.22ms]
+ 7 pass
+ 2 fail
+== 17: sin tope de archivos
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > a corrupt archive, one without JSON and one with too many are refused [3.29ms]
+ 8 pass
+ 1 fail
+== 18: con rutas que suben
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > traversal and oversized entries are refused, per file and in total [0.55ms]
+ 8 pass
+ 1 fail
+== 19: sin tope por archivo
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > traversal and oversized entries are refused, per file and in total [1.58ms]
+ 8 pass
+ 1 fail
+== 20: sin tope total
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > traversal and oversized entries are refused, per file and in total [2.26ms]
+ 8 pass
+ 1 fail
+== 21: la ruta entera como nombre
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > the JSON entries come back by base name; other files are ignored [16.11ms]
+ 8 pass
+ 1 fail
+== 22: un ZIP roto sin decirlo
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > a corrupt archive, one without JSON and one with too many are refused [2.32ms]
+ 8 pass
+ 1 fail
+== 23: un ZIP sin JSON devuelve vacío
+   (src/accounts/imports/jsonZipExtract.ts)
+(fail) json zip > a corrupt archive, one without JSON and one with too many are refused [2.78ms]
+ 8 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/imports/
+ 9 pass
+ 0 fail
+__BG_EXIT__=0
