@@ -75,13 +75,22 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import {
   getDefaultMainLoopModelSetting,
+  getMainLoopModel,
   isOpus1mMergeEnabled,
   type ModelSetting,
   parseUserSpecifiedModel,
 } from './model.ts'
 import { getAPIProvider } from './providers.ts'
 import { modelHasCapability } from '@thyrox/agent/modelCapabilities'
-import { canonicalModelName } from '@thyrox/agent/models'
+import { canonicalModelName, MODELS } from '@thyrox/agent/models'
+import { isCoworkEntrypoint, isTruthyFlag } from '@thyrox/config/entrypoint'
+import {
+  fastModeUnavailableMessage,
+  type FastModeAvailabilityContext,
+  type FastModeAvailabilityOptions,
+  type FastModeOrgStatusSnapshot,
+} from './fastModeAvailability.ts'
+import { isModelAllowed } from './model/modelAllowlist.ts'
 import {
   getInitialSettings,
   getSettingsForSource,
@@ -139,87 +148,56 @@ export function isFastModeAvailable(): boolean {
   return getFastModeUnavailableReason() === null
 }
 
-type AuthType = 'oauth' | 'api-key'
-
-function getDisabledReasonMessage(
-  disabledReason: FastModeDisabledReason,
-  authType: AuthType,
-): string {
-  switch (disabledReason) {
-    case 'free':
-      return authType === 'oauth'
-        ? 'Fast mode requires a paid subscription'
-        : 'Fast mode unavailable during evaluation. Please purchase credits.'
-    case 'preference':
-      return 'Fast mode has been disabled by your organization'
-    case 'extra_usage_disabled':
-      return 'Fast mode requires extra usage billing · /extra-usage to enable'
-    case 'network_error':
-      return 'Fast mode unavailable due to network connectivity issues'
-    case 'unknown':
-      return 'Fast mode is currently unavailable'
-  }
+/**
+ * `D5`: el motivo, redactado, de que el modo rápido no esté disponible para
+ * `model` (el del bucle si falta), o `null`.
+ */
+export function getFastModeUnavailableReason(
+  model?: ModelSetting,
+  options: FastModeAvailabilityOptions = {},
+): string | null {
+  return fastModeUnavailableMessage(model, options, processFastModeAvailabilityContext(), logForDebugging)
 }
 
-export function getFastModeUnavailableReason(): string | null {
-  if (!isFastModeEnabled()) {
-    return 'Fast mode is not available'
-  }
+/** `uc() && Iz()`: una sesión remota de cowork, fuera de un puente. */
+function isRemoteCoworkSession(): boolean {
+  return isTruthyFlag(readEnv('THYROX_CODE_REMOTE')) && readEnv('THYROX_CODE_ENVIRONMENT_KIND') === undefined && isCoworkEntrypoint()
+}
 
-  const statigReason = getFeatureValue_CACHED_MAY_BE_STALE(
-    'tengu_penguins_off',
-    null,
-  )
-  if (statigReason !== null) {
-    logForDebugging(`Fast mode unavailable: ${statigReason}`)
-    return statigReason
-  }
+/** `K$`: el nombre visible del modelo del modo rápido. */
+function fastModeModelDisplay(): string {
+  const model = parseUserSpecifiedModel('opus')
+  return MODELS[canonicalModelName(model)]?.display_name ?? 'Opus'
+}
 
-  if (
-    !requireBundledMode().isInBundledMode() &&
-    getFeatureValue_CACHED_MAY_BE_STALE('tengu_marble_sandcastle', false)
-  ) {
-    return 'Fast mode requires the native binary · Install from: https://claude.com/product/claude-code'
+/** El contexto de `gL` leído del proceso. */
+export function processFastModeAvailabilityContext(): FastModeAvailabilityContext {
+  const policy = getSettingsForSource('policySettings')
+  return {
+    apiProvider: getAPIProvider(),
+    fastModeEnabled: isFastModeEnabled(),
+    penguinsOffMessage: getFeatureValue_CACHED_MAY_BE_STALE<string | null>('tengu_penguins_off', null),
+    isModelAllowed,
+    fastModeModel: 'opus' + (isOpus1mMergeEnabled() ? '[1m]' : ''),
+    resolveModel: model => (model !== undefined ? String(model ?? getDefaultMainLoopModelSetting()) : getMainLoopModel()),
+    // pendiente: `Ea` (canal de control de una sesión remota), fase R-2b-3.
+    hasRemoteControlChannel: false,
+    supportsFastMode: isFastModeSupportedByModel,
+    flagSettingsFastMode: getSettingsForSource('flagSettings')?.fastMode,
+    policyFastMode: policy?.fastMode,
+    policyPerSessionOptIn: policy?.fastModePerSessionOptIn,
+    sdkOptInRequired: requireAppHostBootstrapState().preferThirdPartyAuthentication(),
+    orgStatus,
+    skipOrgCheckEnv: Boolean(readEnv('THYROX_CODE_SKIP_FAST_MODE_ORG_CHECK')),
+    skipNetworkErrorsEnv: Boolean(readEnv('THYROX_CODE_SKIP_FAST_MODE_NETWORK_ERRORS')),
+    // pendiente: `eo` (claims del token de una sesión de trabajo remota), fase R-2b-2c.
+    remoteManaged: isRemoteCoworkSession(),
+    authType: getClaudeAIOAuthTokens() !== null ? 'oauth' : 'api-key',
+    fastModeModelDisplay: fastModeModelDisplay(),
+    // pendiente: `_6e` y `hy() && Ex() ? Run()` (créditos de uso), fase R-2b-2d.
+    usageCreditsLink: undefined,
+    usageCreditsInstruction: undefined,
   }
-
-  const { getIsNonInteractiveSession, getKairosActive, preferThirdPartyAuthentication } =
-    requireAppHostBootstrapState()
-  if (
-    getIsNonInteractiveSession() &&
-    preferThirdPartyAuthentication() &&
-    !getKairosActive()
-  ) {
-    const flagFastMode = getSettingsForSource('flagSettings')?.fastMode
-    if (!flagFastMode) {
-      const reason = 'Fast mode is not available in the Agent SDK'
-      logForDebugging(`Fast mode unavailable: ${reason}`)
-      return reason
-    }
-  }
-
-  if (getAPIProvider() !== 'firstParty') {
-    const reason = 'Fast mode is not available on Bedrock, Vertex, or Foundry'
-    logForDebugging(`Fast mode unavailable: ${reason}`)
-    return reason
-  }
-
-  if (orgStatus.status === 'disabled') {
-    if (
-      orgStatus.reason === 'network_error' ||
-      orgStatus.reason === 'unknown'
-    ) {
-      if (isEnvTruthy(readEnv('THYROX_CODE_SKIP_FAST_MODE_NETWORK_ERRORS'))) {
-        return null
-      }
-    }
-    const authType: AuthType =
-      getClaudeAIOAuthTokens() !== null ? 'oauth' : 'api-key'
-    const reason = getDisabledReasonMessage(orgStatus.reason, authType)
-    logForDebugging(`Fast mode unavailable: ${reason}`)
-    return reason
-  }
-
-  return null
 }
 
 // Actualizar los modelos de Fast Mode soportados cuando cambie el
@@ -456,10 +434,7 @@ export type FastModeDisabledReason =
 // Caché en memoria del estado de fast mode que viene de la API. Distinto
 // del app state de fast mode del usuario — representa si la org *permite*
 // fast mode y por qué puede estar deshabilitado.
-type FastModeOrgStatus =
-  | { status: 'pending' }
-  | { status: 'enabled' }
-  | { status: 'disabled'; reason: FastModeDisabledReason }
+type FastModeOrgStatus = FastModeOrgStatusSnapshot
 
 let orgStatus: FastModeOrgStatus = { status: 'pending' }
 

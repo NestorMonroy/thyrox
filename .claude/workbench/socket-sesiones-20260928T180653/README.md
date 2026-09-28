@@ -612,7 +612,10 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 | R-2b-0 | consulta de capacidades de modelo (`$h`, `UYe` con `THYROX_CODE_MODEL_CAPABILITIES`, `qFt`, `MBr`, `P`/`L`, `h`, `ENo`, `kNo`, `chunk-4h0c4z04.js`) → `agent/modelCapabilities.ts`, sobre el catálogo `MODELS` | hecha: 11 pruebas; 17 anulaciones (`anulacion-R2b0-*.txt`) |
 | R-2b-1 | puertas del modo rápido: `mo` (primera parte y cualquier valor de `THYROX_CODE_DISABLE_FAST_MODE` lo apaga) y `qy` (capacidad `fast_mode` y, si no consta, Opus 4.8 / Opus 5 por el nombre) en `provider/src/fastMode.ts` | hecha: 8 pruebas; 8 anulaciones (`anulacion-R2b1-*.txt`) |
 | R-2b-2 | disponibilidad del modo rápido sobre un contexto explícito: `gL`, `aC`, `$g`, `Wg`, `D5`, `Bk`, `Yi`, `Yg` → `provider/src/fastModeAvailability.ts`. Redundantes por construcción: `unknown-oauth` (`$g('unknown')` no depende del tipo de autenticación) y `bk` (`gL` ya devuelve causa con el modo rápido apagado) | hecha: 14 pruebas; 27 anulaciones (`anulacion-R2b2-*.txt`) |
-| R-2b-2b | contexto de disponibilidad armado desde el proceso (`Vr` con `isModelAllowed`, `Rte`, `K$`, preferencias por origen, `Te`/`ijt`, `rn` con `uc`/`Iz`/`eo`, créditos de uso `_6e`/`hy`/`Ex`/`Run`), `orgStatus` con `source`, y reemplazo de `getFastModeUnavailableReason` | pendiente |
+| R-2b-2b | contexto de disponibilidad desde el proceso (`processFastModeAvailabilityContext`: `Vr`→`isModelAllowed`, `Rte`, `K$` por el catálogo, preferencias por origen, `Te`/`ijt`→`preferThirdPartyAuthentication`, `uc`/`Iz`); `getFastModeUnavailableReason` pasa a ser `D5` y se retira `getDisabledReasonMessage` | hecha: 6 pruebas; 9 anulaciones (`anulacion-R2b2b-*.txt`) |
+| R-2b-2c | `eo` (`Ndt`, `dqn`, `Vi`, `U6e`: claims del token de una sesión de trabajo remota), que completa `remoteManaged` | pendiente |
+| R-2b-2d | créditos de uso en el mensaje de `extra_usage_disabled` (`_6e`, `M5`, `hy`, `Ex`, `DC`, `c2o`, `Run`, `nqn`, `dKn`) | pendiente |
+| R-2b-5 | ciclo de vida del estado de la organización de 2.1.283 (`Vg`: `replaceOrgStatus`, `$Oo` con su guarda de origen, `source: 'server'` al leer del servidor, avisos de créditos agotados, rechazo por excedente `lC`) | pendiente |
 | R-2b-3 | `Yl` (preferencia con opt-in por sesión), `Ndn`, `oA`, `Dt` (espacio remoto), `Ea` (canal de control remoto) | pendiente |
 | R-2b-4 | modelo y nombre visible del modo rápido (`Rte`, `K$`); 2.1.283 ya no tiene la anulación a Opus 4.6 que `getFastModeModel` y `agent/prompts.ts` conservan | pendiente |
 | R-2c | alcance del modelo de respaldo (`vV`: `ahe`, `$h`/`Be` con `refusal_fallback`, `MNe`, `Tle`, `$5`, `izn`) | pendiente |
@@ -665,3 +668,13 @@ otra prueba del mismo proceso deja activo el sufijo `[1m]`.
 Cada anulación cae en uno o dos casos, salvo `unknown-oauth` y `bk` (0,
 redundantes por construcción); `extra` cae en 1 tras añadir el caso con
 instrucción de créditos.
+
+### Controles de la fase R-2b-2b
+
+`bun test src/__tests__/fastModeProcessContext.test.ts` en `@thyrox/provider`.
+Casos que caen: omision-org (1), omision-red (1), resolver (1, tras fijar
+`ANTHROPIC_MODEL` para separar el modelo del bucle del de la configuración),
+modelo-rapido (1), remoto (1), cowork (1, tras el caso remoto fuera de
+cowork), proveedor (2), habilitado (2), d5 (1). Cambio de conducta: con el
+estado de la organización pendiente, el modo rápido deja de estar disponible
+hasta que el prefetch lo resuelva, como en la referencia.

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeProcessContext.test.ts:
+55 |     expect(context.resolveModel(null)).toBe(String(getDefaultMainLoopModelSetting()))
+56 |     expect(context.resolveModel(undefined)).toBe(getMainLoopModel())
+57 |   })
+58 | 
+59 |   test('el modelo del modo rápido es opus, con [1m] sólo si la fusión de 1M aplica', () => {
+60 |     expect(processFastModeAvailabilityContext().fastModeModel).toMatch(/^opus(\[1m\])?$/)
+                                                                    ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /^opus(\[1m\])?$/
+Received: "claude-opus-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeProcessContext.test.ts:60:64)
+(fail) processFastModeAvailabilityContext > el modelo del modo rápido es opus, con [1m] sólo si la fusión de 1M aplica [0.39ms]
+
+ 5 pass
+ 1 fail
+ 13 expect() calls
+Ran 6 tests across 1 file. [265.00ms]
