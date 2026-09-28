@@ -21,7 +21,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3b | identidad de proceso: `b`/`Zne`, `n6`, `Hx`, `TFe`, `mfn`, `Nh`, `nc`/`Pv`, `_Lo`/`HP` | hecha: 10 pruebas; 7 anulaciones, cada una su caso (`anulacion-f3b-*.txt`) |
 | F3c-1 | escritura atómica con modo: `An`, `Jne`, `Kx`, `kA`, `j`, `XL`, `We`, `Ye`, `R`, `XS` → `uds/atomicWrite.ts` | hecha |
 | F3c-2 | clave publicada y leída: `XDo`, `sz`, `be`, `ifn`, `JDo`, `QDo`, `W`, `cl` → `uds/inboxKeys.ts` (rama de archivos locales) | hecha |
-| F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` y el token de Windows `procStartFt` (`f()`, `n6`/`Hx` con FILETIME) | pendiente |
+| F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` (`lxe`, `RGr`, `ya`) y la forma de Windows de `n6`/`Hx` → `uds/processIdentity.ts` | hecha; la fuente del token en Windows, DESCONOCIDO |
 | F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`, `ve`, `Fe`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`) y `we`/`ce` de Windows | pendiente |
 | F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n` y `Ee` de `QDo` | pendiente |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
@@ -90,3 +90,19 @@ nombre con el sufijo de la dirección y sin pid numérico, y con él tumba 1.
 Directiva del ejecutor: una rama que la compilación de Linux de la
 referencia no alcanza no es razón para no portarla. Las ramas que los
 docstrings de F3a–F3c declaraban «no se porta» pasan a las fases F3d-1..3.
+
+## F3d-1 — token de inicio fuera de `/proc`: controles
+
+Anulaciones en `anulacion-starttoken-*.txt`; ocho, y cada una tumba sólo sus
+casos. `sin-rama-linux` incluye el control contra el `ps` real del
+contenedor (`/usr/bin/ps`, procps), que devuelve la fecha en inglés y UTC.
+
+Control que no discrimina, declarado: el caso «un PATH sin entradas
+absolutas no lanza ps» sobrevive a `sin-path-absoluto`, porque `Bun.which`
+tampoco encuentra `ps` en `rel:./bin`. Lo que filtra las entradas relativas
+lo mide el caso unitario de `absolutePathEntries`.
+
+DESCONOCIDO, con su condición de cierre: de dónde toma la referencia el token
+en Windows. La compilación de Linux 2.1.283 sólo contiene la forma del campo
+(`procStartFt`); la lectura del FILETIME no está en el bundle. Se cierra con
+una compilación de Windows de la referencia.

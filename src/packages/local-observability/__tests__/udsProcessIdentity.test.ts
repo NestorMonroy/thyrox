@@ -15,6 +15,9 @@ import {
   pidDomainFor,
   procStartFields,
   readProcessStartToken,
+  absolutePathEntries,
+  envValue,
+  whichInSanitizedPath,
   recordedStartToken,
   sameStartToken,
 } from '../src/uds/processIdentity.ts'
@@ -28,8 +31,8 @@ describe('parseProcStatStartTime (Zne) y readProcessStartToken (b)', () => {
   })
 
   test('lee /proc/<pid>/stat; si no se puede leer, no hay token', async () => {
-    expect(await readProcessStartToken(123, async path => (path === '/proc/123/stat' ? STAT : ''))).toBe('987654')
-    expect(await readProcessStartToken(123, async () => { throw new Error('ENOENT') })).toBeUndefined()
+    expect(await readProcessStartToken(123, { platform: 'linux', readFile: async path => (path === '/proc/123/stat' ? STAT : '') })).toBe('987654')
+    expect(await readProcessStartToken(123, { platform: 'linux', readFile: async () => { throw new Error('ENOENT') } })).toBeUndefined()
   })
 
   test('el proceso propio tiene token en este sistema', async () => {
@@ -39,8 +42,18 @@ describe('parseProcStatStartTime (Zne) y readProcessStartToken (b)', () => {
 
 describe('procStartFields (n6), recordedStartToken (Hx) y sameStartToken (TFe)', () => {
   test('fuera de Windows el token viaja en procStart', () => {
-    expect(procStartFields('42')).toEqual({ procStart: '42', procStartFt: undefined })
-    expect(recordedStartToken({ procStart: '42', procStartFt: 'x' })).toBe('42')
+    expect(procStartFields('42', false)).toEqual({ procStart: '42', procStartFt: undefined })
+    expect(recordedStartToken({ procStart: '42', procStartFt: 'x' }, false)).toBe('42')
+  })
+
+  test('en Windows el token viaja en procStartFt, y un registro con procStart no es comparable', () => {
+    expect(procStartFields('42', true)).toEqual({ procStart: undefined, procStartFt: '42' })
+    expect(recordedStartToken({ procStartFt: '42' }, true)).toBe('42')
+    expect(recordedStartToken({ procStart: '7', procStartFt: '42' }, true)).toBeUndefined()
+  })
+
+  test('por omisión la forma la decide la plataforma de este proceso', () => {
+    expect(procStartFields('42')).toEqual(procStartFields('42', process.platform === 'win32'))
   })
 
   test('dos tokens coinciden sólo si son iguales', () => {
@@ -103,5 +116,86 @@ describe('StartTokenCache (nc)', () => {
     await cache.get(11)
     await cache.get(11, { skipCache: true })
     expect(reads).toEqual([10, 10, 11, 11, 11])
+  })
+})
+
+describe('readProcessStartToken (b) fuera de Linux: `ps -o lstart=`', () => {
+  type Call = { command: string; args: string[]; options: { timeout: number; env: Record<string, string | undefined> } }
+  const runner = (result: { code: number; stdout: string }, calls: Call[]) => async (command: string, args: string[], options: Call['options']) => {
+    calls.push({ command, args, options })
+    return result
+  }
+
+  test('corre ps con el pid, un segundo de plazo, LC_ALL=C y TZ=UTC, y recorta la salida', async () => {
+    const calls: Call[] = []
+    const token = await readProcessStartToken(77, { platform: 'darwin', runCommand: runner({ code: 0, stdout: ' Mon Sep 28 17:00:00 2026\n' }, calls) })
+    expect(token).toBe('Mon Sep 28 17:00:00 2026')
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.command).toBe('ps')
+    expect(calls[0]!.args).toEqual(['-o', 'lstart=', '-p', '77'])
+    expect(calls[0]!.options.timeout).toBe(1000)
+    expect(calls[0]!.options.env.LC_ALL).toBe('C')
+    expect(calls[0]!.options.env.TZ).toBe('UTC')
+  })
+
+  test.skipIf(Bun.which('ps') === null)('contra el ps real, el inicio del proceso propio es una fecha en inglés y UTC', async () => {
+    expect(await readProcessStartToken(process.pid, { platform: 'darwin' })).toMatch(/^[A-Z][a-z]{2} [A-Z][a-z]{2} +\d+ \d\d:\d\d:\d\d \d{4}$/)
+  })
+
+  test('fuera de Linux no se lee /proc', async () => {
+    let read = false
+    await readProcessStartToken(77, {
+      platform: 'darwin',
+      readFile: async () => { read = true; return '' },
+      runCommand: runner({ code: 0, stdout: 'x' }, []),
+    })
+    expect(read).toBe(false)
+  })
+
+  test('un código distinto de 0, una salida vacía o un fallo al lanzar: sin token', async () => {
+    expect(await readProcessStartToken(77, { platform: 'darwin', runCommand: runner({ code: 1, stdout: 'x' }, []) })).toBeUndefined()
+    expect(await readProcessStartToken(77, { platform: 'darwin', runCommand: runner({ code: 0, stdout: '' }, []) })).toBeUndefined()
+    expect(await readProcessStartToken(77, { platform: 'darwin', runCommand: async () => { throw new Error('spawn') } })).toBeUndefined()
+  })
+
+  test('con un entorno dado, ps se resuelve en su PATH y el entorno no hereda el del proceso', async () => {
+    const calls: Call[] = []
+    await readProcessStartToken(77, {
+      platform: 'darwin',
+      env: { PATH: '/opt/bin', HOME: '/h' },
+      which: (command, path) => (path === '/opt/bin' ? `/opt/bin/${command}` : null),
+      runCommand: runner({ code: 0, stdout: 'x' }, calls),
+    })
+    expect(calls[0]!.command).toBe('/opt/bin/ps')
+    expect(calls[0]!.options.env).toEqual({ PATH: '/opt/bin', HOME: '/h', LC_ALL: 'C', TZ: 'UTC' })
+  })
+
+  test('con un entorno cuyo PATH no tiene entradas absolutas, ps no se lanza', async () => {
+    const calls: Call[] = []
+    const token = await readProcessStartToken(77, { platform: 'darwin', env: { PATH: 'rel:./bin' }, runCommand: runner({ code: 0, stdout: 'x' }, calls) })
+    expect(token).toBeUndefined()
+    expect(calls).toHaveLength(0)
+  })
+})
+
+describe('absolutePathEntries (RGr), whichInSanitizedPath (lxe) y envValue (ya)', () => {
+  test('conserva sólo las entradas absolutas del PATH', () => {
+    expect(absolutePathEntries('/a:rel:/b::./c', 'linux')).toBe('/a:/b')
+  })
+
+  test('en win32 retira las comillas de cada entrada antes de juzgarla', () => {
+    expect(absolutePathEntries('"/x";rel', 'win32', ';')).toBe('/x')
+    expect(absolutePathEntries('"/x";rel', 'linux', ';')).toBe('')
+  })
+
+  test('sin entradas absolutas no hay comando', () => {
+    expect(whichInSanitizedPath('ps', 'rel', () => '/x/ps')).toBeNull()
+    expect(whichInSanitizedPath('ps', '/bin:/usr/bin', (_, path) => (path === '/bin:/usr/bin' ? '/bin/ps' : null))).toBe('/bin/ps')
+  })
+
+  test('la búsqueda de una variable ignora mayúsculas sólo en Windows', () => {
+    expect(envValue({ Path: '/x' }, 'PATH', 'linux')).toBeUndefined()
+    expect(envValue({ Path: '/x' }, 'PATH', 'windows')).toBe('/x')
+    expect(envValue({ PATH: '/y' }, 'PATH', 'linux')).toBe('/y')
   })
 })
