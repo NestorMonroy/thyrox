@@ -5,6 +5,11 @@
  */
 import type { Socket } from 'node:net'
 
+import type { InboxTokens } from './inboxAuth.ts'
+
+/** `lEn`: cuánto espera el buzón la primera línea completa de una conexión. */
+export const FIRST_LINE_DEADLINE_MS = 30000
+
 /** Por qué no arrancó el buzón: los valores que `mn` escribe en `lastStartFailureCause`. */
 export type InboxStartFailureCause =
   | 'bind_failed'
@@ -25,6 +30,15 @@ export type InboxState = {
   startInFlight: boolean
   /** Los mensajes se procesan en orden: cada uno espera al anterior. */
   processingChain: Promise<void>
+  /** Si toda conexión tiene que abrir con la línea de autenticación. */
+  authRequired: boolean
+  firstLineDeadlineMs: number
+  /** Los tokens de esta sesión mientras el buzón está abierto. */
+  activeTokens: InboxTokens | undefined
+  /** Cada caída se reporta una vez por proceso, no una por conexión. */
+  silentDropReported: boolean
+  authDropReported: boolean
+  authOkReported: boolean
 }
 
 export function createInboxState(): InboxState {
@@ -36,6 +50,12 @@ export function createInboxState(): InboxState {
     lastStartDegradedCause: undefined,
     startInFlight: false,
     processingChain: Promise.resolve(),
+    authRequired: false,
+    firstLineDeadlineMs: FIRST_LINE_DEADLINE_MS,
+    activeTokens: undefined,
+    silentDropReported: false,
+    authDropReported: false,
+    authOkReported: false,
   }
 }
 

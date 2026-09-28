@@ -25,7 +25,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`), `we`/`Ie` por plataforma y `ce`/`Ez`/`Le` como `shouldRetryRename` → `uds/atomicWrite.ts` | hecha |
 | F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n`, `Ee`, `Ks`, `rt` y el contrato `SessionKeyStorage` que consumen → `uds/inboxKeys.ts` | hecha |
 | F4a | credenciales del par: `lsn`, `te`, `Yce`, `aUr`; `Bun.ant.getPeerPid` sustituido por `getsockopt` (`SO_PEERCRED` en Linux, `LOCAL_PEERPID` en macOS) por `bun:ffi` → `uds/peerCredentials.ts` | hecha (H-THYROX-241) |
-| F4b | el manejador de conexión `en`: plazo de primera línea, marco de auth, tope `WOt` de 1 MiB, líneas JSON, fragmento final, `TB`/`Bf` | pendiente |
+| F4b | el manejador de conexión `en`: plazo de primera línea, marco de auth, tope `WOt` de 1 MiB, líneas JSON, fragmento final, `TB`/`Bf`, telemetría `_`/`m`/`p` → `uds/inboxConnection.ts`, `uds/logRedaction.ts`, `uds/featureTelemetry.ts` | hecha |
 | F4c | el enrutado `Qe`/`be`/`ze`/`Ie` y la confianza por ancestría en modo bypass (`unr`) | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
 | F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
@@ -163,3 +163,15 @@ primera forma y se endurecieron sus casos: `sin-corte-init` (el doble no
 tenía padre para init) y `sin-vacio` (ningún caso producía un campo 22
 vacío). La rama de macOS se mide sólo por la consulta que elige, porque este
 contenedor no puede ejecutarla.
+
+## F4b — el manejador de conexión: controles
+
+Anulaciones en `anulacion-connection-*.txt` (15) y `anulacion-redaction-*.txt`
+(6); cada una tumba sólo sus casos.
+
+Una trampa del arnés, medida (`probe-bun-server-data.txt`,
+`probe-handler.txt`). El manejador aislado enruta bien, pero la primera
+versión de la prueba afirmaba en cuanto el CLIENTE veía `close`, y en Bun ese
+`close` puede llegar antes de que el servidor procese sus `data`: la prueba
+veía cero mensajes enrutados. Desde entonces el arnés espera el `close` del
+socket del servidor. La prueba se corrió tres veces seguidas en verde.

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+134 | })
+135 | 
+136 | describe('plazo de la primera línea', () => {
+137 |   test('una conexión muda se cierra al vencer el plazo y se reporta una sola vez', async () => {
+138 |     state.firstLineDeadlineMs = 40
+139 |     expect((await exchange(['{"type":'], { end: false, waitMs: 500 })).closedByServer).toBe(true)
+                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:139:88)
+(fail) plazo de la primera línea > una conexión muda se cierra al vencer el plazo y se reporta una sola vez [503.50ms]
+
+ 16 pass
+ 1 fail
+ 26 expect() calls
+Ran 17 tests across 1 file. [963.00ms]
