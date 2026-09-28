@@ -1,0 +1,4 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — el proxy de credencial no arrancó (/home/user/thyrox/bin/provider-credential-proxy): credentialProxy: sin credencial propia — declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY en el entorno del proxy. NO se escucha. 
+exit=2
