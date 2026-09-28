@@ -95,6 +95,15 @@ async function main(): Promise<void> {
   // uno borrado revienta mas adentro con un rastro que no dice que hacer.
   await (await import('./cwdCheck.ts')).exitIfCwdUnavailable()
 
+  // Los comandos autocontenidos (`providers`, `mitm`) no necesitan el
+  // arranque completo: por `main.tsx` cargaban miles de módulos para leer una
+  // tabla (#130). Se resuelven aquí y salen.
+  const lightExitCode = await (await import('./lightModes.ts')).runLightMode(args)
+  if (lightExitCode !== undefined) {
+    process.exitCode = lightExitCode
+    return
+  }
+
   // For all other paths, load the startup profiler
   const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
   profileCheckpoint('cli_entry')
