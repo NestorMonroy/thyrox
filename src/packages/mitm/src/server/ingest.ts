@@ -10,6 +10,7 @@
 import { randomUUID } from 'node:crypto'
 
 import type { InterceptedRequest } from '../inspector/types.ts'
+import type { AgentId } from '../types.ts'
 
 export const INGEST_PATH = '/api/tools/traffic-inspector/internal/ingest'
 
@@ -26,7 +27,8 @@ export interface IngestEntryInput {
   responseBody?: string | null
   responseSize?: number
   status: InterceptedRequest['status']
-  agentId?: string
+  /** Sólo un agente conocido; el servidor omite el que no reconoce. */
+  agentId?: AgentId
   sourceModel?: string | null
   mappedModel?: string
   error?: string
