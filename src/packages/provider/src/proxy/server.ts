@@ -40,6 +40,7 @@
 import { randomUUID } from 'node:crypto'
 import { type AccessManager, httpStatusOf } from './access.ts'
 import { type CredentialSelector, ModelCooldownError, type ProxyCredential } from './credentialSelectors.ts'
+import { ANTIGRAVITY_PATH, serveAntigravity } from './antigravity.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
 import { compactMessagesBody } from './context/compactRequest.ts'
 import type { ContextWindowOf } from './context/contextManager.ts'
@@ -396,6 +397,14 @@ async function route(config: ProxyServerConfig, request: Request, requestId: str
     if (model instanceof Response) return model
     const source = { callerScope: scope, payload: read.text, sourceFormat: 'openai' }
     return serveChatCompletion(model, read.body, messagesBody => forwardBody(config, request, '/v1/messages', messagesBody, requestId, source))
+  }
+  if (request.method === 'POST' && pathname === ANTIGRAVITY_PATH) {
+    const read = await readJsonObject(request, requestId)
+    if (read instanceof Response) return read
+    const model = requireModel(read.body, requestId)
+    if (model instanceof Response) return model
+    const source = { callerScope: scope, payload: read.text, sourceFormat: 'antigravity' }
+    return serveAntigravity(model, read.body, messagesBody => forwardBody(config, request, '/v1/messages', messagesBody, requestId, source))
   }
   return new Response('not found', { status: 404 })
 }

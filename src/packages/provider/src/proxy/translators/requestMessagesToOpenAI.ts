@@ -37,7 +37,7 @@ const DEFAULT_MIN_TOKENS = 32000
  * mínimo cuando la petición declara herramientas, para que una llamada con
  * argumento grande (p. ej. escribir un archivo) no se trunque.
  */
-function adjustMaxTokens(body: JsonRecord): number {
+export function adjustMaxTokens(body: JsonRecord): number {
   const requestedMaxTokens = (body.max_tokens ?? body.max_completion_tokens) as
     | number
     | undefined

@@ -77,6 +77,17 @@ export function isEffortLevel(value: string): value is EffortLevel {
   return (EFFORT_LEVELS as readonly string[]).includes(value)
 }
 
+/** Los sinónimos que otros clientes usan para un nivel: `extra` es el `xhigh` de OmniRoute. */
+const EFFORT_SYNONYMS: Record<string, EffortLevel> = { extra: 'xhigh' }
+
+/** El nivel de esfuerzo que nombra `value`, sin distinguir mayúsculas, o `undefined`. */
+export function normalizeReasoningEffort(value: unknown): EffortLevel | undefined {
+  if (typeof value !== 'string') return undefined
+  const lowered = value.trim().toLowerCase()
+  if (!lowered) return undefined
+  return EFFORT_SYNONYMS[lowered] ?? (isEffortLevel(lowered) ? lowered : undefined)
+}
+
 export function isValidNumericEffort(value: number): boolean {
   return Number.isInteger(value)
 }

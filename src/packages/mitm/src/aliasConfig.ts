@@ -8,12 +8,12 @@
  * guardado.
  *
  * El vocabulario del esfuerzo es el de sesión de `@thyrox/agent/effort.js`
- * (none, low, medium, high, xhigh, max), no uno propio. OmniRoute añade el
- * sinónimo `extra` de su interfaz, que equivale a `xhigh`.
+ * (none, low, medium, high, xhigh, max), no uno propio, con los sinónimos que
+ * su `normalizeReasoningEffort` acepta.
  *
  * Porte de `omniroute: src/mitm/aliasConfig.ts` (MIT).
  */
-import { type EffortLevel, isEffortLevel } from '@thyrox/agent/effort.js'
+import { type EffortLevel, normalizeReasoningEffort } from '@thyrox/agent/effort.js'
 
 export interface MitmAliasEntry {
   model?: string
@@ -21,18 +21,6 @@ export interface MitmAliasEntry {
 }
 
 export type MitmAliasMappings = Record<string, MitmAliasEntry>
-
-const EFFORT_SYNONYMS: Record<string, EffortLevel> = { extra: 'xhigh' }
-
-/** El nivel de esfuerzo que nombra `value`, sin distinguir mayúsculas, o `undefined`. */
-export function normalizeReasoningEffort(value: unknown): EffortLevel | undefined {
-  if (typeof value !== 'string') return undefined
-  const lowered = value.trim().toLowerCase()
-  if (!lowered) return undefined
-  const synonym = EFFORT_SYNONYMS[lowered]
-  if (synonym) return synonym
-  return isEffortLevel(lowered) ? lowered : undefined
-}
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
