@@ -138,9 +138,8 @@ export function manifestLine(kind: string, payload: Record<string, unknown>): st
  *
  * Traducir no es rebautizar: `corpus` ya estaba en inglés y no se toca.
  *
- * Directiva del ejecutor 2026-09-06: lo que otros consumidores tengan escrito
- * en español es asunto suyo y no condiciona si esto puede ejecutarse; lo
- * nuestro va en inglés.
+ * Lo que otros consumidores tengan escrito en español es asunto suyo y no
+ * condiciona si esto puede ejecutarse; lo nuestro va en inglés.
  */
 export const WORKBENCH_FORMS = ['corpus', 'measurement', 'transformation'] as const
 export type WorkbenchForm = typeof WORKBENCH_FORMS[number]

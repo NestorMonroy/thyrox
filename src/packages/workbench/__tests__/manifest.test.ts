@@ -236,9 +236,8 @@ describe('el andamiaje omite lo que no puede saber', () => {
  * Las FORMAS del banco — portadas del puerto en español con sus valores en
  * inglés, y su mitad ROJA escrita antes.
  *
- * Directiva del ejecutor 2026-09-06: *«nosotros no vamos a corregir lo que
- * tiene docs/.claude/eventos/ … nosotros vamos a hacer las claves en inglés»*.
- * `identificadores-en-ingles.md` ya lo cubría —«claves de manifiesto: una clave
+ * Las claves van en inglés, y lo que otros consumidores tengan escrito en
+ * español no se corrige desde aquí. `identificadores-en-ingles.md` lo cubre —«claves de manifiesto: una clave
  * es un atributo»— y las FORMAS son valores de una clave, así que el mismo
  * criterio las alcanza: `medicion` → `measurement`, `transformacion` →
  * `transformation`, y la pieza `radio/` → `radius/`.

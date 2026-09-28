@@ -10,7 +10,7 @@
  *
  * PERO esa razon vale para UNA de las dos, y el propio analisis lo dice tres
  * tablas mas arriba: la fila de `reference/triple.ts` declara «Quien la
- * consume: **solo su test**». Medido 2026-09-08 sobre todo el clon, sus
+ * consume: **solo su test**». Medido sobre todo el clon, sus
  * cuatro simbolos exportados —`checkPortDeclaration`, `declaredAlias`,
  * `canonicalAlias`, `sameCorpus`— tienen CERO consumidores fuera del propio
  * paquete. Su destino no lo decide un consumidor que no tiene: lo decide

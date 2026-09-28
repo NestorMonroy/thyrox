@@ -114,8 +114,7 @@ describe('predicados', () => {
 })
 
 /**
- * La raíz de configuración migró a `.thyrox` (decisión del ejecutor
- * 2026-09-27) con respaldo en `.claude`: las dos quedan protegidas igual,
+ * La raíz de configuración es `.thyrox`, con respaldo en `.claude`: las dos quedan protegidas igual,
  * porque un archivo que el cliente lee como configuración es configuración
  * con cualquiera de los dos nombres.
  */

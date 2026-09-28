@@ -21,14 +21,12 @@
  *
  * Divergencias declaradas:
  *
- * - (Retirada 2026-09-24.) Decía que la memoria nunca está en pausa y que
- *   la rama `EN(y) && Kh()` de `Wy` no podía dispararse. Era una omisión:
- *   `/pause-memory` y su indicador están portados de 2.1.281, y la rama
- *   niega como `ib` (`xU(h)&&Yh()` → `Rr`).
- * - (Retirada 2026-09-24.) Decía que el experimento en sombra
- *   `tengu_playful_lobster` no se portaba por ser sólo telemetría. Era una
- *   omisión: este árbol tiene dónde registrar (`logEvent`), y está portado
- *   de 2.1.281 en `playfulLobster.ts`.
+ * - Sin divergencia en la pausa de memoria: `/pause-memory` y su indicador
+ *   están portados de 2.1.281, y la rama `EN(y) && Kh()` de `Wy` niega como
+ *   `ib` (`xU(h)&&Yh()` → `Rr`).
+ * - Sin divergencia en el experimento en sombra `tengu_playful_lobster`:
+ *   está portado de 2.1.281 en `playfulLobster.ts` y registra por
+ *   `logEvent`.
  * - `servedCall` no lo fija ningún productor en este árbol; la rama que
  *   convierte la negación en consulta se porta igual, leyendo las settings.
  */

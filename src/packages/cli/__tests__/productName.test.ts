@@ -5,7 +5,7 @@
  *
  * Sin excepciones, tampoco `install`: thyrox no es thyrox, y con otro
  * provider instalar las releases de thyrox instala un programa que el
- * usuario no corre (directiva del ejecutor 2026-09-27).
+ * usuario no corre.
  *
  * *Métrica:* literales «thyrox» en código de `src/` (sin comentarios).
  * *Ciega a:* el nombre compuesto en tiempo de ejecución desde otra cadena, y

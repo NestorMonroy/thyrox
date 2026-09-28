@@ -13,11 +13,9 @@
  *
  * Divergencias declaradas:
  *
- * - (Retirada 2026-09-24.) Esta línea decía que el árbol no tenía
- *   `/pause-memory` ni su indicador y que las dos ramas no podían
- *   dispararse. Era una omisión, no una divergencia: el comando y el
- *   indicador están portados de 2.1.281 (`@thyrox/memory/memoryPause`), y
- *   las dos ramas niegan como en el binario (`vQ` → `qs`, `Mxt` → `Rr`).
+ * - Sin divergencia en la pausa de memoria: el comando y el indicador están
+ *   portados de 2.1.281 (`@thyrox/memory/memoryPause`), y las dos ramas
+ *   niegan como en el binario (`vQ` → `qs`, `Mxt` → `Rr`).
  * - El documento de taller del plan (`<slug>.workshop.md`) exige que el
  *   taller esté disponible (`Ji.isAvailable()`); este árbol no lo tiene y
  *   la rama queda cerrada.

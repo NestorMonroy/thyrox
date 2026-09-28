@@ -1,12 +1,9 @@
 /**
  * El control de la entrada de la CLI (#205, tramo final).
  *
- * Directiva del ejecutor 2026-09-08: «ya no queremos esto harness.ts». El
- * binario se llamaba `harness.ts` por el paquete `@thyrox/harness`, que se
- * retiro en #226/#266 — el nombre sobrevivio a su sujeto. Y su cuerpo de 666
- * lineas fundia en una cascada de `argv.includes` lo que la referencia reparte
- * en tres capas: `entry/` decide el modo, `commands/` implementa cada uno, y
- * el binario solo arranca.
+ * La entrada se reparte en las tres capas de la referencia: `entry/` decide
+ * el modo, `commands/` implementa cada uno, y el binario solo arranca. Una
+ * cascada de `argv.includes` en el binario fundiria las tres.
  *
  * La forma la fija la referencia, medida:
  *
@@ -53,18 +50,14 @@ const COMMANDS = [
 
 describe('la entrada de la CLI (#205)', () => {
   test('1. el punto de entrada se llama como en las DOS referencias', () => {
-    // Directiva del ejecutor 2026-09-08: «asegurate que thyrox/src sea lo mas
-    // parecido posible a thyrox/_references/restored-src/src/». Medido contra
-    // las dos referencias, que aqui COINCIDEN:
+    // `thyrox/src` sigue la forma de `_references/restored-src/src/`. Medido
+    // contra las dos referencias, que aqui COINCIDEN:
     //
     //   restored-src: src/main.tsx                      (v2.1.88, monolitico)
     //   ccnmt:        packages/cli/src/entry/main.tsx   (el mismo, particionado)
     //   directorios `bin/` en cualquiera de las dos: 0
     //
-    // La primera version de este control afirmaba `bin/thyrox.ts`. Era una
-    // eleccion mia, no de la referencia: ni el nombre ni el directorio salian
-    // de una medicion. Se corrige contra lo medido, que es la unica direccion
-    // en que una prediccion se corrige.
+    // Ni el nombre ni el directorio se eligen: salen de esa medicion.
     expect(existsSync(join(PKG, 'bin'))).toBe(false)
     expect(existsSync(ENTRY)).toBe(true)
   })

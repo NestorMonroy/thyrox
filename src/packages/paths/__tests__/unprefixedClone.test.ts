@@ -1,10 +1,9 @@
 /**
  * The TypeScript half: a consumer clone without the provider's prefix.
  *
- * H-THYROX-176 y H-THYROX-177 en la mitad TypeScript. `reach.ts` fijaba
- * `CLONE_PREFIX = 'kaupamex-'`, un literal que la mitad Python ya había
- * retirado derivándolo, y `cloneSuffixOf` tomaba lo que sigue al ÚLTIMO guion
- * (`ai-course-notes` -> `NOTES`). El prefijo se declara
+ * H-THYROX-176 y H-THYROX-177 en la mitad TypeScript. El prefijo no es un
+ * literal (`kaupamex-`), y el sufijo no es lo que sigue al ÚLTIMO guion
+ * (`ai-course-notes` daría `NOTES`). El prefijo se declara
  * (`THYROX_CLONE_PREFIX`) o se deriva de los hermanos, y es opcional: un clon
  * que no lo lleva se nombra entero.
  */

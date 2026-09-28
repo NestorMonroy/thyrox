@@ -12,13 +12,9 @@
  * (`KAUPAMEX_DOCS_ROOT` + ascenso a `source/gestion/pm/`) — una segunda
  * fuente de verdad para una decisión que este módulo ya tomaba.
  *
- * `consumerRoot` se porta el 2026-09-06 por la misma razón: su docstring lo
- * declaraba sin consumidor en TS, y apareció uno — la resolución del store de
- * sesiones, cuya mitad Python (`store/agent_sessions.py`) excluye la ruta a
- * propósito («la resolución de rutas es del consumidor») mientras la mitad TS
- * la clavaba al clon de docs. Un porte parcial declarado se completa cuando
- * aparece su consumidor, no se deja con la nota —
- * `porte-completo-no-parcial.md`.
+ * `consumerRoot` se porta por la misma razón: lo consume la resolución del
+ * store de sesiones, cuya mitad Python (`store/agent_sessions.py`) excluye la
+ * ruta a propósito («la resolución de rutas es del consumidor»).
  *
  * Lo que sigue SIN portar, y su razón: `paths` y `requireAll` (su consumidor
  * es la familia de gates en Python) y `main` (el CLI).
@@ -295,7 +291,7 @@ export function cloneShortName(start: string): string | null {
 
 /**
  * `kaupamex-docs` -> `DOCS`; `ai-course-notes` -> `AI_COURSE_NOTES`: el nombre
- * corto entero. Tomaba sólo lo que sigue al último guion (H-THYROX-176).
+ * corto entero, no sólo lo que sigue al último guion (H-THYROX-176).
  */
 export function cloneSuffixOf(start: string): string | null {
   return shortName(cloneTopOf(start)).toUpperCase().replace(/-/g, '_') || null
@@ -317,7 +313,7 @@ export function productionDeclarations(start?: string): ForReadingDeclarations {
   const specificPath = envFilePath(start)
   const layers: ForReadingDeclarations[] = [new ProcessEnvironment()]
   // Sin `start` el ascenso parte del módulo, dentro del proveedor: desde un
-  // clon consumidor se leía el `.env` de thyrox y no el suyo (H-THYROX-178).
+  // clon consumidor leería el `.env` de thyrox y no el suyo (H-THYROX-178).
   // La capa del consumidor va ANTES, sin sustituir: su `.env` puede no
   // declarar claves que el proveedor sí (`THYROX_COMMIT_AUTHOR`).
   const consumer = start === undefined ? consumerEnvFile() : null
@@ -723,10 +719,10 @@ export const CONSUMER_MARKER = '.claude'
  * *Métrica:* presencia del directorio `.claude` subiendo desde el punto de
  * partida.
  * *Ciega a:* CUÁL de los consumidores es el correcto cuando hay varios en la
- * cadena. Medido en este árbol el 2026-09-06: `/home/user/.claude`,
- * `/home/user/thyrox/.claude` y `/home/user/kaupamex-docs/.claude` existen los
- * tres. El caso del PROVEEDOR dejó de ser ceguera el 2026-09-09: ahora rehúsa
- * con `ConsumerUnknownError` en vez de devolver su raíz. Sigue ciega al otro —
+ * cadena (`/home/user/.claude`, `/home/user/thyrox/.claude` y
+ * `/home/user/kaupamex-docs/.claude` pueden existir los tres). El caso del
+ * PROVEEDOR no es ciego: rehúsa con `ConsumerUnknownError` en vez de devolver
+ * su raíz. Sigue ciega al otro —
  * un ascenso desde `/home/user` devuelve un directorio que no es clon de
  * nadie, porque ese sí lleva el marcador y no es el proveedor. Por eso quien
  * resuelve un artefacto del consumidor no se apoya en el ascenso: exige el

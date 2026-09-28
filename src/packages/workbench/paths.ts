@@ -1,13 +1,11 @@
 /**
  * El hogar del banco de trabajo — un PARÁMETRO del consumidor, no un literal.
  *
- * Directiva del ejecutor 2026-09-06: *«todas las que requieran cablear el hogar
- * de algo definiendo una ruta, todas ellas la ruta tiene que ser pasada por una
- * CONSTANTE, y con dos entradas, ambas de entorno … el cablear algo hace que el
- * usuario que usa thyrox pierda la decisión de dónde van las cosas»*.
+ * Toda ruta que cablea un hogar pasa por una CONSTANTE con dos entradas, ambas
+ * de entorno: cablearla a mano quitaría al usuario de thyrox la decisión de
+ * dónde van las cosas.
  *
- * LAS DOS ENTRADAS, con el nombre de cada una. La ilustración de la directiva
- * las nombra por separado y no son la misma cosa mirada dos veces:
+ * LAS DOS ENTRADAS, con el nombre de cada una. La ilustración las nombra por separado y no son la misma cosa mirada dos veces:
  *
  *     worker_config   = get_secret("WORKER_CONFIG")        <- el VALOR, directo
  *     env_config_yaml = get_secret_str("CONFIG_FILE_PATH") <- la RUTA del archivo
@@ -106,18 +104,17 @@ export class WorkbenchHomeError extends Error {}
  * fue **derivarlo por aritmética de la ruta del archivo**. Aquí sale de la
  * cadena declarada: `consumerRoot()` más los dos segmentos declarables.
  *
- * Esta función REHUSABA hasta el 2026-09-07. El rehuse apagaba el mecanismo
- * para todo consumidor que no hubiera tomado una decisión que casi ninguno
- * necesita tomar, y empujaba a teclear la ruta a mano — que es como once
- * bancos aterrizaron en el árbol del proveedor (L-028).
+ * No rehúsa: un rehúse apagaría el mecanismo para todo consumidor que no
+ * hubiera tomado una decisión que casi ninguno necesita tomar, y empujaría a
+ * teclear la ruta a mano — que es como los bancos aterrizan en el árbol del
+ * proveedor (L-028).
  *
  * @param start punto de partida para localizar el `.env`; por defecto el cwd.
  */
 export function workbenchDir(start?: string): string {
   // El valor declarado pasa por `resolveHome`, igual que en la familia
-  // `rules`. Se devolvia CRUDO, y eso dejaba a la clave sin su unica forma
-  // util: como segmento relativo tiene que decir «en cada clon, este
-  // subdirectorio», y devuelta cruda resolvia contra el CWD — el defecto
+  // `rules`: como segmento relativo tiene que decir «en cada clon, este
+  // subdirectorio», y devuelto crudo resolveria contra el CWD — el defecto
   // home-by-cwd de #284/#286 dentro de la familia que el registro publica.
   const declared = envValue(WORKBENCH_DIR_VAR, start)
   if (declared) {

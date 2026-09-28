@@ -1,8 +1,7 @@
 /**
  * El roster de raíces en `reach.ts` se DERIVA, como en `reach_roots()` de
- * Python (H-THYROX-177). Estaba fijado —`['api','db','docs','server','ui']`—
- * y ese literal ataba la mitad TypeScript al multi-repo kaupamex: un árbol
- * `acme-*` no tenía raíces nombrables.
+ * Python (H-THYROX-177). Un literal fijo ataría la mitad TypeScript al
+ * multi-repo kaupamex: un árbol `acme-*` no tendría raíces nombrables.
  *
  * Qué haría fallar a estos casos: volver a fijar la lista (caen el derivado y
  * el declarado), ignorar la declaración (cae el declarado) o aceptar un nombre

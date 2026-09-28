@@ -39,13 +39,12 @@
  * linkeados en `node_modules` de este paquete sin correr `bun install`, fuera
  * de alcance de este pase), `ToolPermissionContext` canónico (cada consumidor
  * declara su propio tipo local más angosto, igual que ya hace `permissions.ts`
- * — ver su docstring). `ToolPermissionRulesBySource` SÍ se agrega (2026-09-25):
- * su consumidor apareció, `tool-registry/src/Tool.ts` la importa de aquí.
+ * — ver su docstring). `ToolPermissionRulesBySource` SÍ está: la importa
+ * `tool-registry/src/Tool.ts`.
  *
  * `ContentBlockParam` es el del SDK (`@anthropic-ai/sdk/resources/messages.mjs`),
- * como en la fuente. Antes se declaraba aquí una forma mínima porque el SDK
- * no resolvía desde este paquete; ya es dependencia suya, y la copia local
- * no encajaba con los consumidores que pasan esos bloques al SDK.
+ * como en la fuente: una copia local no encajaría con los consumidores que
+ * pasan esos bloques al SDK.
  */
 
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
