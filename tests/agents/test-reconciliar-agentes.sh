@@ -132,12 +132,10 @@ get() { printf '%s\n' "$OUT" | awk -v k="$1" '$1==k && $2 ~ /^[0-9]+$/ {print $2
 check "terminado = 3 (cerrado + harness + propio)" "3" "$(get terminado)"
 check "desaparecido = 1 (el cortado y congelado; NO el vivo de enlace viejo)"  "1" "$(get desaparecido)"
 check "indecidible = 1 (bash mudo y congelado)"    "1" "$(get indecidible)"
-# ANTES: los tres caian en `atascado`, y ese era el defecto (H-DOCS-1004):
-# sin segunda muestra, «escribio hace poco» se publicaba como «se quedo
-# pegado» — el veredicto CONTRARIO. Desde que el veredicto lo decide
-# `thyrox: src/roster/job_liveness.py`, los tres se reparten: dentro de la
-# ventana y sin `--vigilar` el guion publica `reciente`, que dice lo unico
-# que se sabe. `atascado` queda para lo que una segunda muestra confirma.
+# Sin segunda muestra, «escribio hace poco» no es «se quedo pegado» — son
+# veredictos CONTRARIOS (H-DOCS-1004). El veredicto lo decide
+# `thyrox: src/roster/job_liveness.py`: dentro de la ventana y sin
+# `--vigilar` el guion publica `reciente`, que dice lo unico que se sabe. `atascado` queda para lo que una segunda muestra confirma.
 check "reciente = 3 (pegado + fresco + vivo con enlace viejo)" "3" "$(get reciente)"
 check "atascado = 0 sin --vigilar (no se afirma sin segunda muestra)" "0" "$(get atascado)"
 check "TOTAL = 8"                                  "8" "$(get TOTAL)"

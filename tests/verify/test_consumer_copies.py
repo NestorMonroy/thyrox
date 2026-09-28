@@ -118,14 +118,10 @@ r = correr()
 check('sin argumentos NO rehusa por falta de argumentos', False,
       'the following arguments are required' in (r.stdout + r.stderr))
 
-# CORREGIDO 2026-09-09 (TASK-DOCS-0286). Aqui decia:
-#
-#     check('sin argumentos SI emite su denominador', True, 'alcance medido' in r.stdout)
-#
-# y ese verde MEDIA EL ARBOL EQUIVOCADO. `reach.consumer_root()` devolvia la
-# raiz del PROVEEDOR cuando el ascenso aterrizaba en el —thyrox tambien lleva
-# `.claude/`, asi que el marcador no lo distingue—, de modo que el gate corrido
-# a secas desde thyrox comparaba thyrox contra thyrox. Medido antes de corregir:
+# Sin consumidor derivable el gate REHUSA (TASK-DOCS-0286). Desde thyrox, un
+# ascenso que aterrizara en el proveedor —thyrox tambien lleva `.claude/`, asi
+# que el marcador no lo distingue— compararia thyrox contra thyrox. Medido sin
+# el rehuse:
 #
 #     fuente (thyrox_root) : /home/user/thyrox
 #     consumidor derivado  : /home/user/thyrox
