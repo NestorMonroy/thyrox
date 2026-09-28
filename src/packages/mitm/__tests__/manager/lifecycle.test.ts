@@ -25,6 +25,8 @@ fs.writeFileSync(process.env.FAKE_ENV_OUT, JSON.stringify({
   port: process.env.THYROX_MITM_LOCAL_PORT,
   certMode: process.env.THYROX_MITM_CERT_MODE,
   apiKeys: process.env.THYROX_PROXY_API_KEYS ?? null,
+  ingestUrl: process.env.THYROX_MITM_API_URL ?? null,
+  ingestToken: process.env.THYROX_INSPECTOR_INTERNAL_INGEST_TOKEN ?? null,
 }))
 process.on('SIGTERM', () => process.exit(0))
 setInterval(() => {}, 1000)
@@ -73,6 +75,8 @@ test('arranca el servidor con el puerto, el modelo de certificado y la clave, y 
     port: '8443',
     certMode: 'legacy',
     apiKeys: 'local-key',
+    ingestUrl: null,
+    ingestToken: null,
   })
   assert.deepEqual(calls, ['installCert:legacy:server.crt', 'provisionDns'])
   assert.ok(fs.existsSync(path.join(dir, 'targets.json')))
@@ -103,6 +107,24 @@ test('con THYROX_MITM_ROOT_CA_ENABLED instala ca.crt y el hijo recibe el modo ro
 
   assert.equal(JSON.parse(fs.readFileSync(envOut, 'utf-8')).certMode, 'root-ca')
   assert.deepEqual(calls, ['installCert:root-ca:ca.crt', 'provisionDns'])
+})
+
+test('con la API local en marcha, el hijo recibe su URL y el token de ingesta', async () => {
+  const dir = useTempMitmDataDir(cleanups)
+  await generateCert()
+  const envOut = path.join(dir, 'env.json')
+  process.env.FAKE_ENV_OUT = envOut
+  cleanups.push(() => delete process.env.FAKE_ENV_OUT)
+  manager.setInspectorIngest({ baseUrl: 'http://127.0.0.1:4455', token: 'ingest-token-0123456789' })
+
+  await manager.startMitm('', 'secret', { port: 8443 }, {
+    ...recordingSteps([]),
+    serverEntry: script(dir, 'alive.js', ALIVE_SERVER),
+  })
+
+  const env = JSON.parse(fs.readFileSync(envOut, 'utf-8'))
+  assert.equal(env.ingestUrl, 'http://127.0.0.1:4455')
+  assert.equal(env.ingestToken, 'ingest-token-0123456789')
 })
 
 test('sin permiso para los pasos privilegiados arranca igual, sin confianza ni DNS', async () => {

@@ -168,3 +168,21 @@ Ajustes y CLI de antigravity:
 - regenerar fuerza un certificado nuevo en vez de borrar y generar;
 - los alias sólo se guardan para un agente de `MITM_AGENT_IDS`;
 - el certificado que se descarga es el del modelo vigente.
+
+## F7h-5 — la API compuesta y el cableado de la ingesta
+
+`src/api/mitmApi.ts` monta todos los grupos de rutas con sus dependencias
+reales sobre una base y un búfer dados (`mitmApiRoutes`), rehúsa un método y
+ruta montados dos veces (`assertUniqueRoutes`: el enrutador atendería sólo el
+primero, en silencio) y arranca el servidor con el canal en vivo sobre ese
+búfer (`startMitmApi`).
+
+Al arrancar publica al gestor el destino de ingesta —su URL y su token—
+(`setInspectorIngest`) y lo retira al parar. El gestor compone el entorno del
+servidor MITM con `buildServerEnv`: con la API en marcha le pasa
+`THYROX_MITM_API_URL` y `THYROX_INSPECTOR_INTERNAL_INGEST_TOKEN`; sin ella
+retira los heredados, que apuntarían a una API que ya no escucha.
+
+Anulaciones (`annul-f7h5.sh`, `results-f7h5.txt`): las siete discriminan. La
+séptima —el reinicio del gestor que olvida el destino— no tenía prueba en la
+primera ejecución; se añadió `resetting the manager forgets the ingest target`.

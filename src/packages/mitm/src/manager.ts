@@ -142,6 +142,49 @@ let mitmStarting = false
 let orphanedStateDetected = false
 let cleanupHandlersInstalled = false
 let cachedPassword: string | null = null
+let inspectorIngest: InspectorIngest | null = null
+
+/** Dónde publica el servidor MITM lo que captura: la API local y su token. */
+export interface InspectorIngest {
+  baseUrl: string
+  token: string
+}
+
+/** Lo fija la API local al arrancar y lo retira al parar; `null` sin API. */
+export function setInspectorIngest(target: InspectorIngest | null): void {
+  inspectorIngest = target
+}
+
+export function getInspectorIngest(): InspectorIngest | null {
+  return inspectorIngest
+}
+
+export interface ServerEnvOptions {
+  port: number
+  mode: CertMode
+  apiKey: string
+  ingest: InspectorIngest | null
+}
+
+/**
+ * El entorno del proceso del servidor MITM. Sin API local no lleva destino
+ * de ingesta: uno heredado apuntaría a una API que ya no escucha.
+ */
+export function buildServerEnv(base: NodeJS.ProcessEnv, options: ServerEnvOptions): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {
+    ...base,
+    THYROX_MITM_LOCAL_PORT: String(options.port),
+    THYROX_MITM_CERT_MODE: options.mode,
+  }
+  delete env.THYROX_MITM_API_URL
+  delete env.THYROX_INSPECTOR_INTERNAL_INGEST_TOKEN
+  if (options.ingest) {
+    env.THYROX_MITM_API_URL = options.ingest.baseUrl
+    env.THYROX_INSPECTOR_INTERNAL_INGEST_TOKEN = options.ingest.token
+  }
+  if (options.apiKey) env.THYROX_PROXY_API_KEYS = options.apiKey
+  return env
+}
 
 /** Sólo para pruebas: instala un proceso de servidor falso. */
 export function __setServerProcessForTest(proc: ChildProcess | null, pid: number | null): void {
@@ -156,6 +199,7 @@ export function __resetMitmManagerForTest(): void {
   mitmStarting = false
   orphanedStateDetected = false
   cachedPassword = null
+  inspectorIngest = null
 }
 
 /**
@@ -496,12 +540,7 @@ async function startMitmInternal(
   })
 
   const port = resolvePort(options.port)
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    THYROX_MITM_LOCAL_PORT: String(port),
-    THYROX_MITM_CERT_MODE: mode,
-  }
-  if (apiKey) env.THYROX_PROXY_API_KEYS = apiKey
+  const env = buildServerEnv(process.env, { port, mode, apiKey, ingest: inspectorIngest })
 
   const proc = spawn(process.execPath, [deps.serverEntry ?? DEFAULT_SERVER_ENTRY], {
     windowsHide: true,
