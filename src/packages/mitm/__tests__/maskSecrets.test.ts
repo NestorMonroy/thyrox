@@ -1,7 +1,7 @@
 // Portado de omniroute: tests/unit/mitm-masksecrets.test.ts (MIT), sobre bun:test.
 import { test } from "bun:test";
 import assert from "node:assert/strict";
-import { maskSecret } from "../../src/mitm/maskSecrets.ts";
+import { maskSecret } from "../src/maskSecrets.ts";
 
 test("maskSecret — Bearer token is masked", () => {
   const input = "authorization: Bearer sk-proj-abcdefghijklmnop";

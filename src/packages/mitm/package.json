@@ -1,0 +1,17 @@
+{
+  "name": "@thyrox/mitm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "El puente de agentes por interceptación (MITM): certificados, saneado de cabeceras y secretos, y los handlers que llevan el tráfico de cada agente al proxy local.",
+  "exports": {
+    "./*": {
+      "@thyrox/source": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/provider": "0.1.0"
+  }
+}

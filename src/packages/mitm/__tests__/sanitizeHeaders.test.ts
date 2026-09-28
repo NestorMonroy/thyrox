@@ -1,7 +1,7 @@
 // Portado de omniroute: tests/unit/mitm-sanitize-headers.test.ts (MIT), sobre bun:test.
 import { test } from "bun:test";
 import assert from "node:assert/strict";
-import { sanitizeHeaders } from "../../src/mitm/sanitizeHeaders.ts";
+import { sanitizeHeaders } from "../src/sanitizeHeaders.ts";
 
 // `set-cookie` is a response-side credential header. maskSecret()'s format
 // heuristics (Bearer / sk- / >=40-char) do NOT match an arbitrary session or

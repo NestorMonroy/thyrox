@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 import { describe, expect, test } from 'bun:test'
 
-import { DynamicCertStore, generateMitmCa, issueLeafCert } from '../mitm/dynamicCert.ts'
+import { DynamicCertStore, generateMitmCa, issueLeafCert } from '../src/dynamicCert.ts'
 
 /**
  * CA dinamica por SNI — el almacen que emite una hoja por host a demanda.

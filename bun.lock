@@ -475,6 +475,13 @@
         "zod": "^4.3.6",
       },
     },
+    "src/packages/mitm": {
+      "name": "@thyrox/mitm",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/provider": "0.1.0",
+      },
+    },
     "src/packages/modifiers-napi": {
       "name": "@thyrox/modifiers-napi",
       "version": "1.0.0",
@@ -1242,6 +1249,8 @@
     "@thyrox/mcp-runtime": ["@thyrox/mcp-runtime@workspace:src/packages/mcp-runtime"],
 
     "@thyrox/memory": ["@thyrox/memory@workspace:src/packages/memory"],
+
+    "@thyrox/mitm": ["@thyrox/mitm@workspace:src/packages/mitm"],
 
     "@thyrox/modifiers-napi": ["@thyrox/modifiers-napi@workspace:src/packages/modifiers-napi"],
 

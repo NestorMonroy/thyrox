@@ -544,6 +544,16 @@
       "@thyrox/source": "./src/workloadContext.ts",
       "types": "./dist/workloadContext.d.ts",
       "default": "./src/workloadContext.ts"
+    },
+    "./proxy/upstreamHeaders": {
+      "@thyrox/source": "./src/proxy/upstreamHeaders.ts",
+      "types": "./dist/proxy/upstreamHeaders.d.ts",
+      "default": "./src/proxy/upstreamHeaders.ts"
+    },
+    "./proxy/proxyEndpoint": {
+      "@thyrox/source": "./src/proxy/proxyEndpoint.ts",
+      "types": "./dist/proxy/proxyEndpoint.d.ts",
+      "default": "./src/proxy/proxyEndpoint.ts"
     }
   },
   "scripts": {

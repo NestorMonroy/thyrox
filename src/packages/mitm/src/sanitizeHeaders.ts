@@ -8,7 +8,7 @@
  * Porte de `omniroute: src/mitm/sanitizeHeaders.ts` (MIT).
  */
 import type { IncomingHttpHeaders } from 'node:http'
-import { isForbiddenUpstreamHeaderName } from '../proxy/upstreamHeaders.ts'
+import { isForbiddenUpstreamHeaderName } from '@thyrox/provider/proxy/upstreamHeaders'
 import { maskSecret } from './maskSecrets.ts'
 
 const MASKED_CREDENTIAL_HEADERS = new Set([
