@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+190 |   test('exactMode fija el modo sin que el umask lo recorte; mode a secas sí se recorta', async () => {
+191 |     await withUmask(0o077, async () => {
+192 |       await writeFileAtomicWithMode(join(dir, 'exact'), 'x', { exactMode: 0o644 })
+193 |       await writeFileAtomicWithMode(join(dir, 'plain'), 'x', { mode: 0o644 })
+194 |     })
+195 |     expect(lstatSync(join(dir, 'exact')).mode & 0o777).toBe(0o644)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: 420
+Received: 384
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:195:56)
+(fail) opciones completas de Jne > exactMode fija el modo sin que el umask lo recorte; mode a secas sí se recorta [3.44ms]
+
+ 26 pass
+ 1 fail
+ 71 expect() calls
+Ran 27 tests across 1 file. [201.00ms]

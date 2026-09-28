@@ -22,7 +22,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F3c-1 | escritura atómica con modo: `An`, `Jne`, `Kx`, `kA`, `j`, `XL`, `We`, `Ye`, `R`, `XS` → `uds/atomicWrite.ts` | hecha |
 | F3c-2 | clave publicada y leída: `XDo`, `sz`, `be`, `ifn`, `JDo`, `QDo`, `W`, `cl` → `uds/inboxKeys.ts` (rama de archivos locales) | hecha |
 | F3d-1 | token de inicio fuera de `/proc`: la rama `ps -o lstart=` de `b` (`lxe`, `RGr`, `ya`) y la forma de Windows de `n6`/`Hx` → `uds/processIdentity.ts` | hecha; la fuente del token en Windows, DESCONOCIDO |
-| F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`, `ve`, `Fe`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`) y `we`/`ce` de Windows | pendiente |
+| F3d-2 | `Jne` completo: `exactMode`, `flush` (`De`, `oxe`), `stagingDir` (`Me`, `Ue`), `beforePublish` (`fhn`), `inPlaceOnTempCreateRefused`, rechazo por enlace duro (`uhn`, `ae`), `we`/`Ie` por plataforma y `ce`/`Ez`/`Le` como `shouldRetryRename` → `uds/atomicWrite.ts` | hecha |
 | F3d-3 | rama de storage de la clave: `ye`, la rama `N()` de `JDo`, `J4n` y `Ee` de `QDo` | pendiente |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
 | F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
@@ -106,3 +106,18 @@ DESCONOCIDO, con su condición de cierre: de dónde toma la referencia el token
 en Windows. La compilación de Linux 2.1.283 sólo contiene la forma del campo
 (`procStartFt`); la lectura del FILETIME no está en el bundle. Se cierra con
 una compilación de Windows de la referencia.
+
+## F3d-2 — `Jne` completo: controles
+
+Anulaciones en `anulacion-atomicwrite-sin-*.txt` (las 15 nuevas junto a las
+6 de F3c-1); cada una tumba sólo sus casos. Dos sondas del contenedor,
+ejecutado como root, que las pruebas usan:
+
+- un `EACCES` real al crear en exclusiva: `/sys/<nombre>` da `EACCES` y
+  `/proc/<nombre>` da `ENOENT`. Por eso el caso de
+  `inPlaceOnTempCreateRefused` fija el temporal bajo `/sys`: un directorio
+  con permisos quitados no rehúsa a root.
+- `ce` (reintentar el `rename`) y `uhn` (rechazo por enlace duro) son
+  constantes `false` en la compilación de Linux. `uhn` depende además de una
+  bandera de ejecución (`te`/`fUo`). Aquí son opciones con esos mismos
+  valores por omisión.
