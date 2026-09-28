@@ -35,6 +35,7 @@ import { createMainProgram, type MainProgram } from './commander.js'
 import { runModeDispatch } from './mode-dispatch.js'
 import type { PendingHandles } from './preprocess-argv.js'
 import { registerMcpCommands } from '../commands/mcp-commands.js'
+import { registerMitmCommands } from '../commands/mitm-commands.js'
 import { registerMiscCommands } from '../commands/misc-commands.js'
 import { registerProjectCommands } from '../commands/project-commands.js'
 
@@ -419,6 +420,8 @@ export async function runCliProgram(
 
   // claude project purge — port of ant v2.1.126 WD/5142.js
   registerProjectCommands(program)
+
+  registerMitmCommands(program)
 
   profileCheckpoint('run_before_parse')
   await program.parseAsync(process.argv)

@@ -7,7 +7,7 @@
   "exports": {
     "./*": {
       "@thyrox/source": "./src/*.ts",
-      "types": "./dist/*.d.ts",
+      "types": "./dist/src/*.d.ts",
       "default": "./src/*.ts"
     }
   },

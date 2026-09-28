@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/emit_declarations --stale 2>&1 | tail -20; bash bin/check-cli-typecheck --strict 2>&1 | tail -8", "started_at": "2026-09-28T08:34:08+00:00"}

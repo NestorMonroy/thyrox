@@ -19,6 +19,12 @@
     "paths": {
       "@thyrox/transparent-napi": [
         "./src/index.ts"
+      ],
+      "@thyrox/transparent-napi/proxyHeader": [
+        "./src/proxyHeader.ts"
+      ],
+      "@thyrox/transparent-napi/build": [
+        "./src/build.ts"
       ]
     }
   },

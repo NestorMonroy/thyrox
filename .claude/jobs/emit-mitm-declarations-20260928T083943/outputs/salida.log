@@ -1,0 +1,15 @@
+mitm: OK
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+ls: cannot access 'src/packages/mitm/dist/api': No such file or directory
+__tests__/mitmCommands.test.ts(11,37): error TS2305: Module '"@thyrox/mitm/manager"' has no exported member 'getInspectorIngest'.
+__tests__/mitmPrivilegedVerbs.test.ts(13,59): error TS2307: Cannot find module '../src/commands/mitm/apiEndpoint.ts' or its corresponding type declarations.
+__tests__/mitmPrivilegedVerbs.test.ts(14,83): error TS2307: Cannot find module '../src/commands/mitm/privilegedVerbs.ts' or its corresponding type declarations.
+__tests__/mitmPrivilegedVerbs.test.ts(28,26): error TS7006: Parameter 'request' implicitly has an 'any' type.
+__tests__/mitmPrivilegedVerbs.test.ts(33,12): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/commands/mitm-commands.ts(64,40): error TS2322: Type 'import("/home/user/thyrox/src/packages/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/src/packages/mitm/src/inspector/buffer").TrafficBuffer'.
+src/commands/mitm/inProcessApi.ts(24,55): error TS2322: Type 'import("/home/user/thyrox/src/packages/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/src/packages/mitm/src/inspector/buffer").TrafficBuffer'.
+check-cli-typecheck: tsconfig.json CRECE — 2 sobre un baseline de 0.
+check-cli-typecheck: tsconfig.tests.json CRECE — 7 sobre un baseline de 0.
+check-cli-typecheck: proyectos medidos: 2 de 2
+__BG_EXIT__=0

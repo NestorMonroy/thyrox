@@ -1,0 +1,45 @@
+# F7j — `thyrox mitm` en la CLI
+
+## F7j-1 — registro del subcomando, servir la API y su ciclo de vida
+
+`src/packages/cli/src/commands/mitm-commands.ts`:
+
+- `mitmServe(port, deps)` arranca `startMitmApi` sobre el store del MITM y el
+  búfer global, anuncia la URL, sirve hasta que llega la señal de parar y al
+  parar detiene la API —que retira el destino de ingesta— y cierra el store.
+  Un puerto que no es un entero de 0 a 65535 rehúsa con exit 2 sin abrir nada.
+- `mitmCommand(argv)` es el manejador de la tabla de modos: `mitm` como
+  primera palabra selecciona el modo (gana sobre cualquier bandera) y el
+  verbo es la segunda. Uno desconocido rehúsa nombrando los válidos.
+- `registerMitmCommands(program)` lo cuelga del programa Commander completo.
+
+La CLI tiene dos entradas: `runCli`, la de `bin/cli`, con la tabla de modos, y
+`runClaudeCode`, el programa completo con Commander. `mitm` se registra en las
+dos sobre la misma función: dos registros, una lógica. El primer intento
+registró sólo en Commander, y `bin/cli mitm serve` imprimió la ayuda; lo
+destapó correr el lanzador real, no una prueba unitaria.
+
+La prueba de proceso real lanza `bin/cli mitm serve --port 0`, espera el
+anuncio y comprueba que SIGTERM termina con 0.
+
+Anulaciones (`annul-f7j1.sh`, `results-f7j1.txt`): las siete discriminan.
+
+## F7j-2 — verbos de estado sobre la API en proceso
+
+`src/packages/cli/src/commands/mitm/`:
+
+- `inProcessApi.ts` monta las mismas rutas que `serve` sobre el store abierto
+  y responde sin abrir puerto: los verbos de estado no exigen una API en
+  marcha, porque sólo leen y escriben el store.
+- `stateVerbs.ts` traduce cada verbo a su petición —`status`, `agents`,
+  `agent <id>`, `detect <id>`, `mappings [--set origen=destino]`,
+  `bypass [list|set|remove]`, `config export|import <archivo>`—; un argumento
+  que falta o no tiene forma rehúsa con exit 2 sin llamar a la API.
+- `verbResult.ts` imprime el JSON de la respuesta, y un rechazo de la API sale
+  con exit 1 y su mensaje.
+
+`mitmCommand` y el programa Commander cuelgan los mismos verbos de la misma
+tabla (`STATE_VERBS`), y cada verbo cierra el store al terminar.
+
+Anulaciones (`annul-f7j2.sh`, `results-f7j2.txt`): las ocho discriminan; cada
+una tumba exactamente su caso, y el árbol restaurado vuelve a 16/0.

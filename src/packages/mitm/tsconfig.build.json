@@ -14,7 +14,7 @@
       "bun"
     ],
     "preserveSymlinks": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
     "paths": {
       "@thyrox/mitm/*": [

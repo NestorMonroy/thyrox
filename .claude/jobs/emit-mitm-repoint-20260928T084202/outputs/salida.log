@@ -1,0 +1,7 @@
+mitm: OK
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+ src/packages/mitm/package.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+__BG_EXIT__=0
