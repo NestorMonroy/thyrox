@@ -48,7 +48,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-4a | estado del registro (`By`, `eD`, `HH`, `Y5o`, `kv`, `Cut`) con `JM`, `KKn`, `XM` y la bandera `Nq` → `uds/sessionRegistryState.ts` | hecha: 14 pruebas; 16 anulaciones (`anulacion-registry-*.txt`); oráculo `diferencial-registry-state.txt`, 0 discrepancias en 3000 secuencias |
 | F4c-2f-4b | escritura del archivo pid (`Vt`, `Ms`) y lo que la sesión publica en él (`eF`, `Rut`, `X5o`, `ipn`, `GNr`, `apn`, `kCe`, `rD`, `Wy`, `ud`) → `uds/pidFileRecord.ts`; `ud` llega como sonda que instala F4c-2f-4g | hecha: 23 pruebas; 30 anulaciones (`anulacion-pidfile-*.txt`) |
 | F4c-2f-4g | sesión hija y contexto de equipo (`kFe`, `nUr`, `cFt`, `dF`, `tl`, sonda ambiente de tmux, `chunk-jzycvw5e.js`) en `@thyrox/swarm`, con `THYROX_CODE_CHILD_SESSION` y `THYROX_CODE_FORCE_SESSION_PERSISTENCE`; su veredicto es la sonda de `ud` | pendiente |
-| F4c-2f-4c | alta de la sesión (`nD`, `KNt`), latido (`ld`, `Ms`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`) y sesión de reserva (`jy`, `iD`, `sD`) | pendiente |
+| F4c-2f-4c-1 | latido del tablero (`ld`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`, `Ds`, `tD`, `Gy`, `fBe`) → `uds/fleetHeartbeat.ts` | hecha: 11 pruebas; 16 anulaciones (`anulacion-heartbeat-*.txt`) |
+| F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) | pendiente |
+| F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`) con su archivo pid, limpieza al salir y los avisos de cambio de sesión y de directorio | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
 | F4c-2f-4e | tipo de sesión por entorno (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`) con variables `THYROX_*` | pendiente |
 | F4c-2f-4f | sustituir `agent/concurrentSessions.ts` por el registro portado en sus consumidores | pendiente |
@@ -512,3 +514,13 @@ F4c-2f-4g.
 | `revierte` / `revierte-ajeno` / `revierte-held` / `revierte-former` / `revierte-emit` | la vuelta atrás, su guarda y sus tres efectos | 1 cada una |
 | `hora-estado` / `deja-reserva` / `wy-publicado` / `ud-kce` / `rd` / `wy` / `sonda` | la hora del estado, la salida de reserva, su condición de publicado, el éxito ajeno, la guarda de `rD`, el `clearInterval` y el instalador de la sonda | 1 cada una |
 | `vacio-rut` | la guarda de nombre vacío de `Rut` | 0 — redundante por construcción: `eF` rehúsa el nombre vacío antes de tocar el estado, y sin cambio de estado no hay vuelta atrás |
+
+## F4c-2f-4c-1 — latido del tablero: controles
+
+| Anulación | Qué retira | Caen |
+|---|---|---|
+| `absent-code` / `absent-tel` / `touch-calla` | reconocer el padre ausente y callarlo | 1 / 1 / 1 |
+| `touch-catch` / `touch-local` / `remove-local` / `remove-storage` | registrar la excepción y las dos escrituras y borrados | 1 cada una |
+| `cache-edad` / `cache-local` / `cache-storage` / `guarda-local` | la vigencia de un segundo, usarla en las dos formas y guardarla | 3 / 1 / 1 / 1 |
+| `fresco-local` / `enoent` / `notfound` | la edad de cinco segundos y callar la ausencia en archivo y en storage | 1 cada una |
+| `hora-despues` / `no-pisa` | medir con la hora de después y no pisar una medida más nueva | 1 / 1 |

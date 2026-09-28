@@ -151,6 +151,11 @@
       "types": "./dist/uds/renameNotice.d.ts",
       "default": "./src/uds/renameNotice.ts"
     },
+    "./uds/fleetHeartbeat.js": {
+      "@thyrox/source": "./src/uds/fleetHeartbeat.ts",
+      "types": "./dist/uds/fleetHeartbeat.d.ts",
+      "default": "./src/uds/fleetHeartbeat.ts"
+    },
     "./uds/pidFileRecord.js": {
       "@thyrox/source": "./src/uds/pidFileRecord.ts",
       "types": "./dist/uds/pidFileRecord.d.ts",

@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+190 |     const newer = storageWith(async () => {
+191 |       state.setWatchedCache({ at: 150, value: true })
+192 |       return { ok: true, value: { mtimeMs: -10_000 } }
+193 |     })
+194 |     expect(await isWatchedFromStorage(newer, deps())).toBe(false)
+195 |     expect(state.watchedCache).toEqual({ at: 150, value: true })
+                                     ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "at": 150,
+-   "value": true,
++   "at": 200,
++   "value": false,
+  }
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:195:32)
+(fail) isWatchedFromStorage (qNt) > no pisa una medida guardada por otra consulta más nueva [0.60ms]
+
+ 10 pass
+ 1 fail
+ 42 expect() calls
+Ran 11 tests across 1 file. [125.00ms]

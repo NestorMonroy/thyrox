@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+163 |   })
+164 | 
+165 |   test('NotFound no se registra; otro error o una excepción, sí', async () => {
+166 |     times = [1, 2]
+167 |     expect(await isWatchedFromStorage(storageWith(async () => ({ ok: false, error: { code: 'NotFound' } })), deps())).toBe(false)
+168 |     expect(logs).toEqual([])
+                       ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "[concurrentSessions] heartbeat stat failed: NotFound",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:168:18)
+(fail) isWatchedFromStorage (qNt) > NotFound no se registra; otro error o una excepción, sí [0.43ms]
+
+ 10 pass
+ 1 fail
+ 39 expect() calls
+Ran 11 tests across 1 file. [113.00ms]

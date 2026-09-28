@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+104 | describe('cachedWatched ($y)', () => {
+105 |   test('vale mientras la medida tenga menos de un segundo', () => {
+106 |     expect(cachedWatched(state, 5)).toBeUndefined()
+107 |     state.setWatchedCache({ at: 1000, value: true })
+108 |     expect(cachedWatched(state, 1999)).toBe(true)
+109 |     expect(cachedWatched(state, 2000)).toBeUndefined()
+                                             ^
+error: expect(received).toBeUndefined()
+
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:109:40)
+(fail) cachedWatched ($y) > vale mientras la medida tenga menos de un segundo [0.31ms]
+120 |     expect(isWatchedFromFile(deps())).toBe(true)
+121 |     expect(state.watchedCache).toEqual({ at: 1_004_999, value: true })
+122 |     times = [1_005_998]
+123 |     expect(isWatchedFromFile(deps())).toBe(true)
+124 |     times = [1_005_999]
+125 |     expect(isWatchedFromFile(deps())).toBe(false)
+                                            ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:125:39)
+(fail) isWatchedFromFile (VNt) > el tablero mira si el latido tiene menos de cinco segundos, y la respuesta se guarda un segundo [0.34ms]
+181 |       state.setWatchedCache({ at: 150, value: true })
+182 |       return { ok: true, value: { mtimeMs: -10_000 } }
+183 |     })
+184 |     state.watchedCache = { at: 50, value: true }
+185 |     times = [2000, 2100]
+186 |     expect(await isWatchedFromStorage(storage, deps())).toBe(false)
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:186:57)
+(fail) isWatchedFromStorage (qNt) > no pisa una medida guardada por otra consulta más nueva [0.25ms]
+
+ 8 pass
+ 3 fail
+ 38 expect() calls
+Ran 11 tests across 1 file. [121.00ms]
