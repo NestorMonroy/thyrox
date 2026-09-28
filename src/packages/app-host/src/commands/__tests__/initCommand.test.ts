@@ -22,10 +22,10 @@ describe('/init', () => {
 
   test('texto y descripción siguen al selector', async () => {
     delete process.env.THYROX_CODE_NEW_INIT
-    expect(await command.getPromptForCommand('', undefined as never)).toEqual([{ type: 'text', text: oldInitPrompt() }])
+    expect(await command.getPromptForCommand()).toEqual([{ type: 'text', text: oldInitPrompt() }])
     expect(command.description).toBe(initCommandDescription())
     process.env.THYROX_CODE_NEW_INIT = '1'
-    expect(await command.getPromptForCommand('', undefined as never)).toEqual([{ type: 'text', text: newInitPrompt() }])
+    expect(await command.getPromptForCommand()).toEqual([{ type: 'text', text: newInitPrompt() }])
     expect(command.description).toBe(initCommandDescription())
   })
 })

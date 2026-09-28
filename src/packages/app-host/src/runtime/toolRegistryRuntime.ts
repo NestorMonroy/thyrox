@@ -152,7 +152,7 @@ export function getToolsForDefaultPreset(): string[] {
   return getToolsForDefaultPresetFromPackage()
 }
 
-export function getToolRegistry() {
+export function getToolRegistry(): ReturnType<typeof getToolRegistryFromPackage> {
   installToolRegistryRuntimeBindings()
   return getToolRegistryFromPackage()
 }
