@@ -46,12 +46,11 @@
 #       adopt-external --id X --log P [--marker RE]
 #   wait-jobs.sh forget <etiqueta>
 #
-# El subcomando va en INGLES desde 2026-09-04 (`identificadores-en-ingles.md`,
-# ampliada por el ejecutor a scripts, funciones y firmas). El nombre español
-# queda como ALIAS y no se retira: mas de treinta `.rst` de hallazgo y analisis
-# lo citan como evidencia fechada de lo que se ejecuto ese dia, y esa clase de
-# cita no se reescribe —mismo criterio que las citas historicas a `odoo19x/`—.
-# El alias mantiene cierta la evidencia sin congelar el idioma del codigo.
+# El subcomando va en INGLES (`identificadores-en-ingles.md`). El nombre
+# español queda como ALIAS: mas de treinta `.rst` de hallazgo y analisis lo
+# citan como evidencia fechada, y esa clase de cita no se reescribe —mismo
+# criterio que las citas historicas a `odoo19x/`—. El alias mantiene cierta la
+# evidencia sin congelar el idioma del codigo.
 #
 # `wait` sale:
 #     0 — todos los trabajos escribieron su marcador
@@ -66,36 +65,25 @@
 
 set -uo pipefail
 
-# El ledger vive en un sitio DURABLE, no en /tmp. Medido 2026-09-02 tras el
-# reinicio del worker (época 247): el directorio de /tmp no sobrevivió al
-# reinicio —justo cuando el ledger importa—, así que un trabajo registrado y no
-# recogido se perdía sin rastro. El ledger VIVO es un directorio de trabajo por
-# sesión bajo `.claude/jobs-ledger/<id>/`; lo que se COMMITEA como evidencia es
-# su archivo comprimido `<id>.tar.gz` bajo `.claude/jobs/`,
-# uno por sesión —como el binario guarda `jobs/<short>/`, pero empaquetado, para
-# no cargar GitHub con muchos `.job` sueltos (directiva del ejecutor 2026-09-02)—.
-# El subcomando `archive` produce ese `.tar.gz`. Un test aísla el ledger vivo
-# con KX_TRABAJOS_DIR.
-# La raiz es la de THYROX —`src/session/` esta dos niveles bajo ella—. Decia
-# `../../..` y resolvia a `/home/user`, un nivel POR ENCIMA del repo: el ledger
-# aterrizaba fuera del arbol versionado. Los dos tests lo sobreescriben con
-# `KX_TRABAJOS_DIR`, asi que el default equivocado nunca se ejercitaba.
+# El ledger vive en un sitio DURABLE, no en /tmp: un /tmp que no sobrevive a
+# un reinicio del worker pierde sin rastro justo el trabajo registrado y no
+# recogido. El ledger VIVO es un directorio por sesión bajo
+# `.claude/jobs-ledger/<id>/`; lo que se COMMITEA como evidencia es su archivo
+# comprimido `<id>.tar.gz` bajo `.claude/jobs/`, uno por sesión —como el
+# binario guarda `jobs/<short>/`, pero empaquetado para no cargar el repo con
+# muchos `.job` sueltos—. El subcomando `archive` produce ese `.tar.gz`.
+# La raiz es la de THYROX: `src/session/` esta dos niveles bajo ella.
 _ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # thyrox-rename: keep — el id de la sesión anfitriona
 _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # NO va bajo el banco: una pieza de banco es una PREGUNTA medida, y esto es
 # estado de sesion. Mezclarlos haria que el gate del manifiesto midiera
 # directorios que nunca van a tener uno.
-# El nombre de la clave va en INGLES desde 2026-09-09: una clave de entorno es
-# un atributo, y `identificadores-en-ingles.md` los gobierna. El prefijo tambien
-# cambia — `KX_` nombraba al consumidor cuando el productor es THYROX.
-#
-# Las dos viejas quedan como RESPALDO, no por nostalgia: medido antes de tocar,
-# `KX_TRABAJOS_DIR` sale 43 veces y `KX_TRABAJOS_ARCHIVO_DIR` 6, repartidas en
-# tres suites de shell que no se estan corriendo en este pase. Renombrar los 49
-# de golpe y no correrlas seria publicar un verde que no medi. La cadena de
-# respaldo hace que el barrido pueda ser gradual sin dejar nada roto en medio;
-# el barrido es la tarea #91.
+# Las claves van en INGLES y con prefijo `THYROX_`: una clave de entorno es un
+# atributo (`identificadores-en-ingles.md`), y `KX_` nombraba al consumidor.
+# `KX_TRABAJOS_DIR` y `KX_TRABAJOS_ARCHIVO_DIR` quedan como respaldo de lectura
+# para quien aún las declare (`.env.example`); sus pruebas son
+# `test-wait-jobs-archive-dir.sh` y `test-wait-jobs-ledger-home.sh`.
 # La raiz de los ledgers es un hogar: la resuelve `job_ledger.ledger_root()`,
 # con sus dos entradas de entorno (`THYROX_JOBS_LEDGER_DIR` o el `.env`). Un
 # literal aqui seria su segunda fuente de verdad, y el hook de compactacion ya
@@ -220,8 +208,7 @@ cmd_register() {
 #
 # Lo que `olvidar` NO hace, y hay que decirlo: **no toca el proceso**. Suelta
 # la anotación y deja el trabajo corriendo, huérfano de todo seguimiento.
-# Medido 2026-09-04: tras `olvidar ctl-001`, su `sleep 40` seguía vivo. Para
-# terminarlo de verdad existe `kill`, que señala y luego suelta; `forget`
+# Para terminarlo de verdad existe `kill`, que señala y luego suelta; `forget`
 # queda para el trabajo que se quiere **dejar correr** sin bloquear el turno.
 cmd_forget() {
     local label="${1:?uso: olvidar <label>}"

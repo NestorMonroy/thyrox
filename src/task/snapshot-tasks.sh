@@ -36,20 +36,10 @@
 #
 # El destino por defecto es el registro, no stdout
 # --------------------------------------------------
-# Hasta 2026-08-13 `OUT="${2:-}"` hacía que una invocación sin argumentos
-# imprimiera a stdout y **no escribiera nada**. Para refrescar el registro
-# había que acordarse de DOS posicionales — y del truco de pasar `""` como
-# primero:
-#
-#     bash .claude/scripts/task/snapshot-tasks.sh "" source/gestion/pm/reportes/…
-#
-# Medido en la sesión del 2026-08-13: la primera corrida no escribió el
-# archivo y el registro quedó parado en #282 mientras el board iba por #296.
-# El guion salía **0**: un fallo silencioso, la misma forma que H-DOCS-100
-# registró para los tres guiones con fallback silencioso.
-#
-# Ahora el destino por defecto es el registro versionado y `--stdout` pide
-# explícitamente el comportamiento viejo. Ver :ref:`h-docs-137`.
+# Sin argumentos escribe el registro versionado; `--stdout` imprime en vez de
+# escribir. Un default a stdout saldría 0 sin haber escrito nada, y el
+# registro se quedaría atrás del board sin que nadie lo note (H-DOCS-100,
+# :ref:`h-docs-137`).
 #
 # Qué se leyó del binario para esto (rango 1: el código que corre)
 # -----------------------------------------------------------------

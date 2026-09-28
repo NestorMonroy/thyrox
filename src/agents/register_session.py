@@ -766,19 +766,13 @@ def main() -> None:
 
     destino = _destination_from_argv(sys.argv)
     if destino is None:
-        # Sin destino declarado se usa EL HOGAR — `thyrox/agent-results/`,
-        # decidido por el ejecutor el 2026-09-07 para que no haya silos.
-        #
-        # Aquí había un rehúse, y su razón era correcta mientras no existía un
-        # hogar: *«un destino fabricado escribiría en el store equivocado y
-        # nadie lo notaría»*. Derivarlo del localizador no lo fabrica.
-        #
-        # Y era este rehúse el que sostenía el silo, no el de
-        # `resolve_store_dir`: obligaba a que cada llamador declarase destino,
-        # y el hook vivo del consumidor declaraba `--repo docs`. Lo destapó una
-        # SONDA DE CONDUCTA —invocar el hook y mirar dónde escribe—; el control
-        # unitario no podía verlo, porque llama a `resolve_store_dir` directo y
-        # este guard está aguas arriba. Ver :ref:`h-docs-1237`.
+        # Sin destino declarado se usa EL HOGAR — `thyrox/agent-results/`, un
+        # solo store para que no haya silos. Derivarlo del localizador no lo
+        # fabrica; rehusar obligaría a cada llamador a declarar destino, y un
+        # hook que declare el suyo reabre el silo (:ref:`h-docs-1237`). El
+        # control es de conducta —invocar el hook y mirar dónde escribe—: una
+        # prueba unitaria de `resolve_store_dir` no ve este guard, que está
+        # aguas arriba.
         destino = ["--claude-dir", str(agents_paths.agent_store_path().parent)]
 
     try:

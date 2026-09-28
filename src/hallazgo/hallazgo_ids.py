@@ -189,9 +189,9 @@ def store_numbers(store_path: Path, prefix: str) -> list[int]:
     return numbers
 
 
-#: El acuñador ANTEPONE ``H-``: su argumento es la capa DESNUDA. Medido por
-#: conducta 2026-09-17 al acuñar ``H-THYROX-73`` — ``acunar H-THYROX`` devolvía
-#: ``H-H-THYROX-01``, un id malformado que entra al corpus si nadie lo mira.
+#: El acuñador ANTEPONE ``H-``: su argumento es la capa DESNUDA. Con el prefijo
+#: completo (``acunar H-THYROX``) devolvería ``H-H-THYROX-01``, un id
+#: malformado que entra al corpus si nadie lo mira.
 _BARE_PREFIX_RE = re.compile(r'[A-Za-z]+')
 
 

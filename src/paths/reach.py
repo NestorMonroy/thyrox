@@ -957,10 +957,9 @@ CONSUMER_MARKER = ".claude"
 #: Las dos clausulas, y por que son dos:
 #:
 #: 1. **Rehusar cuando el punto de partida es el proveedor.** Declarar cual es
-#:    el consumidor no convierte al proveedor en uno. Medido el 2026-09-23 en
-#:    un arbol real: sin esta clausula, un gate de idioma paso de 0 a 70
-#:    nombres al declararse la variable. Ninguno era nuevo — dejo de leer el
-#:    baseline del PROVEEDOR y lo busco en el consumidor, donde no esta.
+#:    el consumidor no convierte al proveedor en uno. Sin esta clausula, un
+#:    gate que corre en el proveedor buscaria su baseline en el consumidor,
+#:    donde no esta, y publicaria como nueva toda su deuda heredada.
 #: 2. **Resolver una declaracion RELATIVA contra la raiz del contenedor.** Una
 #:    ruta relativa resuelta contra el cwd da una respuesta distinta por cada
 #:    directorio desde el que se invoque — el defecto home-by-cwd que este

@@ -1,0 +1,1 @@
+tests/agents/test-agent-store-compara-antes-de-escribir.sh

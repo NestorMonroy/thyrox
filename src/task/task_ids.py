@@ -120,10 +120,8 @@ from paths import reach  # noqa: E402
 
 #: Los REPOS del multi-repo donde un trabajo puede aterrizar.
 #:
-#: EL EJE ES EL REPO, NO LA CAPA DEL PRODUCTO — decidido el 2026-09-07, y es
-#: un cambio de significado, no una entrada mas. Los dos ejes coincidian
-#: mientras los cinco repos eran las cinco capas; con ``thyrox`` dejan de
-#: coincidir, porque es un repo y **no** es una capa del producto: es su
+#: EL EJE ES EL REPO, NO LA CAPA DEL PRODUCTO. Los dos ejes coinciden en los
+#: cinco ``kaupamex-*``; con ``thyrox`` no coinciden, porque es un repo y **no** es una capa del producto: es su
 #: PROVEEDOR de metodologia, y los cinco ``kaupamex-*`` son sus consumidores.
 #: Es lo mismo que el comentario de la clave ``submodulos:`` en ``CLAUDE.md``
 #: ya declara un nivel mas arriba.
@@ -137,13 +135,9 @@ LAYERS = ("api", "db", "docs", "server", "thyrox", "ui")
 
 #: El trabajo que CRUZA repos — no el que no se supo clasificar.
 #:
-#: Nacio como «sin señal», y con el eje en la capa del producto eso lo
-#: convirtio en desague: medido el 2026-09-07, **632 de 1565** citas acuñadas
-#: (el 40 %) llevaban ``GEN``, mas que cualquier repo. Un cubo de descarte que
-#: resulta ser el mayor del esquema no es una categoria, es la ausencia de una.
-#:
-#: REDEFINIDO el 2026-09-07 por decision del ejecutor: ``GEN`` nombra el
-#: trabajo que **CRUZA repos**, que en un multi-repo es una categoria real y
+#: Como «sin señal» seria un desague: un cubo de descarte que resulta ser el
+#: mayor del esquema no es una categoria, es la ausencia de una. ``GEN`` nombra
+#: el trabajo que **CRUZA repos**, que en un multi-repo es una categoria real y
 #: frecuente — un porte que toca thyrox y su consumidor, un barrido de los
 #: cinco, una regla que se replica.
 #:
@@ -612,8 +606,8 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
         vistos = {row[0] for row in conn.execute(
             "SELECT subject FROM tasks WHERE session_id = ?", (session_id,))}
         # Filas del sujeto SIN cita: las deja así `snapshot-tareas`, que
-        # inserta sin acuñar. Saltarlas como «ya vistas» las dejaba sin cita
-        # durable para siempre (medido 2026-09-23: cuatro tareas). Se acuña en
+        # inserta sin acuñar. Saltarlas como «ya vistas» las dejaría sin cita
+        # durable para siempre. Se acuña en
         # esa fila porque su cita es nula; una cita existente no se reasigna.
         without_citation = {row[0]: (row[1], row[2]) for row in conn.execute(
             "SELECT subject, task_id, submodule FROM tasks "

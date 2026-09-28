@@ -1,0 +1,1 @@
+bash tests/agents/test-agent-store-clasificar-documentos.sh

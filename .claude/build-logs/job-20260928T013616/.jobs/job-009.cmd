@@ -1,0 +1,1 @@
+python3 tests/agents/test_task_status_vocabulary.py

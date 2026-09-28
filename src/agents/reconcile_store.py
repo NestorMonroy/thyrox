@@ -191,17 +191,17 @@ def _cargar_hook():
 _hook = _cargar_hook()
 _extract_usage = _hook._extract_usage
 _extract_meta = _hook._extract_meta
-# Mudada al hook con #587, por la misma razon que `api_error` con #600: sus
-# dos consumidores son el hook al cerrar la sesion —que es cuando el
+# Vive en el hook, por la misma razon que `api_error`: sus dos consumidores
+# son el hook al cerrar la sesion —que es cuando el
 # transcript existe con certeza— y este barrido, que es la red. La
-# direccion de la dependencia ya era reconciliador -> hook; invertirla
-# habria hecho que el camino principal dependiera de su red.
+# direccion de la dependencia es reconciliador -> hook; invertirla haria que
+# el camino principal dependiera de su red.
 _telemetria = _hook._telemetria
 _normalize_model = _hook.normalize_model
 _normalize_model_alias = _hook.normalize_model_alias
-# Mudada al hook con #600: sus dos consumidores (el hook al cerrar la sesion,
+# Vive en el hook: sus dos consumidores (el hook al cerrar la sesion,
 # este barrido al reparar) la necesitan, y el hook es el modulo base — copiarla
-# habria duplicado el mecanismo (:ref:`h-docs-222`).
+# duplicaria el mecanismo (:ref:`h-docs-222`).
 _api_error = _hook.api_error
 
 
@@ -368,8 +368,7 @@ def _ids_incompletos() -> set:
         faltantes = ["subagent_type = 'desconocido'"]
         faltantes += [f"{c} IS NULL"
                       for c in ("spawn_depth", "source", "tool_use_id",
-                                # Las cinco de 2026-08-19 — duración, actividad
-                                # y encargo. Entran en la MISMA lista y no en un
+                                # Duración, actividad y encargo. Entran en la MISMA lista y no en un
                                 # barrido aparte: una columna nueva sobre 366
                                 # filas ya escritas es exactamente la deuda que
                                 # esta función existe para pagar, y darle su
@@ -377,15 +376,15 @@ def _ids_incompletos() -> set:
                                 # lo mismo.
                                 "duration_s", "tool_uses_total",
                                 "tool_uses_json", "prompt", "retention_level",
-                                # 2026-08-20: el modelo. Entra por la misma
+                                # El modelo. Entra por la misma
                                 # puerta que las demás — es deuda ya escrita,
                                 # no una columna nueva. La mitad de las filas
                                 # lo tienen en NULL porque el sidecar del que
                                 # salía falta en un tercio de los casos
-                                # (:ref:`h-docs-219`); ahora se deriva del
+                                # (:ref:`h-docs-219`); se deriva del
                                 # transcript, que sigue en disco.
                                 "model",
-                                # 2026-08-20, #599: los tres ejes de
+                                # Los tres ejes de
                                 # comparabilidad (:ref:`h-docs-222`). Misma
                                 # puerta, misma razón — sin ellos la fila
                                 # existe y no responde «¿con qué esfuerzo y

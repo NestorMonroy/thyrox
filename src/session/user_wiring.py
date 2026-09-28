@@ -616,9 +616,8 @@ def wiring_drift(live: dict, declared: dict) -> dict:
     incluye los eventos que difieren; sin deriva, ``{}``.
 
     *Métrica:* cadenas de ``command`` por evento, comparadas como conjuntos.
-    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Medido 2026-09-07 sobre
-    el archivo vivo: ``SubagentStart`` y ``SubagentStop`` dan **cero** literales
-    en común con lo declarado, y las dos formas resuelven al MISMO destino — el
+    *Ciega a:* un stub que DELEGA en el mismo mecanismo. Sobre un archivo vivo,
+    ``SubagentStart`` y ``SubagentStop`` pueden dar **cero** literales en común con lo declarado, y las dos formas resuelven al MISMO destino — el
     stub compone ``reach.root("docs")/.claude/agent-results`` donde el declarado
     escribe ``--results-dir`` con esa misma ruta, y ninguna de las dos pasa
     destino al store. Por eso un rojo de este instrumento autoriza a concluir

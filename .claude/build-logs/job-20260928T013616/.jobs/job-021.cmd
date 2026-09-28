@@ -1,0 +1,1 @@
+python3 tests/session/test_installed_hooks_resolve.py

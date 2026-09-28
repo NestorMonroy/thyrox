@@ -1,0 +1,2 @@
+bash: line 1: tests/agents/test-agent-store-sessions.sh: Permission denied
+EXIT=126

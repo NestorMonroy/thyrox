@@ -1,0 +1,2 @@
+bash: line 1: tests/agents/test-agent-store-tareas.sh: Permission denied
+EXIT=126

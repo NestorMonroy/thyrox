@@ -1,0 +1,42 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. la migración es aditiva: las dos columnas existen tras conectar ==
+  ok    columna opened_at
+  ok    columna opened_at_source
+== 3. siembra: fichas, tablero versionado y filas del store ==
+  ok    siembra sin error
+== 4. DISCRIMINADOR — gana la cota MÁS TEMPRANA, no cualquiera ==
+  ok    #100 gana ficha
+  ok    #100 declara fuente
+  ok    #200 gana ingestion
+  ok    #200 declara fuente
+  ok    #300 gana ficha
+== 5. la fuente git existe y gana cuando es la más temprana ==
+  ok    #300 gana tablero
+  ok    #300 declara fuente
+== 6. sin más fuente que la ingestión, ésa se usa y se declara ==
+  ok    #400 usa ingestion
+  ok    #400 declara fuente
+== 7. la fuente exacta NO se pisa con una cota ==
+  ok    #400 conserva hook
+  ok    #400 conserva fuente
+== 8. idempotencia — el segundo pase no cambia nada ==
+  ok    estado idéntico
+== 9. sin ninguna fuente queda NULO, no una fecha inventada ==
+  ok    #500 opened_at nulo
+  ok    #500 fuente nula
+== 10. --dry-run no escribe, y la salida publica su denominador ==
+  ok    dry-run no escribió
+  ok    publica alcance
+== 11. DISCRIMINADOR 2 — la PK es (session_id, task_id), no task_id ==
+  ok    las DOS filas quedan fechadas
+== 12. el conteo no cuenta dos veces la misma fila ==
+  ok    lo reportado == lo escrito
+== 13. el hook sella la fecha EXACTA, no una cota ==
+  ok    #700 sellada por hook
+  ok    #700 trae instante
+== 14. una ingestión masiva NO sella: su instante no es la apertura ==
+  ok    #800 NO sellada
+
+25 ok · 0 fallas
+EXIT=0

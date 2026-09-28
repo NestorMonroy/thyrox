@@ -1,0 +1,5 @@
+ 1 skip
+ 0 fail
+ 2525 expect() calls
+Ran 90 tests across 10 files. [12.57s]
+EXIT=0

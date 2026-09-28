@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # El typecheck del paquete de entrada, como gate donde el trabajo pasa.
 #
-# Por que existe: medido el 2026-09-05, `typecheck` y `typecheck:tests` eran
-# scripts de `package.json` que NADIE invocaba — ni el pre-commit, ni el
-# pre-push, ni `thyrox-audit.sh`. Un script que solo corre cuando alguien se
-# acuerda no es un gate: es el defecto que `gitlink-bump-gate.md` ya dejo
+# Por que existe: `typecheck` y `typecheck:tests` son scripts de
+# `package.json`, y un script que solo corre cuando alguien se acuerda no es un
+# gate: es el defecto que `gitlink-bump-gate.md` ya dejo
 # dicho —la prosa no previene la reincidencia, un gate ejecutable si— con la
 # forma mas barata de cometerlo, porque el comando ya existia.
 #
@@ -13,12 +12,8 @@
 # proyecto de produccion seguiria midiendose con las suyas. Un solo comando
 # haria que ese aflojamiento pasara sin que nada lo delatara.
 #
-# NOMBRE (2026-09-17, directiva del ejecutor: "ya no usamos la palabra
-# harness"). Este gate se llamaba `check-harness-typecheck.sh`. El paquete que
-# medía dejo de existir: TASK-THYROX-0226 vacio `src/packages/harness` —su
-# bucle vive en `@thyrox/agent`, su workbench en `src/workbench/`, su triple en
-# `src/reference/`— y el punto de entrada quedo en `@thyrox/cli`, que es el
-# sujeto real desde entonces. El nombre se deriva del sujeto, no de la historia.
+# NOMBRE: el sujeto es el punto de entrada, `@thyrox/cli`, y el nombre se
+# deriva del sujeto.
 #
 # Uso:  check-cli-typecheck.sh [--strict] [archivos...]
 #   Sin archivos mide siempre. Con archivos, solo actua si alguno pertenece al
@@ -51,9 +46,8 @@ if [[ "${#FILES[@]}" -gt 0 ]]; then
     TOUCHES=0
     # El alcance es el ARBOL de paquetes, no solo el de entrada: el proyecto
     # compila a los hermanos por sus enlaces, asi que un commit que toca
-    # `config/` o `agent/` mueve este mismo conteo. Medido 2026-09-24: con el
-    # alcance en `cli/` dos commits asi pasaron eximidos y el conteo subio de
-    # 2375 a 2428 sin que nada lo delatara.
+    # `config/` o `agent/` mueve este mismo conteo; con el alcance en `cli/`
+    # ese commit pasaria eximido y el conteo subiria sin que nada lo delate.
     for f in "${FILES[@]}"; do
         case "$f" in /*) abs="$f" ;; *) abs="$ROOT/$f" ;; esac
         case "$abs" in "$PACKAGES_DIR"/*) TOUCHES=1 ;; esac
@@ -174,8 +168,7 @@ fi
 
 # EL TRINQUETE. Con baseline declarado, el veredicto de `--strict` es «no
 # crece», no «compila»: un gate binario sobre un paquete ya rojo bloquea TODO
-# commit que lo toque, tambien los que bajan errores — medido 2026-09-23, un
-# lote que bajaba el total de 4787 a 4493 no pudo commitearse. Sin baseline se
+# commit que lo toque, tambien los que bajan errores. Sin baseline se
 # conserva la conducta binaria de abajo.
 #
 # El baseline es parametro de ESTE arbol (DEC-04): `<proyecto> <conteo>`.
