@@ -1,0 +1,10 @@
+192	77MB	@thyrox/app-host/startup/startupProfiler.js
+15	40MB	@thyrox/config/settings/mdm/rawRead
+1928	225MB	@thyrox/app-host/runtime/bootstrap.js
+130	73MB	@thyrox/config
+4	33MB	@thyrox/config/host.js
+142	75MB	@anthropic/ink
+1662	225MB	/home/user/thyrox/src/packages/cli/src/entry/run-cli.ts
+46	45MB	@thyrox/app-host/main/startup/context.js
+1663	233MB	/home/user/thyrox/src/packages/cli/src/entry/main.tsx
+89	57MB	/home/user/thyrox/src/packages/cli/src/commands/providers-commands.ts

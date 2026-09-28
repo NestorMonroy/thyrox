@@ -1,0 +1,5 @@
+Bun v1.3.11 (Linux x64)
+675	125MB	@thyrox/agent/sessionStores
+56	54MB	@thyrox/local-observability/debug.js
+28	40MB	@thyrox/storage/fsOperations
+26	42MB	@thyrox/storage/cache-paths
