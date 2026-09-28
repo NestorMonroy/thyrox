@@ -71,7 +71,7 @@ const ideOnboardingDialog = (): { hasIdeOnboardingDialogBeenShown(): boolean } =
 
 // Constante de build-time inyectada por Bun.build({ define }); undefined en
 // desarrollo. Declarada en línea, igual que `@thyrox/local-observability:
-// src/sentry.ts` — así este paquete no depende de un `.d.ts` global.
+// src/telemetry/attributes.ts` — así este paquete no depende de un `.d.ts` global.
 declare const MACRO: { VERSION: string } | undefined
 
 // Se usa el probe canónico de shell, no una copia propia —

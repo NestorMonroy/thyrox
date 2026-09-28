@@ -40,7 +40,7 @@ export function getWorkload(): string | undefined {
 // `MACRO.VERSION` es un define de build de ccnmt (`scripts/defines.ts`,
 // sustituido por Bun.build en tiempo de compilación). Aquí no hay build
 // propio con ese macro, así que se resuelve en runtime desde el propio
-// `package.json` del paquete — mismo patrón que `local-observability/sentry.ts`
+// `package.json` del paquete — mismo patrón que `local-observability/telemetry/attributes.ts`
 // usa para `typeof MACRO !== 'undefined'`.
 let cachedVersion: string | undefined
 function getPackageVersion(): string {

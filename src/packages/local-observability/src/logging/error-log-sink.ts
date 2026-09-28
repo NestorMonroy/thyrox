@@ -9,7 +9,7 @@
  *
  * Cross-package deps (direct imports): fs from storage/fsOperations,
  * cache paths from storage/cache-paths, session id + cleanup registry
- * from app-host/bootstrap, debug logger + sentry from this package.
+ * from app-host/bootstrap, debug logger from this package.
  */
 
 import axios from 'axios'
@@ -20,7 +20,6 @@ import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { CACHE_PATHS } from '@thyrox/storage/cache-paths'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
-import { captureException } from '../sentry.js'
 import { logForDebugging } from '../debug.js'
 import { jsonStringify } from '../slowOperations.js'
 
@@ -227,7 +226,6 @@ function logErrorImpl(error: Error): void {
     error: `${context}${errorStr}`,
   })
 
-  captureException(error)
 }
 
 function logMCPErrorImpl(serverName: string, error: unknown): void {

@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { captureException } from '@thyrox/local-observability/sentry.js'
+import { logError } from '@thyrox/local-observability/log.js'
 
 interface Props {
   children: React.ReactNode
-  /** Optional label for identifying which component boundary caught the error */
+  /** Nombre del límite, para saber en el registro cuál atrapó el error. */
   name?: string
 }
 
@@ -11,7 +11,11 @@ interface State {
   hasError: boolean
 }
 
-export class SentryErrorBoundary extends React.Component<Props, State> {
+/**
+ * Aísla un componente que falla al renderizar: lo retira de la pantalla en vez
+ * de tumbar el REPL entero, y deja el error en el registro local.
+ */
+export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = { hasError: false }
@@ -22,10 +26,7 @@ export class SentryErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    captureException(error, {
-      componentBoundary: this.props.name || 'SentryErrorBoundary',
-      componentStack: errorInfo.componentStack,
-    })
+    logError(new Error(`[${this.props.name ?? 'ErrorBoundary'}] ${error.message}${errorInfo.componentStack ?? ''}`, { cause: error }))
   }
 
   render(): React.ReactNode {

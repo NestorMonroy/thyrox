@@ -6,7 +6,7 @@
  * `init()` es la secuencia de arranque completa del host: configs,
  * variables de entorno seguras, cleanup en salida, OAuth, detección de
  * JetBrains/repo, settings remotos, migración de conexiones legacy,
- * mTLS/proxy, Sentry, preconexión a la API, shell de Windows, LSP,
+ * mTLS/proxy, preconexión a la API, shell de Windows, LSP,
  * swarm, scratchpad. Es la iniciativa más grande de este pase: 30
  * imports distintos de 15 paquetes/módulos hermanos.
  *
@@ -110,7 +110,6 @@ import {
 // Los exporters gRPC (~700KB vía @grpc/grpc-js) se cargan perezosamente aún más adentro, en instrumentation.ts.
 import { configureGlobalAgents } from '@thyrox/provider/proxy.js'
 import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
-import { initSentry } from '@thyrox/local-observability/sentry.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // initialize1PEventLogging se importa dinámicamente para diferir sdk-logs/resources de OpenTelemetry
@@ -281,8 +280,6 @@ export const init = memoize(async (): Promise<void> => {
     logForDebugging('[init] configureGlobalAgents complete')
     profileCheckpoint('init_network_configured')
 
-    // Inicializa Sentry para reporte de errores (no-op si SENTRY_DSN no está fijado)
-    initSentry()
 
     // Preconecta a la API de Anthropic — solapa el handshake TCP+TLS
     // (~100-200ms) con los ~100ms de trabajo del action-handler previos al

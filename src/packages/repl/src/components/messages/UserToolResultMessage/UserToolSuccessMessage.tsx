@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
 import figures from 'figures'
 import * as React from 'react'
-import { SentryErrorBoundary } from '../../SentryErrorBoundary.js'
+import { ErrorBoundary } from '../../ErrorBoundary.js'
 import { Box, Text, useTheme } from '@anthropic/ink'
 import { useAppState } from '../../../appStateHooks.js'
 import {
@@ -135,7 +135,7 @@ export function UserToolSuccessMessage({
             )
           : null}
       </Box>
-      <SentryErrorBoundary>
+      <ErrorBoundary>
         <HookProgressMessage
           hookEvent="PostToolUse"
           lookups={lookups}
@@ -143,7 +143,7 @@ export function UserToolSuccessMessage({
           verbose={verbose}
           isTranscriptMode={isTranscriptMode}
         />
-      </SentryErrorBoundary>
+      </ErrorBoundary>
     </Box>
   )
 }

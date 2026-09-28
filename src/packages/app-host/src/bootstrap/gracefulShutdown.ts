@@ -61,7 +61,6 @@ import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getInvokedBinaryName } from '@thyrox/config'
 import { getCurrentSessionTitle, sessionIdExists } from '@thyrox/storage/sessionStorage.js'
 import { sleep } from '@thyrox/config/sleep'
-import { closeSentry } from '@thyrox/local-observability/sentryShutdown.js'
 import { profileReport } from '../startup/startupProfiler.js'
 
 /**
@@ -642,7 +641,7 @@ export async function gracefulShutdown(
   // Vacía los sinks locales restantes — acotado a 500ms.
   try {
     await Promise.race([
-      Promise.all([shutdownEventLoggers(), closeSentry(2000)]),
+      shutdownEventLoggers(),
       sleep(500),
     ])
   } catch {

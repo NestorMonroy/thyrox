@@ -62,12 +62,6 @@
       "@thyrox/local-observability/telemetryEvents.js": [
         "./src/telemetryEvents.ts"
       ],
-      "@thyrox/local-observability/sentry.js": [
-        "./src/sentry.ts"
-      ],
-      "@thyrox/local-observability/sentryShutdown.js": [
-        "./src/sentryShutdown.ts"
-      ],
       "@thyrox/local-observability/betaSessionTracing.js": [
         "./src/betaSessionTracing.ts"
       ],

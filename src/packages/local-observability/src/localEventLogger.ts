@@ -3,7 +3,7 @@
  * calls to a local jsonl file. NEVER opens a network connection.
  *
  * Audited 2026-05-07: nothing in packages/local-observability/src reaches
- * the network. Sentry / Datadog / GrowthBook / Statsig stubs return early.
+ * the network. Datadog / GrowthBook / Statsig stubs return early.
  * sessionDataUploader is a 3-line `() => {}` stub.
  *
  * Gate:

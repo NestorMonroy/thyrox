@@ -59,8 +59,7 @@
  *
  * `getClaudeCodeUserAgent()` — `MACRO.VERSION` es un define de build-time
  * de `ccnmt` ausente en este árbol fuera de un build real. Mismo patrón que
- * ya usan `local-observability/{telemetry/attributes,logging/error-log-sink,
- * sentry}.ts`: `typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'`.
+ * ya usan `local-observability/{telemetry/attributes,logging/error-log-sink}.ts`: `typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'`.
  */
 
 import { createHash } from 'crypto'
@@ -142,7 +141,7 @@ function getSettingsSchema(): {
   return schema as ReturnType<typeof getSettingsSchema>
 }
 
-// Mismo patrón que `local-observability/{telemetry/attributes,sentry}.ts` —
+// Mismo patrón que `local-observability/telemetry/attributes.ts` —
 // ver docstring del módulo.
 declare const MACRO: { VERSION: string } | undefined
 
