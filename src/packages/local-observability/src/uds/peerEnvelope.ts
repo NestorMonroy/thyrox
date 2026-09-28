@@ -18,7 +18,7 @@
  */
 import { createHmac } from 'node:crypto'
 
-import { sliceUnits } from './displayText.ts'
+import { sliceUnits } from './stringUnits.ts'
 import { escapeTagClose } from './tagClose.ts'
 
 /** `fj`. */

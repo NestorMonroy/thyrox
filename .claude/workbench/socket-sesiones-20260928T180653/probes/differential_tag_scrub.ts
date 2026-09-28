@@ -6,7 +6,7 @@
  */
 import { createTagFormScrubber, foldConfusables } from '../../../../src/packages/local-observability/src/uds/tagFormScrub.ts'
 import { escapeTagClose, escapeTagOpenOrClose, normalizeTagLookalikes } from '../../../../src/packages/local-observability/src/uds/tagClose.ts'
-import { sliceUnits } from '../../../../src/packages/local-observability/src/uds/displayText.ts'
+import { sliceUnits } from '../../../../src/packages/local-observability/src/uds/stringUnits.ts'
 
 const raw = await Bun.file('_references/claude-code-bin/2.1.283/bunfs-root/chunk-0grnxhq4.js').text()
 const body = raw.replace(/import\{[^}]*\}from"[^"]*";/g, '').replace(/export\{[^}]*\};?\s*$/, 'return {DLo,Pfn,Qce,CFt,PL};')

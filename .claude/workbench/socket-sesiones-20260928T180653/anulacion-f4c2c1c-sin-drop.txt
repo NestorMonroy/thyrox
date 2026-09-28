@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+103 |   })
+104 | 
+105 |   test('flattenControls (OJ) y toSingleLine (po)', () => {
+106 |     expect(flattenControls('\x1b[1ma\u0007b')).toBe('a b')
+107 |     expect(toSingleLine('  a\n\n b \t c ')).toBe('a b c')
+108 |     expect(toSingleLine('`a` <b>', { drop: /[`<>]/g })).toBe('a b')
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "a b"
+Received: "`a` <b>"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:108:57)
+(fail) el resto de chunk-pbnxt79v.js > flattenControls (OJ) y toSingleLine (po) [0.52ms]
+108 |     expect(toSingleLine('`a` <b>', { drop: /[`<>]/g })).toBe('a b')
+109 |     expect(toSingleLine('abcdef', { maxCodeUnits: 3 })).toBe('abc')
+110 |   })
+111 | 
+112 |   test('sanitizeMarkdownLabel (QE) rompe la sintaxis de enlace y corta a 255', () => {
+113 |     expect(sanitizeMarkdownLabel('[x](y) ![i][r] [a]: `c` <d>')).toBe('[x] (y) ! [i] [r] [a] : c d')
+                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: "[x] (y) ! [i] [r] [a] : c d"
+Received: "[x] (y) ! [i] [r] [a] : `c` <d>"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:113:66)
+(fail) el resto de chunk-pbnxt79v.js > sanitizeMarkdownLabel (QE) rompe la sintaxis de enlace y corta a 255 [0.50ms]
+
+ 16 pass
+ 2 fail
+ 33 expect() calls
+Ran 18 tests across 1 file. [38.00ms]

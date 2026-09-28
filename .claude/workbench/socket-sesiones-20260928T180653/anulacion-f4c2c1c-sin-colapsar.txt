@@ -1,0 +1,40 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+71 |     expect(replaceControls('👨\u200d👩 \u200dx', ' ', { keepEmojiJoiners: true })).toBe('👨\u200d👩 x')
+72 |     expect(replaceControls('a\ud800b', '_')).toBe('a_b')
+73 |   })
+74 | 
+75 |   test('collapseControls (fr) retira controles C0 y C1 y colapsa los espacios', () => {
+76 |     expect(collapseControls('  a\u0007 \t\n b\u0085 ')).toBe('a b')
+                                                             ^
+error: expect(received).toBe(expected)
+
+- "a b"
++ "a 	
++  b"
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:76:57)
+(fail) el resto de chunk-pbnxt79v.js > collapseControls (fr) retira controles C0 y C1 y colapsa los espacios [0.37ms]
+75 |   test('collapseControls (fr) retira controles C0 y C1 y colapsa los espacios', () => {
+76 |     expect(collapseControls('  a\u0007 \t\n b\u0085 ')).toBe('a b')
+77 |   })
+78 | 
+79 |   test('stripIgnorables (Cy) quita formato e ignorables y colapsa', () => {
+80 |     expect(stripIgnorables('a\u200b\u034fb  c\u115f')).toBe('ab c')
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "ab c"
+Received: "ab  c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:80:56)
+(fail) el resto de chunk-pbnxt79v.js > stripIgnorables (Cy) quita formato e ignorables y colapsa [0.21ms]
+
+ 16 pass
+ 2 fail
+ 35 expect() calls
+Ran 18 tests across 1 file. [43.00ms]

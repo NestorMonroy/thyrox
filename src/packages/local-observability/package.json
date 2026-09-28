@@ -136,6 +136,11 @@
       "types": "./dist/uds/unicodeSanitize.d.ts",
       "default": "./src/uds/unicodeSanitize.ts"
     },
+    "./uds/stringUnits.js": {
+      "@thyrox/source": "./src/uds/stringUnits.ts",
+      "types": "./dist/uds/stringUnits.d.ts",
+      "default": "./src/uds/stringUnits.ts"
+    },
     "./uds/udsClient.js": {
       "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",

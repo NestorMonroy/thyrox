@@ -1,14 +1,17 @@
 /**
  * Texto de terceros con tope: leer un archivo sólo si es regular y cabe, y
  * reducir un texto a una línea mostrable. Porte de `cl`, `rLo`, `OP`, `oLo`,
- * `lfn`, `aFt`, `t3n`, `g` y `XFr` (`chunk-q8a07cv0.js`), de `YH` con `wt`
- * y sus clases (`chunk-pbnxt79v.js`), y de `ot`, `ie` y `_a`
- * (`chunk-8w2y72gy.js`, `chunk-y0kwrsd8.js`) de 2.1.283.
+ * `lfn`, `aFt`, `t3n`, `g` y `XFr` (`chunk-q8a07cv0.js`) y de `ot`, `ie` y
+ * `_a` (`chunk-8w2y72gy.js`, `chunk-y0kwrsd8.js`) de 2.1.283. `YH` viene de
+ * `unicodeSanitize.ts`.
  */
 import { lstatSync, readFileSync, type Stats } from 'node:fs'
 import { lstat, readFile } from 'node:fs/promises'
 
-import { sliceUnits } from './displayText.ts'
+import { sliceUnits } from './stringUnits.ts'
+import { replaceControls } from './unicodeSanitize.ts'
+
+export { replaceControls, type ReplaceControlsOptions } from './unicodeSanitize.ts'
 
 /** `t3n`: unidades de la línea resumida. */
 const SUMMARY_UNITS = 512
@@ -63,29 +66,6 @@ export function readCappedWithSync(fs: CappedReadFsSync, path: string, max: numb
   const stats = fs.statSync(path)
   if (!stats.isFile() || stats.size > max) return null
   return fs.readFileSync(path, { encoding: 'utf8' })
-}
-
-/** `s`/`cde`: controles, formato, sustitutos, uso privado, no asignados e ignorables. */
-const CONTROL_CLASS = '\\p{Cc}\\p{Cf}\\p{Cs}\\p{Co}\\p{Cn}\\u2028\\u2029\\p{Default_Ignorable_Code_Point}\\u2800'
-/** `o`: los que unen o eligen la forma de un emoji. */
-const EMOJI_JOINERS = '\\u200D\\uFE0E\\uFE0F'
-const ALL_CONTROLS = new RegExp(`[${CONTROL_CLASS}]+`, 'gu')
-const CONTROLS_BUT_JOINERS = new RegExp(`(?:(?![${EMOJI_JOINERS}])[${CONTROL_CLASS}])+`, 'gu')
-const CONTROLS_BUT_JOINERS_AND_NEWLINES = new RegExp(`(?:(?![${EMOJI_JOINERS}\\n])[${CONTROL_CLASS}])+`, 'gu')
-const LEADING_JOINERS = new RegExp(`(?<!\\S)[${EMOJI_JOINERS}]+`, 'gu')
-
-export type ReplaceControlsOptions = { keepNewlines?: boolean; keepEmojiJoiners?: boolean }
-
-/**
- * `YH`: sin ANSI, y cada tramo de controles sustituido por `replacement`. Con
- * `keepEmojiJoiners` (o `keepNewlines`) los que unen un emoji se conservan,
- * salvo al principio de una palabra.
- */
-export function replaceControls(text: string, replacement: string, options?: ReplaceControlsOptions): string {
-  const keepJoiners = options?.keepNewlines === true || options?.keepEmojiJoiners === true
-  const pattern = options?.keepNewlines ? CONTROLS_BUT_JOINERS_AND_NEWLINES : keepJoiners ? CONTROLS_BUT_JOINERS : ALL_CONTROLS
-  const replaced = Bun.stripANSI(text.replace(/\p{Cs}/gu, '​')).replace(pattern, replacement)
-  return keepJoiners ? replaced.replace(LEADING_JOINERS, '') : replaced
 }
 
 let graphemeSegmenter: Intl.Segmenter | undefined

@@ -37,7 +37,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2b | `chunk-q8a07cv0.js` entero salvo las constantes de equipo (ya en `@thyrox/swarm`): sobre `cross-session-message` → `uds/peerEnvelope.ts`; direcciones de pares → `uds/peerAddress.ts`; lectores con tope y resumen de una línea → `uds/cappedText.ts`; y la rama `win32.normalize` de `_N` que F1 omitía | hecha |
 | F4c-2c-1 | neutralizado de etiquetas por forma (`DLo`, `xu`, `_u`, `D`, `$u`, `W`, `Su`, `Pfn` con las tablas `N` y `M` generadas) → `uds/tagFormScrub.ts`, `uds/confusableTables.ts`; texto de par (`aYe`, `X4n`, `lYe`, `fe`, `Wce`, `m`, `g9r`, `ioe`) → `uds/peerTextScrub.ts`; escapes XML (`qt`, `AYe`, `AFt`, `Do`, `$w`, `ine`) → `uds/xmlText.ts` | hecha |
 | F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `Uq`, `lz`, `RYe`, `cu`, `Ofn`, `Hfn`, `mu`, `LLo`, `yJ`, `CYe`, `RUr` con `y3n`/`sne` y sus clases → `uds/confusableTagPatterns.ts`; `H` general y `OFe`, `sRe`, `F`, `B`, `U`, `uu` → `uds/tagClose.ts`; `sf`, `E`, `R8e`, `t6n`, `Mz` → `uds/unicodeSanitize.ts` | hecha: 19 pruebas; 16 anulaciones (`anulacion-f4c2c1b-*.txt`); oráculo `diferencial-confusable-patterns.txt`, 0 discrepancias |
-| F4c-2c-1c | resto de `chunk-pbnxt79v.js`: `wt`, `cde`, `YH`, `Cy`, `Njr`, `H_`, `wl`, `vUe`, `Tn`, `PJ`, `OJ`, `po`, `QE`, `v6` | pendiente |
+| F4c-2c-1c | `chunk-pbnxt79v.js` entero → `uds/unicodeSanitize.ts`; `re`, `Mz`, `fr` de `chunk-vq0drrah.js` → `uds/stringUnits.ts`; `displayText.ts` y `cappedText.ts` dejan de duplicar `Mz`, `Tn` y `YH`; `@thyrox/mcp-runtime: sanitization.ts` delega en `Njr`/`H_` | hecha: 18 pruebas; 14 anulaciones (`anulacion-f4c2c1c-*.txt`); oráculo `diferencial-unicode-sanitize.txt`, 0 discrepancias |
 | F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
 | F4c-2d | `session.receive` (`Aot`, `NXe`, `R_e`, `WCt`, `jCt`, `Q0n`, `BXe`, `HXe`, `jXe`, `FXe`, `$Xe`, `Me`) sobre una interfaz `HookSite` → `uds/sessionReceive.ts`; el runtime de módulos que la implementa es la serie MOD | hecha |
 | F4c-2e-0 | predicados de ruta de una copia de transferencia (`Djt`, `nM`, `p9n`, `yN`/`Pt`, `tt`, `GF`, `pn` de `chunk-yqm14hey.js`; `Mur` de `chunk-d6ekr2rh.js`) → `@thyrox/permission: pathSafety.ts`, sobre sus primitivas ya portadas; `local-observability` exporta `./uds/peerAddress.js` para `zF` | hecha |
@@ -398,3 +398,21 @@ lo importa.
 
 `sf` necesita `Mz` y `E`, que se portan aquí; el resto de
 `chunk-pbnxt79v.js` es la fase F4c-2c-1c.
+
+## F4c-2c-1c — saneadores de texto: controles
+
+Anulaciones en `anulacion-f4c2c1c-*.txt`; catorce, cada una tumba su caso.
+`sin-sustituto-marca` no discriminaba con la primera suite: sustituir un
+sustituto suelto por `​` antes de quitar ANSI sólo se nota cuando el
+sustituto queda ante una secuencia de escape, que al retirarse lo empareja
+con lo que sigue. El oráculo lo mostró (480 discrepancias con la marca
+retirada, `anulacion-f4c2c1c-oraculo-sustituto-marca.txt`) y se añadió ese
+caso, con el valor tomado de la referencia.
+
+El oráculo `probes/differential_unicode_sanitize.ts` compara las 21
+funciones de `chunk-pbnxt79v.js` y `chunk-vq0drrah.js` sobre 20 000
+entradas: 0 discrepancias (`diferencial-unicode-sanitize.txt`). Los tres
+oráculos anteriores siguen en 0 tras mover `sliceUnits` a `stringUnits.ts`.
+
+`@thyrox/mcp-runtime` tenía un porte anterior de `Njr`/`H_` que no retiraba
+los sustitutos sueltos; ahora delega, y sus 25 pruebas siguen en verde.

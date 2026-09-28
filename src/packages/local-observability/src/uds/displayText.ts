@@ -1,32 +1,17 @@
 /**
  * Texto de terceros listo para mostrarse en una línea, y argumentos listos para
- * un comando de shell. Porte de `an`, `lde`, `YC`, `y`, `p`, `Tn`, `XUt`, `b`,
- * `N` (`chunk-tp36n59y.js`, `chunk-pbnxt79v.js`), `Mz`, `re`, `l`, `a`, `f`
- * (`chunk-vq0drrah.js`) y `qr` (`chunk-0qxzxz5e.js`) de 2.1.283.
+ * un comando de shell. Porte de `an`, `lde`, `YC`, `y`, `p`, `XUt`, `b`, `N`
+ * (`chunk-tp36n59y.js`) y `qr` (`chunk-0qxzxz5e.js`) de 2.1.283; `Mz`, `re`
+ * y `Tn` vienen de `stringUnits.ts` y `unicodeSanitize.ts`.
  */
+import { sliceUnits, stripLoneSurrogates } from './stringUnits.ts'
+import { controlsToSpace } from './unicodeSanitize.ts'
 
 const ANSI_SEQUENCE = /\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\x1b[\]PX^_][^\x1b\x07]*(?:\x07|\x1b\\)/g
 const ANSI_STRIP_PASSES = 4
-const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g
 const STRAY_COMBINING_MARKS = /(?<![^\s\p{P}])\p{M}+/gu
 const BACKTICK_LOOKALIKES = /[`｀ˋ`‵]/g
 const DEFAULT_MAX_CHARS = 160
-
-/** `Mz`: retira los sustitutos sueltos, que no forman un carácter. */
-function dropLoneSurrogates(text: string): string {
-  if (text.isWellFormed()) return text
-  return text.replace(LONE_SURROGATE, '')
-}
-
-/** `re`: corta en `max` unidades sin partir un par sustituto. */
-export function sliceUnits(text: string, max: number): string {
-  if (max <= 0) return ''
-  if (text.length <= max) return text
-  const head = text.slice(0, max)
-  const last = head.charCodeAt(max - 1)
-  const whole = last >= 0xd800 && last <= 0xdbff ? head.slice(0, -1) : head
-  return Buffer.from(whole, 'utf16le').toString('utf16le')
-}
 
 /** `y`: corta sin dejar a medias una secuencia de escape que el corte parta. */
 function sliceBeforeEscape(text: string, max: number): string {
@@ -52,11 +37,6 @@ function stripAnsi(text: string): string {
   return current
 }
 
-/** `Tn`: los controles y separadores de línea pasan a espacio. */
-function controlsToSpace(text: string): string {
-  return text.replace(/[\p{Cc}\p{Cf}\u2028\u2029]+/gu, ' ')
-}
-
 /** `lde`: trunca con elipsis. */
 function truncate(text: string, max: number): string {
   return text.length > max ? `${sliceUnits(text, max)}…` : text
@@ -64,7 +44,7 @@ function truncate(text: string, max: number): string {
 
 /** `an`: una línea mostrable, sin escapes ni controles, en NFC y acotada. */
 export function sanitizeForDisplay(text: string, max = DEFAULT_MAX_CHARS): string {
-  const flat = controlsToSpace(stripAnsi(dropLoneSurrogates(sliceBeforeEscape(text, max)))).replace(/ {2,}/g, ' ').trim()
+  const flat = controlsToSpace(stripAnsi(stripLoneSurrogates(sliceBeforeEscape(text, max)))).replace(/ {2,}/g, ' ').trim()
   return truncate(flat.normalize('NFC').replace(BACKTICK_LOOKALIKES, "'").replace(STRAY_COMBINING_MARKS, ''), max)
 }
 

@@ -15,7 +15,7 @@
  */
 import { AsyncResource } from 'node:async_hooks'
 
-import { sliceUnits } from './displayText.ts'
+import { sliceUnits } from './stringUnits.ts'
 import { parseAddress } from './peerAddress.ts'
 
 /** `pA`: largo máximo de un nombre de sesión. */

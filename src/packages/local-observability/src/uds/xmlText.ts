@@ -2,7 +2,7 @@
  * Escapes y desescapes XML para texto y atributos. Porte de `qt`, `AYe`,
  * `AFt`, `Do`, `$w` e `ine` (`chunk-0grnxhq4.js`) de 2.1.283.
  */
-import { sliceUnits } from './displayText.ts'
+import { sliceUnits } from './stringUnits.ts'
 
 const TRUNCATION_MARK = '… [truncated]'
 const TRUNCATION_BACKOFF = 0.9

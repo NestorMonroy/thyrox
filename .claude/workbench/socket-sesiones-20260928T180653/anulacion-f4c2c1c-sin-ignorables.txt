@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+75 |   test('collapseControls (fr) retira controles C0 y C1 y colapsa los espacios', () => {
+76 |     expect(collapseControls('  a\u0007 \t\n b\u0085 ')).toBe('a b')
+77 |   })
+78 | 
+79 |   test('stripIgnorables (Cy) quita formato e ignorables y colapsa', () => {
+80 |     expect(stripIgnorables('a\u200b\u034fb  c\u115f')).toBe('ab c')
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "ab c"
+Received: "a͏b cᅟ"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:80:56)
+(fail) el resto de chunk-pbnxt79v.js > stripIgnorables (Cy) quita formato e ignorables y colapsa [0.37ms]
+
+ 17 pass
+ 1 fail
+ 35 expect() calls
+Ran 18 tests across 1 file. [47.00ms]

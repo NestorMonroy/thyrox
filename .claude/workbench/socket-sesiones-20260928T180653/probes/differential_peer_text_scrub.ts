@@ -6,7 +6,7 @@
  * `bin/binary symbol`, y el resto por nada (estas funciones no las usan).
  */
 import { formatAgentMessage, messageTagOpenerOffsets, neutralizeMessageTags, scrubPeerMessageText, scrubPeerText, scrubToolMessageContent } from '../../../../src/packages/local-observability/src/uds/peerTextScrub.ts'
-import { sliceUnits } from '../../../../src/packages/local-observability/src/uds/displayText.ts'
+import { sliceUnits } from '../../../../src/packages/local-observability/src/uds/stringUnits.ts'
 
 const root = '_references/claude-code-bin/2.1.283/bunfs-root'
 const strip = (text: string, exports: string) => text.replace(/import\{[^}]*\}from"[^"]*";/g, '').replace(/export\{[^}]*\};?\s*$/, `return {${exports}};`)
