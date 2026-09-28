@@ -33,7 +33,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-5 | `yield`/`unyield_artifact_replies` y `artifact_replies_yielded` (`cno`, `uno`, `bno`, `dno`, `gno`, `hno`, `glr`) | pendiente |
 | F4c-6a | el veredicto «lo envió esta sesión»: `ye`, `Le`, `Ke`, `he`, `Ne`, `hfn` → `uds/peerTrust.ts` | hecha |
 | F4c-6b | `unr`: la política `crossSessionInbound` (`I`, `B`, `O`, `zje`, niveles `accept`/`hold`/`refuse`) y el modo de permisos (`C`, `S`, `V1`, `NL`) → `uds/inboundPolicy.ts`; la clave entra al esquema de `@thyrox/config` | hecha |
-| F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee | pendiente |
+| F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
 | F3d-4b | un backend que implemente `SessionKeyStorage` | decisión del ejecutor: en la referencia es un servicio REST del proveedor (bandera remota `tengu_hover_rest`) |
@@ -212,3 +212,19 @@ consumidor, y `crossSessionInbound` lo tiene ahora (`unr`). Lleva
 ausente (`sin-catch` 1). El aviso que `B` busca en ese caso lo produce la
 validación de settings de la referencia, y thyrox todavía no lo emite. Eso
 es F4c-6c.
+
+## F4c-6c — aviso de un `crossSessionInbound` inválido: controles
+
+`sanitizeCrossSessionInbound` (`Oy`/`wy`) corre antes de `SettingsSchema`
+en los cuatro sitios que parsean settings: `parseSettingsFile` y
+`loadSettings` (fuera de política retira el valor y avisa con
+`severity: warning`, que es lo que `B` lee para retener), y
+`parseCommandOutputAsSettings`, `readPolicyDocument` y la fuente
+`policySettings` de `loadSettings` (sustituyen por `refuse` con un aviso
+`statusOnly`, que `B` no cuenta). `SettingsError` gana `severity`,
+`statusOnly` y `expected`, opcionales.
+
+Anulaciones en `anulacion-csi-*.txt`; siete, y cada una tumba sólo su caso
+(`sin-refuse` tumba dos: el saneo directo y el de MDM). `sin-clon` retira
+la copia del documento de política y cae el caso que exige no mutar el
+original, que es el que la caché por documento necesita.

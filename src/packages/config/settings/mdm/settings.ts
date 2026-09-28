@@ -56,6 +56,7 @@ import {
   formatZodError,
 } from '../validation.ts'
 import type { SettingsError } from '../validation.ts'
+import { sanitizeCrossSessionInbound } from '../crossSessionInbound.ts'
 import {
   WINDOWS_REGISTRY_KEY_PATH_HKCU,
   WINDOWS_REGISTRY_KEY_PATH_HKLM,
@@ -276,7 +277,7 @@ export function parseCommandOutputAsSettings(
     return { settings: {}, errors: [] }
   }
 
-  const ruleWarnings = filterInvalidPermissionRules(data, sourcePath)
+  const ruleWarnings = [...filterInvalidPermissionRules(data, sourcePath), ...sanitizeCrossSessionInbound(data, sourcePath, { policySource: true })]
   const parseResult = SettingsSchema().safeParse(data)
   if (!parseResult.success) {
     const errors = formatZodError(parseResult.error, sourcePath)

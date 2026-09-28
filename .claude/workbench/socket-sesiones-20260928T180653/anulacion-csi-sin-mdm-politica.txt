@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/crossSessionInbound.test.ts:
+72 |     expect(errors.find(error => error.path === 'crossSessionInbound')?.statusOnly).toBeUndefined()
+73 |   })
+74 | 
+75 |   test('los settings de un comando de MDM son managed: el valor inválido queda en refuse', () => {
+76 |     const { settings, errors } = parseCommandOutputAsSettings(JSON.stringify({ crossSessionInbound: 'maybe' }), 'mdm')
+77 |     expect(settings.crossSessionInbound).toBe('refuse')
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "refuse"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/crossSessionInbound.test.ts:77:42)
+(fail) el saneo en los sitios que parsean settings > los settings de un comando de MDM son managed: el valor inválido queda en refuse [0.69ms]
+
+ 5 pass
+ 1 fail
+ 21 expect() calls
+Ran 6 tests across 1 file. [169.00ms]

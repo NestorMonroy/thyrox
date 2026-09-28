@@ -77,6 +77,7 @@ import {
   formatZodError,
   type SettingsError,
 } from './validation.ts'
+import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 import { SETTING_SOURCES, type SettingSource } from './constants.ts'
 import { getManagedFilePath } from './managedPath.ts'
 import { composePolicySettings, defaultPolicyContext, policySettingsDocument } from './policySettings.ts'
@@ -160,7 +161,7 @@ function parseSettingsFileUncached(path: string): {
 
     const data = safeParseJSON(content)
 
-    const ruleWarnings = filterInvalidPermissionRules(data, path)
+    const ruleWarnings = [...filterInvalidPermissionRules(data, path), ...sanitizeCrossSessionInbound(data, path)]
 
     const result = SettingsSchema().safeParse(data)
 

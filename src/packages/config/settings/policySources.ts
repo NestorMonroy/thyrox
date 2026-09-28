@@ -44,6 +44,7 @@ import {
 import { mergeManagedValue } from './policyMerge.ts'
 import { SettingsSchema } from './types.ts'
 import { formatZodError } from './validation.ts'
+import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 
 type PolicyDocument = Record<string, unknown>
 
@@ -88,13 +89,15 @@ const validated = new WeakMap<object, Map<string, DocumentRead>>()
 
 /** `Ty`. */
 function validatePolicyDocument(document: PolicyDocument, file: string): DocumentRead {
-  const parsed = SettingsSchema().safeParse(structuredClone(document))
+  const candidate = structuredClone(document)
+  const warnings = sanitizeCrossSessionInbound(candidate, file, { policySource: true })
+  const parsed = SettingsSchema().safeParse(candidate)
   if (!parsed.success) {
-    return { settings: null, errors: formatZodError(parsed.error, file), documentHasPolicyContent: false, loadState: 'didNotLoad' }
+    return { settings: null, errors: [...warnings, ...formatZodError(parsed.error, file)], documentHasPolicyContent: false, loadState: 'didNotLoad' }
   }
   const data = parsed.data as PolicyDocument
   const settings = Object.keys(data).length > 0 ? data : null
-  return { settings, errors: [], documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
+  return { settings, errors: warnings, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
 }
 
 /** `gd`: cada llamada recibe su copia, para que nadie mute la de la caché. */
