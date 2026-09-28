@@ -1,0 +1,91 @@
+== 1: cualquier cadena es una región
+   (src/accounts/kiro/kiroRegion.ts)
+(fail) kiro regions > a region must have the AWS shape: it is interpolated into hosts [0.37ms]
+(fail) kiro device flow > the poll refuses a region that is not a region [0.55ms]
+ 17 pass
+ 2 fail
+== 2: la región del Identity Center sirve de runtime
+   (src/accounts/kiro/kiroRegion.ts)
+(fail) kiro regions > the runtime lives where the profile ARN says, else in a profile region, else us-east-1 [0.53ms]
+ 18 pass
+ 1 fail
+== 3: EMEA no busca primero en Europa
+   (src/accounts/kiro/kiroRegion.ts)
+(fail) kiro regions > discovery probes the profile regions first, EU first for an EMEA identity center, then its own [0.44ms]
+ 18 pass
+ 1 fail
+== 4: el primer perfil aunque sea de otra región
+   (src/accounts/kiro/kiroRegion.ts)
+(fail) kiro regions > the first region with a profile gives the ARN, preferring the one of that region [1.03ms]
+ 18 pass
+ 1 fail
+== 5: el Identity Center de empresa recibe el issuer fijo
+   (src/accounts/oauth/flows/kiroFlow.ts)
+(fail) kiro device flow > an identity center tenant registers without the issuer and is marked idc [0.45ms]
+ 18 pass
+ 1 fail
+== 6: una cuenta Builder ID busca perfil
+   (src/accounts/oauth/flows/kiroFlow.ts)
+(fail) kiro device flow > a builder id account looks for no profile [0.56ms]
+ 18 pass
+ 1 fail
+== 7: el sondeo acepta cualquier región
+   (src/accounts/oauth/flows/kiroFlow.ts)
+(fail) kiro device flow > the poll refuses a region that is not a region [0.67ms]
+ 18 pass
+ 1 fail
+== 8: el ARN compartido basta para identificar
+   (src/accounts/kiro/kiroConnectionIdentity.ts)
+(fail) kiro account identity > a shared profile ARN alone does not identify an account [0.60ms]
+ 18 pass
+ 1 fail
+== 9: un email distinto no contradice
+   (src/accounts/kiro/kiroConnectionIdentity.ts)
+(fail) kiro account identity > a shared profile ARN alone does not identify an account [0.53ms]
+ 18 pass
+ 1 fail
+== 10: slow_down no amplía el intervalo
+   (src/accounts/kiro/kiroSocialPoll.ts)
+(fail) kiro social login > the social poll: progress may come in status; slow_down widens the interval for good [0.46ms]
+ 18 pass
+ 1 fail
+== 11: el progreso en status no cuenta
+   (src/accounts/kiro/kiroSocialPoll.ts)
+(fail) kiro social login > the social poll: progress may come in status; slow_down widens the interval for good [0.52ms]
+ 18 pass
+ 1 fail
+== 12: el verificador sale en la URL
+   (src/accounts/oauth/flows/cursorLogin.ts)
+(fail) cursor > the login URL carries only the challenge; the verifier stays in the session [0.93ms]
+ 18 pass
+ 1 fail
+== 13: las sesiones no caducan
+   (src/accounts/oauth/flows/cursorLogin.ts)
+(fail) cursor > the login URL carries only the challenge; the verifier stays in the session [0.86ms]
+ 18 pass
+ 1 fail
+== 14: el 404 es un error
+   (src/accounts/oauth/flows/cursorLogin.ts)
+(fail) cursor > one poll: 404 is pending, tokens are success, anything else an error [0.92ms]
+ 18 pass
+ 1 fail
+== 15: la misma cuenta de Cursor se crea otra vez
+   (src/accounts/oauth/cursorPersistence.ts)
+(fail) cursor > persisting: the same account id updates and clears the error, another creates [54.84ms]
+ 18 pass
+ 1 fail
+== 16: la caducidad sin margen
+   (src/accounts/oauth/flows/cursorLogin.ts)
+(fail) cursor > the credentials take the account and the email from the token, and expire five minutes early [0.89ms]
+ 18 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/kiro/
+?? src/packages/provider/src/accounts/oauth/cursorPersistence.ts
+?? src/packages/provider/src/accounts/oauth/flows/cursorFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/cursorLogin.ts
+?? src/packages/provider/src/accounts/oauth/flows/kiroFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/kiroSocialLogin.ts
+ 19 pass
+ 0 fail
+__BG_EXIT__=0
