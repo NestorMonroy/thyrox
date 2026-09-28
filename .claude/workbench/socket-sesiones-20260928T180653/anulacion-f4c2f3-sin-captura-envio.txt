@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRenameNotice.test.ts:
+79 | 
+80 |   test('un envío fallido se registra y no detiene los demás', async () => {
+81 |     const flaky = {
+82 |       ...deps,
+83 |       send: async (target: string) => {
+84 |         if (target === '/tmp/a.sock') throw Object.assign(new Error('x'), { code: 'ECONNREFUSED' })
+                                                                   ^
+error: x
+ code: "ECONNREFUSED"
+
+      at send (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:84:63)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/src/uds/renameNotice.ts:61:20)
+      at map (1:11)
+      at notifyCorrespondentsOfRename (/home/user/thyrox/src/packages/local-observability/src/uds/renameNotice.ts:57:36)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:88:11)
+(fail) notifyCorrespondentsOfRename (zkr) > un envío fallido se registra y no detiene los demás [0.57ms]
+
+ 6 pass
+ 1 fail
+ 9 expect() calls
+Ran 7 tests across 1 file. [108.00ms]

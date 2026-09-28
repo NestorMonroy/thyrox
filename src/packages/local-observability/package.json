@@ -146,6 +146,11 @@
       "types": "./dist/uds/sessionRename.d.ts",
       "default": "./src/uds/sessionRename.ts"
     },
+    "./uds/renameNotice.js": {
+      "@thyrox/source": "./src/uds/renameNotice.ts",
+      "types": "./dist/uds/renameNotice.d.ts",
+      "default": "./src/uds/renameNotice.ts"
+    },
     "./uds/udsClient.js": {
       "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",

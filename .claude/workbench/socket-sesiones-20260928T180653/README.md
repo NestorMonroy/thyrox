@@ -46,7 +46,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-2 | flujos de renombre (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`, `z`, `T`) y saneado de nombre (`li`, `AY`) sobre un `RenameContext` inyectado → `uds/sessionRename.ts` | hecha: 22 pruebas; 19 anulaciones (`anulacion-f4c2f2-*.txt`); oráculo por escenarios `diferencial-session-rename.txt`, 0 discrepancias en 3000 |
 | F4c-2f-4 | el registro de sesiones de 2.1.283 (`HH`/`eD`, `kv`, `Cut`, `eF`/`Vt`, `D3`) que los flujos reciben inyectado; hoy sólo existe `agent/concurrentSessions.ts`, un porte anterior más simple | pendiente |
 | W-1 | `@thyrox/tool-registry: words.ts`: `TDo` → `shortWordSlugFromSeed`, `E$t` → `slugFromText` con `c`; `M4n` y `Q5` ya eran `generateWordSlug` y `generateShortWordSlug`, ahora nombrados; `Q5` llega inyectado a los flujos de renombre porque `tool-registry` depende de `local-observability` | hecha: 5 pruebas nuevas; 7 anulaciones (`anulacion-w1-*.txt`); oráculo `diferencial-words.txt`, 0 discrepancias |
-| F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) | pendiente |
+| F4c-2f-3 | aviso de renombre a los correspondientes (`zkr`) sobre `RenameNoticeDeps` (envío `VOt`, registro `D3`, `Ws`, `DV` inyectados) → `uds/renameNotice.ts` | hecha: 7 pruebas; 10 anulaciones (`anulacion-f4c2f3-*.txt`) |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
@@ -449,3 +449,15 @@ listas de thyrox en lugar de las suyas —las listas son divergencia
 declarada de datos— y compara `E$t` y `TDo` sobre 20 000 entradas: 0
 discrepancias. Discrimina: sin retirar las marcas de pegado, 10 740
 (`anulacion-w1-oraculo-sin-marcas.txt`).
+
+## F4c-2f-3 — aviso de renombre: controles
+
+Anulaciones en `anulacion-f4c2f3-*.txt`; diez, cada una tumba su caso.
+`sin-esquema` no discriminaba con la primera suite: la dirección `bridge:`
+de la prueba apuntaba a un destino que no era el socket registrado de su
+pid, así que la descartaba esa otra comprobación. Ahora apunta al mismo
+socket y sólo el esquema la descarta.
+
+`l` y `v` de `chunk-ern0s5ks.js` son `errorMessage` y `getErrnoCode`, ya
+portados en `errorHelpers.ts`; `mJ` es `mayBeSameSocket` y `Bf` es
+`withholdTokenText`.
