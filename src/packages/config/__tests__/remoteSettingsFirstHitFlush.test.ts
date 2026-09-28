@@ -2,17 +2,15 @@
  * La primera lectura con éxito del caché de ajustes gestionados remotos
  * vacía el caché de ajustes FUSIONADOS, y sólo la primera.
  *
- * Es la mitad unitaria del control que `remote/syncCacheState.ts:102` citaba
- * como `managedSettingsHeadless.int.test.ts` y no existía. El episodio de la
- * fuente (gh-23085): una lectura de `getSettings()` hecha ANTES de que la
+ * Es la mitad unitaria del control que `remote/syncCacheState.ts` cita. El
+ * caso de la fuente (gh-23085): una lectura de `getSettings()` hecha ANTES de que la
  * sesión supiera si era elegible para ajustes remotos quedaba en caché sin la
  * capa `policySettings`, y ninguna lectura posterior la veía. La corrección es
  * vaciar ese caché cuando la capa remota aparece por primera vez.
  *
- * La mitad de integración —que `getSettingsForSource('policySettings')`
- * muestre la capa— espera a que se porte la composición de `policySettings`
- * (`UP`/`Qq`/`Os` de 2.1.283; hoy declarada como no portada en
- * `settings/settings.ts`).
+ * La mitad de integración —que una fusión leída antes de la elegibilidad
+ * muestre la capa tras esa primera lectura— es
+ * `policySettingsWiring.test.ts`.
  *
  * Qué haría fallar a este control: retirar `resetSettingsCache()` del camino
  * de la primera lectura (anulado, medido: cae el caso 2), o vaciar también

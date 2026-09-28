@@ -3,17 +3,11 @@
  * símbolos exportados: 23 funciones, 7 constantes, 15 tipos) — el registro
  * de configuración global, o sea `~/.claude.json` y su modelo de datos.
  *
- * POR QUÉ ESTE PORTE (#260). `@thyrox/config` no exportaba `getGlobalConfig`,
- * así que sus dos consumidores vivían de sustitutos que fingen que la
- * configuración está vacía: `updater/src/internal/globalConfigCompat.ts`
- * (devuelve `{}`, y su `saveGlobalConfig` es un no-op declarado) y el
- * `require()` diferido de `provider/src/oauth/client.ts`. Un `oauth/client`
- * que lee `{}` no encuentra el registro de conexiones y se comporta como si
- * el usuario no tuviera ninguna.
+ * `getGlobalConfig` es lo que leen `updater` y `provider/src/oauth/client.ts`:
+ * un `oauth/client` que leyera `{}` no encontraría el registro de conexiones y
+ * se comportaría como si el usuario no tuviera ninguna.
  *
- * ALCANCE, declarado y no omitido en silencio (`porte-completo-no-parcial.md`).
- * Este pase trae el NÚCLEO DE LECTURA/ESCRITURA y su modelo de datos, que es
- * lo que desbloquea a los dos consumidores:
+ * ALCANCE, declarado y no omitido en silencio (`porte-completo-no-parcial.md`):
  *
  *   tipos      `GlobalConfig` con sus 15 tipos satélite, entero.
  *   constantes `DEFAULT_GLOBAL_CONFIG`, `GLOBAL_CONFIG_KEYS`,
@@ -22,24 +16,18 @@
  *              `isProjectConfigKey`, `getGlobalConfigWriteCount`,
  *              `enableConfigs`, `checkHasTrustDialogAccepted`,
  *              `isPathTrusted`, `_setGlobalConfigCacheForTesting`.
+ *   proyecto   `getCurrentProjectConfig`, `saveCurrentProjectConfig`,
+ *              `getProjectPathForConfig`, al final de este archivo.
+ *   memoria    `getMemoryPath`, que cuelga de `teamMemPaths` tras la bandera
+ *              `TEAMMEM`, igual que en la fuente.
  *
- * LO QUE NO TRAE, con su razón — cada uno es una tarea, no un olvido:
+ * El resto de la fuente vive en módulos hermanos: los accesores del
+ * AUTO-UPDATER en `./autoUpdater.ts` y `recordFirstStartTime`,
+ * `markHasUsedAgentsFleet`, `getRemoteControlAtStartup` y
+ * `getCustomApiKeyStatus` en `./configMarkers.ts`.
  *
- *   [PORTADA 2026-09-19, al final de este archivo] la mitad de PROYECTO
- *       (`getCurrentProjectConfig`, `saveCurrentProjectConfig`,
- *       `getProjectPathForConfig`). Sus dos razones de deferimiento estaban
- *       rancias al medirlas: los bindings `getOriginalCwd` y
- *       `findCanonicalGitRoot` ya existían, y 18 archivos en 10 paquetes la
- *       importan — `repl` no arrancaba por eso.
- *   [PORTADOS 2026-09-24, en `./autoUpdater.ts`] los accesores del
- *       AUTO-UPDATER (`isAutoUpdaterDisabled`, `shouldSkipPluginAutoupdate`,
- *       `formatAutoUpdaterDisabledReason`, `getAutoUpdaterDisabledReason`).
- *   las rutas de MEMORIA y REGLAS (`getMemoryPath`, `getManagedClaudeRulesDir`,
- *       `getUserClaudeRulesDir`) — `getMemoryPath` cuelga de `teamMemPaths`,
- *       que la fuente carga tras la bandera `TEAMMEM`.
- *   [PORTADOS 2026-09-24, en `./configMarkers.ts`] `recordFirstStartTime`,
- *       `markHasUsedAgentsFleet`, `getRemoteControlAtStartup`,
- *       `getCustomApiKeyStatus` — sus consumidores ya existían.
+ * LO QUE NO TRAE: las rutas de REGLAS (`getManagedClaudeRulesDir`,
+ * `getUserClaudeRulesDir`); ningún consumidor de este árbol las pide todavía.
  *
  * DIVERGENCIA DECLARADA, y es la única de firma: el parámetro `filePath`
  * OPCIONAL. La fuente resuelve la ruta ella misma y, para poder probarse,

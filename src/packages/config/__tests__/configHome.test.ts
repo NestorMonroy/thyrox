@@ -1,6 +1,5 @@
 /**
- * La raíz de configuración del usuario migra a `.thyrox` (decisión del
- * ejecutor 2026-09-27, «Migrar a .thyrox»): la variable propia y el
+ * La raíz de configuración del usuario es `.thyrox`: la variable propia y el
  * directorio propio mandan, y los nombres heredados del cliente sólo se leen
  * como respaldo mientras el usuario no haya migrado.
  */

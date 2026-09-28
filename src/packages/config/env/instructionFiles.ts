@@ -2,7 +2,7 @@
  * Los nombres del archivo de instrucciones y de sus directorios. El
  * ejecutable 2.1.283 los fija como `THYROX.md`, `THYROX.local.md`,
  * `.claude/THYROX.md` y `.claude/rules`; thyrox los migra a sus nombres
- * propios (decisión del ejecutor 2026-09-27) y conserva los heredados como
+ * propios y conserva los heredados como
  * respaldo de lectura.
  *
  * Cada ranura es una lista de candidatos en orden de preferencia: se carga el

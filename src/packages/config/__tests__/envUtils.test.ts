@@ -1,15 +1,7 @@
 /**
- * TDD del resto de `@thyrox/config/env/utils.ts` — pase de 2026-09-09
- * («completar `env/utils.ts` sobre la excepción declarada»; sin task
- * asignada en el encargo — `TASK-DOCS-0200`/`TASK-DOCS-0250` citados en un
- * borrador previo de este docstring NO corresponden a este trabajo, medido
- * contra `agent_store.sqlite3` (0200 = censar tengu_team_mem_*; 0250 =
- * re-encuadre de un catálogo documental) — retirados). Cierra los 13
- * exports que faltaban de los 18 de la fuente (`ccnmt:
- * packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
- * reimplementación, no copia). Sin dependencias transitivas nuevas: los 13
- * sólo usan `process.env`/`process.argv` y los cinco ya portados
- * (`isEnvTruthy`, `getConfigHomeDir`).
+ * Los 18 exports de `@thyrox/config/env/utils.ts`, contra la fuente
+ * (`ccnmt: packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
+ * reimplementación, no copia).
  *
  * `getPermissionHostBindings`-style no aplica aquí — no hay shim de host,
  * son lectores/escritores puros de `process.env`. El riesgo real es la

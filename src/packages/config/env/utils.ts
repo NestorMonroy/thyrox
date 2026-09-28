@@ -1,37 +1,20 @@
 /**
  * Lectores puros de variables de entorno.
  *
- * PORTE COMPLETO — pase de 2026-09-09. La fuente (`ccnmt:
- * packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
- * reimplementación, no copia) declara 18 exports, no 17: una revisión
- * anterior de este docstring enumeraba 17 y omitía `isBareMode` de la
- * lista — la propia cuenta ya arrastraba el porte parcial. Los 18:
+ * PORTE COMPLETO de la fuente (`ccnmt: packages/config/env/utils.ts`, 224
+ * líneas, licencia UNLICENSED — reimplementación, no copia): sus 18 exports,
  * `getConfigHomeDir`, `getTeamsDir`, `hasNodeOption`, `isEnvTruthy`,
  * `isEnvDefinedFalsy`, `isBareMode`, `parseEnvVars`, `getAWSRegion`,
  * `getDefaultVertexRegion`, `shouldMaintainProjectWorkingDir`,
  * `isRunningOnHomespace`, `setCheckProtectedNamespaceFn`,
  * `isInProtectedNamespace`, `getVertexRegionForModel`, `readEnv`,
- * `getAllEnv`, `setEnv`, `deleteEnv`.
+ * `getAllEnv`, `setEnv`, `deleteEnv`. Ninguno tiene dependencia transitiva:
+ * todos usan sólo `process.env`/`process.argv` y los lectores hermanos.
  *
- * Historial de cobertura: `@thyrox/shell`'s `subprocessEnv.ts` consumía tres
- * (`getAllEnv`, `isEnvTruthy`, `readEnv`); el porte de
- * `config/env/git-settings.ts` y `config/env/paths.ts` sumó dos más
- * (`isEnvDefinedFalsy`, `getConfigHomeDir`) — completados entonces en
- * vez de fabricarlos en el sitio consumidor, siguiendo el mismo criterio que
- * `paths/reach.ts: consumerRoot` («un porte parcial declarado se completa
- * cuando aparece su consumidor» — `porte-completo-no-parcial.md`). Este
- * pase (2026-09-09) cierra los 13 restantes: ninguno tiene dependencia
- * transitiva nueva — todos usan sólo `process.env`/`process.argv` y los
- * cinco ya presentes (`isEnvTruthy`, `getConfigHomeDir`).
- *
- * Hallazgo, no corregido aquí (fuera del alcance de este archivo):
- * `@thyrox/agent: internalUtils.ts:59,149` y
- * `@thyrox/provider: authAlias.ts:144` ya declaran su PROPIA copia local de
- * `isEnvTruthy`/`isBareMode` en vez de importar de aquí — la primera incluso
- * importa `readEnv` de este mismo módulo dos líneas más arriba de la
- * duplicación. Con `isBareMode` ya portado en este pase, esos dos archivos
- * podrían dejar de fabricarlo — pero eso es una edición de `agent`/`provider`,
- * fuera del alcance de esta tarea.
+ * Duplicación conocida, fuera de este archivo: `@thyrox/agent`
+ * (`internalUtils.ts`, `context.ts`, `prompts.ts`) y `@thyrox/provider`
+ * (`authAlias.ts`) declaran su propia copia de `isEnvTruthy`/`isBareMode` en
+ * vez de importarla de aquí. Retirarlas es edición de esos paquetes (#53).
  *
  * @module
  */

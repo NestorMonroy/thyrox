@@ -1,7 +1,6 @@
 /**
  * `getMemoryPath` decide dónde vive —y dónde se escribe— cada archivo de
- * instrucciones. Con la migración a `THYROX.md` (decisión del ejecutor
- * 2026-09-27) la ranura es la misma que la del cargador: el archivo que ya
+ * instrucciones. La ranura es la misma que la del cargador: el archivo que ya
  * existe, o el nombre propio si no hay ninguno.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'

@@ -1,7 +1,7 @@
 /**
  * La raíz de configuración del usuario. El ejecutable 2.1.283 la resuelve
  * como `CLAUDE_CONFIG_DIR ?? ~/.claude`; thyrox la migra a nombres propios (thyrox-rename: keep — respaldo heredado)
- * (decisión del ejecutor 2026-09-27, «Migrar a .thyrox») y conserva los
+ * y conserva los
  * heredados sólo como respaldo de lectura, para que un usuario que aún no
  * migró no pierda su configuración.
  *

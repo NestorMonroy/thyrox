@@ -102,8 +102,8 @@ export function getRemoteManagedSettingsSyncFromCache(): SettingsJson | null {
     // llegaba a getSettings() desde auth. El try/catch de bridgeEnabled se
     // tragaba el fallo posterior de getGlobalConfig(), pero el caché fusionado
     // ya estaba envenenado. La mitad unitaria del control es
-    // `__tests__/remoteSettingsFirstHitFlush.test.ts`; la de integración
-    // headless espera a que se porte la composición de policySettings.
+    // `__tests__/remoteSettingsFirstHitFlush.test.ts`; la de integración,
+    // `__tests__/policySettingsWiring.test.ts`.
     resetSettingsCache()
     return cachedSettings
   }

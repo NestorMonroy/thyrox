@@ -43,7 +43,7 @@
  *   (`['default', 'acceptEdits', 'bypass']`) no incluye `'auto'` — el guard
  *   sería inerte con el esquema actual.
  * - `getManagedFileSettingsPresence` y `getPolicySettingsOrigin` se portan
- *   al final (2026-09-24, `Ysr`/`wS` de 2.1.275), acotados a la capa de
+ *   al final (`Ysr`/`wS` de 2.1.275), acotados a la capa de
  *   archivo: las otras capas de política no existen aquí.
  * - `loadManagedFileSettings`, `getManagedSettingsKeysForLogging`,
  *   `getUseAutoModeDuringPlan`,

@@ -3,7 +3,7 @@
 // Wave-5 integrations / higher layers). Plugin types need only a thin
 // shape here; strictness regains when those subsystems are packaged.
 // La forma sale del esquema zod del `.lsp.json` (`LspServerConfigSchema`);
-// antes vivía en `@thyrox/ide`, que depende de este paquete y no al revés.
+// vive aquí porque `@thyrox/ide` depende de este paquete y no al revés.
 export type LspServerConfig = {
   command: string
   args?: string[]

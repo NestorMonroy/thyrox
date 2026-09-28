@@ -1291,9 +1291,9 @@ export function setGracefulShutdownFn(fn: typeof _gracefulShutdown): void {
 
 // ---------------------------------------------------------------------------
 // Tipos de capa superior: `Command` (agent) y `BundledSkillDefinition`
-// (command-runtime). Se re-exportan sólo como tipos; hasta 2026-09-25 eran
-// ranuras de campos `unknown` con índice abierto, y los consumidores que les
-// pasaban los tipos reales fallaban (ver H-THYROX-176).
+// (command-runtime). Se re-exportan sólo como tipos: una ranura de campos
+// `unknown` con índice abierto rechaza a los consumidores que le pasan los
+// tipos reales (H-THYROX-176).
 // ---------------------------------------------------------------------------
 
 // El `Command` real vive en `@thyrox/agent/command.js`. Esta ranura lo

@@ -1,16 +1,16 @@
 /**
  * La fuente `policySettings` de `settings/settings.ts`, cableada a la
- * composición (`settings/policySettings.ts`). Es la mitad de integración que
- * `remoteSettingsFirstHitFlush.test.ts` declaraba pendiente: con la capa
- * remota en caché, `getSettingsForSource('policySettings')` la muestra, y la
- * fusión de todas las fuentes la pone por encima de las demás.
+ * composición (`settings/policySettings.ts`), y la mitad de integración de
+ * `remoteSettingsFirstHitFlush.test.ts`: con la capa remota en caché,
+ * `getSettingsForSource('policySettings')` la muestra, y la fusión de todas
+ * las fuentes la pone por encima de las demás.
  */
 import { afterAll, afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { installConfigHostBindings } from '../host.js'
-import { getSettingsPath, resetSyncCache, setEligibility } from '../remote/syncCacheState.js'
+import { getRemoteManagedSettingsSyncFromCache, getSettingsPath, resetSyncCache, setEligibility } from '../remote/syncCacheState.js'
 import { getSettingsForSource, getSettingsWithErrors } from '../settings/settings.js'
 import { resetSettingsCache } from '../settings/settingsCache.js'
 import { getAdminAuthoredPolicy, getPolicyTiers, resetPolicyStoreForTesting } from '../settings/policySettings.js'
@@ -50,6 +50,14 @@ describe('policySettings cableada', () => {
     const { settings } = getSettingsWithErrors()
     expect(settings.model).toBe('claude-opus-5')
     expect(settings.cleanupPeriodDays).toBe(3)
+  })
+  test('la primera lectura remota tras la elegibilidad hace visible la política a una fusión leída antes (gh-23085)', () => {
+    writeFileSync(join(home, 'settings.json'), JSON.stringify({ model: 'claude-sonnet-5' }))
+    writeFileSync(getSettingsPath(), JSON.stringify({ model: 'claude-opus-5' }))
+    expect(getSettingsWithErrors().settings.model).toBe('claude-sonnet-5')
+    setEligibility(true)
+    getRemoteManagedSettingsSyncFromCache()
+    expect(getSettingsWithErrors().settings.model).toBe('claude-opus-5')
   })
 })
 
