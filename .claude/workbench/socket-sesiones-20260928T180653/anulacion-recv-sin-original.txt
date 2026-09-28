@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionReceive.test.ts:
+57 |     let answer: unknown
+58 |     const hooks = site([async (event, next) => (answer = await next(event))])
+59 |     const result = await runSessionReceive({ origin: { kind: 'peer' }, content: ENVELOPE, agentId: 'a1' }, hooks, () => {})
+60 |     expect(hooks.calls[0]).toEqual({ origin: { kind: 'peer' }, text: STRIPPED, agentId: 'a1' })
+61 |     if (result.consumed !== undefined) throw new Error('consumido')
+62 |     expect(result.content).toBe(ENVELOPE)
+                                ^
+error: expect(received).toBe(expected)
+
+@@ -1,2 +1,2 @@
+- "<cross-session-message from="uds:/a.sock" hop-chain="aaaaaaaaaaaaaaaaaaaaaaaa">
++ "<cross-session-message from="uds:/a.sock">
+  hola
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:62:28)
+(fail) runSessionReceive (Aot) > si la entrega llega al fondo sin cambios, el contenido original sigue; queued resuelve la cadena [0.68ms]
+
+ 6 pass
+ 1 fail
+ 15 expect() calls
+Ran 7 tests across 1 file. [43.00ms]

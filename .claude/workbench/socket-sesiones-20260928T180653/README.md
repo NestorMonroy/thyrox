@@ -38,7 +38,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2c-1 | neutralizado de etiquetas por forma (`DLo`, `xu`, `_u`, `D`, `$u`, `W`, `Su`, `Pfn` con las tablas `N` y `M` generadas) → `uds/tagFormScrub.ts`, `uds/confusableTables.ts`; texto de par (`aYe`, `X4n`, `lYe`, `fe`, `Wce`, `m`, `g9r`, `ioe`) → `uds/peerTextScrub.ts`; escapes XML (`qt`, `AYe`, `AFt`, `Do`, `$w`, `ine`) → `uds/xmlText.ts` | hecha |
 | F4c-2c-1b | resto de `chunk-0grnxhq4.js`: `lz`, `Uq`, `Ofn`, `Hfn`, `cu`, `LLo`, `mu`, `yJ`, `RUr`, `CYe` | pendiente |
 | F4c-2c | `ze`/`Oe`/`aEn`/`E2e`/`B4e`: entrega de un `user` a la cola, con sus dependencias inyectadas → `uds/inboxDelivery.ts`; `InboxState` gana `peerDirOwnerUids` y `onEnqueue` | hecha |
-| F4c-2d | `session.receive` (`Aot`) y su reserva de cola | pendiente |
+| F4c-2d | `session.receive` (`Aot`, `NXe`, `R_e`, `WCt`, `jCt`, `Q0n`, `BXe`, `HXe`, `jXe`, `FXe`, `$Xe`, `Me`) sobre una interfaz `HookSite` → `uds/sessionReceive.ts`; el runtime de módulos que la implementa es la serie MOD | hecha |
 | F4c-2e | adjuntos de un par (`nlt`, `chunk-yrfq0b3e.js`) | pendiente |
 | F4c-2f-1 | estado de nombre y correspondientes (`b`, `q`, `wS`, `Wkr`, `zFn`, `He`) y decisión de colisión de nombres (`P`, `L`, `D`, `O`, `B`, `A`, `C`, `U`, `fDe`, `Cr`) → `uds/sessionNameState.ts`; `ADo` → `@thyrox/tool-registry: isShortWordSlug` | hecha |
 | F4c-2f-2 | flujos de renombre con el registro de sesiones (`tPt`, `Gkr`, `Vtn`, `VFn`, `sae`, `jkr`, `y`) | pendiente |
@@ -310,3 +310,17 @@ anulación; al matar el proceso, un `pkill` en bucle mató también la
 siguiente (`name-sin-recorte`) y la dio por verde. Se repitieron las dos con
 `timeout 30`. El archivo se restauró entero en los dos casos (0 restos de
 la anulación, medido con `grep -c`).
+
+## F4c-2d — `session.receive`: controles
+
+Anulaciones en `anulacion-recv-*.txt`; nueve. Dos no discriminaban y se
+estrecharon: `recv-sin-atajo` (sin módulos que escuchen, la cadena ni se
+llama) y `recv-sin-soltar-al-consumir` (una entrega que llega al núcleo
+después de que un manejador la consumió recibe el error de no encolado, en
+vez de quedar pendiente para siempre). `recv-sin-una-vez` no discrimina y es
+por construcción: una promesa sólo se asienta una vez, así que la guarda de
+`done` no cambia ningún desenlace; se porta igual.
+
+El runtime de módulos que ejecuta la cadena (`Ml`, `Vp`, `Xot`, `EH`, `cB` y
+los chunks `7g2tbnrf`, `cnp2ghvr`, `ss489drq`, unos 215 KB y treinta
+señales) es la serie MOD. `session.receive` lo consume por `HookSite`.
