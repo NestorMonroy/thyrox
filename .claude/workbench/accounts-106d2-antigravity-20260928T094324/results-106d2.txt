@@ -1,0 +1,81 @@
+== 1: los perfiles antiguos no son cli
+(fail) client identity > the profile is ide or cli; the old synthetic names read as cli [0.40ms]
+ 19 pass
+ 1 fail
+== 2: linux sin su enum
+(fail) client identity > the metadata carries numeric enums for the host platform [0.39ms]
+(fail) antigravity flow > an account with a project: exchange with the secret, discover the project, record the issuing client [1.93ms]
+ 18 pass
+ 2 fail
+== 3: la versión no es la más nueva
+(fail) client version > the newest release wins over the fallback, and is cached [1.48ms]
+ 19 pass
+ 1 fail
+== 4: la caché no caduca
+(fail) client version > the cache expires after six hours [0.83ms]
+ 19 pass
+ 1 fail
+== 5: un feed inalcanzable se da por resuelto
+(fail) client version > an unreachable feed keeps the fallback and is retried next time [0.57ms]
+ 19 pass
+ 1 fail
+== 6: el tier actual aunque la cuenta no sea elegible
+(fail) code assist tier > onboarding tier: paid, then current if eligible, then the default allowed one, then legacy [0.48ms]
+ 19 pass
+ 1 fail
+== 7: sin el tier por defecto
+(fail) code assist tier > onboarding tier: paid, then current if eligible, then the default allowed one, then legacy [0.44ms]
+ 19 pass
+ 1 fail
+== 8: el restringido sin marca
+(fail) code assist tier > display tier: a restricted account shows its default as restricted [0.33ms]
+ 19 pass
+ 1 fail
+== 9: sin secreto se intercambia igual
+(fail) antigravity flow > without the client secret the flow refuses by naming it [504.95ms]
+ 19 pass
+ 1 fail
+== 10: sin consentimiento offline
+(fail) antigravity flow > the authorize URL asks for offline consent, without PKCE [0.98ms]
+ 19 pass
+ 1 fail
+== 11: el perfil IDE sin su cliente Node
+(fail) antigravity flow > an account with a project: exchange with the secret, discover the project, record the issuing client [1.64ms]
+ 19 pass
+ 1 fail
+== 12: tras el onboarding no se vuelve a consultar
+ 20 pass
+ 0 fail
+== 13: el proyecto de la respuesta del onboarding se ignora
+(fail) antigravity flow > no project in discovery but one in the onboarding answer: it is taken [0.62ms]
+ 19 pass
+ 1 fail
+== 14: todo fallo es un proyecto manual
+(fail) antigravity flow > discovery and onboarding both failing is a failed discovery, not a manual project [1.08ms]
+ 19 pass
+ 1 fail
+== 15: el onboarding en segundo plano sin tope
+(fail) antigravity flow > background onboarding of an account with a project is bounded [12.94ms]
+ 19 pass
+ 1 fail
+== 16: la cuenta sin proyecto se guarda activa
+(fail) degraded project > persisting a login without a project stores it degraded; a later one with a project restores it [57.01ms]
+ 19 pass
+ 1 fail
+== 17: cualquier redirección se sube a la URL pública
+(fail) browser redirect > anything else is left as it is [0.38ms]
+ 19 pass
+ 1 fail
+== 18: sin cliente propio también se sube
+(fail) browser redirect > anything else is left as it is [0.34ms]
+ 19 pass
+ 1 fail
+== restaurado
+ 20 pass
+ 0 fail
+== 12, repetida con el proyecto que aparece en la segunda consulta
+(fail) antigravity flow > a project created after the onboarding is found by the second discovery [0.62ms]
+ 20 pass
+ 1 fail
+ 21 pass
+ 0 fail

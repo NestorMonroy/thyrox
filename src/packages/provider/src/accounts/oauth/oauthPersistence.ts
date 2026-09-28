@@ -9,6 +9,7 @@ import { timingSafeEqual } from 'node:crypto'
 
 import type { JsonRecord } from '../connectionColumns.ts'
 import type { ConnectionStore } from '../connectionStore.ts'
+import { degradedProjectState, persistStatus } from './antigravityProjectGate.ts'
 
 const MILLISECONDS_PER_SECOND = 1000
 
@@ -80,9 +81,12 @@ export function persistOAuthConnection(
     ? new Date(now() + data.expiresIn * MILLISECONDS_PER_SECOND).toISOString()
     : null
 
+  // El estado gana sobre el payload: un error viejo que traiga no se cuela.
+  const status = persistStatus(degradedProjectState(provider, data))
+
   if (options.connectionId || data.email) {
     const match = findExistingOAuthConnection(store.list({ provider }), provider, data, options.connectionId)
-    if (typeof match?.id === 'string') return store.update(match.id, { ...data, expiresAt, isActive: true })
+    if (typeof match?.id === 'string') return store.update(match.id, { ...data, expiresAt, ...status, isActive: true })
   }
-  return store.create({ provider, authType: 'oauth', ...data, expiresAt, tokenExpiresAt: expiresAt })
+  return store.create({ provider, authType: 'oauth', ...data, expiresAt, tokenExpiresAt: expiresAt, ...status })
 }
