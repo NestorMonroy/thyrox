@@ -32,6 +32,27 @@ pasarela lo importa.
 - `jv` devuelve `undefined` para una ruta que no es de mensajes, como la
   referencia; el tipo lo declara.
 
+## Fase 2: el cliente por proveedor
+
+`src/proxy/sdk/cloudClients.ts` construye `AnthropicBedrock`,
+`AnthropicVertex` o `AnthropicFoundry` desde la configuración del upstream.
+Qué URL y qué autorización produce cada SDK real se midió antes de escribir
+las expectativas, con un `fetch` que intercepta (`probes/sdk-requests.ts`,
+salida en `outputs/sdk-requests.jsonl`): SigV4 con el alcance
+`<fecha>/<región>/bedrock/aws4_request`, `rawPredict` en Vertex, y en
+Foundry la clave en `x-api-key` —la suposición previa, `api-key`, era
+falsa—.
+
+El portador de Bedrock es una divergencia medida: el `bedrock-sdk` 0.26.4
+instalado no tiene `apiKey`, y la petición cae a la cadena de AWS y falla.
+`skipAuth` con la cabecera `Authorization: Bearer` produce la petición que la
+referencia envía.
+
+Controles: `probes/annul-cloud.tsv`. La primera pasada dejó dos variantes en
+pie —la anulación de cabeceras en Vertex y de `Authorization` en Foundry—
+porque ninguna prueba ponía esa cabecera en el upstream; con esos dos casos
+caen las 17 (`outputs/annul-cloud.out`).
+
 ## Controles de anulación
 
 `probes/annul.sh`, salida en `outputs/annul.out`: las 35 variantes caen (17
