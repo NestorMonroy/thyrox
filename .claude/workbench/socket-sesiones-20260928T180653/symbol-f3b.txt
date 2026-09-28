@@ -1,0 +1,16 @@
+==== f: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function f [1943,1965)
+function f(){return!1}
+==== mfn: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function mfn [2554,2608)
+function mfn(e){return Number.isInteger(e)&&e>1&&e<=w}
+==== _: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js variable _ [6067,6073)
+_=5000
+==== C: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js variable C [6059,6066)
+C=60000
+==== x: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js variable x [5727,5745)
+x=new q(()=>new h)
+symbol: 5 de 5 nombre(s) resueltos

@@ -18,7 +18,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F2b-2 | verificación del directorio de sockets (`Re`) con sus mensajes (`Te`, `De`, `fn`, `an`, `qr`) | hecha: 18 pruebas; 9 anulaciones, cada una su caso (`anulacion-f2b2-*.txt`) |
 | F2b-3 | ruta explícita (`G1o`) con `CliUserError` (`_m`) | hecha: 7 pruebas; 7 anulaciones, cada una su caso (`anulacion-f2b3-*.txt`) |
 | F3a | tokens y marcos: `ofn`, `YDo`, `zFr`, `eLo`, `tLo`, `v0`, `Iv`, `J`, `Q` | hecha: 9 pruebas; 5 anulaciones (`anulacion-f3a-*.txt`) |
-| F3b | identidad de proceso: `b`/`Zne`, `n6`, `_Lo`/`HP`, `Nh`, `nc`/`Pv` | pendiente |
+| F3b | identidad de proceso: `b`/`Zne`, `n6`, `Hx`, `TFe`, `mfn`, `Nh`, `nc`/`Pv`, `_Lo`/`HP` | hecha: 10 pruebas; 7 anulaciones, cada una su caso (`anulacion-f3b-*.txt`) |
 | F3c | clave publicada y leída: `XDo`, `be`, `ifn`, `JDo`, `QDo`, con la escritura atómica `Jne` | pendiente |
 | F4 | conexión y mensajes: `en`, `Qe`, `be`, `ze`, `Ie` | pendiente |
 | F2c | orquestación de `mn` (tras F3 y F4) | pendiente |
