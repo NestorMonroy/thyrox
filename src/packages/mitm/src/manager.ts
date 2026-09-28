@@ -409,14 +409,25 @@ function resolvePort(port: number | undefined): number {
   return typeof port === 'number' && Number.isInteger(port) && port > 0 && port <= 65535 ? port : DEFAULT_PORT
 }
 
-function applyUpstreamCa(): void {
-  const caPath = process.env.THYROX_MITM_UPSTREAM_CA_CERT || readStoredUpstreamCaPath()
+/**
+ * La CA del upstream: la variable de entorno gana a la ruta que la interfaz
+ * guardó en `upstream-ca.path`; sin ninguna, `null`.
+ */
+export function resolveUpstreamCaPath(
+  env: NodeJS.ProcessEnv = process.env,
+  readStored: () => string | null = readStoredUpstreamCaPath,
+): string | null {
+  return env.THYROX_MITM_UPSTREAM_CA_CERT || readStored() || null
+}
+
+/** Aplica la CA; una ruta inválida se registra y el arranque sigue sin ella. */
+export function applyUpstreamCa(caPath: string | null = resolveUpstreamCaPath(), report: typeof log = log): void {
   if (!caPath) return
   try {
     configureUpstreamCa(caPath)
-    log(`upstream CA certificate configured: ${caPath}`)
+    report(`upstream CA certificate configured: ${caPath}`)
   } catch (err) {
-    log(`upstream CA path invalid (continuing without custom CA): ${String(err)}`, 'error')
+    report(`upstream CA path invalid (continuing without custom CA): ${String(err)}`, 'error')
   }
 }
 

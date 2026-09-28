@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/mitm && bun test 2>&1 | tail -4 && bunx tsc -p tsconfig.build.json --noEmit | grep -c 'error TS'; bunx tsc -p tsconfig.test.json --noEmit | grep -c 'error TS'", "started_at": "2026-09-28T06:35:13+00:00"}
