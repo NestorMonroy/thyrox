@@ -30,13 +30,9 @@ async function main(): Promise<void> {
     process.stderr.write(`[MITM] ${sanitizeErrorMessage(error)}\n`)
     process.exit(1)
   }
-  try {
-    await handle.listen()
-  } catch (error) {
-    db.close()
-    process.stderr.write(`[MITM] ${listenFailure(error as NodeJS.ErrnoException, config.localPort)}\n`)
-    process.exit(1)
-  }
+  // Los manejadores van antes de escuchar: quien lanza el servidor puede
+  // mandar la señal en cuanto lee «ready on», y sin manejador la acción por
+  // defecto termina con 130 sin cerrar la base.
   const shutdown = () => {
     void handle.close().then(() => {
       db.close()
@@ -45,6 +41,13 @@ async function main(): Promise<void> {
   }
   process.on('SIGTERM', shutdown)
   process.on('SIGINT', shutdown)
+  try {
+    await handle.listen()
+  } catch (error) {
+    db.close()
+    process.stderr.write(`[MITM] ${listenFailure(error as NodeJS.ErrnoException, config.localPort)}\n`)
+    process.exit(1)
+  }
 }
 
 await main()
