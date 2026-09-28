@@ -186,3 +186,15 @@ retira los heredados, que apuntarían a una API que ya no escucha.
 Anulaciones (`annul-f7h5.sh`, `results-f7h5.txt`): las siete discriminan. La
 séptima —el reinicio del gestor que olvida el destino— no tenía prueba en la
 primera ejecución; se añadió `resetting the manager forgets the ingest target`.
+
+### Anulaciones en worktrees paralelos (`annul-in-worktrees.sh`)
+
+Las siete fases se corren a la vez, una por worktree desde `HEAD`
+(`bin/item_worktree prepare`), repartidas con GNU Parallel. Mutan archivos
+del árbol: en el mismo, se leerían las mutaciones entre sí. Resultado: todas
+las anulaciones de F7h-0 a F7h-5 discriminan, y cada restauración vuelve a 0
+fallos.
+
+La anchura es 2, no 4. Medido: cada worktree ocupa ~480 MB (1.9 GB quedaron
+en cuatro), y a -j4 se agotó el disco de la sesión a mitad del trabajo; la
+retirada de los worktrees falló por ENOSPC y hubo que limpiarlos a mano.

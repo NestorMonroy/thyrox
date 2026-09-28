@@ -15,5 +15,5 @@ one() {
     echo "$phase: hecho"
 }
 export -f one; export T B OUT
-printf '%s\n' f7h0 f7h1 f7h2 f7h3a f7h3b f7h4 f7h5 | parallel -j4 -k one {}
+printf '%s\n' f7h0 f7h1 f7h2 f7h3a f7h3b f7h4 f7h5 | parallel -j2 -k one {}
 bash "$T/bin/item_worktree" sweep "$T" "$OUT"
