@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+137 |     writeFileSync(join(jobDir!, 'state.json'), '{}')
+138 |     const ctx = context()
+139 |     await pollSpareClaim(ctx)
+140 |     expect(JSON.parse(readFileSync(join(dir, 'sessions', '77.json'), 'utf8'))).toEqual({ pid: 77, updatedAt: 5 })
+141 |     expect(state.spareClaimPoll).toBeUndefined()
+142 |     expect(ctx.clearing).toBe(false)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:142:26)
+(fail) el sondeo de reclamo (iD, sD) > reclamada, retira la marca y detiene el sondeo [2.25ms]
+179 |       return { ok: false, error: { code: 'NotFound' } }
+180 |     })
+181 |     state.spareClaimPoll = setInterval(() => {}, 1_000_000)
+182 |     await pollSpareClaim(ctx)
+183 |     expect(during).toBe(true)
+184 |     expect(ctx.clearing).toBe(false)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:184:26)
+(fail) el sondeo de reclamo (iD, sD) > mientras consulta, marca que está en curso [0.42ms]
+
+ 9 pass
+ 2 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [128.00ms]

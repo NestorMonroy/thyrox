@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+73 | afterEach(() => rmSync(dir, { recursive: true, force: true }))
+74 | 
+75 | describe('isSpareClaimed (jy)', () => {
+76 |   test('sin directorio de trabajo no hay reclamo', async () => {
+77 |     jobDir = undefined
+78 |     expect(await isSpareClaimed(undefined, deps())).toBe(false)
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:78:53)
+(fail) isSpareClaimed (jy) > sin directorio de trabajo no hay reclamo [3.33ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [121.00ms]

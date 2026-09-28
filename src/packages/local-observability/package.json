@@ -166,6 +166,11 @@
       "types": "./dist/uds/pidFileRecord.d.ts",
       "default": "./src/uds/pidFileRecord.ts"
     },
+    "./uds/spareSession.js": {
+      "@thyrox/source": "./src/uds/spareSession.ts",
+      "types": "./dist/uds/spareSession.d.ts",
+      "default": "./src/uds/spareSession.ts"
+    },
     "./uds/sessionKind.js": {
       "@thyrox/source": "./src/uds/sessionKind.ts",
       "types": "./dist/uds/sessionKind.d.ts",

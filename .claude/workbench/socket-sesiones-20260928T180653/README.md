@@ -50,7 +50,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-4g | sesión hija y contexto de equipo (`kFe`, `nUr`, `cFt`, `dF`, `tl`, sonda ambiente de tmux, `chunk-jzycvw5e.js`) en `@thyrox/swarm`, con `THYROX_CODE_CHILD_SESSION` y `THYROX_CODE_FORCE_SESSION_PERSISTENCE`; su veredicto es la sonda de `ud` | pendiente |
 | F4c-2f-4c-1 | latido del tablero (`ld`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`, `Ds`, `tD`, `Gy`, `fBe`) → `uds/fleetHeartbeat.ts` | hecha: 11 pruebas; 16 anulaciones (`anulacion-heartbeat-*.txt`) |
 | K | catálogo de claves del storage (`chunk-qbkceaaj.js` completo: `Re`, `K`, `mhn`, `SUo`, `bUo`, `wUo`, `vUo`, `jn`, `sR`, `qBt`, `_Uo`, `KBt`, `cK`, `YBt`) → `storageKeys.ts` | hecha: 11 pruebas; 24 anulaciones (`anulacion-storagekeys-*.txt`); oráculo `diferencial-storage-keys.txt`, 0 discrepancias en 20000 nombres y 20000 claves |
-| F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) | pendiente |
+| F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) → `uds/spareSession.ts` | hecha: 11 pruebas; 19 anulaciones (`anulacion-spare-*.txt`) |
 | F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`) con su archivo pid, limpieza al salir y los avisos de cambio de sesión y de directorio | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
 | F4c-2f-4e | tipo de sesión por entorno y anfitrión (`oJ`, `vt`, `fm`, `Ip`, `tc`, `tz`, `jte`, `NNr`, `qKn`) con `THYROX_CODE_SESSION_KIND`, `THYROX_JOB_DIR` y `THYROX_BG_BACKEND`; `fb`, `Ul`, `dR` y `md` llegan por `configureSessionKindHost` → `uds/sessionKind.ts` | hecha: 9 pruebas; 17 anulaciones (`anulacion-sessionkind-*.txt`) |
@@ -549,3 +549,14 @@ Una anulación por condición de cada predicado (`bg` tumba 5 porque todos
 parten de `oJ`), más las dos de `qKn` —segmento válido y colgar directamente
 de la raíz de trabajos— y el instalador del anfitrión: cada una cae en su
 caso (`anulacion-sessionkind-*.txt`), ninguna en cero.
+
+## F4c-2f-4c-2 — sesión de reserva: controles
+
+Cada condición de `jy` (directorio, backend, storage presente, clave del
+trabajo, las tres salidas del `statMeta`, su excepción y la ausencia en disco)
+y cada paso de `sD`/`iD` (no solaparse, sondeo ya detenido, marca en curso,
+liberar sólo lo reclamado, detener sólo lo liberado, soltar la marca, `unref`,
+el intervalo y guardar el temporizador) cae en su caso. `con-storage` y
+`reclamado` no discriminaban en la primera versión de la suite; se añadieron
+el caso de backend activo sin storage y el de una reserva sin reclamo con su
+archivo pid presente.
