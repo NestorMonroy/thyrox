@@ -6,7 +6,7 @@
  * Porte de `buildSocialLoginUrl` y `exchangeSocialCode` de
  * `omniroute: src/lib/oauth/services/kiro.ts` (MIT).
  */
-const AUTH_SERVICE = 'https://prod.us-east-1.auth.desktop.kiro.dev'
+export const KIRO_AUTH_SERVICE ='https://prod.us-east-1.auth.desktop.kiro.dev'
 const REDIRECT_URI = 'kiro://kiro.kiroAgent/authenticate-success'
 const DEFAULT_EXPIRES_IN_SECONDS = 3600
 
@@ -34,11 +34,11 @@ export function createKiroSocialLogin(deps: { fetch?: typeof globalThis.fetch })
         state,
         prompt: 'select_account',
       })
-      return `${AUTH_SERVICE}/login?${params.toString()}`
+      return `${KIRO_AUTH_SERVICE}/login?${params.toString()}`
     },
 
     async exchangeCode(code, codeVerifier) {
-      const response = await fetch(`${AUTH_SERVICE}/oauth/token`, {
+      const response = await fetch(`${KIRO_AUTH_SERVICE}/oauth/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, code_verifier: codeVerifier, redirect_uri: REDIRECT_URI }),
