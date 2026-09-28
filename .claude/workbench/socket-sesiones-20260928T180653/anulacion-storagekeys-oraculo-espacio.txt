@@ -1,0 +1,2 @@
+nombres=20000 claves=20000 discrepancias=911
+cK("/a\\01234567-89ab-cdef-0123-456789abcdef "): ours=["/a\\01234567-89ab-cdef-0123-456789abcdef "] ref=["/a\\01234567-89ab-cdef-0123-456789abcdef"]

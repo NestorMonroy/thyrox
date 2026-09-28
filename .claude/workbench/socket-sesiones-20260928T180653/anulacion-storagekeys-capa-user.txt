@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/storageKeys.test.ts:
+114 |     expect(storageKeyTuple(storageKeys.marketplaceTree('m', ['a']))).toEqual(['marketplaceCache', 'm', ['a']])
+115 |     expect(storageKeyTuple(storageKeys.marketplaceCache('m', 'f'))).toEqual(['marketplaceCache', 'm', 'f'])
+116 |     expect(storageKeyTuple(storageKeys.jobPins())).toEqual(['jobsRoot', 'pins'])
+117 |     expect(storageKeyTuple(storageKeys.jobDraft('d'))).toEqual(['jobsRoot', 'draft', 'd'])
+118 |     expect(storageKeyTuple({ namespace: 'agentMemory', layer: 'project', projectKey: 'p', agentType: 't', relPath: [] })).toEqual(['agentMemory', 'project', 'p', 't', []])
+119 |     expect(storageKeyTuple(storageKeys.agentMemory('t', []))).toEqual(['agentMemory', 'user', null, 't', []])
+                                                                    ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "user",
+-   null,
++   undefined,
+    "t",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/storageKeys.test.ts:119:63)
+(fail) forma canónica (K, mhn, SUo) > las ramas con alternativa [0.48ms]
+
+ 10 pass
+ 1 fail
+ 71 expect() calls
+Ran 11 tests across 1 file. [72.00ms]

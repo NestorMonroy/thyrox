@@ -1,0 +1,1 @@
+nombres=20000 claves=20000 discrepancias=0

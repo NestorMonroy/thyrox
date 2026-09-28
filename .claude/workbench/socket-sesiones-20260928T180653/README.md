@@ -49,6 +49,7 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-2f-4b | escritura del archivo pid (`Vt`, `Ms`) y lo que la sesión publica en él (`eF`, `Rut`, `X5o`, `ipn`, `GNr`, `apn`, `kCe`, `rD`, `Wy`, `ud`) → `uds/pidFileRecord.ts`; `ud` llega como sonda que instala F4c-2f-4g | hecha: 23 pruebas; 30 anulaciones (`anulacion-pidfile-*.txt`) |
 | F4c-2f-4g | sesión hija y contexto de equipo (`kFe`, `nUr`, `cFt`, `dF`, `tl`, sonda ambiente de tmux, `chunk-jzycvw5e.js`) en `@thyrox/swarm`, con `THYROX_CODE_CHILD_SESSION` y `THYROX_CODE_FORCE_SESSION_PERSISTENCE`; su veredicto es la sonda de `ud` | pendiente |
 | F4c-2f-4c-1 | latido del tablero (`ld`, `jNr`, `WNr`, `$y`, `VNt`, `qNt`, `Ds`, `tD`, `Gy`, `fBe`) → `uds/fleetHeartbeat.ts` | hecha: 11 pruebas; 16 anulaciones (`anulacion-heartbeat-*.txt`) |
+| K | catálogo de claves del storage (`chunk-qbkceaaj.js` completo: `Re`, `K`, `mhn`, `SUo`, `bUo`, `wUo`, `vUo`, `jn`, `sR`, `qBt`, `_Uo`, `KBt`, `cK`, `YBt`) → `storageKeys.ts` | hecha: 11 pruebas; 24 anulaciones (`anulacion-storagekeys-*.txt`); oráculo `diferencial-storage-keys.txt`, 0 discrepancias en 20000 nombres y 20000 claves |
 | F4c-2f-4c-2 | sesión de reserva: si ya la reclamaron (`jy`) y su sondeo (`iD`, `sD`, `oD`) | pendiente |
 | F4c-2f-4c-3 | alta de la sesión en el registro (`nD`, `KNt`) con su archivo pid, limpieza al salir y los avisos de cambio de sesión y de directorio | pendiente |
 | F4c-2f-4d | listado y barrido del registro (`Ny`, `Fy`, `zy`, `TCe`, `aD`, `ZKn`, `Ly`, `lpn`, `xut`) y `D3` con su vivacidad | pendiente |
@@ -524,3 +525,20 @@ F4c-2f-4g.
 | `cache-edad` / `cache-local` / `cache-storage` / `guarda-local` | la vigencia de un segundo, usarla en las dos formas y guardarla | 3 / 1 / 1 / 1 |
 | `fresco-local` / `enoent` / `notfound` | la edad de cinco segundos y callar la ausencia en archivo y en storage | 1 cada una |
 | `hora-despues` / `no-pisa` | medir con la hora de después y no pisar una medida más nueva | 1 / 1 |
+
+## K — catálogo de claves del storage: controles
+
+El chunk no importa nada, así que el oráculo lo evalúa entero y compara las
+reglas de nombre sobre 20000 nombres generados (con puntos, espacios, dos
+puntos, separadores, NUL y los sufijos de apartado, temporal y `.jsonl`) y
+los constructores con su forma canónica sobre 20000 claves; las excepciones se
+comparan por tipo, porque su mensaje nombra la variable local. Anulado el
+recorte del espacio final, el oráculo da 911 discrepancias
+(`anulacion-storagekeys-oraculo-espacio.txt`).
+
+| Anulación | Qué retira | Caen |
+|---|---|---|
+| `recorte` / `dos-puntos` / `minusculas` / `congelado` / `cache` / `tope` | las variantes de nombre, su congelado, su caché y su tope | 3 / 3 / 3 / 1 / 1 / 1 |
+| `seg-*` / `segs-vacio` | cada condición de un segmento válido y la lista vacía | 1 cada una |
+| `opcional` / `journal` / `sessionjournal` / `copia` / `meta` / `hwm` / `capa-user` / `borrador` / `relpath` / `vuo` | los campos opcionales y cada rama con alternativa de la forma canónica | 1 cada una |
+| `punto-inicial` | el atajo de `qBt` para nombres sin punto inicial | 0 — redundante por construcción: la expresión de apartado exige `^\.`, y ninguna variante (minúsculas, recorte del final, prefijo antes de `:`) añade un punto al principio |

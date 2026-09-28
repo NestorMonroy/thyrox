@@ -151,6 +151,11 @@
       "types": "./dist/uds/renameNotice.d.ts",
       "default": "./src/uds/renameNotice.ts"
     },
+    "./storageKeys.js": {
+      "@thyrox/source": "./src/storageKeys.ts",
+      "types": "./dist/storageKeys.d.ts",
+      "default": "./src/storageKeys.ts"
+    },
     "./uds/fleetHeartbeat.js": {
       "@thyrox/source": "./src/uds/fleetHeartbeat.ts",
       "types": "./dist/uds/fleetHeartbeat.d.ts",
