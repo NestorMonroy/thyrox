@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+tests/package/lodash_imports.test.ts:
+34 | describe('lodash-es por función', () => {
+35 |   test('ningún archivo de src importa el barril', () => {
+36 |     const offenders = [...sourceFiles(join(ROOT, 'src'))]
+37 |       .filter(path => barrelImporters(readFileSync(path, 'utf8')))
+38 |       .map(path => relative(ROOT, path))
+39 |     expect(offenders).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/shell/src/sandbox/sandbox-adapter.ts",
++   "src/packages/tool-registry/src/tools/SkillTool/prompt.ts",
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/tests/package/lodash_imports.test.ts:39:23)
+(fail) lodash-es por función > ningún archivo de src importa el barril [129.97ms]
+
+ 2 pass
+ 1 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [167.00ms]
