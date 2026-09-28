@@ -1,0 +1,213 @@
+== 1: sin releer la fila
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > reads the stored row before deciding, and a skipped one is left alone [2.59ms]
+ 24 pass
+ 1 fail
+== 2: sin exclusiones del entorno
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) hidden logs > skip providers come from the variable [1.33ms]
+ 24 pass
+ 1 fail
+== 3: marca no se escribe
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > marks, stamps and deactivations are written as planned [0.70ms]
+ 24 pass
+ 1 fail
+== 4: sin sello
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > marks, stamps and deactivations are written as planned [0.70ms]
+ 24 pass
+ 1 fail
+== 5: sin desactivar
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > an exhausted expired connection that is still active is deactivated [0.52ms]
+ 24 pass
+ 1 fail
+== 6: cursor ignorado
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > providers with their own check are handed over [0.70ms]
+ 24 pass
+ 1 fail
+== 7: cookie sin intervalo
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > providers with their own check are handed over [0.60ms]
+ 24 pass
+ 1 fail
+== 8: copilot ignorado
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > providers with their own check are handed over [0.90ms]
+ 24 pass
+ 1 fail
+== 9: kimi ignorado
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > providers with their own check are handed over [0.91ms]
+ 24 pass
+ 1 fail
+== 10: guardado fuera de la ventana
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > a due refresh is persisted inside the refresh window and then stamped [1.76ms]
+(fail) refresh failures > an error after a successful persist does not undo it [0.43ms]
+(fail) refresh failures > a failed persist is warned and the refresh is written in full afterwards [0.61ms]
+ 22 pass
+ 3 fail
+== 11: guardado fallido cuenta como hecho
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) refresh failures > a failed persist is warned and the refresh is written in full afterwards [0.63ms]
+ 24 pass
+ 1 fail
+== 12: error tras guardar deshace
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) refresh failures > an error after a successful persist does not undo it [0.74ms]
+ 24 pass
+ 1 fail
+== 13: red abre el circuito
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) refresh failures > a transient error waits two minutes without climbing the ladder [1.45ms]
+ 24 pass
+ 1 fail
+== 14: sin muerto
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) a dead refresh token > is ignored when the row was rotated during the refresh [0.81ms]
+(fail) a dead refresh token > expires the connection and drops a consumed token [0.97ms]
+ 23 pass
+ 2 fail
+== 15: muerto sin releer
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) a dead refresh token > is ignored when the row was rotated during the refresh [1.16ms]
+ 24 pass
+ 1 fail
+== 16: guardado reescrito entero
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > a due refresh is persisted inside the refresh window and then stamped [1.94ms]
+ 24 pass
+ 1 fail
+== 17: sin subtoken
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > a GitHub refresh also renews the Copilot sub-token [0.66ms]
+ 24 pass
+ 1 fail
+== 18: subtoken para todos
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+ 25 pass
+ 0 fail
+== 19: vacío no abre circuito
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) refresh failures > an empty result opens the circuit and counts an expired retry [0.70ms]
+ 24 pass
+ 1 fail
+== 20: sin ocultar registro
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) hidden logs > THYROX_HIDE_HEALTHCHECK_LOGS silences the check [0.63ms]
+ 24 pass
+ 1 fail
+== 21: credenciales sin datos
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > a due refresh is persisted inside the refresh window and then stamped [1.46ms]
+ 24 pass
+ 1 fail
+== 22: sin id se lee
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+ 25 pass
+ 0 fail
+== 23: lote de 10
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > the defaults: batches of twenty, a three-second stagger and a jitter of 0.5 to 5 s [0.52ms]
+(fail) sweep > a zero stagger only yields; a bad batch size falls back to twenty [0.94ms]
+ 23 pass
+ 2 fail
+== 24: tamaño cero vale
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+ 25 pass
+ 0 fail
+== 25: sin cookies
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > checks every oauth and cookie connection in batches, with a pause between them [0.99ms]
+(fail) scheduler lifecycle > starts after ten seconds, sweeps every minute, and stops cleanly [1.60ms]
+ 23 pass
+ 2 fail
+== 26: barridos solapados
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > a failing check is logged and does not stop the batch; an overlapping sweep is skipped [5000.00ms]
+ 24 pass
+ 1 fail
+== 27: fallo de una corta el lote
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+ 0 pass
+ 1 fail
+== 28: sin pausa
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > checks every oauth and cookie connection in batches, with a pause between them [1.49ms]
+(fail) sweep > the defaults: batches of twenty, a three-second stagger and a jitter of 0.5 to 5 s [0.67ms]
+ 23 pass
+ 2 fail
+== 29: sin jitter
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > checks every oauth and cookie connection in batches, with a pause between them [0.94ms]
+(fail) sweep > the defaults: batches of twenty, a three-second stagger and a jitter of 0.5 to 5 s [0.37ms]
+ 23 pass
+ 2 fail
+== 30: sin ceder
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > checks every oauth and cookie connection in batches, with a pause between them [1.14ms]
+(fail) sweep > the defaults: batches of twenty, a three-second stagger and a jitter of 0.5 to 5 s [0.34ms]
+(fail) sweep > a zero stagger only yields; a bad batch size falls back to twenty [0.89ms]
+ 22 pass
+ 3 fail
+== 31: pausa tras el último
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > checks every oauth and cookie connection in batches, with a pause between them [1.00ms]
+(fail) sweep > the defaults: batches of twenty, a three-second stagger and a jitter of 0.5 to 5 s [0.39ms]
+(fail) sweep > a zero stagger only yields; a bad batch size falls back to twenty [0.65ms]
+ 22 pass
+ 3 fail
+== 32: listado lanza
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) sweep > a failing listing is logged and counts nothing [0.51ms]
+ 24 pass
+ 1 fail
+== 33: arranque inmediato
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > starts after ten seconds, sweeps every minute, and stops cleanly [0.90ms]
+ 24 pass
+ 1 fail
+== 34: arranca dos veces
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > starts after ten seconds, sweeps every minute, and stops cleanly [0.57ms]
+ 24 pass
+ 1 fail
+== 35: desactivado arranca
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > a disabled scheduler never starts [0.57ms]
+ 24 pass
+ 1 fail
+== 36: parar no limpia
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > starts after ten seconds, sweeps every minute, and stops cleanly [4.06ms]
+ 24 pass
+ 1 fail
+== 37: sigue corriendo al parar
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > starts after ten seconds, sweeps every minute, and stops cleanly [3.73ms]
+ 24 pass
+ 1 fail
+== 38: sin primer barrido
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > starts after ten seconds, sweeps every minute, and stops cleanly [1.79ms]
+ 24 pass
+ 1 fail
+== 39: exclusión sin minúsculas
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > the switches read from their variables [0.61ms]
+(fail) hidden logs > skip providers come from the variable [0.48ms]
+ 23 pass
+ 2 fail
+== 40: bandera sin recortar
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+(fail) scheduler lifecycle > a disabled scheduler never starts [0.47ms]
+(fail) scheduler lifecycle > the switches read from their variables [0.49ms]
+ 23 pass
+ 2 fail
+== restaurado
+ 25 pass
+ 0 fail
+__BG_EXIT__=0
