@@ -444,6 +444,7 @@ TECHNICAL_VOCABULARY = frozenset({
     'napi',      # la interfaz N-API de Node
     'uds',       # *Unix domain socket*
     'trae',      # un editor de ByteDance, nombre de producto (`mitm/handlers/trae.ts`)
+    'nss',       # Network Security Services, la base de certificados de Chromium y Firefox (`mitm/cert/install.ts`)
     'windsurf',  # un editor, nombre de producto
     'yates',     # el barajado de Fisher-Yates
 })
