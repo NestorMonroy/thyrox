@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+153 |     expect(derivedSessionName('/home/u/Mi Proyecto', 'sess_1', true)).toBe(`mi-proyecto-${shortWordSlugFromSeed(seed)}`)
+154 |     expect(derivedSessionName('/home/u/Mi Proyecto', 'sess_1', true)).toBe(derivedSessionName('/otra/Mi Proyecto/', 'sess_1', true))
+155 |   })
+156 | 
+157 |   test('sin dirección estable: un byte aleatorio en hexadecimal', () => {
+158 |     expect(derivedSessionName('/tmp/app', 's', false)).toMatch(/^app-[0-9a-f]{2}$/)
+                                                             ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /^app-[0-9a-f]{2}$/
+Received: "app-zz"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:158:56)
+(fail) derivedSessionName (xs) > sin dirección estable: un byte aleatorio en hexadecimal [0.29ms]
+157 |   test('sin dirección estable: un byte aleatorio en hexadecimal', () => {
+158 |     expect(derivedSessionName('/tmp/app', 's', false)).toMatch(/^app-[0-9a-f]{2}$/)
+159 |   })
+160 | 
+161 |   test('una carpeta sin slug toma el nombre del producto', () => {
+162 |     expect(derivedSessionName('/', 's', false)).toMatch(new RegExp(`^${PRODUCT_NAME}-[0-9a-f]{2}$`))
+                                                      ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /^thyrox-[0-9a-f]{2}$/
+Received: "thyrox-zz"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:162:49)
+(fail) derivedSessionName (xs) > una carpeta sin slug toma el nombre del producto [0.17ms]
+
+ 17 pass
+ 2 fail
+ 198 expect() calls
+Ran 19 tests across 1 file. [86.00ms]

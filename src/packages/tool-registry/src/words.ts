@@ -26,7 +26,10 @@
  * cifras el sesgo es del orden de 10^-8 y no cambia ninguna conducta —
  * pero se dice, en vez de dejarlo como una propiedad que nadie midió.
  */
-import { randomBytes } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
+import { basename } from 'path'
+
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const ADJECTIVES = [
   'amber', 'azure', 'balmy', 'blithe', 'brisk', 'candid', 'clement',
@@ -125,4 +128,17 @@ export function slugFromText(text: string, options: SlugFromTextOptions = {}): s
     .replace(/[^a-z0-9]+/g, '-')
     .slice(0, maxLen)
     .replace(/^-+|-+$/g, '')
+}
+
+/**
+ * `xs`: el nombre derivado de una sesión — el slug de su carpeta y un sufijo.
+ * Con dirección estable el sufijo sale del sha256 del id de sesión, así que
+ * la misma sesión vuelve a llamarse igual; sin ella es un byte aleatorio. Una
+ * carpeta sin slug toma el nombre del producto, donde la referencia pone el
+ * suyo.
+ */
+export function derivedSessionName(cwd: string, sessionId: string, stableAddress: boolean): string {
+  const folder = slugFromText(basename(cwd)) || PRODUCT_NAME
+  const suffix = stableAddress ? shortWordSlugFromSeed(createHash('sha256').update(sessionId).digest()) : randomBytes(1).toString('hex')
+  return `${folder}-${suffix}`
 }

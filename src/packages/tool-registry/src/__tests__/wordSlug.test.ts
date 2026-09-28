@@ -7,10 +7,15 @@
  * other.
  */
 import { describe, expect, test } from 'bun:test'
+import { createHash } from 'crypto'
+
+import { PRODUCT_NAME } from '@thyrox/config/product'
+
 import {
   ADJECTIVES,
   NOUNS,
   VERBS,
+  derivedSessionName,
   generateShortWordSlug,
   generateWordSlug,
   isShortWordSlug,
@@ -139,5 +144,22 @@ describe('generateWordSlug (M4n)', () => {
     expect(ADJECTIVES as readonly string[]).toContain(adjective!)
     expect(VERBS as readonly string[]).toContain(verb!)
     expect(NOUNS as readonly string[]).toContain(noun!)
+  })
+})
+
+describe('derivedSessionName (xs)', () => {
+  test('con dirección estable: el slug de la carpeta y el del sha256 de la sesión', () => {
+    const seed = createHash('sha256').update('sess_1').digest()
+    expect(derivedSessionName('/home/u/Mi Proyecto', 'sess_1', true)).toBe(`mi-proyecto-${shortWordSlugFromSeed(seed)}`)
+    expect(derivedSessionName('/home/u/Mi Proyecto', 'sess_1', true)).toBe(derivedSessionName('/otra/Mi Proyecto/', 'sess_1', true))
+  })
+
+  test('sin dirección estable: un byte aleatorio en hexadecimal', () => {
+    expect(derivedSessionName('/tmp/app', 's', false)).toMatch(/^app-[0-9a-f]{2}$/)
+  })
+
+  test('una carpeta sin slug toma el nombre del producto', () => {
+    expect(derivedSessionName('/', 's', false)).toMatch(new RegExp(`^${PRODUCT_NAME}-[0-9a-f]{2}$`))
+    expect(derivedSessionName('/tmp/---', 's', true).startsWith(`${PRODUCT_NAME}-`)).toBe(true)
   })
 })
