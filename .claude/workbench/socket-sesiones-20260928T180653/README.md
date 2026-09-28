@@ -33,6 +33,9 @@ Instrumento: `bin/binary symbol|references|reflow` sobre el ejecutable
 | F4c-5 | `yield`/`unyield_artifact_replies` y `artifact_replies_yielded` (`cno`, `uno`, `bno`, `dno`, `gno`, `hno`, `glr`) | pendiente |
 | F4c-6a | el veredicto «lo envió esta sesión»: `ye`, `Le`, `Ke`, `he`, `Ne`, `hfn` → `uds/peerTrust.ts` | hecha |
 | F4c-6b | `unr`: la política `crossSessionInbound` (`I`, `B`, `O`, `zje`, niveles `accept`/`hold`/`refuse`) y el modo de permisos (`C`, `S`, `V1`, `NL`) → `uds/inboundPolicy.ts`; la clave entra al esquema de `@thyrox/config` | hecha |
+| F4c-2a | escape del cierre de la etiqueta que envuelve texto ajeno (`Qce`, `CFt`, `PL`, `h`, `H`, `iRe`, `Spt` de `chunk-0grnxhq4.js`) → `uds/tagClose.ts` | hecha |
+| F4c-2b | sobre `cross-session-message` y direcciones de pares (`chunk-q8a07cv0.js`) | pendiente |
+| F4c-2c | `ze`/`Oe`/`aEn`: entrega de un `user` a la cola, con sus dependencias inyectadas | pendiente |
 | F4c-6c | el aviso de validación por un `crossSessionInbound` inválido (`.catch(void 0)` → `severity: warning` en la ruta de la clave), que `B` lee → `@thyrox/config: settings/crossSessionInbound.ts` y los cuatro sitios que parsean settings | hecha |
 | F4d | el resto del subsistema de mensajes entrantes (`chunk-dv9ctjss.js`): mensajes retenidos, recibos, cierre ordenado, disponibilidad, `C7e`, `fbt` | pendiente |
 | F3d-4a | la bandera que activa el backend: `N`, `DBo`, `dVn` → `uds/storageBackendPin.ts`, cableada en `processInboxKeyDeps` | hecha |
@@ -228,3 +231,10 @@ Anulaciones en `anulacion-csi-*.txt`; siete, y cada una tumba sólo su caso
 (`sin-refuse` tumba dos: el saneo directo y el de MDM). `sin-clon` retira
 la copia del documento de política y cae el caso que exige no mutar el
 original, que es el que la caché por documento necesita.
+
+## F4c-2a — escape del cierre de etiqueta: controles
+
+Anulaciones en `anulacion-tag-*.txt`; siete, y cada una tumba sólo su caso.
+`sin-parecidos` retira a la vez los parecidos de `<` y de `/`, que caen en el
+mismo caso. La caché de 64 patrones que se vacía al llenarse no tiene caso
+que la separe: sólo cambia cuándo se reconstruye un patrón, no cuál.
