@@ -450,7 +450,10 @@ _headless_item() {
          # `-q`: sin el, GNU Time antepone «Command exited with non-zero status
          # N» a la medida del item que falla, y un consumidor que lee la
          # primera palabra (`ai-course-notes: translation_loop.py`) revienta.
-         ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
+         # `setsid` hace del ítem el líder de una sesión propia: su pid es el id
+         # de la sesión, y todo lo que lance —también lo que `timeout` pone en
+         # otro grupo de procesos— queda dentro, donde el drenaje lo encuentra.
+         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
          timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
@@ -468,6 +471,28 @@ _headless_item() {
     fi
     wait "$pid"
     local rc=$?
+    # >>> item-drain
+    # El ítem no termina porque salió su proceso principal: termina cuando su
+    # sesión quedó vacía y nadie escribe ya en sus salidas. Un hijo que siga
+    # escribiendo tiene hasta HP_DRAIN_SECONDS para salir solo; si hubo que
+    # terminarlo, o si alguien sigue escribiendo, el ítem se marca fallido con
+    # el motivo, porque lo que dejó en disco no es confiable.
+    local -r unsettled_exit=6
+    local drain_rc=0 writers_report writers_rc=0
+    bash "$HP_PROCESS_OWNERSHIP" drain "$pid" --grace "$HP_DRAIN_SECONDS" >> "$HP_OUT/$n.err" 2>&1 || drain_rc=$?
+    if [[ "$drain_rc" -ne 0 ]]; then
+        echo "el ítem dejó procesos vivos después de salir su principal (drenaje exit $drain_rc); sus salidas no son confiables" >> "$HP_OUT/$n.err"
+        rc="$unsettled_exit"
+    fi
+    # La salida del inspector se captura antes de anexarla: redirigida al
+    # `.err`, el propio inspector sería un escritor de las rutas que mide.
+    writers_report="$(bash "$HP_WRITER_INSPECTOR" "$HP_OUT/$n.stream.jsonl" "$HP_OUT/$n.err" 2>&1)" || writers_rc=$?
+    if [[ "$writers_rc" -ne 0 ]]; then
+        printf 'las salidas del ítem siguen abiertas en escritura (inspector exit %s):\n%s\n' \
+            "$writers_rc" "$writers_report" >> "$HP_OUT/$n.err"
+        rc="$unsettled_exit"
+    fi
+    # <<< item-drain
     [[ -z "$monitor" ]] || wait "$monitor"
     [[ -z "$HP_VRAM_NEED" ]] || bash "$HP_GPU" release --ledger "$HP_VRAM_LEDGER" --owner "$owner"
     [[ "$HP_ISOLATION" != worktree ]] || bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_OUT" "$n" "$rc" "$HP_VERIFY"
@@ -489,6 +514,13 @@ export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
+# Cuánto se espera a que un hijo del ítem salga solo después de que salió el
+# principal, antes de terminarlo (`process_ownership drain`).
+HP_DRAIN_SECONDS="${HEADLESS_POOL_ITEM_DRAIN_SECONDS:-30}"
+[[ "$HP_DRAIN_SECONDS" =~ ^[0-9]+([.][0-9]+)?$ ]] \
+    || rehusa "HEADLESS_POOL_ITEM_DRAIN_SECONDS va en segundos, no: $HP_DRAIN_SECONDS"
+export HP_DRAIN_SECONDS
+export HP_PROCESS_OWNERSHIP="$HP_BIN/process_ownership" HP_WRITER_INSPECTOR="$HP_BIN/writer_inspector"
 export HP_ITEM_GIT_GUARD_DIR="${HEADLESS_POOL_ITEM_GIT_GUARD_DIR:-$HP_HERE/item_git_guard}"
 # El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
 # y mientras alguno viva, el barrido de huérfanos de una sesión nueva no toca
