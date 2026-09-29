@@ -62,3 +62,19 @@ podman run --rm -v "$R:/w:O" -w /w --rootfs /:O bash -c '
   else echo "3 FALLA: $baked .js con __dirname/__filename absoluto; bridge.py falta junto a $miss de $total lector(es)"; fails=$((fails+1)); fi
   exit $fails
 ' </dev/null
+rc=$?
+# 3b. Invariancia respecto del path del árbol fuente: el mismo árbol, montado
+# en dos rutas absolutas distintas, tiene que emitir dist/ idénticos byte a
+# byte. Mide la propiedad general, no la forma de hoy del path horneado.
+digest() {
+  podman run --rm -v "$R:$1:O" -w "$1" --rootfs /:O bash -c '
+    rm -rf src/packages/*/dist
+    bun install --frozen-lockfile >/dev/null 2>&1 && bash bin/typescript-build-javascript src/packages/* >/dev/null 2>&1 || exit 1
+    find src/packages/*/dist -type f -print0 | sort -z | xargs -0 sha256sum' </dev/null
+}
+a="$(digest /w)" && b="$(digest /v)" || { echo "3b FALLA: no se pudo construir en las dos rutas"; exit $((rc+1)); }
+n=$(printf '%s\n' "$a" | wc -l)
+d=$(diff <(printf '%s\n' "$a") <(printf '%s\n' "$b") | grep -c '^<')
+if (( d == 0 )); then echo "3b ok: $n archivo(s) de dist idénticos construyendo en /w y en /v"
+else echo "3b FALLA: $d de $n archivo(s) de dist cambian con la ruta del árbol fuente"; rc=$((rc+1)); fi
+exit $rc
