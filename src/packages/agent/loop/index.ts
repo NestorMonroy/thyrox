@@ -182,7 +182,8 @@ const textoDe = (bloques: ContentBlock[]): string =>
  * `runLoop` es su envoltura para quien sólo quiere el resultado final.
  */
 export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEvent, LoopResult> {
-  const maxTurns = opts.maxTurns ?? 20
+  // Sin tope declarado el bucle corre hasta end_turn o abort, como `claude -p`.
+  const maxTurns = opts.maxTurns ?? Infinity
   // Una sola decisión de TTL por bucle: la usan la petición y el costo.
   const { ttl: cacheTtl } = resolveRequestCacheTtl({
     declared: opts.cacheTtl, model: opts.model, expectedGapMinutes: opts.expectedGapMinutes,

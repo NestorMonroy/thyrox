@@ -8,9 +8,10 @@
  */
 export function resolveMaxTurnsFromEnv(
   explicit: number | undefined,
+  env: Record<string, string | undefined> = process.env,
 ): number | undefined {
   if (explicit !== undefined) return explicit
-  const raw = process.env.THYROX_CODE_MAX_TURNS?.trim()
+  const raw = env.THYROX_CODE_MAX_TURNS?.trim()
   if (!raw) return undefined
   const n = Number(raw)
   if (!Number.isInteger(n) || n <= 0) {

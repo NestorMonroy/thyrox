@@ -32,10 +32,19 @@ with_retries() {
     return 1
 }
 
+# `worktree add` en un árbol grande retiene el candado de git durante
+# segundos: con varios ítems a la vez, unos pocos reintentos cortos se agotan.
+# Los ítems de una misma ejecución se turnan con un candado propio mientras
+# dura el alta; los reintentos quedan para el choque con un escritor ajeno.
 prepare() {
-    local repo="$1" out="$2" n="$3" dir
-    dir="$(run_dir "$repo" "$out")/$n" || return 2
-    with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD || return 2
+    local repo="$1" out="$2" n="$3" base dir
+    base="$(run_dir "$repo" "$out")" || return 2
+    dir="$base/$n"
+    mkdir -p "$base" || return 2
+    (
+        flock 9 || exit 2
+        with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD
+    ) 9> "$base.lock" || return 2
     printf '%s\n' "$dir"
 }
 

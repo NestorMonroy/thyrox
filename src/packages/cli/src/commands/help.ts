@@ -27,7 +27,7 @@ export const HELP = `thyrox — el bucle de agente, nativo
                           las definiciones de subagente por subagent_type
   --resume <sesion>       reanuda una sesión por id
   --sessions              lista las sesiones reanudables y sale
-  --max-turns <n>         corte del bucle (por defecto 20)
+  --max-turns <n>         corte del bucle (sin él, sin tope; o THYROX_CODE_MAX_TURNS)
   --settings <ruta>       JSON con las claves "hooks" y "permissions"
   --settings-source <n>   project: lee <cwd>/.claude/settings.json (+ .local.json)
   --config-origin         imprime de qué fuente salió cada clave y sale

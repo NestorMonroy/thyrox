@@ -1,0 +1,2 @@
+/opt/node22/bin/claude
+2.1.284 (Claude Code)

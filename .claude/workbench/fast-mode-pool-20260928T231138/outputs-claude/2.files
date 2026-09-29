@@ -1,0 +1,4 @@
+src/packages/agent/__tests__/modelScope.test.ts
+src/packages/agent/modelScope.ts
+src/packages/agent/package.json
+src/packages/agent/tsconfig.build.json

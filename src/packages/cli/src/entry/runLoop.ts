@@ -36,6 +36,7 @@ import { OUTPUT_STYLES, renderEvent, renderStatusLine, type OutputStyle } from '
 import { settingsFor } from './settings.ts'
 import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
+import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
 
 /**
@@ -133,6 +134,15 @@ async function* stdinLines(): AsyncGenerator<string> {
  * `toolAllow` acota las herramientas por nombre (el `--tools` de `thyrox -p`);
  * `null` deja todas.
  */
+/**
+ * Tope de turnos del bucle: la bandera, luego THYROX_CODE_MAX_TURNS, y si no
+ * hay ninguna, ninguno. Un ítem del pool lo acota su plazo, no un conteo.
+ */
+export function loopMaxTurns(argv: string[], env: Record<string, string | undefined> = process.env): number {
+  const declared = flag(argv, 'max-turns')
+  return resolveMaxTurnsFromEnv(declared === undefined ? undefined : Number(declared), env) ?? Infinity
+}
+
 export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
                           toolAllow: readonly string[] | null = null) {
   const conf = settingsFor(argv, cwd)
@@ -182,7 +192,7 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
     tools,
     cwd,
     transcriptDir,
-    maxTurns: Number(flag(argv, 'max-turns') ?? 20),
+    maxTurns: loopMaxTurns(argv),
     hooks: conf.hooks,
     permissions: conf.permissions,
     journalPath: flag(argv, 'journal'),

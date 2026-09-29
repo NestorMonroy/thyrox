@@ -28,6 +28,16 @@ import { join } from 'node:path'
 import { streamLoop } from '@thyrox/agent/loop'
 import type { LoopResult } from '@thyrox/agent/loop/types'
 import { loopSetup } from './runLoop.ts'
+import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
+
+/** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
+export type PrintDeps = {
+  env?: Record<string, string | undefined>
+  findExecutable?: (name: string) => string | null
+  readFd?: (fd: number) => string
+  newSessionId?: () => string
+}
 
 export type OutputFormat = 'text' | 'json' | 'stream-json'
 const OUTPUT_FORMATS: readonly OutputFormat[] = ['text', 'json', 'stream-json']
@@ -35,7 +45,7 @@ const OUTPUT_FORMATS: readonly OutputFormat[] = ['text', 'json', 'stream-json']
 export type PrintArgs = {
   prompt: string
   model: string
-  maxTurns: number
+  maxTurns: number | undefined
   /** Las herramientas permitidas; `null` = todas. */
   tools: string[] | null
   persist: boolean
@@ -58,7 +68,7 @@ function toolList(v: string): string[] {
  * Traduce la línea de comando de `thyrox -p`. `stdin` es el texto leído de la
  * entrada estándar, o `null` si no hubo; el prompt posicional gana.
  */
-export function parsePrintArgs(argv: string[], stdin: string | null): PrintArgs {
+export function parsePrintArgs(argv: string[], stdin: string | null, env: Record<string, string | undefined> = process.env): PrintArgs {
   const values = new Map<string, string>()
   const positional: string[] = []
   let persist = true
@@ -92,9 +102,15 @@ export function parsePrintArgs(argv: string[], stdin: string | null): PrintArgs 
     ? declared.map(toolList).reduce((acc, list) => acc.filter((t) => list.includes(t)))
     : null
   const model = values.get('--model') ?? 'claude-opus-5'
-  const maxTurns = Number(values.get('--max-turns') ?? 20)
-  if (!Number.isInteger(maxTurns) || maxTurns < 1) throw new Error(`thyrox -p: --max-turns pide un entero ≥ 1`)
-  const loopArgv = ['--prompt', prompt, '--model', model, '--max-turns', String(maxTurns),
+  const declaredTurns = values.get('--max-turns')
+  const explicitTurns = declaredTurns === undefined ? undefined : Number(declaredTurns)
+  if (explicitTurns !== undefined && (!Number.isInteger(explicitTurns) || explicitTurns < 1)) {
+    throw new Error(`thyrox -p: --max-turns pide un entero ≥ 1`)
+  }
+  // Sin bandera ni variable no hay tope: el ítem lo acota su plazo, no un conteo.
+  const maxTurns = resolveMaxTurnsFromEnv(explicitTurns, env)
+  const loopArgv = ['--prompt', prompt, '--model', model,
+    ...(maxTurns === undefined ? [] : ['--max-turns', String(maxTurns)]),
     '--provider', values.get('--provider') ?? 'http']
   // `claude` lee una lista (`user,project,local`); thyrox distingue «sólo el
   // proyecto» de lo demás, que es lo que el pool pide.
@@ -177,13 +193,21 @@ function readTranscript(path: string): TranscriptEntry[] {
  * quien despacha); `transcriptDir` se sustituye por uno temporal que se
  * borra al terminar cuando se pide `--no-session-persistence`.
  */
-export async function runPrint(argv: string[], cwd: string, transcriptDir: string, stdin: string | null): Promise<number> {
+export async function runPrint(argv: string[], cwd: string, transcriptDir: string, stdin: string | null,
+  deps: PrintDeps = {}): Promise<number> {
   let args: PrintArgs
   try {
     args = parsePrintArgs(argv, stdin)
   } catch (e) {
     process.stderr.write(`${(e as Error).message}\n`)
     return 2
+  }
+  // La línea se valida con el contrato de thyrox antes de delegar: lo que
+  // thyrox -p rehúsa no pasa a claude -p.
+  const env = deps.env ?? process.env
+  const delegation = decidePrintDelegation(argv, env, deps.findExecutable ?? ((name) => Bun.which(name)), deps.readFd)
+  if (delegation.delegate) {
+    return runDelegatedPrint(delegation.claudePath, delegatedArgv(argv, deps.newSessionId), stdin, env)
   }
   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
   const startedAt = performance.now()

@@ -18,13 +18,15 @@ F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
 cat > "$F/claude" <<'SH'
 #!/usr/bin/env bash
 entrada="$(cat)"
-modelo=""; persist=si; formato=""; verbose=no
+modelo=""; persist=si; formato=""; verbose=no; sid=sin; turns=sin
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --model) modelo="$2"; shift 2 ;;
     --no-session-persistence) persist=no; shift ;;
     --output-format) formato="$2"; shift 2 ;;
     --verbose) verbose=si; shift ;;
+    --session-id) sid="$2"; shift 2 ;;
+    --max-turns) turns="$2"; shift 2 ;;
     *) shift ;;
   esac
 done
@@ -38,7 +40,7 @@ case "$entrada" in *RAMPA*)
   echo "end $(date +%s.%N)" >> "$RAMPA_LOG" ;;
 esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}"
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|sid=$sid"
 if [[ "$formato" == stream-json ]]; then
   # Como el ejecutable: stream-json en -p exige --verbose.
   [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
@@ -102,12 +104,12 @@ check "sin parallel: exit 2" "$CODE" "2"
 check "sin parallel: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/parallel/{n++} END{print (n>0)}')" "1"
 SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin ejecutor: exit 2" "$CODE" "2"
-# El pool sólo corre `thyrox -p`: el nombre que permitía declarar `claude`
-# como ejecutor rehúsa entero y nombra el que lo reemplaza.
+# La variable que declaraba `claude` como ejecutor rehúsa entera y nombra la
+# bandera que la reemplaza.
 SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude HEADLESS_POOL_HISTORY_DIR="$F/hist-legacy" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "HEADLESS_POOL_CLAUDE retirada: exit 2" "$CODE" "2"
-check "HEADLESS_POOL_CLAUDE retirada: nombra HEADLESS_POOL_RUNNER" \
-  "$(printf '%s' "$SALIDA" | gawk '/HEADLESS_POOL_CLAUDE/ && /HEADLESS_POOL_RUNNER/{n++} END{print n+0}')" "1"
+check "HEADLESS_POOL_CLAUDE retirada: nombra --runner claude" \
+  "$(printf '%s' "$SALIDA" | gawk '/HEADLESS_POOL_CLAUDE/ && /--runner claude/{n++} END{print n+0}')" "1"
 check "HEADLESS_POOL_CLAUDE retirada: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
@@ -446,6 +448,47 @@ rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=1G corre alfa
 check "sin historial, la reserva sola es la cota" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1024M \(history\)/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=mucha corre alfa
 check "reserva ilegible: exit 2" "$CODE" "2"
+
+# 30 — `--runner claude`: el ítem corre con el `claude` del PATH, con la
+# misma línea de comando, y cada uno con su propio --session-id. Un
+# `claude -p` hijo hereda la sesión de quien lo lanza si no se le da otra
+# (.claude/workbench/claude-p-from-shell-20260928T234121).
+mkdir -p "$F/path-claude"; cp "$F/claude" "$F/path-claude/claude"
+run_with_claude() { SALIDA="$(printf '%s\n' "$@" | env -u HEADLESS_POOL_RUNNER PATH="$F/path-claude:$PATH" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 --runner claude ${EXTRA:-} 2>&1)"; CODE=$?; }
+rm -rf "$F/out"; run_with_claude alfa beta
+check "runner claude: exit 0" "$CODE" "0"
+check "runner claude: resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
+check "runner claude: sin sesión persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=stream-json"
+sids="$(cat "$F/out"/*.json | jq -r .result | gawk -F'sid=' '{print $2}')"
+check "runner claude: cada ítem trae un --session-id con forma de uuid" \
+  "$(printf '%s\n' "$sids" | grep -cE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')" "2"
+check "runner claude: los --session-id son distintos" "$(printf '%s\n' "$sids" | sort -u | wc -l)" "2"
+rm -rf "$F/out"; corre alfa
+check "runner thyrox por defecto: sin --session-id" "$(jq -r .result "$F/out/1.json" | gawk -F'sid=' '{print $2}')" "sin"
+# Sin --max-turns el pool no inventa un tope: el ítem lo acota su --timeout.
+turns_of() { jq -r .result "$F/out/1.json" | gawk -F'|' '{for (i=1;i<=NF;i++) if ($i ~ /^turns=/) print substr($i,7)}'; }
+check "sin --max-turns: el ítem corre sin tope de turnos" "$(turns_of)" "sin"
+rm -rf "$F/out"; EXTRA="--max-turns 7" corre alfa
+check "--max-turns declarado llega al ítem" "$(turns_of)" "7"
+rm -rf "$F/out"; run_with_claude alfa
+check "runner claude sin --max-turns: sin tope" "$(turns_of)" "sin"
+SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER PATH="$F/sin-claude:/usr/bin:/bin" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --runner claude 2>&1)"; CODE=$?
+check "runner claude sin claude en el PATH: exit 2" "$CODE" "2"
+check "runner claude sin claude en el PATH: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/REHUSA/ && /claude/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--runner otro" corre alfa
+check "runner desconocido: exit 2" "$CODE" "2"
+# El TTL llega con la variable que lee cada cliente: la de claude, no la de
+# thyrox (las dos declaradas en _references/claude-code-bin/2.1.283).
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" run_with_claude alfa
+check "runner claude con --cache-ttl: exit 0" "$CODE" "0"
+check "runner claude con --cache-ttl: la variable de claude, no la de thyrox" \
+  "$(jq -r .result "$F/out/1.json" | cut -d'|' -f5,6)" "ttl=5m|thx=sin"
+# El proxy de credencial funciona igual con claude: el ítem recibe el socket
+# y el marcador, y la credencial se queda en el proxy.
+rm -rf "$F/out" "$F/proxy-saw"; EXTRA="--credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_POOL_CREDENTIAL_PROXY="$F/credential-proxy" run_with_claude alfa beta
+check "runner claude con proxy: exit 0" "$CODE" "0"
+check "runner claude con proxy: el ítem ve el socket y el marcador, sin credencial" "$(cred_de)" "sock=$F/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin"
+check "runner claude con proxy: la credencial la recibe el proxy" "$(cut -d'|' -f1 "$F/proxy-saw" 2>/dev/null)" "sk-user"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
