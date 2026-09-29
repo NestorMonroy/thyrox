@@ -5,11 +5,15 @@
 # Uso: pool_integrate.sh OUT [--repo REPO] [--unverified]
 #
 # Aplica los ítems `verificado` (y `sin-verificar` con --unverified). Un
-# parche que toca un archivo que otro ítem ya cambió es `conflicto: <archivo>`
-# y no se aplica; uno que `git apply --check` rechaza es `no-aplica`. No
-# commitea: los archivos aplicados quedan en el árbol para que quien integra
-# los commitee por pathspec. Escribe OUT/integration.tsv (ítem, resultado) y
-# una línea `aplicados=A conflictos=C no-aplicables=X`. Sale 0 si todo lo
+# `con-stash` nunca se aplica —el ítem intentó `git stash`—, y tampoco un
+# ítem con `<n>.shared-stash-anomaly`: su intervalo se solapó con una
+# mutación de refs/stash que no se le puede atribuir, y queda anotado como
+# `anomalia-stash-compartido: <hashes>` para revisión humana. Un parche que
+# toca un archivo que otro ítem ya cambió es `conflicto: <archivo>` y no se
+# aplica; uno que `git apply --check` rechaza es `no-aplica`. No commitea:
+# los archivos aplicados quedan en el árbol para que quien integra los
+# commitee por pathspec. Escribe OUT/integration.tsv (ítem, resultado) y una
+# línea `aplicados=A conflictos=C no-aplicables=X`. Sale 0 si todo lo
 # aplicable se aplicó, 1 si hubo conflicto o no-aplica, 2 si no pudo medir.
 set -uo pipefail
 out="${1:?falta OUT}"; shift
@@ -34,6 +38,14 @@ while IFS=$'\t' read -r n _; do
         sin-verificar) [[ -n "$unverified" ]] || { printf '%s\t%s\n' "$n" "$verdict" >> "$out/integration.tsv"; continue; } ;;
         *) printf '%s\t%s\n' "$n" "$verdict" >> "$out/integration.tsv"; continue ;;
     esac
+    # Un item cuyo intervalo se solapó con una mutación de refs/stash que no
+    # se le puede atribuir no se integra solo: queda para revisión humana,
+    # con los hashes que la originaron.
+    if [[ -s "$out/$n.shared-stash-anomaly" ]]; then
+        hashes="$(paste -sd, "$out/$n.shared-stash-anomaly")"
+        printf '%s\tanomalia-stash-compartido: %s\n' "$n" "$hashes" >> "$out/integration.tsv"
+        continue
+    fi
     clash=""
     while read -r file; do
         [[ -n "$file" && -n "${touched[$file]:-}" ]] && { clash="$file"; break; }

@@ -13,7 +13,16 @@
 #
 # Veredictos: `fallido` (el ítem salió con error), `sin-cambios` (diff vacío),
 # `verificado` / `rechazado` (VERIFY salió 0 / con error, corrido en el
-# worktree) y `sin-verificar` (hubo cambios y no se declaró VERIFY).
+# worktree), `sin-verificar` (hubo cambios y no se declaró VERIFY) y
+# `con-stash` (el ítem intentó `git stash`; ver `item_git_guard/git`).
+#
+# Un stash ajeno que aparece en refs/stash durante el intervalo del ítem —sin
+# que el ítem lo haya intentado por el envoltorio— es una ANOMALÍA COMPARTIDA,
+# no una atribución: se deja en `<out>/unexpected-stashes/` y el ítem que la
+# observó deja `<n>.shared-stash-anomaly`, sin cambiar su veredicto. Lo que
+# este mecanismo NO ve: un stash creado y retirado dentro del intervalo del
+# ítem —ya no está en la pila al comparar en `finalize`— ni un
+# `git stash create` sin `store`, que crea el commit sin tocar `refs/stash`.
 set -uo pipefail
 
 # El worktree de un ítem vive en `.thyrox/pool-worktrees/` de la raíz del
@@ -135,7 +144,12 @@ prepare() {
     root="${base%/*}"
     exclude_default_root "$repo" || return 2
     dir="$base/$n"
-    mkdir -p "$base" || return 2
+    mkdir -p "$base" "$out" || return 2
+    # La pila de stash y el instante de arranque, para que `finalize` pueda
+    # distinguir una entrada nueva de una que ya estaba: `refs/stash` es
+    # compartido entre todos los worktrees del repositorio.
+    git -C "$repo" stash list --format=%H > "$out/$n.stash-baseline" 2>/dev/null
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$out/$n.stash-started"
     # El candado es de la raíz, no de la ejecución: la admisión por disco sólo
     # vale si ningún otro pool crea un worktree entre la medida y el alta.
     (
@@ -217,12 +231,63 @@ sweep_orphans() {
     done
 }
 
+# Registra en `<out>/unexpected-stashes/` una entrada de refs/stash que
+# apareció durante el intervalo de un ítem sin que ése la haya intentado por
+# el envoltorio. Idempotente bajo un candado propio: si el parche ya existe
+# sólo añade al ítem como observador, nunca vuelve a crearlo ni lo aplica.
+record_unexpected_stash() {
+    local repo="$1" out="$2" n="$3" hash="$4" message="$5"
+    local dir="$out/unexpected-stashes" patch meta started ended
+    mkdir -p "$dir" || return 2
+    patch="$dir/$hash.patch"
+    meta="$dir/$hash.meta"
+    started="$(cat "$out/$n.stash-started" 2>/dev/null || echo desconocido)"
+    ended="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    (
+        flock 9
+        if [[ ! -f "$patch" ]]; then
+            git -C "$repo" stash show -p --binary "$hash" > "$patch" 2>/dev/null
+            {
+                printf 'hash: %s\n' "$hash"
+                printf 'mensaje: %s\n' "$message"
+                printf 'primer-item: %s\n' "$n"
+            } > "$meta"
+        fi
+        grep -q "^item: $n intervalo:" "$meta" 2>/dev/null \
+            || printf 'item: %s intervalo: %s-%s\n' "$n" "$started" "$ended" >> "$meta"
+    ) 9> "$dir/.lock"
+}
+
+# Compara la pila de stash actual contra la observada al preparar el ítem
+# (`<n>.stash-baseline`). Una entrada nueva es una ANOMALÍA COMPARTIDA del
+# repositorio, no una atribución al ítem: se registra y se deja
+# `<n>.shared-stash-anomaly`, sin tocar el veredicto.
+check_shared_stash_anomaly() {
+    local repo="$1" out="$2" n="$3"
+    local baseline="$out/$n.stash-baseline" hash rest anomalies=()
+    [[ -f "$baseline" ]] || return 0
+    while IFS=' ' read -r hash rest; do
+        [[ -n "$hash" ]] || continue
+        gawk -v h="$hash" '$0 == h {found = 1} END {exit !found}' "$baseline" && continue
+        anomalies+=("$hash")
+        record_unexpected_stash "$repo" "$out" "$n" "$hash" "$rest"
+    done < <(git -C "$repo" stash list --format='%H %gs' 2>/dev/null)
+    [[ "${#anomalies[@]}" -gt 0 ]] && printf '%s\n' "${anomalies[@]}" > "$out/$n.shared-stash-anomaly"
+    return 0
+}
+
 finalize() {
     local repo="$1" dir="$2" out="$3" n="$4" rc="$5" verify="${6:-}" verdict
     git -C "$dir" add -A
     git -C "$dir" diff --cached --binary HEAD > "$out/$n.patch"
     git -C "$dir" diff --cached --name-only HEAD > "$out/$n.files"
-    if [[ "$rc" -ne 0 ]]; then
+    check_shared_stash_anomaly "$repo" "$out" "$n"
+    if [[ -s "$out/$n.stash-attempts" ]]; then
+        # Precedencia sobre cualquier otro veredicto: el ítem intentó stashear
+        # su trabajo, y eso es lo primero que hay que saber de él, gane o
+        # pierda el resto de la evaluación.
+        verdict=con-stash
+    elif [[ "$rc" -ne 0 ]]; then
         verdict=fallido
     elif [[ ! -s "$out/$n.patch" ]]; then
         verdict=sin-cambios

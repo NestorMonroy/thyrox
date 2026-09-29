@@ -36,7 +36,8 @@
 # `--isolation worktree` hace que cada item implemente: corre en su propio
 # worktree desde HEAD (`item_worktree.sh`), con Bash como única herramienta por
 # defecto, y al terminar deja <n>.patch, <n>.files y <n>.verdict
-# (`verificado`, `rechazado`, `sin-verificar`, `sin-cambios` o `fallido`;
+# (`verificado`, `rechazado`, `sin-verificar`, `sin-cambios`, `fallido` o
+# `con-stash` —el ítem intentó `git stash`, que el pool rehúsa—;
 # `--verify CMD` corre en el worktree). El arbol principal no cambia:
 # `bin/pool_integrate OUT` aplica lo verificado y disjunto, y el commit es de
 # quien integra.
@@ -392,6 +393,13 @@ _headless_item() {
              export THYROX_JOBS_DIR="$HP_OUT/$n.jobs" \
                     THYROX_SESSION_LEDGER_DIR="$HP_OUT/$n.ledger" \
                     THYROX_JOBS_ARCHIVE_DIR="$HP_OUT/$n.jobs"
+             # El envoltorio de `git` que rehúsa `git stash` (refs/stash es
+             # compartido entre worktrees, TASK-THYROX-0604): va antes en el
+             # PATH del ítem, y el archivo donde registra cada intento
+             # rehusado es el que `item_worktree.sh finalize` lee para dar el
+             # veredicto `con-stash`.
+             export THYROX_POOL_STASH_ATTEMPTS_FILE="$HP_OUT/$n.stash-attempts"
+             export PATH="$HP_ITEM_GIT_GUARD_DIR:$PATH"
          fi
          # Cada cliente lee el TTL con su propio nombre: `thyrox -p`
          # THYROX_CODE_PROMPT_CACHE_TTL, `claude -p` CLAUDE_CODE_PROMPT_CACHE_TTL.
@@ -456,6 +464,7 @@ export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
+export HP_ITEM_GIT_GUARD_DIR="${HEADLESS_POOL_ITEM_GIT_GUARD_DIR:-$HP_HERE/item_git_guard}"
 # El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
 # y mientras alguno viva, el barrido de huérfanos de una sesión nueva no toca
 # estos worktrees.
@@ -512,6 +521,7 @@ if [[ "$ISOLATION" == worktree ]]; then
     cat "$OUT"/*.verdict 2>/dev/null | gawk '{c[$1]++} END {
         printf "verificados=%d rechazados=%d sin-cambios=%d fallidos=%d", c["verificado"], c["rechazado"], c["sin-cambios"], c["fallido"]
         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
+        if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
         print "" }'
     bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT"
 fi
