@@ -616,9 +616,9 @@ desuscribir-cwd (1), siempre-cwd (1), slug-condicion (1), raiz (1), cwd (1).
 | R-2b-2c | `eo` (`Ndt`, `dqn`, `Vi`, `U6e`: claims del token de una sesión de trabajo remota), que completa `remoteManaged` | pendiente |
 | R-2b-2d | créditos de uso en el mensaje de `extra_usage_disabled` (`_6e`, `M5`, `hy`, `Ex`, `DC`, `c2o`, `Run`, `nqn`, `dKn`) | pendiente |
 | R-2b-5 | ciclo de vida del estado de la organización de 2.1.283 (`Vg`: `replaceOrgStatus`, `$Oo` con su guarda de origen, `source: 'server'` al leer del servidor, avisos de créditos agotados, rechazo por excedente `lC`) | pendiente |
-| R-2b-3 | `Yl` (preferencia con opt-in por sesión), `Ndn`, `oA`, `Dt` (espacio remoto), `Ea` (canal de control remoto) | pendiente |
-| R-2b-4 | modelo y nombre visible del modo rápido (`Rte`, `K$`); 2.1.283 ya no tiene la anulación a Opus 4.6 que `getFastModeModel` y `agent/prompts.ts` conservan | pendiente |
-| R-2c | alcance del modelo de respaldo (`vV`: `ahe`, `$h`/`Be` con `refusal_fallback`, `MNe`, `Tle`, `$5`, `izn`) | pendiente |
+| R-2b-3 | `Yl` (preferencia con opt-in por sesión), `Ndn`, `oA`, `Dt` (espacio remoto), `Ea` (canal de control remoto) | hecha para `Yl`, `Ndn`, `oA` (`thyrox@21328857`, banco `fast-mode-r2b3-*`); `Dt` y `Ea` llegan resueltos por el llamador y su porte sigue pendiente |
+| R-2b-4 | modelo y nombre visible del modo rápido (`Rte`, `K$`); 2.1.283 ya no tiene la anulación a Opus 4.6 que `getFastModeModel` y `agent/prompts.ts` conservan | hecha (`thyrox@1ee6834f`, banco `fast-mode-r2b4-*`) |
+| R-2c | alcance del modelo de respaldo (`vV`: `ahe`, `$h`/`Be` con `refusal_fallback`, `MNe`, `Tle`, `$5`, `izn`) | hecha (`agent/modelScope.ts`, entró en `thyrox@711314d4`) |
 | R-2d | cableado: `Pyt` sobre el `setState` del almacén del REPL y `b8r` en el modo headless (olvida el modelo pedido por el usuario), con las dependencias de R-2b y R-2c | pendiente |
 
 ### Fase C — el módulo cliente y de recibos (`chunk-qcy58j4w.js`)
