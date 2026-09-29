@@ -2,10 +2,11 @@
  * Elige el adaptador del estado compartido en caliente (ADR-THYROX-006, 1.1.0).
  *
  * Con `THYROX_REDIS_URL` abre el adaptador Redis; sin ella, el de memoria, que
- * sólo vale para un proxy. Si Redis falla a mitad de operación, el almacén
- * degrada a memoria con un aviso y no vuelve a intentarlo: la vista global se
- * pierde, pero el proxy sigue atendiendo. Lo que exige vista global en modo
- * multi-proxy rehúsa en su propio consumidor, no aquí.
+ * sólo vale para un proxy. Si Redis falla a mitad de operación, esa llamada se
+ * atiende en memoria con un aviso, y la siguiente vuelve a intentar Redis: una
+ * caída breve no deja al proxy con la vista local hasta reiniciarlo. El aviso
+ * sale al entrar en degradación, no en cada llamada mientras dura. Lo que exige
+ * vista global en modo multi-proxy rehúsa en su propio consumidor, no aquí.
  */
 import { createMemorySharedStateStore } from './memory.ts'
 import type { SharedStateStore } from './port.ts'
@@ -39,18 +40,23 @@ export function openSharedStateStore(options: OpenSharedStateOptions = {}): Open
   const warn = options.warn ?? ((message: string) => console.warn(message))
   const redis = createRedis(url)
   let fallback: SharedStateStore | null = null
+  let degraded = false
 
-  // Cada operación va a redis hasta el primer fallo; desde ahí, a memoria.
+  // Cada operación intenta redis primero; si falla, la atiende memoria.
   async function call<T>(operation: (store: SharedStateStore) => Promise<T>): Promise<T> {
-    if (fallback) return operation(fallback)
     try {
-      return await operation(redis)
+      const result = await operation(redis)
+      degraded = false
+      return result
     } catch (error) {
-      fallback = createMemory()
-      warn(
-        `${REDIS_URL_ENV}: redis falló (${error instanceof Error ? error.message : String(error)}); ` +
-          'el estado compartido degrada a memoria local de este proxy',
-      )
+      if (!degraded) {
+        warn(
+          `${REDIS_URL_ENV}: redis falló (${error instanceof Error ? error.message : String(error)}); ` +
+            'el estado compartido degrada a memoria local de este proxy hasta que redis responda',
+        )
+      }
+      degraded = true
+      fallback ??= createMemory()
       return operation(fallback)
     }
   }
@@ -66,5 +72,5 @@ export function openSharedStateStore(options: OpenSharedStateOptions = {}): Open
       if (fallback) await fallback.close()
     },
   }
-  return { store, backend: 'redis', degraded: () => fallback !== null }
+  return { store, backend: 'redis', degraded: () => degraded }
 }

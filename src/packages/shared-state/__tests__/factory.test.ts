@@ -64,7 +64,7 @@ describe('openSharedStateStore', () => {
     expect(opened.backend).toBe('memory')
   })
 
-  test('si redis falla a mitad de operación degrada a memoria con un aviso, una sola vez', async () => {
+  test('si redis falla degrada a memoria con un aviso y reintenta redis en la llamada siguiente', async () => {
     const calls: string[] = []
     const warnings: string[] = []
     const opened = openSharedStateStore({
@@ -75,11 +75,45 @@ describe('openSharedStateStore', () => {
     })
     expect(await opened.store.acquireLease('l', 'a', 1000)).toBe(true)
     expect(await opened.store.incrementWindow('k', 1000)).toBe(1)
-    // El primer intento fue a redis; desde ahí, sólo memoria.
-    expect(calls).toEqual(['redis', 'memory', 'memory'])
+    // ADR-THYROX-006: cada llamada vuelve a intentar redis antes de caer a memoria.
+    expect(calls).toEqual(['redis', 'memory', 'redis', 'memory'])
+    // El aviso sale al entrar en degradación, no en cada llamada mientras dura.
     expect(warnings).toHaveLength(1)
     expect(warnings[0]).toContain('redis caído')
     expect(opened.degraded()).toBe(true)
+  })
+
+  test('cuando redis vuelve, la llamada siguiente lo usa y deja de estar degradado', async () => {
+    const calls: string[] = []
+    const warnings: string[] = []
+    let down = true
+    const redis = fakeStore('redis', calls)
+    const flaky: SharedStateStore = {
+      ...redis,
+      getWithTtl: async key => {
+        if (down) {
+          calls.push('redis')
+          throw new Error('redis caído')
+        }
+        return redis.getWithTtl(key)
+      },
+    }
+    const opened = openSharedStateStore({
+      env: { [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => flaky,
+      warn: message => warnings.push(message),
+    })
+    await opened.store.getWithTtl('k')
+    expect(opened.degraded()).toBe(true)
+    down = false
+    expect(await opened.store.getWithTtl('k')).toBe('v')
+    expect(calls).toEqual(['redis', 'memory', 'redis'])
+    expect(opened.degraded()).toBe(false)
+    // Una segunda caída vuelve a avisar: es otra transición.
+    down = true
+    await opened.store.getWithTtl('k')
+    expect(warnings).toHaveLength(2)
   })
 
   test('close cierra los dos adaptadores que llegaron a abrirse', async () => {
