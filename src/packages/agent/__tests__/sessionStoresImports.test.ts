@@ -10,8 +10,7 @@
  * estático necesario, fuera de este archivo) llega a
  * `repl/promptSuggestion.js` vía `state/AppStateCompat.ts`, y ese camino
  * por sí solo ya arrastra ~150 módulos de `repl` — independiente de
- * `onChangeAppState` y fuera del alcance de este corte (no es
- * `sessionStores.ts` ni un consumidor de `repl`).
+ * `onChangeAppState`: ese camino no pasa por `sessionStores.ts`.
  */
 import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
@@ -24,13 +23,18 @@ describe('sessionStores.ts no nombra el paquete repl', () => {
       entrypoints: [ENTRY],
       target: 'bun',
       metafile: true,
+      // Sólo cuentan las aristas directas: los paquetes del workspace quedan
+      // fuera del recorrido y aparecen por su especificador. Recorrerlos
+      // desde la raíz del árbol no es determinista (Bun 1.3.11 publica un
+      // número distinto de «Could not resolve» en cada ejecución).
+      packages: 'external',
     })
     expect(result.success).toBe(true)
     const inputs = result.metafile!.inputs
     const entry = Object.keys(inputs).find(p => p.endsWith('sessionStores.ts'))!
     const directRepl = inputs[entry]!.imports
       .map(i => i.path)
-      .filter(p => p.includes('/packages/repl/'))
+      .filter(p => p.startsWith('@thyrox/repl') || p.includes('/packages/repl/'))
     expect(directRepl).toEqual([])
   })
 

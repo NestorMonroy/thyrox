@@ -31,7 +31,7 @@
  * `null`, y los alias de mercados no se reconocen. pendiente: cuando exista
  * `gn`/las claves de mercados dejen de ser diferidas.
  *
- * Símbolos de `symbol-UP-level3.txt` que este pase NO porta, y por qué:
+ * Símbolos de `symbol-UP-level3.txt` que no se portan, y por qué:
  * - `tm` — `structuredClone` con trazado; utilidad genérica sin relación con
  *   el rescate, y sin infraestructura de trazado en este puerto.
  * - `At` — agrega nueve validadores de entradas de servidor MCP
