@@ -1,0 +1,13 @@
+src/agents/agent_store.py
+src/packages/agent/__tests__/contextGovernance.test.ts
+src/packages/agent/__tests__/hooksEvents.test.ts
+src/packages/agent/__tests__/taskCitation.test.ts
+src/packages/agent/__tests__/taskReminder.test.ts
+src/packages/cli/__tests__/rstTasks.test.ts
+src/packages/task/schema.ts
+src/packages/tools/__tests__/subagent.test.ts
+src/packages/tools/__tests__/taskDbValidation.test.ts
+src/packages/tools/__tests__/taskSessionHighwater.test.ts
+src/packages/tools/__tests__/todoWrite.test.ts
+src/packages/tools/src/tasks.ts
+tests/agents/test_agent_store_migrations.py
