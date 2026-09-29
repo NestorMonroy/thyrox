@@ -550,6 +550,60 @@ function thyrox_toolchain_require_redis() {
 }
 export -f thyrox_toolchain_require_redis
 
+# @description El comando que instala podman. Declarado por la misma razon
+# que sus hermanos: un control necesita inyectar un instalador que MIENTA
+# —que salga cero sin instalar nada— para probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD="${THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD:-sudo apt-get install -y podman}"
+
+# @description Asegura `podman`, motor de contenedores sin daemon. Mismo
+# contrato que `thyrox_toolchain_require_redis`: instalar es opt-in
+# (`THYROX_INSTALL_PODMAN=1`), el rechazo no emite conteo, y el exito NO se
+# lee del codigo de salida de apt ni de `--version`: se RE-COMPRUEBA
+# invocando `podman info`, porque `command -v` sólo prueba que el nombre
+# resuelve en el PATH y `--version` sólo prueba que el binario arranca —
+# ninguno de los dos ejercita el runtime OCI ni el almacenamiento, que es
+# donde un cgroups mal montado o un `runc` ausente rompen en la practica. La
+# ruta resuelta queda exportada en THYROX_TOOLCHAIN_PODMAN_BIN para quien la
+# necesite sin volver a buscarla.
+# @noargs
+# @exitcode 0 El binario responde a `info`; THYROX_TOOLCHAIN_PODMAN_BIN resuelto.
+# @exitcode 2 No esta, o `info` falla, y no se pudo o no se quiso instalar.
+function thyrox_toolchain_require_podman() {
+  local bin="${THYROX_TOOLCHAIN_PODMAN_BIN:-podman}"
+  local resolved
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -n "$resolved" ]] && "$resolved" info >/dev/null 2>&1; then
+    THYROX_TOOLCHAIN_PODMAN_BIN="$resolved"
+    export THYROX_TOOLCHAIN_PODMAN_BIN
+    return 0
+  fi
+
+  if [[ "${THYROX_INSTALL_PODMAN:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin' (paquete podman) y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_PODMAN=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+
+  $THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD >&2 2>&1 || true
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -z "$resolved" ]] || ! "$resolved" info >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin responder info." >&2
+    echo "                  Se re-comprueba inicializando runtime y almacenamiento," >&2
+    echo "                  no se lee su exit." >&2
+    return 2
+  fi
+
+  THYROX_TOOLCHAIN_PODMAN_BIN="$resolved"
+  export THYROX_TOOLCHAIN_PODMAN_BIN
+  return 0
+}
+export -f thyrox_toolchain_require_podman
+
 # @description El comando que instala iproute2. Declarado para que un control
 # pueda inyectar un instalador que MIENTA y probar que el exito se
 # re-comprueba.
