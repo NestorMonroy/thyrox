@@ -564,6 +564,9 @@
     "src/packages/plan": {
       "name": "@thyrox/plan",
       "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/config": "0.1.0",
+      },
       "devDependencies": {
         "@types/bun": "^1.4.0",
       },
