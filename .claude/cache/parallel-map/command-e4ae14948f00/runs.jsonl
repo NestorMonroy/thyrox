@@ -1,1 +1,2 @@
 {"items_measured": 9, "max_wall_s": 0.0, "min_wall_s": 0.0, "peak_kb": 3468, "median_kb": 3400, "p90_kb": 3468, "recorded_at": "2026-09-29T07:02:57Z", "items_gpu_measured": 0}
+{"items_measured": 17, "max_wall_s": 0.0, "min_wall_s": 0.0, "peak_kb": 3488, "median_kb": 3404, "p90_kb": 3480, "recorded_at": "2026-09-29T07:10:37Z", "items_gpu_measured": 0}
