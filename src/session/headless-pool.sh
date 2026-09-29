@@ -389,13 +389,21 @@ done
 _headless_item() {
     local n="$1" rc=0 publish_rc=0
     local -r publish_failed_exit=7
-    bash "$HP_LIFECYCLE" begin "$HP_LIVE" "$HP_OUT" "$n" --owner "$BASHPID" \
-        > /dev/null 2>> "$HP_LIVE/$n.lifecycle.err" || return "$publish_failed_exit"
+    HP_ITEM_GENERATION="$(bash "$HP_LIFECYCLE" begin "$HP_LIVE" "$HP_OUT" "$n" --owner "$BASHPID" \
+        2>> "$HP_LIVE/$n.lifecycle.err")" || return "$publish_failed_exit"
+    export HP_ITEM_GENERATION
     rm -f "${HP_LIVE:?}/${n:?}.lifecycle.err"
     _headless_item_run "$@" || rc=$?
     bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" \
         2>> "$HP_LIVE/$n.lifecycle.err" || publish_rc=$?
     [[ "$publish_rc" -eq 0 ]] || return "$publish_failed_exit"
+    # La foto del worktree es un punto de recuperación: un ítem publicado con
+    # éxito ya no la necesita y su ref se retira; la de un ítem fallido o
+    # cancelado se conserva para `recovery_controller recover`.
+    if [[ "$rc" -eq 0 && "$HP_ISOLATION" == worktree && -s "$HP_OUT/$n.snapshot.json" ]]; then
+        git -C "$HP_WORKDIR" update-ref -d "refs/thyrox/snapshots/${HP_LIVE##*/}/$n/$HP_ITEM_GENERATION" \
+            "$(jq -r .snapshot_commit "$HP_OUT/$n.snapshot.json")" 2>> "$HP_OUT/$n.err"
+    fi
     return "$rc"
 }
 export -f _headless_item
@@ -527,7 +535,18 @@ _headless_item_run() {
     # <<< item-drain
     [[ -z "$monitor" ]] || wait "$monitor"
     [[ -z "$HP_VRAM_NEED" ]] || bash "$HP_GPU" release --ledger "$HP_VRAM_LEDGER" --owner "$owner"
-    [[ "$HP_ISOLATION" != worktree ]] || bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_LIVE" "$n" "$rc" "$HP_VERIFY"
+    if [[ "$HP_ISOLATION" == worktree ]]; then
+        # Antes de que `finalize` retire el worktree, su estado queda guardado
+        # en objetos de git bajo refs/thyrox/snapshots/<run>/<n>/<gen>: si algo
+        # falla después, `recovery_controller recover` lo abre aparte. Una foto
+        # que no se pudo tomar se declara en el `.err`; no cambia el veredicto.
+        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING 2>> "$HP_LIVE/$n.err"
+        bash "$HP_SNAPSHOT" take "$workdir" "${HP_LIVE##*/}" "$n" "$HP_ITEM_GENERATION" \
+            > "$HP_LIVE/$n.snapshot.json" 2>> "$HP_LIVE/$n.err" \
+            || echo "no se pudo guardar la foto del worktree del ítem" >> "$HP_LIVE/$n.err"
+        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING 2>> "$HP_LIVE/$n.err"
+        bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_LIVE" "$n" "$rc" "$HP_VERIFY"
+    fi
     # El .json de siempre es la linea `result` del stream: sus consumidores
     # no cambian. El stream se queda porque es lo unico que trae el uso de
     # cada peticion; `usage.iterations` del result trae solo la ultima.
@@ -553,6 +572,7 @@ HP_DRAIN_SECONDS="${HEADLESS_POOL_ITEM_DRAIN_SECONDS:-30}"
     || rehusa "HEADLESS_POOL_ITEM_DRAIN_SECONDS va en segundos, no: $HP_DRAIN_SECONDS"
 export HP_DRAIN_SECONDS
 export HP_PROCESS_OWNERSHIP="$HP_BIN/process_ownership" HP_WRITER_INSPECTOR="$HP_BIN/writer_inspector"
+export HP_SNAPSHOT="$HP_BIN/snapshot_store"
 export HP_ITEM_GIT_GUARD_DIR="${HEADLESS_POOL_ITEM_GIT_GUARD_DIR:-$HP_HERE/item_git_guard}"
 # El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
 # y mientras alguno viva, el barrido de huérfanos de una sesión nueva no toca
