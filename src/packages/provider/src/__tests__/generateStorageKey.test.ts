@@ -8,7 +8,9 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { STORAGE_KEY_VARIABLE } from '../accounts/fieldCipher.ts'
+import { Database } from 'bun:sqlite'
+
+import { createFieldCipher, STORAGE_KEY_VARIABLE } from '../accounts/fieldCipher.ts'
 import { main } from '../../bin/generateStorageKey.ts'
 
 function tmpEnvDir(): string {
@@ -16,7 +18,7 @@ function tmpEnvDir(): string {
 }
 
 /** Captura stdout/stderr sin tocar el terminal de la suite. */
-async function run(argv: string[]) {
+async function run(argv: string[], deps?: Parameters<typeof main>[1]) {
   const out: string[] = []
   const err: string[] = []
   const so = process.stdout.write.bind(process.stdout)
@@ -24,7 +26,7 @@ async function run(argv: string[]) {
   process.stdout.write = ((s: string) => { out.push(String(s)); return true }) as typeof process.stdout.write
   process.stderr.write = ((s: string) => { err.push(String(s)); return true }) as typeof process.stderr.write
   try {
-    const code = await main(argv)
+    const code = await main(argv, deps)
     return { code, out: out.join(''), err: err.join('') }
   } finally {
     process.stdout.write = so
@@ -147,5 +149,114 @@ describe('el entorno de la suite', () => {
     // Este caso corre después del que fija THYROX_ROOT a un temporal: el
     // afterEach tiene que haber devuelto el valor con que arrancó la suite.
     expect(process.env.THYROX_ROOT).toBe(inheritedRoot)
+  })
+})
+
+describe('--rotate', () => {
+  const OLD_KEY = 'a'.repeat(64)
+  const inheritedDataDir = process.env.THYROX_PROVIDERS_DATA_DIR
+  afterEach(() => {
+    if (inheritedDataDir === undefined) delete process.env.THYROX_PROVIDERS_DATA_DIR
+    else process.env.THYROX_PROVIDERS_DATA_DIR = inheritedDataDir
+  })
+
+  /** Un `.env` con la clave anterior y un store con una credencial que ella cifró. */
+  function fixture() {
+    const dir = tmpEnvDir()
+    dirsToClean.push(dir)
+    const envFile = join(dir, '.env')
+    writeFileSync(envFile, `OTRA=1\n${STORAGE_KEY_VARIABLE}=${OLD_KEY}\nFIN=2\n`)
+    process.env.THYROX_PROVIDERS_DATA_DIR = dir
+    const db = new Database(join(dir, 'connections.sqlite3'))
+    db.run('CREATE TABLE provider_connections (id TEXT PRIMARY KEY, api_key TEXT, access_token TEXT, refresh_token TEXT, id_token TEXT)')
+    const stored = createFieldCipher(OLD_KEY, () => {}).encrypt('sk-guardada') as string
+    db.query('INSERT INTO provider_connections (id, api_key) VALUES (?, ?)').run('c1', stored)
+    db.close()
+    return { dir, envFile }
+  }
+
+  function storedApiKey(dir: string): string | null {
+    const db = new Database(join(dir, 'connections.sqlite3'), { readonly: true })
+    const row = db.query('SELECT api_key FROM provider_connections WHERE id = ?').get('c1') as { api_key: string | null }
+    db.close()
+    return row.api_key
+  }
+
+  function declaredKey(envFile: string): string | undefined {
+    return readFileSync(envFile, 'utf8').match(new RegExp(`^${STORAGE_KEY_VARIABLE}=(.*)$`, 'm'))?.[1]
+  }
+
+  test('reemplaza la clave en su sitio, recifra el store y no imprime ninguna clave', async () => {
+    const { dir, envFile } = fixture()
+
+    const { code, out, err } = await run(['--rotate', '--env-file', envFile])
+
+    expect(code).toBe(0)
+    const next = declaredKey(envFile)!
+    expect(next).not.toBe(OLD_KEY)
+    expect(readFileSync(envFile, 'utf8')).toBe(`OTRA=1\n${STORAGE_KEY_VARIABLE}=${next}\nFIN=2\n`)
+    expect(createFieldCipher(next, () => {}).decrypt(storedApiKey(dir))).toBe('sk-guardada')
+    expect(createFieldCipher(OLD_KEY, () => {}).decrypt(storedApiKey(dir))).toBeNull()
+    for (const text of [out, err]) {
+      expect(text).not.toContain(next)
+      expect(text).not.toContain(OLD_KEY)
+    }
+  })
+
+  test('sin clave declarada no hay nada que rotar: sale 1 y no escribe', async () => {
+    const dir = tmpEnvDir()
+    dirsToClean.push(dir)
+    const envFile = join(dir, '.env')
+    writeFileSync(envFile, 'OTRA=1\n')
+
+    const { code, err } = await run(['--rotate', '--env-file', envFile])
+
+    expect(code).toBe(1)
+    expect(err).toContain(STORAGE_KEY_VARIABLE)
+    expect(readFileSync(envFile, 'utf8')).toBe('OTRA=1\n')
+  })
+
+  test('si el store rehúsa, el .env queda intacto', async () => {
+    const { dir, envFile } = fixture()
+    const db = new Database(join(dir, 'connections.sqlite3'))
+    const foreign = createFieldCipher('otra-clave', () => {}).encrypt('x') as string
+    db.query('INSERT INTO provider_connections (id, access_token) VALUES (?, ?)').run('c2', foreign)
+    db.close()
+    const before = readFileSync(envFile, 'utf8')
+
+    const { code, err } = await run(['--rotate', '--env-file', envFile])
+
+    expect(code).toBe(1)
+    expect(err).toContain('c2')
+    expect(readFileSync(envFile, 'utf8')).toBe(before)
+    expect(createFieldCipher(OLD_KEY, () => {}).decrypt(storedApiKey(dir))).toBe('sk-guardada')
+  })
+
+  test('si no se puede publicar el .env nuevo, devuelve el store a la clave anterior', async () => {
+    const { dir, envFile } = fixture()
+    const before = readFileSync(envFile, 'utf8')
+
+    const { code } = await run(['--rotate', '--env-file', envFile], {
+      rename: () => {
+        throw new Error('rename denegado')
+      },
+    })
+
+    expect(code).toBe(2)
+    expect(readFileSync(envFile, 'utf8')).toBe(before)
+    expect(createFieldCipher(OLD_KEY, () => {}).decrypt(storedApiKey(dir))).toBe('sk-guardada')
+  })
+
+  test('sin store todavía, sólo reemplaza la clave', async () => {
+    const dir = tmpEnvDir()
+    dirsToClean.push(dir)
+    const envFile = join(dir, '.env')
+    writeFileSync(envFile, `${STORAGE_KEY_VARIABLE}=${OLD_KEY}\n`)
+    process.env.THYROX_PROVIDERS_DATA_DIR = join(dir, 'sin-store')
+
+    const { code } = await run(['--rotate', '--env-file', envFile])
+
+    expect(code).toBe(0)
+    expect(declaredKey(envFile)).not.toBe(OLD_KEY)
   })
 })

@@ -15,16 +15,28 @@
  * conexiones que esa clave ya cifró. La clave nunca se imprime, ni por stdout
  * ni por stderr.
  *
- * Salidas: 0 escrita · 1 la variable ya está declarada · 2 invocación
+ *   bun bin/generateStorageKey.ts --rotate [--env-file <ruta>]
+ *
+ * `--rotate` reemplaza una clave ya declarada: recifra con la nueva las
+ * credenciales del store de conexiones (`rotateStorageKey`, en una sola
+ * transacción) y sólo entonces publica el `.env` nuevo, escrito antes a un
+ * archivo hermano y movido encima. Si el store rehúsa, el `.env` no cambia;
+ * si el `.env` no se puede publicar, el store vuelve a la clave anterior.
+ *
+ * Salidas: 0 escrita o rotada · 1 la variable ya está declarada (sin
+ * `--rotate`), no hay clave que rotar, o el store rehusó · 2 invocación
  * inválida (falta el valor de `--env-file`, o no se pudo derivar la raíz de
- * thyrox para el valor por defecto).
+ * thyrox para el valor por defecto), o el `.env` rotado no se pudo publicar.
  */
 import { randomBytes } from 'node:crypto'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { Database } from 'bun:sqlite'
+import { existsSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { thyroxRoot } from '@thyrox/paths/reach.ts'
 
+import { CONNECTIONS_DB_FILE, resolveProvidersDataDir } from '../src/accounts/connectionStoreHome.ts'
 import { STORAGE_KEY_VARIABLE } from '../src/accounts/fieldCipher.ts'
+import { rotateStorageKey, type RotationOutcome } from '../src/accounts/storageKeyRotation.ts'
 
 const KEY_BYTES = 32
 
@@ -86,7 +98,71 @@ function writeKey(path: string, key: string): void {
   writeFileSync(path, `${withNewline}${declaration}\n`)
 }
 
-export function main(argv: string[]): number {
+/** El contenido de `existing` con la declaración de la variable apuntando a `key`. */
+function withKeyReplaced(existing: string, key: string): string {
+  return existing
+    .split('\n')
+    .map(line => (declaredName(line) === STORAGE_KEY_VARIABLE ? `${STORAGE_KEY_VARIABLE}=${key}` : line))
+    .join('\n')
+}
+
+function describeRefusal(outcome: Exclude<RotationOutcome, { kind: 'rotated' }>): string {
+  if (outcome.reason === 'undecryptable') {
+    return `la conexión ${outcome.connectionId} guarda en ${outcome.column} un valor que la clave declarada no descifra`
+  }
+  if (outcome.reason === 'verification') {
+    return `la clave nueva no devolvió el valor de ${outcome.connectionId}.${outcome.column}; la transacción se deshizo`
+  }
+  return outcome.reason === 'same-key' ? 'la clave nueva coincide con la anterior' : 'falta una de las dos claves'
+}
+
+export interface GenerateStorageKeyDeps {
+  /** Publica el `.env` rotado; se inyecta para probar el camino en que falla. */
+  rename?: (from: string, to: string) => void
+}
+
+function rotate(envFile: string, deps: GenerateStorageKeyDeps): number {
+  const previous = declaredValue(envFile, STORAGE_KEY_VARIABLE)
+  if (previous === null) {
+    process.stderr.write(`${STORAGE_KEY_VARIABLE} no está declarada en ${envFile}: no hay clave que rotar.\n`)
+    return 1
+  }
+  const next = generateKey()
+  const staged = `${envFile}.rotating`
+  writeFileSync(staged, withKeyReplaced(readFileSync(envFile, 'utf8'), next), { mode: statSync(envFile).mode })
+
+  const storePath = join(resolveProvidersDataDir(process.env), CONNECTIONS_DB_FILE)
+  const db = existsSync(storePath) ? new Database(storePath) : null
+  try {
+    const outcome: RotationOutcome = db ? rotateStorageKey(db, previous, next) : { kind: 'rotated', fields: 0 }
+    if (outcome.kind === 'refused') {
+      rmSync(staged, { force: true })
+      process.stderr.write(`No se rota ${STORAGE_KEY_VARIABLE}: ${describeRefusal(outcome)}. ${envFile} y el store quedan intactos.\n`)
+      return 1
+    }
+    try {
+      ;(deps.rename ?? renameSync)(staged, envFile)
+    } catch (error) {
+      const restored = db ? rotateStorageKey(db, next, previous) : ({ kind: 'rotated', fields: 0 } as const)
+      if (restored.kind === 'rotated') {
+        rmSync(staged, { force: true })
+        process.stderr.write(`No se pudo publicar ${envFile} (${(error as Error).message}); el store volvió a la clave anterior.\n`)
+      } else {
+        process.stderr.write(
+          `No se pudo publicar ${envFile} (${(error as Error).message}) ni devolver el store a la clave anterior: ` +
+            `la clave vigente está en ${staged}, no lo borres.\n`,
+        )
+      }
+      return 2
+    }
+    process.stdout.write(`${STORAGE_KEY_VARIABLE} rotada en ${envFile}: ${outcome.fields} credencial(es) recifrada(s)\n`)
+    return 0
+  } finally {
+    db?.close()
+  }
+}
+
+export function main(argv: string[], deps: GenerateStorageKeyDeps = {}): number {
   let envFile: string
   const declared = arg(argv, 'env-file')
   if (argv.includes('--env-file') && declared === undefined) {
@@ -99,6 +175,8 @@ export function main(argv: string[]): number {
     process.stderr.write(`${(error as Error).message}\n`)
     return 2
   }
+
+  if (argv.includes('--rotate')) return rotate(envFile, deps)
 
   if (declaredValue(envFile, STORAGE_KEY_VARIABLE) !== null) {
     process.stderr.write(
