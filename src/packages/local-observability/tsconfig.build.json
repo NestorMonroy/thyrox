@@ -134,6 +134,15 @@
       "@thyrox/local-observability/uds/sessionRegistryState.js": [
         "./src/uds/sessionRegistryState.ts"
       ],
+      "@thyrox/local-observability/uds/launchRegistration.js": [
+        "./src/uds/launchRegistration.ts"
+      ],
+      "@thyrox/local-observability/uds/sessionNameState.js": [
+        "./src/uds/sessionNameState.ts"
+      ],
+      "@thyrox/local-observability/uds/liveSessionRegistry.js": [
+        "./src/uds/liveSessionRegistry.ts"
+      ],
       "@thyrox/local-observability/uds/udsClient.js": [
         "./src/uds/udsClient.ts"
       ],
