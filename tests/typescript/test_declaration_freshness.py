@@ -93,5 +93,23 @@ with tempfile.TemporaryDirectory() as tmp:
     check("sólo el viejo", ["other"], out.getvalue().split())
     check("no emitió", False, (other / "dist").exists())
 
+    print("\n6. una emision parcial no sella la huella")
+    # tsc publica TS5055 («Cannot write file … would overwrite input file») o
+    # TS5033 cuando deja un .d.ts sin escribir: dist/ conserva el de la fuente
+    # anterior. Sellar ahi declara fresca una declaracion congelada — el
+    # episodio de store/dist/db.d.ts sin `openLocal`.
+    real_emit = ed.emit_package
+    try:
+        for label, output, stale in (
+                ("con TS5055 queda viejo", "index.ts: error TS5055: Cannot write file 'x'", True),
+                ("con TS5033 queda viejo", "error TS5033: Could not write file 'x'", True),
+                ("sin errores de escritura se sella", "", False)):
+            ed.emit_package = lambda d, o=output: ed.EmitResult(d.name, True, 1 if o else 0, o)
+            with contextlib.redirect_stdout(io.StringIO()):
+                ed.main(["--root", tmp, "other"])
+            check(label, stale, ed.is_stale(other))
+    finally:
+        ed.emit_package = real_emit
+
 print(f"\ntest_declaration_freshness: {ok_count} ok, {fail_count} falla(s)")
 sys.exit(1 if fail_count else 0)

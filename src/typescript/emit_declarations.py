@@ -125,6 +125,9 @@ _LOCATED_ERROR = re.compile(r"^(?P<file>[^(\n]+)\(\d+,\d+\): error TS[0-9]+", re
 #: `@types/bun` — los tres controles de `check_package` estaban verdes por ese
 #: segundo error, no por el error de tipo que el fixture escribe.
 UNMEASURABLE_CODES = ("TS18003", "TS2688")
+#: Los codigos con que tsc declara un `.d.ts` que NO escribio: TS5055 (lo
+#: sobrescribiria siendo entrada) y TS5033 (fallo la escritura).
+UNWRITTEN_CODES = ("TS5055", "TS5033")
 
 
 def unmeasurable_reason(output: str):
@@ -212,6 +215,20 @@ class EmitResult:
         un campo aparte podria quedar desincronizado de ella.
         """
         return unmeasurable_reason(self.output)
+
+    @property
+    def unwritten(self):
+        """El codigo de tsc que dejo un `.d.ts` sin escribir, o `None`.
+
+        TS5055 y TS5033 no impiden emitir el resto: `dist/` conserva la
+        declaracion de la fuente anterior para ese archivo. `emitted` no lo
+        ve —mira si hay algun `.d.ts`, no si es el de esta fuente—, y sellar
+        la huella ahi declara fresca una declaracion congelada.
+        """
+        for code in UNWRITTEN_CODES:
+            if f"error {code}:" in self.output:
+                return code
+        return None
 
     def verdict(self) -> str:
         if self.unmeasurable:
@@ -976,10 +993,14 @@ def main(argv=None):
         result = emit_package(package_dir)
         total_errors += result.errors
         print(result.verdict())
-        if result.emitted:
+        if result.emitted and not result.unwritten:
             # Sellar lo que se compilo: la declaracion corresponde a esta fuente
             # aunque traiga errores, porque tsc emite conservando las firmas.
+            # Salvo si tsc dejo algun `.d.ts` sin escribir: ese queda viejo.
             write_digest(package_dir)
+        elif result.unwritten:
+            print(f"  {result.package}: {result.unwritten} dejo declaraciones sin "
+                  f"escribir; la huella no se sella")
         if repoint and result.emitted:
             repoint_manifest(package_dir)
 
