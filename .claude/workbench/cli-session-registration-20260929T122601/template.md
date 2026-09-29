@@ -1,4 +1,4 @@
-# App-host / REPL — registrar la sesión de `bin/cli` al arrancar (TASK #252)
+# App-host / REPL — registrar la sesión de `bin/cli` al arrancar (TASK-THYROX-0503)
 
 Trabajas en un worktree de thyrox. Identificadores en inglés; comentarios y
 docstrings en español. No toques `.claude/` ni ningún `package.json` salvo
