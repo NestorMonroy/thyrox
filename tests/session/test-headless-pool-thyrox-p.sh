@@ -12,6 +12,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 POOL="$ROOT/bin/headless-pool"
 F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
+# El pool de prueba abre su runtime aquí, no en el runtime real del árbol.
+export THYROX_RUNTIME_DIR="$F/runtime"
 PASS=0; FAIL=0
 check() { if [[ "$2" == "$3" ]]; then PASS=$((PASS+1)); echo "  ok   $1"; else FAIL=$((FAIL+1)); echo "  FALLA $1 — esperado [$3] obtenido [$2]"; fi; }
 

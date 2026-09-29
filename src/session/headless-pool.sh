@@ -391,7 +391,10 @@ done
 _headless_item() {
     local n="$1" rc=0 publish_rc=0
     local -r publish_failed_exit=7
-    HP_ITEM_GENERATION="$(bash "$HP_LIFECYCLE" begin "$HP_LIVE" "$HP_OUT" "$n" --owner "$BASHPID" \
+    # El shell del trabajo vive lo que el ítem; dentro de `$(...)` BASHPID
+    # sería el de la sustitución, que sale al instante.
+    local -r item_owner="$BASHPID"
+    HP_ITEM_GENERATION="$(bash "$HP_LIFECYCLE" begin "$HP_LIVE" "$HP_OUT" "$n" --owner "$item_owner" \
         2>> "$HP_LIVE/$n.lifecycle.err")" || return "$publish_failed_exit"
     export HP_ITEM_GENERATION
     rm -f "${HP_LIVE:?}/${n:?}.lifecycle.err"

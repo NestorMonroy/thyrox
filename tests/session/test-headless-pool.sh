@@ -26,6 +26,8 @@ ledger_reservation_count() {
 }
 
 F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
+# El pool de prueba abre su runtime aquí, no en el runtime real del árbol.
+export THYROX_RUNTIME_DIR="$F/runtime"
 cat > "$F/claude" <<'SH'
 #!/usr/bin/env bash
 entrada="$(cat)"
@@ -519,6 +521,12 @@ rm -rf "$F/out"; HEADLESS_POOL_PARALLEL="$F/parallel-dies" corre alfa beta gamma
 check "sin filas en el joblog: no sale 0" "$([[ $CODE -ne 0 ]] && echo si || echo no)" "si"
 check "sin filas en el joblog: el total es el del índice" \
   "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=3 ok=0 fallidos=0 sin-veredicto=3"
+
+# Un pool de prueba vive en su propio runtime: ninguna ejecución del runtime
+# real puede publicar en la salida de esta suite.
+real_runtime="$(env -u THYROX_RUNTIME_DIR THYROX_ROOT="$RAIZ" python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import pool_lifecycle; print(pool_lifecycle.runtime_root())' "$RAIZ/src/session")"
+check "el runtime real no recibe ejecuciones de la suite" \
+  "$(grep -ls "\"out_dir\": \"$F/" "$real_runtime"/pool/*/run.json 2>/dev/null | wc -l)" "0"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"

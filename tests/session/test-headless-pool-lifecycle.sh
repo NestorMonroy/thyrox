@@ -82,6 +82,10 @@ check "en curso, el stream vive en el runtime" \
   "$(compgen -G "$REPO/.thyrox/runtime/pool/*/1.stream.jsonl" | wc -l)" 1
 check "en curso, ningún consumidor ve el ítem" \
   "$(bash "$ROOT/bin/pool_lifecycle" closed-items "$REPO/$BENCH/run1" | wc -l)" 0
+# El dueño registrado tiene que vivir lo que vive el ítem: si es un proceso
+# efímero, `reconcile` declara abandonado a un ítem que sigue trabajando.
+check "en curso, reconcile no toca al ítem vivo" \
+  "$(THYROX_RUNTIME_DIR="$REPO/.thyrox/runtime" bash "$ROOT/bin/pool_lifecycle" reconcile | cut -f3)" "sin cambios (RUNNING)"
 release run1
 wait "$POOL_PID"; code=$?
 check "el pool termina bien" "$code" 0
