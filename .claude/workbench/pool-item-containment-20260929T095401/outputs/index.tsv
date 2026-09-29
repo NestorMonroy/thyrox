@@ -1,0 +1,1 @@
+1	src/session/item_containment.sh src/session/headless-pool.sh src/session/item_worktree.sh tests/session/test-item-containment.sh .env.example
