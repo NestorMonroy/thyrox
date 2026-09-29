@@ -2267,10 +2267,25 @@ def _last_commit_dates(repo: Path, subtree: str) -> dict:
     linea en blanco que ese mismo formato deja sin ``-z`` — asi que cada
     fragmento se despoja de ese `\n` sobrante antes de decidir si es fecha o
     ruta.
+
+    Se pide con ``--cc``, no con ``-m`` ni ``--first-parent``: sin ninguna
+    opcion de diff para merges, git NO lista archivos en un commit merge, asi
+    que un archivo cuyo UNICO commit es un merge (creado al resolver un
+    conflicto, o al añadirlo durante la resolucion) queda sin fecha —
+    H-THYROX-271, medido sobre `hallazgo-H-DOCS-492-…` en kaupamex-docs.
+    ``-m`` mostraria ese archivo, pero tambien CUALQUIER archivo que el merge
+    trajo sin cambios de una rama, contra CADA padre por separado —
+    re-fechando con la fecha del merge documentos que no cambiaron ahi.
+    ``--first-parent`` tiene el mismo defecto sobre un solo padre. ``--cc``
+    es la combinada: en un commit merge, lista solo los archivos que
+    difieren de TODOS los padres a la vez — exactamente el caso que hay que
+    recuperar, sin tocar lo que el merge trajo intacto (medido: 34307 lineas
+    sin ``--cc`` contra 34340 con ella sobre `source/`, 33 archivos que antes
+    no aparecian en ningun commit).
     """
     try:
         salida = subprocess.run(
-            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "-z", "--", subtree],
+            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "--cc", "-z", "--", subtree],
             capture_output=True, text=True, check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):

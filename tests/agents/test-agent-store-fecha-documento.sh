@@ -279,6 +279,44 @@ commit_en "2026-08-01T00:00:00" "no ascii"
 python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
 afirmar "16 ruta no ASCII se fecha con su ruta real"  "git-commit"  "$(leer 'source/h-tilde-í.rst' updated_at_source)"
 
+
+# --- 17 · H-THYROX-271: archivo cuyo UNICO commit es un merge ---------------
+# git log sin opcion de diff para merges no lista archivos de un commit merge.
+# Un archivo creado al resolver el merge (no existe en ningun padre) queda sin
+# fecha porque su unico commit nunca aparece en `--name-only`. `--cc` lo
+# recupera: lista, en cada merge, solo los archivos que difieren de TODOS los
+# padres -- exactamente este caso -- sin re-fechar lo que el merge trajo
+# intacto de una rama (el CONTROL de abajo).
+RAMA_BASE=$(git -C "$REPO" branch --show-current)
+git -C "$REPO" checkout -q -b rama-b
+
+git -C "$REPO" checkout -q "$RAMA_BASE"
+doc "k-en-master.rst" "-" "K"
+git -C "$REPO" add -A
+commit_en "2026-08-05T00:00:00" "avanza master"
+
+git -C "$REPO" checkout -q rama-b
+doc "i-viene-de-rama.rst" "-" "I"
+git -C "$REPO" add -A
+commit_en "2026-08-10T00:00:00" "archivo creado en la rama"
+
+git -C "$REPO" checkout -q "$RAMA_BASE"
+git -C "$REPO" merge -q --no-commit --no-ff rama-b
+doc "j-nace-en-merge.rst" "-" "J"
+git -C "$REPO" add -A
+commit_en "2026-08-20T00:00:00" "merge con archivo nuevo"
+
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
+afirmar "17a archivo nacido en el merge toma su fecha"  "git-commit" "$(leer source/j-nace-en-merge.rst updated_at_source)"
+FECHA_MERGE=$(leer source/j-nace-en-merge.rst commit_at)
+if [[ "$FECHA_MERGE" == 2026-08-20* ]]; then RC_MERGE=0; else RC_MERGE=1; fi
+afirmar "17b la fecha es la del commit merge"           "0" "$RC_MERGE"
+
+# CONTROL: el archivo que el merge trajo SIN cambios conserva la fecha de su
+# commit en la rama, no la del merge.
+FECHA_RAMA=$(leer source/i-viene-de-rama.rst commit_at)
+if [[ "$FECHA_RAMA" == 2026-08-10* ]]; then RC_BRANCH=0; else RC_BRANCH=1; fi
+afirmar "17c CONTROL archivo traido intacto conserva su fecha de rama" "0" "$RC_BRANCH"
 echo
 echo "  $OK ok · $FALLO fallas"
 [[ $FALLO -eq 0 ]]
