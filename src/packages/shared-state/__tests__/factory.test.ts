@@ -33,7 +33,7 @@ describe('openSharedStateStore', () => {
       },
     })
     expect(opened.backend).toBe('memory')
-    await opened.store.incrementWindow('k', 1000)
+    await opened.forConsistency('bestEffortShared').incrementWindow('k', 1000)
     expect(calls).toEqual(['memory'])
   })
 
@@ -50,7 +50,7 @@ describe('openSharedStateStore', () => {
     })
     expect(opened.backend).toBe('redis')
     expect(seenUrl).toBe('redis+unix:///run/r.sock')
-    expect(await opened.store.getWithTtl('k')).toBe('v')
+    expect(await opened.forConsistency('bestEffortShared').getWithTtl('k')).toBe('v')
     expect(calls).toEqual(['redis'])
   })
 
@@ -74,8 +74,8 @@ describe('openSharedStateStore', () => {
       createRedis: () => fakeStore('redis', calls, true),
       warn: message => warnings.push(message),
     })
-    expect(await opened.store.acquireLease('l', 'a', 1000)).toBe(true)
-    expect(await opened.store.incrementWindow('k', 1000)).toBe(1)
+    expect(await opened.forConsistency('bestEffortShared').acquireLease('l', 'a', 1000)).toBe(true)
+    expect(await opened.forConsistency('bestEffortShared').incrementWindow('k', 1000)).toBe(1)
     // ADR-THYROX-006: cada llamada vuelve a intentar redis antes de caer a memoria.
     expect(calls).toEqual(['redis', 'memory', 'redis', 'memory'])
     // El aviso sale al entrar en degradación, no en cada llamada mientras dura.
@@ -105,15 +105,15 @@ describe('openSharedStateStore', () => {
       createRedis: () => flaky,
       warn: message => warnings.push(message),
     })
-    await opened.store.getWithTtl('k')
+    await opened.forConsistency('bestEffortShared').getWithTtl('k')
     expect(opened.degraded()).toBe(true)
     down = false
-    expect(await opened.store.getWithTtl('k')).toBe('v')
+    expect(await opened.forConsistency('bestEffortShared').getWithTtl('k')).toBe('v')
     expect(calls).toEqual(['redis', 'memory', 'redis'])
     expect(opened.degraded()).toBe(false)
     // Una segunda caída vuelve a avisar: es otra transición.
     down = true
-    await opened.store.getWithTtl('k')
+    await opened.forConsistency('bestEffortShared').getWithTtl('k')
     expect(warnings).toHaveLength(2)
   })
 
@@ -125,8 +125,8 @@ describe('openSharedStateStore', () => {
       createRedis: () => fakeStore('redis', calls, true),
       warn: () => {},
     })
-    await opened.store.getWithTtl('k')
-    await opened.store.close()
+    await opened.forConsistency('bestEffortShared').getWithTtl('k')
+    await opened.close()
     expect(calls).toContain('redis:close')
     expect(calls).toContain('memory:close')
   })
@@ -251,5 +251,24 @@ describe('openSharedStateStore: forConsistency en modo multi (R5a)', () => {
     await opened.close()
     expect(calls.filter(c => c === 'redis:close')).toHaveLength(1)
     expect(calls.filter(c => c === 'memory:close')).toHaveLength(2)
+  })
+})
+
+describe('openSharedStateStore: retiro del campo store (R5b)', () => {
+  test('sin redis, OpenedSharedState no trae "store": el consumidor pasa por forConsistency', () => {
+    const opened = openSharedStateStore({
+      env: {},
+      createMemory: () => fakeStore('memory', []),
+    })
+    expect(Object.hasOwn(opened, 'store')).toBe(false)
+  })
+
+  test('con redis en multi, OpenedSharedState no trae "store": era la vista bestEffort y dejaba degradar en silencio lo global', () => {
+    const opened = openSharedStateStore({
+      env: { THYROX_PROXY_MODE: 'multi', [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', []),
+      createRedis: () => fakeStore('redis', []),
+    })
+    expect(Object.hasOwn(opened, 'store')).toBe(false)
   })
 })

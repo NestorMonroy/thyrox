@@ -59,13 +59,6 @@ export interface OpenSharedStateOptions {
 }
 
 export interface OpenedSharedState {
-  /**
-   * Equivale a `forConsistency('bestEffortShared')`: redis preferido, y una
-   * caída se atiende en memoria de este proxy con aviso. Se conserva para no
-   * romper a los consumidores que abrían el estado antes de que existiera
-   * `forConsistency`.
-   */
-  store: SharedStateStore
   backend: SharedStateBackend
   degraded: () => boolean
   /** El modo declarado por `THYROX_PROXY_MODE` (`single` por omisión). */
@@ -101,8 +94,8 @@ export function openSharedStateStore(options: OpenSharedStateOptions = {}): Open
       closed = true
       await memory.close()
     }
-    const store: SharedStateStore = { ...memory, close }
-    return { store, backend: 'memory', degraded: () => false, mode, forConsistency: () => store, close }
+    const memoryStore: SharedStateStore = { ...memory, close }
+    return { backend: 'memory', degraded: () => false, mode, forConsistency: () => memoryStore, close }
   }
 
   const createRedis = options.createRedis ?? ((redisUrl: string) => createRedisSharedStateStore(redisUrl))
@@ -152,7 +145,6 @@ export function openSharedStateStore(options: OpenSharedStateOptions = {}): Open
 
   if (mode === 'single') {
     return {
-      store: sharedStore,
       backend: 'redis',
       degraded: () => degraded,
       mode,
@@ -199,5 +191,5 @@ export function openSharedStateStore(options: OpenSharedStateOptions = {}): Open
     return sharedStore
   }
 
-  return { store: sharedStore, backend: 'redis', degraded: () => degraded, mode, forConsistency, close }
+  return { backend: 'redis', degraded: () => degraded, mode, forConsistency, close }
 }

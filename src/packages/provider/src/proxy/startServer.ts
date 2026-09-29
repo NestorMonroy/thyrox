@@ -29,6 +29,7 @@ import {
   WeightedRoundRobinSelector,
 } from './credentialSelectors.ts'
 import { connectionProxyCredentials } from '../accounts/proxyCredentials.ts'
+import { openSharedStateStore, type OpenedSharedState } from '@thyrox/shared-state/factory.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
 import { ComboRouter } from './combo/comboRouter.ts'
 import { CredentialCooldown } from './resilience/credentialCooldown.ts'
@@ -97,6 +98,15 @@ export type ProxyStartConfig = {
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
+  /**
+   * El estado compartido en caliente entre proxies (ADR-THYROX-006, R5b).
+   * Sin declarar, `startProxyServer` abre el suyo propio con
+   * `openSharedStateStore({ env: config.env })`, antes de `Bun.serve`: así
+   * un `THYROX_PROXY_MODE=multi` sin `THYROX_REDIS_URL` rehúsa arrancar sin
+   * dejar un puerto abierto. Inyectarlo es sólo para pruebas — una vez
+   * recibido, este proxy pasa a ser su dueño, y `stop()` lo cierra igual.
+   */
+  sharedState?: OpenedSharedState
 }
 
 export type SessionAffinityOptions = {
@@ -106,7 +116,15 @@ export type SessionAffinityOptions = {
   subagents?: boolean
 }
 
-export type RunningProxy = { url: string; stop: () => void }
+export type RunningProxy = {
+  url: string
+  /**
+   * Para `Bun.serve` y cierra el estado compartido —el inyectado incluido:
+   * una vez recibido, este proxy es su dueño—. Idempotente: una segunda
+   * llamada no falla ni vuelve a cerrar nada.
+   */
+  stop: () => Promise<void>
+}
 
 const SELECTORS: Record<SelectorName, () => CredentialSelector> = {
   'fill-first': () => new FillFirstSelector(),
@@ -180,7 +198,11 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     }
   }
   const credentials = withCloudCredentials(config.credentials, Object.keys(cloud))
-  const rateLimit = config.rateLimit && protectApiKeyCredentials(new RateLimitManager(config.rateLimit), config)
+  // Antes de `Bun.serve`: un THYROX_PROXY_MODE=multi sin THYROX_REDIS_URL
+  // rehúsa aquí, sin dejar ningún puerto abierto.
+  const sharedState = config.sharedState ?? openSharedStateStore({ env: config.env })
+  const rateLimit = config.rateLimit
+    && protectApiKeyCredentials(new RateLimitManager(config.rateLimit, sharedState.forConsistency('requiresGlobalConsistency')), config)
   const handler = createProxyHandler({
     access: new AccessManager([keyProvider]),
     routing: config.routing,
@@ -192,7 +214,10 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     rateLimit,
     cooldown: config.cooldown === false
       ? undefined
-      : new CredentialCooldown({ traitsOf: provider => config.providerTraits?.[provider], bannedSignals: config.cooldown?.bannedSignals }),
+      : new CredentialCooldown(
+          { traitsOf: provider => config.providerTraits?.[provider], bannedSignals: config.cooldown?.bannedSignals },
+          sharedState.forConsistency('bestEffortShared'),
+        ),
     contextCompaction: config.contextCompaction && { contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.[model] },
     combos: new ComboRouter({
       contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.[model],
@@ -211,5 +236,12 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   })
   const server = Bun.serve({ hostname: config.host, port: config.port, fetch: handler })
   const shownHost = config.host.includes(':') && !config.host.startsWith('[') ? `[${config.host}]` : config.host
-  return { url: `http://${shownHost}:${server.port}`, stop: () => server.stop(true) }
+  let stopped = false
+  const stop = async () => {
+    if (stopped) return
+    stopped = true
+    server.stop(true)
+    await sharedState.close()
+  }
+  return { url: `http://${shownHost}:${server.port}`, stop }
 }
