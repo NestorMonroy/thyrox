@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/parallel_map bash .claude/workbench/pool-item-containment-20260929T095401/diagnose.sh {} ::: head-only with-patch", "started_at": "2026-09-29T10:48:56+00:00"}
