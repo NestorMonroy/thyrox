@@ -1,0 +1,4 @@
+tests/session/test-headless-pool-frozen-launcher.sh :: result: 6 of 6 assertions green
+tests/session/test-headless-pool.sh :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-worktree.sh :: test-headless-pool-worktree: 32 aserciones — 32 ok, 0 falla(s)
+__BG_EXIT__=0
