@@ -241,10 +241,29 @@ if (postgresUrlError) {
     async withEngine(body) {
       await withDisposableSchema(url, async sql => body(asyncEngine(sql, 'postgres')))
     },
-    // Sin `withConcurrentWriteLock`: ver la nota junto a su consumo en
-    // `migrationRunnerContract.ts` — la prueba de lock cruzado necesita una
-    // segunda conexión con `lock_timeout` propio, fuera del pool compartido
-    // que `withDisposableSchema` entrega.
+    // El equivalente del `BEGIN IMMEDIATE` de SQLite: otra conexión, fuera del
+    // pool, retiene `LOCK TABLE … IN EXCLUSIVE MODE` sobre la tabla de control.
+    // Ese modo choca con el ROW EXCLUSIVE de una escritura y no con el ACCESS
+    // SHARE de una lectura. El runner corre sobre un pool con `lock_timeout`
+    // propio: una escritura que no debiera abrirse falla en segundos en vez de
+    // esperar para siempre.
+    async withConcurrentWriteLock(options, duringLock) {
+      await withDisposableSchema(url, async sql => {
+        await runMigrations(sql, 'postgres', options)
+        const [{ schema }] = await sql.unsafe('SELECT current_schema() AS schema')
+        const holder = new SQL({ url, max: 1, connection: { search_path: schema } })
+        const runner = new SQL({ url, connection: { search_path: schema, lock_timeout: '2000' } })
+        try {
+          await holder.begin(async tx => {
+            await tx.unsafe(`LOCK TABLE ${options.table} IN EXCLUSIVE MODE`)
+            await duringLock(asyncEngine(runner, 'postgres'))
+          })
+        } finally {
+          await runner.close()
+          await holder.close()
+        }
+      })
+    },
   })
 } else if (process.env.THYROX_TEST_REQUIRE_POSTGRES === '1') {
   describe('contrato del runner de migraciones — async — postgres', () => {

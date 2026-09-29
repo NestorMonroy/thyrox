@@ -344,13 +344,12 @@ export function defineMigrationRunnerContract(adapter: MigrationRunnerAdapter): 
         })
       })
     } else {
-      // NO MEDIDO aquí: este motor no implementa `withConcurrentWriteLock`. El
-      // algoritmo (leer el ledger, y sólo escribir si hay algo pendiente) es el
-      // mismo para los tres motores; la prueba de lock cruzado se ejerce en los
-      // dos motores SQLite (single-writer de archivo). Portarla a postgres exige
-      // una segunda conexión con su propio `lock_timeout`, fuera del pool
-      // compartido — condición para dejar de declarar este hueco.
-      test.todo(`${name}: lock de escritura concurrente NO MEDIDO — ver la nota junto a withConcurrentWriteLock`)
+      // NO MEDIDO aquí: este adaptador no implementa `withConcurrentWriteLock`.
+      // Los tres motores del paquete sí lo implementan —en SQLite con
+      // `BEGIN IMMEDIATE`, en PostgreSQL con `LOCK TABLE … IN EXCLUSIVE MODE`
+      // desde una conexión fuera del pool—; un adaptador nuevo queda declarado
+      // aquí hasta que aporte el suyo.
+      test.todo(`${name}: lock de escritura concurrente NO MEDIDO — ver la nota junto a withConcurrentWriteLock`, () => {})
     }
   })
 }
