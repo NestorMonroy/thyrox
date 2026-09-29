@@ -1,0 +1,93 @@
+== antes
+PostgreSQL 16.13 (Ubuntu 16.13-0ubuntu0.24.04.1)
+default_version = '0.6.0'
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  clang-17 icu-devtools libclang-common-17-dev libclang-cpp17t64
+  libclang-rt-17-dev libclang1-17t64 libicu-dev libpq-dev libpq5 libxml2
+  libxml2-dev libxml2-utils libz3-4 libz3-dev llvm-17 llvm-17-dev
+  llvm-17-linker-tools llvm-17-runtime llvm-17-tools postgresql-16
+  postgresql-client-16 python3-pygments
+Suggested packages:
+  clang-17-doc wasi-libc icu-doc postgresql-doc-16 llvm-17-doc
+  python-pygments-doc ttf-bitstream-vera
+The following NEW packages will be installed:
+  clang-17 icu-devtools libclang-common-17-dev libclang-cpp17t64
+  libclang-rt-17-dev libclang1-17t64 libicu-dev libpq-dev libxml2-dev libz3-4
+  libz3-dev llvm-17 llvm-17-dev llvm-17-linker-tools llvm-17-runtime
+  llvm-17-tools postgresql-server-dev-16 python3-pygments
+The following packages will be upgraded:
+  libpq5 libxml2 libxml2-utils postgresql-16 postgresql-client-16
+5 upgraded, 18 newly installed, 0 to remove and 234 not upgraded.
+Need to get 132 MB of archives.
+After this operation, 679 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2 amd64 2.9.14+dfsg-1.3ubuntu3.9 [765 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 python3-pygments all 2.17.2+dfsg-1 [819 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-cpp17t64 amd64 1:17.0.6-9ubuntu1 [12.9 MB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-common-17-dev amd64 1:17.0.6-9ubuntu1 [690 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-linker-tools amd64 1:17.0.6-9ubuntu1 [1308 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang1-17t64 amd64 1:17.0.6-9ubuntu1 [7353 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble/universe amd64 clang-17 amd64 1:17.0.6-9ubuntu1 [78.6 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 icu-devtools amd64 74.2-1ubuntu3.1 [212 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-rt-17-dev amd64 1:17.0.6-9ubuntu1 [2361 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libicu-dev amd64 74.2-1ubuntu3.1 [11.9 MB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpq5 amd64 16.15-0ubuntu0.24.04.1 [151 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpq-dev amd64 16.15-0ubuntu0.24.04.1 [153 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2-dev amd64 2.9.14+dfsg-1.3ubuntu3.9 [781 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2-utils amd64 2.9.14+dfsg-1.3ubuntu3.9 [39.4 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-runtime amd64 1:17.0.6-9ubuntu1 [529 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17 amd64 1:17.0.6-9ubuntu1 [23.8 MB]
+Get:17 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-tools amd64 1:17.0.6-9ubuntu1 [518 kB]
+Get:18 http://archive.ubuntu.com/ubuntu noble/universe amd64 libz3-4 amd64 4.8.12-3.1build1 [5836 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble/universe amd64 libz3-dev amd64 4.8.12-3.1build1 [72.2 kB]
+Get:20 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-dev amd64 1:17.0.6-9ubuntu1 [43.4 MB]
+Get:21 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-client-16 amd64 16.15-0ubuntu0.24.04.1 [1301 kB]
+Get:22 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-16 amd64 16.15-0ubuntu0.24.04.1 [15.6 MB]
+Get:23 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 postgresql-server-dev-16 amd64 16.15-0ubuntu0.24.04.1 [1233 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 132 MB in 8s (17.1 MB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55555 files and directories currently installed.)
+Preparing to unpack .../00-libxml2_2.9.14+dfsg-1.3ubuntu3.9_amd64.deb ...
+Unpacking libxml2:amd64 (2.9.14+dfsg-1.3ubuntu3.9) over (2.9.14+dfsg-1.3ubuntu3.7) ...
+Selecting previously unselected package python3-pygments.
+Preparing to unpack .../01-python3-pygments_2.17.2+dfsg-1_all.deb ...
+Unpacking python3-pygments (2.17.2+dfsg-1) ...
+Selecting previously unselected package libclang-cpp17t64.
+Preparing to unpack .../02-libclang-cpp17t64_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking libclang-cpp17t64 (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package libclang-common-17-dev:amd64.
+Preparing to unpack .../03-libclang-common-17-dev_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking libclang-common-17-dev:amd64 (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package llvm-17-linker-tools.
+Preparing to unpack .../04-llvm-17-linker-tools_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking llvm-17-linker-tools (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package libclang1-17t64.
+Preparing to unpack .../05-libclang1-17t64_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking libclang1-17t64 (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package clang-17.
+Preparing to unpack .../06-clang-17_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking clang-17 (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package icu-devtools.
+Preparing to unpack .../07-icu-devtools_74.2-1ubuntu3.1_amd64.deb ...
+Unpacking icu-devtools (74.2-1ubuntu3.1) ...
+Selecting previously unselected package libclang-rt-17-dev:amd64.
+Preparing to unpack .../08-libclang-rt-17-dev_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking libclang-rt-17-dev:amd64 (1:17.0.6-9ubuntu1) ...
+Selecting previously unselected package libicu-dev:amd64.
+Preparing to unpack .../09-libicu-dev_74.2-1ubuntu3.1_amd64.deb ...
+Unpacking libicu-dev:amd64 (74.2-1ubuntu3.1) ...
+Preparing to unpack .../10-libpq5_16.15-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libpq5:amd64 (16.15-0ubuntu0.24.04.1) over (16.13-0ubuntu0.24.04.1) ...
+Selecting previously unselected package libpq-dev.
+Preparing to unpack .../11-libpq-dev_16.15-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libpq-dev (16.15-0ubuntu0.24.04.1) ...
+Selecting previously unselected package libxml2-dev:amd64.
+Preparing to unpack .../12-libxml2-dev_2.9.14+dfsg-1.3ubuntu3.9_amd64.deb ...
+Unpacking libxml2-dev:amd64 (2.9.14+dfsg-1.3ubuntu3.9) ...
+Preparing to unpack .../13-libxml2-utils_2.9.14+dfsg-1.3ubuntu3.9_amd64.deb ...
+Unpacking libxml2-utils (2.9.14+dfsg-1.3ubuntu3.9) over (2.9.14+dfsg-1.3ubuntu3.7) ...
+Selecting previously unselected package llvm-17-runtime.
+Preparing to unpack .../14-llvm-17-runtime_1%3a17.0.6-9ubuntu1_amd64.deb ...
+Unpacking llvm-17-runtime (1:17.0.6-9ubuntu1) ...
