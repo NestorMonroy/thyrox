@@ -18,7 +18,12 @@ check() {
 
 F="$RAIZ/.claude/cache/test-headless-pool-worktree/$$"
 mkdir -p "$F"
-trap 'git -C "$F/repo" worktree prune 2>/dev/null; rm -rf "${F:?}"; rmdir "$RAIZ/.claude/cache/test-headless-pool-worktree" 2>/dev/null || true' EXIT
+# Los worktrees no pueden colgar de `.claude/`: el runner trataría la ruta
+# como sensible. La suite les da una raíz propia en la caché del usuario.
+mkdir -p "$HOME/.cache"
+THYROX_POOL_WORKTREES_DIR="$(mktemp -d "$HOME/.cache/thyrox-worktrees-test.XXXXXX")"
+export THYROX_POOL_WORKTREES_DIR
+trap 'git -C "$F/repo" worktree prune 2>/dev/null; rm -rf "${F:?}" "${THYROX_POOL_WORKTREES_DIR:?}"; rmdir "$RAIZ/.claude/cache/test-headless-pool-worktree" 2>/dev/null || true' EXIT
 
 # El doble: la última línea es «Item: <verbo> <archivo> [texto]». `escribe`
 # crea el archivo en su directorio de trabajo, `nada` no toca nada y `falla`
@@ -90,8 +95,21 @@ dir="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" prepare "$F/repo" "$F/out7" 1)"
 mkdir -p "$F/out7"; printf 'x\n' > "$dir/nuevo.txt"
 bash "$HEADLESS_POOL_ITEM_WORKTREE" finalize "$F/repo" "$dir" "$F/out7" 1 0 true
 check "sin barrido, el worktree ya no está" \
-  "$(git -C "$F/repo" worktree list | grep -c "pool-worktrees/$(printf '%s' "$F/out7" | sha1sum | cut -c1-12)/")" "0"
+  "$(git -C "$F/repo" worktree list | grep -c "$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out7" | sha1sum | cut -c1-12)/")" "0"
 check "su parche nombra el archivo" "$(cat "$F/out7/1.files")" "nuevo.txt"
+
+echo "caso 7 — si el worktree no se prepara, el .err del ítem trae el motivo"
+cat > "$F/failing-worktree" <<'SH'
+#!/usr/bin/env bash
+[[ "$1" == prepare ]] || exit 0
+echo "fatal: Unable to create worktrees.lock: File exists." >&2
+exit 2
+SH
+chmod +x "$F/failing-worktree"
+printf '%s\n' 'escribe a.txt hola' \
+    | HEADLESS_POOL_ITEM_WORKTREE="$F/failing-worktree" pool --out "$F/out8" --verify true >/dev/null
+check "el ítem sale sin json de resultado" "$(wc -c < "$F/out8/1.json")" "0"
+check "el .err nombra el motivo de git" "$(gawk '/Unable to create worktrees.lock/{n++} END{print n+0}' "$F/out8/1.err")" "1"
 
 echo "test-headless-pool-worktree: $total aserciones — $((total - fallos)) ok, $fallos falla(s)"
 [[ $fallos -eq 0 ]]

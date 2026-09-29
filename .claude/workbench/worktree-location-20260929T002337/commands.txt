@@ -1,0 +1,5 @@
+bash tests/session/test-item-worktree-location.sh > .claude/workbench/worktree-location-20260929T002337/location.txt 2>&1; echo EXIT=$? >> .claude/workbench/worktree-location-20260929T002337/location.txt
+bash tests/session/test-item-worktree-lock.sh > .claude/workbench/worktree-location-20260929T002337/lock.txt 2>&1; echo EXIT=$? >> .claude/workbench/worktree-location-20260929T002337/lock.txt
+bash tests/session/test-headless-pool-worktree.sh > .claude/workbench/worktree-location-20260929T002337/pool-worktree.txt 2>&1; echo EXIT=$? >> .claude/workbench/worktree-location-20260929T002337/pool-worktree.txt
+cd src/packages/agent && bun test __tests__/modelScope.test.ts > ../../../.claude/workbench/worktree-location-20260929T002337/modelScope.txt 2>&1; echo EXIT=$? >> ../../../.claude/workbench/worktree-location-20260929T002337/modelScope.txt
+cd src/packages/agent && bunx tsc --noEmit -p tsconfig.build.json > ../../../.claude/workbench/worktree-location-20260929T002337/tsc-agent-build.txt 2>&1; echo EXIT=$? >> ../../../.claude/workbench/worktree-location-20260929T002337/tsc-agent-build.txt

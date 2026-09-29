@@ -376,9 +376,8 @@ _headless_item() {
     rm -f "$HP_OUT/$n.admit.err"
     local workdir="$HP_WORKDIR"
     if [[ "$HP_ISOLATION" == worktree ]]; then
-        workdir="$(bash "$HP_ITEM_WORKTREE" prepare "$HP_WORKDIR" "$HP_OUT" "$n" 2> "$HP_OUT/$n.prepare.err")" || {
-            { echo "no se pudo preparar el worktree del item:"; cat "$HP_OUT/$n.prepare.err"; } > "$HP_OUT/$n.err"
-            : > "$HP_OUT/$n.json"; return 4; }
+        workdir="$(bash "$HP_ITEM_WORKTREE" prepare "$HP_WORKDIR" "$HP_OUT" "$n")" || {
+            echo "no se pudo preparar el worktree del item" > "$HP_OUT/$n.err"; : > "$HP_OUT/$n.json"; return 4; }
     fi
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$workdir" || exit 1

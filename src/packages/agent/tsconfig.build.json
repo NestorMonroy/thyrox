@@ -44,6 +44,9 @@
       "@thyrox/agent/modelCapabilities": [
         "./modelCapabilities.ts"
       ],
+      "@thyrox/agent/modelScope": [
+        "./modelScope.ts"
+      ],
       "@thyrox/agent/taggedId": [
         "./taggedId.ts"
       ],
@@ -741,6 +744,7 @@
     "messages.ts",
     "messagesMappers.ts",
     "modelCapabilities.ts",
+    "modelScope.ts",
     "models.ts",
     "postSamplingHooks.ts",
     "promptCategory.ts",

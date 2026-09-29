@@ -14,67 +14,22 @@
 # worktree) y `sin-verificar` (hubo cambios y no se declaró VERIFY).
 set -uo pipefail
 
-# El worktree de un ítem vive en `.thyrox/pool-worktrees/` de la raíz del
-# repositorio, o bajo THYROX_POOL_WORKTREES_DIR. Nunca bajo un segmento `.git`,
-# `.claude`, `.vscode` o `.idea`: el runner `claude -p` trata esas rutas como
-# sensibles (DANGEROUS_DIRECTORIES, permission/src/filesystem.ts) y en modo -p
-# rechaza cada Write y Edit del ítem sin poder pedir permiso.
-DEFAULT_WORKTREES_SUBDIR=".thyrox/pool-worktrees"
-
-worktrees_root() {
-    local repo="$1" top
-    if [[ -n "${THYROX_POOL_WORKTREES_DIR:-}" ]]; then
-        printf '%s\n' "$THYROX_POOL_WORKTREES_DIR"
-        return 0
-    fi
-    top="$(git -C "$repo" rev-parse --show-toplevel)" || return 2
-    printf '%s/%s\n' "$top" "$DEFAULT_WORKTREES_SUBDIR"
-}
-
-# La raíz por defecto queda dentro del árbol: se excluye en `info/exclude`,
-# que no se versiona, para que `git status` no la vea en ningún consumidor.
-exclude_default_root() {
-    local repo="$1" common pattern="/$DEFAULT_WORKTREES_SUBDIR/"
-    [[ -n "${THYROX_POOL_WORKTREES_DIR:-}" ]] && return 0
-    common="$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir)" || return 2
-    mkdir -p "$common/info" || return 2
-    gawk -v p="$pattern" '$0 == p {found = 1} END {exit !found}' "$common/info/exclude" 2>/dev/null \
-        || printf '%s\n' "$pattern" >> "$common/info/exclude"
-}
-
 run_dir() {
-    local repo="$1" out="$2" root
-    root="$(worktrees_root "$repo")" || return 2
-    if [[ "/$root/" =~ /(\.git|\.claude|\.vscode|\.idea)/ ]]; then
-        echo "item_worktree: la raíz de worktrees tiene un segmento sensible para el runner: $root" >&2
-        return 2
-    fi
-    printf '%s/%s\n' "$root" "$(printf '%s' "$out" | sha1sum | cut -c1-12)"
+    local repo="$1" out="$2" common
+    common="$(git -C "$repo" rev-parse --path-format=absolute --git-common-dir)" || return 2
+    printf '%s/pool-worktrees/%s\n' "$common" "$(printf '%s' "$out" | sha1sum | cut -c1-12)"
 }
 
 # Los worktrees de un mismo repositorio comparten sus metadatos: con varios
 # ítems a la vez, `worktree add` y `worktree remove` pueden chocar con el
-# candado de otro y fallar sin que nada esté mal. Un escritor ajeno —un commit
-# con sus hooks— retiene ese candado minutos, así que se reintenta hasta un
-# plazo (THYROX_ITEM_WORKTREE_RETRY_SECONDS, 300 por defecto) con espera
-# creciente, y al agotarlo se entrega el último motivo de git por stderr.
-RETRY_SECONDS="${THYROX_ITEM_WORKTREE_RETRY_SECONDS:-300}"
-if [[ ! "$RETRY_SECONDS" =~ ^[0-9]+$ ]]; then
-    echo "item_worktree: THYROX_ITEM_WORKTREE_RETRY_SECONDS va en segundos enteros, no: $RETRY_SECONDS" >&2
-    exit 2
-fi
-
+# candado de otro y fallar sin que nada esté mal. Se reintentan.
 with_retries() {
-    local deadline=$((SECONDS + RETRY_SECONDS)) pause=1 reason
-    while true; do
-        reason="$("$@" 2>&1 >/dev/null)" && return 0
-        if (( SECONDS >= deadline )); then
-            printf '%s\n' "$reason" >&2
-            return 1
-        fi
-        sleep "$pause"
-        (( pause < 8 )) && pause=$((pause * 2))
+    local attempt
+    for attempt in 1 2 3 4 5; do
+        "$@" >/dev/null 2>&1 && return 0
+        sleep "0.$attempt"
     done
+    return 1
 }
 
 # `worktree add` en un árbol grande retiene el candado de git durante
@@ -84,7 +39,6 @@ with_retries() {
 prepare() {
     local repo="$1" out="$2" n="$3" base dir
     base="$(run_dir "$repo" "$out")" || return 2
-    exclude_default_root "$repo" || return 2
     dir="$base/$n"
     mkdir -p "$base" || return 2
     (
