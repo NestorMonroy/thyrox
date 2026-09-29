@@ -1,0 +1,124 @@
+diff --git a/src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts b/src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts
+new file mode 100644
+index 00000000..e65f68b2
+--- /dev/null
++++ b/src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts
+@@ -0,0 +1,53 @@
++/**
++ * El enfriamiento de una credencial visto entre dos proxies que comparten
++ * el mismo `SharedStateStore` (ADR-THYROX-006). Cada instancia de
++ * `CredentialCooldown` simula un proxy distinto, con su propio objeto
++ * `ProxyCredential` para el mismo id: lo que una marca no disponible sólo
++ * se ve en la otra a través del store, nunca por referencia compartida.
++ */
++import { describe, expect, test } from 'bun:test'
++import { createMemorySharedStateStore } from '@thyrox/shared-state/memory.ts'
++import type { ProxyCredential } from '../../credentialSelectors.ts'
++import type { ProviderTraits } from '../errorClassifier.ts'
++import { CredentialCooldown } from '../credentialCooldown.ts'
++
++const TRAITS: Record<string, ProviderTraits> = { openai: { authType: 'apikey' } }
++const NOW = new Date('2026-09-27T12:00:00Z')
++
++describe('CredentialCooldown con estado compartido', () => {
++  test('lo que una instancia enfría, la otra lo ve enfriado a través del store', async () => {
++    let clock = NOW.getTime()
++    const store = createMemorySharedStateStore({ now: () => clock })
++    const cooldownA = new CredentialCooldown({ traitsOf: p => TRAITS[p] }, store)
++    const cooldownB = new CredentialCooldown({ traitsOf: p => TRAITS[p] }, store)
++    const credentialA: ProxyCredential = { id: 'shared-1' }
++    const credentialB: ProxyCredential = { id: 'shared-1' }
++
++    const decision = cooldownA.markUnavailable({
++      credential: credentialA, provider: 'openai', model: 'gpt-4o', status: 429,
++      errorText: 'Rate limit hit', headers: null, now: new Date(clock),
++    })
++    expect(decision.cooldownMs).toBeGreaterThan(0)
++
++    // B no comparte el objeto credencial, así que sólo el store puede decírselo.
++    expect(await cooldownB.isCoolingDown(credentialB)).toBe(true)
++
++    clock += decision.cooldownMs + 1
++    expect(await cooldownB.isCoolingDown(credentialB)).toBe(false)
++  })
++
++  test('sin sharedState la conducta es la de hoy: una instancia no ve el enfriamiento de otra', async () => {
++    const cooldownA = new CredentialCooldown({ traitsOf: p => TRAITS[p] })
++    const cooldownB = new CredentialCooldown({ traitsOf: p => TRAITS[p] })
++    const credentialA: ProxyCredential = { id: 'local-1' }
++    const credentialB: ProxyCredential = { id: 'local-1' }
++
++    cooldownA.markUnavailable({
++      credential: credentialA, provider: 'openai', model: 'gpt-4o', status: 429,
++      errorText: 'Rate limit hit', headers: null, now: NOW,
++    })
++
++    expect(await cooldownB.isCoolingDown(credentialB, NOW)).toBe(false)
++    expect(await cooldownA.isCoolingDown(credentialA, NOW)).toBe(true)
++  })
++})
+diff --git a/src/packages/provider/src/proxy/resilience/credentialCooldown.ts b/src/packages/provider/src/proxy/resilience/credentialCooldown.ts
+index 9b725d4a..adc0d6a0 100644
+--- a/src/packages/provider/src/proxy/resilience/credentialCooldown.ts
++++ b/src/packages/provider/src/proxy/resilience/credentialCooldown.ts
+@@ -20,6 +20,7 @@
+  * - Sin las ramas propias de un proveedor (Codex, Alibaba, Grok, agentrouter)
+  *   ni la desactivación automática de una cuenta dada de baja.
+  */
++import type { SharedStateStore } from '@thyrox/shared-state/port.ts'
+ import type { ProxyCredential } from '../credentialSelectors.ts'
+ import { checkFallbackError, type CooldownOptions, type FallbackDecision, isProviderModelUnsupported400 } from './accountCooldown.ts'
+ 
+@@ -41,7 +42,11 @@ export class CredentialCooldown {
+   /** Las credenciales dadas de baja: un fallo transitorio no las rehabilita. */
+   private readonly terminal = new Set<string>()
+ 
+-  constructor(private readonly options: CooldownOptions = {}) {}
++  constructor(
++    private readonly options: CooldownOptions = {},
++    /** El estado compartido entre proxies; sin él, la conducta es local, como hoy. */
++    private readonly sharedState?: SharedStateStore,
++  ) {}
+ 
+   backoffLevelOf(credentialId: string): number {
+     return this.backoffLevels.get(credentialId) ?? 0
+@@ -78,10 +83,30 @@ export class CredentialCooldown {
+       // Como `MarkResult` de CLIProxyAPI: sólo un 429 es cuota, y el selector
+       // distingue por ella «enfriada» (429 con causa) de «no disponible» (503).
+       if (status === 429) credential.quota = { exceeded: true, reason: 'quota', nextRecoverAt: until }
++      this.publishCooldown(credential.id, decision.reason, until, decision.cooldownMs)
+     }
+     return decision
+   }
+ 
++  /** Publica el enfriamiento en el store compartido, si hay uno; sin él, no hace nada. */
++  private publishCooldown(credentialId: string, reason: string | undefined, until: Date, cooldownMs: number): void {
++    if (!this.sharedState) return
++    const payload = JSON.stringify({ reason: reason ?? null, until: until.toISOString() })
++    void this.sharedState.setWithTtl(sharedCooldownKey(credentialId), payload, cooldownMs).catch(() => {})
++  }
++
++  /**
++   * ¿Sigue enfriada esta credencial? Primero lo local —el propio objeto, que
++   * no exige red—; sólo si hace falta, el store compartido.
++   */
++  async isCoolingDown(credential: ProxyCredential, now: Date = new Date()): Promise<boolean> {
++    if (this.terminal.has(credential.id)) return true
++    if (cooledUntil(credential, now) > 0) return true
++    if (!this.sharedState) return false
++    const shared = await this.sharedState.getWithTtl(sharedCooldownKey(credential.id))
++    return shared !== null
++  }
++
+   /** Un acierto: la credencial vuelve a estar disponible y su retroceso a cero, salvo una baja. */
+   clear(credential: ProxyCredential): void {
+     if (this.terminal.has(credential.id)) return
+@@ -111,3 +136,8 @@ function cooledUntil(credential: ProxyCredential, now: Date): number {
+   if (!credential.unavailable || !credential.nextRetryAfter) return 0
+   return Math.max(credential.nextRetryAfter.getTime() - now.getTime(), 0)
+ }
++
++/** La clave del estado compartido bajo la que vive el enfriamiento de una credencial. */
++function sharedCooldownKey(credentialId: string): string {
++  return `credential-cooldown:${credentialId}`
++}
