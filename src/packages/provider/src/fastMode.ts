@@ -72,7 +72,7 @@ import {
   hasProfileScope,
 } from './authAlias.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { readEnv } from '@thyrox/config/env/utils'
 import {
   getDefaultMainLoopModelSetting,
   getMainLoopModel,
@@ -164,8 +164,8 @@ function isRemoteCoworkSession(): boolean {
   return isTruthyFlag(readEnv('THYROX_CODE_REMOTE')) && readEnv('THYROX_CODE_ENVIRONMENT_KIND') === undefined && isCoworkEntrypoint()
 }
 
-/** `K$`: el nombre visible del modelo del modo rápido. */
-function fastModeModelDisplay(): string {
+/** `K$`: el nombre visible del modelo del modo rápido, leído del catálogo. */
+export function getFastModeModelDisplay(): string {
   const model = parseUserSpecifiedModel('opus')
   return MODELS[canonicalModelName(model)]?.display_name ?? 'Opus'
 }
@@ -193,36 +193,22 @@ export function processFastModeAvailabilityContext(): FastModeAvailabilityContex
     // pendiente: `eo` (claims del token de una sesión de trabajo remota), fase R-2b-2c.
     remoteManaged: isRemoteCoworkSession(),
     authType: getClaudeAIOAuthTokens() !== null ? 'oauth' : 'api-key',
-    fastModeModelDisplay: fastModeModelDisplay(),
+    fastModeModelDisplay: getFastModeModelDisplay(),
     // pendiente: `_6e` y `hy() && Ex() ? Run()` (créditos de uso), fase R-2b-2d.
     usageCreditsLink: undefined,
     usageCreditsInstruction: undefined,
   }
 }
 
-// Actualizar los modelos de Fast Mode soportados cuando cambie el
-// lanzamiento vigente. Opus 4.8 es el objetivo por defecto; el override
-// heredado a Opus 4.6 está deprecado upstream pero se conserva para
-// compatibilidad mientras los usuarios migran.
-function shouldUseOpus46FastMode(): boolean {
-  if (isEnvTruthy(readEnv('THYROX_CODE_ENABLE_OPUS_4_8_FAST_MODE'))) return false
-  if (isEnvTruthy(readEnv('THYROX_CODE_OPUS_4_6_FAST_MODE_OVERRIDE'))) return true
-  return false
-}
+// Constante para callers que resuelven el nombre a la carga del módulo. El
+// nombre visible sale del catálogo (`getFastModeModelDisplay`); 2.1.283 ya
+// no trae la anulación a Opus 4.6, así que no hay variable de entorno que
+// leer después de la carga.
+export const FAST_MODE_MODEL_DISPLAY = getFastModeModelDisplay()
 
-export function getFastModeModelDisplay(): string {
-  return shouldUseOpus46FastMode() ? 'Opus 4.6' : 'Opus 4.8'
-}
-
-// Constante para callers que resuelven el nombre a la carga del módulo;
-// los callers en runtime deberían preferir getFastModeModelDisplay() para
-// que el override por variable de entorno se respete aunque se fije
-// después de la carga.
-export const FAST_MODE_MODEL_DISPLAY = 'Opus 4.8'
-
+/** `Rte`: 'opus', con el sufijo `[1m]` cuando aplica la fusión de contexto de 1M. */
 export function getFastModeModel(): string {
-  const base = shouldUseOpus46FastMode() ? 'claude-opus-4-6' : 'opus'
-  return base + (isOpus1mMergeEnabled() ? '[1m]' : '')
+  return 'opus' + (isOpus1mMergeEnabled() ? '[1m]' : '')
 }
 
 export function getInitialFastModeSetting(model: ModelSetting): boolean {

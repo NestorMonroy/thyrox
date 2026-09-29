@@ -168,11 +168,9 @@ const CLAUDE_4_5_OR_4_6_MODEL_IDS = {
   haiku: 'claude-haiku-4-5-20251001',
 }
 
-/** Nombre de mercadeo del modelo de fast-mode — Opus 4.8 por defecto, con override legacy. */
+/** Nombre de mercadeo del modelo de fast-mode, leído del catálogo (`K$`). */
 function getFastModelName(): string {
-  return isEnvTruthy(readEnv('THYROX_CODE_OPUS_4_6_FAST_MODE_OVERRIDE'))
-    ? 'Opus 4.6'
-    : 'Opus 4.8'
+  return MODELS[CLAUDE_4_5_OR_4_6_MODEL_IDS.opus]?.display_name ?? 'Opus 4.8'
 }
 
 /**
