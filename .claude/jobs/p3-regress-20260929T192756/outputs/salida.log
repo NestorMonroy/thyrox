@@ -1,0 +1,36 @@
+=== tests/session/test-headless-pool.sh
+exit=0
+aserciones: 128 de 128 · fallos: 0
+=== tests/session/test-headless-pool-worktree.sh
+exit=1
+  FALLA el pool deja sólo el árbol principal: esperado «1», obtenido «2»
+  FALLA sin candado de la ejecución al terminar: esperado «no», obtenido «si»
+test-headless-pool-worktree: 32 aserciones — 30 ok, 2 falla(s)
+=== tests/session/test-headless-pool-frozen-launcher.sh
+exit=0
+result: 6 of 6 assertions green
+=== tests/session/test-headless-pool-item-drain.sh
+exit=0
+result: 16 of 16 assertions green
+=== tests/session/test-headless-pool-lifecycle.sh
+exit=0
+result: 21 of 21 assertions green
+=== tests/session/test-item-worktree-stash.sh
+exit=0
+item_worktree stash guard: 19/19
+=== lint
+shellcheck: 1 hallazgo(s) (alcance medido: 5 archivo(s))
+    tests/session/test-headless-pool-lifecycle.sh:88: SC1010 Use semicolon or linefeed before 'done' (or quote to make it literal).
+ruff: 0 hallazgo(s) (alcance medido: 10 archivo(s))
+pyright: 10 hallazgo(s) (alcance medido: 10 archivo(s))
+    tests/session/test_pool_lifecycle.py:82: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:87: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:101: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:124: reportOptionalMemberAccess "generation" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:131: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:131: reportOptionalMemberAccess "owner_pid" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:160: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:176: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:201: reportOptionalMemberAccess "state" is not a known attribute of "None"
+    tests/session/test_pool_lifecycle.py:203: reportOptionalMemberAccess "state" is not a known attribute of "None"
+__BG_EXIT__=1

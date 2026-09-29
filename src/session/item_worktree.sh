@@ -138,18 +138,22 @@ with_retries() {
 # segundos: con varios ítems a la vez, unos pocos reintentos cortos se agotan.
 # Los ítems de una misma ejecución se turnan con un candado propio mientras
 # dura el alta; los reintentos quedan para el choque con un escritor ajeno.
+# OUT identifica la ejecución —de él salen el directorio de sus worktrees y su
+# candado—; los artefactos del ítem van a ARTIFACTS, que por defecto es OUT.
+# `headless-pool` pasa como ARTIFACTS el runtime del ítem, que sólo llega a OUT
+# al publicarse.
 prepare() {
-    local repo="$1" out="$2" n="$3" base root dir
+    local repo="$1" out="$2" n="$3" artifacts="${4:-$2}" base root dir
     base="$(run_dir "$repo" "$out")" || return 2
     root="${base%/*}"
     exclude_default_root "$repo" || return 2
     dir="$base/$n"
-    mkdir -p "$base" "$out" || return 2
+    mkdir -p "$base" "$artifacts" || return 2
     # La pila de stash y el instante de arranque, para que `finalize` pueda
     # distinguir una entrada nueva de una que ya estaba: `refs/stash` es
     # compartido entre todos los worktrees del repositorio.
-    git -C "$repo" stash list --format=%H > "$out/$n.stash-baseline" 2>/dev/null
-    date -u +%Y-%m-%dT%H:%M:%SZ > "$out/$n.stash-started"
+    git -C "$repo" stash list --format=%H > "$artifacts/$n.stash-baseline" 2>/dev/null
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$artifacts/$n.stash-started"
     # El candado es de la raíz, no de la ejecución: la admisión por disco sólo
     # vale si ningún otro pool crea un worktree entre la medida y el alta.
     (

@@ -31,6 +31,7 @@ from pathlib import Path
 
 from agents import model_catalog
 from paths import reach
+from session.pool_lifecycle import closed_glob
 from verify import step_setup, tsc_reflect, tsc_routes, tsc_sweep
 from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
@@ -86,7 +87,7 @@ def cmd_status(args) -> int:
     items_file = args.bench / "items.txt"
     items = [l for l in items_file.read_text().splitlines() if l.strip()] if items_file.is_file() else []
     endings: collections.Counter = collections.Counter()
-    outputs = sorted((args.bench / "outputs").glob("*.json"))
+    outputs = sorted(closed_glob(args.bench / "outputs", "*.json"))
     for path in outputs:
         try:
             endings[json.loads(path.read_text()).get("subtype", "unknown")] += 1
@@ -612,7 +613,7 @@ def previous_item_bound(bench: Path) -> float | None:
                       if (n := _step_number(p)) is not None and n < current)
     for _, step in reversed(previous):
         durations = []
-        for path in (step / "outputs").glob("*.json"):
+        for path in closed_glob(step / "outputs", "*.json"):
             try:
                 duration = json.loads(path.read_text()).get("duration_ms")
             except (ValueError, AttributeError):

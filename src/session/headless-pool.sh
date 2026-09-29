@@ -84,12 +84,15 @@
 # con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
 # declara y no se mide.
 #
-# El prompt de cada item es la plantilla seguida de `Item: <linea>`. Por item
-# escribe `<out>/<n>.stream.jsonl` (una linea por evento de `--output-format
-# stream-json`, con el uso de cada peticion), `<n>.json` (su linea `result`) y
-# `<n>.err`;
-# `<out>/index.tsv` empareja numero e item, y `<out>/joblog.tsv` es el de
-# GNU Parallel. Publica `-- FALLIDO <item>` por cada fallo y una linea final
+# El prompt de cada item es la plantilla seguida de `Item: <linea>`. Mientras
+# corre, el item escribe en el runtime de la ejecución
+# (`$THYROX_RUNTIME_DIR/pool/<run-id>/`, ignorado por git), no en `<out>`: su
+# `<n>.stream.jsonl` (una linea por evento de `--output-format stream-json`,
+# con el uso de cada peticion), `<n>.json` (su linea `result`) y `<n>.err`.
+# Al cerrarse, `pool_lifecycle publish` los mueve a `<out>` y deja
+# `<n>.closed` —su manifiesto con generación y sha256— como última escritura;
+# un consumidor lee sólo ítems con `<n>.closed`. Al final `<out>/index.tsv`
+# (número e item), `<out>/joblog.tsv` (el de GNU Parallel) y `run.closed`. Publica `-- FALLIDO <item>` por cada fallo y una linea final
 # `items=N ok=K fallidos=F`. Sale 0 si todos terminaron bien, 1 si alguno no.
 #
 # Cada `thyrox -p` corre con `--no-session-persistence`, `--setting-sources
@@ -362,14 +365,42 @@ if [[ -n "$CREDENTIAL_PROXY" ]]; then
     HP_PROXY_SOCKET="$proxy_socket"
 fi
 export HP_PROXY_SOCKET
-: > "$OUT/index.tsv"
+# La ejecución vive en su runtime hasta cerrarse: el índice, el joblog y los
+# artefactos de cada ítem se escriben ahí, y a la salida sólo llega lo publicado
+# (`pool_lifecycle`). Un pool que muere deja su runtime para `reconcile`.
+export HP_LIFECYCLE="$HP_BIN/pool_lifecycle"
+HP_LIVE="$(bash "$HP_LIFECYCLE" open-run "$OUT" --owner $$)" \
+    || rehusa "no se pudo abrir el runtime de la ejecución para $OUT"
+export HP_LIVE
+: > "$HP_LIVE/index.tsv"
 for i in "${!ITEMS[@]}"; do
-    printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$OUT/index.tsv"
+    printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$HP_LIVE/index.tsv"
 done
 
 # Un item por trabajo. El cuerpo va en una funcion exportada para que GNU
 # Parallel no tenga que citar el prompt: recibe numero e item como argumentos.
+#
+# El ítem vive en el runtime (`HP_LIVE`, ignorado por git) y llega a la salida
+# sólo al cerrarse: `pool_lifecycle begin` le da su generación, y `publish`
+# mueve sus artefactos, los verifica contra su sha256 y deja `<n>.closed` como
+# última escritura. Se publica también el ítem que falló —su `.err` es el
+# motivo—; si la publicación misma falla, el runtime se conserva para
+# `pool_lifecycle reconcile` y el ítem sale con 7.
 _headless_item() {
+    local n="$1" rc=0 publish_rc=0
+    local -r publish_failed_exit=7
+    bash "$HP_LIFECYCLE" begin "$HP_LIVE" "$HP_OUT" "$n" --owner "$BASHPID" \
+        > /dev/null 2>> "$HP_LIVE/$n.lifecycle.err" || return "$publish_failed_exit"
+    rm -f "${HP_LIVE:?}/${n:?}.lifecycle.err"
+    _headless_item_run "$@" || rc=$?
+    bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" \
+        2>> "$HP_LIVE/$n.lifecycle.err" || publish_rc=$?
+    [[ "$publish_rc" -eq 0 ]] || return "$publish_failed_exit"
+    return "$rc"
+}
+export -f _headless_item
+
+_headless_item_run() {
     local n="$1" item="$2"
     # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
     # GPU (`parallel` 20231122, líneas 4113-4118: no arranca si no hay sitio).
@@ -386,7 +417,7 @@ _headless_item() {
     if [[ -n "$HP_VRAM_NEED" ]]; then
         bash "$HP_GPU" admit "$HP_VRAM_NEED" --ledger "$HP_VRAM_LEDGER" --owner "$owner" \
             --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL" \
-            2> "$HP_OUT/$n.admit.err" || admit_rc=$?
+            2> "$HP_LIVE/$n.admit.err" || admit_rc=$?
     fi
     # 3 es el plazo vencido, una medida; cualquier otro código es que la
     # admisión no pudo decidir, y decir «no hubo sitio» afirmaría lo que no
@@ -396,17 +427,17 @@ _headless_item() {
             echo "admision por VRAM vencida: el item pide $HP_VRAM_NEED MiB y no hubo sitio en ${HP_TIMEOUT}s"
         else
             echo "la admision por VRAM fallo (exit $admit_rc); el item no se lanzo:"
-            cat "$HP_OUT/$n.admit.err"
-        fi > "$HP_OUT/$n.err"
-        : > "$HP_OUT/$n.json"
+            cat "$HP_LIVE/$n.admit.err"
+        fi > "$HP_LIVE/$n.err"
+        : > "$HP_LIVE/$n.json"
         return 3
     fi
-    rm -f "$HP_OUT/$n.admit.err"
+    rm -f "$HP_LIVE/$n.admit.err"
     local workdir="$HP_WORKDIR"
     if [[ "$HP_ISOLATION" == worktree ]]; then
-        workdir="$(bash "$HP_ITEM_WORKTREE" prepare "$HP_WORKDIR" "$HP_OUT" "$n" 2> "$HP_OUT/$n.prepare.err")" || {
-            { echo "no se pudo preparar el worktree del item:"; cat "$HP_OUT/$n.prepare.err"; } > "$HP_OUT/$n.err"
-            : > "$HP_OUT/$n.json"; return 4; }
+        workdir="$(bash "$HP_ITEM_WORKTREE" prepare "$HP_WORKDIR" "$HP_OUT" "$n" "$HP_LIVE" 2> "$HP_LIVE/$n.prepare.err")" || {
+            { echo "no se pudo preparar el worktree del item:"; cat "$HP_LIVE/$n.prepare.err"; } > "$HP_LIVE/$n.err"
+            : > "$HP_LIVE/$n.json"; return 4; }
     fi
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$workdir" || exit 1
@@ -415,15 +446,15 @@ _headless_item() {
          # los trabajos que lance, su ledger y su archivo caerian en el arbol
          # principal. Van a la salida del item: ni al arbol ni al parche.
          if [[ "$HP_ISOLATION" == worktree ]]; then
-             export THYROX_JOBS_DIR="$HP_OUT/$n.jobs" \
-                    THYROX_SESSION_LEDGER_DIR="$HP_OUT/$n.ledger" \
-                    THYROX_JOBS_ARCHIVE_DIR="$HP_OUT/$n.jobs"
+             export THYROX_JOBS_DIR="$HP_LIVE/$n.jobs" \
+                    THYROX_SESSION_LEDGER_DIR="$HP_LIVE/$n.ledger" \
+                    THYROX_JOBS_ARCHIVE_DIR="$HP_LIVE/$n.jobs"
              # El envoltorio de `git` que rehúsa `git stash` (refs/stash es
              # compartido entre worktrees, TASK-THYROX-0604): va antes en el
              # PATH del ítem, y el archivo donde registra cada intento
              # rehusado es el que `item_worktree.sh finalize` lee para dar el
              # veredicto `con-stash`.
-             export THYROX_POOL_STASH_ATTEMPTS_FILE="$HP_OUT/$n.stash-attempts"
+             export THYROX_POOL_STASH_ATTEMPTS_FILE="$HP_LIVE/$n.stash-attempts"
              export PATH="$HP_ITEM_GIT_GUARD_DIR:$PATH"
          fi
          # Cada cliente lee el TTL con su propio nombre: `thyrox -p`
@@ -453,19 +484,19 @@ _headless_item() {
          # `setsid` hace del ítem el líder de una sesión propia: su pid es el id
          # de la sesión, y todo lo que lance —también lo que `timeout` pone en
          # otro grupo de procesos— queda dentro, donde el drenaje lo encuentra.
-         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
+         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
          timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} --no-session-persistence "${session_args[@]}" \
             --output-format stream-json --verbose) \
-      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err" &
+      > "$HP_LIVE/$n.stream.jsonl" 2> "$HP_LIVE/$n.err" &
     local pid=$! monitor=""
     # La VRAM del item: GNU Time mide su RAM y no ve la GPU. El monitor
     # muestrea el ARBOL de `pid` (el item y el ejecutor) mientras vive y deja
     # <n>.gpu; sin nvidia-smi no se lanza y el pool ya lo declaro.
     if [[ -n "$HP_NVIDIA_SMI" ]]; then
-        bash "$HP_GPU" watch "$pid" "$HP_OUT/$n.gpu" \
+        bash "$HP_GPU" watch "$pid" "$HP_LIVE/$n.gpu" \
             --nvidia-smi "$HP_NVIDIA_SMI" --interval "$HP_GPU_INTERVAL" &
         monitor=$!
     fi
@@ -479,33 +510,34 @@ _headless_item() {
     # el motivo, porque lo que dejó en disco no es confiable.
     local -r unsettled_exit=6
     local drain_rc=0 writers_report writers_rc=0
-    bash "$HP_PROCESS_OWNERSHIP" drain "$pid" --grace "$HP_DRAIN_SECONDS" >> "$HP_OUT/$n.err" 2>&1 || drain_rc=$?
+    bash "$HP_PROCESS_OWNERSHIP" drain "$pid" --grace "$HP_DRAIN_SECONDS" >> "$HP_LIVE/$n.err" 2>&1 || drain_rc=$?
     if [[ "$drain_rc" -ne 0 ]]; then
-        echo "el ítem dejó procesos vivos después de salir su principal (drenaje exit $drain_rc); sus salidas no son confiables" >> "$HP_OUT/$n.err"
+        echo "el ítem dejó procesos vivos después de salir su principal (drenaje exit $drain_rc); sus salidas no son confiables" >> "$HP_LIVE/$n.err"
         rc="$unsettled_exit"
     fi
     # La salida del inspector se captura antes de anexarla: redirigida al
     # `.err`, el propio inspector sería un escritor de las rutas que mide.
-    writers_report="$(bash "$HP_WRITER_INSPECTOR" "$HP_OUT/$n.stream.jsonl" "$HP_OUT/$n.err" 2>&1)" || writers_rc=$?
+    local -a item_paths=("$HP_LIVE/$n".*)
+    writers_report="$(bash "$HP_WRITER_INSPECTOR" "${item_paths[@]}" 2>&1)" || writers_rc=$?
     if [[ "$writers_rc" -ne 0 ]]; then
         printf 'las salidas del ítem siguen abiertas en escritura (inspector exit %s):\n%s\n' \
-            "$writers_rc" "$writers_report" >> "$HP_OUT/$n.err"
+            "$writers_rc" "$writers_report" >> "$HP_LIVE/$n.err"
         rc="$unsettled_exit"
     fi
     # <<< item-drain
     [[ -z "$monitor" ]] || wait "$monitor"
     [[ -z "$HP_VRAM_NEED" ]] || bash "$HP_GPU" release --ledger "$HP_VRAM_LEDGER" --owner "$owner"
-    [[ "$HP_ISOLATION" != worktree ]] || bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_OUT" "$n" "$rc" "$HP_VERIFY"
+    [[ "$HP_ISOLATION" != worktree ]] || bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_LIVE" "$n" "$rc" "$HP_VERIFY"
     # El .json de siempre es la linea `result` del stream: sus consumidores
     # no cambian. El stream se queda porque es lo unico que trae el uso de
     # cada peticion; `usage.iterations` del result trae solo la ultima.
     # Se elige por el campo `type` ya parseado, no por el orden de las claves,
     # que el ejecutable no garantiza; una linea truncada por timeout se salta.
-    jq -cR 'fromjson? | select(.type == "result")' "$HP_OUT/$n.stream.jsonl" \
-        | tail -1 > "$HP_OUT/$n.json"
+    jq -cR 'fromjson? | select(.type == "result")' "$HP_LIVE/$n.stream.jsonl" \
+        | tail -1 > "$HP_LIVE/$n.json"
     return "$rc"
 }
-export -f _headless_item
+export -f _headless_item_run
 HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 HP_OUT="$(cd "$OUT" && pwd)"
 HP_RUNNER="$(command -v "$RUNNER_BIN")"
@@ -553,8 +585,8 @@ if [[ -n "$MEMFREE_SPEC" ]]; then
     echo "memfree: $MEMFREE_SPEC ($MEMFREE_WHY)"
 fi
 
-"$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$OUT/joblog.tsv" \
-    _headless_item '{1}' '{2}' :::: "$OUT/index.tsv" >/dev/null 2>&1
+"$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$HP_LIVE/joblog.tsv" \
+    _headless_item '{1}' '{2}' :::: "$HP_LIVE/index.tsv" >/dev/null 2>&1
 
 # El veredicto sale del joblog (columna Exitval), emparejado con el indice por
 # numero: no depende del orden en que terminaron. El total sale del índice: un
@@ -572,15 +604,22 @@ gawk -F'\t' '
         print ""
         exit (mal > 0 || missing > 0)
     }
-' "$OUT/index.tsv" "$OUT/joblog.tsv"
+' "$HP_LIVE/index.tsv" "$HP_LIVE/joblog.tsv"
 STATUS=$?
 if [[ "$ISOLATION" == worktree ]]; then
-    cat "$OUT"/*.verdict 2>/dev/null | gawk '{c[$1]++} END {
+    bash "$HP_LIFECYCLE" closed-items "$OUT" | while read -r n; do cat "$OUT/$n.verdict" 2>/dev/null; done | gawk '{c[$1]++} END {
         printf "verificados=%d rechazados=%d sin-cambios=%d fallidos=%d", c["verificado"], c["rechazado"], c["sin-cambios"], c["fallido"]
         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
         if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
         print "" }'
     bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT"
+fi
+# El cierre de la ejecución publica el índice y el joblog y deja `run.closed` al
+# final. Si algún ítem no llegó a cerrarse, su runtime se conserva y el pool
+# sale con fallo aunque el joblog diga lo contrario.
+if ! bash "$HP_LIFECYCLE" close-run "$HP_LIVE" "$OUT"; then
+    echo "runtime conservado para pool_lifecycle reconcile: $HP_LIVE"
+    STATUS=1
 fi
 # La medida de esta ejecución alimenta a la siguiente. Sin GNU Time no hay
 # `.time` y `record` no escribe fila: una medida ausente no es un cero.

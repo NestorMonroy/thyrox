@@ -81,13 +81,21 @@ bash "$MODULE" finalize "$REPO" "$dirf" "$F/outf" 1 0 true
 check "veredicto verificado, sin stash de por medio" "$(cat "$F/outf/1.verdict")" "verificado"
 
 echo "caso g — pool_integrate no aplica ni con-stash ni anomalía, y los anota"
-mkdir -p "$F/outg"
+# Los artefactos se escriben en el runtime y se publican, como hace el pool:
+# pool_integrate sólo lee ítems con `<n>.closed`.
+LIFECYCLE="$RAIZ/bin/pool_lifecycle"
+export THYROX_RUNTIME_DIR="$F/runtime"
+liveg="$(bash "$LIFECYCLE" open-run "$F/outg" --owner $$)"
+bash "$LIFECYCLE" begin "$liveg" "$F/outg" 1 --owner $$ > /dev/null
+bash "$LIFECYCLE" begin "$liveg" "$F/outg" 2 --owner $$ > /dev/null
+echo con-stash > "$liveg/1.verdict"
+: > "$liveg/1.patch"; : > "$liveg/1.files"
+echo verificado > "$liveg/2.verdict"
+printf 'deadbeef\n' > "$liveg/2.shared-stash-anomaly"
+: > "$liveg/2.patch"; : > "$liveg/2.files"
+bash "$LIFECYCLE" publish "$liveg" "$F/outg" 1 --exit 0
+bash "$LIFECYCLE" publish "$liveg" "$F/outg" 2 --exit 0
 printf '1\t\n2\t\n' > "$F/outg/index.tsv"
-echo con-stash > "$F/outg/1.verdict"
-: > "$F/outg/1.patch"; : > "$F/outg/1.files"
-echo verificado > "$F/outg/2.verdict"
-printf 'deadbeef\n' > "$F/outg/2.shared-stash-anomaly"
-: > "$F/outg/2.patch"; : > "$F/outg/2.files"
 bash "$INTEGRATE" "$F/outg" --repo "$REPO" > "$F/outg.log" 2>&1
 check "item1 (con-stash) no se aplica" "$(gawk -F'\t' '$1 == 1 {print $2}' "$F/outg/integration.tsv")" "con-stash"
 check "item2 (anomalía) no se aplica" \

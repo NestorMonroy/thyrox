@@ -25,6 +25,18 @@ from verify import step_report as sr
 passed = failed = 0
 
 
+def publish_all(bench: Path) -> Path:
+    """Cierra cada ítem de ``outputs``, como hace el pool al publicarlo.
+
+    El informe lee sólo ítems con ``<n>.closed`` (``pool_lifecycle``); las
+    salidas de estas pruebas simulan un paso ya terminado.
+    """
+    outputs = bench / "outputs"
+    for item in {p.name.split(".", 1)[0] for p in outputs.iterdir() if p.name[0].isdigit()}:
+        (outputs / f"{item}.closed").write_text(json.dumps({"item": item, "generation": 1, "artifacts": {}}))
+    return bench
+
+
 def assert_equal(name: str, expected, obtained) -> None:
     global passed, failed
     if expected == obtained:
@@ -56,7 +68,7 @@ with tempfile.TemporaryDirectory() as tmp:
         (pipeline / f"batch-0{n}").mkdir(parents=True)
         (pipeline / f"batch-0{n}/report.json").write_text(json.dumps(
             {"total_before": before, "total_final": final, "outcomes": outcomes, "tsc_runs": 2}))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("cuatro capas separadas", ["capability", "cost", "data", "system"], sorted(report))
     assert_equal("sistema: pared del pool y fracción a ancho completo, del joblog",
                  (40.0, 0.25), (report["system"]["pool_wall_s"], report["system"]["full_width_share"]))
@@ -83,7 +95,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # primera palabra lo descartaba como ilegible.
     (bench / "outputs/5.time").write_text(
         "Command exited with non-zero status 124\n1200000 600.00 50.00 4.00\n")
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("la memoria pico de los items: máxima, mediana y cuántos se midieron",
                  {"measured": 4, "max": 1200000, "median": 750000}, report["system"]["memory_kb"])
     # La VRAM, de los `<n>.gpu` que escribe `gpu_monitor`: `pico media uso% muestras`.
@@ -93,9 +105,9 @@ with tempfile.TemporaryDirectory() as tmp:
     for n, (peak, utilization) in ((1, (3200, 80)), (2, (4700, 91)), (3, (0, 0))):
         (bench / f"outputs/{n}.gpu").write_text(f"{peak} {peak // 2} {utilization} 12\n")
     (bench / "outputs/4.gpu").write_text("ilegible\n")
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     (bench / "outputs/6.gpu").write_text("error NVML: Driver/library version mismatch\n")
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     # TRES estados, sin colapsar: el 0 medido cuenta (mediana 3200, no 3950);
     # lo ilegible y el fallo de nvidia-smi son ERRORES, no medidas ni ausencias.
     assert_equal("la VRAM de los items: pico máximo, mediana, uso pico, medidos y errores",
@@ -110,7 +122,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for n in (1, 2, 3):
         (bench / f"outputs/{n}.json").write_text(json.dumps(
             {"usage": opus_usage, "modelUsage": {"claude-opus-5-5": {"inputTokens": 10}}}))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("costo con los cocientes del tier del modelo de cada salida", (1080.0, 540.0),
                  (report["cost"]["equiv_tokens"], report["cost"]["equiv_per_accepted"]))
     assert_equal("la base de cada modelo se publica", {"claude-opus-5-5": "tier_4_20_cache_read_0_20"},
@@ -132,13 +144,13 @@ with tempfile.TemporaryDirectory() as tmp:
             "".join(json.dumps(line) + "\n" for line in lines) + '{"type":"res\n')
 
     stream(1, (0, 5000), (5000, 900))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa)",
                  {"measured": 1, "first_item": {"item": 1, "read": 0, "write": 5000}},
                  report["cost"]["cache_prefix"])
     stream(2, (4800, 200), (6000, 50))
     stream(3, (5000, 300))
-    report = sr.step_report(bench, pipeline)
+    report = sr.step_report(publish_all(bench), pipeline)
     assert_equal("el prefijo: primer ítem frío, su tamaño por la lectura de los demás",
                  {"measured": 3, "first_item": {"item": 1, "read": 0, "write": 5000},
                   "prefix_tokens": 4900, "first_item_read_share": 0.0, "write_median": 300},
@@ -155,7 +167,7 @@ with tempfile.TemporaryDirectory() as tmp:
             {"type": "assistant", "message": {"usage": {"cache_read_input_tokens": request[0],
                                                         "cache_creation_input_tokens": request[1]}}}) + "\n")
     assert_equal("el primer ítem es el primero en arrancar, no el de Seq menor",
-                 {"item": 2, "read": 0, "write": 4000}, sr._cache_prefix(late)["first_item"])
+                 {"item": 2, "read": 0, "write": 4000}, sr._cache_prefix(publish_all(late))["first_item"])
 
     empty = Path(tmp) / "empty"
     (empty / "outputs").mkdir(parents=True)

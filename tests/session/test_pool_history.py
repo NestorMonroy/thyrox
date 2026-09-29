@@ -45,6 +45,7 @@ def run_with(times: list[str]) -> Path:
     out = Path(tempfile.mkdtemp(dir=TMP))
     for n, content in enumerate(times, start=1):
         (out / f"{n}.time").write_text(content)
+        (out / f"{n}.closed").write_text(json.dumps({"item": str(n), "generation": 1, "artifacts": {}}))
     return out
 
 
@@ -155,6 +156,7 @@ with tempfile.TemporaryDirectory() as raw:
     out = run_with(["266000 10 1 0\n"])
     (out / "1.gpu").write_text("error NVML: fallo\n")
     (out / "2.gpu").write_text("0 0 0 9\n")
+    (out / "2.closed").write_text(json.dumps({"item": "2", "generation": 1, "artifacts": {}}))
     row = ph.record(TMP / "h-tres", out)
     assert row is not None
     check("el 0 medido es el pico; el error no cuenta", 0, row.get("peak_vram_mib"))
@@ -370,6 +372,27 @@ with tempfile.TemporaryDirectory() as raw:
                  "--gpu-interval", "0.5", "--template", str(prompt), "--min-items", "2",
                  "--max-age-hours", "24"])
     check("... con la MISMA plantilla: el pico medido", "3000", buffer.getvalue().split("\t")[3])
+
+    print("== 28. sólo cuentan los ítems publicados (<n>.closed) ==")
+    # Un ítem sin `.closed` aún corre o murió a medias: su medida no entra.
+    out = run_with(["100000 10 1 0\n", "200000 10 1 0\n"])
+    (out / "3.time").write_text("900000 99 1 0\n")
+    (out / "3.gpu").write_text("9000 9000 90 20\n")
+    row = ph.record(TMP / "h-closed", out)
+    assert row is not None
+    check("el ítem sin cerrar no se cuenta", 2, row["items_measured"])
+    check("... ni su pico de RAM", 200000, row["peak_kb"])
+    check("... ni su VRAM", None, row.get("peak_vram_mib"))
+
+    print("== 28c. control: sin el filtro de cerrados, el ítem sin cerrar vuelve a contar ==")
+    original_closed_items = ph.closed_items
+    ph.closed_items = lambda directory: sorted({p.name.split(".", 1)[0] for p in Path(directory).iterdir()})
+    try:
+        row = ph.record(TMP / "h-closed-control", out)
+        assert row is not None
+        check("control: sin el filtro se cuentan los tres", 3, row["items_measured"])
+    finally:
+        ph.closed_items = original_closed_items
 
 print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
 raise SystemExit(1 if FAILED else 0)

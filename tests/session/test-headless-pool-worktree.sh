@@ -50,7 +50,7 @@ jq -cn '{type:"result",result:"hecho"}'
 SH
 chmod +x "$F/runner"
 export HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-time" TOOLS_LOG="$F/tools.log"
-export HEADLESS_POOL_HISTORY_DIR="$F/hist" MAIN_ROOT="$RAIZ"
+export HEADLESS_POOL_HISTORY_DIR="$F/hist" MAIN_ROOT="$RAIZ" THYROX_RUNTIME_DIR="$F/runtime"
 printf 'Implementa.\n' > "$F/prompt.md"
 
 git init -q "$F/repo" && git -C "$F/repo" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base

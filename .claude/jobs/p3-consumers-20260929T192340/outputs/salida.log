@@ -1,0 +1,27 @@
+=== tests/verify/test_step_report.py
+  FALLA costo en tokens equivalentes ponderados, y por aceptada — esperado (1005.0, 502.5), obtenido (0.0, 0.0)
+  FALLA la memoria pico de los items: máxima, mediana y cuántos se midieron — esperado {'measured': 4, 'max': 1200000, 'median': 750000}, obtenido {'measured': 0}
+  FALLA la VRAM de los items: pico máximo, mediana, uso pico, medidos y errores — esperado {'measured': 3, 'errors': 2, 'vram_max_mib': 4700, 'vram_median_mib': 3200, 'utilization_max_pct': 91}, obtenido {'measured': 0}
+  FALLA sin modelUsage la base es la fórmula fija, declarada — esperado {'(sin modelo)': 'fija-3-15'}, obtenido {}
+  FALLA costo con los cocientes del tier del modelo de cada salida — esperado (1080.0, 540.0), obtenido (0.0, 0.0)
+  FALLA la base de cada modelo se publica — esperado {'claude-opus-5-5': 'tier_4_20_cache_read_0_20'}, obtenido {}
+  FALLA un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa) — esperado {'measured': 1, 'first_item': {'item': 1, 'read': 0, 'write': 5000}}, obtenido {'measured': 0}
+  FALLA el prefijo: primer ítem frío, su tamaño por la lectura de los demás — esperado {'measured': 3, 'first_item': {'item': 1, 'read': 0, 'write': 5000}, 'prefix_tokens': 4900, 'first_item_read_share': 0.0, 'write_median': 300}, obtenido {'measured': 0}
+KeyError: 'first_item'
+exit=0
+=== tests/verify/test_step_close.py
+  ok    el resultado nombra los commits
+test_step_close: 14 aserciones — 14 ok, 0 falla(s)
+exit=0
+=== tests/verify/test_pool_pipeline.py
+exit=0
+=== tests/verify/test_tsc_cycle.py
+  FALLA cuenta las salidas contra los ítems — esperado True, obtenido False
+  FALLA separa cómo terminó cada agente — esperado True, obtenido False
+  FALLA la cota es el ítem más largo del paso anterior, en minutos — esperado 4.91, obtenido None
+  FALLA ítems de menos de 5 min: 5m, y el porqué — esperado ('5m', True), obtenido (None, False)
+  FALLA un ítem de 12 min en el paso anterior: 1h — esperado '1h', obtenido None
+  FALLA sin entorno, la cota decide como antes — esperado '5m', obtenido None
+test_tsc_cycle: 102 aserciones — 96 ok, 6 falla(s)
+exit=0
+__BG_EXIT__=0

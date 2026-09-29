@@ -32,6 +32,7 @@ import sys
 import time
 from pathlib import Path
 
+from session.pool_lifecycle import is_closed
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 from verify import measure_worktree, prefix_speculation, tsc_reflect, tsc_sweep
 from verify.file_edits import apply_files
@@ -263,7 +264,7 @@ def backfill_provenance(run: Path) -> int:
         for n, file in enumerate(files, 1):
             path = step / "outputs" / f"{n}.json"
             try:
-                output = json.loads(path.read_text()) if path.is_file() else {}
+                output = json.loads(path.read_text()) if is_closed(step / "outputs", str(n)) else {}
             except ValueError:
                 continue
             for pattern in output_patterns(output):
@@ -405,7 +406,9 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
         finished, outputs = set(), {}
         for directory in args.outputs:
             for n in range(1, len(items) + 1):
-                data = read_output(directory / f"{n}.json")
+                # Sólo lo publicado: `<n>.json` sin su `<n>.closed` es de un ítem
+                # que no terminó de cerrarse (`pool_lifecycle`).
+                data = read_output(directory / f"{n}.json") if is_closed(directory, str(n)) else None
                 if data is not None:
                     finished.add(n)
                     outputs.setdefault(n, []).append(data)

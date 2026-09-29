@@ -12,7 +12,8 @@
 # toca un archivo que otro ítem ya cambió es `conflicto: <archivo>` y no se
 # aplica; uno que `git apply --check` rechaza es `no-aplica`. No commitea:
 # los archivos aplicados quedan en el árbol para que quien integra los
-# commitee por pathspec. Escribe OUT/integration.tsv (ítem, resultado) y una
+# commitee por pathspec. Un ítem sin `<n>.closed` es `sin-cerrar`, y uno cuyos
+# artefactos no coinciden con su manifiesto es `incoherente`: ninguno se aplica. Escribe OUT/integration.tsv (ítem, resultado) y una
 # línea `aplicados=A conflictos=C no-aplicables=X`. Sale 0 si todo lo
 # aplicable se aplicó, 1 si hubo conflicto o no-aplica, 2 si no pudo medir.
 set -uo pipefail
@@ -28,10 +29,22 @@ done
 [[ -f "$out/index.tsv" ]] || { echo "pool_integrate: REHUSA — no hay $out/index.tsv" >&2; exit 2; }
 git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "pool_integrate: REHUSA — $repo no es un árbol de git" >&2; exit 2; }
 
+lifecycle="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/bin/pool_lifecycle"
 declare -A touched=()
 applied=0; conflicts=0; unapplicable=0
 : > "$out/integration.tsv"
 while IFS=$'\t' read -r n _; do
+    # >>> closed-gate
+    # Sólo se integra lo publicado y coherente: sin `<n>.closed` el ítem aún
+    # corre o murió a medias, y un artefacto que no coincide con su manifiesto
+    # no es el que el ítem cerró (`pool_lifecycle`).
+    if ! bash "$lifecycle" is-closed "$out" "$n"; then
+        printf '%s\tsin-cerrar\n' "$n" >> "$out/integration.tsv"; continue
+    fi
+    if ! bash "$lifecycle" verify "$out" "$n" >/dev/null; then
+        printf '%s\tincoherente\n' "$n" >> "$out/integration.tsv"; continue
+    fi
+    # <<< closed-gate
     verdict="$(cat "$out/$n.verdict" 2>/dev/null || echo sin-veredicto)"
     case "$verdict" in
         verificado) ;;

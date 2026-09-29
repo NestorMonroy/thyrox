@@ -37,6 +37,17 @@ def assert_equal(name: str, expected, obtained) -> None:
         print(f"  FALLA {name} — esperado {expected!r}, obtenido {obtained!r}")
 
 
+def publish(path: Path) -> Path:
+    """Deja ``<n>.closed`` junto a la salida ``<n>.json``, como hace el pool.
+
+    ``pool_pipeline`` sólo lee ítems publicados (``pool_lifecycle``).
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    item = path.name.split(".", 1)[0]
+    (path.parent / f"{item}.closed").write_text(json.dumps({"item": item, "generation": 1, "artifacts": {}}))
+    return path
+
+
 print("test_pool_pipeline:")
 items = ["a.ts d/1.txt", "b.ts d/2.txt", "a.ts d/3.txt", "c.ts d/4.txt"]
 grouped = pp.items_by_file(items)
@@ -90,7 +101,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("src/a.ts d/1.txt\n")
-    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}],
+    publish(main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}],
         "patterns": [{"patron": "bad-literal", "senal_del_verificador": "TS9001: bad \\d+",
                       "fix_generico": "sustituir BADn por n", "edits": [0]}]})}))
     cwd = os.getcwd()
@@ -132,7 +143,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("src/a.ts d/1.txt\n")
-    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}]})}))
+    publish(main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}]})}))
     cwd = os.getcwd()
     os.chdir(main)
     try:
@@ -248,7 +259,7 @@ with tempfile.TemporaryDirectory() as directory:
         (run_dir / step / "outputs").mkdir(parents=True)
         (run_dir / step / "items.txt").write_text(f"{file} {run_dir}/{step}/items/1.txt\n")
         named = ["old-one"] + (["late-one"] if step == "step-002" else [])
-        (run_dir / step / "outputs/1.json").write_text(json.dumps({"result": "texto ```json\n" + json.dumps(
+        publish(run_dir / step / "outputs/1.json").write_text(json.dumps({"result": "texto ```json\n" + json.dumps(
             {"edits": [], "patterns": [{"patron": name, "senal_del_verificador": "TS7: x", "fix_generico": "f"}
                                        for name in named]}) + "\n```"}))
     pp.tsc_sweep.add_pattern(run_dir, {"name": "old-one", "signal": "TS7: x", "fix": "f"})
@@ -321,7 +332,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "items.txt").write_text("module:n d/1.txt src/a.ts\n")
     proposal_text = json.dumps({"edits": [module_edit("src/a.ts", "BAD1", "1"),
                                           module_edit("src/port/n.ts", "", "export const n = 1\n")]})
-    (main / "out/1.json").write_text(json.dumps({"result": proposal_text}))
+    publish(main / "out/1.json").write_text(json.dumps({"result": proposal_text}))
     cwd = os.getcwd()
     os.chdir(main)
     try:
@@ -363,7 +374,7 @@ def speculative_run(bad: str, directory: str) -> tuple[dict, Path, Path]:
     (main / "items.txt").write_text("".join(f"src/{name}.ts d/{n}.txt\n" for n, name in enumerate("abc", 1)))
     for n, name in enumerate("abc", 1):
         old, new = edits[name]
-        (main / f"out/{n}.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": old, "new": new}]})}))
+        publish(main / f"out/{n}.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": old, "new": new}]})}))
     cwd = os.getcwd()
     os.chdir(main)
     try:

@@ -33,6 +33,7 @@ from pathlib import Path
 
 from agents import model_catalog
 from session import gpu_monitor
+from session.pool_lifecycle import closed_glob
 
 #: La etiqueta de una salida que no declara su modelo.
 NO_MODEL = "(sin modelo)"
@@ -82,7 +83,7 @@ def _system(bench: Path, batches: list[dict]) -> dict:
     wall = (max(s + r for _, s, r, _ in jobs) - min(s for _, s, _, _ in jobs)) if jobs else 0.0
     runtimes = [run for _, _, run, _ in jobs]
     failed = {seq for seq, _, _, code in jobs if code != 0}
-    for path in (bench / "outputs").glob("*.json"):
+    for path in closed_glob(bench / "outputs", "*.json"):
         try:
             if path.stem.isdigit() and json.loads(path.read_text()).get("is_error"):
                 failed.add(int(path.stem))
@@ -105,7 +106,7 @@ def _memory(bench: Path) -> dict:
     medida de un ítem que falló, y ése —un ``thyrox -p`` que agotó su plazo—
     suele ser el más pesado."""
     peaks = []
-    for path in (bench / "outputs").glob("*.time"):
+    for path in closed_glob(bench / "outputs", "*.time"):
         lines = [l.split() for l in path.read_text(errors="ignore").splitlines()]
         measured = [fields for fields in lines if fields and fields[0].isdigit()]
         if measured:
@@ -120,7 +121,7 @@ def _gpu(bench: Path) -> dict:
     ``<pico MiB> <media MiB> <uso pico %> <muestras>``. Sin ninguno —no hubo
     ``nvidia-smi``— ``measured: 0``: una medida ausente no es un cero. Un ítem
     que no usó la GPU sí cuenta, con 0 MiB, porque eso SÍ se midió."""
-    readings = [gpu_monitor.read_gpu_file(path) for path in (bench / "outputs").glob("*.gpu")]
+    readings = [gpu_monitor.read_gpu_file(path) for path in closed_glob(bench / "outputs", "*.gpu")]
     # `state == "measured"` ya implica `summary is not None` en la fuente
     # (gpu_monitor.py); se repite aquí porque el tipo no lo codifica.
     measured = [r.summary for r in readings if r.state == "measured" and r.summary is not None]
@@ -155,7 +156,7 @@ def _cache_prefix(bench: Path) -> dict:
     demás estima su tamaño. Sin streams, ``measured: 0``; con uno solo no
     hay tamaño que estimar y la clave no se publica."""
     first = {}
-    for path in (bench / "outputs").glob("*.stream.jsonl"):
+    for path in closed_glob(bench / "outputs", "*.stream.jsonl"):
         stem = path.name.split(".")[0]
         request = _first_request(path) if stem.isdigit() else None
         if request:
@@ -185,7 +186,7 @@ def step_report(bench: Path, pipeline: Path) -> dict:
     accepted = sum(1 for o in outcomes if o.startswith("accepted"))
     catalog, _ = model_catalog.try_catalog()
     equiv, basis = 0.0, {}
-    for path in sorted((bench / "outputs").glob("*.json")):
+    for path in sorted(closed_glob(bench / "outputs", "*.json")):
         try:
             result = json.loads(path.read_text())
         except ValueError:

@@ -66,8 +66,10 @@ release_child() {
 # --- caso 1: el ítem espera a su hijo y la línea tardía entra antes del cierre
 start_case "$ROOT" drained 30
 check "el hijo sigue vivo después de que salió el principal" "$(alive "$CHILD_PID" && echo yes)" yes
+# Mientras el ítem vive, su stream está en el runtime, no en la salida.
+live_stream="$(compgen -G "$F/drained.runtime/pool/*/1.stream.jsonl")"
 check "el hijo es escritor vivo del stream" \
-  "$(bash "$ROOT/bin/writer_inspector" "$F/drained.out/1.stream.jsonl" >/dev/null; echo $?)" 1
+  "$(bash "$ROOT/bin/writer_inspector" "$live_stream" >/dev/null; echo $?)" 1
 check "mientras el hijo vive, el ítem no tiene .json" "$([[ -e "$F/drained.out/1.json" ]] && echo yes || echo no)" no
 release_child drained
 wait "$POOL_PID"; code=$?

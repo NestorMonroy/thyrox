@@ -33,6 +33,7 @@ from pathlib import Path
 from agents import model_catalog
 from cache.paths import cache_dir
 from session import gpu_monitor
+from session.pool_lifecycle import closed_items
 
 HISTORY_FILE = "runs.jsonl"
 DEFAULT_MARGIN = 2.0
@@ -131,7 +132,11 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
     línea de menos de 4 KB, que Linux escribe entera; no hay leer-comprobar-
     añadir como en ``step_setup.register``, así que dos pools concurrentes
     dejan dos filas enteras y el lock no tendría caso que lo discrimine."""
-    measures = [m for m in (_last_measure(p) for p in sorted(Path(out_dir).glob("*.time"))) if m]
+    # Sólo cuenta lo publicado: un ítem sin `<n>.closed` aún corre o murió a
+    # medias, y su `.time` no es una medida cerrada (`pool_lifecycle`).
+    closed = set(closed_items(Path(out_dir)))
+    time_files = [p for p in sorted(Path(out_dir).glob("*.time")) if p.name.split(".", 1)[0] in closed]
+    measures = [m for m in (_last_measure(p) for p in time_files) if m]
     if not measures:
         return None
     row = {
@@ -157,7 +162,8 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
     # pico no predice el de otro modelo.
     if item_model:
         row["item_model"] = item_model
-    vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
+    vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")
+                        if g.name.split(".", 1)[0] in closed) if p is not None]
     if vram:
         row["peak_vram_mib"] = max(vram)
         row["median_vram_mib"] = _nearest_rank(vram, 0.5)
@@ -166,7 +172,7 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
     # mismo número es una MEDIDA. Sin ella un pico 0 no distingue «ningún ítem
     # usó GPU» de «a la mitad no se les midió» (H-THYROX-192).
     row["items_gpu_measured"] = sum(
-        1 for t in Path(out_dir).glob("*.time")
+        1 for t in time_files
         if _last_measure(t) and _gpu_peak(t.with_suffix(".gpu")) is not None)
     history = Path(history)
     history.mkdir(parents=True, exist_ok=True)

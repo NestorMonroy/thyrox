@@ -34,6 +34,16 @@ def assert_equal(name: str, expected, obtained) -> None:
         print(f"  FALLA {name} — esperado {expected!r}, obtenido {obtained!r}")
 
 
+def publish(path: Path) -> Path:
+    """Deja ``<n>.closed`` junto a la salida ``<n>.json``, como hace el pool.
+
+    ``tsc_cycle`` sólo lee ítems publicados (``pool_lifecycle``).
+    """
+    item = path.name.split(".", 1)[0]
+    (path.parent / f"{item}.closed").write_text(json.dumps({"item": item, "generation": 1, "artifacts": {}}))
+    return path
+
+
 def run(argv: list[str]) -> tuple[int, str, str]:
     out, err = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
@@ -78,9 +88,9 @@ with tempfile.TemporaryDirectory() as tmp:
     step = Path(tmp) / "step"
     (step / "outputs").mkdir(parents=True)
     (step / "items.txt").write_text("a.ts d/1\nb.ts d/2\nc.ts d/3\n")
-    (step / "outputs" / "1.json").write_text(json.dumps({"subtype": "success"}))
-    (step / "outputs" / "2.json").write_text(json.dumps({"subtype": "error_max_turns"}))
-    (step / "outputs" / "3.json").write_text("")
+    publish(step / "outputs" / "1.json").write_text(json.dumps({"subtype": "success"}))
+    publish(step / "outputs" / "2.json").write_text(json.dumps({"subtype": "error_max_turns"}))
+    publish(step / "outputs" / "3.json").write_text("")
     for n, before, after, kept in ((1, 100, 90, 3), (2, 90, 88, 1)):
         batch = step / "pipeline" / f"batch-{n:02d}"
         batch.mkdir(parents=True)
@@ -622,7 +632,7 @@ with tempfile.TemporaryDirectory() as tmp:
     previous = run_dir / "step-154" / "outputs"
     previous.mkdir(parents=True)
     for n, minutes in enumerate((1.4, 4.91), 1):
-        (previous / f"{n}.json").write_text(json.dumps({"duration_ms": minutes * 60000}))
+        publish(previous / f"{n}.json").write_text(json.dumps({"duration_ms": minutes * 60000}))
     (previous / "joblog.tsv").write_text("no es json\n")
     current = run_dir / "step-155"
     (current / "outputs").mkdir(parents=True)
@@ -630,7 +640,7 @@ with tempfile.TemporaryDirectory() as tmp:
                  tc.previous_item_bound(current))
     ttl, why = tc.pool_cache_ttl(current, "claude-sonnet-5")
     assert_equal("ítems de menos de 5 min: 5m, y el porqué", ("5m", True), (ttl, "turnos seguidos" in why))
-    (previous / "3.json").write_text(json.dumps({"duration_ms": 12 * 60000}))
+    publish(previous / "3.json").write_text(json.dumps({"duration_ms": 12 * 60000}))
     assert_equal("un ítem de 12 min en el paso anterior: 1h", "1h", tc.pool_cache_ttl(current, "claude-sonnet-5")[0])
     # El entorno THYROX_* va antes que la cota: la cota es un DEFAULT
     # derivado, no una declaración — en el orden de `QCt` (2.1.282) forzar
