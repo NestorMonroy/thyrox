@@ -92,12 +92,25 @@ else:
     FAILED += 1
     print("  FALLA sólo mira Bash")
 hint = gate.detect({"tool_name": "Bash", "tool_input": {"command": EPISODE}}) or ""
-if "parallel" in hint and "-k" in hint:
+# El aviso nombra la herramienta, no la forma a mano: `parallel_map` deriva la
+# anchura y exige la fuente de ítems declarada (`:::: -` para leer stdin).
+if "bin/parallel_map" in hint and ":::: -" in hint:
     OK += 1
-    print("  ok    el aviso nombra parallel y su -k (orden de salida)")
+    print("  ok    el aviso nombra bin/parallel_map y su fuente declarada")
 else:
     FAILED += 1
-    print("  FALLA el aviso nombra parallel y su -k (orden de salida)")
+    print("  FALLA el aviso nombra bin/parallel_map y su fuente declarada")
+# Mismo bucle del episodio —que avisa—, con un cuerpo que ya reparte: sin
+# reconocer `parallel_map` el aviso saldría igual (`_` es carácter de palabra,
+# así que `parallel\b` no lo ve).
+already = ("for f in $(git ls-files -- .claude/cache); do bash bin/parallel_map "
+           "'git log --follow --format=%h -- {}' ::: \"$f\"; done > origen.txt")
+if gate.detect({"tool_name": "Bash", "tool_input": {"command": already}}) is None:
+    OK += 1
+    print("  ok    un cuerpo que ya reparte con parallel_map no avisa")
+else:
+    FAILED += 1
+    print("  FALLA un cuerpo que ya reparte con parallel_map no avisa")
 
 print(f"test_detect_parallel_opportunity: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)
