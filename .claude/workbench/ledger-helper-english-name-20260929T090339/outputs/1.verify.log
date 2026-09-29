@@ -1,0 +1,28 @@
+OK   tres items: exit 0
+OK   tres items: resumen
+OK   una salida json por item
+OK   el item llega al final del prompt
+OK   sin sesion persistida y en stream-json
+OK   el .json es la linea result del stream, sola
+OK   un stream por item, una linea por peticion
+OK   el indice empareja numero e item
+OK   un fallo: exit 1
+OK   un fallo: lo nombra
+OK   un fallo: resumen
+OK   timeout: exit 1
+OK   timeout: nombra al lento
+OK   alias: exit 2
+OK   alias: sin resumen
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin ejecutor: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude
+OK   HEADLESS_POOL_CLAUDE retirada: sin resumen
+OK   sin plantilla: exit 2
+OK   sin ejecutor declarado: thyrox -p (bin/cli)
+OK   memfree: exit 0
+OK   memfree: la cota llega a parallel
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
