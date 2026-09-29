@@ -577,10 +577,37 @@ check("17.2 y entra al universo como roto", 1,
       len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
           {"type": "command", "command": _REL}]}]}},
           cwd="/home/user", bases=_BASES)))
-check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
-      w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
-          {"type": "command", "command": _REL}]}]}},
-          cwd=str(HERE.parent / "kaupamex-docs"), bases=_BASES))
+# H-THYROX-259: la disposicion NO se supone de donde vive el arbol -- se
+# arma la propia, en un directorio temporal retirado al salir, para que el
+# caso mida el comando real del consumidor resuelto desde el cwd correcto
+# sin depender de si `HERE` es el arbol principal o un worktree del pool.
+import tempfile as _tf17  # noqa: E402
+with _tf17.TemporaryDirectory() as _d17:
+    _root17 = Path(_d17)
+    _docs17 = _root17 / "kaupamex-docs"
+    _docs17.mkdir()
+    _target17 = (_root17 / "thyrox" / "src" / "packages" / "agent"
+                   / "bin" / "preModelSwitch.ts")
+    _target17.parent.mkdir(parents=True)
+    _target17.touch()
+    check("17.3 el mismo comando desde el cwd correcto NO se reporta", [],
+          w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES))
+
+    # CONTROL DE ANULACION propio de 17.3: si el objetivo temporal no
+    # existe, el mismo comando tiene que reportarse roto -- y solo este
+    # caso, porque es el unico que depende de la disposicion armada aqui.
+    _target17.unlink()
+    check("17.3-anulacion.1 sin el archivo, el comando SI se reporta roto",
+          1, len(w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES)))
+    _target17.touch()
+    check("17.3-anulacion.2 restaurado el archivo, vuelve a verse sano", [],
+          w.broken_targets({"hooks": {"PreModelSwitch": [{"hooks": [
+              {"type": "command", "command": _REL}]}]}},
+              cwd=str(_docs17), bases=_BASES))
 check("17.4 el prefijo `~/` usa la casa, no el cwd", "/root/x.py",
       w._target_of("python3 ~/x.py", cwd="/home/user", bases=_BASES))
 check("17.5 un prefijo cuya raiz el entorno no declara REHUSA", None,
