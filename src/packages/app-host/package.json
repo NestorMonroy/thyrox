@@ -246,6 +246,11 @@
       "types": "./dist/runtime/bootstrap.d.ts",
       "default": "./src/runtime/bootstrap.ts"
     },
+    "./runtime/sessionRegistryAtLaunch.js": {
+      "@thyrox/source": "./src/runtime/sessionRegistryAtLaunch.ts",
+      "types": "./dist/runtime/sessionRegistryAtLaunch.d.ts",
+      "default": "./src/runtime/sessionRegistryAtLaunch.ts"
+    },
     "./runtime/commandRegistryRuntime.js": {
       "@thyrox/source": "./src/runtime/commandRegistryRuntime.ts",
       "types": "./dist/runtime/commandRegistryRuntime.d.ts",

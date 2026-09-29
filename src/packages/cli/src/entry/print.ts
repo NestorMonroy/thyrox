@@ -30,6 +30,7 @@ import type { LoopResult } from '@thyrox/agent/loop/types'
 import { loopSetup } from './runLoop.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
+import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 
 /** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
 export type PrintDeps = {
@@ -212,10 +213,15 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
   const startedAt = performance.now()
   try {
+    // Publica sessions/<pid>.json ANTES del turno, igual que el modo bucle.
+    await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
     const { shared } = loopSetup(args.loopArgv, cwd, dir, args.tools)
     const gen = streamLoop({ ...shared, prompt: args.prompt })
     let step = await gen.next()
-    while (!step.done) step = await gen.next()
+    while (!step.done) {
+      if (step.value.type === 'session_start') adoptLoopSessionId(step.value.sessionId, false)
+      step = await gen.next()
+    }
     const result = step.value
     if (args.outputFormat === 'text') {
       process.stdout.write(`${result.lastText}\n`)

@@ -1,5 +1,0 @@
-log=/home/user/thyrox/.claude/workbench/cli-session-registration-20260929T122601/outputs/1.jobs/typecheck-baseline-20260929T123534/outputs/salida.log
-pid=13723
-proc_start=4888743
-cmd=bash -c /usr/bin/time -q -f %M\ %e\ %U\ %S -o /home/user/thyrox/.claude/workbench/cli-session-registration-20260929T122601/outputs/1.jobs/typecheck-baseline-20260929T123534/outputs/salida.log.time bun run typecheck ; printf '%s%s\n' '__BG_EXIT__=' "$?" 
-marker=^__BG_EXIT__=[0-9]+

@@ -201,6 +201,21 @@
       "types": "./dist/uds/sessionRegistryState.d.ts",
       "default": "./src/uds/sessionRegistryState.ts"
     },
+    "./uds/launchRegistration.js": {
+      "@thyrox/source": "./src/uds/launchRegistration.ts",
+      "types": "./dist/uds/launchRegistration.d.ts",
+      "default": "./src/uds/launchRegistration.ts"
+    },
+    "./uds/sessionNameState.js": {
+      "@thyrox/source": "./src/uds/sessionNameState.ts",
+      "types": "./dist/uds/sessionNameState.d.ts",
+      "default": "./src/uds/sessionNameState.ts"
+    },
+    "./uds/liveSessionRegistry.js": {
+      "@thyrox/source": "./src/uds/liveSessionRegistry.ts",
+      "types": "./dist/uds/liveSessionRegistry.d.ts",
+      "default": "./src/uds/liveSessionRegistry.ts"
+    },
     "./uds/udsClient.js": {
       "@thyrox/source": "./src/uds/udsClient.ts",
       "types": "./dist/uds/udsClient.d.ts",

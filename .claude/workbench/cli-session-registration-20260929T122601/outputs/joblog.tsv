@@ -1,1 +1,2 @@
 Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790684768.984	  1281.815	0	0	0	0	_headless_item 1 cli-session-registration

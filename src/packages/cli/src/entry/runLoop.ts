@@ -38,6 +38,7 @@ import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
+import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 
 /**
  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
@@ -219,6 +220,9 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
   const prompt = flag(argv, 'prompt')
   const style = outputStyleOf(argv)
   const { shared, modelo } = loopSetup(argv, cwd, transcriptDir)
+  // Publica sessions/<pid>.json ANTES del primer turno: quien lista
+  // sesiones ve ésta desde que arranca, no sólo tras la primera respuesta.
+  await registerSessionAtLaunch(flag(argv, 'name') ?? process.env.THYROX_CODE_SESSION_NAME)
 
   /** Un turno completo: dibuja su flujo y devuelve su resultado. */
   const runTurn = async (texto: string, resume: string | undefined) => {
@@ -231,6 +235,7 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
     while (!step.done) {
       const e = step.value
       if (e.type === 'turn_start') turn = e.turn
+      if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
       if (e.type === 'done') usage = e.result.usage
       // El `--json` final y el flujo `json` son cosas distintas: el primero
       // imprime el resultado, el segundo la conversación entera.

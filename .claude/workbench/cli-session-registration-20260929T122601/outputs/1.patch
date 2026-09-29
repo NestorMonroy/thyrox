@@ -1,0 +1,370 @@
+diff --git a/src/packages/app-host/package.json b/src/packages/app-host/package.json
+index 391fc7ab..bea68478 100644
+--- a/src/packages/app-host/package.json
++++ b/src/packages/app-host/package.json
+@@ -241,6 +241,11 @@
+       "types": "./dist/runtime/bootstrap.d.ts",
+       "default": "./src/runtime/bootstrap.ts"
+     },
++    "./runtime/sessionRegistryAtLaunch.js": {
++      "@thyrox/source": "./src/runtime/sessionRegistryAtLaunch.ts",
++      "types": "./dist/runtime/sessionRegistryAtLaunch.d.ts",
++      "default": "./src/runtime/sessionRegistryAtLaunch.ts"
++    },
+     "./runtime/commandRegistryRuntime.js": {
+       "@thyrox/source": "./src/runtime/commandRegistryRuntime.ts",
+       "types": "./dist/runtime/commandRegistryRuntime.d.ts",
+diff --git a/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts b/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+new file mode 100644
+index 00000000..77c21361
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+@@ -0,0 +1,138 @@
++/**
++ * El alta de la sesión en el registro, cableada de verdad: compone
++ * `registerAtLaunch` (2.1.283, `chunk-bdv29443.js`) con las piezas que ya
++ * estaban portadas —`startSessionRegistration`/`processRegistrationDeps`
++ * (`@thyrox/local-observability/uds/sessionRegistration.js`),
++ * `runStartupNaming`/`restoreSessionName`
++ * (`@thyrox/local-observability/uds/sessionRename.js`), el nombre derivado
++ * (`derivedSessionName`, `@thyrox/tool-registry/words.js`) y el título de
++ * sesión (`cacheSessionTitle`/`getCurrentSessionTitle`,
++ * `@thyrox/storage/sessionStorage.js`)— pero que tenían CERO llamadores de
++ * producción: ninguna sesión de `bin/cli` publicaba `sessions/<pid>.json`, y
++ * otra sesión no podía verla.
++ *
++ * `registerSessionAtLaunch` es el único punto de entrada: arma las
++ * dependencias reales de `registerAtLaunch` y lo corre. `runLoop.ts` y
++ * `print.ts` (los dos caminos de `bin/cli`, REPL y `-p`) lo llaman al
++ * arrancar; ninguno construye sus propias dependencias.
++ *
++ * Sin almacenamiento remoto: `bin/cli` no tiene un backend de KV para el
++ * registro de sesiones, así que el `storage` de `sessionRegistration.ts` y
++ * `sessionRename.ts` viaja como `undefined` en cada punto de esta
++ * composición — el mismo valor con que sus propios tests por omisión los
++ * ejercitan — y las funciones caen a su lectura/escritura por sistema de
++ * archivos (`<config home>/sessions/<pid>.json`, vía `defaultSessionsDir`).
++ *
++ * DOS DIVERGENCIAS DECLARADAS, porque sus piezas de origen no tienen porte
++ * en este árbol (`git grep` sin resultados fuera de este docstring y del
++ * tipo que las declara):
++ *
++ *   - `isSpareParked` (`OA` de la referencia): no hay sesión de reserva
++ *     portada que pueda estar «aparcada» en `bin/cli` — el concepto entero
++ *     vive del lado del daemon/spare, fuera del alcance de este ítem. Se
++ *     cablea `() => false`: el registro nunca se salta por esa causa, que
++ *     es el comportamiento de una sesión que nunca nace de reserva.
++ *   - `setAgentName` (`Jve` de la referencia): el nombre de agente del
++ *     banner de la UI vive en ink/el REPL, que no son dependencias de
++ *     `@thyrox/app-host`. Se cablea como no-op: el nombre persistido para
++ *     OTRAS sesiones lo sigue publicando `setTitle`/`cacheSessionTitle`; lo
++ *     que falta es sólo el reflejo cosmético en el banner de ESTA sesión.
++ *
++ * `adoptLoopSessionId` resuelve la otra mitad del ítem: el registro nace con
++ * el `sessionId` que trae `@thyrox/app-host/bootstrap/state.js` al arrancar
++ * (un id nuevo, aún sin relación con el bucle), y el bucle
++ * (`@thyrox/agent/loop`) abre su PROPIO id en `session.ts:38`
++ * (`opts.resume ?? randomUUID()`). En vez de forzar ese id como si fuera un
++ * `--resume` —que dispararía la reconciliación de `session.ts` sobre un
++ * transcript que no existe—, el llamador escucha el evento `session_start`
++ * del generador y adopta el id con `switchSession`: el registro ya
++ * publicado se actualiza in-place (el oyente de
++ * `sessionRegistration.ts::registerSession` reescribe `sessionId` en el pid
++ * file), sin reabrir el registro ni tocar el flujo del bucle.
++ */
++import { asSessionId } from '@thyrox/agent/idTypes'
++import { registerCleanup } from '../bootstrap/cleanupRegistry.ts'
++import { getIsNonInteractiveSession, getSessionId, onOriginalCwdChange, onSessionSwitch, switchSession } from '../bootstrap/state.ts'
++import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
++import { logEvent } from '@thyrox/local-observability'
++import { logForDebugging } from '@thyrox/local-observability/debug.js'
++import { registerAtLaunch, type LaunchRegistrationDeps } from '@thyrox/local-observability/uds/launchRegistration.js'
++import { listAllLiveSessions } from '@thyrox/local-observability/uds/liveSessionRegistry.js'
++import { setSessionName, type PidFileStorage } from '@thyrox/local-observability/uds/pidFileRecord.js'
++import { sessionKind } from '@thyrox/local-observability/uds/sessionKind.js'
++import { sessionNameState } from '@thyrox/local-observability/uds/sessionNameState.js'
++import { processRegistrationDeps, startSessionRegistration } from '@thyrox/local-observability/uds/sessionRegistration.js'
++import { registeredSessionName, sessionRegistryState, stableAddressEnabled, whenSessionRegistered } from '@thyrox/local-observability/uds/sessionRegistryState.js'
++import {
++  restoreSessionName as restoreSessionNamePorted,
++  runStartupNaming as runStartupNamingPorted,
++  type RenameContext,
++} from '@thyrox/local-observability/uds/sessionRename.js'
++import { cacheSessionTitle, getCurrentSessionTitle } from '@thyrox/storage/sessionStorage.js'
++import { generateShortWordSlug, isShortWordSlug, derivedSessionName } from '@thyrox/tool-registry/words.js'
++
++/** El contexto de renombre único de este proceso: mismo estado en cada llamada, como `wS()`. */
++function buildRenameContext(): RenameContext {
++  return {
++    state: sessionNameState(),
++    registry: {
++      whenRegistered: () => whenSessionRegistered(),
++      listLive: () => listAllLiveSessions(),
++    },
++    registeredName: () => registeredSessionName(),
++    registration: () => sessionRegistryState(),
++    writeName: (name, target, source) => setSessionName(name, target as PidFileStorage | undefined, source),
++    isShortWordSlug,
++    slug: generateShortWordSlug,
++    uniquenessEnabled: () => getFeatureValue_CACHED_MAY_BE_STALE('tengu_session_name_uniqueness', false),
++    pid: process.pid,
++    log: (message, level) => logForDebugging(message, { level }),
++  }
++}
++
++/**
++ * Da de alta esta sesión de `bin/cli` en el registro y le fija su nombre.
++ * `sessionNameArg` es `--name` (si la CLI lo admite) o `THYROX_CODE_SESSION_NAME`.
++ */
++export async function registerSessionAtLaunch(sessionNameArg?: string): Promise<void> {
++  const renameContext = buildRenameContext()
++  const registrationDeps = processRegistrationDeps({
++    derivedName: (cwd, sessionId) => derivedSessionName(cwd, sessionId, stableAddressEnabled()),
++    registerCleanup,
++    onSessionSwitch,
++    onOriginalCwdChange,
++  })
++  const launchDeps: LaunchRegistrationDeps = {
++    isSpareParked: () => false,
++    installRestoreSetAsideName: restore => {
++      sessionRegistryState().restoreSetAsideName = restore
++    },
++    restoreSessionName: (name, options) => {
++      void restoreSessionNamePorted(name, undefined, options, renameContext)
++    },
++    register: () => startSessionRegistration(undefined, registrationDeps),
++    currentSessionId: () => getSessionId(),
++    sessionNameArg,
++    peerSessionKind: () => sessionKind(),
++    nonInteractive: () => getIsNonInteractiveSession(),
++    runStartupNaming: options => runStartupNamingPorted(options, renameContext),
++    writeRegisteredName: (name, source, givenAtLaunch) => setSessionName(name, undefined, source, givenAtLaunch),
++    registeredName: () => registeredSessionName(),
++    currentTitle: sessionId => getCurrentSessionTitle(asSessionId(sessionId)),
++    setTitle: title => cacheSessionTitle(title),
++    setAgentName: () => {},
++    countLiveSessions: async () => (await listAllLiveSessions()).length,
++    emit: (event, data) => logEvent(event, data),
++  }
++  await registerAtLaunch(launchDeps)
++}
++
++/**
++ * Adopta `sessionId` (el que acaba de abrir `@thyrox/agent/loop` en su
++ * evento `session_start`) como la sesión viva de este proceso, para que el
++ * registro ya publicado por `registerSessionAtLaunch` quede con el mismo id
++ * que el transcript. `resumed` es si el arranque llevó `--resume`.
++ */
++export function adoptLoopSessionId(sessionId: string, resumed: boolean): void {
++  switchSession(asSessionId(sessionId), resumed ? 'resume' : 'startup_custom_id')
++}
+diff --git a/src/packages/cli/__tests__/sessionRegistryAtLaunch.e2e.test.ts b/src/packages/cli/__tests__/sessionRegistryAtLaunch.e2e.test.ts
+new file mode 100644
+index 00000000..1d2728fa
+--- /dev/null
++++ b/src/packages/cli/__tests__/sessionRegistryAtLaunch.e2e.test.ts
+@@ -0,0 +1,119 @@
++/**
++ * TASK-THYROX-0503 — el alta de la sesión al arrancar `bin/cli`, de punta a
++ * punta: un proceso REAL (no una llamada en el mismo proceso de test), con
++ * `--provider recorded` y `THYROX_CONFIG_DIR` propio para no tocar el
++ * registro real del contenedor.
++ *
++ * Mientras el proceso vive, `sessions/<pid>.json` existe y su `sessionId`
++ * es el mismo que el del transcript (el que `session_start` anuncia) — no
++ * el id de arranque de `@thyrox/app-host`, que es otro hasta que
++ * `adoptLoopSessionId` los une. Al salir, el archivo desaparece.
++ *
++ * `--chat` espera en stdin entre turnos: ese hueco es la ventana natural
++ * para sondear "vivo". `-p` no tiene ese hueco —lee su prompt posicional y
++ * corre un único turno—, así que la ventana la abre un `tool_use` real de
++ * `Bash` con `sleep`: mientras el comando corre, el proceso sigue vivo con
++ * el registro ya publicado y ya adoptado (la adopción, sin E/S de red, se
++ * asienta en milisegundos — muy por debajo del margen del `sleep`).
++ */
++import { describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
++const uso = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
++
++/** Sondea `predicate` hasta que sea verdadera, o rinde tras `timeoutMs`. */
++async function waitUntil(predicate: () => boolean, timeoutMs = 10000, stepMs = 20): Promise<void> {
++  const deadline = Date.now() + timeoutMs
++  while (!predicate()) {
++    if (Date.now() > deadline) throw new Error('tiempo agotado esperando la condición')
++    await Bun.sleep(stepMs)
++  }
++}
++
++function readRecord(path: string): Record<string, unknown> {
++  return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
++}
++
++describe('bin/cli registra su sesión al arrancar (TASK-THYROX-0503)', () => {
++  test('--chat: el registro nace con el sessionId del transcript y se retira al cerrar stdin', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'chat-registro-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const tr = join(cwd, 'tr')
++    writeFileSync(join(cwd, 'turnos.json'), JSON.stringify([
++      { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'ok' }] },
++    ]))
++
++    const proc = Bun.spawn(
++      ['bun', 'run', BIN, '--chat', '--provider', 'recorded', '--grabacion', join(cwd, 'turnos.json'),
++        '--cwd', cwd, '--transcript-dir', tr, '--output-style', 'quiet'],
++      { stdin: 'pipe', stdout: 'ignore', stderr: 'pipe', env: { ...process.env, THYROX_CONFIG_DIR: cfg } },
++    )
++    try {
++      proc.stdin.write('hola\n')
++      proc.stdin.flush()
++
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      await waitUntil(() => existsSync(pidFile))
++      expect(readRecord(pidFile).pid).toBe(proc.pid)
++
++      // El transcript aparece justo tras `session_start`, en el mismo turno
++      // síncrono que lo emite (`loop/index.ts`): su nombre de archivo ES el
++      // sessionId real, la referencia contra la que se mide el registro.
++      await waitUntil(() => existsSync(tr) && readdirSync(tr).length === 1)
++      const sessionId = readdirSync(tr)[0]!.replace(/\.jsonl$/, '')
++      await waitUntil(() => readRecord(pidFile).sessionId === sessionId)
++
++      // Cerrar stdin termina la conversación (`stdinLines()` agota su fuente)
++      // y el proceso sale solo — sin `/salir`, como describe el ítem.
++      await proc.stdin.end()
++      const exitCode = await proc.exited
++      expect(exitCode).toBe(0)
++      expect(existsSync(pidFile)).toBe(false)
++    } finally {
++      proc.kill()
++    }
++  })
++
++  test('-p: el registro nace, vive y queda adoptado mientras corre una herramienta real, y se retira al salir', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'print-registro-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    writeFileSync(join(cwd, 'turnos.json'), JSON.stringify([
++      { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
++        content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: 'sleep 1' } }] },
++      { id: 'm2', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'listo' }] },
++    ]))
++
++    const proc = Bun.spawn(
++      ['bun', 'run', BIN, '-p', 'hola', '--provider', 'recorded', '--grabacion', join(cwd, 'turnos.json'),
++        '--no-session-persistence', '--output-format', 'json'],
++      { cwd, stdin: 'ignore', stdout: 'pipe', stderr: 'pipe', env: { ...process.env, THYROX_CONFIG_DIR: cfg } },
++    )
++    try {
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      // El proceso sigue vivo aquí: el `sleep 1` de la herramienta real
++      // todavía no terminó cuando el registro ya se publicó.
++      await waitUntil(() => existsSync(pidFile))
++      const inicial = readRecord(pidFile)
++      expect(inicial.pid).toBe(proc.pid)
++
++      // La adopción (`switchSession` al recibir `session_start`) reescribe
++      // `sessionId` sobre el mismo archivo: se sondea el cambio, no un
++      // plazo fijo — sigue vivo (el `sleep` no ha terminado) mientras dura.
++      await waitUntil(() => readRecord(pidFile).sessionId !== inicial.sessionId)
++      const adoptado = readRecord(pidFile)
++
++      const salida = await new Response(proc.stdout).text()
++      const exitCode = await proc.exited
++      expect(exitCode).toBe(0)
++      expect(existsSync(pidFile)).toBe(false)
++
++      const resultado = JSON.parse(salida.trim().split('\n').at(-1)!)
++      expect(adoptado.sessionId).toBe(resultado.session_id)
++    } finally {
++      proc.kill()
++    }
++  })
++})
+diff --git a/src/packages/cli/src/entry/print.ts b/src/packages/cli/src/entry/print.ts
+index 5ff4d7d6..3f43fb4a 100644
+--- a/src/packages/cli/src/entry/print.ts
++++ b/src/packages/cli/src/entry/print.ts
+@@ -30,6 +30,7 @@ import type { LoopResult } from '@thyrox/agent/loop/types'
+ import { loopSetup } from './runLoop.ts'
+ import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+ import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
++import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+ 
+ /** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
+ export type PrintDeps = {
+@@ -212,10 +213,15 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
+   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
+   const startedAt = performance.now()
+   try {
++    // Publica sessions/<pid>.json ANTES del turno, igual que el modo bucle.
++    await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
+     const { shared } = loopSetup(args.loopArgv, cwd, dir, args.tools)
+     const gen = streamLoop({ ...shared, prompt: args.prompt })
+     let step = await gen.next()
+-    while (!step.done) step = await gen.next()
++    while (!step.done) {
++      if (step.value.type === 'session_start') adoptLoopSessionId(step.value.sessionId, false)
++      step = await gen.next()
++    }
+     const result = step.value
+     if (args.outputFormat === 'text') {
+       process.stdout.write(`${result.lastText}\n`)
+diff --git a/src/packages/cli/src/entry/runLoop.ts b/src/packages/cli/src/entry/runLoop.ts
+index eb4d8bd6..a189b6ba 100644
+--- a/src/packages/cli/src/entry/runLoop.ts
++++ b/src/packages/cli/src/entry/runLoop.ts
+@@ -38,6 +38,7 @@ import { systemPromptFor } from './systemPrompt.ts'
+ import { flag, hasFlag } from './flags.ts'
+ import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+ import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
++import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+ 
+ /**
+  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
+@@ -219,6 +220,9 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
+   const prompt = flag(argv, 'prompt')
+   const style = outputStyleOf(argv)
+   const { shared, modelo } = loopSetup(argv, cwd, transcriptDir)
++  // Publica sessions/<pid>.json ANTES del primer turno: quien lista
++  // sesiones ve ésta desde que arranca, no sólo tras la primera respuesta.
++  await registerSessionAtLaunch(flag(argv, 'name') ?? process.env.THYROX_CODE_SESSION_NAME)
+ 
+   /** Un turno completo: dibuja su flujo y devuelve su resultado. */
+   const runTurn = async (texto: string, resume: string | undefined) => {
+@@ -231,6 +235,7 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
+     while (!step.done) {
+       const e = step.value
+       if (e.type === 'turn_start') turn = e.turn
++      if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
+       if (e.type === 'done') usage = e.result.usage
+       // El `--json` final y el flujo `json` son cosas distintas: el primero
+       // imprime el resultado, el segundo la conversación entera.
+diff --git a/src/packages/local-observability/package.json b/src/packages/local-observability/package.json
+index 38dd8dcf..9c092f38 100644
+--- a/src/packages/local-observability/package.json
++++ b/src/packages/local-observability/package.json
+@@ -201,6 +201,21 @@
+       "types": "./dist/uds/sessionRegistryState.d.ts",
+       "default": "./src/uds/sessionRegistryState.ts"
+     },
++    "./uds/launchRegistration.js": {
++      "@thyrox/source": "./src/uds/launchRegistration.ts",
++      "types": "./dist/uds/launchRegistration.d.ts",
++      "default": "./src/uds/launchRegistration.ts"
++    },
++    "./uds/sessionNameState.js": {
++      "@thyrox/source": "./src/uds/sessionNameState.ts",
++      "types": "./dist/uds/sessionNameState.d.ts",
++      "default": "./src/uds/sessionNameState.ts"
++    },
++    "./uds/liveSessionRegistry.js": {
++      "@thyrox/source": "./src/uds/liveSessionRegistry.ts",
++      "types": "./dist/uds/liveSessionRegistry.d.ts",
++      "default": "./src/uds/liveSessionRegistry.ts"
++    },
+     "./uds/udsClient.js": {
+       "@thyrox/source": "./src/uds/udsClient.ts",
+       "types": "./dist/uds/udsClient.d.ts",
