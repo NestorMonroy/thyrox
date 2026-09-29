@@ -747,6 +747,24 @@ def main():
         check("ni lo que cuelga de node_modules", False,
               any("node_modules" in p for p in found))
 
+    # Caso — re-emitir. Un paquete con la entrada en la raiz incluye `**/*`, y
+    # sin excluir `dist` sus propias declaraciones son ENTRADA del siguiente
+    # build: tsc rehusa sobrescribirlas (TS5055) y el `.d.ts` queda congelado
+    # con la version anterior del paquete, sin que el build falle en voz alta.
+    # Episodio: `store/dist/db.d.ts` seguia exportando `openStore` tras
+    # renombrarlo a `openLocal`.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "reemite", "")
+        mod.emit_package(pkg)
+        (pkg / "index.ts").write_text(
+            (pkg / "index.ts").read_text() + "export const added = 2\n")
+        second = mod.emit_package(pkg)
+        declared = (pkg / "dist" / "index.d.ts").read_text()
+        check("la segunda emision refleja la fuente nueva", True, "added" in declared)
+        check("sin TS5055 por reescribir su propia salida", False,
+              "TS5055" in second.output)
+
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0
 

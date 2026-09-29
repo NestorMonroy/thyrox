@@ -319,7 +319,11 @@ def _write_project(package_dir: Path, filename: str, options: dict, include: lis
     own = self_paths(package_dir)
     if own and "paths" not in options:
         options = {**options, "paths": own}
-    body = {"compilerOptions": options, "include": include, "exclude": list(TEST_EXCLUDE)}
+    # `dist` se excluye porque es la salida: con `include: ["**/*"]` sus
+    # `.d.ts` serian entrada del siguiente build, tsc rehusaria sobrescribirlos
+    # (TS5055) y la declaracion quedaria congelada sin que el build fallara.
+    body = {"compilerOptions": options, "include": include,
+            "exclude": [*TEST_EXCLUDE, "node_modules", OUTPUT_DIR]}
     if BUILD_GLOBALS.is_file():
         # Relativa: el proyecto se versiona, y una ruta absoluta lo ataria a
         # este clon.
