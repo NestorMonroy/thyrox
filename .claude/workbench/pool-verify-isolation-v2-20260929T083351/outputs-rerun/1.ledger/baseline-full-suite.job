@@ -1,0 +1,5 @@
+log=/home/user/thyrox/.claude/workbench/pool-verify-isolation-v2-20260929T083351/outputs-rerun/1.jobs/baseline-full-suite-20260929T090457/outputs/salida.log
+pid=2157
+proc_start=3625010
+cmd=bash -c /usr/bin/time -q -f %M\ %e\ %U\ %S -o /home/user/thyrox/.claude/workbench/pool-verify-isolation-v2-20260929T083351/outputs-rerun/1.jobs/baseline-full-suite-20260929T090457/outputs/salida.log.time bash tests/run.sh ; printf '%s%s\n' '__BG_EXIT__=' "$?" 
+marker=^__BG_EXIT__=[0-9]+
