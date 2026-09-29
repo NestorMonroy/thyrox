@@ -1,0 +1,13 @@
+  ok   1. sale 0
+  ok   2. una fila por ejecución, de thyrox -p
+  ok   2b. con la huella de la plantilla
+  ok   3. cada ítem llegó al proxy con el marcador local, no con la credencial del anfitrión
+  ok   4. el proxy no queda vivo
+  ok   4b. lo dice: peticiones y filas
+  ok   5. sin peticiones al proxy: exit 1
+  ok   5b. lo nombra
+  ok   6. sin GNU Time: exit 2
+  ok   6b. sin filas
+
+10 ok · 0 falla(s) (alcance medido: pool-calibrate contra el proxy local)
+EXIT=0

@@ -1,0 +1,8 @@
+python3 tests/session/test_gpu_monitor.py > .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_monitor.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_monitor.txt
+python3 tests/session/test_gpu_scenarios.py > .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_scenarios.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_scenarios.txt
+python3 tests/session/test_gpu_trace.py > .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_trace.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_gpu_trace.txt
+python3 tests/session/test_pool_history.py > .claude/workbench/vram-flow-audit-20260929T001226/test_pool_history.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test_pool_history.txt
+bash tests/session/test-gpu-admission-cli.sh > .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-admission-cli.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-admission-cli.txt
+bash tests/session/test-gpu-hardware-refusal.sh > .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-hardware-refusal.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test-gpu-hardware-refusal.txt
+bash tests/session/test-pool-calibrate.sh > .claude/workbench/vram-flow-audit-20260929T001226/test-pool-calibrate.txt 2>&1; echo EXIT=$? >> .claude/workbench/vram-flow-audit-20260929T001226/test-pool-calibrate.txt
+cd src/packages/config && bun test __tests__/gpuAdmission.test.ts > ../../../.claude/workbench/vram-flow-audit-20260929T001226/gpuAdmission-ts.txt 2>&1; echo EXIT=$? >> ../../../.claude/workbench/vram-flow-audit-20260929T001226/gpuAdmission-ts.txt

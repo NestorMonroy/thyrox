@@ -1,0 +1,30 @@
+gpu_monitor        bin: sí
+pool_history       bin: sí
+step_report        bin: sí
+headless-pool      bin: sí
+gpu_trace          bin: sí
+hardware-inventory bin: sí
+pool-calibrate     bin: sí
+
+28:#                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
+61:# `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
+71:# el TTL con `choose_cache_ttl` sobre la pared máxima, y `--memfree` como la
+72:# memoria pico × 2 más HEADLESS_POOL_MEMFREE_RESERVE (la de un vecino que corre
+80:# (la admision de --memfree, que Parallel no tiene para la GPU). Al terminar
+83:# con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
+139:        --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
+214:# arriba —TTL ni `--memfree`— se deriva de la última ejecución medida. Va
+227:# La VRAM de cada item, si hay GPU (`gpu_monitor.py`). `--memfree` es memoria
+248:if [[ -n "${HEADLESS_POOL_MEMFREE_RESERVE:-}" ]]; then
+249:    RESERVE_BYTES="$(parse_binary_size "$HEADLESS_POOL_MEMFREE_RESERVE" 2>/dev/null)" \
+250:        || rehusa "HEADLESS_POOL_MEMFREE_RESERVE ilegible: '$HEADLESS_POOL_MEMFREE_RESERVE' (ej. 2G, 512M)"
+255:VRAM_RESERVE_MIB="${HEADLESS_POOL_VRAM_RESERVE_MIB:-0}"
+256:[[ "$VRAM_RESERVE_MIB" =~ ^[0-9]+$ ]] || rehusa "HEADLESS_POOL_VRAM_RESERVE_MIB va en MiB enteros, no: $VRAM_RESERVE_MIB"
+262:VRAM_FLOOR_MIB="${HEADLESS_POOL_VRAM_MIN_MIB:-0}"
+263:[[ "$VRAM_FLOOR_MIB" =~ ^[0-9]+$ ]] || rehusa "HEADLESS_POOL_VRAM_MIN_MIB va en MiB enteros, no: $VRAM_FLOOR_MIB"
+269:DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
+295:# Se deriva SIEMPRE: el TTL y --memfree sólo si nadie los declaró, pero la
+346:    # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
+350:    # (`gpu_monitor admit`): comprobar sin reservar dejaba arrancar a dos items
+463:    parse_binary_size "$MEMFREE_SPEC" >/dev/null 2>&1 || rehusa "--memfree ilegible: '$MEMFREE_SPEC' (ej. 2G, 512M)"
+464:    MEMFREE_ARGS=(--memfree "$MEMFREE_SPEC")
