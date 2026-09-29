@@ -354,44 +354,99 @@ function thyrox_toolchain_pg_major() {
 }
 export -f thyrox_toolchain_pg_major
 
+# @description La version fijada de pgvector (`vector.control` declara
+# `default_version`). Decision del ejecutor 2026-09-29: compilar 0.8.6 desde
+# el fuente, porque PGDG arrastra el servidor a su propio repositorio
+# (H-THYROX-256) y el paquete de Ubuntu instalado hoy es 0.6.0.
+export THYROX_PGVECTOR_VERSION="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+
+# @description El repositorio del que se clona la etiqueta `v<version>`.
+export THYROX_PGVECTOR_SOURCE_URL="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
+
+# @description Lee `default_version` de un `vector.control`. Vacio si el
+# archivo no existe o no declara la clave — nunca un error: la ausencia es un
+# valor legitimo para comparar contra la version pedida.
+# @arg $1 string La ruta de `vector.control`.
+# @stdout La version instalada, o nada.
+function thyrox_toolchain_pgvector_installed_version() {
+  local control="$1" line
+  [[ -f "$control" ]] || return 0
+  line="$(grep -m1 '^default_version' "$control" 2>/dev/null)" || return 0
+  [[ "$line" =~ \'([0-9]+\.[0-9]+\.[0-9]+)\' ]] && printf '%s' "${BASH_REMATCH[1]}"
+  return 0
+}
+export -f thyrox_toolchain_pgvector_installed_version
+
+# @description El instalador por defecto de pgvector: NO el paquete de Ubuntu
+# (0.6.0, desactualizado) ni PGDG (arrastra el servidor a otro repositorio,
+# H-THYROX-256), sino compilar la etiqueta `v$THYROX_PGVECTOR_VERSION` contra
+# el PostgreSQL de Ubuntu ya instalado. Efecto colateral MEDIDO: el paquete
+# `postgresql-server-dev-<mayor>` que este paso instala arrastra el servidor y
+# el cliente de Ubuntu (no PGDG) a su ultima version MENOR — hoy 16.13 ->
+# 16.15 — porque `apt` resuelve la dependencia de version junto con el resto
+# del paquete. Esta funcion NO ejecuta `ALTER EXTENSION vector UPDATE` en
+# ninguna base: una extension ya creada en una base existente sigue en su
+# version anterior hasta que alguien con privilegios en esa base lo pida.
+# @noargs
+function thyrox_toolchain_pgvector_install_default() {
+  local major; major="$(thyrox_toolchain_pg_major)" || return 1
+  local version="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+  local source_url="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
+  local dir; dir="$(mktemp -d)" || return 1
+  sudo apt-get install -y "postgresql-server-dev-$major" \
+    && git clone --branch "v$version" --depth 1 "$source_url" "$dir" \
+    && make -C "$dir" "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN" \
+    && sudo make -C "$dir" install "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN"
+  local rc=$?
+  rm -rf "${dir:?}"
+  return $rc
+}
+export -f thyrox_toolchain_pgvector_install_default
+
 # @description El comando que instala pgvector: el declarado en
-# THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD, o el paquete de la version mayor.
+# THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD, o `thyrox_toolchain_pgvector_install_default`.
 function thyrox_toolchain_pgvector_install_cmd() {
   if [[ -n "${THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD:-}" ]]; then
     printf '%s' "$THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD"; return 0
   fi
-  local major; major="$(thyrox_toolchain_pg_major)" || return 1
-  printf 'sudo apt-get install -y postgresql-%s-pgvector' "$major"
+  printf 'thyrox_toolchain_pgvector_install_default'
 }
 export -f thyrox_toolchain_pgvector_install_cmd
 
-# @description Asegura la extension pgvector del servidor local. No es un
-# binario: lo que su paquete entrega es `vector.control` en el directorio de
-# extensiones (`pg_config --sharedir`/extension), y eso es lo que se
-# re-comprueba. Mismo contrato que `thyrox_toolchain_require_rsync`: instalar
-# es opt-in (`THYROX_INSTALL_PGVECTOR=1`), el rechazo no emite conteo y el
-# exito no se lee del exit del instalador.
+# @description Asegura la version FIJADA de pgvector en el servidor local. No
+# es un binario: lo que su paquete entrega es `vector.control` en el
+# directorio de extensiones (`pg_config --sharedir`/extension), y su clave
+# `default_version` es lo que se re-comprueba — que el archivo exista ya NO
+# basta, porque el paquete de Ubuntu instala 0.6.0 y la version fijada es
+# `THYROX_PGVECTOR_VERSION` (0.8.6 por defecto). Mismo contrato que
+# `thyrox_toolchain_require_rsync`: instalar es opt-in
+# (`THYROX_INSTALL_PGVECTOR=1`), el rechazo no emite conteo y el exito no se
+# lee del exit del instalador.
 #
-# No instala el servidor: sin `pg_config` rehusa nombrandolo.
+# No instala el servidor: sin `pg_config` rehusa nombrandolo. Tampoco corre
+# `ALTER EXTENSION vector UPDATE` en ninguna base — ver el docstring de
+# `thyrox_toolchain_pgvector_install_default`.
 #
-# Ciega a: que la base concreta tenga la extension creada. Eso lo hace
-# `CREATE EXTENSION vector`, que exige una conexion y privilegios que esta
-# cadena no tiene.
+# Ciega a: que la base concreta tenga la extension creada, y a si esa base ya
+# corrio el `ALTER EXTENSION … UPDATE` hacia la version fijada. Eso lo hace
+# `CREATE EXTENSION vector` / `ALTER EXTENSION vector UPDATE`, que exigen una
+# conexion y privilegios que esta cadena no tiene.
 # @noargs
-# @exitcode 0 La extension esta disponible para el servidor.
+# @exitcode 0 La version pedida esta disponible para el servidor.
 # @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
 function thyrox_toolchain_require_pgvector() {
-  local sharedir control major
+  local sharedir control requested installed
   if ! sharedir="$("$THYROX_TOOLCHAIN_PG_CONFIG_BIN" --sharedir 2>/dev/null)" || [[ -z "$sharedir" ]]; then
     echo "thyrox_toolchain: pg_config ('$THYROX_TOOLCHAIN_PG_CONFIG_BIN') no resuelve: no hay servidor PostgreSQL" >&2
     echo "                  al que añadir pgvector. Esta cadena no instala el servidor." >&2
     return 2
   fi
   control="$sharedir/extension/vector.control"
-  [[ -f "$control" ]] && return 0
-  major="$(thyrox_toolchain_pg_major)" || major="<mayor>"
+  requested="${THYROX_PGVECTOR_VERSION:-0.8.6}"
+  installed="$(thyrox_toolchain_pgvector_installed_version "$control")"
+  [[ "$installed" == "$requested" ]] && return 0
   if [[ "${THYROX_INSTALL_PGVECTOR:-}" != "1" ]]; then
-    echo "thyrox_toolchain: falta pgvector (paquete postgresql-$major-pgvector) y la instalacion es opt-in." >&2
+    echo "thyrox_toolchain: pgvector instalada es '${installed:-ninguna}', se pide '$requested', y la instalacion es opt-in." >&2
     echo "                  Reintenta con THYROX_INSTALL_PGVECTOR=1." >&2
     echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
     echo "                  «no hay» de «no pude medir»." >&2
@@ -399,9 +454,10 @@ function thyrox_toolchain_require_pgvector() {
   fi
   local cmd; cmd="$(thyrox_toolchain_pgvector_install_cmd)" || return 2
   $cmd >&2 2>&1 || true
-  if [[ ! -f "$control" ]]; then
-    echo "thyrox_toolchain: el instalador termino y '$control' sigue sin existir." >&2
-    echo "                  Se re-comprueba la extension, no se lee su exit." >&2
+  installed="$(thyrox_toolchain_pgvector_installed_version "$control")"
+  if [[ "$installed" != "$requested" ]]; then
+    echo "thyrox_toolchain: el instalador termino y 'vector.control' declara '${installed:-ninguna}', no '$requested'." >&2
+    echo "                  Se re-comprueba la version, no se lee su exit." >&2
     return 2
   fi
   return 0
