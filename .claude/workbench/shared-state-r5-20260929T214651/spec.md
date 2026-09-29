@@ -101,3 +101,44 @@ Consecuencias para R5:
   efímero entre instancias.
 - Varios MITM contra un solo proxy no requieren `multi`; `multi` lo decide
   cuántos proxies hay, no cuántos clientes.
+
+## Fronteras que se conservan (decisión del ejecutor)
+
+    MITM                → transporte/routing TLS
+    Proxy               → política operativa y coordinación
+    Redis               → estado efímero compartido
+    AgentBridge SQLite  → aliases / configuración persistente
+
+    MITM
+    ├── terminación TLS para target hosts
+    ├── routing hacia el proxy local
+    ├── passthrough / raw TCP para bypass y hosts externos
+    └── lectura de aliases desde AgentBridge state
+
+    Proxy
+    ├── refresh lease
+    ├── global rate-limit window
+    ├── shared cooldown
+    └── lifecycle de @thyrox/shared-state
+
+El MITM no conoce ni abre Redis, no decide `single|multi`, no adquiere leases
+ni maneja ventanas globales. Nunca `MITM → Redis` ni `MITM → @thyrox/shared-state`.
+
+    proxy count = 1  → single
+    proxy count > 1  → multi
+    (independiente de cuántos MITM o clientes haya delante)
+
+## Controles añadidos a R5b
+
+1. Mismo camino: una petición que entra por MITM → proxy pasa por el mismo
+   `RateLimitManager` / `CredentialCooldown` / estado compartido que una
+   enviada directamente al proxy. No hay un segundo camino de conducta.
+2. Frontera verificable: una prueba impide que `@thyrox/mitm` importe
+   `@thyrox/shared-state` o abra Redis.
+
+Al cerrar R5b se reporta el flujo comprobado
+
+    MITM request → proxy local → RateLimitManager / CredentialCooldown
+                 → @thyrox/shared-state → Redis
+
+y que `@thyrox/mitm` sigue sin dependencia de Redis ni del estado compartido.
