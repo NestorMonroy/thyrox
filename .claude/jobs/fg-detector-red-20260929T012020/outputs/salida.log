@@ -1,0 +1,26 @@
+....F........                                                            [100%]
+=================================== FAILURES ===================================
+_______________ test_warns_on_the_suites_this_tree_actually_runs _______________
+
+    def test_warns_on_the_suites_this_tree_actually_runs():
+        """Las suites de thyrox se invocan por su archivo, no por `pytest`.
+    
+        Los cuatro comandos son los que corrieron en primer plano el 2026-09-29,
+        cada uno de varios minutos, sin que el detector dijera nada.
+        """
+        for command in (
+            'timeout 300 bash tests/session/test-headless-pool-worktree.sh 2>&1 | grep -E "FALLA|aserciones"',
+            "bash tests/session/test-item-worktree-orphans.sh 2>&1 | tail -14",
+            "PYTHONDONTWRITEBYTECODE=1 timeout 300 python3 tests/session/test_user_wiring.py 2>&1 | grep FALLO",
+            'timeout 300 bash tests/session/test-headless-pool.sh 2>&1 | grep -E "FALLA|aserciones"',
+        ):
+            aviso = _detect(command)
+>           assert aviso is not None and "la suite" in aviso, command
+E           AssertionError: timeout 300 bash tests/session/test-headless-pool-worktree.sh 2>&1 | grep -E "FALLA|aserciones"
+E           assert (None is not None)
+
+tests/hooks/test_detect_foreground_long_command.py:75: AssertionError
+=========================== short test summary info ============================
+FAILED tests/hooks/test_detect_foreground_long_command.py::test_warns_on_the_suites_this_tree_actually_runs
+1 failed, 12 passed in 0.05s
+__BG_EXIT__=1

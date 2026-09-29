@@ -38,11 +38,19 @@ from __future__ import annotations
 
 import re
 
+#: El cuerpo de un heredoc es texto, no comandos: un mensaje de commit que
+#: nombra una suite no la ejecuta.
+from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
+
 #: Familias de trabajo cuya duración típica supera los diez segundos. Cada entrada
 #: es (etiqueta, patrón); la etiqueta se cita en el aviso para que el lector sepa
 #: qué lo disparó en vez de recibir un recordatorio genérico.
 LONG_FAMILIES: tuple[tuple[str, str], ...] = (
-    ("la suite", r"\b(?:tests/run\.sh|pytest|bun\s+test|npm\s+(?:test|ci)|jest)\b"),
+    # Las suites de este árbol se invocan por su archivo —`bash tests/<área>/test-*.sh`,
+    # `python3 tests/<área>/test_*.py`—; tras pelar el intérprete, la ruta queda
+    # al principio del segmento.
+    ("la suite", r"(?:\b(?:tests/run\.sh|pytest|bun\s+test|npm\s+(?:test|ci)|jest)\b"
+                 r"|(?:[\w./-]*/)?tests/[\w./-]*test[-_][\w.-]*\.(?:sh|py)(?=\s|$))"),
     ("un build", r"\b(?:make\s+html|sphinx-build|npm\s+run\s+build|webpack)\b"),
     ("un gate de corpus", r"\b(?:thyrox-audit|check_vocabulario_prosa|linkcheck)\b"),
     ("una migración", r"\bmanage\.py\s+migrate\b"),
@@ -67,7 +75,7 @@ _SEPARATORS = re.compile(r"&&|\|\||[;|\n]")
 #: Envolturas que preceden al programa real sin serlo, y las asignaciones de
 #: entorno (``DJANGO_SETTINGS_MODULE=x pytest``). Se pelan una por una.
 _WRAPPERS = re.compile(
-    r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*|sudo|time|env|exec|bash|sh|uv\s+run|"
+    r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*=\S*|sudo|time|timeout\s+\S+|env|exec|bash|sh|uv\s+run|"
     r"npx|python3?|poetry\s+run)\s+"
 )
 
@@ -98,8 +106,6 @@ def matched_families(command: str) -> list[str]:
             if any(re.match(pattern, head) for head in heads)]
 
 
-#: El cuerpo de un heredoc, que se escribe como dato y no se ejecuta.
-_HEREDOC_BODY = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?\n\s*\1\s*(?:\n|$)", re.S)
 
 #: Las esperas que BLOQUEAN hasta que un trabajo termina. Nombran el mecanismo
 #: de segundo plano, así que el descuento de ``ALREADY_BACKGROUND`` las
@@ -118,7 +124,7 @@ def detect(payload: dict) -> str | None:
     if not isinstance(command, str) or not command.strip():
         return None
 
-    if (BLOCKING_WAIT.search(_HEREDOC_BODY.sub("\n", command))
+    if (BLOCKING_WAIT.search(strip_heredoc_bodies(command))
             and not tool_input.get("run_in_background")):
         return (
             "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
@@ -132,7 +138,7 @@ def detect(payload: dict) -> str | None:
     if ALREADY_BACKGROUND.search(command):
         return None
 
-    families = matched_families(command)
+    families = matched_families(strip_heredoc_bodies(command))
     if not families:
         return None
 

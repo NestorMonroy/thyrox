@@ -59,6 +59,36 @@ def test_the_background_discount_carries_its_own_weight():
     assert _detect("bash tests/run.sh & disown") is None
 
 
+def test_warns_on_the_suites_this_tree_actually_runs():
+    """Las suites de thyrox se invocan por su archivo, no por `pytest`.
+
+    Los cuatro comandos son los que corrieron en primer plano el 2026-09-29,
+    cada uno de varios minutos, sin que el detector dijera nada.
+    """
+    for command in (
+        'timeout 300 bash tests/session/test-headless-pool-worktree.sh 2>&1 | grep -E "FALLA|aserciones"',
+        "bash tests/session/test-item-worktree-orphans.sh 2>&1 | tail -14",
+        "PYTHONDONTWRITEBYTECODE=1 timeout 300 python3 tests/session/test_user_wiring.py 2>&1 | grep FALLO",
+        'timeout 300 bash tests/session/test-headless-pool.sh 2>&1 | grep -E "FALLA|aserciones"',
+    ):
+        aviso = _detect(command)
+        assert aviso is not None and "la suite" in aviso, command
+
+
+def test_a_suite_file_named_as_an_argument_stays_silent():
+    assert _detect("sed -n 1,40p tests/session/test-headless-pool.sh") is None
+    # Una ruta dentro de un texto entrecomillado es un dato, no una orden.
+    assert _detect("OLD='a' NEW='bash tests/session/test-x.sh' bash bin/replace_literal f") is None
+    assert _detect("bash bin/thyrox-bg start s --grace 0 -- bash tests/session/test-headless-pool.sh") is None
+
+
+def test_a_suite_named_inside_a_heredoc_body_stays_silent():
+    """El mensaje de commit que describió este arreglo disparó el aviso."""
+    command = ("git commit -q -F - -- src/x.py <<'EOF'\nThe detector only knew pytest, bun test,\n"
+               "npm test and jest. The suites here are invoked by their file.\nEOF")
+    assert _detect(command) is None
+
+
 def test_stays_silent_on_short_commands():
     assert _detect("git status --short") is None
     assert _detect("grep -rn pytest .claude/rules/") is None
