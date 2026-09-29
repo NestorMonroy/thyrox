@@ -316,27 +316,40 @@ check(kx.TaskRef(S, "1", "docs", "a  b").subject_key
       "9h: el sujeto se compara normalizado por espacios")
 
 
-# --- 10. `ingest_board` — el sujeto del board entra al store en un ordinal
-#     LIBRE, sin pisar la cita del ocupante anterior de su ordinal.
-#
-#     El defecto que repara es real y esta medido (:ref:`h-docs-1067`): el
-#     ordinal del board se reusa, y en el store esos mismos numeros nombran
-#     otros sujetos. El control positivo reproduce esa forma — una fila vieja
-#     ya ocupa el ordinal "5" con OTRO sujeto y su propia cita.
+# --- 10. `ingest_board` — la identidad de una tarjeta es su ORDINAL, no su
+#     sujeto (H-THYROX-252). El control positivo es el episodio real: una
+#     tarjeta renombrada EN EL MISMO ordinal no puede recibir una segunda
+#     cita. La cobertura profunda —link_board_ordinal y los controles de
+#     anulacion— vive en tests/task/test_board_ordinal_identity.py; aqui solo
+#     el contrato minimo de la funcion que este archivo posee.
 import sqlite3
 
 def _store_con(filas):
-    """Un store minimo con las columnas que `ingest_board` toca."""
+    """Un store minimo con las columnas que `ingest_board` toca.
+
+    Cada fila es ``(task_id, subject, session_id, submodule, citation_id)``
+    o, con un sexto elemento explicito, ``(..., board_ordinal)``. Sin el
+    sexto, el ordinal por defecto es el propio ``task_id`` — la sesion ya
+    RECONCILIADA, que es el caso comun en estas pruebas—; un ``None``
+    explicito deja la fila sin ordinal (sesion no reconciliada).
+    """
     d = pathlib.Path(tempfile.mkdtemp())
     db = d / "s.sqlite3"
     c = sqlite3.connect(db)
     c.execute("CREATE TABLE tasks (task_id TEXT, subject TEXT, description TEXT,"
               " status TEXT, session_id TEXT, source TEXT, created_at TEXT,"
               " updated_at TEXT, submodule TEXT, submodule_source TEXT,"
-              " opened_at TEXT, opened_at_source TEXT, citation_id TEXT)")
+              " opened_at TEXT, opened_at_source TEXT, citation_id TEXT,"
+              " board_ordinal INTEGER)")
     for f in filas:
+        if len(f) == 6:
+            task_id, subject, session_id, submodule, citation_id, board_ordinal = f
+        else:
+            task_id, subject, session_id, submodule, citation_id = f
+            board_ordinal = int(task_id)
         c.execute("INSERT INTO tasks (task_id, subject, session_id, submodule,"
-                  " citation_id) VALUES (?,?,?,?,?)", f)
+                  " citation_id, board_ordinal) VALUES (?,?,?,?,?,?)",
+                  (task_id, subject, session_id, submodule, citation_id, board_ordinal))
     c.commit(); c.close()
     return d, db
 
@@ -349,62 +362,77 @@ def _board_con(tarjetas):
 VIEJO = "Cron A — portar el ejecutor de IrCron"
 NUEVO = "Reparar el REcompile() panic del gate de sucesor"
 
+# 10a — el control positivo del episodio: la tarjeta del ordinal "5" se
+#     RENOMBRA en el board. Deduplicar por sujeto (la forma anterior) leia
+#     esto como un sujeto nuevo y acuñaba una SEGUNDA cita; por ordinal, es
+#     la MISMA tarjeta.
 _, DB = _store_con([("5", VIEJO, S, "gen", "TASK-GEN-0045")])
 BOARD = _board_con({"5": {"subject": NUEVO, "submodule": "docs"}})
 acunadas = kx.ingest_board(DB, BOARD, S, ["5"])
 
-check(len(acunadas) == 1, "10a: el sujeto nuevo del board se acuña")
-check(acunadas[0][1] != "5",
-      "10b: aterriza en un ordinal LIBRE, no en el 5 que ya estaba ocupado")
+check(len(acunadas) == 1, "10a: la tarjeta renombrada se procesa una vez")
+check(acunadas[0][1] == "5",
+      "10b: NO aterriza en un ordinal nuevo — es la MISMA fila que ya existia")
 
 con = sqlite3.connect(DB)
-cita_vieja = con.execute("SELECT citation_id FROM tasks WHERE subject = ?",
-                         (VIEJO,)).fetchone()[0]
-check(cita_vieja == "TASK-GEN-0045",
-      "10c: la cita del sujeto ANTERIOR queda intacta (el daño de h-docs-1042)")
-cita_nueva = con.execute("SELECT citation_id FROM tasks WHERE subject = ?",
-                         (NUEVO,)).fetchone()[0]
-check(cita_nueva != cita_vieja and cita_nueva.startswith("TASK-DOCS-"),
-      "10d: el sujeto nuevo recibe cita propia, en la capa que declara su tarjeta")
+filas = con.execute("SELECT task_id, subject, citation_id FROM tasks "
+                    "WHERE session_id = ?", (S,)).fetchall()
 con.close()
+check(len(filas) == 1,
+      "10c: sigue habiendo UNA sola fila — el defecto de H-THYROX-252 no reaparece")
+check(filas[0][1] == NUEVO,
+      "10d: el sujeto de la fila es el NUEVO — se actualizo en su sitio")
+check(filas[0][2] == "TASK-GEN-0045",
+      "10e: la cita NO se movio — sigue siendo la que ya tenia esa tarjeta")
 
-# 10e — idempotencia: repetir el mismo ingest NO acuña una segunda cita para
-#     el mismo sujeto. Sin esto, cada pasada duplicaria la fila (TASK-DB-0002).
-check(len(kx.ingest_board(DB, BOARD, S, ["5"])) == 0,
-      "10e: repetir el ingest no acuña de nuevo el mismo sujeto")
+# 10f — idempotencia: repetir el ingest sin cambios no vuelve a listar la
+#     tarjeta — nada que tocar.
+check(kx.ingest_board(DB, BOARD, S, ["5"]) == [],
+      "10f: repetir el ingest sin cambios no toca nada")
 
-# 10f — `snapshot-tareas` inserta la fila SIN cita y en `gen`; si después se
-#     ingiere el board, el sujeto ya existe y se saltaba, así que la fila se
-#     quedaba sin cita durable para siempre. Medido 2026-09-23: cuatro tareas
-#     de la sesión quedaron así y `ingerir-board` publicó «0 acuñadas».
-#     Se acuña en ESA fila, sólo porque su cita es nula: una cita existente
-#     nunca se reasigna (h-docs-1042).
-_, DB3 = _store_con([("1", NUEVO, S, "gen", None)])
+# 10g — un ordinal que AUN no tiene fila SI crea una nueva.
+BOARD2 = _board_con({"5": {"subject": NUEVO, "submodule": "docs"},
+                     "9": {"subject": "Una tarjeta genuinamente nueva",
+                           "submodule": "api"}})
+acunadas2 = kx.ingest_board(DB, BOARD2, S, ["9"])
+check(len(acunadas2) == 1, "10g: un ordinal sin fila previa SI se acuña")
+check(acunadas2[0][1] != "5",
+      "10h: y aterriza en un task_id propio, no en el de la tarjeta renombrada")
+
+# 10i — una fila que YA tiene ordinal pero SIN cita (como la deja
+#     `snapshot-tareas`) recibe su cita sin duplicarse.
+_, DB3 = _store_con([("1", NUEVO, S, "gen", None, 5)])
 acunadas3 = kx.ingest_board(DB3, BOARD, S, ["5"], layer="thyrox")
 con = sqlite3.connect(DB3)
-rows3 = con.execute("SELECT task_id, citation_id, submodule FROM tasks "
-                     "WHERE subject = ?", (NUEVO,)).fetchall()
+rows3 = con.execute("SELECT task_id, citation_id FROM tasks "
+                     "WHERE session_id = ?", (S,)).fetchall()
 con.close()
-check(len(rows3) == 1 and rows3[0][1] is not None and rows3[0][1].startswith("TASK-THYROX-"),
-      "10f: la fila sin cita que dejó el snapshot recibe su cita, sin duplicarse")
-check(bool(rows3) and rows3[0][2] == "thyrox",
-      "10g: y la capa declarada sustituye al «gen» que no sabía")
+check(len(rows3) == 1 and rows3[0][1] is not None
+      and rows3[0][1].startswith("TASK-THYROX-"),
+      "10i: la fila sin cita recibe la suya, sin duplicarse")
 check(len(acunadas3) == 1 and acunadas3[0][1] == "1",
-      "10h: el informe la cuenta como acuñada en su ordinal existente")
+      "10j: el informe la cuenta en su task_id existente, no en uno nuevo")
 
-# 10f — control que DISCRIMINA: con el indice de sujetos vacio —la pieza que
-#     hace el trabajo— el segundo ingest SI duplicaria. Se mide sobre un store
-#     hermano, sin tocar el de arriba.
-_, DB2 = _store_con([])
-check(len(kx.ingest_board(DB2, BOARD, S, ["5"])) == 1,
-      "10f: sobre un store sin ese sujeto SI se acuña — el control discrimina")
+# 10k — guard: una SESION no reconciliada (alguna fila con board_ordinal
+#     NULO) REHUSA por completo — nada se escribe.
+_, DB4 = _store_con([("1", "A", S, "gen", "TASK-GEN-0900", None)])
+antes = sqlite3.connect(DB4).execute(
+    "SELECT subject, citation_id FROM tasks").fetchall()
+try:
+    kx.ingest_board(DB4, BOARD2, S, ["9"])
+    check(False, "10k: una sesion no reconciliada debe REHUSAR")
+except kx.MappingError as exc:
+    check("1" in str(exc), "10k: y nombra CUANTAS filas sin ordinal tiene")
+after = sqlite3.connect(DB4).execute(
+    "SELECT subject, citation_id FROM tasks").fetchall()
+check(antes == after, "10l: y no escribe nada — ni siquiera la tarjeta nueva")
 
-# 10g — guard: una tarjeta que falta REHUSA, y no escribe la mitad del lote.
+# 10m — guard: una tarjeta que falta REHUSA, y no escribe la mitad del lote.
 try:
     kx.ingest_board(DB, BOARD, S, ["5", "99"])
-    check(False, "10g: una tarjeta ausente debe REHUSAR")
+    check(False, "10m: una tarjeta ausente debe REHUSAR")
 except kx.MappingError:
-    check(True, "10g: una tarjeta ausente REHUSA en vez de acuñar a medias")
+    check(True, "10m: una tarjeta ausente REHUSA en vez de acuñar a medias")
 
 
 # 11 — `cita` publica el SUJETO, no solo el id (#182).

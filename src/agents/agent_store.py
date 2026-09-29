@@ -265,6 +265,16 @@ CREATE TABLE IF NOT EXISTS tasks (
     -- El id sigue siendo un ordinal, y la capa un atributo.
     submodule        TEXT,
     submodule_source TEXT,
+    -- La identidad de una tarjeta del board es ``(session_id, board_ordinal)``,
+    -- no el ``subject`` (H-THYROX-252): el board renombra sin cambiar su
+    -- ordinal, y ``task_id`` es un contador interno sin significado de
+    -- identidad (ver ``ingest_board`` en ``src/task/task_ids.py``). NULO en
+    -- toda fila histórica anterior a esta columna — no se inventa un ordinal
+    -- que nadie declaró. Su unicidad PARCIAL (``WHERE board_ordinal IS NOT
+    -- NULL``) vive en el índice de ``_migrate_tasks_board_ordinal_column``,
+    -- no aquí: SQLite no admite una restricción parcial dentro del DDL de la
+    -- tabla, sólo en un índice aparte.
+    board_ordinal INTEGER,
     created_at    TEXT NOT NULL,
     updated_at    TEXT NOT NULL,
     PRIMARY KEY (session_id, task_id)
@@ -826,6 +836,14 @@ _TASK_CITATION_COLUMNS = {
     "citation_id": "TEXT",
 }
 
+#: Columna de IDENTIDAD de una tarjeta del board — ``(session_id,
+#: board_ordinal)``, no ``subject`` (H-THYROX-252). Se anade por ALTER TABLE
+#: por la misma razon que las de cita: el store ya existia poblado cuando se
+#: decidio. Ver ``_migrate_tasks_board_ordinal_column``.
+_TASK_BOARD_ORDINAL_COLUMNS = {
+    "board_ordinal": "INTEGER",
+}
+
 #: Columnas del EJE TEMPORAL de ``tasks`` — el "factor tiempo" de la gestion
 #: documental (H-DOCS-327, tarea #774). Se anaden por ALTER TABLE por la misma
 #: razon que las de capa: el store ya existia poblado cuando se decidieron.
@@ -992,6 +1010,37 @@ def _migrate_tasks_citation_columns(conn: sqlite3.Connection) -> None:
     # filas ya acuñadas. Sin el `WHERE`, N filas sin acuñar chocarian entre si.
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_citation "
                  "ON tasks(citation_id) WHERE citation_id IS NOT NULL")
+    conn.commit()
+
+
+def _migrate_tasks_board_ordinal_column(conn: sqlite3.Connection) -> None:
+    """Anade ``board_ordinal`` a un ``tasks`` ya existente, con su indice.
+
+    Mismo mecanismo que ``_migrate_tasks_citation_columns``: ALTER TABLE por
+    columna que falte, y el indice de unicidad se (re)crea SIEMPRE, sin
+    condicion — es la forma que sobrevive a que ``_migrate_tasks_status_check``
+    reconstruya la tabla y se lleve consigo los indices que no reconstruye
+    (idx_tasks_status/idx_tasks_session son los unicos que esa migracion
+    recrea). Corre DESPUES de ``_migrate_tasks_composite_pk`` y ANTES de
+    ``_migrate_tasks_status_check`` en ``connect()``, mismo orden que sus
+    hermanas de columna.
+
+    La unicidad es PARCIAL (``WHERE board_ordinal IS NOT NULL``) por la misma
+    razon que la de ``citation_id``: las filas historicas —de antes de esta
+    columna— quedan en NULO, y NULO no es un valor que colisione consigo
+    mismo en SQL. La llave que protege es ``(session_id, board_ordinal)``,
+    no la columna sola: dos sesiones pueden compartir el mismo ordinal de
+    board sin chocar.
+    """
+    existentes = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+    if not existentes:
+        return                      # la tabla aun no existe; CORE_SCHEMA la crea bien
+    for columna, tipo in _TASK_BOARD_ORDINAL_COLUMNS.items():
+        if columna not in existentes:
+            conn.execute(f"ALTER TABLE tasks ADD COLUMN {columna} {tipo}")
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_board_ordinal "
+        "ON tasks(session_id, board_ordinal) WHERE board_ordinal IS NOT NULL")
     conn.commit()
 
 
@@ -1227,6 +1276,7 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     _migrate_tasks_layer_columns(conn)
     _migrate_tasks_opening_columns(conn)
     _migrate_tasks_citation_columns(conn)
+    _migrate_tasks_board_ordinal_column(conn)
     _migrate_tasks_status_check(conn)
     _migrate_documents_series_columns(conn)
     _migrate_documents_drop_scanned_at(conn)
@@ -1800,6 +1850,22 @@ def _reanchor_citations_by_subject(conn, session: str, citas_antes: dict) -> int
     return movidas
 
 
+def _board_ordinal_of(task_id: str):
+    """El ordinal de board de un ``task_id`` del cliente, o ``None``.
+
+    ``task_id`` es TEXT porque es como el cliente lo emite; el ordinal del
+    board que lo nombra es ese mismo valor, numerico casi siempre. Un
+    ``task_id`` que no lo sea (fila fabricada a mano, migracion antigua) no
+    tiene ordinal que fijar — se deja NULO en vez de inventarlo, y la sesion
+    queda «no reconciliada» hasta que alguien lo fije con
+    ``task_ids.link_board_ordinal``.
+    """
+    try:
+        return int(task_id)
+    except (TypeError, ValueError):
+        return None
+
+
 def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
     """Vuelca un directorio de tareas del cliente a la tabla ``tasks``.
 
@@ -1911,14 +1977,16 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 ilegibles += 1
                 continue
             task_id = str(d.get("id") or ruta.stem)
+            board_ordinal = _board_ordinal_of(task_id)
             extra = {k: v for k, v in d.items() if k not in _TASK_CONOCIDAS}
             antes = conn.total_changes
             conn.execute(
                 "INSERT INTO tasks (task_id, subject, description, status, "
                 "active_form, owner, blocks_json, blocked_by_json, session_id, "
                 "source, metadata_json, created_at, updated_at, "
-                "opened_at, opened_at_source, submodule, submodule_source) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+                "opened_at, opened_at_source, submodule, submodule_source, "
+                "board_ordinal) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
                 # El conflicto es sobre la clave COMPUESTA: dos sesiones con la
                 # misma tarea "447" son dos filas, no una que se pisa (H-DOCS-175).
                 "ON CONFLICT(session_id, task_id) DO UPDATE SET "
@@ -1931,6 +1999,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 "  blocked_by_json = excluded.blocked_by_json, "
                 "  source = excluded.source, "
                 "  metadata_json = excluded.metadata_json, "
+                "  board_ordinal = excluded.board_ordinal, "
                 "  updated_at = excluded.updated_at "
                 # Sin este WHERE la fila se reescribe aunque sea idéntica, y con
                 # ella `updated_at`. `IS NOT` y no `<>` porque la mitad de estas
@@ -1952,7 +2021,8 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                 # tareas. Sigue actualizándose arriba cuando el contenido SÍ
                 # cambia, así que no queda caduco; lo que deja de hacer es
                 # provocar una escritura por sí solo.
-                "   OR tasks.metadata_json    IS NOT excluded.metadata_json",
+                "   OR tasks.metadata_json    IS NOT excluded.metadata_json "
+                "   OR tasks.board_ordinal    IS NOT excluded.board_ordinal",
                 (
                     task_id,
                     d.get("subject") or "",
@@ -1993,6 +2063,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # juicio, sino su ausencia.
                     UNKNOWN_LAYER,
                     "respaldo al volcar el board: nadie declaro la capa",
+                    board_ordinal,
                 ),
             )
             if task_id not in existentes:

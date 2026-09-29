@@ -116,6 +116,16 @@ import sys
 # —no lazy— porque varias suites cargan este archivo con
 # `spec_from_file_location`, via por la que su directorio no queda en la ruta
 # de busqueda. Es el mismo criterio que `closure_graph.py` ya documenta.
+#
+# Y el archivo TAMBIEN corre como PROGRAMA directo —`bin/task_ids` (que fija
+# `PYTHONPATH`) y, sin ese envoltorio, las suites que lo invocan por ruta con
+# `subprocess.run`—: ahi `sys.path[0]` es `src/task`, y `paths` no resolveria.
+# El insert es el mismo patron que `paths/reach_roots.py::_load_owner` ya usa
+# para el caso identico de un dueño que se importa por nombre.
+_SRC_DIR = str(pathlib.Path(__file__).resolve().parent.parent)
+if _SRC_DIR not in sys.path:
+    sys.path.insert(0, _SRC_DIR)
+
 from paths import reach  # noqa: E402
 
 #: Los REPOS del multi-repo donde un trabajo puede aterrizar.
@@ -567,24 +577,41 @@ def persist_to_store(store_path, assignments: dict) -> int:
 
 
 def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> list:
-    """Trae al store el sujeto de una tarjeta del board que aun no tiene fila.
+    """Trae al store cada tarjeta del board, por su IDENTIDAD de ordinal.
 
-    El board del cliente numera por ORDINAL de sesion, y ese ordinal se reusa:
-    el store recuerda al ocupante anterior, asi que citar ``#122`` en un `.rst`
-    puede nombrar hoy un sujeto muerto (:ref:`h-docs-1067`). La reparacion no
-    es reasignar el ``citation_id`` viejo —eso destruiria la cita del sujeto
-    anterior, que es el daño de :ref:`h-docs-1042`— sino dar al sujeto nuevo
-    una fila propia en un ordinal libre, con su cita acuñada.
+    La identidad de una tarjeta es ``(session_id, board_ordinal)``, NUNCA el
+    ``subject`` (H-THYROX-252). Deduplicar por sujeto —la forma anterior—
+    hacia que una tarjeta RENOMBRADA en el board se leyera como un sujeto
+    nuevo, y recibiera una SEGUNDA cita sin pisar la primera: dos citas para
+    la misma tarjeta, y nada que las relacione.
 
-    Es ADITIVO por construccion: inserta filas nuevas y no toca ninguna
-    existente. Devuelve ``(ordinal_board, ordinal_store, cita, sujeto)`` por
-    tarjeta acuñada.
+    Por cada ordinal:
 
-    *Metrica:* tarjetas del board cuyo sujeto no aparece en ninguna fila del
-    store para esta sesion.
-    *Ciega a:* un sujeto que exista en el store con otra redaccion — la
-    comparacion es por texto exacto, no por semantica, asi que un reencuadre
-    del titulo se acuña como sujeto nuevo.
+    - si ya hay una fila ``(session_id, board_ordinal)``: no se crea otra.
+      Si su cita es nula, se acuña. Si el sujeto, la descripcion o el estado
+      de la tarjeta cambiaron, se actualizan esos campos — la cita, si ya
+      existia, NUNCA se mueve.
+    - si no hay fila: se inserta una nueva, con su ``board_ordinal`` y una
+      cita nueva.
+
+    Es ADITIVA: nunca reasigna una cita ya acuñada. Devuelve
+    ``(ordinal_board, ordinal_store, cita, sujeto)`` por tarjeta TOCADA —
+    creada, o actualizada de verdad. Repetir el ingest sobre una tarjeta sin
+    cambios no la vuelve a listar (idempotencia observable).
+
+    **Rehusa sobre una sesion no reconciliada.** Si alguna fila de la sesion
+    tiene ``board_ordinal IS NULL``, no se ingiere nada: esa fila es
+    indistinguible de «no existe todavia», y el sujeto de su tarjeta
+    recibiria una segunda cita — exactamente el defecto que esta identidad
+    existe para cerrar. Se reconcilia con :func:`link_board_ordinal` antes de
+    ingerir.
+
+    *Metrica:* tarjetas del board cuyo ``(session_id, board_ordinal)`` no
+    tiene fila en el store, o cuya fila tiene cita nula, o sujeto/descripcion/
+    estado distintos de los de la tarjeta.
+    *Ciega a:* un board con la tarjeta en otro ordinal por error de quien lo
+    genera — la identidad es el ordinal que EL BOARD declara, no un cruce por
+    contenido.
     """
     store_path = pathlib.Path(store_path)
     board_dir = pathlib.Path(board_dir)
@@ -603,16 +630,40 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
     conn = sqlite3.connect(store_path)
     acunadas = []
     try:
-        vistos = {row[0] for row in conn.execute(
-            "SELECT subject FROM tasks WHERE session_id = ?", (session_id,))}
-        # Filas del sujeto SIN cita: las deja así `snapshot-tareas`, que
-        # inserta sin acuñar. Saltarlas como «ya vistas» las dejaría sin cita
-        # durable para siempre. Se acuña en
-        # esa fila porque su cita es nula; una cita existente no se reasigna.
-        without_citation = {row[0]: (row[1], row[2]) for row in conn.execute(
-            "SELECT subject, task_id, submodule FROM tasks "
-            " WHERE session_id = ? AND citation_id IS NULL", (session_id,))}
-        ordinal = int(conn.execute(
+        columnas = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+        if "board_ordinal" not in columnas:
+            # Un store que nunca paso por `agent_store.connect()` —el store
+            # real siempre pasa; esto cubre el fixture minimo de una prueba, o
+            # un store muy viejo—. Se migra aqui mismo, con la MISMA
+            # semantica de auto-reconciliacion que `snapshot-tareas` ya
+            # aplica: el ordinal por defecto es el propio `task_id`. No es lo
+            # mismo que la migracion oficial de `agent_store` —que deja NULO
+            # lo historico, porque ahi si puede haber filas que dependieran
+            # de la ausencia de la columna—: aqui la columna nunca existio, y
+            # ninguna fila pudo haber dependido de distinguir "reconciliada"
+            # de "no reconciliada" sobre algo que no estaba.
+            conn.execute("ALTER TABLE tasks ADD COLUMN board_ordinal INTEGER")
+            conn.execute(
+                "UPDATE tasks SET board_ordinal = CAST(task_id AS INTEGER) "
+                " WHERE board_ordinal IS NULL AND task_id GLOB '[0-9]*'")
+        # La sesion tiene que estar RECONCILIADA antes de ingerir — sin esto,
+        # una fila historica sin ordinal es indistinguible de «no existe
+        # todavia» y su tarjeta recibiria una segunda cita (H-THYROX-252).
+        missing_ordinal = conn.execute(
+            "SELECT COUNT(*) FROM tasks "
+            " WHERE session_id = ? AND board_ordinal IS NULL",
+            (session_id,)
+        ).fetchone()[0]
+        if missing_ordinal:
+            raise MappingError(
+                f"la sesion {session_id!r} tiene {missing_ordinal} fila(s) sin "
+                f"board_ordinal: no esta reconciliada. NO se ingiere nada: "
+                f"ingerir aqui repetiria el defecto que esta identidad cierra "
+                f"— una fila sin ordinal es indistinguible de «no existe» y su "
+                f"tarjeta recibiria una segunda cita. Fijar el ordinal de cada "
+                f"fila con link_board_ordinal antes de ingerir el board."
+            )
+        next_task_id = int(conn.execute(
             "SELECT MAX(CAST(task_id AS INTEGER)) FROM tasks WHERE session_id = ?",
             (session_id,)).fetchone()[0] or 0)
         for board_id in ordinals:
@@ -624,60 +675,156 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
                 )
             data = json.loads(card.read_text())
             subject = data.get("subject", "")
-            if subject in vistos and subject not in without_citation:
-                continue
+            description = data.get("description", "")
+            status = data.get("status", "pending")
             # La tarjeta del board NO trae capa (medido: sus claves son
             # blockedBy/blocks/description/id/status/subject). `--capa` es una
             # DECLARACION de quien acuña, no una adivinanza del guion; sin
             # ella la fila nace en `gen`, que dice «no se sabe».
-            capa = layer or data.get("submodule") or UNKNOWN_LAYER
-            capa = capa.lower()
-            layer_actual = capa
-            if layer_actual not in LAYERS and layer_actual != UNKNOWN_LAYER:
-                layer_actual = UNKNOWN_LAYER
+            capa = (layer or data.get("submodule") or UNKNOWN_LAYER).lower()
+            if capa not in LAYERS and capa != UNKNOWN_LAYER:
+                capa = UNKNOWN_LAYER
+            ordinal_int = int(board_id)
+            card_row = conn.execute(
+                "SELECT task_id, subject, description, status, citation_id, "
+                "       submodule FROM tasks "
+                " WHERE session_id = ? AND board_ordinal = ?",
+                (session_id, ordinal_int)
+            ).fetchone()
+            if card_row is not None:
+                (task_id_row, subject_row, description_row, status_row,
+                 cita, layer_row) = card_row
+                touched = False
+                if cita is None:
+                    # La cita lleva el prefijo de la capa YA conocida de la
+                    # fila; solo cae a la declarada cuando la fila no sabia
+                    # ninguna (`gen`/NULL). El id es identidad — no se corrige
+                    # aqui la CAPA de una fila ya clasificada.
+                    layer_citation = layer_row if layer_row in LAYERS else capa
+                    siguiente = conn.execute(
+                        "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) "
+                        "  FROM tasks WHERE citation_id LIKE ?",
+                        (len(f"TASK-{layer_citation.upper()}-") + 1,
+                         f"TASK-{layer_citation.upper()}-%")
+                    ).fetchone()[0]
+                    cita = format_id(layer_citation, int(siguiente or 0) + 1)
+                    conn.execute(
+                        "UPDATE tasks SET citation_id = ? "
+                        " WHERE session_id = ? AND task_id = ? "
+                        "   AND citation_id IS NULL",
+                        (cita, session_id, task_id_row))
+                    touched = True
+                if (subject_row, description_row, status_row) != (
+                        subject, description, status):
+                    conn.execute(
+                        "UPDATE tasks SET subject = ?, description = ?, "
+                        "  status = ?, updated_at = ? "
+                        " WHERE session_id = ? AND task_id = ?",
+                        (subject, description, status, stamp,
+                         session_id, task_id_row))
+                    touched = True
+                if touched:
+                    acunadas.append((str(board_id), str(task_id_row), cita, subject))
+                continue
             siguiente = conn.execute(
                 "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
                 " WHERE citation_id LIKE ?",
-                (len(f"TASK-{layer_actual.upper()}-") + 1,
-                 f"TASK-{layer_actual.upper()}-%")
+                (len(f"TASK-{capa.upper()}-") + 1, f"TASK-{capa.upper()}-%")
             ).fetchone()[0]
-            cita = format_id(layer_actual, int(siguiente or 0) + 1)
-            if subject in without_citation:
-                existing, layer_previous = without_citation.pop(subject)
-                # La capa declarada sustituye sólo a «no se sabe» (`gen`).
-                layer_row = layer_actual if (layer_previous in (None, UNKNOWN_LAYER)) else layer_previous
-                if layer_row != layer_actual:
-                    # La cita lleva el prefijo de la capa de SU fila.
-                    previous = conn.execute(
-                        "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
-                        " WHERE citation_id LIKE ?",
-                        (len(f"TASK-{layer_row.upper()}-") + 1, f"TASK-{layer_row.upper()}-%")
-                    ).fetchone()[0]
-                    cita = format_id(layer_row, int(previous or 0) + 1)
-                conn.execute(
-                    "UPDATE tasks SET citation_id = ?, submodule = ?, "
-                    "  submodule_source = ?, updated_at = ? "
-                    " WHERE session_id = ? AND task_id = ? AND citation_id IS NULL",
-                    (cita, layer_row, "acuñado al ingerir el board", stamp,
-                     session_id, existing))
-                acunadas.append((str(board_id), str(existing), cita, subject))
-                continue
-            ordinal += 1
+            cita = format_id(capa, int(siguiente or 0) + 1)
+            next_task_id += 1
             conn.execute(
                 "INSERT INTO tasks (task_id, subject, description, status, "
                 "  session_id, source, created_at, updated_at, submodule, "
-                "  submodule_source, opened_at, opened_at_source, citation_id) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (str(ordinal), subject, data.get("description", ""),
-                 data.get("status", "pending"), session_id, "task_ids ingerir-board",
-                 stamp, stamp, layer_actual, "acuñado al ingerir el board",
-                 stamp, "acuñado al ingerir el board", cita))
-            vistos.add(subject)
-            acunadas.append((str(board_id), str(ordinal), cita, subject))
+                "  submodule_source, opened_at, opened_at_source, citation_id, "
+                "  board_ordinal) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (str(next_task_id), subject, description, status,
+                 session_id, "task_ids ingerir-board", stamp, stamp, capa,
+                 "acuñado al ingerir el board", stamp,
+                 "acuñado al ingerir el board", cita, ordinal_int))
+            acunadas.append((str(board_id), str(next_task_id), cita, subject))
         conn.commit()
     finally:
         conn.close()
     return acunadas
+
+
+def link_board_ordinal(store_path, session_id: str, citation_id: str,
+                       board_ordinal: int) -> None:
+    """Fija el ``board_ordinal`` de UNA fila existente que aun no lo tiene.
+
+    Es la herramienta de la RECONCILIACION: cuando ``ingest_board`` rehusa por
+    sesion no reconciliada, esta funcion fija el ordinal fila por fila, sobre
+    datos ya reales — no reconcilia nada por su cuenta ni adivina el ordinal
+    que le corresponde a cada cita. Aditiva: no toca ninguna otra columna.
+
+    Rehusa (``MappingError``, nada escrito) en tres casos:
+
+    - la cita no existe en la sesion;
+    - la fila de esa cita YA tiene un ``board_ordinal`` — fijarlo dos veces
+      con valores distintos moveria la identidad de la tarjeta, y este
+      esquema existe justo para que eso no pase en silencio;
+    - el ordinal ya pertenece a OTRA fila de la misma sesion — dos tarjetas
+      no pueden compartir identidad.
+
+    *Metrica:* la fila ``(session_id, citation_id)`` con ``board_ordinal``
+    fijado, o ninguna si rehusa.
+    *Ciega a:* si el ordinal que se declara es realmente el de esa tarjeta en
+    el board vivo — esta funcion no lee el board, sólo escribe lo que se le
+    declara.
+    """
+    store_path = pathlib.Path(store_path)
+    if not store_path.exists():
+        raise MappingError(
+            f"no existe el store {store_path}. NO se fija nada: sin el store "
+            f"no hay fila que reconciliar."
+        )
+    conn = sqlite3.connect(store_path)
+    try:
+        card_row = conn.execute(
+            "SELECT task_id, board_ordinal FROM tasks "
+            " WHERE session_id = ? AND citation_id = ?",
+            (session_id, citation_id)
+        ).fetchone()
+        if card_row is None:
+            raise MappingError(
+                f"la cita {citation_id!r} no existe en la sesion {session_id!r}. "
+                f"NO se fija nada."
+            )
+        task_id, ordinal_actual = card_row
+        if ordinal_actual is not None:
+            raise MappingError(
+                f"la fila de {citation_id!r} ya tiene board_ordinal="
+                f"{ordinal_actual}. NO se fija nada: fijarlo de nuevo movería "
+                f"la identidad de la tarjeta, que es justo lo que este "
+                f"esquema existe para impedir."
+            )
+        occupant = conn.execute(
+            "SELECT citation_id FROM tasks "
+            " WHERE session_id = ? AND board_ordinal = ?",
+            (session_id, board_ordinal)
+        ).fetchone()
+        if occupant is not None:
+            raise MappingError(
+                f"el ordinal {board_ordinal} ya pertenece a {occupant[0]!r} en "
+                f"la sesion {session_id!r}. NO se fija nada: dos tarjetas no "
+                f"pueden compartir identidad."
+            )
+        conn.execute(
+            "UPDATE tasks SET board_ordinal = ? "
+            " WHERE session_id = ? AND task_id = ?",
+            (board_ordinal, session_id, task_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _cmd_link_board_ordinal(args: argparse.Namespace) -> int:
+    link_board_ordinal(args.store, args.sesion, args.cita, args.ordinal)
+    print(f"link-board-ordinal: {args.cita} -> board_ordinal={args.ordinal} "
+          f"(sesion {args.sesion})")
+    return 0
 
 
 def correct_layer(store_path, citation_id: str, layer: str,
@@ -983,6 +1130,14 @@ def main(argv=None) -> int:
     p_acunar = sub.add_parser("acunar", help="acuña el id que falte, desde el store")
     p_acunar.add_argument("--dry-run", action="store_true")
     p_acunar.set_defaults(func=_cmd_acunar)
+
+    p_link = sub.add_parser(
+        "link-board-ordinal",
+        help="fija el board_ordinal de una fila existente (reconciliacion)")
+    p_link.add_argument("sesion")
+    p_link.add_argument("cita", help="el TASK-<CAPA>-NNNN de la fila")
+    p_link.add_argument("ordinal", type=int, help="el board_ordinal a fijar")
+    p_link.set_defaults(func=_cmd_link_board_ordinal)
 
     args = parser.parse_args(argv)
     args.store = str(resolve_store(args.store))
