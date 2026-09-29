@@ -1,0 +1,55 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.284
+import{xe}from"/$bunfs/root/chunk-h4npc7kp.js";import"/$bunfs/root/chunk-8zeg9165.js";import"/$bunfs/root/chunk-37s48y77.js";import{wr,$o}from"/$bunfs/root/chunk-d37h8mav.js";import"/$bunfs/root/chunk-0pd7kjzx.js";import"/$bunfs/root/chunk-czwr6846.js";import{v,Rt}from"/$bunfs/root/chunk-31aa9k3a.js";import"/$bunfs/root/chunk-bz96yhka.js";import"/$bunfs/root/chunk-zy97v06w.js";import{st,Ue,x}from"/$bunfs/root/chunk-swk3rjnt.js";import{Se}from"/$bunfs/root/chunk-0j2vcydt.js";import"/$bunfs/root/chunk-k40f9rxb.js";import"/$bunfs/root/chunk-6v8fhz43.js";import{a}from"/$bunfs/root/chunk-8whxj5sg.js";import"/$bunfs/root/chunk-yr0jgjsq.js";import"/$bunfs/root/chunk-6b6gfk00.js";import"/$bunfs/root/chunk-7jxsf4cd.js";import"/$bunfs/root/chunk-k6n2tyj0.js";import"/$bunfs/root/chunk-320rdak1.js";import"/$bunfs/root/chunk-msjd5xeg.js";import"/$bunfs/root/chunk-hqy3a2gr.js";import{i}from"/$bunfs/root/chunk-wt82nr44.js";import"/$bunfs/root/chunk-q5gkv7dz.js";import"/$bunfs/root/chunk-8jfh2rja.js";import"/$bunfs/root/chunk-ka4gnw3m.js";import"/$bunfs/root/chunk-x15v86ew.js";import"/$bunfs/root/chunk-7ckg8258.js";import"/$bunfs/root/chunk-rx56hxr8.js";import"/$bunfs/root/chunk-1qy944sj.js";import"/$bunfs/root/chunk-6hfhp7ca.js";import"/$bunfs/root/chunk-1zd4bz7m.js";import"/$bunfs/root/chunk-h6tt1g8k.js";import"/$bunfs/root/chunk-fybh7qze.js";import"/$bunfs/root/chunk-2rw92xpq.js";import"/$bunfs/root/chunk-45j14f09.js";import"/$bunfs/root/chunk-gc37yxcb.js";import"/$bunfs/root/chunk-8qxwgk4m.js";import"/$bunfs/root/chunk-e1ahn80a.js";import"/$bunfs/root/chunk-abz0wvam.js";import"/$bunfs/root/chunk-3xxkkv4v.js";import"/$bunfs/root/chunk-wan25qy3.js";import"/$bunfs/root/chunk-kpm3vnff.js";import"/$bunfs/root/chunk-qcjafqk2.js";import"/$bunfs/root/chunk-m399t3d8.js";import"/$bunfs/root/chunk-p1be706c.js";import"/$bunfs/root/chunk-r03mjfax.js";import"/$bunfs/root/chunk-kaskbbn0.js";import"/$bunfs/root/chunk-12vsw1j8.js";import"/$bunfs/root/chunk-v7906md2.js";import"/$bunfs/root/chunk-b271vmpk.js";import"/$bunfs/root/chunk-6vdt0hv3.js";import"/$bunfs/root/chunk-h9xec3e4.js";import"/$bunfs/root/chunk-hf1cte62.js";import"/$bunfs/root/chunk-3xweah4t.js";import"/$bunfs/root/chunk-bkr619pr.js";import"/$bunfs/root/chunk-2rwe9v5c.js";import"/$bunfs/root/chunk-n7t5rsss.js";import"/$bunfs/root/chunk-w8rs8ehp.js";import"/$bunfs/root/chunk-akb28a3m.js";import"/$bunfs/root/chunk-232c8jv2.js";import"/$bunfs/root/chunk-6w7z3vez.js";import"/$bunfs/root/chunk-00mawwda.js";import"/$bunfs/root/chunk-gqk3xdpc.js";import"/$bunfs/root/chunk-vfge45b6.js";import"/$bunfs/root/chunk-5z16fazy.js";import"/$bunfs/root/chunk-5amhd006.js";import"/$bunfs/root/chunk-j70276wn.js";import"/$bunfs/root/chunk-1rswn9n0.js";import"/$bunfs/root/chunk-023680d9.js";import{wp}from"/$bunfs/root/chunk-qwx8d9cf.js";import"/$bunfs/root/chunk-ttv57pbg.js";import"/$bunfs/root/chunk-3zz7efen.js";import"/$bunfs/root/chunk-2b10qw5j.js";import"/$bunfs/root/chunk-dx46xds7.js";import"/$bunfs/root/chunk-6vtp2w5r.js";import"/$bunfs/root/chunk-cap10ns2.js";import"/$bunfs/root/chunk-b6q1zdq7.js";import"/$bunfs/root/chunk-xghj8qpt.js";import{Ahe}from"/$bunfs/root/chunk-p48qx5rs.js";import"/$bunfs/root/chunk-t2qzymvt.js";import{qU}from"/$bunfs/root/chunk-8fcnqjy2.js";import{kl,DNe,Rhe,hln,ug,Hw}from"/$bunfs/root/chunk-xfdkyh85.js";import{mGe}from"/$bunfs/root/chunk-p6tj529t.js";import"/$bunfs/root/chunk-j9qabfez.js";import{yI}from"/$bunfs/root/chunk-tcwq4sjx.js";import{Al}from"/$bunfs/root/chunk-x5k9ggvm.js";import{p0}from"/$bunfs/root/chunk-ws6e69s2.js";import"/$bunfs/root/chunk-0f49g1em.js";import"/$bunfs/root/chunk-mz1dwgfm.js";import"/$bunfs/root/chunk-drw7d2f5.js";import"/$bunfs/root/chunk-46s09b52.js";import"/$bunfs/root/chunk-00nkznxh.js";import"/$bunfs/root/chunk-pbs1taz0.js";import"/$bunfs/root/chunk-g2fq1s1e.js";import"/$bunfs/root/chunk-9a48b7ac.js";import"/$bunfs/root/chunk-pd4sjd3m.js";import"/$bunfs/root/chunk-4w7hfzb9.js";import"/$bunfs/root/chunk-1kg329b6.js";import"/$bunfs/root/chunk-asz3893d.js";import"/$bunfs/root/chunk-yg7hj4df.js";import"/$bunfs/root/chunk-v96ev9bk.js";import"/$bunfs/root/chunk-vtvzrtws.js";import{Re}from"/$bunfs/root/chunk-2dxhgqgt.js";import{readFileSync as F}from"fs";import{readFile as M}from"fs/promises";import{join as b}from"path";var p=Re("/$bunfs/root/loopAutonomousPreamble-07qcyhv4.md");var y=Re("/$bunfs/root/loopAutonomousPreamblePersistent-3zqtkrvg.md");function c(){if(a.CLAUDE_CODE_LOOP_PERSISTENT)return!0;return x("tengu_kairos_loop_persistent",!1)}function L(){let e=c()?y:p,t=mGe({forCloudSession:Boolean(a.CLAUDE_CODE_REMOTE)});return t?`${e.trimEnd()}
+
+${t}
+`:e}function I(){i("tengu_kairos_loop_persistent_activated",{variant:c()})}function s(e=!1){if(!Ahe())return"";let o=!e&&c()?"newly blocked on a decision you won't make alone, you're ending the loop":"newly blocked on a decision you won't make alone, third straight tick with nothing to do, you're ending the loop";return`
+
+Use ${yI} when the loop can't move further without the user, or when something landed that they'd want to act on now: ${o}, or a major update arrived (CI went red, a review changes the plan). Progress you made yourself isn't a trigger \u2014 the transcript covers that. One ping per state, not per tick.`}function P(){return`# Autonomous loop tick
+
+Run the autonomous check using the loop instructions established earlier in this conversation. If you cannot find them, treat this as a no-op tick. The recurring cron will fire the next tick automatically \u2014 do not call ${kl} from this tick.${s()}`}function d(){let e=st(),t=p0(Ue(e),e),o=qU(),r=o?`send a brief status update for this tick via ${wp}`:"write a brief status update for this tick",n=t?`Immediately before re-arming, ${r}.`:`After re-arming, ${r}.`;return`
+
+If a ${Al} is armed (check ${Hw}), keep \`delaySeconds\` at 1200\u20131800s \u2014 the ${Al} is the wake signal and this is only the fallback heartbeat. If you were woken by a \`<task-notification>\`, handle the event before deciding whether to re-arm. ${n} ${hln({preArmStatus:t,briefMode:o})} To stop the loop, call ${kl} with \`stop: true\` and ${ug} the monitor (use ${Hw} to find its task ID if no longer in context).`}function N(){return`# Autonomous loop tick (dynamic pacing)
+
+Run the autonomous check using the loop instructions established earlier in this conversation. If you cannot find them, treat this as a no-op tick.
+
+You scheduled this tick via the ${kl} tool (not a recurring cron). To keep the loop alive, call ${kl} again this turn with \`prompt\` set to the literal sentinel \`${Rhe}\` and \`noop\` set to \`true\` if this tick changed nothing (or \`false\` if it did) \u2014 otherwise the loop ends after this tick.${d()}${s()}`}function _(e){return e===DNe||e===Rhe}function A(e,t){if(!_(t))return null;I();let o=t===Rhe?N():P();if(e.autonomousPreambleDelivered||e.lastLoopFileDelivered!==null)return o;return e.autonomousPreambleDelivered=!0,`${L()}
+
+---
+
+${o}`}var w="__autonomous_preamble__",D="<<loop.md>>",l="<<loop.md-dynamic>>";function q(){return`# /loop tick \u2014 loop.md tasks
+
+Work the tasks from the loop.md contents established earlier in this conversation. If you cannot find them, treat this as a no-op tick. The recurring cron will fire the next tick automatically \u2014 do not call ${kl} from this tick.${s(!0)}`}function j(){return`# /loop tick \u2014 loop.md tasks (dynamic pacing)
+
+Work the tasks from the loop.md contents established earlier in this conversation. If you cannot find them, treat this as a no-op tick.
+
+You scheduled this tick via the ${kl} tool (not a recurring cron). To keep the loop alive, call ${kl} again this turn with \`prompt\` set to the literal sentinel \`${l}\` and \`noop\` set to \`true\` if this tick changed nothing (or \`false\` if it did) \u2014 otherwise the loop ends after this tick.${d()}${s(!0)}`}function B(){return`# /loop tick \u2014 loop.md absent (dynamic pacing)
+
+loop.md is not currently present. Run the autonomous check using the loop instructions established earlier in this conversation.
+
+You scheduled this tick via the ${kl} tool (not a recurring cron). To keep the loop alive \u2014 and to pick up loop.md if it is recreated \u2014 call ${kl} again this turn with \`prompt\` set to the literal sentinel \`${l}\` and \`noop\` set to \`true\` if this tick changed nothing (or \`false\` if it did) \u2014 otherwise the loop ends after this tick.${d()}${s()}`}var h=25000;function U(e){if(e.length<=h)return e;let t=e.lastIndexOf(`
+`,h);return`${e.slice(0,t>0?t:h)}
+
+> WARNING: loop.md was truncated to ${h} bytes. Keep the task list concise.`}function W(){return k(S())??k(T())}function S(){return b($o()??wr(),".claude","loop.md")}function T(){return b(Se(),"loop.md")}function k(e){let t;try{t=F(e,"utf-8")}catch(o){return O(o)}return g(e,t)}async function u(e){let t;try{t=await M(e,"utf-8")}catch(o){return O(o)}return g(e,t)}function O(e){if(Rt(e)||v(e)==="EISDIR")return null;throw e}function g(e,t){let o=t.trim();if(o.length===0)return null;return{path:e,content:U(o)}}async function Y(e){let t=await u(S());if(t)return t;let o=T();if(!e)return u(o);let r=await e.read([xe.state("loop-file")]);if(!r.ok)return u(o);let n=r.value.items[0];if(!n.found)return null;return g(o,Buffer.from(n.value.buffer,n.value.byteOffset,n.value.byteLength).toString("utf-8"))}function m(e){return e===D||e===l}function H(e,t){if(!m(t))return null;return R(e,t,W())}async function z(e,t,o){if(!m(t))return null;return R(e,t,await Y(o))}function R(e,t,o){let r=t===l;if(o){let f=r?j():q();if(e.lastLoopFileDelivered===o.content)return f;return e.lastLoopFileDelivered=o.content,`# /loop tick \u2014 tasks from ${o.path}
+
+The user configured a loop-tasks file. Work through the tasks defined below; these are the instructions for this tick and every subsequent tick (the reminder on later fires refers back to this message).
+
+---
+
+${o.content}
+
+---
+
+${f}`}I();let n=r?B():P();if(e.lastLoopFileDelivered===w||e.autonomousPreambleDelivered)return n;return e.lastLoopFileDelivered=w,e.autonomousPreambleDelivered=!0,`${L()}
+
+---
+
+${n}`}function ye(e){return _(e)||m(e)}function we(e,t){return A(e,t)??H(e,t)??t}async function ke(e,t,o){return A(e,t)??await z(e,t,o)??t}export{l as LOOP_FILE_DYNAMIC_SENTINEL,D as LOOP_FILE_SENTINEL,L as getAutonomousLoopPreamble,ye as isLoopDefaultSentinel,m as isLoopFileSentinel,I as logAutonomousLoopActivation,Y as readLoopFileAsync,we as resolveLoopDefaultFire,ke as resolveLoopDefaultFireAsync};

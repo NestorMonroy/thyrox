@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.284
+import{mCe}from"/$bunfs/root/chunk-q3brtb9y.js";import{f}from"/$bunfs/root/chunk-k40f9rxb.js";import{mdr}from"/$bunfs/root/chunk-97eq9hxh.js";import{o,k,H,u,z,R}from"/$bunfs/root/chunk-fwjxbyrt.js";var BSt=1,c=64,l=/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/,s=f(()=>k().int().min(0).max(mdr)),m=f(()=>u({side:z(["laptop","container"]),gen:s(),tree:o().regex(l).nullable(),taken:s(),dirty:H(),shipping:s().nullable(),takes:H(),instance:o().regex(mCe),seq:k().int().min(0).max(mdr)})),p=["shipped","shipping","unchanged","deferred","kept_here","failed","not_running"],y=(n)=>o().max(n).regex(/^[a-z0-9_]+$/),d=f(()=>y(c)),S=f(()=>u({v:R(BSt),frame:m(),outcome:u({kind:z(p),reason:d().optional()}),ask_id:o().regex(mCe).optional()}));function jor(n){let r=S().safeParse(n);if(!r.success)return null;let{v:a,frame:e,outcome:t,ask_id:i}=r.data;if(e.side!=="laptop")return null;return{v:a,frame:e,outcome:{kind:t.kind,...t.reason!==void 0&&{reason:t.reason}},...i!==void 0&&{askId:i}}}function YQr(n){let r=d().safeParse(n.outcome.reason);return{v:n.v,frame:n.frame,outcome:{kind:n.outcome.kind,...r.success&&{reason:r.data}},...n.askId!==void 0&&{ask_id:n.askId}}}var g={frame:null,heardAt:null,stale:!0};function lAn(){let n=new Map,r=(e)=>`${e.source}:${e.name}`,a=(e)=>{let t=n.get(r(e));return t!==void 0&&t.servingEpoch===e.description?.epoch?t.value:void 0};return{of:a,file(e,t){let i=e.description?.epoch;if(i!==void 0)n.set(r(e),{servingEpoch:i,value:t(a(e))})}}}function XQr(){let n=lAn(),r=0;return{peer(a){let e=n.of(a);return e===void 0?g:{frame:e.frame,heardAt:e.heardAt,stale:e.era<r}},heard(a,e,t){n.file(a,(i)=>i===void 0||i.frame.instance!==e.instance||e.seq>i.frame.seq?{frame:e,heardAt:t,era:r}:i)},invalidateAll(){r+=1}}}function JQr({view:n,upTo:r,newest:a,laptopJournalUnread:e}){return e||n.stale||n.frame===null||!n.frame.takes||n.frame.taken>a||n.frame.taken<r}
+export{BSt,jor,YQr,lAn,XQr,JQr};

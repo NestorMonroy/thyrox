@@ -1,0 +1,14 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.284
+import"/$bunfs/root/chunk-37s48y77.js";import"/$bunfs/root/chunk-czwr6846.js";import"/$bunfs/root/chunk-31aa9k3a.js";import"/$bunfs/root/chunk-bz96yhka.js";import"/$bunfs/root/chunk-zy97v06w.js";import"/$bunfs/root/chunk-0j2vcydt.js";import"/$bunfs/root/chunk-k40f9rxb.js";import"/$bunfs/root/chunk-6v8fhz43.js";import"/$bunfs/root/chunk-8whxj5sg.js";import"/$bunfs/root/chunk-8zeg9165.js";import"/$bunfs/root/chunk-d37h8mav.js";import"/$bunfs/root/chunk-0pd7kjzx.js";import"/$bunfs/root/chunk-yr0jgjsq.js";import"/$bunfs/root/chunk-6b6gfk00.js";import{Ch}from"/$bunfs/root/chunk-7jxsf4cd.js";import"/$bunfs/root/chunk-k6n2tyj0.js";import"/$bunfs/root/chunk-320rdak1.js";import"/$bunfs/root/chunk-msjd5xeg.js";import"/$bunfs/root/chunk-h9xec3e4.js";import{Ds}from"/$bunfs/root/chunk-hf5rffkn.js";import"/$bunfs/root/chunk-2rw92xpq.js";import"/$bunfs/root/chunk-wt82nr44.js";import{fn}from"/$bunfs/root/chunk-q5gkv7dz.js";import{o3t}from"/$bunfs/root/chunk-pv7m70nq.js";import{Fv,fu,Iu,CI}from"/$bunfs/root/chunk-4eh5q9cs.js";import{Vu}from"/$bunfs/root/chunk-p27b6zy4.js";import{ZZe,n3t}from"/$bunfs/root/chunk-ycq9rh64.js";import"/$bunfs/root/chunk-bkqvdc3h.js";import"/$bunfs/root/chunk-1hs126es.js";import{spawn as E}from"child_process";import{closeSync as p}from"fs";import{constants as v}from"os";import{isatty as u}from"tty";function d(){for(let r=0;r<32;r++){if(r===1||r===2)continue;try{if(u(r))p(r)}catch{}}}async function B({proactivity:r}={}){if(await new Promise((e)=>setImmediate(e)),!await CI())return await fn("agent_launcher","relaunch_launcher_not_runnable"),process.stderr.write(`
+${Iu()??`${Fv}: launcher \`${fu()[0]}\` was deleted or is not executable \u2014 restore it (or fix the setting), then start claude again`}
+`),Ds(1);let{cmd:n,prefixArgs:c}=Vu(),s=process.argv.slice(2),t={...process.env};delete t[ZZe],Object.assign(t,n3t()),o3t();let i=E(n,[...c,...s],{stdio:"inherit",env:t});d();let a=["SIGINT","SIGTERM","SIGHUP"];for(let e of a)process.on(e,()=>{try{i.kill(e)}catch{}});return new Promise(()=>{i.on("close",(e,o)=>{let l=o?128+(v.signals[o]??0):0;process.exit(e??l)}),i.on("error",(e)=>{process.stderr.write(`Failed to relaunch Claude Code: ${e.message}
+`),Ch("relaunch_child_error"),process.exit(1)})})}export{B as execRelaunch};
