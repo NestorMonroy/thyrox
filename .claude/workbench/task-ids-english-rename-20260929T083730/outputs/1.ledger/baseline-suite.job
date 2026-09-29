@@ -1,0 +1,5 @@
+log=/home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.jobs/baseline-suite-20260929T093058/outputs/salida.log
+pid=7579
+proc_start=3781122
+cmd=bash -c /usr/bin/time -q -f %M\ %e\ %U\ %S -o /home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.jobs/baseline-suite-20260929T093058/outputs/salida.log.time bash tests/run.sh ; printf '%s%s\n' '__BG_EXIT__=' "$?" 
+marker=^__BG_EXIT__=[0-9]+
