@@ -3,13 +3,15 @@
 Parte de una copia del esquema real (sin filas) y simula dos sesiones que
 divergen desde la misma base; luego corre el driver real sobre las copias.
 """
-import pathlib, shutil, sqlite3, subprocess, sys, tempfile
+import atexit, pathlib, shutil, sqlite3, subprocess, sys, tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[4]
 STORE = ROOT / "agent-results" / "agent_store.sqlite3"
 DRIVER = ROOT / "bin" / "merge_sqlite_union"
 
 tmp = pathlib.Path(tempfile.mkdtemp(dir=pathlib.Path(__file__).parent))
+# La copia se retira también si la sonda falla a mitad: quedaba en el banco.
+atexit.register(shutil.rmtree, tmp, ignore_errors=True)
 base = tmp / "base.sqlite3"
 src = sqlite3.connect(f"file:{STORE}?mode=ro", uri=True)
 dst = sqlite3.connect(base)
@@ -45,4 +47,3 @@ print("driver exit", r.returncode, r.stderr.strip()[:200])
 m = sqlite3.connect(ours)
 print("a1 status tras merge:", m.execute("select status from agent_sessions where agent_id='a1'").fetchone(), "(el otro lado escribió 'completed')")
 print("hallazgos tras merge:", sorted(x for (x,) in m.execute("select finding_id from findings_history")), "(se escribieron H-OURS-1 y H-THEIRS-1)")
-shutil.rmtree(tmp)

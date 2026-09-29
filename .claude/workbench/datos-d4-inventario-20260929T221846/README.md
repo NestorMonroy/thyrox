@@ -269,7 +269,10 @@ SESSION_CLOSE: ¿PENDING_RST? no -> CLOSED
 
 ## 9. Cómo lo resuelve OmniRoute — leído en `omniroute@113de57b9`
 
-Leído del árbol versionado (`git show HEAD:<ruta>`), no del directorio de
+Evidencia en este banco: `omniroute-113de57b9/` guarda los fragmentos
+citados, extraídos con `git -c gc.auto=0 show HEAD:<ruta>` (el commit exacto
+está en `COMMIT`; OmniRoute es MIT). Así las citas de abajo se verifican sin
+ese clon. Leído del árbol versionado, no del directorio de
 trabajo: ese clon tiene 24 231 cambios sin commit en su índice, que no son de
 esta sesión y no se tocaron. Una lectura sin `-c gc.auto=0` disparó el
 empaquetado automático de git en ese clon; el contenido no cambia, y el resto
