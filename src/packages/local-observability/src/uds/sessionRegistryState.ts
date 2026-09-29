@@ -11,6 +11,7 @@
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 
+import { probeRegistrySweepPermitted } from './registrySweepPermission.ts'
 import { PerHost, createSignal, normalizeSessionName, processHost } from './sessionNameState.ts'
 
 /** `JM`: lo que un nombre tiene que haberse llevado para recordarse como anterior. */
@@ -42,7 +43,19 @@ export function stableAddressEnabled(): boolean {
   }
 }
 
-const processDeps: SessionRegistryDeps = { now: () => Date.now(), sessionId: () => getSessionId(), stableAddress: stableAddressEnabled }
+/**
+ * En producción, el sondeo de permiso de barrido es el real
+ * (`probeRegistrySweepPermitted`, `registrySweepPermission.ts`) — sin este
+ * cable, `isRegistrySweepPermitted()` resuelve SIEMPRE `false`
+ * (`?? Promise.resolve(false)` más abajo) y el barrido nunca borra un
+ * registro muerto fuera de una prueba con deps inyectadas.
+ */
+export const processSessionRegistryDeps: SessionRegistryDeps = {
+  now: () => Date.now(),
+  sessionId: () => getSessionId(),
+  stableAddress: stableAddressEnabled,
+  probeRegistrySweep: probeRegistrySweepPermitted,
+}
 
 /** `By`. */
 export class SessionRegistryState {
@@ -65,7 +78,7 @@ export class SessionRegistryState {
   registrySweepPermitted: Promise<boolean> | undefined = undefined
   readonly registeredNameChanged = createSignal<[]>()
 
-  constructor(private readonly deps: SessionRegistryDeps = processDeps) {}
+  constructor(private readonly deps: SessionRegistryDeps = processSessionRegistryDeps) {}
 
   setRegisteredName(name: string, source: string, givenAtLaunch?: boolean): void {
     const previous = this.registeredName

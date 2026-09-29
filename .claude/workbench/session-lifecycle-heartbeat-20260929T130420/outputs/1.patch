@@ -1,0 +1,275 @@
+diff --git a/src/packages/app-host/src/runtime/__tests__/sessionRegistryAtLaunchSweep.test.ts b/src/packages/app-host/src/runtime/__tests__/sessionRegistryAtLaunchSweep.test.ts
+new file mode 100644
+index 00000000..287cef86
+--- /dev/null
++++ b/src/packages/app-host/src/runtime/__tests__/sessionRegistryAtLaunchSweep.test.ts
+@@ -0,0 +1,84 @@
++/**
++ * TASK-THYROX-0504 — el barrido (`xut`/`sweepRegistry`) cableado en el
++ * arranque de `bin/cli`: `sessionRegistryAtLaunch.ts` ya no cuenta con
++ * `listAllLiveSessions().length` (una sustituta emparentada, pero distinta
++ * de lo que la referencia corre en este punto) sino con
++ * `sweepSessionRegistryAtLaunch`, que reenvía a la MISMA `sweepRegistry`
++ * que `chunk-bdv29443.js` invoca tras `KNt(E)` (`startSessionRegistration`).
++ *
++ * `sweepSessionRegistryAtLaunch` se prueba aquí con `RegistrySweepDeps`
++ * inyectadas —no vía el subproceso real de `sessionRegistryAtLaunch.e2e
++ * .test.ts`— porque `probeRegistrySweepPermitted` (el permiso real del
++ * barrido) exige `isInteractive()`, y ninguno de los dos caminos de ese
++ * arnés (`--chat` con stdin en pipe, `-p`) corre contra una TTY: en este
++ * contenedor la deleción real nunca sería observable desde ese subproceso,
++ * con o sin el cableado — no es un hueco de cobertura, es la propia
++ * conservadurería del barrido (nunca borra sin permiso).
++ */
++import { describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { sweepSessionRegistryAtLaunch } from '../sessionRegistryAtLaunch.ts'
++import type { RegistrySweepDeps } from '@thyrox/local-observability/uds/registrySweep.js'
++import { SessionRegistryState } from '@thyrox/local-observability/uds/sessionRegistryState.js'
++
++const DOMAIN = 'linux:m:ns'
++
++let dir: string
++function deps(dead: number[], alive: number[] = [], overrides: Partial<RegistrySweepDeps> = {}): RegistrySweepDeps {
++  const state = new SessionRegistryState({ now: () => 0, sessionId: () => 's', stableAddress: () => false, probeRegistrySweep: async () => true })
++  return {
++    sessionsDir: () => dir,
++    pid: 1,
++    platform: () => 'linux',
++    isInteractive: () => true,
++    homedir: () => '/home/u',
++    version: '2.0.0',
++    now: () => 61000,
++    isProcessGone: pid => dead.includes(pid),
++    isProcessAlive: pid => alive.includes(pid),
++    ownPidDomain: async () => DOMAIN,
++    sleep: async () => {},
++    log: () => {},
++    logEvent: () => {},
++    isEmbeddedEntrypoint: entrypoint => entrypoint === 'embedded',
++    state: () => state,
++    ...overrides,
++  }
++}
++
++describe('sessionRegistryAtLaunch.ts:countLiveSessions usa el código fuente de sweepSessionRegistryAtLaunch', () => {
++  test('el campo cablea sweepSessionRegistryAtLaunch(), no listAllLiveSessions().length', () => {
++    const source = readFileSync(join(import.meta.dir, '..', 'sessionRegistryAtLaunch.ts'), 'utf8')
++    expect(source).toContain('countLiveSessions: () => sweepSessionRegistryAtLaunch()')
++    expect(source).not.toContain('countLiveSessions: async () => (await listAllLiveSessions()).length')
++  })
++})
++
++describe('sweepSessionRegistryAtLaunch (TASK-THYROX-0504)', () => {
++  test('un registro de un pid muerto sembrado antes de arrancar desaparece tras el barrido', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'sweep-at-launch-'))
++    const deadPidFile = join(dir, '999999.json')
++    writeFileSync(deadPidFile, JSON.stringify({ pid: 999999, sessionId: 'dead', startedAt: 0, kind: 'interactive', pidDomain: DOMAIN }))
++
++    const live = await sweepSessionRegistryAtLaunch(deps([999999]))
++
++    expect(live).toBe(0)
++    expect(existsSync(deadPidFile)).toBe(false)
++    rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('cuenta las vivas y deja su registro intacto', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'sweep-at-launch-'))
++    const livePidFile = join(dir, '42.json')
++    writeFileSync(livePidFile, JSON.stringify({ pid: 42, sessionId: 'live', startedAt: 0, kind: 'interactive', pidDomain: DOMAIN }))
++
++    const live = await sweepSessionRegistryAtLaunch(deps([], [42]))
++
++    expect(live).toBe(1)
++    expect(existsSync(livePidFile)).toBe(true)
++    rmSync(dir, { recursive: true, force: true })
++  })
++})
+diff --git a/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts b/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+index 77c21361..fc3126d3 100644
+--- a/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
++++ b/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+@@ -23,9 +23,9 @@
+  * ejercitan — y las funciones caen a su lectura/escritura por sistema de
+  * archivos (`<config home>/sessions/<pid>.json`, vía `defaultSessionsDir`).
+  *
+- * DOS DIVERGENCIAS DECLARADAS, porque sus piezas de origen no tienen porte
+- * en este árbol (`git grep` sin resultados fuera de este docstring y del
+- * tipo que las declara):
++ * DOS DIVERGENCIAS DECLARADAS de TASK-THYROX-0503, porque sus piezas de
++ * origen no tienen porte en este árbol (`git grep` sin resultados fuera de
++ * este docstring y del tipo que las declara):
+  *
+  *   - `isSpareParked` (`OA` de la referencia): no hay sesión de reserva
+  *     portada que pueda estar «aparcada» en `bin/cli` — el concepto entero
+@@ -38,6 +38,58 @@
+  *     OTRAS sesiones lo sigue publicando `setTitle`/`cacheSessionTitle`; lo
+  *     que falta es sólo el reflejo cosmético en el banner de ESTA sesión.
+  *
++ * TASK-THYROX-0504 — latido, sesión de reserva y barrido, medidos contra
++ * 2.1.283 antes de cablear nada (`_references/claude-code-bin/2.1.283/
++ * bunfs-root/`), no asumidos desde la prosa del ítem:
++ *
++ *   - **El barrido queda cableado.** `countLiveSessions` ya no llama a
++ *     `listAllLiveSessions().length` (una sustituta emparentada, pero
++ *     distinta) — llama a `sweepSessionRegistryAtLaunch`, que reenvía a
++ *     `sweepRegistry` (`xut`/`registrySweep.ts`), la MISMA función que la
++ *     referencia invoca en este punto exacto: `chunk-bdv29443.js`, dentro
++ *     del `.then` que sigue a `KNt(E)` (`startSessionRegistration`):
++ *     `xut(E).then((T)=>{if(T>=2)i("tengu_concurrent_sessions",
++ *     {num_sessions:T})})`. `sweepRegistry` YA tenía un llamador de
++ *     producción distinto (`@thyrox/repl/tips/tipRegistry.ts`, la
++ *     relevancia del tip `color-when-multi-clauding` — porte fiel de la
++ *     MISMA `xut` que usa la referencia para ese tip, `chunk-30gw5pmc.js`),
++ *     así que lo que faltaba no era la función sino ESTE llamador. Cerrarlo
++ *     de verdad exigió además una segunda pieza, sin la cual el barrido
++ *     nunca borra nada: `SessionRegistryState`'s `probeRegistrySweep` no
++ *     estaba cableado a `probeRegistrySweepPermitted` en
++ *     `sessionRegistryState.ts`'s `processSessionRegistryDeps` —
++ *     `isRegistrySweepPermitted()` resolvía SIEMPRE `false`
++ *     (`?? Promise.resolve(false)`), así que ningún registro muerto se
++ *     retiraba en producción aunque el entorno lo permitiera. Ya wired.
++ *   - **La sesión de reserva YA tenía llamador de producción, sin tocar
++ *     nada.** `startSpareClaimPoll` (`spareSession.ts`) ya se invoca desde
++ *     `registerSession` (`sessionRegistration.ts`: `if (announcesSpare)
++ *     startSpareClaimPoll(storage, deps)`), y `registerSession` es lo que
++ *     `startSessionRegistration` —ya compuesto aquí como `deps.register`—
++ *     ejecuta. La condición (`announcesSpare`, que exige `kind === 'bg'` y
++ *     `THYROX_BG_SOURCE=spare`) rara vez se cumple en una sesión de
++ *     `bin/cli` corriente, pero el cableado existe y corre por este mismo
++ *     camino; no había nada que cablear de nuevo.
++ *   - **El latido NO se cablea aquí, y es una divergencia medida, no una
++ *     omisión.** En la referencia, `touchFleetViewHeartbeat`/
++ *     `clearFleetViewHeartbeat` (`jNr`/`WNr`, `fleetHeartbeat.ts`) tienen
++ *     UN solo llamador: el `load()`/cierre del store de FleetView
++ *     (`chunk-9d5amed5.js` — `load=async()=>{if(Ws()&&
++ *     x("tengu_fleetview_peers",!1))this.#e.touchFleetViewHeartbeat(...)`,
++ *     y `clearFleetViewHeartbeat` en el método de cierre del store), NO el
++ *     arranque de una sesión de `bin/cli`. Ese latido significa «el tablero
++ *     de FleetView está abierto y mirando» —lo consume `isWatchedFromFile`/
++ *     `isWatchedFromStorage`, que hoy no tienen NINGÚN llamador de
++ *     producción en este árbol (`git grep` sin resultados fuera de sus
++ *     propios tests): la función entera «fleetview peers» —su bandera
++ *     `tengu_fleetview_peers`, el chequeo `Ws()` y el consumidor— no está
++ *     portada. Tocarlo aquí marcaría CADA sesión lanzada como «siendo
++ *     observada», invirtiendo la semántica que el latido existe para
++ *     señalar. Su lugar, cuando se porte, es
++ *     `@thyrox/repl/screens/agentFleet/hooks/useFleetPolling.ts` (el poll
++ *     de FleetView ya portado, que hoy NO toca el latido) — fuera del
++ *     alcance de `@thyrox/app-host` y de este ítem.
++ *
+  * `adoptLoopSessionId` resuelve la otra mitad del ítem: el registro nace con
+  * el `sessionId` que trae `@thyrox/app-host/bootstrap/state.js` al arrancar
+  * (un id nuevo, aún sin relación con el bucle), y el bucle
+@@ -63,6 +115,7 @@ import { sessionKind } from '@thyrox/local-observability/uds/sessionKind.js'
+ import { sessionNameState } from '@thyrox/local-observability/uds/sessionNameState.js'
+ import { processRegistrationDeps, startSessionRegistration } from '@thyrox/local-observability/uds/sessionRegistration.js'
+ import { registeredSessionName, sessionRegistryState, stableAddressEnabled, whenSessionRegistered } from '@thyrox/local-observability/uds/sessionRegistryState.js'
++import { sweepRegistry, type RegistrySweepDeps } from '@thyrox/local-observability/uds/registrySweep.js'
+ import {
+   restoreSessionName as restoreSessionNamePorted,
+   runStartupNaming as runStartupNamingPorted,
+@@ -90,6 +143,18 @@ function buildRenameContext(): RenameContext {
+   }
+ }
+ 
++/**
++ * `xut`: el barrido que la referencia corre justo tras un registro exitoso
++ * (`chunk-bdv29443.js`, dentro del `.then` de `KNt(E)`:
++ * `xut(E).then((T)=>{if(T>=2)i("tengu_concurrent_sessions",{num_sessions:T})})`).
++ * Envuelto para que `countLiveSessions` lo cite por identidad y una prueba
++ * pueda inyectarle `RegistrySweepDeps` —`sweepRegistry()` a secas no admite
++ * eso porque su segundo parámetro es opcional y aquí se reenvía.
++ */
++export function sweepSessionRegistryAtLaunch(deps?: RegistrySweepDeps): Promise<number> {
++  return sweepRegistry(undefined, deps)
++}
++
+ /**
+  * Da de alta esta sesión de `bin/cli` en el registro y le fija su nombre.
+  * `sessionNameArg` es `--name` (si la CLI lo admite) o `THYROX_CODE_SESSION_NAME`.
+@@ -121,7 +186,7 @@ export async function registerSessionAtLaunch(sessionNameArg?: string): Promise<
+     currentTitle: sessionId => getCurrentSessionTitle(asSessionId(sessionId)),
+     setTitle: title => cacheSessionTitle(title),
+     setAgentName: () => {},
+-    countLiveSessions: async () => (await listAllLiveSessions()).length,
++    countLiveSessions: () => sweepSessionRegistryAtLaunch(),
+     emit: (event, data) => logEvent(event, data),
+   }
+   await registerAtLaunch(launchDeps)
+diff --git a/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts b/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts
+index 80334440..19431d0a 100644
+--- a/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts
++++ b/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts
+@@ -12,10 +12,12 @@ import {
+   MAX_FORMER_NAMES,
+   SessionRegistryState,
+   heldSessionNames,
++  processSessionRegistryDeps,
+   registeredSessionName,
+   sessionRegistryState,
+   whenSessionRegistered,
+ } from '../src/uds/sessionRegistryState.ts'
++import { probeRegistrySweepPermitted } from '../src/uds/registrySweepPermission.ts'
+ 
+ let clock: number
+ let sessionId: string
+@@ -155,6 +157,13 @@ describe('el resto del estado', () => {
+     expect(probes).toBe(1)
+   })
+ 
++  test('el sondeo de permiso de barrido en producción es el probe real, no un false fijo (TASK-THYROX-0504)', () => {
++    // Sin este cableado, `isRegistrySweepPermitted()` de una sesión real
++    // resuelve SIEMPRE false (`sessionRegistryState.ts`: `probeRegistrySweep?.() ?? Promise.resolve(false)`)
++    // y el barrido nunca borra nada en producción, aunque el entorno lo permita.
++    expect(processSessionRegistryDeps.probeRegistrySweep).toBe(probeRegistrySweepPermitted)
++  })
++
+   test('el valor inicial de cada campo es el de la referencia', () => {
+     expect([state.adoptions, state.restores, state.registered, state.bornSpare, state.registration, state.liveSessionId, state.restoreSetAsideName, state.spareClaimPoll]).toEqual([0, 0, false, false, undefined, undefined, undefined, undefined])
+   })
+diff --git a/src/packages/local-observability/src/uds/sessionRegistryState.ts b/src/packages/local-observability/src/uds/sessionRegistryState.ts
+index 3148ab52..df27ec0e 100644
+--- a/src/packages/local-observability/src/uds/sessionRegistryState.ts
++++ b/src/packages/local-observability/src/uds/sessionRegistryState.ts
+@@ -11,6 +11,7 @@
+ import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+ 
++import { probeRegistrySweepPermitted } from './registrySweepPermission.ts'
+ import { PerHost, createSignal, normalizeSessionName, processHost } from './sessionNameState.ts'
+ 
+ /** `JM`: lo que un nombre tiene que haberse llevado para recordarse como anterior. */
+@@ -42,7 +43,19 @@ export function stableAddressEnabled(): boolean {
+   }
+ }
+ 
+-const processDeps: SessionRegistryDeps = { now: () => Date.now(), sessionId: () => getSessionId(), stableAddress: stableAddressEnabled }
++/**
++ * En producción, el sondeo de permiso de barrido es el real
++ * (`probeRegistrySweepPermitted`, `registrySweepPermission.ts`) — sin este
++ * cable, `isRegistrySweepPermitted()` resuelve SIEMPRE `false`
++ * (`?? Promise.resolve(false)` más abajo) y el barrido nunca borra un
++ * registro muerto fuera de una prueba con deps inyectadas.
++ */
++export const processSessionRegistryDeps: SessionRegistryDeps = {
++  now: () => Date.now(),
++  sessionId: () => getSessionId(),
++  stableAddress: stableAddressEnabled,
++  probeRegistrySweep: probeRegistrySweepPermitted,
++}
+ 
+ /** `By`. */
+ export class SessionRegistryState {
+@@ -65,7 +78,7 @@ export class SessionRegistryState {
+   registrySweepPermitted: Promise<boolean> | undefined = undefined
+   readonly registeredNameChanged = createSignal<[]>()
+ 
+-  constructor(private readonly deps: SessionRegistryDeps = processDeps) {}
++  constructor(private readonly deps: SessionRegistryDeps = processSessionRegistryDeps) {}
+ 
+   setRegisteredName(name: string, source: string, givenAtLaunch?: boolean): void {
+     const previous = this.registeredName

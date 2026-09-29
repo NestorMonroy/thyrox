@@ -23,9 +23,9 @@
  * ejercitan — y las funciones caen a su lectura/escritura por sistema de
  * archivos (`<config home>/sessions/<pid>.json`, vía `defaultSessionsDir`).
  *
- * DOS DIVERGENCIAS DECLARADAS, porque sus piezas de origen no tienen porte
- * en este árbol (`git grep` sin resultados fuera de este docstring y del
- * tipo que las declara):
+ * DOS DIVERGENCIAS DECLARADAS de TASK-THYROX-0503, porque sus piezas de
+ * origen no tienen porte en este árbol (`git grep` sin resultados fuera de
+ * este docstring y del tipo que las declara):
  *
  *   - `isSpareParked` (`OA` de la referencia): no hay sesión de reserva
  *     portada que pueda estar «aparcada» en `bin/cli` — el concepto entero
@@ -37,6 +37,58 @@
  *     `@thyrox/app-host`. Se cablea como no-op: el nombre persistido para
  *     OTRAS sesiones lo sigue publicando `setTitle`/`cacheSessionTitle`; lo
  *     que falta es sólo el reflejo cosmético en el banner de ESTA sesión.
+ *
+ * TASK-THYROX-0504 — latido, sesión de reserva y barrido, medidos contra
+ * 2.1.283 antes de cablear nada (`_references/claude-code-bin/2.1.283/
+ * bunfs-root/`), no asumidos desde la prosa del ítem:
+ *
+ *   - **El barrido queda cableado.** `countLiveSessions` ya no llama a
+ *     `listAllLiveSessions().length` (una sustituta emparentada, pero
+ *     distinta) — llama a `sweepSessionRegistryAtLaunch`, que reenvía a
+ *     `sweepRegistry` (`xut`/`registrySweep.ts`), la MISMA función que la
+ *     referencia invoca en este punto exacto: `chunk-bdv29443.js`, dentro
+ *     del `.then` que sigue a `KNt(E)` (`startSessionRegistration`):
+ *     `xut(E).then((T)=>{if(T>=2)i("tengu_concurrent_sessions",
+ *     {num_sessions:T})})`. `sweepRegistry` YA tenía un llamador de
+ *     producción distinto (`@thyrox/repl/tips/tipRegistry.ts`, la
+ *     relevancia del tip `color-when-multi-clauding` — porte fiel de la
+ *     MISMA `xut` que usa la referencia para ese tip, `chunk-30gw5pmc.js`),
+ *     así que lo que faltaba no era la función sino ESTE llamador. Cerrarlo
+ *     de verdad exigió además una segunda pieza, sin la cual el barrido
+ *     nunca borra nada: `SessionRegistryState`'s `probeRegistrySweep` no
+ *     estaba cableado a `probeRegistrySweepPermitted` en
+ *     `sessionRegistryState.ts`'s `processSessionRegistryDeps` —
+ *     `isRegistrySweepPermitted()` resolvía SIEMPRE `false`
+ *     (`?? Promise.resolve(false)`), así que ningún registro muerto se
+ *     retiraba en producción aunque el entorno lo permitiera. Ya wired.
+ *   - **La sesión de reserva YA tenía llamador de producción, sin tocar
+ *     nada.** `startSpareClaimPoll` (`spareSession.ts`) ya se invoca desde
+ *     `registerSession` (`sessionRegistration.ts`: `if (announcesSpare)
+ *     startSpareClaimPoll(storage, deps)`), y `registerSession` es lo que
+ *     `startSessionRegistration` —ya compuesto aquí como `deps.register`—
+ *     ejecuta. La condición (`announcesSpare`, que exige `kind === 'bg'` y
+ *     `THYROX_BG_SOURCE=spare`) rara vez se cumple en una sesión de
+ *     `bin/cli` corriente, pero el cableado existe y corre por este mismo
+ *     camino; no había nada que cablear de nuevo.
+ *   - **El latido NO se cablea aquí, y es una divergencia medida, no una
+ *     omisión.** En la referencia, `touchFleetViewHeartbeat`/
+ *     `clearFleetViewHeartbeat` (`jNr`/`WNr`, `fleetHeartbeat.ts`) tienen
+ *     UN solo llamador: el `load()`/cierre del store de FleetView
+ *     (`chunk-9d5amed5.js` — `load=async()=>{if(Ws()&&
+ *     x("tengu_fleetview_peers",!1))this.#e.touchFleetViewHeartbeat(...)`,
+ *     y `clearFleetViewHeartbeat` en el método de cierre del store), NO el
+ *     arranque de una sesión de `bin/cli`. Ese latido significa «el tablero
+ *     de FleetView está abierto y mirando» —lo consume `isWatchedFromFile`/
+ *     `isWatchedFromStorage`, que hoy no tienen NINGÚN llamador de
+ *     producción en este árbol (`git grep` sin resultados fuera de sus
+ *     propios tests): la función entera «fleetview peers» —su bandera
+ *     `tengu_fleetview_peers`, el chequeo `Ws()` y el consumidor— no está
+ *     portada. Tocarlo aquí marcaría CADA sesión lanzada como «siendo
+ *     observada», invirtiendo la semántica que el latido existe para
+ *     señalar. Su lugar, cuando se porte, es
+ *     `@thyrox/repl/screens/agentFleet/hooks/useFleetPolling.ts` (el poll
+ *     de FleetView ya portado, que hoy NO toca el latido) — fuera del
+ *     alcance de `@thyrox/app-host` y de este ítem.
  *
  * `adoptLoopSessionId` resuelve la otra mitad del ítem: el registro nace con
  * el `sessionId` que trae `@thyrox/app-host/bootstrap/state.js` al arrancar
@@ -63,6 +115,7 @@ import { sessionKind } from '@thyrox/local-observability/uds/sessionKind.js'
 import { sessionNameState } from '@thyrox/local-observability/uds/sessionNameState.js'
 import { processRegistrationDeps, startSessionRegistration } from '@thyrox/local-observability/uds/sessionRegistration.js'
 import { registeredSessionName, sessionRegistryState, stableAddressEnabled, whenSessionRegistered } from '@thyrox/local-observability/uds/sessionRegistryState.js'
+import { sweepRegistry, type RegistrySweepDeps } from '@thyrox/local-observability/uds/registrySweep.js'
 import {
   restoreSessionName as restoreSessionNamePorted,
   runStartupNaming as runStartupNamingPorted,
@@ -88,6 +141,18 @@ function buildRenameContext(): RenameContext {
     pid: process.pid,
     log: (message, level) => logForDebugging(message, { level }),
   }
+}
+
+/**
+ * `xut`: el barrido que la referencia corre justo tras un registro exitoso
+ * (`chunk-bdv29443.js`, dentro del `.then` de `KNt(E)`:
+ * `xut(E).then((T)=>{if(T>=2)i("tengu_concurrent_sessions",{num_sessions:T})})`).
+ * Envuelto para que `countLiveSessions` lo cite por identidad y una prueba
+ * pueda inyectarle `RegistrySweepDeps` —`sweepRegistry()` a secas no admite
+ * eso porque su segundo parámetro es opcional y aquí se reenvía.
+ */
+export function sweepSessionRegistryAtLaunch(deps?: RegistrySweepDeps): Promise<number> {
+  return sweepRegistry(undefined, deps)
 }
 
 /**
@@ -121,7 +186,7 @@ export async function registerSessionAtLaunch(sessionNameArg?: string): Promise<
     currentTitle: sessionId => getCurrentSessionTitle(asSessionId(sessionId)),
     setTitle: title => cacheSessionTitle(title),
     setAgentName: () => {},
-    countLiveSessions: async () => (await listAllLiveSessions()).length,
+    countLiveSessions: () => sweepSessionRegistryAtLaunch(),
     emit: (event, data) => logEvent(event, data),
   }
   await registerAtLaunch(launchDeps)

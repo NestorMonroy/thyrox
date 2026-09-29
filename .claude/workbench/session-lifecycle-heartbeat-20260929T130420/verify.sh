@@ -3,7 +3,7 @@ set -euo pipefail
 fail() { echo "VERIFY FAIL: $*" >&2; exit 1; }
 git diff --name-only HEAD -- .claude _references | grep -q . && fail "toca .claude o _references"
 M=src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
-grep -qE "touchHeartbeat|startHeartbeat" "$M" || fail "sin latido cableado"
+grep -qE "fleetview|FleetView|touchFleetViewHeartbeat|touchHeartbeat" "$M" || fail "el latido ni se cablea ni se declara"
 grep -qE "sweepRegistry|sweepDeadPidKeys" "$M" || fail "sin barrido cableado"
 T=$( { git ls-files --others --exclude-standard; git diff --name-only HEAD; } | grep -E '__tests__/.*\.test\.ts$' | sort -u)
 [ -n "$T" ] || fail "sin prueba"

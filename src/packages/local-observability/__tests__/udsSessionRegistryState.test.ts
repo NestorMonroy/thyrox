@@ -12,10 +12,12 @@ import {
   MAX_FORMER_NAMES,
   SessionRegistryState,
   heldSessionNames,
+  processSessionRegistryDeps,
   registeredSessionName,
   sessionRegistryState,
   whenSessionRegistered,
 } from '../src/uds/sessionRegistryState.ts'
+import { probeRegistrySweepPermitted } from '../src/uds/registrySweepPermission.ts'
 
 let clock: number
 let sessionId: string
@@ -153,6 +155,13 @@ describe('el resto del estado', () => {
     expect(await probing.isRegistrySweepPermitted()).toBe(true)
     expect(await probing.isRegistrySweepPermitted()).toBe(true)
     expect(probes).toBe(1)
+  })
+
+  test('el sondeo de permiso de barrido en producción es el probe real, no un false fijo (TASK-THYROX-0504)', () => {
+    // Sin este cableado, `isRegistrySweepPermitted()` de una sesión real
+    // resuelve SIEMPRE false (`sessionRegistryState.ts`: `probeRegistrySweep?.() ?? Promise.resolve(false)`)
+    // y el barrido nunca borra nada en producción, aunque el entorno lo permita.
+    expect(processSessionRegistryDeps.probeRegistrySweep).toBe(probeRegistrySweepPermitted)
   })
 
   test('el valor inicial de cada campo es el de la referencia', () => {
