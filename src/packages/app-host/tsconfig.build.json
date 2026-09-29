@@ -62,6 +62,9 @@
       "@thyrox/app-host/state/store.js": [
         "./src/state/store.ts"
       ],
+      "@thyrox/app-host/state/refusalFallbackRestore.js": [
+        "./src/state/refusalFallbackRestore.ts"
+      ],
       "@thyrox/app-host/state/AppState.js": [
         "./src/state/AppState.tsx"
       ],
@@ -136,6 +139,12 @@
       ],
       "@thyrox/app-host/runtime/bootstrap.js": [
         "./src/runtime/bootstrap.ts"
+      ],
+      "@thyrox/app-host/runtime/sessionRegistryAtLaunch.js": [
+        "./src/runtime/sessionRegistryAtLaunch.ts"
+      ],
+      "@thyrox/app-host/runtime/messagingInboxAtLaunch.js": [
+        "./src/runtime/messagingInboxAtLaunch.ts"
       ],
       "@thyrox/app-host/runtime/commandRegistryRuntime.js": [
         "./src/runtime/commandRegistryRuntime.ts"
