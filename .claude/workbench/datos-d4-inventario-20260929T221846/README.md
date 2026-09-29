@@ -200,6 +200,11 @@ migraciones se decide después.
 
 ### El criterio de orden de D4-A: `updated_at` hoy no lo es — medido
 
+> **Reemplazado por §10.** La conclusión sobre `updated_at` se mantiene. La
+> propuesta de una revisión lógica como árbitro no: un contador no representa
+> causalidad entre copias paralelas, y lo que decide es el merge de tres vías
+> contra el ancestro.
+
 `updated-at-resolution.txt`:
 
 | Tabla | Formato | Valores repetidos |
@@ -325,3 +330,119 @@ de lecturas lo desactivaron.
 *Ciega a:* cómo se comportan esas rutas en ejecución (no se ejecutó
 OmniRoute), y a mecanismos de sincronización que vivan fuera de `src/lib/sync`
 y `src/app/api/db-backups`.
+
+## 10. Contrato de D4-A: merge de tres vías con conflictos explícitos (2026-09-29)
+
+Reemplaza el criterio de §7. La corrección que lo cambia: **un contador de
+revisión local no representa causalidad entre dos copias que evolucionaron en
+paralelo.**
+
+```text
+base: rev 11
+A:    11 → 12 → 13
+B:    11 → 12            (otro cambio)
+«13 > 12 → gana A» supone que A incluye a B, y A nunca vio a B:
+el cambio de B se pierde sin conflicto.
+```
+
+La igualdad de revisión sólo detecta el caso en que los dos lados hicieron el
+mismo número de ediciones. Lo que decide es el **ancestro común**, y git ya
+lo entrega: el driver `merge=sqlite-union` recibe `<ancestro> <nuestro>
+<suyo>`, y hoy `merge_sqlite_union.py` recibe el ancestro y no lo usa (lo
+declara su docstring).
+
+### La propiedad no es «determinista»: es «sin pérdida silenciosa»
+
+«Merge determinista» sugiere que siempre sale una fila ganadora, y no es eso.
+La propiedad es una **reconciliación de tres vías con conflictos
+explícitos**: si puede probar qué cambio aplicar, lo aplica; si los dos lados
+cambiaron de forma incompatible, no inventa ganador, declara el conflicto y
+conserva las dos versiones.
+
+### Tres clases de campo, declaradas por tabla
+
+| Clase | Qué es | Entra en el hash de dominio |
+|---|---|---|
+| identidad | la clave global de la fila (`agent_id`, `(task_id, session_id)`, `finding_id`) | no: es lo que empareja las filas |
+| contenido de dominio | lo que la fila afirma: estado, sujeto, cuerpo, severidad… | **sí** |
+| contabilidad | `revision`, `updated_at`, metadatos de migración y de merge | **no** |
+
+La clasificación se declara por tabla, junto al esquema. Así no se decide
+caso por caso. Si el hash incluyera la contabilidad, dos ediciones idénticas
+con distinto `updated_at` darían un conflicto falso.
+
+`domain_hash(fila) = sha256(JSON canónico de los campos de contenido)`
+
+### Tabla de decisión, por fila, emparejada por identidad
+
+| Base → nuestro | Base → suyo | Resultado |
+|---|---|---|
+| igual | igual | sin cambio |
+| cambió | igual | nuestro |
+| igual | cambió | suyo |
+| cambió | cambió, mismo `domain_hash` | la misma modificación, sin conflicto |
+| cambió | cambió, `domain_hash` distinto | **CONFLICTO** |
+| no existía | sólo un lado inserta | insertar |
+| no existía | los dos insertan el mismo contenido | insertar una vez |
+| no existía | los dos insertan contenido distinto con la misma identidad | **CONFLICTO** |
+| existía | un lado la borra y el otro no la cambió | borrar |
+| existía | un lado la borra y el otro la cambió | **CONFLICTO** |
+
+«Cambió» significa `domain_hash` distinto del de la base, no `revision`
+distinta.
+
+### El papel de `revision`, acotado
+
+Queda como metadato de evolución local: observabilidad, depuración, detectar
+anomalías y, dentro de una autoridad única (D4-B), concurrencia optimista.
+**No elige ganador entre copias independientes.** Tampoco `updated_at`, que
+es sólo observabilidad (§7 midió que hoy no es un orden fiable).
+
+### Identidad
+
+Toda tabla que viaja entre sesiones tiene identidad global estable.
+`findings_history` se empareja por `finding_id`, nunca por su `id
+AUTOINCREMENT` local. Eso elimina la colisión y la pérdida del `OR IGNORE`
+a la vez.
+
+### Informe del driver
+
+Por tabla: idénticas, insertadas, actualizadas, borradas y conflictos, con la
+identidad de cada conflicto. Ningún conflicto real puede degradarse en
+silencio a elegir un ganador.
+
+### Respaldo
+
+- **Merge por git:** ancestro, nuestro y suyo ya viven como objetos de git y
+  se pueden recuperar. No hace falta copiarlos, pero el driver no reemplaza
+  su salida hasta tener un resultado válido.
+- **Fuera de git** (`merge_stores.py`, migraciones, importaciones,
+  mantenimiento): no hay tres versiones protegidas. Ahí sí se hace respaldo,
+  luego la operación, luego `integrity_check`, y sólo entonces se publica.
+  Se enlaza con TASK #295.
+
+### Casos TDD obligatorios
+
+1. **El contraejemplo de la revisión:** base con `status = running` (rev 11);
+   nuestro `completed` (rev 13, tras dos ediciones), suyo `cancelled` (rev
+   12). Tiene que dar **CONFLICTO**, no «gana nuestro». Protege contra que
+   alguien vuelva a `max(revision)`.
+2. **Misma modificación, contabilidad distinta:** base `running`; nuestro
+   `completed` (rev 12, `updated_at` X); suyo `completed` (rev 15,
+   `updated_at` Y). Tiene que dar **sin conflicto**. Prueba que la
+   contabilidad está fuera del hash.
+3. Los dos de §4 (actualización perdida y colisión de `id`), ahora en verde,
+   con el control que ya existe.
+4. Borrado contra cambio: CONFLICTO.
+
+Y un control de anulación por mitad de juicio: sin el ancestro (tratando la
+base como vacía), cae el caso 1; con la contabilidad dentro del hash, cae el
+caso 2.
+
+### Por qué esto refuerza D4-B
+
+Esta complejidad existe porque cada sesión escribe su copia y la causalidad
+se reconstruye después, con git. Con una autoridad durable común, las
+escrituras de `agent_sessions` y `tasks` las serializa la autoridad y no hay
+merge entre sesiones. D4-A es la corrección necesaria de la topología de hoy;
+D4-B estudia cómo dejar de necesitarla.
