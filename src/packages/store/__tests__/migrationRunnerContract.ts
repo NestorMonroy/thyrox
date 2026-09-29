@@ -88,7 +88,7 @@ const LEGACY_LEDGER_MIGRATIONS: readonly Migration[] = [
     name: 'seq_insert_v2',
     // depende de que 'seq' ya exista: si el runner re-ejecutara la versión 1
     // adoptada, la CREATE TABLE sin IF NOT EXISTS fallaría antes de llegar aquí.
-    statements: { sqlite: [`INSERT INTO seq (id) VALUES (2)`], postgres: [`INSERT INTO seq (id) VALUES (2)`] },
+    statements: { sqlite: [`INSERT INTO seq (id) VALUES (2)`], postgres: [`INSERT INTO seq (id) OVERRIDING SYSTEM VALUE VALUES (2)`] },
   },
 ]
 
