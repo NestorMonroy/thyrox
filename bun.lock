@@ -673,6 +673,10 @@
         "zod": "^4.3.6",
       },
     },
+    "src/packages/shared-state": {
+      "name": "@thyrox/shared-state",
+      "version": "0.1.0",
+    },
     "src/packages/shell": {
       "name": "@thyrox/shell",
       "version": "0.1.0",
@@ -1273,6 +1277,8 @@
     "@thyrox/ripgrep-napi": ["@thyrox/ripgrep-napi@workspace:src/packages/ripgrep-napi"],
 
     "@thyrox/server": ["@thyrox/server@workspace:src/packages/server"],
+
+    "@thyrox/shared-state": ["@thyrox/shared-state@workspace:src/packages/shared-state"],
 
     "@thyrox/shell": ["@thyrox/shell@workspace:src/packages/shell"],
 

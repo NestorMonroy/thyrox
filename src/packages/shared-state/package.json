@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/shared-state",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Estado compartido en caliente entre instancias del proxy: leases, ventanas de conteo y valores con TTL.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  }
+}

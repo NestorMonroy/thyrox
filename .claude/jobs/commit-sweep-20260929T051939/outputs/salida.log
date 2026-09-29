@@ -244,3 +244,5 @@ check_product_word: 0 archivo(s) con deuda nueva; 1549 aparición(es) del produc
 check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 288 archivo(s))
 checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1818 lectura(s) en 3945 archivo(s) de producción — propias 782, proveedor 94, cliente ajeno 18, sin prefijo 924)
 checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 133 congelada(s), 0 obsoleta(s) (alcance medido: 323 variable(s) propia(s), 2005 archivo(s) de prueba)
+claves leidas del entorno: 448 | declaradas: 464 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 20 clave(s) en 1 archivo(s) ignorado(s), 473 declarada(s) en .env.example)
