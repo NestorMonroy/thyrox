@@ -121,12 +121,22 @@ def declared_wiring(root: Path | None = None,
     #   register_session  0 — el mecanismo ya lee AGENT_STORE_CLAUDE_DIR (:713)
     #   measure_delta     --repo <n>=<ruta> (de `reach`) y --results-dir
     #   save_result       --log-dir
+    #
+    # Todo comando Python va por su envoltorio de `bin/`, nunca por `python3
+    # <ruta>.py` directo. H-THYROX-268: `declared_wiring` invocaba el `.py` sin
+    # `PYTHONPATH`, y bajo el entorno del cliente —que no lo declara— eso
+    # muere con `ModuleNotFoundError` (`agents`/`hooks`) en cuanto el modulo
+    # importa otro paquete del arbol. El envoltorio resuelve `THYROX_ROOT`, el
+    # interprete del proveedor y `PYTHONPATH` por si mismo
+    # (`src/session/generate_bin.py`), asi que invocarlo por su nombre corto
+    # es correcto pase lo que pase con las importaciones internas del modulo.
     agentes = f"{base}/src/agents"
+    binroot = f"{base}/bin"
     resultados = f"{consumer}/.claude/agent-results"
     repos = " ".join(f"--repo {nombre}={ruta}"
                      for nombre, ruta in sorted(reach().items()))
-    delta = f"python3 {agentes}/measure_delta.py"
-    registro = f"python3 {agentes}/register_session.py"
+    delta = f"bash {binroot}/measure_delta"
+    registro = f"bash {binroot}/register_session"
     return {
         "hooks": {
             "SubagentStart": [{"hooks": [
@@ -141,8 +151,11 @@ def declared_wiring(root: Path | None = None,
             # aqui seria otra fuente de verdad del hogar.
             "SessionStart": [{
                 "matcher": "compact",
-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
-                              f"{base}/src/hooks/compact_context.py "
+                # Por su envoltorio de `bin/` (H-THYROX-268): sin él, y sin el
+                # `PYTHONPATH` que este comando antes anteponia a mano, el
+                # `.py` muere por `ModuleNotFoundError` bajo el entorno del
+                # cliente, que no lo declara.
+                "hooks": [cmd(f"bash {binroot}/compact_context "
                               + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
                               timeout=20)],
             }, {
@@ -165,11 +178,14 @@ def declared_wiring(root: Path | None = None,
             # mide; el preflight descarta en proceso lo que no le toca.
             "PreToolUse": [{
                 "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
-                # El PYTHONPATH va en el comando: el hook corre desde el cwd de
-                # la sesion y sin el entorno del corredor, y sin el cuatro de
-                # los diecisiete detectores no cargaban (su suite lo mide).
-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
-                              f"{base}/src/hooks/tool_use_preflight.py",
+                # El envoltorio de `bin/` resuelve el `PYTHONPATH`: el hook
+                # corre desde el cwd de la sesion y sin el entorno del
+                # corredor, y sin el cuatro de los diecisiete detectores no
+                # cargaban (su suite lo mide). Antes este comando anteponia
+                # `PYTHONPATH={base}/src` a mano; el mismo defecto que dejaba
+                # sin PYTHONPATH a `task_lifecycle`/`register_session` podia
+                # repetirse aqui por el mismo camino (H-THYROX-268).
+                "hooks": [cmd(f"bash {binroot}/tool_use_preflight",
                               timeout=10)],
             }],
             "SubagentStop": [{"hooks": [
@@ -187,11 +203,18 @@ def declared_wiring(root: Path | None = None,
             # Sin esto, `mint_created_card` tenia CERO invocadores de
             # produccion y la cita durable se acuñaba a mano y a posteriori,
             # que es justo lo que TASK-DOCS-0404 existe para cerrar.
+            #
+            # Por su envoltorio de `bin/`, no por `python3 <ruta>.py`: el
+            # modulo importa `agents.agents_paths` y `task.board_sync`, y
+            # sin `PYTHONPATH` esas importaciones mueren con
+            # `ModuleNotFoundError` en cuanto el cliente lo invoca por ruta
+            # (H-THYROX-268 — 289 tarjetas y 26 subagentes reconciliados a
+            # mano en la sesion que lo destapo).
             "TaskCreated": [{"hooks": [
-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+                cmd(f"bash {binroot}/task_lifecycle"),
             ]}],
             "TaskCompleted": [{"hooks": [
-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
+                cmd(f"bash {binroot}/task_lifecycle"),
             ]}],
         },
         "advisorModel": advisor or DEFAULT_ADVISOR,

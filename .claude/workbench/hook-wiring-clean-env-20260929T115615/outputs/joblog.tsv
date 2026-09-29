@@ -1,1 +1,2 @@
 Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790684175.019	  1039.487	0	0	0	0	_headless_item 1 'Cableado de hooks sin PYTHONPATH heredado (H-THYROX-268): src/session/user_wiring.py, tests/session/test_user_wiring.py'
