@@ -39,6 +39,7 @@ import { flag, hasFlag } from './flags.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
 import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
 
 /**
  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
@@ -220,71 +221,79 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
   const prompt = flag(argv, 'prompt')
   const style = outputStyleOf(argv)
   const { shared, modelo } = loopSetup(argv, cwd, transcriptDir)
+  // El buzon arranca ANTES del registro y del primer turno: su env
+  // (THYROX_CODE_MESSAGING_SOCKET) tiene que estar exportado antes de que
+  // cualquier hook SessionStart pueda hacer un snapshot de process.env.
+  const stopMessaging = await startMessagingInboxAtLaunch(flag(argv, 'messaging-socket-path'))
   // Publica sessions/<pid>.json ANTES del primer turno: quien lista
   // sesiones ve ésta desde que arranca, no sólo tras la primera respuesta.
   await registerSessionAtLaunch(flag(argv, 'name') ?? process.env.THYROX_CODE_SESSION_NAME)
 
-  /** Un turno completo: dibuja su flujo y devuelve su resultado. */
-  const runTurn = async (texto: string, resume: string | undefined) => {
-    const gen = streamLoop({ ...shared, prompt: texto, resume })
-    /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
-    const drawnByDelta = new Set<number>()
-    let turn = 0
-    let usage: Usage = { ...USAGE_CERO }
-    let step = await gen.next()
-    while (!step.done) {
-      const e = step.value
-      if (e.type === 'turn_start') turn = e.turn
-      if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
-      if (e.type === 'done') usage = e.result.usage
-      // El `--json` final y el flujo `json` son cosas distintas: el primero
-      // imprime el resultado, el segundo la conversación entera.
-      if (!(hasFlag(argv, 'json') && style !== 'json')) {
-        // El delta se escribe SIN salto de línea y marca el turno como ya
-        // dibujado, para que su `text` no lo repita. Sin esa marca el usuario
-        // leería la misma respuesta dos veces.
-        if (e.type === 'text_delta' && style === 'text') {
-          process.stdout.write(e.text)
-          drawnByDelta.add(e.turn)
-        } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
-          process.stdout.write('\n')
-        } else {
-          const line = renderEvent(e, style)
-          if (line !== null) process.stdout.write(`${line}\n`)
+  try {
+    /** Un turno completo: dibuja su flujo y devuelve su resultado. */
+    const runTurn = async (texto: string, resume: string | undefined) => {
+      const gen = streamLoop({ ...shared, prompt: texto, resume })
+      /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
+      const drawnByDelta = new Set<number>()
+      let turn = 0
+      let usage: Usage = { ...USAGE_CERO }
+      let step = await gen.next()
+      while (!step.done) {
+        const e = step.value
+        if (e.type === 'turn_start') turn = e.turn
+        if (e.type === 'session_start') adoptLoopSessionId(e.sessionId, resume !== undefined)
+        if (e.type === 'done') usage = e.result.usage
+        // El `--json` final y el flujo `json` son cosas distintas: el primero
+        // imprime el resultado, el segundo la conversación entera.
+        if (!(hasFlag(argv, 'json') && style !== 'json')) {
+          // El delta se escribe SIN salto de línea y marca el turno como ya
+          // dibujado, para que su `text` no lo repita. Sin esa marca el usuario
+          // leería la misma respuesta dos veces.
+          if (e.type === 'text_delta' && style === 'text') {
+            process.stdout.write(e.text)
+            drawnByDelta.add(e.turn)
+          } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
+            process.stdout.write('\n')
+          } else {
+            const line = renderEvent(e, style)
+            if (line !== null) process.stdout.write(`${line}\n`)
+          }
         }
+        step = await gen.next()
       }
-      step = await gen.next()
+      const r = step.value
+      if (hasFlag(argv, 'json')) process.stdout.write(`${JSON.stringify(r, null, 2)}\n`)
+      if (hasFlag(argv, 'status-line')) {
+        process.stdout.write(`${renderStatusLine({ model: modelo, turn, usage, usd: r.usd })}\n`)
+      }
+      return r
     }
-    const r = step.value
-    if (hasFlag(argv, 'json')) process.stdout.write(`${JSON.stringify(r, null, 2)}\n`)
-    if (hasFlag(argv, 'status-line')) {
-      process.stdout.write(`${renderStatusLine({ model: modelo, turn, usage, usd: r.usd })}\n`)
-    }
-    return r
-  }
 
-  if (!chat) {
-    const r = await runTurn(prompt as string, flag(argv, 'resume'))
-    return r.stop === 'end_turn' ? 0 : 1
-  }
-
-  // Conversación: una línea de stdin por turno, reanudando SIEMPRE la misma
-  // sesión. Reanudar es lo que hace que el segundo turno vea al primero; sin
-  // eso serían N sesiones sueltas que comparten terminal y nada más.
-  let sesion = flag(argv, 'resume')
-  let ultimo = 0
-  for await (const line of stdinLines()) {
-    const texto = line.trim()
-    if (!texto) continue
-    if (texto === '/salir' || texto === '/exit') break
-    if (texto === '/rename' || texto.startsWith('/rename ')) {
-      const requestedName = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
-      process.stdout.write(`${await renameCurrentSession(requestedName)}\n`)
-      continue
+    if (!chat) {
+      const r = await runTurn(prompt as string, flag(argv, 'resume'))
+      return r.stop === 'end_turn' ? 0 : 1
     }
-    const r = await runTurn(texto, sesion)
-    sesion = r.sessionId
-    ultimo = r.stop === 'end_turn' ? 0 : 1
+
+    // Conversación: una línea de stdin por turno, reanudando SIEMPRE la misma
+    // sesión. Reanudar es lo que hace que el segundo turno vea al primero; sin
+    // eso serían N sesiones sueltas que comparten terminal y nada más.
+    let sesion = flag(argv, 'resume')
+    let ultimo = 0
+    for await (const line of stdinLines()) {
+      const texto = line.trim()
+      if (!texto) continue
+      if (texto === '/salir' || texto === '/exit') break
+      if (texto === '/rename' || texto.startsWith('/rename ')) {
+        const requestedName = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
+        process.stdout.write(`${await renameCurrentSession(requestedName)}\n`)
+        continue
+      }
+      const r = await runTurn(texto, sesion)
+      sesion = r.sessionId
+      ultimo = r.stop === 'end_turn' ? 0 : 1
+    }
+    return ultimo
+  } finally {
+    await stopMessaging?.()
   }
-  return ultimo
 }

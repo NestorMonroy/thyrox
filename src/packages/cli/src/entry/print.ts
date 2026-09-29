@@ -31,6 +31,7 @@ import { loopSetup } from './runLoop.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
 import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
 
 /** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
 export type PrintDeps = {
@@ -53,11 +54,14 @@ export type PrintArgs = {
   outputFormat: OutputFormat
   /** El `argv` que entiende `loopSetup`. */
   loopArgv: string[]
+  /** `--messaging-socket-path`, si llegó — la vía de escape también bajo `--bare`. */
+  messagingSocketPath: string | undefined
 }
 
 /** Banderas con valor que se traducen o se pasan al bucle tal cual. */
 const WITH_VALUE = new Set(['--model', '--max-turns', '--setting-sources', '--tools', '--allowedTools',
-  '--allowed-tools', '--output-format', '--provider', '--grabacion', '--system', '--connection', '--store'])
+  '--allowed-tools', '--output-format', '--provider', '--grabacion', '--system', '--connection', '--store',
+  '--messaging-socket-path'])
 /** Banderas sin valor que se aceptan. `--verbose` no cambia nada aquí. */
 const FLAGS = new Set(['-p', '--print', '--no-session-persistence', '--verbose'])
 
@@ -121,7 +125,7 @@ export function parsePrintArgs(argv: string[], stdin: string | null, env: Record
     const v = values.get(passthrough)
     if (v !== undefined) loopArgv.push(passthrough, v)
   }
-  return { prompt, model, maxTurns, tools, persist, outputFormat, loopArgv }
+  return { prompt, model, maxTurns, tools, persist, outputFormat, loopArgv, messagingSocketPath: values.get('--messaging-socket-path') }
 }
 
 /**
@@ -212,7 +216,12 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
   }
   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
   const startedAt = performance.now()
+  let stopMessaging: MessagingInboxStop | undefined
   try {
+    // El buzón arranca ANTES del registro y del turno, igual que el modo
+    // bucle: su env tiene que estar exportado antes de cualquier hook
+    // SessionStart.
+    stopMessaging = await startMessagingInboxAtLaunch(args.messagingSocketPath)
     // Publica sessions/<pid>.json ANTES del turno, igual que el modo bucle.
     await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
     const { shared } = loopSetup(args.loopArgv, cwd, dir, args.tools)
@@ -237,5 +246,6 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
     return 1
   } finally {
     if (!args.persist) rmSync(dir, { recursive: true, force: true })
+    await stopMessaging?.()
   }
 }

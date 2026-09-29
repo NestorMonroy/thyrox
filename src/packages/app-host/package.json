@@ -251,6 +251,11 @@
       "types": "./dist/runtime/sessionRegistryAtLaunch.d.ts",
       "default": "./src/runtime/sessionRegistryAtLaunch.ts"
     },
+    "./runtime/messagingInboxAtLaunch.js": {
+      "@thyrox/source": "./src/runtime/messagingInboxAtLaunch.ts",
+      "types": "./dist/runtime/messagingInboxAtLaunch.d.ts",
+      "default": "./src/runtime/messagingInboxAtLaunch.ts"
+    },
     "./runtime/commandRegistryRuntime.js": {
       "@thyrox/source": "./src/runtime/commandRegistryRuntime.ts",
       "types": "./dist/runtime/commandRegistryRuntime.d.ts",
