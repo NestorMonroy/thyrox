@@ -16,6 +16,13 @@ archivos distintos con hallazgos distintos, y el acuñador colapsa los dos a
 construcción, no un olvido — ``_ID_RE`` normaliza a entero a propósito, porque
 el árbol escribe las dos formas.
 
+**El alcance por sesión (``--session``).** Es la mitad A acotada al
+productor: dos sesiones pueden dejar cada una su propio huérfano, y
+``--session`` tiene que ver sólo el suyo — sin eso, el cierre de una sesión
+vería (y podría bloquearse por) la deuda de otra. Su control es el gemelo
+directo: sin la cláusula ``WHERE session_id = ?`` la consulta vuelve a traer
+el store entero y el caso de aislamiento cae.
+
 Precondición verificada por conducta, no por docstring: el gate no escribe en el
 árbol. Se comprueba con la huella antes y después (caso 8).
 """
@@ -61,6 +68,22 @@ def make_store(path: pathlib.Path, finding_ids: list[str]) -> None:
     conn.executemany(
         "INSERT INTO findings_history VALUES (?,'thyrox','x','s','c')",
         [(f,) for f in finding_ids])
+    conn.commit()
+    conn.close()
+
+
+def make_store_with_sessions(path: pathlib.Path, rows: list[tuple[str, str]]) -> None:
+    """Un store con ``session_id`` poblado, para medir el alcance por sesión.
+
+    ``rows`` es (finding_id, session_id).
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
+    conn.execute("""CREATE TABLE findings_history (
+        finding_id TEXT NOT NULL UNIQUE, submodule TEXT, initiative TEXT,
+        summary TEXT, content TEXT, session_id TEXT)""")
+    conn.executemany(
+        "INSERT INTO findings_history VALUES (?,'thyrox','x','s','c',?)", rows)
     conn.commit()
     conn.close()
 
@@ -190,6 +213,78 @@ def test_the_gate_refuses_without_a_baseline(tree: pathlib.Path) -> None:
           result.stdout[-160:])
 
 
+# --- el alcance por sesión (--session) ---------------------------------------
+
+def test_session_scope_hides_other_sessions_orphans(tree: pathlib.Path) -> None:
+    """Con --session, la mitad A sólo ve las filas de ESA sesión."""
+    store = tree / "store.sqlite3"
+    make_store_with_sessions(store, [
+        (f"H-{PREFIX}-50", "session-a"),
+        (f"H-{PREFIX}-51", "session-b"),
+    ])
+    result = run_gate(tree, store, "--session", "session-a")
+    check("ve el huérfano de su sesión", f"H-{PREFIX}-50" in result.stdout,
+          result.stdout[-200:])
+    check("no ve el huérfano de la otra sesión",
+          f"H-{PREFIX}-51" not in result.stdout, result.stdout[-200:])
+
+
+def test_session_scope_denominator_is_scoped(tree: pathlib.Path) -> None:
+    """El denominador publicado también se acota, no el store entero."""
+    store = tree / "store.sqlite3"
+    make_store_with_sessions(store, [
+        (f"H-{PREFIX}-52", "session-c"),
+        (f"H-{PREFIX}-53", "session-d"),
+    ])
+    result = run_gate(tree, store, "--session", "session-c")
+    check("1 fila en el alcance de la sesión, no 2",
+          "1 fila(s) de la sesión session-c en el store" in result.stdout,
+          result.stdout[-260:])
+
+
+def test_pending_findings_for_session_is_scoped(tree: pathlib.Path) -> None:
+    """La función pública que consultará el cierre de sesión."""
+    store = tree / "store.sqlite3"
+    make_store_with_sessions(store, [
+        (f"H-{PREFIX}-54", "session-e"),
+        (f"H-{PREFIX}-55", "session-f"),
+    ])
+    make_finding(tree, f"H-{PREFIX}-55", "ya-tiene-su-rst")
+    sys.path.insert(0, str(ROOT / "src"))
+    from verify import check_finding_id_unique as gate_module
+    universe = sorted(
+        tree.glob("source/gestion/pm/*/iniciativas/*/hallazgos/hallazgo-*.rst"))
+    pending_e = gate_module.pending_findings_for_session(
+        "session-e", universe=universe, store=store)
+    check("devuelve el pendiente de su sesión",
+          pending_e == [f"H-{PREFIX}-54"], str(pending_e))
+    pending_f = gate_module.pending_findings_for_session(
+        "session-f", universe=universe, store=store)
+    check("la sesión con .rst no tiene pendientes", pending_f == [], str(pending_f))
+
+
+def test_write_baseline_refuses_with_session(tree: pathlib.Path) -> None:
+    """--write-baseline no acepta --session: el baseline es del corpus entero.
+
+    ``run_gate`` deja escrito ``baseline-vacio.txt`` ANTES de correr el gate —
+    es ``FINDING_ID_UNIQUE_BASELINE``, el mismo archivo que ``--write-baseline``
+    sobrescribiría si el guard no lo detuviera. Comprobar un destino distinto
+    (``.claude/baselines/...``) no habría discriminado nada: nunca es el que
+    ``baseline_destination`` elige cuando esa variable está declarada.
+    """
+    store = tree / "store.sqlite3"
+    make_store(store, [])
+    # Sin `baseline=`: run_gate deja `baseline-vacio.txt` escrito y VACÍO antes
+    # de correr el gate, y ese mismo archivo es el destino real de
+    # --write-baseline (FINDING_ID_UNIQUE_BASELINE apunta ahí).
+    result = run_gate(tree, store, "--write-baseline", "--session", "session-g")
+    destination = tree / "baseline-vacio.txt"
+    check("rehúsa con exit 2", result.returncode == 2,
+          f"exit={result.returncode}")
+    check("y no toca su destino real",
+          destination.read_text(encoding="utf-8") == "", destination.read_text())
+
+
 # --- control positivo REAL del repo ------------------------------------------
 
 def test_the_real_padding_collisions_are_seen() -> None:
@@ -240,7 +335,7 @@ def test_the_gate_does_not_write_to_the_tree() -> None:
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
-        for name in ("a", "b", "c", "d", "e", "f"):
+        for name in ("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"):
             (base / name).mkdir()
         test_a_row_without_its_rst_is_reported(base / "a")
         test_a_row_with_its_rst_is_silent(base / "b")
@@ -248,10 +343,15 @@ def main() -> int:
         test_b_distinct_numbers_are_silent(base / "d")
         test_baseline_freezes_inherited_debt(base / "e")
         test_the_gate_refuses_without_a_baseline(base / "f")
+        test_session_scope_hides_other_sessions_orphans(base / "g")
+        test_session_scope_denominator_is_scoped(base / "h")
+        test_pending_findings_for_session_is_scoped(base / "i")
+        test_write_baseline_refuses_with_session(base / "j")
     test_the_real_padding_collisions_are_seen()
     test_the_gate_does_not_write_to_the_tree()
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
-          f"(alcance medido: check_finding_id_unique, sus dos mitades)")
+          f"(alcance medido: check_finding_id_unique, sus dos mitades más el "
+          f"alcance por sesión)")
     return 1 if failed else 0
 
 
