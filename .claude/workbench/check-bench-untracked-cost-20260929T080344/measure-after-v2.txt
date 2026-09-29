@@ -1,0 +1,2 @@
+Command exited with non-zero status 1
+después-v2: pared=30.75s rss=252496KB
