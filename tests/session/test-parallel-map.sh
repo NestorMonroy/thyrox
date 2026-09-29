@@ -132,5 +132,20 @@ check "dice que no mide" "$(grep -q 'sin GNU Time' <<<"$out" && echo si)" "si"
 check "sin historial" "$(test -e "$W/history-none" && echo si || echo no)" "no"
 unset THYROX_PARALLEL_MAP_HISTORY_DIR THYROX_RAM_ADMISSION_LEDGER
 
+echo "caso 15 — --help como primer argumento imprime el uso y sale 0 sin invocar a GNU Parallel"
+out="$(HOME="$W/home" THYROX_TOOLCHAIN_PARALLEL_BIN="$W/absent/parallel" bash "$MODULE" --help 2>&1)"; code=$?
+check "exit 0" "$code" "0"
+check "imprime Uso:" "$(grep -c '^Uso:' <<<"$out")" "1"
+check "imprime la forma" "$(grep -qF 'parallel_map [--width N]' <<<"$out" && echo si)" "si"
+check "no invoca a parallel" "$(grep -c '^ARGS:' <<<"$out")" "0"
+
+echo "caso 15b — -h como primer argumento es equivalente a --help"
+out="$(HOME="$W/home" THYROX_TOOLCHAIN_PARALLEL_BIN="$W/absent/parallel" bash "$MODULE" -h 2>&1)"; code=$?
+check "exit 0" "$code" "0"
+check "imprime Uso:" "$(grep -c '^Uso:' <<<"$out")" "1"
+
+echo "caso 16 — --help DESPUÉS del comando se entrega al comando, no a la herramienta"
+check "--help viaja al comando" "$(real echo --help ::: a)" "--help a"
+
 echo "parallel_map: $((total - failures))/$total"
 [[ $failures -eq 0 ]]

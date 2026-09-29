@@ -32,6 +32,16 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 
 refuse() { echo "parallel_map: REHUSA — $*" >&2; exit 2; }
 
+# La ayuda se lee de la propia cabecera del archivo (líneas de comentario
+# desde la descripción hasta el párrafo de salida): una copia en un heredoc
+# se desincroniza de esa prosa la primera vez que alguien edite sólo una.
+if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
+    awk 'NR == 1 { next }
+         /^#/   { sub(/^# ?/, ""); print; next }
+                { exit }' "${BASH_SOURCE[0]}"
+    exit 0
+fi
+
 width=""
 if [[ "${1:-}" == --width ]]; then
     [[ $# -ge 2 ]] || refuse "--width requiere un valor."
