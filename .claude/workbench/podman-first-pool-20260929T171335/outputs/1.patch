@@ -1,0 +1,380 @@
+diff --git a/src/lib/infrastructure.sh b/src/lib/infrastructure.sh
+new file mode 100644
+index 00000000..f7030f62
+--- /dev/null
++++ b/src/lib/infrastructure.sh
+@@ -0,0 +1,188 @@
++#!/usr/bin/env bash
++# @description Declaracion reproducible de la infraestructura GESTIONADA de
++# thyrox — PostgreSQL+pgvector y Redis (TASK-THYROX-0607, ADR-THYROX-007
++# v1.2.0 Regla 4).
++#
++# «Gestionada» y no «services»: este arbol no tiene systemd (medido,
++# TASK-THYROX-0605 — `podman-restart.service` existe en disco y nada la
++# ejecuta), asi que no hay unidad que declare ni arranque nada por su cuenta.
++# Lo que hay aqui es la FORMA de cada contenedor —imagen, red, puertos,
++# volumen, etiqueta— compuesta como argv de `podman`, nunca ejecutada: cada
++# funcion IMPRIME el argv o lo mide, y quien invoca decide cuando correrlo.
++# El consumidor de esta declaracion es el bootstrap (TASK-THYROX-0606, que no
++# vive aqui): el ensure/start/loop de salud es su responsabilidad, no la de
++# este archivo.
++#
++# El healthcheck es la misma leccion: se declara el COMANDO de salud
++# (`pg_isready`, `redis-cli ping`) para que el bootstrap lo corra
++# explicitamente con `podman exec` o `podman healthcheck run` — no corre
++# solo, medido en el mismo banco de TASK-THYROX-0605 (0 ejecuciones
++# automaticas sin systemd que dispare el temporizador).
++#
++# Sigue el estilo de `podman_capabilities.sh` y `toolchain.sh`: prefijo de
++# namespace, `export -f` por funcion, guard de doble inclusion. A diferencia
++# de `podman_capabilities.sh` (que SI ejecuta), este archivo no fija
++# `set -uo pipefail` — es una biblioteca para `source`, y fijar opciones de
++# shell al sourcear cambiaria el estado del proceso que lo invoca.
++
++# Guard de doble inclusion: sourcear dos veces es no-op.
++if type thyrox_infrastructure_container_names &>/dev/null; then return 0 2>/dev/null || true; fi
++
++# --- nombres fijos: el PodmanWorkerManager futuro tendra los suyos, y nunca
++# gestionan los del otro (contrato de la etiqueta de rol, mas abajo). ---
++readonly THYROX_INFRASTRUCTURE_POSTGRES_NAME="thyrox-postgres"
++readonly THYROX_INFRASTRUCTURE_REDIS_NAME="thyrox-redis"
++declare -ga THYROX_INFRASTRUCTURE_CONTAINERS=(
++  "$THYROX_INFRASTRUCTURE_POSTGRES_NAME"
++  "$THYROX_INFRASTRUCTURE_REDIS_NAME"
++)
++
++# Red propia y etiqueta de rol — no sobreescribibles: identifican QUE es esta
++# infraestructura, no COMO se aprovisiona (eso si varia por variable, abajo).
++readonly THYROX_INFRASTRUCTURE_NETWORK="thyrox-infra"
++readonly THYROX_INFRASTRUCTURE_ROLE_LABEL="io.thyrox.role=infrastructure"
++
++# PostgreSQL: la verdad durable vive en el volumen con nombre, el contenedor
++# es descartable.
++readonly THYROX_INFRASTRUCTURE_POSTGRES_VOLUME="thyrox-postgres-data"
++readonly THYROX_INFRASTRUCTURE_POSTGRES_DATA_DIR="/var/lib/postgresql/data"
++
++# Imagenes versionadas y totalmente calificadas — sobreescribibles por
++# variable, nunca por edicion de este archivo.
++THYROX_INFRA_POSTGRES_IMAGE="${THYROX_INFRA_POSTGRES_IMAGE:-docker.io/pgvector/pgvector:0.8.0-pg16}"
++THYROX_INFRA_REDIS_IMAGE="${THYROX_INFRA_REDIS_IMAGE:-docker.io/library/redis:7.4}"
++
++# Puertos SOLO en loopback, y nunca 5432/6379: 5432 ya lo ocupa el cluster
++# PostgreSQL del anfitrion. Sobreescribibles por variable.
++THYROX_INFRA_POSTGRES_PORT="${THYROX_INFRA_POSTGRES_PORT:-55432}"
++THYROX_INFRA_REDIS_PORT="${THYROX_INFRA_REDIS_PORT:-56379}"
++
++# Identidad de PostgreSQL dentro del contenedor (no es la credencial: esa se
++# exige por separado en THYROX_INFRA_POSTGRES_PASSWORD, sin default).
++THYROX_INFRA_POSTGRES_USER="${THYROX_INFRA_POSTGRES_USER:-thyrox}"
++THYROX_INFRA_POSTGRES_DB="${THYROX_INFRA_POSTGRES_DB:-thyrox}"
++
++# @description Lista los nombres fijos de los contenedores de infraestructura
++# gestionada, uno por linea.
++# @noargs
++# @stdout `thyrox-postgres` y `thyrox-redis`, en ese orden.
++thyrox_infrastructure_container_names() {
++  local name
++  for name in "${THYROX_INFRASTRUCTURE_CONTAINERS[@]}"; do
++    printf '%s\n' "$name"
++  done
++}
++export -f thyrox_infrastructure_container_names
++
++# _thyrox_infrastructure_create_argv_postgres — compone el argv de
++# `podman create` para thyrox-postgres. La credencial NUNCA vive en el
++# codigo: se lee de THYROX_INFRA_POSTGRES_PASSWORD, y si falta esta funcion
++# rehusa con exit 2 nombrandola, SIN emitir ningun argumento — un argv a
++# medias con la contraseña vacia seria un contenedor sin auth valida creado
++# en silencio.
++_thyrox_infrastructure_create_argv_postgres() {
++  local password="${THYROX_INFRA_POSTGRES_PASSWORD:-}"
++  if [[ -z "$password" ]]; then
++    printf 'thyrox_infrastructure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL); no se emite argv\n' >&2
++    return 2
++  fi
++  printf '%s\n' \
++    create \
++    --name "$THYROX_INFRASTRUCTURE_POSTGRES_NAME" \
++    --network "$THYROX_INFRASTRUCTURE_NETWORK" \
++    --label "$THYROX_INFRASTRUCTURE_ROLE_LABEL" \
++    --restart=on-failure \
++    -p "127.0.0.1:${THYROX_INFRA_POSTGRES_PORT}:5432" \
++    -v "${THYROX_INFRASTRUCTURE_POSTGRES_VOLUME}:${THYROX_INFRASTRUCTURE_POSTGRES_DATA_DIR}" \
++    -e "POSTGRES_PASSWORD=${password}" \
++    -e "POSTGRES_USER=${THYROX_INFRA_POSTGRES_USER}" \
++    -e "POSTGRES_DB=${THYROX_INFRA_POSTGRES_DB}" \
++    "$THYROX_INFRA_POSTGRES_IMAGE"
++}
++
++# _thyrox_infrastructure_create_argv_redis — compone el argv de
++# `podman create` para thyrox-redis. SIN volumen: Redis aqui es estado
++# compartido EFIMERO, no fuente de verdad, y la persistencia queda
++# desactivada en el propio comando del servidor (`--save ''`,
++# `--appendonly no`) para que un `podman restart` no reviva un RDB/AOF
++# viejo desde un disco que este contenedor no monta.
++_thyrox_infrastructure_create_argv_redis() {
++  printf '%s\n' \
++    create \
++    --name "$THYROX_INFRASTRUCTURE_REDIS_NAME" \
++    --network "$THYROX_INFRASTRUCTURE_NETWORK" \
++    --label "$THYROX_INFRASTRUCTURE_ROLE_LABEL" \
++    --restart=on-failure \
++    -p "127.0.0.1:${THYROX_INFRA_REDIS_PORT}:6379" \
++    "$THYROX_INFRA_REDIS_IMAGE" \
++    redis-server \
++    --save \
++    '' \
++    --appendonly \
++    no
++}
++
++# @description Imprime el argv COMPLETO de `podman create` para un nombre de
++# contenedor conocido, una palabra por linea, SIN ejecutarlo — el bootstrap
++# (TASK-THYROX-0606) es quien decide cuando correrlo.
++# @arg $1 string `thyrox-postgres` o `thyrox-redis`.
++# @stdout el argv, una palabra por linea.
++# @exitcode 0 argv compuesto.
++# @exitcode 2 nombre desconocido, o (solo postgres) falta la credencial.
++thyrox_infrastructure_create_argv() {
++  local name="${1:-}"
++  case "$name" in
++    "$THYROX_INFRASTRUCTURE_POSTGRES_NAME") _thyrox_infrastructure_create_argv_postgres ;;
++    "$THYROX_INFRASTRUCTURE_REDIS_NAME") _thyrox_infrastructure_create_argv_redis ;;
++    *)
++      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
++      return 2
++      ;;
++  esac
++}
++export -f thyrox_infrastructure_create_argv
++
++# @description Imprime el comando de verificacion de salud de un contenedor
++# conocido, una palabra por linea — el comando que corre DENTRO del
++# contenedor (via `podman exec <nombre> <estas palabras>`, o registrado como
++# `--health-cmd` para que `podman healthcheck run` lo dispare). Esta funcion
++# no ejecuta nada: el health check no corre solo (medido, TASK-THYROX-0605).
++# @arg $1 string `thyrox-postgres` o `thyrox-redis`.
++# @stdout el comando de salud, una palabra por linea.
++# @exitcode 0 comando compuesto.
++# @exitcode 2 nombre desconocido.
++thyrox_infrastructure_health_check_argv() {
++  local name="${1:-}"
++  case "$name" in
++    "$THYROX_INFRASTRUCTURE_POSTGRES_NAME")
++      printf '%s\n' pg_isready -U "$THYROX_INFRA_POSTGRES_USER" -d "$THYROX_INFRA_POSTGRES_DB"
++      ;;
++    "$THYROX_INFRASTRUCTURE_REDIS_NAME")
++      printf '%s\n' redis-cli ping
++      ;;
++    *)
++      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
++      return 2
++      ;;
++  esac
++}
++export -f thyrox_infrastructure_health_check_argv
++
++# @description Inspecciona un contenedor y publica su estado reportado y su
++# PID, separados por tab. Usa THYROX_TOOLCHAIN_PODMAN_BIN si esta resuelto
++# (via `thyrox_toolchain_require_podman`), o el `podman` del PATH.
++# @arg $1 string nombre del contenedor a inspeccionar.
++# @stdout `<estado>\t<pid>`
++# @exitcode 0 `podman inspect` respondio.
++# @exitcode 2 falta el nombre.
++# @exitcode >0 el que devuelva `podman inspect` (p. ej. contenedor inexistente).
++thyrox_infrastructure_inspect() {
++  local name="${1:-}" bin
++  if [[ -z "$name" ]]; then
++    printf 'thyrox_infrastructure: se exige un nombre de contenedor\n' >&2
++    return 2
++  fi
++  bin="${THYROX_TOOLCHAIN_PODMAN_BIN:-podman}"
++  "$bin" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name"
++}
++export -f thyrox_infrastructure_inspect
+diff --git a/tests/lib/test-infrastructure.sh b/tests/lib/test-infrastructure.sh
+new file mode 100755
+index 00000000..3b50e19b
+--- /dev/null
++++ b/tests/lib/test-infrastructure.sh
+@@ -0,0 +1,180 @@
++#!/usr/bin/env bash
++# test-infrastructure.sh — contrato de la declaracion de infraestructura
++# gestionada (TASK-THYROX-0607, ADR-THYROX-007 v1.2.0 Regla 4).
++#
++# `src/lib/infrastructure.sh` es DECLARACION, no ejecucion: cada funcion
++# imprime el argv que el bootstrap (TASK-THYROX-0606) correra explicitamente,
++# nunca invoca `podman` para crear ni arrancar nada. Por eso estas pruebas no
++# necesitan Podman real — solo un `podman` falso para el caso de inspeccion,
++# que si lee un binario.
++set -uo pipefail
++
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++ROOT="$(cd "$HERE/../.." && pwd)"
++SUBJECT="$ROOT/src/lib/infrastructure.sh"
++source "$ROOT/src/lib/assert.sh"
++ok()  { thyrox_ok "$*"; }
++bad() { thyrox_fail "$*" || true; }
++
++if [[ -f "$SUBJECT" ]]; then
++  ok "el sujeto existe: $SUBJECT"
++else
++  bad "no existe: $SUBJECT"
++  thyrox_summary; exit 1
++fi
++
++if source "$SUBJECT" 2>/dev/null; then
++  ok "el sujeto se sourcea sin error"
++else
++  bad "sourcear $SUBJECT fallo"
++  thyrox_summary; exit 1
++fi
++
++for fn in thyrox_infrastructure_container_names thyrox_infrastructure_create_argv \
++          thyrox_infrastructure_health_check_argv thyrox_infrastructure_inspect; do
++  if type "$fn" &>/dev/null; then
++    ok "declara $fn"
++  else
++    bad "falta $fn"
++  fi
++done
++
++# Un `export -f` en ESTE proceso contamina cada `bash -c` que sigue: el
++# guard de doble inclusion del sujeto veria la funcion ya declarada y
++# retornaria antes de fijar los arrays/variables que las pruebas de abajo
++# necesitan (el mismo defecto que test-toolchain-podman.sh ya documenta).
++# Se retira aqui para que cada `bash -c` de aqui en mas fuente desde cero.
++for fn in thyrox_infrastructure_container_names thyrox_infrastructure_create_argv \
++          thyrox_infrastructure_health_check_argv thyrox_infrastructure_inspect; do
++  unset -f "$fn"
++done
++
++# --- nombres fijos ---
++names="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_container_names")"
++thyrox_check "container_names lista los dos nombres fijos" \
++  "$(printf 'thyrox-postgres\nthyrox-redis')" "$names"
++
++# --- postgres: rehusa sin THYROX_INFRA_POSTGRES_PASSWORD, sin emitir argv ---
++out="$(THYROX_INFRA_POSTGRES_PASSWORD='' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-postgres" 2>/dev/null)"; rc=$?
++thyrox_check "sin contraseña, create_argv(postgres) sale 2" "2" "$rc"
++thyrox_check "sin contraseña, create_argv(postgres) no imprime nada" "" "$out"
++
++err="$(THYROX_INFRA_POSTGRES_PASSWORD='' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-postgres" 2>&1 >/dev/null)"
++if [[ "$err" == *THYROX_INFRA_POSTGRES_PASSWORD* ]]; then
++  ok "el rehuso nombra THYROX_INFRA_POSTGRES_PASSWORD en stderr"
++else
++  bad "el rehuso no nombro la variable: [$err]"
++fi
++
++# --- postgres: argv exacto con contraseña, imagen y puerto por defecto ---
++expected_pg="$(printf '%s\n' \
++  create \
++  --name thyrox-postgres \
++  --network thyrox-infra \
++  --label io.thyrox.role=infrastructure \
++  --restart=on-failure \
++  -p 127.0.0.1:55432:5432 \
++  -v thyrox-postgres-data:/var/lib/postgresql/data \
++  -e POSTGRES_PASSWORD=secret123 \
++  -e POSTGRES_USER=thyrox \
++  -e POSTGRES_DB=thyrox \
++  docker.io/pgvector/pgvector:0.8.0-pg16)"
++actual_pg="$(THYROX_INFRA_POSTGRES_PASSWORD='secret123' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-postgres")"
++thyrox_check "argv exacto de postgres (imagen, red, etiqueta, puerto, volumen, restart)" \
++  "$expected_pg" "$actual_pg"
++
++# --- postgres: imagen y puerto sobreescribibles por variable ---
++actual_pg_over="$(THYROX_INFRA_POSTGRES_PASSWORD='secret123' \
++  THYROX_INFRA_POSTGRES_IMAGE='docker.io/pgvector/pgvector:0.8.1-pg17' \
++  THYROX_INFRA_POSTGRES_PORT='15432' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-postgres")"
++if [[ "$actual_pg_over" == *"docker.io/pgvector/pgvector:0.8.1-pg17"* \
++   && "$actual_pg_over" == *"127.0.0.1:15432:5432"* ]]; then
++  ok "imagen y puerto de postgres se sobreescriben por variable"
++else
++  bad "sobreescritura de postgres no tomo efecto: [$actual_pg_over]"
++fi
++
++# --- redis: argv exacto, sin volumen, persistencia desactivada ---
++expected_redis="$(printf '%s\n' \
++  create \
++  --name thyrox-redis \
++  --network thyrox-infra \
++  --label io.thyrox.role=infrastructure \
++  --restart=on-failure \
++  -p 127.0.0.1:56379:6379 \
++  docker.io/library/redis:7.4 \
++  redis-server \
++  --save \
++  '' \
++  --appendonly \
++  no)"
++actual_redis="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-redis")"
++thyrox_check "argv exacto de redis (imagen, red, etiqueta, puerto, restart, sin volumen)" \
++  "$expected_redis" "$actual_redis"
++
++if [[ "$actual_redis" != *"thyrox-postgres-data"* && "$actual_redis" != *"-v "* ]]; then
++  ok "redis no declara ningun volumen"
++else
++  bad "redis declaro un volumen: [$actual_redis]"
++fi
++
++# --- redis: imagen y puerto sobreescribibles por variable ---
++actual_redis_over="$(THYROX_INFRA_REDIS_IMAGE='docker.io/library/redis:7.5' \
++  THYROX_INFRA_REDIS_PORT='16379' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-redis")"
++if [[ "$actual_redis_over" == *"docker.io/library/redis:7.5"* \
++   && "$actual_redis_over" == *"127.0.0.1:16379:6379"* ]]; then
++  ok "imagen y puerto de redis se sobreescriben por variable"
++else
++  bad "sobreescritura de redis no tomo efecto: [$actual_redis_over]"
++fi
++
++# --- nombre desconocido rehusa ---
++out_unknown="$(THYROX_INFRA_POSTGRES_PASSWORD='x' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-mongo" 2>/dev/null)"; rc=$?
++thyrox_check "create_argv de un nombre desconocido sale 2" "2" "$rc"
++thyrox_check "create_argv de un nombre desconocido no imprime nada" "" "$out_unknown"
++
++out_unknown_health="$(bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_health_check_argv thyrox-mongo" 2>/dev/null)"; rc=$?
++thyrox_check "health_check_argv de un nombre desconocido sale 2" "2" "$rc"
++
++# --- comando de salud, por contenedor ---
++health_pg="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_health_check_argv thyrox-postgres")"
++thyrox_check "health_check_argv(postgres) es pg_isready" \
++  "$(printf 'pg_isready\n-U\nthyrox\n-d\nthyrox')" "$health_pg"
++
++health_redis="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_health_check_argv thyrox-redis")"
++thyrox_check "health_check_argv(redis) es redis-cli ping" \
++  "$(printf 'redis-cli\nping')" "$health_redis"
++
++# --- etiqueta de infraestructura presente en los dos contenedores ---
++if [[ "$actual_pg" == *"io.thyrox.role=infrastructure"* && \
++      "$actual_redis" == *"io.thyrox.role=infrastructure"* ]]; then
++  ok "la etiqueta io.thyrox.role=infrastructure esta en los dos contenedores"
++else
++  bad "falta la etiqueta en alguno de los dos"
++fi
++
++# --- inspeccion contra un podman falso ---
++WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
++cat > "$WORK/podman-fake" <<'STUB'
++#!/usr/bin/env bash
++if [[ "$1" == "inspect" ]]; then
++  printf 'running\t4242\n'
++  exit 0
++fi
++exit 1
++STUB
++chmod +x "$WORK/podman-fake"
++
++inspect_out="$(THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_inspect thyrox-postgres")"
++thyrox_check "inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid" \
++  "$(printf 'running\t4242')" "$inspect_out"
++
++thyrox_summary
