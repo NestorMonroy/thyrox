@@ -1,1 +1,533 @@
 == TypeScript (bun) ==
+-- FAIL src/packages/agent/__tests__/flowHomes.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/flowHomes.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at homesMissingFromTree (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:158:53)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:45:12)
+(fail) FLOW_HOMES — el mapa flow → hogar como dato tipado (no prosa) > ningún hogar declarado apunta a un directorio inexistente [1.73ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at definitionsWithMissingHomes (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:195:18)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:102:12)
+(fail) definitionsWithMissingHomes — el gate DMAIC-control de T-006 (#54) > ninguna definicion del registro real declara un hogar inexistente [1.46ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at definitionsWithMissingHomes (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:195:18)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:130:12)
+(fail) definitionsWithMissingHomes — el gate DMAIC-control de T-006 (#54) > la misma definicion contra el arbol real no reporta ausentes [1.16ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at homesMissingFromTree (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:158:53)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:159:14)
+(fail) la raiz del arbol se resuelve por el alcance, no por una copia > honra la grafia canonica por raiz [2.00ms]
+
+ 9 pass
+ 4 fail
+ 77 expect() calls
+Ran 13 tests across 1 file. [237.00ms]
+-- FAIL src/packages/cli/__tests__/mitmCommands.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/mitmCommands.test.ts:
+123 |   let out = ''
+124 |   child.stdout.on('data', chunk => (out += chunk))
+125 |   const exited = new Promise<number | null>(resolve => child.once('exit', code => resolve(code)))
+126 |   const deadline = Date.now() + 20_000
+127 |   while (!/listening on http/.test(out) && Date.now() < deadline) await Bun.sleep(50)
+128 |   expect(out).toContain('MITM API listening on http://127.0.0.1:')
+                    ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "MITM API listening on http://127.0.0.1:"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/cli/__tests__/mitmCommands.test.ts:128:15)
+(fail) thyrox mitm serve runs through the real launcher and stops on SIGTERM [20054.48ms]
+
+ 15 pass
+ 1 fail
+ 59 expect() calls
+Ran 16 tests across 1 file. [21.27s]
+-- FAIL src/packages/cli/__tests__/rstTasks.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/rstTasks.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+474 | export function reachRoots(start?: string, declared?: string): string[] {
+475 |   const value = declared ?? envValue(REACH_ROOTS_VAR, start)
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+              ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:479:9)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/cli/__tests__/rstTasks.test.ts:24:3
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1.82s]
+-- FAIL src/packages/paths/__tests__/docs.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/paths/__tests__/docs.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:40:28)
+(fail) docsRoot — la raiz se descubre, no se escribe > sin variable, resuelve al repo que contiene source/gestion/pm [1.49ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:53:14)
+(fail) docsRoot — la raiz se descubre, no se escribe > honra las grafias canonicas del alcance, no solo la heredada [0.85ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at docsLayer (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:289:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:253:14)
+(fail) el catalogo flow -> hogar (#53) — declara que produce, la ruta la construye > cada capa se resuelve como docsLayer(l) y su directorio existe [0.48ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:262:38)
+(fail) el catalogo flow -> hogar (#53) — declara que produce, la ruta la construye > CONTROL bidireccional — DOCS_LAYERS es exactamente el disco (sin `_`) [0.30ms]
+
+ 27 pass
+ 4 fail
+ 74 expect() calls
+Ran 31 tests across 1 file. [203.00ms]
+-- FAIL src/packages/skills/__tests__/bundledSkills.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/skills/__tests__/bundledSkills.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at soloApoyoFromTriage (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:22:24)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:43:56)
+(fail) bundledSkills — la membresía sale del triaje, no de su propia lista > los nombres empaquetados == el conjunto sin clase a del triaje [4.21ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at soloApoyoFromTriage (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:22:24)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:49:58)
+(fail) bundledSkills — la membresía sale del triaje, no de su propia lista > registerBundledSkills registra exactamente ese conjunto en un registry [9.57ms]
+
+ 1 pass
+ 2 fail
+ 2 expect() calls
+Ran 3 tests across 1 file. [210.00ms]
+-- FAIL src/packages/task/__tests__/schema.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/task/__tests__/schema.test.ts:
+48 |     ])
+49 |   })
+50 | 
+51 |   test('la base del Python declara 15 — el piso más las dos de capa', () => {
+52 |     const base = pythonBaseColumns()
+53 |     expect(base.length).toBe(15)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 15
+Received: 16
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/task/__tests__/schema.test.ts:53:25)
+(fail) las dos declaraciones del esquema de tareas > la base del Python declara 15 — el piso más las dos de capa [1.19ms]
+63 | })
+64 | 
+65 | describe('el invariante: piso ⊂ base, y el delta lo cubre un ALTER', () => {
+66 |   test('ninguna columna de la base queda fuera del piso sin ALTER que la añada', () => {
+67 |     const d = schemaDrift()
+68 |     expect(d.uncovered).toEqual([])
+                             ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "board_ordinal",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/task/__tests__/schema.test.ts:68:25)
+(fail) el invariante: piso ⊂ base, y el delta lo cubre un ALTER > ninguna columna de la base queda fuera del piso sin ALTER que la añada [9.80ms]
+77 |     expect(d.missingNotNull).toEqual([])
+78 |     expect(d.notNull.length).toBeGreaterThan(0)
+79 |   })
+80 | 
+81 |   test('el delta medido hoy son exactamente las dos columnas de capa', () => {
+82 |     expect(schemaDrift().onlyInBase.sort()).toEqual(['submodule', 'submodule_source'])
+                                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
++   "board_ordinal",
+    "submodule",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/task/__tests__/schema.test.ts:82:45)
+(fail) el invariante: piso ⊂ base, y el delta lo cubre un ALTER > el delta medido hoy son exactamente las dos columnas de capa [3.87ms]
+
+ 12 pass
+ 3 fail
+ 30 expect() calls
+Ran 15 tests across 1 file. [178.00ms]
+-- FAIL tests/conformance/maintenance.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/conformance/maintenance.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:73:21)
+(fail) A.7.6 — memoria rancia > 1. nombra la que pasa la cota y NO la que no [78.33ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:85:12)
+(fail) A.7.6 — memoria rancia > 2. publica cuanto se pasa, no solo que se pasa [8.15ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:92:19)
+(fail) A.7.6 — skills invalidos > 3. un directorio sin SKILL.md es invalido, y se dice por que [12.84ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:103:19)
+(fail) A.7.6 — skills invalidos > 4. sin description, y con el name cambiado, tambien [15.20ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:121:12)
+(fail) A.7.6 — las DOS formas de frontmatter del arbol > 5. la cerca ```yml vale igual que los guiones: no es un defecto [1.46ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at maintenanceReport (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:165:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:127:15)
+(fail) A.7.6 — el estado del arbol real > 6. hoy no hay ninguna de las dos, y el conteo dice sobre que se midio [0.47ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:176:12)
+(fail) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 7. la memoria se busca en el segmento que el consumidor declara [7.07ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:181:12)
+(fail) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 8. los skills tambien, y el denominador lo dice [0.94ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:194:19)
+(fail) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 9. THYROX_RULES_DIR reapunta el hogar de las reglas, y se cita relativo [7.33ms]
+
+ 0 pass
+ 9 fail
+Ran 9 tests across 1 file. [1.70s]
+-- FAIL tests/reference/triple.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/reference/triple.test.ts:
+201 |     // clon presente, y las otras se declaran aparte.
+202 |     const clon = (ruta: string) => ruta.split('/').slice(0, 4).join('/')
+203 |     const alias = Object.keys(TRIPLES)
+204 |     const medibles = alias.filter((a) => existsSync(clon(resolveRoot(a))))
+205 |     const ausentes = medibles.filter((a) => !existsSync(resolveRoot(a)))
+206 |     expect({ ausentes, declaradas: alias.length }).toEqual({ ausentes: [], declaradas: 9 })
+                                                         ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,11 @@
+  {
+-   "ausentes": [],
++   "ausentes": [
++     "odoo19c",
++     "odoo19e",
++     "odoo18c",
++     "odoo18e",
++     "ccb",
++     "ccnmt",
++     "ui-core",
++   ],
+    "declaradas": 9,
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/reference/triple.test.ts:206:52)
+(fail) la raiz declarada tiene que existir y ser absoluta (#294) > toda raiz declarada resuelve a un directorio que existe [0.44ms]
+
+ 19 pass
+ 1 fail
+ 55 expect() calls
+Ran 20 tests across 1 file. [151.00ms]
+-- FAIL tests/rules/markdown.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/rules/markdown.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/markdown.test.ts:30:12)
+(fail) el hogar del consumidor > cae en el arbol del consumidor, no en el del proveedor [2.36ms]
+474 | export function reachRoots(start?: string, declared?: string): string[] {
+475 |   const value = declared ?? envValue(REACH_ROOTS_VAR, start)
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+              ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:479:9)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/markdown.test.ts:157:27)
+(fail) el productor y el cargador coinciden > toda ruta que el emisor compone la reconoce isMemoryFilePath [1333.24ms]
+
+ 13 pass
+ 2 fail
+ 18 expect() calls
+Ran 15 tests across 1 file. [1.51s]
+-- FAIL tests/verify/checkEnvPrefix.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/verify/checkEnvPrefix.test.ts:
+(fail) el propio thyrox > ninguna lectura de entorno nueva fuera de THYROX_* y ninguna variable propia sin prueba [5819.23ms]
+  ^ this test timed out after 5000ms.
+
+ 15 pass
+ 1 fail
+ 30 expect() calls
+Ran 16 tests across 1 file. [6.26s]
+pass=21417 fail=28 errors=1 crashes=0 files=1484 failed=10
+
+== Python (stdlib) ==
