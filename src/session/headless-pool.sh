@@ -397,13 +397,9 @@ _headless_item() {
     bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" \
         2>> "$HP_LIVE/$n.lifecycle.err" || publish_rc=$?
     [[ "$publish_rc" -eq 0 ]] || return "$publish_failed_exit"
-    # La foto del worktree es un punto de recuperación: un ítem publicado con
-    # éxito ya no la necesita y su ref se retira; la de un ítem fallido o
-    # cancelado se conserva para `recovery_controller recover`.
-    if [[ "$rc" -eq 0 && "$HP_ISOLATION" == worktree && -s "$HP_OUT/$n.snapshot.json" ]]; then
-        git -C "$HP_WORKDIR" update-ref -d "refs/thyrox/snapshots/${HP_LIVE##*/}/$n/$HP_ITEM_GENERATION" \
-            "$(jq -r .snapshot_commit "$HP_OUT/$n.snapshot.json")" 2>> "$HP_OUT/$n.err"
-    fi
+    # La ref de la foto del worktree se conserva también cuando el ítem se
+    # publica con éxito: la foto es la garantía de no perder código, no un
+    # sustituto de la salida final.
     return "$rc"
 }
 export -f _headless_item

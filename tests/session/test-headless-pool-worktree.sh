@@ -64,16 +64,19 @@ check "sin worktrees de ítem al terminar" "$(git -C "$F/repo" worktree list | w
 check "veredictos en orden" "$(for n in 1 2 3 4 5 6; do tr -d '\n' < "$F/out/$n.verdict"; printf ' '; done)" \
   "verificado verificado sin-cambios rechazado fallido verificado "
 check "el parche nombra su archivo" "$(cat "$F/out/1.files")" "a.txt"
-# Antes de retirar su worktree, cada ítem deja su foto en objetos de git. La
-# del ítem publicado con éxito se retira; la del que falló se conserva.
+# Antes de retirar su worktree, cada ítem deja su foto en objetos de git, y
+# la foto se conserva aunque el ítem se publique con éxito: es la garantía de
+# no perder código, no un sustituto de la salida final.
 snap1="$(jq -r .snapshot_commit "$F/out/1.snapshot.json")"
 snap5="$(jq -r .snapshot_commit "$F/out/5.snapshot.json")"
 run1="$(jq -r .run "$F/out/1.snapshot.json")"
 check "cada ítem dejó su foto" "$(ls "$F"/out/*.snapshot.json | wc -l)" "6"
 check "la foto del ítem 1 trae su archivo" "$(git -C "$F/repo" show "$snap1:a.txt")" "hola"
-check "sólo queda la ref del ítem que falló" "$(git -C "$F/repo" for-each-ref --format='%(refname)' refs/thyrox/snapshots)" \
-  "refs/thyrox/snapshots/$run1/5/1"
-check "y apunta a su foto" "$(git -C "$F/repo" rev-parse "refs/thyrox/snapshots/$run1/5/1")" "$snap5"
+check "las seis refs de foto se conservan tras publicar" \
+  "$(git -C "$F/repo" for-each-ref --format='%(refname)' refs/thyrox/snapshots | wc -l)" "6"
+check "la del ítem publicado con éxito apunta a su foto" \
+  "$(git -C "$F/repo" rev-parse "refs/thyrox/snapshots/$run1/1/1")" "$snap1"
+check "y la del que falló, a la suya" "$(git -C "$F/repo" rev-parse "refs/thyrox/snapshots/$run1/5/1")" "$snap5"
 check "la línea de resumen cuenta los veredictos" \
   "$(printf '%s\n' "$output" | grep -c '^verificados=3 rechazados=1 sin-cambios=1 fallidos=1$')" "1"
 # Las operaciones de archivo van por Bash (operaciones-de-archivo-con-bash.md):
