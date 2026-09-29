@@ -35,6 +35,8 @@ import threading
 from collections.abc import Iterator
 from pathlib import Path
 
+from session.pool_lifecycle import CLOSED_SUFFIX, item_of_artifact
+
 BENCH_ROOTS = (".claude/workbench/", ".claude/jobs/")
 
 
@@ -202,6 +204,29 @@ def untracked_in_benches(repo: Path, staged: list[str],
     return {bench: sorted(files) for bench, files in sorted(found.items())}
 
 
+def unsealed_pool_artifacts(repo: Path, staged: list[str]) -> list[str]:
+    """Los artefactos de ítem del pool preparados en un banco sin su ``<n>.closed`` en el índice.
+
+    Una salida del pool entra al banco completa o no entra: el sello se
+    escribe el último. Un ``<n>.*`` sin su sello es una publicación que no
+    terminó, y commitearlo lo presentaría como evidencia cerrada.
+    """
+    candidates = []
+    for path in staged:
+        if bench_of(path) is None:
+            continue
+        directory, _, name = path.rpartition("/")
+        item = item_of_artifact(name)
+        if item is not None:
+            candidates.append((path, f"{directory}/{item}{CLOSED_SUFFIX}"))
+    if not candidates:
+        return []
+    seals = sorted({seal for _, seal in candidates})
+    listed = subprocess.run(["git", "ls-files", "--", *seals], cwd=repo,
+                            capture_output=True, text=True, check=True).stdout.splitlines()
+    return sorted(path for path, seal in candidates if seal not in set(listed))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--repo", type=Path, default=Path.cwd())
@@ -213,6 +238,7 @@ def main(argv: list[str] | None = None) -> int:
             capture_output=True, text=True, check=True).stdout.splitlines()
         benches = touched_benches(args.repo, staged)
         found = untracked_in_benches(args.repo, staged, benches)
+        unsealed = unsealed_pool_artifacts(args.repo, staged)
     except (OSError, subprocess.CalledProcessError) as error:
         print(f"check_bench_untracked: SIN MEDIR — {error}", file=sys.stderr)
         return 2
@@ -225,7 +251,13 @@ def main(argv: list[str] | None = None) -> int:
         print("  remedio: git add -N <archivo> antes del commit por pathspec", file=sys.stderr)
     print(f"check_bench_untracked: {sum(map(len, found.values()))} archivo(s) fuera "
           f"(alcance medido: {len(benches)} banco(s) tocado(s))", file=sys.stderr)
-    return 1 if found else 0
+    for path in unsealed:
+        print(f"check_bench_untracked: {path} es un artefacto del pool sin su {CLOSED_SUFFIX}",
+              file=sys.stderr)
+    if unsealed:
+        print("  remedio: un ítem entra al banco sólo publicado; reconcile completa una "
+              "publicación interrumpida", file=sys.stderr)
+    return 1 if found or unsealed else 0
 
 
 if __name__ == "__main__":

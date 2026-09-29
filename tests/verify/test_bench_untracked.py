@@ -201,5 +201,38 @@ with tempfile.TemporaryDirectory() as directory:
                   ".claude/workbench/bench-b": [".claude/workbench/bench-b/nuevo-bench-b.txt"],
                   ".claude/jobs/job-z": [".claude/jobs/job-z/salida.log"]},
                  gate.untracked_in_benches(base, ["src/x.py"]))
+# Una salida del pool dentro de un banco se commitea sólo con su sello: un
+# artefacto `<n>.*` preparado sin `<n>.closed` en el índice es un ítem que la
+# publicación no terminó, y ningún lector debe tomarlo como cerrado.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    bench = fixture(base)
+    out = bench / "outputs" / "pool"
+    out.mkdir()
+    (out / "1.stream.jsonl").write_text("{}\n")
+    (out / "1.verdict").write_text("verificado\n")
+    (out / "notas.txt").write_text("prosa\n")
+    git(base, "add", str(out / "1.stream.jsonl"), str(out / "1.verdict"), str(out / "notas.txt"))
+    staged = [".claude/workbench/bench-a/outputs/pool/1.stream.jsonl",
+              ".claude/workbench/bench-a/outputs/pool/1.verdict",
+              ".claude/workbench/bench-a/outputs/pool/notas.txt"]
+    assert_equal("un ítem del pool preparado sin su .closed se nombra",
+                 [".claude/workbench/bench-a/outputs/pool/1.stream.jsonl",
+                  ".claude/workbench/bench-a/outputs/pool/1.verdict"],
+                 gate.unsealed_pool_artifacts(base, staged))
+    assert_equal("el commit que lo lleva se rehúsa", 1,
+                 gate.main(["--repo", str(base), *staged]))
+    (out / "1.closed").write_text('{"generation": 1, "artifacts": {}}\n')
+    git(base, "add", str(out / "1.closed"))
+    assert_equal("con su .closed en el índice, el ítem pasa", [],
+                 gate.unsealed_pool_artifacts(base, staged))
+    (out / "2.txt").write_text("no es un artefacto del pool\n")
+    git(base, "add", str(out / "2.txt"))
+    assert_equal("control: un archivo numerado que no es artefacto del pool no cuenta", [],
+                 gate.unsealed_pool_artifacts(base, [".claude/workbench/bench-a/outputs/pool/2.txt"]))
+    (base / "src" / "3.json").write_text("{}\n")
+    git(base, "add", "src/3.json")
+    assert_equal("control: fuera de un banco no se mira", [],
+                 gate.unsealed_pool_artifacts(base, ["src/3.json"]))
 print(f"test_bench_untracked: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

@@ -51,6 +51,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -90,6 +91,18 @@ RUN_METADATA = "run.json"
 RUN_CLOSED = "run.closed"
 #: Artefactos de la ejecución entera, no de un ítem.
 RUN_ARTIFACTS = ("index.tsv", "joblog.tsv", "unexpected-stashes")
+#: El nombre de un artefacto de ítem tal como lo escriben ``headless-pool`` e
+#: ``item_worktree``: ``<n>.<sufijo>``. Lo usa quien tiene que reconocer una
+#: salida del pool fuera de este módulo, sin enumerar los sufijos por su cuenta.
+ITEM_ARTIFACT_NAME = re.compile(
+    r"(?P<item>\d+)\.(?:stream\.jsonl|json|snapshot\.json|verdict|patch|files|time|gpu"
+    r"|jobs|ledger|err|[a-z]+\.err|stash-[a-z]+)")
+
+
+def item_of_artifact(name: str) -> str | None:
+    """El ítem al que pertenece un nombre de archivo, o ``None`` si no es un artefacto de ítem."""
+    match = ITEM_ARTIFACT_NAME.fullmatch(name)
+    return match.group("item") if match else None
 
 #: Salidas del CLI.
 EXIT_REJECTED = 5
@@ -368,7 +381,16 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
         # Etapa 1: cada artefacto llega a la salida con un nombre oculto propio de
         # su generación. Mientras dura —la parte larga, la que copia entre
         # sistemas de archivos— la generación anterior sigue cerrada y válida.
-        moves = 0
+        steps = 0
+
+        def step() -> None:
+            # Cada operación que cambia el disco es un punto donde el proceso
+            # puede morir; la inyección de fallo los recorre todos.
+            nonlocal steps
+            steps += 1
+            if fail_after_moves is not None and steps >= fail_after_moves:
+                os._exit(9)
+
         for name, expected in plan["artifacts"].items():
             source, dest = live_dir / name, out_dir / name
             staged_path = out_dir / f".{name}.g{generation}" if staged else dest
@@ -383,19 +405,20 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                                          f"runtime ni en la salida con el hash del plan")
                 _remove(staged_path)
                 _place(source, staged_path)
-                moves += 1
-                if fail_after_moves is not None and moves >= fail_after_moves:
-                    os._exit(9)
+                step()
             if source.exists() or source.is_symlink():
                 _remove(source)
+                step()
         _fsync_dir(out_dir)
         # Etapa 2: el intercambio. Se retira el cierre anterior —desde aquí ningún
         # consumidor lee el ítem— y cada artefacto preparado toma su nombre.
         (out_dir / f"{item}{CLOSED_SUFFIX}").unlink(missing_ok=True)
         _fsync_dir(out_dir)
+        step()
         for name in plan["superseded"]:
             if name not in plan["artifacts"]:
                 _remove(out_dir / name)
+                step()
         for name, expected in plan["artifacts"].items():
             dest = out_dir / name
             staged_path = out_dir / f".{name}.g{generation}"
@@ -403,6 +426,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                 if dest.is_dir() and not dest.is_symlink():
                     shutil.rmtree(dest)
                 os.replace(staged_path, dest)
+                step()
             if not dest.exists() or artifact_digest(dest) != expected:
                 transition(live_dir, item, PARTIALLY_PUBLISHED)
                 raise LifecycleError(f"el artefacto {name} del ítem {item} no llegó íntegro a {out_dir}")
@@ -411,6 +435,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
                     "run_id": plan["run_id"], "artifacts": plan["artifacts"],
                     "closed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
         _write_atomic(out_dir / f"{item}{CLOSED_SUFFIX}", json.dumps(manifest, sort_keys=True) + "\n")
+        step()
         transition(live_dir, item, CLOSED)
         plan_path.unlink(missing_ok=True)
         return manifest

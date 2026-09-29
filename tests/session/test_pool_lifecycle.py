@@ -227,5 +227,38 @@ with tempfile.TemporaryDirectory() as scratch:
     check("run.closed nombra los ítems cerrados", ["1"], closed["items"])
     check("el runtime de la ejecución se retira", False, live9.exists())
 
+# I5 con el fallo inyectado entre CADA operación de la publicación, no sólo
+# tras la primera. Con tres artefactos en el mismo sistema de archivos son
+# ocho: las tres colocaciones (un rename, que no deja fuente que retirar), el
+# retiro del cierre anterior, los tres intercambios y el cierre nuevo.
+with tempfile.TemporaryDirectory() as scratch:
+    base = Path(scratch)
+    os.environ["THYROX_RUNTIME_DIR"] = str(base / "runtime")
+    print("caso 7f: I5 — una caída en cualquier punto de la publicación se retoma")
+    crash_points, broken = 0, []
+    for k in range(1, 40):
+        out = base / f"out-k{k}"
+        out.mkdir()
+        live1 = lc.open_run(out, os.getpid(), run_id=f"k{k}-g1")
+        run_item(live1, out, "4", {"stream.jsonl": "gen1\n", "err": "e1", "time": "1 2 3 4"})
+        lc.publish(live1, out, "4", exit_code=0)
+        live2 = lc.open_run(out, os.getpid(), run_id=f"k{k}-g2")
+        run_item(live2, out, "4", {"stream.jsonl": "gen2\n", "err": "e2", "time": "5 6 7 8"})
+        rc = publish_cli(live2, out, "4", "--exit", "0", "--fail-after-moves", str(k))
+        if rc == 0:
+            break
+        crash_points += 1
+        if lc.is_closed(out, "4") and lc.verify_closed(out, "4"):
+            broken.append(f"k={k}: cierre aceptado e incoherente")
+        lc.reconcile(base / "runtime" / "pool")
+        if (lc.closed_generation(out, "4"), lc.verify_closed(out, "4")) != (2, []):
+            broken.append(f"k={k}: reconcile no dejó la generación 2 coherente")
+        elif (out / "4.stream.jsonl").read_text() != "gen2\n":
+            broken.append(f"k={k}: contenido distinto de la generación 2")
+        if any(p.name.startswith(".") for p in out.iterdir()):
+            broken.append(f"k={k}: quedaron artefactos ocultos")
+    check("la inyección recorre las ocho operaciones de la publicación", 8, crash_points)
+    check("ninguna caída deja un cierre incoherente ni impide completar la generación 2", [], broken)
+
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)
