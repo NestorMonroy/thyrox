@@ -73,6 +73,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_bare_awk",
     "detect_client_background",
     "detect_irreversible_operation",
+    "detect_unguarded_removal",
     "detect_edit_loop",
     "detect_awk_substr_target",
     "detect_gawk_opportunity",

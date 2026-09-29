@@ -165,5 +165,12 @@ loop_out = preflight_hook.preflight(
 check("el despacho real avisa del bucle en serie", True,
       "GNU PARALLEL" in json.dumps(loop_out, ensure_ascii=False))
 
+check("detect_unguarded_removal esta en la lista", True, "detect_unguarded_removal" in preflight_hook.DETECTOR_NAMES)
+removal_out = preflight_hook.preflight(
+    {"tool_name": "Bash", "tool_input": {"command": "r" + "m -f $W/x.txt && ls"}},
+    detectors=registry)
+check("el despacho real avisa del borrado sin guarda", True,
+      "BORRADO SIN GUARDA" in json.dumps(removal_out, ensure_ascii=False))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

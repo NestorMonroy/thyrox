@@ -264,3 +264,25 @@ catálogo de arriba no bastaba para elegir bien:
 python3 tests/hooks/test_detect_git_grep_opportunity.py
 python3 tests/hooks/test_detect_parallel_opportunity.py
 ```
+
+## Un paso con riesgo va en su propia llamada, y un borrado lleva guarda
+
+El chequeo de seguridad del cliente rehúsa un borrado cuyo destino empieza
+por una variable sin guarda: vacía, el destino cuelga de `/`. Rehúsa el
+**comando entero**, no el paso: en una llamada de quince pasos no corre
+ninguno y no queda salida que leer. Y lee también el cuerpo de un heredoc,
+porque puede volver a interpretarse como órdenes.
+
+- El destino de un borrado por variable se escribe `"${W:?}"/…`: si falta la
+  variable, el shell aborta en vez de borrar.
+- Un paso con riesgo —borrar, `git`, un servicio— va en una llamada propia,
+  para que un rechazo cueste ese paso y cada resultado se lea aparte.
+- Un archivo cuyo texto contiene un borrado por variable se escribe con
+  `Write`, no con un heredoc.
+
+Su gate es `src/hooks/detect_unguarded_removal.py`, detector de
+`tool_use_preflight.py`: avisa antes de enviar, con la forma con guarda y el
+número de pasos que se perderían. Sus cuatro mitades de juicio —la guarda
+`:?`, la cláusula de varios pasos, la lectura del heredoc y la posición de
+orden— se probaron por anulación: retirada cada una cae exactamente su caso
+(`uv run pytest tests/hooks/test_detect_unguarded_removal.py`).
