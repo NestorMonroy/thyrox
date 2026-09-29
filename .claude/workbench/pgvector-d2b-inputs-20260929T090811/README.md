@@ -16,3 +16,21 @@ salida en `results.tsv`. La decisión 0.6.0 frente a ≥0.7/0.8.x sigue esperand
 Ciego a: rendimiento, recall y memoria de cada índice; eso exige el volumen y la
 dimensionalidad de D5. Las variables `hnsw.*`/`ivfflat.*` no salen porque la
 biblioteca no estaba cargada en la sesión de la sonda.
+
+## PGDG, medido después (índice `noble-pgdg/main/binary-amd64/Packages.gz`)
+
+- `postgresql-16-pgvector`: `0.8.5-1.pgdg24.04+1`, `0.8.6-1.pgdg24.04+1`, `0.8.6-1.pgdg24.04+2`.
+- `0.8.6-1.pgdg24.04+2` declara `Depends: postgresql-16, libc6 (>= 2.38)`, sin versión
+  mínima del servidor; aquí corre `postgresql-16 16.13-0ubuntu0.24.04.1`.
+- Por tanto hay una ≥0.8 empaquetada sin compilar. Ciego a: si añadir el repositorio
+  PGDG arrastra además un `postgresql-16` más nuevo en la próxima actualización (depende
+  de la prioridad de apt, no del índice), y a la conducta de la extensión instalada.
+
+## Orden acordado con el ejecutor (2026-09-29)
+
+D2b sigue abierto hasta que D5 fije: entidades, volumen inicial y crecimiento, modelo,
+dimensionalidad, denso frente a disperso, necesidad de `halfvec`, patrón de escritura,
+`top_k`, objetivo de recall y latencia, y presupuesto de memoria y almacenamiento.
+Después se mide exacto frente a HNSW frente a IVFFlat con un corpus representativo.
+Preferencia: paquete (PGDG) sobre compilación; compilar sólo si D5 exige algo que no
+esté empaquetado. 0.6.0 basta para un primer corte con embeddings densos.
