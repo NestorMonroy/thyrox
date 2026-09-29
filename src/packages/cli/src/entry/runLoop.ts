@@ -38,7 +38,7 @@ import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
-import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 
 /**
  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
@@ -277,6 +277,11 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
     const texto = line.trim()
     if (!texto) continue
     if (texto === '/salir' || texto === '/exit') break
+    if (texto === '/rename' || texto.startsWith('/rename ')) {
+      const requestedName = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
+      process.stdout.write(`${await renameCurrentSession(requestedName)}\n`)
+      continue
+    }
     const r = await runTurn(texto, sesion)
     sesion = r.sessionId
     ultimo = r.stop === 'end_turn' ? 0 : 1

@@ -116,16 +116,19 @@ import { sessionNameState } from '@thyrox/local-observability/uds/sessionNameSta
 import { processRegistrationDeps, startSessionRegistration } from '@thyrox/local-observability/uds/sessionRegistration.js'
 import { registeredSessionName, sessionRegistryState, stableAddressEnabled, whenSessionRegistered } from '@thyrox/local-observability/uds/sessionRegistryState.js'
 import { sweepRegistry, type RegistrySweepDeps } from '@thyrox/local-observability/uds/registrySweep.js'
+import { notifyCorrespondentsOfRename, type RenameNoticeDeps } from '@thyrox/local-observability/uds/renameNotice.js'
 import {
   restoreSessionName as restoreSessionNamePorted,
   runStartupNaming as runStartupNamingPorted,
+  sanitizeSessionName,
+  type RegisteredName,
   type RenameContext,
 } from '@thyrox/local-observability/uds/sessionRename.js'
 import { cacheSessionTitle, getCurrentSessionTitle } from '@thyrox/storage/sessionStorage.js'
 import { generateShortWordSlug, isShortWordSlug, derivedSessionName } from '@thyrox/tool-registry/words.js'
 
 /** El contexto de renombre único de este proceso: mismo estado en cada llamada, como `wS()`. */
-function buildRenameContext(): RenameContext {
+export function buildRenameContext(): RenameContext {
   return {
     state: sessionNameState(),
     registry: {
@@ -200,4 +203,97 @@ export async function registerSessionAtLaunch(sessionNameArg?: string): Promise<
  */
 export function adoptLoopSessionId(sessionId: string, resumed: boolean): void {
   switchSession(asSessionId(sessionId), resumed ? 'resume' : 'startup_custom_id')
+}
+
+/**
+ * `RenameNoticeDeps` sin correspondiente real: en `bin/cli` no hay envío de
+ * mensajes entre sesiones por UDS (`git grep -l sendPeerMessage -- src/`
+ * sin resultados fuera del propio tipo) — `messagingEnabled` queda en
+ * `() => false` a propósito, la misma forma que `isSpareParked`/
+ * `setAgentName` de arriba: `notifyCorrespondentsOfRename` corta en su
+ * primera línea (`!deps.messagingEnabled()`) antes de tocar `ownSocket`,
+ * `listLive` o `send`, así que esas tres quedan con una implementación
+ * mínima que nunca corre.
+ */
+function buildRenameNoticeDeps(context: RenameContext): RenameNoticeDeps {
+  return {
+    state: context.state,
+    uniquenessEnabled: context.uniquenessEnabled,
+    messagingEnabled: () => false,
+    ownSocket: () => undefined,
+    listLive: () => context.registry.listLive(),
+    send: async () => undefined,
+    log: message => context.log(message, 'info'),
+  }
+}
+
+/**
+ * `/rename <nombre>` del chat de `bin/cli`. Compone los primitivos ya
+ * portados de `sessionRename.ts` (`tPt`/`resolveUniqueName`,
+ * `Vtn`/`scheduleNameRecheck`, `li`/`sanitizeSessionName`) sobre el registro
+ * de ESTA sesión, más el aviso a correspondientes (`zkr`/
+ * `notifyCorrespondentsOfRename`).
+ *
+ * Medido contra 2.1.283 antes de cablear, `chunk-csayct82.js` (comando) y
+ * `chunk-myby092r.js` (`LTn`, la función que ambas variantes —`local-jsx`
+ * interactiva y `local` de thin-client— invocan):
+ *
+ *   var r1o={type:"local-jsx",name:"rename",aliases:["name"],
+ *     description:"Rename the current conversation", …,
+ *     load:()=>import("/$bunfs/root/chunk-rna068k2.js")},
+ *   $Fe={type:"local",name:"rename",aliases:["name"],
+ *     supportsNonInteractive:!0, …,
+ *     load:()=>import("/$bunfs/root/chunk-sn2j4wz5.js")}
+ *
+ * `chunk-sn2j4wz5.js` (la variante `local`, la que corresponde a un CLI sin
+ * Ink): `async function o(e,a){let{message:m}=await LTn(e,a,!1);return
+ * {type:"text",value:m}}` — `e` es el argumento tecleado, `a` el contexto de
+ * turno, y devuelve el mensaje de `LTn` como texto.
+ *
+ * `LTn` (`chunk-myby092r.js`): si el argumento está vacío, genera un nombre
+ * con un fork del modelo (`jSt`/`f`, un `system_prompt` +
+ * `outputFormat:"json_schema"` pidiendo `{name}` kebab-case); si no, usa el
+ * argumento tal cual. Escribe con `ARt(n,"user",e.storageV5,…)` y arma el
+ * mensaje final: `"Session renamed to: "+i` en el caso simple, con el sufijo
+ * `(" + c + " is held by another live session on this machine)"` cuando
+ * `s.outcome==="yielded"`, y `"That name is empty once invisible characters
+ * are removed. Usage: /rename <name>"` cuando el nombre saneado queda vacío.
+ *
+ * DOS DIVERGENCIAS DECLARADAS (`porte-completo-no-parcial.md`):
+ *
+ *   - **Sin argumento, no genera nombre — muestra el actual.** `jSt`/`f`
+ *     abren un fork de conversación contra el modelo en vivo (otro
+ *     `querySource`, otro `system_prompt`, `outputFormat` de JSON) sólo para
+ *     sugerir un nombre; nada de esa maquinaria está portado, y añadirla
+ *     aquí sería una llamada al proveedor en medio del REPL, fuera del
+ *     alcance de este ítem. El ítem admite explícitamente esta rama
+ *     («derivar o mostrar el actual»): se muestra el nombre registrado.
+ *   - **El aviso a correspondientes no reproduce el disparador exacto de
+ *     `ARt`/`Bfe`.** En la referencia, `zkr` sólo se llama dentro de `Bfe`
+ *     cuando `V.yieldedFrom!==void 0` — una condición de la maquinaria de
+ *     escritura de registro (`ARt`/`Bfe`/`KDt`) que este árbol no porta
+ *     (`sessionRename.ts` porta `tPt`/`Gkr`/`Vtn`/`VFn`/`sae`/`jkr`, no
+ *     `ARt` ni `Bfe`). Aquí se llama cuando el nombre registrado cambia de
+ *     verdad a causa de este comando, la composición más fiel con lo que sí
+ *     está portado. Es inerte hoy de todos modos: `messagingEnabled` es
+ *     `() => false` (ver `buildRenameNoticeDeps`), así que no envía nada.
+ */
+export async function renameCurrentSession(requestedName: string | undefined): Promise<string> {
+  const context = buildRenameContext()
+  const before: RegisteredName | undefined = context.registeredName()
+  const trimmed = requestedName?.trim() ?? ''
+  if (!trimmed) {
+    return before ? `Session is named: ${before.name}. Usage: /rename <name>` : 'Usage: /rename <name>'
+  }
+  const sanitized = sanitizeSessionName(trimmed)
+  if (!sanitized) return 'That name is empty once invisible characters are removed. Usage: /rename <name>'
+  await restoreSessionNamePorted(sanitized, undefined, { source: 'user' }, context)
+  const after = context.registeredName()
+  const finalName = after?.name ?? sanitized
+  if (before !== undefined && before.name !== finalName) {
+    await notifyCorrespondentsOfRename(before.name, finalName, sanitized, undefined, buildRenameNoticeDeps(context))
+  }
+  return finalName === sanitized
+    ? `Session renamed to: ${finalName}`
+    : `Session renamed to: ${finalName} ("${sanitized}" is held by another live session on this machine)`
 }
