@@ -1,0 +1,8 @@
+host	pid1=process_api systemd=offline cgroups=v1 podman=4.9.3 restart_unit=/usr/lib/systemd/system/podman-restart.service
+present
+restart-no-kill	policy=no running=false restarts=0 pid_changed=yes
+restart-on-failure-kill	policy=on-failure running=true restarts=1 pid_changed=yes
+restart-always-kill	policy=always running=true restarts=1 pid_changed=yes
+health-runs-alone	log_after_10s=0 status=starting manual_rc=1 log_after_manual=1
+health-on-failure-restart	restarts_after_10s=0 manual_rc=1 restarts_after_manual=1 status=starting
+whole-tree-dies	defined_after=yes state_after=running restarts=0 volume_file_kept=yes podman_start_rc=0 running_after_start=true
