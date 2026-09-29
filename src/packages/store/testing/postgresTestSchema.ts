@@ -11,6 +11,13 @@
  * suelto: `Bun.SQL` es un pool, y medido contra PostgreSQL 16 un `SET` llegó a
  * 1 de 4 conexiones, así que `begin` podía caer en otra y no ver el esquema
  * (`.claude/workbench/datos-d1-store-20260929T062907/probe-search-path.sh`).
+ *
+ * Con el servidor caído, cada esquema desechable intentaba conectar por su
+ * cuenta y fallaba por separado (medido: 26 + 8 fallos de ~1 ms). Por eso
+ * `withDisposableSchema` comprueba la alcanzabilidad una sola vez por
+ * proceso, memoizada por URL (`assertPostgresReachable`): la primera llamada
+ * conecta de verdad y lanza UN error legible si no responde; las siguientes
+ * reutilizan ese resultado sin volver a conectar.
  */
 import { SQL } from 'bun'
 
@@ -66,6 +73,50 @@ function defaultConnect(url: string, options: ConnectOptions = {}): SQL {
   return new SQL({ url, connection: { search_path: options.searchPath } })
 }
 
+export type ReachabilityDeps = {
+  /** Sustituye la conexión de sondeo — para probar sin un servidor. */
+  connect?: (url: string) => SQL
+}
+
+const reachabilityCache = new Map<string, Promise<void>>()
+
+/** Limpia la memoización de {@link assertPostgresReachable} — sólo para pruebas. */
+export function resetPostgresReachabilityForTests(): void {
+  reachabilityCache.clear()
+}
+
+async function probeReachability(url: string, connect: (url: string) => SQL): Promise<void> {
+  let sql: SQL | undefined
+  try {
+    sql = connect(url)
+    await sql.unsafe('SELECT 1')
+  } catch (error) {
+    const cause = error instanceof Error ? error.message : String(error)
+    throw new Error(
+      `PostgreSQL de pruebas inalcanzable en ${maskCredentials(url)}: ${cause}. ` +
+        'Arráncalo con: pg_ctlcluster 16 main start',
+    )
+  } finally {
+    await sql?.close()
+  }
+}
+
+/**
+ * Comprueba que `url` responde, una sola vez por proceso: la comprobación se
+ * memoiza por URL, así que las llamadas siguientes reutilizan el mismo
+ * resultado sin volver a conectar — también si la primera falló. Sin esto,
+ * cada esquema desechable intentaba conectar por su cuenta y fallaba por
+ * separado (medido: 26 + 8 fallos de ~1 ms, cada uno con su propio error de
+ * bajo nivel del driver).
+ */
+export function assertPostgresReachable(url: string, deps: ReachabilityDeps = {}): Promise<void> {
+  const cached = reachabilityCache.get(url)
+  if (cached) return cached
+  const probe = probeReachability(url, deps.connect ?? defaultConnect)
+  reachabilityCache.set(url, probe)
+  return probe
+}
+
 /**
  * Corre `body` contra un esquema de PostgreSQL nuevo, de nombre único. La
  * conexión que recibe `body` tiene ese esquema como `search_path` en todas las
@@ -81,6 +132,7 @@ export async function withDisposableSchema<T>(
     throw new Error(`withDisposableSchema espera una URL postgres://, recibió '${maskCredentials(url)}'`)
   }
   const connect = deps.connect ?? defaultConnect
+  await assertPostgresReachable(url, { connect })
   const schema = `${SCHEMA_PREFIX}${(deps.randomSuffix ?? defaultRandomSuffix)()}`
   const admin = connect(url)
   try {

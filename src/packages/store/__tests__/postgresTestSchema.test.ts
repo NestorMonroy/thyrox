@@ -1,18 +1,28 @@
 /**
  * El esquema de usar y tirar de las pruebas PostgreSQL de `@thyrox/store`:
- * de dónde sale la URL de prueba, y las ramas de `withDisposableSchema`
- * (crear, correr, borrar — también al lanzar), con una conexión inyectada y
- * sin servidor.
+ * de dónde sale la URL de prueba, la comprobación de alcanzabilidad
+ * (`assertPostgresReachable`) que la memoiza, y las ramas de
+ * `withDisposableSchema` (crear, correr, borrar — también al lanzar), con una
+ * conexión inyectada y sin servidor.
  */
 import type { SQL } from 'bun'
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 
 import {
+  assertPostgresReachable,
   type DisposableSchemaDeps,
+  resetPostgresReachabilityForTests,
   resolvePostgresTestUrl,
   TEST_POSTGRES_URL_VAR,
   withDisposableSchema,
 } from '../testing/postgresTestSchema.ts'
+
+// Cada test parte de la memoización vacía: `withDisposableSchema` y
+// `assertPostgresReachable` comparten caché por URL, y las suites reutilizan
+// la misma URL de prueba entre casos.
+beforeEach(() => {
+  resetPostgresReachabilityForTests()
+})
 
 describe('resolvePostgresTestUrl', () => {
   test('sin la variable, da null', () => {
@@ -60,6 +70,71 @@ function fakeConnect(calls: string[]): NonNullable<DisposableSchemaDeps['connect
   }
 }
 
+/** Una conexión falsa que sondea sin lanzar: responde `SELECT 1` y no registra fallo. */
+function fakeReachableConnect(calls: string[]): (url: string) => SQL {
+  return url => {
+    calls.push(`CONNECT ${url}`)
+    return {
+      unsafe: async (query: string) => {
+        calls.push(`QUERY ${query}`)
+        return []
+      },
+      close: async () => {
+        calls.push('CLOSE')
+      },
+    } as unknown as SQL
+  }
+}
+
+/** Una conexión falsa cuyo sondeo (`unsafe`) siempre lanza — simula el servidor caído. */
+function fakeUnreachableConnect(message: string): (url: string) => SQL {
+  return () => {
+    return {
+      unsafe: async () => {
+        throw new Error(message)
+      },
+      close: async () => {},
+    } as unknown as SQL
+  }
+}
+
+describe('assertPostgresReachable', () => {
+  // CONTROL: sin memoización, la segunda llamada volvería a conectar — este
+  // caso caería (dos CONNECT en vez de uno) si se retira la caché.
+  test('servidor alcanzable: no lanza, y una segunda llamada no reconecta', async () => {
+    const calls: string[] = []
+    const connect = fakeReachableConnect(calls)
+    await assertPostgresReachable('postgres://u@h/reachable', { connect })
+    await assertPostgresReachable('postgres://u@h/reachable', { connect })
+    expect(calls).toEqual(['CONNECT postgres://u@h/reachable', 'QUERY SELECT 1', 'CLOSE'])
+  })
+
+  test('servidor inalcanzable: lanza un error con la URL enmascarada, la causa y la orden de arranque, sin la contraseña', async () => {
+    const connect = fakeUnreachableConnect('connect ECONNREFUSED 127.0.0.1:5432')
+    const url = 'postgres://user:secret@h/db'
+    let error: Error | undefined
+    try {
+      await assertPostgresReachable(url, { connect })
+    } catch (e) {
+      error = e as Error
+    }
+    expect(error?.message).toContain('postgres://***@h/db')
+    expect(error?.message).toContain('ECONNREFUSED')
+    expect(error?.message).toContain('pg_ctlcluster 16 main start')
+    expect(error?.message).not.toContain('secret')
+  })
+
+  // Sin servidor: un puerto recién cerrado en 127.0.0.1 no necesita PostgreSQL
+  // instalado y prueba la ruta real de `defaultConnect`/`Bun.SQL`.
+  test('puerto cerrado en 127.0.0.1: lanza sin necesitar un PostgreSQL de verdad', async () => {
+    const probe = Bun.listen({ hostname: '127.0.0.1', port: 0, socket: { data() {} } })
+    const { port } = probe
+    probe.stop(true)
+    const url = `postgres://user:pass@127.0.0.1:${port}/thyrox_test_closed_port`
+    await expect(assertPostgresReachable(url)).rejects.toThrow(/PostgreSQL de pruebas inalcanzable/)
+  })
+})
+
 describe('withDisposableSchema', () => {
   // CONTROL: el `search_path` va en el arranque de la conexión de trabajo, no
   // en un `SET` suelto. `Bun.SQL` es un pool: medido contra PostgreSQL 16, un
@@ -77,7 +152,12 @@ describe('withDisposableSchema', () => {
       { connect: fakeConnect(calls), randomSuffix: () => 'abc123' },
     )
     expect(result).toBe('ok')
+    // Las tres primeras entradas son la comprobación de alcanzabilidad
+    // (memoizada, así que sólo corre una vez por URL).
     expect(calls).toEqual([
+      'CONNECT ADMIN postgres://u@h/db',
+      'ADMIN: SELECT 1',
+      'CLOSE ADMIN',
       'CONNECT ADMIN postgres://u@h/db',
       'ADMIN: CREATE SCHEMA thyrox_test_abc123',
       'CONNECT WORK(thyrox_test_abc123) postgres://u@h/db',
@@ -104,6 +184,9 @@ describe('withDisposableSchema', () => {
       ),
     ).rejects.toBe(boom)
     expect(calls).toEqual([
+      'CONNECT ADMIN postgres://u@h/db',
+      'ADMIN: SELECT 1',
+      'CLOSE ADMIN',
       'CONNECT ADMIN postgres://u@h/db',
       'ADMIN: CREATE SCHEMA thyrox_test_xyz',
       'CONNECT WORK(thyrox_test_xyz) postgres://u@h/db',
