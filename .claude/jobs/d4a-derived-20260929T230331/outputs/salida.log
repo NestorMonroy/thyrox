@@ -1,0 +1,50 @@
+............................                                             [100%]
+28 passed in 0.17s
+test-merge-sqlite-union: 19 de 19 aserciones en verde
+  ok   la fila sin .rst se reporta
+  ok   y --strict sale 1
+  ok   la fila CON .rst no se reporta
+  ok   el par 5/05 se reporta como colisión
+  ok   6 y 7 no son colisión
+  ok   la entrada congelada no bloquea
+  ok   y el denominador se publica igual
+  ok   rehúsa con exit 2
+  ok   y no emite ningún conteo
+  ok   ve el huérfano de su sesión
+  ok   no ve el huérfano de la otra sesión
+  ok   1 fila en el alcance de la sesión, no 2
+  ok   devuelve el pendiente de su sesión
+  ok   la sesión con .rst no tiene pendientes
+  ok   rehúsa con exit 2
+  ok   y no toca su destino real
+  ok   el gate ve los 3 pares de relleno reales del corpus
+  ok   no aparecen archivos nuevos en el árbol
+  ok   no cambia ningún archivo del árbol
+
+19 aprobada(s) · 0 fallida(s) (alcance medido: check_finding_id_unique, sus dos mitades más el alcance por sesión)
+== 1. hueco NUEVO fuera del baseline: bloquea ==
+  ok    exit distinto de 0
+  ok    nombra el hueco nuevo
+  ok    el hook no escribe en el consumidor
+== 2. sólo el hueco CONGELADO: deja pasar ==
+  ok    exit 0
+== 3. corpus del consumidor NO alcanzable: no bloquea ==
+  ok    exit 0 — secundaria, no afirma sin medir
+  ok    lo dice en stderr
+  ok    y NO dice que corrió el gate
+== 4. gate ausente en el árbol que se empuja: no bloquea ==
+  ok    exit 0 sin bin/
+  ok    y lo declara
+
+resultado: 9 de 9 aserciones en verde
+merge_sqlite_union: agent_sessions: identical=1837, inserted=1, updated=0, deleted=0, conflict=0
+merge_sqlite_union: cleared_tool_results: identical=2305, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: documents: identical=6515, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: findings_history: identical=1659, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: schema_migrations: identical=14, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: task_session_highwater: identical=0, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: tasks: identical=2237, inserted=2, updated=3, deleted=0, conflict=0
+merge_exit=0
+.claude/workbench/d4a-three-way-merge-20260929T224254/probes/real-store-smoke.sh: line 9: sqlite3: command not found
+DERIVED_EXIT=1
+__BG_EXIT__=1
