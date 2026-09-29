@@ -50,6 +50,9 @@
       "@thyrox/swarm/teammateContextAlias.js": [
         "./src/teammateContextAlias.ts"
       ],
+      "@thyrox/swarm/childSession.js": [
+        "./src/childSession.ts"
+      ],
       "@thyrox/swarm/teammateState.js": [
         "./src/teammateState.ts"
       ],
