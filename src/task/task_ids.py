@@ -314,7 +314,15 @@ class Mapping:
         """
         self._by_key = {}
         self._by_subject = {}
+        #: Cita de capa -> ``citation_id`` de su fila (``correct_layer``).
+        self.aliases = {}
         for identifier, record in self.ids.items():
+            layer_citation = record.get("layer_citation")
+            if layer_citation:
+                self.aliases[layer_citation] = identifier
+                alias_layer, alias_ordinal = _split(layer_citation)
+                if alias_ordinal >= self._next.get(alias_layer, 0):
+                    self._next[alias_layer] = alias_ordinal + 1
             key = f"{record['session']}{KEY_SEP}{record['task']}"
             self._by_key[key] = identifier
             subject = " ".join((record.get("subject") or "").split())
@@ -329,6 +337,16 @@ class Mapping:
 
     def next_ordinal(self, layer: str) -> int:
         return self._next.get(layer, 1)
+
+    def resolve(self, citation: str) -> str | None:
+        """El ``citation_id`` que nombra ``citation``, sea la original o la de capa."""
+        if citation in self.ids:
+            return citation
+        return self.aliases.get(citation)
+
+    def preferred(self, identifier: str) -> str:
+        """La cita a usar en texto nuevo: la de capa si existe, si no la original."""
+        return (self.ids.get(identifier) or {}).get("layer_citation") or identifier
 
 
 def _now() -> str:
@@ -346,6 +364,36 @@ def _split(identifier: str) -> tuple:
 
 def format_id(layer: str, ordinal: int) -> str:
     return f"TASK-{layer.upper()}-{ordinal:04d}"
+
+
+#: La columna de la cita en la capa CORREGIDA (``correct_layer``). La crea la
+#: migracion de ``agent_store``; un store sin ella se lee como antes.
+LAYER_CITATION_COLUMN = "layer_citation_id"
+
+
+def _task_columns(conn) -> set:
+    return {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+
+
+def _max_ordinal(conn, layer: str) -> int:
+    """El numero mas alto repartido en una capa, sobre las DOS columnas de cita.
+
+    Es la unica secuencia por capa: ``citation_id`` y ``layer_citation_id``
+    comparten el espacio ``TASK-<LAYER>-NNNN``, y contar solo la primera haria
+    que ``ingest_board`` repartiera un numero que la segunda ya publico.
+    """
+    prefix = f"TASK-{layer.upper()}-"
+    columns = ["citation_id"]
+    if LAYER_CITATION_COLUMN in _task_columns(conn):
+        columns.append(LAYER_CITATION_COLUMN)
+    highest = 0
+    for column in columns:
+        value = conn.execute(
+            f"SELECT MAX(CAST(substr({column}, ?) AS INTEGER)) "
+            f"  FROM tasks WHERE {column} LIKE ?",
+            (len(prefix) + 1, f"{prefix}%")).fetchone()[0]
+        highest = max(highest, int(value or 0))
+    return highest
 
 
 def lookup(mapping: Mapping, session_id: str, task_id: str) -> str | None:
@@ -537,8 +585,11 @@ def mapping_from_store(store_path) -> Mapping:
             # La columna la crea la migracion del store. Sin ella el mapa esta
             # vacio de verdad — es el primer uso, no un fallo.
             return Mapping()
+        layer_citation = (LAYER_CITATION_COLUMN if LAYER_CITATION_COLUMN in columns
+                          else "NULL")
         rows = list(conn.execute(
-            "SELECT session_id, task_id, citation_id, submodule, subject "
+            "SELECT session_id, task_id, citation_id, submodule, subject, "
+            f"  {layer_citation} AS layer_citation "
             "  FROM tasks WHERE citation_id IS NOT NULL"))
     finally:
         conn.close()
@@ -550,6 +601,10 @@ def mapping_from_store(store_path) -> Mapping:
             "task": row["task_id"],
             "subject": row["subject"] or "",
         }
+        # Solo cuando existe: una clave en `None` cambiaria la forma del mapa
+        # de toda fila que nunca se corrigio.
+        if row["layer_citation"]:
+            ids[row["citation_id"]]["layer_citation"] = row["layer_citation"]
     return Mapping(ids)
 
 
@@ -701,13 +756,8 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
                     # ninguna (`gen`/NULL). El id es identidad — no se corrige
                     # aqui la CAPA de una fila ya clasificada.
                     layer_citation = layer_row if layer_row in LAYERS else card_layer
-                    max_ordinal = conn.execute(
-                        "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) "
-                        "  FROM tasks WHERE citation_id LIKE ?",
-                        (len(f"TASK-{layer_citation.upper()}-") + 1,
-                         f"TASK-{layer_citation.upper()}-%")
-                    ).fetchone()[0]
-                    citation = format_id(layer_citation, int(max_ordinal or 0) + 1)
+                    citation = format_id(layer_citation,
+                                         _max_ordinal(conn, layer_citation) + 1)
                     conn.execute(
                         "UPDATE tasks SET citation_id = ? "
                         " WHERE session_id = ? AND task_id = ? "
@@ -726,12 +776,7 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
                 if touched:
                     touched_cards.append((str(board_id), str(task_id_row), citation, subject))
                 continue
-            max_ordinal = conn.execute(
-                "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
-                " WHERE citation_id LIKE ?",
-                (len(f"TASK-{card_layer.upper()}-") + 1, f"TASK-{card_layer.upper()}-%")
-            ).fetchone()[0]
-            citation = format_id(card_layer, int(max_ordinal or 0) + 1)
+            citation = format_id(card_layer, _max_ordinal(conn, card_layer) + 1)
             next_task_id += 1
             conn.execute(
                 "INSERT INTO tasks (task_id, subject, description, status, "
@@ -828,7 +873,7 @@ def _cmd_link_board_ordinal(args: argparse.Namespace) -> int:
 
 
 def correct_layer(store_path, citation_id: str, layer: str,
-                  reason: str) -> tuple[str, str]:
+                  reason: str) -> tuple[str, str, str | None]:
     """Corrige la CAPA de una tarea sin tocar su ``citation_id``.
 
     Para que existe, y por que la columna y no el id
@@ -849,7 +894,20 @@ def correct_layer(store_path, citation_id: str, layer: str,
     ``submodule_source`` guarda la RAZON, no solo el valor nuevo: una columna
     que cambia sin decir por que es indistinguible de una que se corrompio.
 
-    Devuelve ``(capa_anterior, capa_nueva)``.
+    La cita en la capa corregida
+    ----------------------------
+    Si la capa nueva es una de ``LAYERS`` y el prefijo del ``citation_id`` no
+    la nombra, se acuña ``layer_citation_id``: la cita de la tarea en su capa
+    (``TASK-GEN-0644`` -> ``TASK-THYROX-0564``). El ``citation_id`` sigue
+    resolviendo; la cita nueva resuelve a la misma fila. El numero sale de la
+    misma secuencia que ``ingest_board`` (:func:`_max_ordinal`), asi que
+    ninguna de las dos columnas repite un numero de la otra.
+
+    Una cita de capa ya acuñada NO se reemplaza: si la capa vuelve a cambiar a
+    otra distinta, se rehusa. Publicada, es tan identidad como la primera.
+
+    Devuelve ``(capa_anterior, capa_nueva, cita_de_capa)``; la tercera es
+    ``None`` cuando no corresponde ninguna.
     """
     layer_actual = (layer or "").lower()
     if layer_actual not in LAYERS and layer_actual != UNKNOWN_LAYER:
@@ -864,30 +922,117 @@ def correct_layer(store_path, citation_id: str, layer: str,
             "por que es indistinguible de una que se corrompio.")
     conn = sqlite3.connect(store_path)
     try:
+        has_layer_column = LAYER_CITATION_COLUMN in _task_columns(conn)
         row = conn.execute(
-            "SELECT submodule FROM tasks WHERE citation_id = ?",
+            "SELECT submodule, "
+            + (LAYER_CITATION_COLUMN if has_layer_column else "NULL")
+            + " FROM tasks WHERE citation_id = ?",
             (citation_id,)).fetchone()
         if row is None:
             raise MappingError(
                 f"no hay ninguna tarea con la cita {citation_id} en "
                 f"{store_path}. NO se escribe nada.")
-        previous = row[0]
+        previous, layer_citation = row
+        needs_layer_citation = (layer_actual in LAYERS
+                                and _split(citation_id)[0] != layer_actual)
+        # Todas las negativas van ANTES de escribir: una correccion a medias
+        # (capa cambiada, cita de capa ausente) seria un estado que ningun
+        # lector sabria distinguir de uno correcto.
+        # Sin la columna, la capa se corrige igual y la cita de capa no se
+        # acuña: corregir la capa es la funcion principal y no depende de la
+        # migracion. `_cmd_fix_layer` lo dice en su salida.
+        needs_layer_citation = needs_layer_citation and has_layer_column
+        if (needs_layer_citation and layer_citation is not None
+                and _split(layer_citation)[0] != layer_actual):
+            raise MappingError(
+                f"{citation_id} ya tiene la cita de capa {layer_citation}, y "
+                f"una cita publicada no se reemplaza. NO se escribe nada.")
         stamp = _now()
         conn.execute(
             "UPDATE tasks SET submodule = ?, submodule_source = ?, "
             "  updated_at = ? WHERE citation_id = ?",
             (layer_actual, f"corregida {stamp}: {reason.strip()}",
              stamp, citation_id))
+        if needs_layer_citation and layer_citation is None:
+            layer_citation = format_id(layer_actual,
+                                       _max_ordinal(conn, layer_actual) + 1)
+            conn.execute(
+                f"UPDATE tasks SET {LAYER_CITATION_COLUMN} = ? "
+                f" WHERE citation_id = ?", (layer_citation, citation_id))
         conn.commit()
     finally:
         conn.close()
-    return previous, layer_actual
+    return previous, layer_actual, layer_citation if needs_layer_citation else None
+
+
+def assign_layer_citations(store_path, dry_run: bool = False) -> list:
+    """Acuña ``layer_citation_id`` en las filas ya corregidas que no la tienen.
+
+    Una fila la necesita cuando su capa es una de ``LAYERS`` y el prefijo de su
+    ``citation_id`` no la nombra: las corregidas antes de que existiera la
+    columna. No reusa :func:`correct_layer` porque esa reescribe
+    ``submodule_source``, y la razon original de la correccion se perderia.
+
+    El orden es el numero del ``citation_id``, de menor a mayor, para que dos
+    pasadas sobre el mismo store acuñen lo mismo. Devuelve
+    ``[(citation_id, cita_de_capa)]``; con ``dry_run`` no escribe.
+    """
+    conn = sqlite3.connect(store_path)
+    try:
+        if LAYER_CITATION_COLUMN not in _task_columns(conn):
+            raise MappingError(
+                f"el store {store_path} no tiene la columna "
+                f"{LAYER_CITATION_COLUMN}. Se crea al abrirlo con "
+                f"agent_store.connect(); NO se escribe nada.")
+        pending = []
+        for citation_id, layer in conn.execute(
+                "SELECT citation_id, submodule FROM tasks "
+                f" WHERE citation_id IS NOT NULL AND {LAYER_CITATION_COLUMN} IS NULL"):
+            layer = (layer or "").lower()
+            if layer in LAYERS and _split(citation_id)[0] != layer:
+                pending.append((_split(citation_id)[1], citation_id, layer))
+        assigned = []
+        next_by_layer: dict = {}
+        for _, citation_id, layer in sorted(pending):
+            if layer not in next_by_layer:
+                next_by_layer[layer] = _max_ordinal(conn, layer) + 1
+            layer_citation = format_id(layer, next_by_layer[layer])
+            next_by_layer[layer] += 1
+            assigned.append((citation_id, layer_citation))
+            if not dry_run:
+                conn.execute(
+                    f"UPDATE tasks SET {LAYER_CITATION_COLUMN} = ? "
+                    f" WHERE citation_id = ?", (layer_citation, citation_id))
+        if not dry_run:
+            conn.commit()
+    finally:
+        conn.close()
+    return assigned
+
+
+def _cmd_assign_layer_citations(args: argparse.Namespace) -> int:
+    assigned = assign_layer_citations(args.store, dry_run=args.dry_run)
+    verb = "acuñaria" if args.dry_run else "acuñada(s)"
+    print(f"assign-layer-citations: {len(assigned)} cita(s) de capa {verb}")
+    for citation_id, layer_citation in assigned:
+        print(f"  {citation_id} -> {layer_citation}")
+    return 0
 
 
 def _cmd_fix_layer(args: argparse.Namespace) -> int:
-    previous, new = correct_layer(args.store, args.cita, args.layer, args.reason)
+    previous, new, layer_citation = correct_layer(
+        args.store, args.cita, args.layer, args.reason)
     print(f"fix-layer: {args.cita} {previous} -> {new} "
           f"(la cita NO se mueve: es identidad, no clasificacion)")
+    if layer_citation:
+        print(f"  cita en su capa: {layer_citation} (resuelve a la misma fila)")
+    elif new in LAYERS and _split(args.cita)[0] != new:
+        with sqlite3.connect(args.store) as conn:
+            missing_column = LAYER_CITATION_COLUMN not in _task_columns(conn)
+        if missing_column:
+            print(f"  sin cita de capa: el store no tiene la columna "
+                  f"{LAYER_CITATION_COLUMN}; se crea al abrirlo con "
+                  f"agent_store.connect()", file=sys.stderr)
     return 0
 
 
@@ -994,13 +1139,18 @@ def _cmd_lookup(args: argparse.Namespace) -> int:
               f"sujeto, no por el numero.", file=sys.stderr)
         return 2
 
+    # El primer campo es la cita a usar en texto nuevo: la de capa cuando la
+    # fila la tiene. La original se nombra al final de la MISMA linea, porque
+    # sigue resolviendo y hay commits que la citan.
+    shown = mapping.preferred(identifier)
+    original = f"  (cita original: {identifier})" if shown != identifier else ""
     if subject:
-        print(f"{identifier}  {subject[:SUBJECT_WIDTH]}")
+        print(f"{shown}  {subject[:SUBJECT_WIDTH]}{original}")
     else:
         # Sin sujeto se DICE, no se calla: una linea con solo el id volveria
         # indistinguible «esta tarea no tiene titulo» de «este comando no
         # publica el sujeto», que es el defecto que esta salida cierra.
-        print(f"{identifier}  (sin sujeto en el store)")
+        print(f"{shown}  (sin sujeto en el store){original}")
     return 0
 
 
@@ -1126,6 +1276,13 @@ def main(argv=None) -> int:
                         help="por que la anterior era incorrecta; queda en "
                              "submodule_source")
     p_layer.set_defaults(func=_cmd_fix_layer)
+
+    p_layer_citations = sub.add_parser(
+        "assign-layer-citations",
+        help="acuña la cita de capa de las filas ya corregidas que no la tienen")
+    p_layer_citations.add_argument("--dry-run", action="store_true",
+                                   help="publica lo que acuñaria, sin escribir")
+    p_layer_citations.set_defaults(func=_cmd_assign_layer_citations)
 
     p_assign_ids = sub.add_parser("assign-ids", help="acuña el id que falte, desde el store")
     p_assign_ids.add_argument("--dry-run", action="store_true")

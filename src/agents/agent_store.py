@@ -834,6 +834,12 @@ SUBMODULES = ("api", "db", "docs", "server", "thyrox", "ui")
 #: :ref:`err-026`, que registra ese diseño y su correccion.
 _TASK_CITATION_COLUMNS = {
     "citation_id": "TEXT",
+    # La cita en la capa CORREGIDA. `citation_id` es identidad y no se mueve
+    # (`task_ids.correct_layer`); cuando la capa de una fila deja de ser la que
+    # su prefijo declara, esta columna lleva la cita que la nombra en su capa
+    # (`TASK-GEN-0644` -> `TASK-THYROX-0564`). Las dos resuelven a la fila, y
+    # las dos salen de la misma secuencia por capa.
+    "layer_citation_id": "TEXT",
 }
 
 #: Columna de IDENTIDAD de una tarjeta del board — ``(session_id,
@@ -1010,6 +1016,8 @@ def _migrate_tasks_citation_columns(conn: sqlite3.Connection) -> None:
     # filas ya acuñadas. Sin el `WHERE`, N filas sin acuñar chocarian entre si.
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_citation "
                  "ON tasks(citation_id) WHERE citation_id IS NOT NULL")
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_layer_citation "
+                 "ON tasks(layer_citation_id) WHERE layer_citation_id IS NOT NULL")
     conn.commit()
 
 
@@ -1840,12 +1848,27 @@ def _reanchor_citations_by_subject(conn, session: str, citas_antes: dict) -> int
             (session, citation)).fetchone()
         if actual and actual[0] == destino:
             continue                    # ya está donde debe: nada que mover
+        # La cita de capa viaja con su `citation_id`: si se quedara en la fila
+        # de origen, las dos citas de una tarea nombrarian filas distintas.
+        layer_citation = None
+        if "layer_citation_id" in {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}:
+            found = conn.execute(
+                "SELECT layer_citation_id FROM tasks "
+                " WHERE session_id = ? AND citation_id = ?", (session, citation)).fetchone()
+            layer_citation = found[0] if found else None
         # Se libera antes de asignar: la columna es única por sesión de hecho, y
         # dos filas con la misma cita es peor que ninguna.
+        if layer_citation is not None:
+            conn.execute("UPDATE tasks SET layer_citation_id = NULL "
+                         " WHERE session_id = ? AND citation_id = ?", (session, citation))
         conn.execute("UPDATE tasks SET citation_id = NULL "
                      " WHERE session_id = ? AND citation_id = ?", (session, citation))
         conn.execute("UPDATE tasks SET citation_id = ? "
                      " WHERE session_id = ? AND task_id = ?", (citation, session, destino))
+        if layer_citation is not None:
+            conn.execute("UPDATE tasks SET layer_citation_id = ? "
+                         " WHERE session_id = ? AND task_id = ?",
+                         (layer_citation, session, destino))
         movidas += 1
     return movidas
 

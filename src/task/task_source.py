@@ -195,13 +195,17 @@ def citation_index(records, store_path=None, session_id=None):
         columns = {row[1] for row in conn.execute('PRAGMA table_info(tasks)')}
         if 'citation_id' not in columns:
             return {}
+        # La cita que se publica es la de capa cuando existe: es la que un texto
+        # nuevo debe usar, y la original sigue resolviendo por su cuenta.
+        shown = ('COALESCE(layer_citation_id, citation_id)'
+                 if 'layer_citation_id' in columns else 'citation_id')
         if session_id:
             rows = conn.execute(
-                'SELECT subject, citation_id FROM tasks '
+                f'SELECT subject, {shown} FROM tasks '
                 ' WHERE session_id = ? AND citation_id IS NOT NULL', (session_id,))
         else:
             rows = conn.execute(
-                'SELECT subject, citation_id FROM tasks '
+                f'SELECT subject, {shown} FROM tasks '
                 ' WHERE citation_id IS NOT NULL')
         by_subject = {}
         for subject, citation in rows:

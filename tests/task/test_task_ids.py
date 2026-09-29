@@ -641,6 +641,129 @@ try:
 except kx.MappingError:
     check(True, "capa: capa fuera del canon REHUSA")
 
+
+# ---------------------------------------------------------------------------
+# 13. La cita de la CAPA corregida — `layer_citation_id`, una columna aparte.
+#
+# El bloque 9 fija que `fix-layer` NO mueve el `citation_id`: es identidad.
+# Eso deja una tarea de thyrox citada para siempre como `TASK-GEN-NNNN`, que
+# es la forma en que nacian todas las tarjetas del board sin capa declarada.
+# La segunda columna da la cita en su capa sin tocar la primera: las dos
+# resuelven a la misma fila, y las dos salen de UNA sola secuencia por capa.
+#
+# EL QUE DISCRIMINA es 13c: sin contar la columna nueva al numerar, el
+# siguiente `ingest-board` de thyrox repetiria el numero ya repartido, y una
+# cita nombraria dos tareas.
+def _store_with_layer_citation(filas):
+    """Como `_store_con`, con la columna `layer_citation_id` presente."""
+    d, db = _store_con(filas)
+    c = sqlite3.connect(db)
+    c.execute("ALTER TABLE tasks ADD COLUMN layer_citation_id TEXT")
+    c.commit(); c.close()
+    return d, db
+
+
+def _layer_citation_of(db, task_id):
+    return sqlite3.connect(db).execute(
+        "SELECT citation_id, layer_citation_id FROM tasks WHERE task_id = ?",
+        (task_id,)).fetchone()
+
+
+_, DB13 = _store_with_layer_citation([
+    ("10", "Tarea de thyrox acuñada sin capa", S, "gen", "TASK-GEN-0010"),
+    ("5", "Otra tarea de thyrox", S, "thyrox", "TASK-THYROX-0005"),
+])
+_minted = kx.correct_layer(DB13, "TASK-GEN-0010", "thyrox", "el trabajo vive en thyrox")
+_row = _layer_citation_of(DB13, "10")
+check(_row == ("TASK-GEN-0010", "TASK-THYROX-0006"),
+      "13a: corregir a una capa distinta del prefijo acuña la cita de esa capa")
+check(_minted[2] == "TASK-THYROX-0006",
+      "13a: y la devuelve a quien la pidio")
+
+kx.correct_layer(DB13, "TASK-GEN-0010", "thyrox", "otra vez")
+check(_layer_citation_of(DB13, "10")[1] == "TASK-THYROX-0006",
+      "13b: repetir la correccion no acuña otra cita (idempotente)")
+
+_board13 = _board_con({"11": {"subject": "Tarjeta nueva de thyrox",
+                              "description": "", "status": "pending"}})
+kx.ingest_board(DB13, _board13, S, ["11"], layer="thyrox")
+check(_layer_citation_of(DB13, "11")[1] is None and sqlite3.connect(DB13).execute(
+          "SELECT citation_id FROM tasks WHERE board_ordinal = 11").fetchone()[0]
+      == "TASK-THYROX-0007",
+      "13c: ingest-board cuenta la columna nueva y NO repite el 0006")
+
+_map13 = kx.mapping_from_store(DB13)
+check(_map13.resolve("TASK-THYROX-0006") == "TASK-GEN-0010",
+      "13d: la cita de capa resuelve a la misma fila que su citation_id")
+check(_map13.resolve("TASK-GEN-0010") == "TASK-GEN-0010",
+      "13d: y el citation_id sigue resolviendo")
+check(_map13.next_ordinal("thyrox") == 8,
+      "13d: la marca de agua del mapa tambien cuenta la columna nueva")
+
+_, DB13e = _store_with_layer_citation([
+    ("20", "Ya nacio en su capa", S, "thyrox", "TASK-THYROX-0020"),
+    ("21", "Cruza repos", S, "docs", "TASK-DOCS-0021"),
+])
+kx.correct_layer(DB13e, "TASK-THYROX-0020", "thyrox", "sin cambio")
+kx.correct_layer(DB13e, "TASK-DOCS-0021", "gen", "cruza repos")
+check(_layer_citation_of(DB13e, "20")[1] is None,
+      "13e: si el prefijo ya es la capa, no se acuña nada")
+check(_layer_citation_of(DB13e, "21")[1] is None,
+      "13e: `gen` no es una capa: corregir a gen no acuña cita")
+
+try:
+    kx.correct_layer(DB13, "TASK-GEN-0010", "docs", "cambio de opinion")
+    check(False, "13f: una cita de capa ya publicada no se reemplaza — REHUSA")
+except kx.MappingError:
+    check(_layer_citation_of(DB13, "10")[1] == "TASK-THYROX-0006",
+          "13f: una cita de capa ya publicada no se reemplaza — REHUSA")
+
+_, DB13g = _store_con([("30", "Store sin la columna", S, "gen", "TASK-GEN-0030")])
+_without_column = kx.correct_layer(DB13g, "TASK-GEN-0030", "thyrox", "falta la migracion")
+check(_without_column == ("gen", "thyrox", None)
+      and sqlite3.connect(DB13g).execute(
+          "SELECT submodule FROM tasks WHERE task_id = '30'").fetchone()[0] == "thyrox",
+      "13g: sin la columna, la capa se corrige igual y no se acuña cita de capa")
+_cli13g = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB13g), "fix-layer", "TASK-GEN-0030",
+     "--layer", "docs", "--reason", "otra"], capture_output=True, text=True)
+check(_cli13g.returncode == 0 and "layer_citation_id" in _cli13g.stderr,
+      "13g: y la CLI lo dice, nombrando la columna que falta")
+
+_look13 = subprocess.run(
+    [sys.executable, str(SUT), "--store", str(DB13), "lookup", S, "10"],
+    capture_output=True, text=True)
+check(_look13.stdout.split()[:1] == ["TASK-THYROX-0006"]
+      and "TASK-GEN-0010" in _look13.stdout
+      and len(_look13.stdout.strip().splitlines()) == 1,
+      "13h: lookup publica primero la cita de capa, nombra la original, en una linea")
+
+# 13i — el relleno de lo ya corregido. Las filas cuya capa ya se corrigio antes
+#     de que existiera la columna reciben su cita de capa, sin tocar la RAZON
+#     que `submodule_source` guarda (por eso no se reusa `correct_layer`).
+_, DB13i = _store_with_layer_citation([
+    ("40", "Capa docs, prefijo gen", S, "docs", "TASK-GEN-0040"),
+    ("41", "Sin capa conocida", S, None, "TASK-GEN-0041"),
+    ("42", "Ya en su capa", S, "thyrox", "TASK-THYROX-0003"),
+    ("43", "Capa thyrox, prefijo gen", S, "thyrox", "TASK-GEN-0043"),
+])
+sqlite3.connect(DB13i).execute(
+    "UPDATE tasks SET submodule_source = 'corregida antes'").connection.commit()
+_dry = kx.assign_layer_citations(DB13i, dry_run=True)
+check(_dry == [("TASK-GEN-0040", "TASK-DOCS-0001"), ("TASK-GEN-0043", "TASK-THYROX-0004")]
+      and _layer_citation_of(DB13i, "40")[1] is None,
+      "13i: dry-run publica lo que acuñaria y no escribe")
+_done = kx.assign_layer_citations(DB13i)
+check(_done == _dry and _layer_citation_of(DB13i, "43")[1] == "TASK-THYROX-0004",
+      "13i: acuña solo donde el prefijo no nombra una capa conocida")
+check(_layer_citation_of(DB13i, "41")[1] is None and _layer_citation_of(DB13i, "42")[1] is None,
+      "13i: sin capa conocida, o ya en su capa, no acuña nada")
+check(sqlite3.connect(DB13i).execute(
+          "SELECT COUNT(*) FROM tasks WHERE submodule_source = 'corregida antes'").fetchone()[0] == 4,
+      "13i: no toca la razon de la correccion")
+check(kx.assign_layer_citations(DB13i) == [],
+      "13i: una segunda pasada no acuña nada (idempotente)")
+
 print(f"{checks} aserciones")
 if failures:
     for f in failures:
