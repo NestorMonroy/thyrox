@@ -1,0 +1,1 @@
+Shims export type * (H-THYROX-262): los 30 shims de src/packages y src/verify/expandStarShims.ts con su prueba tests/verify/expandStarShims.test.ts

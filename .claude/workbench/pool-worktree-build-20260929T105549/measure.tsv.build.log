@@ -1,0 +1,3 @@
+transparent-napi: Bun.build falló
+ResolveMessage: Could not resolve: "../native/build/Release/transparent.node"
+buildJavascript: 1 paquete(s) con fallo (alcance medido: 51 paquete(s))

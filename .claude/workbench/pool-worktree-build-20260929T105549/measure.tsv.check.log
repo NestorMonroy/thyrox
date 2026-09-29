@@ -1,0 +1,2 @@
+transparent-napi: 3 default(s) sin .js: ./src/index.ts, ./src/proxyHeader.ts, ./src/build.ts
+buildJavascript: 1 paquete(s) con fallo (alcance medido: 51 paquete(s))

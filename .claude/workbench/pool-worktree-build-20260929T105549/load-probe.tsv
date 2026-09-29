@@ -1,0 +1,52 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+agent	falla(1)	
+app-host	ok	
+audio-capture-napi	ok	
+binary	ok	
+bridge	ok	
+claude-for-chrome-mcp	ok	
+cli	falla(1)	SyntaxError: Unexpected keyword 'export'
+color-diff-napi	ok	
+command-runtime	ok	
+computer-use-input	ok	
+computer-use-mcp	ok	
+computer-use-swift	ok	
+config	ok	
+context-compression	ok	
+coordination	falla(1)	error: Cannot find module '@thyrox/coordination' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+daemon	ok	
+finding	ok	
+headless-sdk	ok	
+ide	ok	
+image-processor-napi	ok	
+ink	ok	
+local-observability	ok	
+mcp-runtime	ok	
+memory	ok	
+mitm	falla(1)	error: Cannot find module '@thyrox/mitm' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+modifiers-napi	ok	
+observability	falla(1)	error: Cannot find module '@thyrox/observability' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+output	ok	
+paths	falla(1)	error: Cannot find module '@thyrox/paths' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+permission	falla(1)	SyntaxError: Unexpected keyword 'export'
+plan	falla(1)	error: Cannot find module '@thyrox/plan' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+provider	falla(1)	SyntaxError: Unexpected keyword 'export'
+repl	ok	
+ripgrep-napi	ok	
+server	ok	
+shared-state	falla(1)	error: Cannot find module '@thyrox/shared-state' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+shell	ok	
+skills	falla(1)	error: Cannot find module '@thyrox/skills' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+stdin-napi	ok	
+storage	ok	
+store	falla(1)	error: Cannot find module '@thyrox/store' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+swarm	ok	
+task	ok	
+teleport	ok	
+tool-registry	ok	
+tools	falla(1)	error: Cannot find module '@thyrox/tools' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
+transparent-napi	ok	
+updater	ok	
+url-handler-napi	ok	
+voice	ok	
+workbench	falla(1)	error: Cannot find module '@thyrox/workbench' from '/home/user/thyrox/.thyrox/pool-worktrees/diag-build/[eval]'
