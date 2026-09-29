@@ -217,6 +217,13 @@ fi
 # no viajó. Sin rutas lee las staged del índice del propio commit.
 python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
 
+# Un archivo preparado que un proceso vivo sigue escribiendo —la salida de un
+# ítem de pool escrita directamente en un banco, un log que alguien anexa— se
+# commitearía cortado en un instante arbitrario. Bloquea: el remedio es esperar
+# a que el escritor termine, y 2 («no pude demostrar que nadie escribe») tampoco
+# es un verde.
+python3 "$GATES/check_staged_live_writers.py" --repo "$ROOT" || CODE=1
+
 # Cada unidad de `.claude/cache/` en su carpeta con un README que dice qué
 # guarda, de qué episodio sale y cómo se regenera. Estaba cableado sólo en el
 # pre-commit compartido de los consumidores (`src/verify/pre-commit.sh`), así
