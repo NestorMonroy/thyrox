@@ -26,6 +26,7 @@ _contiene() { if [[ "$2" == *"$3"* ]]; then echo "  ok    $1"; ok=$((ok+1));
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 export THYROX_JOBS_DIR="$TMP/jobs" THYROX_SESSION_LEDGER_DIR="$TMP/jobs"
+export THYROX_RUNTIME_DIR="$TMP/runtime"
 export THYROX_BACKGROUND_LOG_DIR="$TMP/logs"
 # Reserva 200 MB y los toca: la memoria pico tiene que verlos.
 RESERVA="python3 -c 'b = bytearray(200 * 1024 * 1024); b[::4096] = b\"x\" * len(b[::4096])'"

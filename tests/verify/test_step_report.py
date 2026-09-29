@@ -178,5 +178,22 @@ with tempfile.TemporaryDirectory() as tmp:
         refused = type(error) is ValueError
     assert_equal("sin lotes medidos rehúsa en vez de publicar ceros", True, refused)
 
+    # Un ítem sin `<n>.closed` todavía corre o murió a medio publicar: el
+    # informe no lo lee aunque su `.time` ya esté en la salida.
+    unsealed = Path(tmp) / "unsealed"
+    (unsealed / "outputs").mkdir(parents=True)
+    for n, peak in ((1, 1000), (2, 9000)):
+        (unsealed / f"outputs/{n}.time").write_text(f"{peak} 1.0 0.5 0.1\n")
+    (unsealed / "outputs/1.closed").write_text(json.dumps({"item": "1", "generation": 1, "artifacts": {}}))
+    assert_equal("sin <n>.closed, el ítem no entra en la medida",
+                 {"measured": 1, "max": 1000, "median": 1000}, sr._memory(unsealed))
+    sealed_glob = sr.closed_glob
+    sr.closed_glob = lambda directory, pattern: sorted(Path(directory).glob(pattern))
+    try:
+        assert_equal("control: sin el filtro de cerrados, el ítem sin sello vuelve a contar",
+                     2, sr._memory(unsealed)["measured"])
+    finally:
+        sr.closed_glob = sealed_glob
+
 print(f"test_step_report: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

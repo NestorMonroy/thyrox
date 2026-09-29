@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c PYTHONPATH=src python3 tests/verify/test_tsc_cycle.py 2>&1 | grep -E \"sello|FALLA|aserciones\"", "started_at": "2026-09-29T20:35:49+00:00"}

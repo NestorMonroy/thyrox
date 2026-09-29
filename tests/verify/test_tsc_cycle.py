@@ -678,5 +678,23 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("el TTL es parte de la configuración del paso (setup_id)", "5m",
                  tc.step_setup_of(current, "claude-sonnet-5", Path("/wt"), "modules", cache_ttl="5m")["policy"]["cache_ttl"])
 
+# Un ítem sin `<n>.closed` no terminó de publicarse: su duración no acota el TTL
+# aunque sea la más larga del paso anterior.
+with tempfile.TemporaryDirectory() as tmp:
+    previous = Path(tmp) / "step-154" / "outputs"
+    previous.mkdir(parents=True)
+    publish(previous / "1.json").write_text(json.dumps({"duration_ms": 2 * 60000}))
+    (previous / "2.json").write_text(json.dumps({"duration_ms": 30 * 60000}))
+    current = Path(tmp) / "step-155"
+    (current / "outputs").mkdir(parents=True)
+    assert_equal("sin <n>.closed, el ítem no acota el TTL", 2.0, tc.previous_item_bound(current))
+    sealed_glob = tc.closed_glob
+    tc.closed_glob = lambda directory, pattern: sorted(Path(directory).glob(pattern))
+    try:
+        assert_equal("control: sin el filtro de cerrados, el ítem sin sello acota", 30.0,
+                     tc.previous_item_bound(current))
+    finally:
+        tc.closed_glob = sealed_glob
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

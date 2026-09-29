@@ -277,6 +277,35 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("devuelve cuántos reconstruyó, y una segunda pasada no reconstruye nada", (2, 0),
                  (filled, pp.backfill_provenance(run_dir)))
 
+# Una salida sin `<n>.closed` es de un ítem que no terminó de publicarse: no da
+# procedencia aunque nombre el patrón antes que la publicada.
+def unsealed_backfill() -> dict:
+    with tempfile.TemporaryDirectory() as directory:
+        run_dir = Path(directory)
+        for step, file in (("step-001", "src/a.ts"), ("step-002", "src/b.ts")):
+            (run_dir / step / "outputs").mkdir(parents=True)
+            (run_dir / step / "items.txt").write_text(f"{file} {run_dir}/{step}/items/1.txt\n")
+            output = run_dir / step / "outputs/1.json"
+            if step == "step-002":
+                publish(output)
+            output.write_text(json.dumps({"result": "```json\n" + json.dumps(
+                {"edits": [], "patterns": [{"patron": "ghost", "senal_del_verificador": "TS7: g",
+                                            "fix_generico": "f"}]}) + "\n```"}))
+        pp.tsc_sweep.add_pattern(run_dir, {"name": "ghost", "signal": "TS7: g", "fix": "f"})
+        pp.backfill_provenance(run_dir)
+        return pp.tsc_sweep.load_patterns(run_dir)["ghost"]["provenance"]
+
+
+assert_equal("una salida sin sello no da procedencia; la da la primera publicada",
+             "step-002", unsealed_backfill()["step"])
+sealed_check = pp.is_closed
+pp.is_closed = lambda directory, item: True
+try:
+    assert_equal("control: sin el filtro de cerrados, la salida sin sello la da",
+                 "step-001", unsealed_backfill()["step"])
+finally:
+    pp.is_closed = sealed_check
+
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los
 # consumidores que el ítem declara. Las ediciones se aplican con el porte del
