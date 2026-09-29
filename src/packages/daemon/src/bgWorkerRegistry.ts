@@ -12,9 +12,9 @@
  */
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { isPidAlive } from '@thyrox/shell/genericProcessUtils.js'
 export { isPidAlive }
 
@@ -91,8 +91,7 @@ export const HEARTBEAT_POLL_MS = 5_000
 export const STALLED_THRESHOLD_MS = 120_000
 
 function getJobsRoot(): string {
-  const root = process.env.THYROX_CONFIG_HOME
-  return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return resolve(getConfigHomeDir(), 'jobs')
 }
 
 function getJobDir(short: string): string {

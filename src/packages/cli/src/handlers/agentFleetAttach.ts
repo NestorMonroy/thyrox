@@ -44,8 +44,9 @@
 
 import { existsSync, openSync, readSync, closeSync, statSync } from 'node:fs'
 import { connect } from 'node:net'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 /**
  * Source: ant 4774.js spare-ready loop uses 10s budget (`Date.now() + 10_000`).
@@ -185,8 +186,7 @@ export async function waitForWorkerFirstFrame(
 }
 
 function getJobsRoot(): string {
-  const root = process.env.THYROX_CONFIG_HOME
-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return join(getConfigHomeDir(), 'jobs')
 }
 
 function getJobDir(short: string): string {
@@ -372,7 +372,7 @@ function buildResumeArgsIfTranscriptExists(
   sessionId: string,
 ): readonly string[] {
   try {
-    const root = process.env.THYROX_CONFIG_HOME ?? join(homedir(), '.claude')
+    const root = getConfigHomeDir()
     const projectsDir = join(root, 'projects')
     const slug = cwd.replace(/[/\\]/g, '-').replace(/^-/, '-')
     const transcript = join(projectsDir, slug, `${sessionId}.jsonl`)

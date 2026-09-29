@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { drainSpool, ingestEnvelope, writeSpoolEnvelope } from '../dispatchSpool.js'
 
-const SPOOL = join(homedir(), '.claude', 'daemon', 'dispatch')
+const SPOOL = join(getConfigHomeDir(), 'daemon', 'dispatch')
 const REJECTED = join(SPOOL, 'rejected')
 
 function clearSpool(): void {

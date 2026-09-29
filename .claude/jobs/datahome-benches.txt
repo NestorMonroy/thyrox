@@ -1,0 +1,1 @@
+.claude/workbench/data-home-resolver-20260929T042341 .claude/workbench/daemon-config-home-20260929T042341

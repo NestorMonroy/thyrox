@@ -66,8 +66,9 @@ export function setLogEventFn(
  */
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync, promises as fsPromises } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 export type FleetJobStatus = 'working' | 'blocked' | 'done' | 'failed' | 'stopped'
 export type FleetTempo = 'active' | 'blocked' | 'idle'
@@ -121,8 +122,7 @@ const STATE_FILE = 'state.json'
 
 /** Fiel a `ccnmt: fleetStore.ts:38-41` (ant `b0()`). */
 function getJobsRoot(): string {
-  const root = process.env.THYROX_CONFIG_HOME
-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return join(getConfigHomeDir(), 'jobs')
 }
 
 /** Fiel a `ccnmt: fleetStore.ts:49-51` (ant `V4(short)`). */

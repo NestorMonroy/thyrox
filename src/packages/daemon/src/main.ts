@@ -3,6 +3,7 @@ import { resolve } from 'path'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { logEvent } from '@thyrox/local-observability'
 import { PRODUCT_NAME } from '@thyrox/config/product'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 /**
  * Exit code used by workers for permanent (non-retryable) failures.
@@ -121,11 +122,10 @@ export async function daemonMain(args: string[]): Promise<void> {
 }
 
 async function bgDaemonTailLog(): Promise<void> {
-  const { homedir } = await import('node:os')
   const { join } = await import('node:path')
   const { existsSync } = await import('node:fs')
   const today = new Date().toISOString().slice(0, 10)
-  const logPath = join(homedir(), '.claude', 'telemetry', `events-${today}.jsonl`)
+  const logPath = join(getConfigHomeDir(), 'telemetry', `events-${today}.jsonl`)
   if (!existsSync(logPath)) {
     console.error(`bg daemon log: no events file at ${logPath}`)
     console.error(`(set THYROX_CODE_LOCAL_TELEMETRY=1 + restart daemon to populate)`)
@@ -182,10 +182,9 @@ async function bgDaemonStatus(asJson = false): Promise<void> {
 async function daemonLaunchAgentVerb(
   verb: 'install' | 'uninstall' | 'enable' | 'disable' | 'restart' | 'is-stale' | 'is-active',
 ): Promise<void> {
-  const { homedir } = await import('node:os')
   const { join } = await import('node:path')
   const la = await import('./launchAgent.js')
-  const ccbDir = join(homedir(), '.claude', 'daemon')
+  const ccbDir = join(getConfigHomeDir(), 'daemon')
   const opts = {
     jsonPath: join(ccbDir, 'state.json'),
     logPath: join(ccbDir, 'daemon.log'),

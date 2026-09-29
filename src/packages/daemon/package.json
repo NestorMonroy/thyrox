@@ -68,6 +68,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
-    "@thyrox/agent": "0.4.0"
+    "@thyrox/agent": "0.4.0",
+    "@thyrox/config": "0.1.0"
   }
 }

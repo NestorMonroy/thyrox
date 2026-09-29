@@ -31,8 +31,9 @@ import {
   unlinkSync,
   watch,
 } from 'node:fs'
-import { homedir } from 'node:os'
 import { basename, join } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { logEvent } from '@thyrox/local-observability'
 
 /** ant 5165.js DF3 — max age before a spool file is considered stale (24h). */
@@ -52,7 +53,7 @@ export interface DispatchEnvelope {
 }
 
 function getSpoolDir(): string {
-  return join(homedir(), '.claude', 'daemon', 'dispatch')
+  return join(getConfigHomeDir(), 'daemon', 'dispatch')
 }
 
 function getRejectedDir(): string {

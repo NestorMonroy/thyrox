@@ -20,8 +20,8 @@
  */
 
 import { appendFileSync, mkdirSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import {
   getJobDir,
   readJobStateSync,
@@ -35,8 +35,7 @@ import type {
 import type { WorkerState, WorkerStateFile, WorkerTempo } from './state.js'
 
 function getJobsRoot(): string {
-  const root = process.env.THYROX_CONFIG_HOME
-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return join(getConfigHomeDir(), 'jobs')
 }
 
 function getTimelinePath(short: string): string {

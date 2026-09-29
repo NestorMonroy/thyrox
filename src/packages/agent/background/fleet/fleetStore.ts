@@ -24,9 +24,8 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { existsSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
-import { readEnv } from '@thyrox/config/env'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import type {
   FleetJob,
@@ -41,8 +40,7 @@ const PINS_FILE = 'pins.json'
 
 /** Source: ant b0(). */
 export function getJobsRoot(): string {
-  const root = readEnv('THYROX_CONFIG_HOME')
-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return join(getConfigHomeDir(), 'jobs')
 }
 
 /** Source: ant V4(short). */

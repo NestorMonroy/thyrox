@@ -27,8 +27,9 @@ import { connect } from 'node:net'
 import { randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { homedir, platform as osPlatform, freemem } from 'node:os'
+import { platform as osPlatform, freemem } from 'node:os'
 
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { logEvent as logEventFn, spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
 import { encodeCtrlFrame } from './internal/ptyFrame.js'
 import { adoptFromRoster, adoptRunningPtyRecords } from './bgAdopt.js'
@@ -188,7 +189,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
           const short = sessionId.slice(0, 8)
           const cwd = process.cwd()
           // Genera el repuesto vía la ruta spawnPtyHost existente de bg.ts.
-          const jobDir = join(homedir(), '.claude', 'jobs', short)
+          const jobDir = join(getConfigHomeDir(), 'jobs', short)
           mkdirSync(jobDir, { recursive: true })
           const r = spawnPtyHost({
             short,

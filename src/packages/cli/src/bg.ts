@@ -32,12 +32,12 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
 import {
   hasAutoModeOptIn,
   hasSkipDangerousModePermissionPrompt,
 } from '@thyrox/config/settings'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { splitBgArgs } from './bg/argParse.js'
 import {
   formatRelativeTime,
@@ -96,10 +96,7 @@ interface JobMeta {
 const JOB_SHORT_LENGTH = 8
 
 function getJobsRoot(): string {
-  // THYROX_CONFIG_HOME env override mirrors the rest of the CLI's
-  // config-dir convention; default to ~/.claude.
-  const root = process.env.THYROX_CONFIG_HOME
-  return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
+  return resolve(getConfigHomeDir(), 'jobs')
 }
 
 function ensureJobsRoot(): string {

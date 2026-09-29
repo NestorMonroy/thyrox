@@ -31,6 +31,7 @@ import { feature } from 'bun:bundle'
 import { pinFd0Raw, unpinFd0Raw } from '@thyrox/stdin-napi'
 
 import { stopCapturingEarlyInput } from '@thyrox/repl/earlyInput.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 import { agentsHandler as plainTextHandler } from './agents.js'
 import { appendFleetCompletionPolicy } from '../bg/fleetCompletionPolicy.js'
@@ -301,12 +302,8 @@ async function runFleetLoop(): Promise<void> {
           // behaviour is identical: FleetView stays up showing "opening…" on the
           // row until the worker is ready, then switches in a populated frame.
           // eslint-disable-next-line @typescript-eslint/no-require-imports
-          const os = require('node:os') as typeof import('node:os')
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const path = require('node:path') as typeof import('node:path')
-          const jobsRoot = process.env.THYROX_CONFIG_HOME
-            ? path.join(process.env.THYROX_CONFIG_HOME, 'jobs')
-            : path.join(os.homedir(), '.claude', 'jobs')
+          const jobsRoot = path.join(getConfigHomeDir(), 'jobs')
           const ptySocketPath = path.join(jobsRoot, short, 'pty.sock')
           // 10s budget matches fleetAttach's PTY_SOCK_WAIT_BUDGET_MS — the
           // worker's first frame lands in ~415ms warm, up to ~3s cold disk.

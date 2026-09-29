@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Pool D (ADR-THYROX-006, regla 3): openByUrl y openLocal, dos ítems disjuntos por archivo.
+set -euo pipefail
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
+B=.claude/workbench/store-openers-20260929T043103
+bash bin/headless-pool --prompt "$B/template.md" --out "$B/outputs" --model claude-sonnet-5 \
+  --isolation worktree --width 2 --timeout 3600 \
+  --verify '{ printf "%s\n" src/packages/agent/__tests__/contextPressure.test.ts src/packages/cli/__tests__/providersCommands.test.ts src/packages/cli/__tests__/providersTestVerbs.test.ts src/packages/cli/__tests__/providersWriteVerbs.test.ts src/packages/finding/__tests__/finding.test.ts src/packages/local-observability/__tests__/errorRecordingWiring.test.ts src/packages/local-observability/__tests__/errorStore.postgres.test.ts src/packages/local-observability/__tests__/errorStore.sqlite.test.ts src/packages/local-observability/__tests__/errorStore.test.ts src/packages/mitm/__tests__/dns/provision.test.ts src/packages/mitm/__tests__/manager/configFiles.test.ts src/packages/mitm/__tests__/repairSteps.test.ts src/packages/mitm/__tests__/server/forwardTarget.test.ts src/packages/mitm/__tests__/server/mitmServer.test.ts src/packages/mitm/__tests__/state/agentBridgeStore.test.ts src/packages/observability/__tests__/observability.test.ts src/packages/observability/__tests__/transcriptShape.test.ts src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts src/packages/provider/src/__tests__/generateStorageKey.test.ts src/packages/repl/src/__tests__/errorBoundary.test.ts src/packages/store/__tests__/db.test.ts src/packages/tools/__tests__/subagent.test.ts src/packages/tools/__tests__/todoWrite.test.ts; ls src/packages/store/__tests__/sql.test.ts 2>/dev/null; } | bash bin/run_ts_isolated' \
+  < "$B/items.txt"

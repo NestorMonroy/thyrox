@@ -17,6 +17,9 @@
  * @dynamicRequire
  */
 
+import { join } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { logEvent } from '@thyrox/local-observability'
 import { readJobState } from '@thyrox/agent/background/fleet/fleetStore.js'
 import { generateJobName } from '@thyrox/agent/background/fleet/generateJobName.js'
@@ -256,9 +259,7 @@ async function runClassify(state: OrchestratorState): Promise<void> {
   // The namer is fire-once per worker lifetime (via attempted Set in
   // namer.ts), so spamming this branch is safe — it self-debounces.
   if (result.source === 'llm') {
-    const jobsRoot = process.env.THYROX_CONFIG_HOME
-      ? `${process.env.THYROX_CONFIG_HOME}/jobs/${state.vm.short}`
-      : `${process.env.HOME ?? ''}/.claude/jobs/${state.vm.short}`
+    const jobsRoot = join(getConfigHomeDir(), 'jobs', state.vm.short)
     const fleetState = await readJobState(jobsRoot).catch(() => null)
     const intent =
       fleetState?.intent ?? state.intent ?? fleetState?.initialPrompt

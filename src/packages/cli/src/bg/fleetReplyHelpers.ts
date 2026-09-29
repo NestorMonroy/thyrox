@@ -20,10 +20,9 @@
 
 import { existsSync } from 'node:fs'
 import { connect } from 'node:net'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-import { readEnv } from '@thyrox/config/env'
+import { getConfigHomeDir } from '@thyrox/config/env'
 import { getJobDir, readJobState } from '@thyrox/agent/background/fleet/fleetStore.js'
 
 import { spawnBgPty } from '../bg.js'
@@ -88,7 +87,7 @@ export async function ptySockReply(short: string, text: string): Promise<boolean
  * pre-seeds PromptInput → auto-submits on mount).
  */
 function historyDir(cwd: string): string {
-  const root = readEnv('THYROX_CONFIG_HOME') ?? join(homedir(), '.claude')
+  const root = getConfigHomeDir()
   // ant I2(): replace path separators with `-`.
   const slug = cwd.replace(/[/\\]/g, '-').replace(/^-/, '-')
   return join(root, 'projects', slug)

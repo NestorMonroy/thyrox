@@ -19,8 +19,10 @@
  */
 
 import { createHash } from 'node:crypto'
-import { homedir, tmpdir } from 'node:os'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 /** Cached realpath-of-cwd hash for stability across sub-calls. */
 let cachedRepoHash: string | undefined
@@ -95,13 +97,11 @@ export function getClaimSocketPath(short: string): string {
 }
 
 /**
- * ~/.claude/daemon directory for breadcrumb files. Respects
- * THYROX_CONFIG_HOME for consistency with bgWorkerRegistry.getJobsRoot()
- * and so unit tests can isolate by pointing the env var at a tmpdir.
+ * `<getConfigHomeDir()>/daemon` directory for breadcrumb files. Unit tests
+ * isolate by pointing `THYROX_CONFIG_DIR` at a tmpdir.
  */
 export function getDaemonHomeDir(): string {
-  const root = process.env.THYROX_CONFIG_HOME
-  return root ? join(root, 'daemon') : join(homedir(), '.claude', 'daemon')
+  return join(getConfigHomeDir(), 'daemon')
 }
 
 /** ~/.claude/daemon/pty-pids directory. */
