@@ -1,0 +1,49 @@
+== tests/hooks/test_detect_ephemeral_citation.py
+  ok    test_warns_on_a_bare_board_ordinal_in_a_commit_message
+  ok    test_warns_on_board_hash_form
+resumen: 0 fallo(s)
+== tests/hooks/test_detect_foreground_long_command.py
+  ok    test_warns_on_the_bare_suite
+  ok    test_warns_on_the_suites_this_tree_actually_runs
+resumen: 0 fallo(s)
+== tests/hooks/test_detect_library_path_invocation.py
+  ok    bin/check_rst_sintaxis por su envoltorio ya no lleva src/…py: calla
+  ok    otro programa calla
+test_detect_library_path_invocation: 9 aserciones — 9 ok, 0 falla(s)
+== tests/hooks/test_detect_rst_validation.py
+  ok    un `&&` antes del eco no avisa del verde falso
+  ok    otro programa calla
+test_detect_rst_validation: 6 aserciones — 6 ok, 0 falla(s)
+== tests/hooks/test_detect_topic_duplication.py
+  ok    test_the_path_anchor_reuses_detect_finding_layer_pattern
+  ok    test_the_underscore_anchor_carries_its_own_weight
+resumen: 0 fallo(s)
+== tests/hooks/test_detect_unbounded_traversal.py
+  ok    test_warns_when_the_root_comes_from_the_provider_variable
+  ok    test_warns_when_the_same_shape_points_at_a_heavy_root
+resumen: 0 fallo(s)
+== tests/hooks/test_tool_use_preflight.py
+  ok    el despacho real avisa del borrado sin guarda
+
+36 ok, 0 fallos
+== tests/lib/test-toolchain-pgvector.sh
+  ok    re-comprobacion fallida: el rechazo nombra el paquete
+  ok    re-comprobacion fallida: no se compila (make no corre)
+
+29 casos: 29 ok, 0 fallos
+== store (sin URL)
+
+ 77 pass
+ 2 todo
+ 0 fail
+ 162 expect() calls
+Ran 79 tests across 5 files. [108.00ms]
+== store (PostgreSQL real)
+bun test v1.3.11 (af24e281)
+
+ 103 pass
+ 0 fail
+ 216 expect() calls
+Ran 103 tests across 5 files. [1166.00ms]
+EXIT=0
+__BG_EXIT__=0

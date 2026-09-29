@@ -1,0 +1,274 @@
+diff --git a/src/hooks/detect_library_path_invocation.py b/src/hooks/detect_library_path_invocation.py
+new file mode 100644
+index 00000000..c3ef8724
+--- /dev/null
++++ b/src/hooks/detect_library_path_invocation.py
+@@ -0,0 +1,83 @@
++"""detect_library_path_invocation — invocar por ruta un módulo que tiene envoltorio.
++
++El defecto que ataja
++--------------------
++``python3 src/verify/check_rst_sintaxis.py`` muere con ``ModuleNotFoundError:
++paths`` porque el módulo asume ``PYTHONPATH=src`` y la resolución de
++``THYROX_ROOT`` que sólo el envoltorio de ``bin/`` compone
++(``trabajo-en-segundo-plano.md``, «Se invoca por el nombre corto»). El
++envoltorio ya existe para ese mismo módulo —``bin/check_rst_sintaxis``—, así
++que el fallo es evitable sin tocar nada más que el comando.
++
++Cómo mide
++---------
++Un segmento invoca ``python3``, ``python`` o ``uv run python3``/``uv run
++python`` sobre una ruta que contiene un componente ``src/`` y termina en
++``.py``. El nombre del archivo, sin la extensión, es el *stem*; si
++``bin/<stem>`` existe en el árbol, el aviso lo nombra. Si no existe —el
++módulo es biblioteca, o no tiene envoltorio generado— calla: no hay forma
++corta que ofrecer.
++
++Ciega a: el intérprete que llega por variable o alias, y una ruta compuesta
++en tiempo de ejecución (``$MOD``) que el análisis léxico no puede resolver.
++
++Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
++"""
++from __future__ import annotations
++
++import re
++
++from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
++from paths import reach  # noqa: E402
++
++#: ``python3 <ruta>.py``, ``python <ruta>.py`` o ``uv run python3 <ruta>.py``,
++#: con la ruta llevando un componente ``src/`` en algún punto.
++_INVOCATION = re.compile(
++    r"(?<![\w.-])(?:uv\s+run\s+)?python3?\s+"
++    r"((?:[\w./-]*/)?src/[\w./-]+\.py)\b"
++)
++
++
++def _bin_wrapper_paths(command: str) -> list[tuple[str, str]]:
++    """Las (ruta, stem) de cada invocación con un envoltorio en ``bin/``."""
++    bin_dir = reach.thyrox_root() / "bin"
++    found: list[tuple[str, str]] = []
++    seen: set[str] = set()
++    for match in _INVOCATION.finditer(command):
++        path = match.group(1)
++        stem = path.rsplit("/", 1)[-1][:-len(".py")]
++        if stem in seen:
++            continue
++        if (bin_dir / stem).exists():
++            seen.add(stem)
++            found.append((path, stem))
++    return found
++
++
++def detect(payload: dict) -> str | None:
++    """El aviso si el comando invoca por ruta un módulo con envoltorio en ``bin/``."""
++    command = (payload.get("tool_input") or {}).get("command")
++    if not isinstance(command, str) or not command.strip():
++        return None
++    found = _bin_wrapper_paths(strip_heredoc_bodies(command))
++    if not found:
++        return None
++    shown = "; ".join(f"`{path}` → `bin/{stem}`" for path, stem in found[:3])
++    return (
++        "ENVOLTORIO DE bin/ — este comando invoca por ruta un módulo que ya "
++        f"tiene envoltorio corto: {shown}. La invocación por ruta no compone "
++        "`PYTHONPATH` ni resuelve `THYROX_ROOT`: medido, "
++        "`python3 src/verify/check_rst_sintaxis.py` muere con "
++        "`ModuleNotFoundError: paths` teniendo `bin/check_rst_sintaxis`. Usa "
++        "el envoltorio."
++    )
++
++
++if __name__ == "__main__":  # pragma: no cover
++    import json
++    import sys
++
++    warning = detect(json.load(sys.stdin))
++    if warning:
++        print(warning)
++    raise SystemExit(0)
+diff --git a/src/hooks/detect_rst_validation.py b/src/hooks/detect_rst_validation.py
+index 42617e39..fb3caa05 100644
+--- a/src/hooks/detect_rst_validation.py
++++ b/src/hooks/detect_rst_validation.py
+@@ -31,9 +31,13 @@ from paths import reach  # noqa: E402
+ #: ``parents[1]`` acertaba hoy y fallaba **en silencio** al mover el archivo:
+ #: este aviso sólo CITA el comando, nunca lo ejecuta, así que una ruta mal
+ #: compuesta se publica y nadie la ejercita — el mismo defecto mudo que el
+-#: docstring de arriba narra para el literal ``src/gates/``.
+-GATE_PATH = reach.thyrox_root() / 'src' / 'verify' / 'check_rst_sintaxis.py'
+-GATE = f'python3 {GATE_PATH}'
++#: docstring de arriba narra para el literal ``src/gates/``. Y ``python3
++#: <ruta>.py`` es él mismo el defecto que
++#: ``src/hooks/detect_library_path_invocation.py`` ataja: el módulo invocado
++#: por ruta directa muere con ``ModuleNotFoundError: paths`` porque no
++#: compone ``PYTHONPATH``. El envoltorio de ``bin/`` sí lo hace.
++GATE_PATH = reach.thyrox_root() / 'bin' / 'check_rst_sintaxis'
++GATE = f'bash {GATE_PATH}'
+ 
+ #: Señales de que el comando valida RST por su cuenta.
+ HAND_ROLLED = re.compile(
+diff --git a/src/hooks/tool_use_preflight.py b/src/hooks/tool_use_preflight.py
+index e5e75346..a5180819 100644
+--- a/src/hooks/tool_use_preflight.py
++++ b/src/hooks/tool_use_preflight.py
+@@ -82,6 +82,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
+     "detect_git_grep_opportunity",
+     "detect_history_comment",
+     "detect_classifier_outage",
++    "detect_library_path_invocation",
+ )
+ 
+ 
+diff --git a/tests/hooks/test_detect_library_path_invocation.py b/tests/hooks/test_detect_library_path_invocation.py
+new file mode 100644
+index 00000000..ffdc9e23
+--- /dev/null
++++ b/tests/hooks/test_detect_library_path_invocation.py
+@@ -0,0 +1,79 @@
++"""Suite del detector de invocación por ruta de un módulo con envoltorio.
++
++El defecto
++----------
++``python3 src/verify/check_rst_sintaxis.py`` muere con
++``ModuleNotFoundError: paths`` porque no compone ``PYTHONPATH`` ni resuelve
++``THYROX_ROOT``, y ese mismo módulo ya tiene un envoltorio corto,
++``bin/check_rst_sintaxis``, que sí lo hace
++(``trabajo-en-segundo-plano.md``).
++
++Las dos mitades de juicio, cada una con su anulación
++----------------------------------------------------
++- **Existe el envoltorio**: ``bin/check_rst_sintaxis`` existe en el árbol —
++  avisa. ``src/hooks/shell_text.py`` es biblioteca (sin guarda
++  ``__main__``) y no tiene ``bin/shell_text`` — calla, aunque la ruta lleve
++  ``src/`` y termine en ``.py``.
++- **Descarte de heredoc**: el mismo comando dentro del CUERPO de un heredoc
++  no se ejecuta, y no avisa.
++"""
++from __future__ import annotations
++
++import importlib.util
++import pathlib
++import sys
++
++sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
++from paths import reach  # noqa: E402
++
++_MODULE = reach.thyrox_root() / "src/hooks/detect_library_path_invocation.py"
++_spec = importlib.util.spec_from_file_location("_gate", _MODULE)
++assert _spec is not None and _spec.loader is not None
++gate = importlib.util.module_from_spec(_spec)
++_spec.loader.exec_module(gate)
++
++OK = 0
++FAILED = 0
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}")
++        OK += 1
++    else:
++        print(f"  FALLA {label} — esperado {expected!r}, obtenido {obtained!r}")
++        FAILED += 1
++
++
++def warns(command: str) -> str | None:
++    return gate.detect({"tool_name": "Bash", "tool_input": {"command": command}})
++
++
++# Positivo real de la sesión.
++check("python3 sobre un módulo con envoltorio avisa", True,
++      bool(warns("python3 src/verify/check_rst_sintaxis.py")))
++check("el aviso nombra bin/check_rst_sintaxis", True,
++      "bin/check_rst_sintaxis" in (warns("python3 src/verify/check_rst_sintaxis.py") or ""))
++check("uv run python3 también avisa", True,
++      bool(warns("uv run python3 src/verify/check_rst_sintaxis.py --archivos x.rst")))
++check("python (sin 3) también avisa", True,
++      bool(warns("python src/verify/check_rst_sintaxis.py")))
++
++# Mitad 1 — existe el envoltorio.
++check("un módulo de biblioteca sin bin/ correspondiente calla", False,
++      bool(warns("python3 src/hooks/shell_text.py")))
++check("una ruta que no lleva src/ calla", False,
++      bool(warns("python3 tests/hooks/test_detect_literal_replacement.py")))
++
++# Mitad 2 — descarte de heredoc.
++check("el mismo comando dentro de un heredoc no se ejecuta: calla", False,
++      bool(warns("cat <<'EOF'\npython3 src/verify/check_rst_sintaxis.py\nEOF")))
++
++# Fuera de familia.
++check("bin/check_rst_sintaxis por su envoltorio ya no lleva src/…py: calla", False,
++      bool(warns("bash bin/check_rst_sintaxis --archivos x.rst")))
++check("otro programa calla", False, bool(warns("ls -la")))
++
++print(f"test_detect_library_path_invocation: {OK + FAILED} aserciones — {OK} ok, {FAILED} falla(s)")
++sys.exit(1 if FAILED else 0)
+diff --git a/tests/hooks/test_detect_rst_validation.py b/tests/hooks/test_detect_rst_validation.py
+new file mode 100644
+index 00000000..409aa812
+--- /dev/null
++++ b/tests/hooks/test_detect_rst_validation.py
+@@ -0,0 +1,61 @@
++"""Suite del detector de validación RST a mano y del verde falso del `;`.
++
++El defecto que agrega esta suite
++---------------------------------
++El detector no tenía prueba propia, y su recomendación citaba
++``python3 <ruta>/check_rst_sintaxis.py`` — la invocación por ruta que
++``detect_library_path_invocation.py`` ataja, y que revienta con
++``ModuleNotFoundError: paths`` porque no compone ``PYTHONPATH``. Corregido a
++``bash bin/check_rst_sintaxis``, que sí funciona.
++"""
++from __future__ import annotations
++
++import importlib.util
++import pathlib
++import sys
++
++sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
++from paths import reach  # noqa: E402
++
++_MODULE = reach.thyrox_root() / "src/hooks/detect_rst_validation.py"
++_spec = importlib.util.spec_from_file_location("_gate", _MODULE)
++assert _spec is not None and _spec.loader is not None
++gate = importlib.util.module_from_spec(_spec)
++_spec.loader.exec_module(gate)
++
++OK = 0
++FAILED = 0
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}")
++        OK += 1
++    else:
++        print(f"  FALLA {label} — esperado {expected!r}, obtenido {obtained!r}")
++        FAILED += 1
++
++
++def notice(command: str) -> str | None:
++    return gate.detect({"tool_input": {"command": command}})
++
++
++HAND_ROLLED_CMD = "python3 -c \"from docutils.core import publish_doctree; publish_doctree(open('x.rst').read())\""
++FALSE_GREEN_CMD = 'bash bin/check_rst_sintaxis x.rst; echo "validado"'
++
++check("la validación a mano recomienda bin/check_rst_sintaxis", True,
++      "bin/check_rst_sintaxis" in (notice(HAND_ROLLED_CMD) or ""))
++check("la recomendación NO cita python3 .../check_rst_sintaxis.py", False,
++      "python3" in (notice(HAND_ROLLED_CMD) or "") and
++      "check_rst_sintaxis.py" in (notice(HAND_ROLLED_CMD) or ""))
++check("el propio gate invocado a mano no se avisa a sí mismo", False,
++      bool(notice("bash bin/check_rst_sintaxis x.rst")))
++check("el `;` antes de un eco de éxito avisa del verde falso", True,
++      bool(notice(FALSE_GREEN_CMD)))
++check("un `&&` antes del eco no avisa del verde falso", False,
++      "`;`" in (notice('bash bin/check_rst_sintaxis x.rst && echo "validado"') or ""))
++check("otro programa calla", False, bool(notice("ls -la")))
++
++print(f"test_detect_rst_validation: {OK + FAILED} aserciones — {OK} ok, {FAILED} falla(s)")
++sys.exit(1 if FAILED else 0)
