@@ -1,2 +1,6 @@
 gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
 historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO Cableado de hooks sin PYTHONPATH heredado (H-THYROX-268): src/session/user_wiring.py, tests/session/test_user_wiring.py
+items=1 ok=0 fallidos=1
+verificados=0 rechazados=0 sin-cambios=0 fallidos=1
+__BG_EXIT__=1
