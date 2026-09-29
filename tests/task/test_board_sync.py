@@ -229,13 +229,13 @@ _, DB = store_con([("1", "Una fila vieja que no se toca", S, "docs",
 BOARD = board_con({"159": {"id": 159, "subject": SUJETO_BOARD_159,
                            "status": "pending", "description": ""}})
 
-creado = bs.mint_created_card(DB, S, "159", board_dir=BOARD, layer="docs",
+creado = bs.assign_created_card(DB, S, "159", board_dir=BOARD, layer="docs",
                               tool_name="TaskCreate")
 check(creado.acted is True, "2a: un TaskCreate SI acuña")
-check(len(creado.minted) == 1, "2b: y acuña exactamente la tarjeta pedida")
-check(creado.minted[0][2].startswith("TASK-DOCS-"),
+check(len(creado.assigned) == 1, "2b: y acuña exactamente la tarjeta pedida")
+check(creado.assigned[0][2].startswith("TASK-DOCS-"),
       "2c: la cita nace en la capa declarada")
-_nueva = fila_por_cita(DB, S, creado.minted[0][2])
+_nueva = fila_por_cita(DB, S, creado.assigned[0][2])
 check(_nueva is not None and _nueva[0] == SUJETO_BOARD_159,
       "2d: la fila nueva lleva el sujeto de la tarjeta")
 check(fila(DB, S, "1")[0] == "Una fila vieja que no se toca",
@@ -244,11 +244,11 @@ check(fila(DB, S, "1")[0] == "Una fila vieja que no se toca",
 # 2f es el control de anulacion de #159: si se retira el acotamiento a
 # TaskCreate, esta asercion —y solo esta— cae.
 _, DB2 = store_con([("1", "Otra fila vieja", S, "docs", "TASK-DOCS-0001", "pending")])
-actualizado = bs.mint_created_card(DB2, S, "159", board_dir=BOARD, layer="docs",
+actualizado = bs.assign_created_card(DB2, S, "159", board_dir=BOARD, layer="docs",
                                    tool_name="TaskUpdate")
 check(actualizado.acted is False,
       "2f: un TaskUpdate NO acuña — acuñar ahi duplicaria el sujeto en cada renombre")
-check(actualizado.minted == [], "2g: y no inserta ninguna fila")
+check(actualizado.assigned == [], "2g: y no inserta ninguna fila")
 _c = sqlite3.connect(DB2)
 _total = _c.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]
 _c.close()
@@ -403,11 +403,11 @@ check("TASK-DOCS-9999" in _mal.stderr,
       "7f: el motivo va a stderr y nombra la cita que no se pudo resolver")
 
 _crear = subprocess.run(
-    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "acunar-tarjeta",
-     S, "159", "--board", str(BOARD), "--capa", "docs",
-     "--evento", "TaskUpdate"],
+    [sys.executable, str(MODULE_PATH), "--store", str(DB6), "assign-card-id",
+     S, "159", "--board", str(BOARD), "--layer", "docs",
+     "--event", "TaskUpdate"],
     capture_output=True, text=True)
-check(_crear.returncode == 0, "7g: `acunar-tarjeta` con TaskUpdate no es un error")
+check(_crear.returncode == 0, "7g: `assign-card-id` con TaskUpdate no es un error")
 check("TaskUpdate" in _crear.stdout,
       "7h: y dice por que no acuñó, en vez de imprimir un 0 mudo")
 
@@ -604,7 +604,7 @@ BOARD10 = board_con({
              "description": "CORREGIDA: la premisa medía otra poblacion"},
 })
 
-_ns10 = argparse.Namespace(store=DB10, sesion=S, board=BOARD10, aplicar=False)
+_ns10 = argparse.Namespace(store=DB10, session=S, board=BOARD10, aplicar=False)
 _buf10 = io.StringIO()
 with contextlib.redirect_stdout(_buf10):
     _rc10 = bs._cmd_reconcile_status(_ns10)
@@ -799,7 +799,7 @@ check(res12b.get("store_rows") == 1,
 _output12 = io.StringIO()
 with contextlib.redirect_stdout(_output12):
     bs._cmd_reconcile_status(argparse.Namespace(
-        store=DB12, sesion=S, board=BOARD12, aplicar=False))
+        store=DB12, session=S, board=BOARD12, aplicar=False))
 _text12 = _output12.getvalue()
 _line12 = [l for l in _text12.splitlines() if "sin tarjeta" in l]
 check(len(_line12) == 1 and "2" in _line12[0] and "3" in _line12[0],
@@ -821,6 +821,75 @@ check(res12c.get("unpaired_total") == 2,
       "12j: reconcile_all_sessions agrega las huerfanas de sus sesiones")
 check(res12c.get("open_unpaired_total") == 1,
       "12k: y agrega cuantas estan abiertas")
+# ---------------------------------------------------------------------------
+# 13. El rename al ingles del CLI (#310): `acunar-tarjeta` -> `assign-card-id`,
+#     `--capa` -> `--layer`, `--evento` -> `--event`, `sesion` -> `session`, y
+#     el vocabulario mint/acuñar -> assign/assigned en los identificadores de
+#     `board_sync.py`.
+# ---------------------------------------------------------------------------
+_, DB13 = store_con([("13", "Sujeto trece", S, "docs", "TASK-DOCS-0013", "pending")])
+BOARD13 = board_con({"160": {"id": 160, "subject": "Sujeto de la tarjeta 160",
+                             "status": "pending", "description": ""}})
+
+_new = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--store", str(DB13), "assign-card-id",
+     S, "160", "--board", str(BOARD13), "--layer", "docs",
+     "--event", "TaskUpdate"],
+    capture_output=True, text=True)
+check(_new.returncode == 0, "13a: `assign-card-id` con --layer/--event sale 0")
+check("TaskUpdate" in _new.stdout,
+      "13b: y el mensaje sigue declarando por que no acuñó")
+
+_old_subcommand = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--store", str(DB13), "acunar-tarjeta",
+     S, "160", "--board", str(BOARD13), "--layer", "docs"],
+    capture_output=True, text=True)
+check(_old_subcommand.returncode == 2,
+      "13c: el subcomando viejo `acunar-tarjeta` ya no se acepta (exit 2)")
+
+_old_layer = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--store", str(DB13), "assign-card-id",
+     S, "160", "--board", str(BOARD13), "--capa", "docs"],
+    capture_output=True, text=True)
+check(_old_layer.returncode == 2,
+      "13d: la opcion vieja --capa ya no se acepta (exit 2)")
+
+_old_event = subprocess.run(
+    [sys.executable, str(MODULE_PATH), "--store", str(DB13), "assign-card-id",
+     S, "160", "--board", str(BOARD13), "--layer", "docs",
+     "--evento", "TaskUpdate"],
+    capture_output=True, text=True)
+check(_old_event.returncode == 2,
+      "13e: la opcion vieja --evento ya no se acepta (exit 2)")
+
+# El posicional se prueba directo sobre la funcion, sin CLI: una posicion no
+# tiene forma de "rechazarse" por nombre en la linea de comandos, asi que el
+# control es que `_cmd_reconcile_status` lea `args.session` y ya no
+# `args.sesion`.
+_ns13 = argparse.Namespace(store=DB13, session=S, board=BOARD13, aplicar=False)
+_buf13 = io.StringIO()
+with contextlib.redirect_stdout(_buf13):
+    _rc13 = bs._cmd_reconcile_status(_ns13)
+check(_rc13 == 0, "13f: `_cmd_reconcile_status` acepta `args.session`")
+try:
+    bs._cmd_reconcile_status(argparse.Namespace(
+        store=DB13, sesion=S, board=BOARD13, aplicar=False))
+    _old_session_rejected = False
+except AttributeError:
+    _old_session_rejected = True
+check(_old_session_rejected,
+      "13g: `args.sesion` (el nombre viejo) ya no existe")
+
+# El vocabulario mint/acuñar de las funciones internas.
+check(hasattr(bs, "assign_created_card"), "13h: existe `assign_created_card`")
+check(not hasattr(bs, "mint_created_card"),
+      "13i: y el nombre viejo `mint_created_card` ya no existe")
+_created13 = bs.assign_created_card(DB13, S, "160", board_dir=BOARD13,
+                                    layer="docs", tool_name="TaskCreate")
+check(hasattr(_created13, "assigned"), "13j: el resultado lleva el campo `assigned`")
+check(not hasattr(_created13, "minted"),
+      "13k: y no el campo viejo `minted`")
+
 print(f"{checks} aserciones")
 if failures:
     for f in failures:

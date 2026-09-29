@@ -750,7 +750,6 @@ src/task/asignadas.py::ASIGNADAS
 src/task/asignadas.py::DEVUELTAS
 src/task/asignadas.py::DUENOS
 src/task/asignadas.py::TRABAJO_PARCIAL
-src/task/board_sync.py::acunar-tarjeta
 src/task/board_sync.py::reconciliar-estados
 src/task/board_sync.py::reconciliar-todo
 src/task/board_sync.py::sincronizar-board

@@ -159,15 +159,15 @@ class BoardSyncError(RuntimeError):
 #: lista a secas porque una lista vacia no discrimina: «el evento no era una
 #: creacion» y «no habia nada nuevo que acuñar» son conductas distintas con la
 #: misma cifra.
-MintResult = collections.namedtuple("MintResult", "acted reason minted")
+AssignResult = collections.namedtuple("AssignResult", "acted reason assigned")
 
 
 def _resolve_board(session_id: str, declared) -> pathlib.Path:
     return pathlib.Path(declared) if declared else board_dir(session_id)
 
 
-def mint_created_card(store_path, session_id, ordinal, *, board_dir=None,
-                      layer=None, tool_name=CREATION_EVENTS[0]) -> MintResult:
+def assign_created_card(store_path, session_id, ordinal, *, board_dir=None,
+                      layer=None, tool_name=CREATION_EVENTS[0]) -> AssignResult:
     """Acuña la cita de la tarjeta **recien creada**, y de ninguna otra.
 
     El acotamiento por evento es el mecanismo, no una comodidad: el hook que
@@ -175,19 +175,19 @@ def mint_created_card(store_path, session_id, ordinal, *, board_dir=None,
     renombre insertaria una fila mas con una cita mas para el mismo trabajo.
     """
     if tool_name not in CREATION_EVENTS:
-        return MintResult(
+        return AssignResult(
             acted=False,
             reason=(f"no aplica: el evento es {tool_name} y la cita se acuña al "
                     f"CREAR. Acuñar en un renombre daria al mismo trabajo una "
                     f"fila y una cita mas."),
-            minted=[])
-    minted = task_ids.ingest_board(
+            assigned=[])
+    assigned = task_ids.ingest_board(
         store_path, _resolve_board(session_id, board_dir), session_id,
         [str(ordinal)], layer=layer)
-    return MintResult(
+    return AssignResult(
         acted=True,
         reason="evento de creacion: la cita se acuña en el mismo INSERT",
-        minted=minted)
+        assigned=assigned)
 
 
 def sync_card(store_path, session_id, ordinal, citation, *, board_dir=None) -> dict:
@@ -487,11 +487,11 @@ def reconcile_all_sessions(store_path, *, board_root=None,
 
 
 def _cmd_reconcile_status(args: argparse.Namespace) -> int:
-    result = reconcile_status(args.store, args.sesion, board_dir=args.board,
+    result = reconcile_status(args.store, args.session, board_dir=args.board,
                               apply_changes=args.aplicar)
     buckets = result["buckets"]
     total = result["total_cards"]
-    print(f"reconciliar-estados: sesion {args.sesion}")
+    print(f"reconciliar-estados: sesion {args.session}")
     print(f"  universo: {total} tarjeta(s) del board")
     for name in RECONCILE_BUCKETS:
         print(f"  {name:14s} {len(buckets[name]):5d}")
@@ -549,23 +549,23 @@ def _cmd_reconcile_all(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_mint_card(args: argparse.Namespace) -> int:
-    result = mint_created_card(args.store, args.sesion, args.ordinal,
-                               board_dir=args.board, layer=args.capa,
-                               tool_name=args.evento)
+def _cmd_assign_card_id(args: argparse.Namespace) -> int:
+    result = assign_created_card(args.store, args.session, args.ordinal,
+                               board_dir=args.board, layer=args.layer,
+                               tool_name=args.event)
     if not result.acted:
-        print(f"acunar-tarjeta: {result.reason}")
+        print(f"assign-card-id: {result.reason}")
         return 0
-    print(f"acunar-tarjeta: {len(result.minted)} cita(s) acuñada(s) "
+    print(f"assign-card-id: {len(result.assigned)} cita(s) acuñada(s) "
           f"(alcance medido: 1 tarjeta pedida)")
-    for board_id, store_id, citation, subject in result.minted:
+    for board_id, store_id, citation, subject in result.assigned:
         print(f"  board #{board_id:<5} -> store #{store_id:<6} {citation}"
               f"  {subject[:52]}")
     return 0
 
 
 def _cmd_sync_board(args: argparse.Namespace) -> int:
-    res = sync_card(args.store, args.sesion, args.ordinal, args.cita,
+    res = sync_card(args.store, args.session, args.ordinal, args.cita,
                     board_dir=args.board)
     print(f"sincronizar-board: {res['citation']} (store #{res['task_id']}, "
           f"board #{res['board_ordinal']})")
@@ -585,25 +585,25 @@ def main(argv=None) -> int:
     parser.add_argument("--store", default=None)
     sub = parser.add_subparsers(dest="comando", required=True)
 
-    p_mint = sub.add_parser(
-        "acunar-tarjeta",
+    p_assign = sub.add_parser(
+        "assign-card-id",
         help="acuña la cita de UNA tarjeta recien creada (#159)")
-    p_mint.add_argument("sesion")
-    p_mint.add_argument("ordinal")
-    p_mint.add_argument("--capa", default=None,
+    p_assign.add_argument("session")
+    p_assign.add_argument("ordinal")
+    p_assign.add_argument("--layer", default=None,
                         choices=list(task_ids.LAYERS) + [task_ids.UNKNOWN_LAYER],
                         help="capa declarada; sin ella la fila nace en «gen»")
-    p_mint.add_argument("--board", default=None,
+    p_assign.add_argument("--board", default=None,
                         help="directorio de tarjetas (default: el de la sesion)")
-    p_mint.add_argument("--evento", default=CREATION_EVENTS[0],
+    p_assign.add_argument("--event", default=CREATION_EVENTS[0],
                         help="el tool del cliente que disparo; sin uno de "
                              f"{list(CREATION_EVENTS)} no se acuña")
-    p_mint.set_defaults(func=_cmd_mint_card)
+    p_assign.set_defaults(func=_cmd_assign_card_id)
 
     p_sync = sub.add_parser(
         "sincronizar-board",
         help="lleva al store el renombre y el cierre de UNA tarjeta (#184)")
-    p_sync.add_argument("sesion")
+    p_sync.add_argument("session")
     p_sync.add_argument("ordinal")
     p_sync.add_argument("--cita", required=True,
                         help="la fila destino, por su TASK-<CAPA>-NNNN")
@@ -614,7 +614,7 @@ def main(argv=None) -> int:
     p_rec = sub.add_parser(
         "reconciliar-estados",
         help="lleva al store el estado de TODAS las tarjetas, por sujeto (#184)")
-    p_rec.add_argument("sesion")
+    p_rec.add_argument("session")
     p_rec.add_argument("--board", default=None,
                        help="directorio de tarjetas (default: el de la sesion)")
     p_rec.add_argument("--aplicar", action="store_true",
