@@ -156,6 +156,49 @@ function thyrox_toolchain_declare() {
   printf 'consumer=%s\n' "$(thyrox_toolchain_consumer_argv "$name")" || return $?
 }
 export -f thyrox_toolchain_declare
+
+# @description La politica UID-aware que decide si un comando de instalacion
+# lleva `sudo`: una funcion reutilizada por TODOS los defaults de apt de este
+# archivo, en vez de copiar la condicion en cada uno.
+#
+# Un contenedor minimo puede correr con uid efectivo 0 y sin `sudo`
+# instalado: un default con `sudo` hardcodeado ahi no falla por el paquete,
+# falla por `sudo: command not found`, y la causa real queda enmascarada
+# detras de una herramienta que ni hacia falta invocar. Tres desenlaces,
+# ninguno silencioso:
+#
+#   uid efectivo 0            -> sin prefijo: el proceso ya tiene privilegio;
+#   otro uid, `sudo` resuelve -> prefijo `sudo ` (con espacio final, para
+#                                 anteponerse tal cual al resto del comando);
+#   otro uid, `sudo` ausente  -> REHUSA con exit 2, sin imprimir nada por
+#                                 stdout — un prefijo vacio ahi se leeria
+#                                 como la rama de uid 0, que es el desenlace
+#                                 equivocado.
+#
+# El uid y el binario de `sudo` se leen de forma inyectable
+# (THYROX_TOOLCHAIN_EFFECTIVE_UID, THYROX_TOOLCHAIN_SUDO_BIN) para que un
+# control pueda forzar cada rama sin cambiar de usuario real.
+# @noargs
+# @stdout El prefijo a anteponer al comando (`""` o `"<binario> "`).
+# @exitcode 0 Resuelto. @exitcode 2 Ni uid 0 ni `sudo` disponible. REHUSA.
+function thyrox_toolchain_sudo_prefix() {
+  local uid="${THYROX_TOOLCHAIN_EFFECTIVE_UID:-$(id -u)}"
+  if [[ "$uid" == "0" ]]; then
+    printf ''
+    return 0
+  fi
+  local sudo_bin="${THYROX_TOOLCHAIN_SUDO_BIN:-sudo}"
+  if command -v "$sudo_bin" >/dev/null 2>&1; then
+    printf '%s ' "$sudo_bin"
+    return 0
+  fi
+  echo "thyrox_toolchain: uid $uid sin privilegio y '$sudo_bin' no resuelve." >&2
+  echo "                  Declara THYROX_TOOLCHAIN_SUDO_BIN con un sudo valido," >&2
+  echo "                  o corre el proceso con uid 0." >&2
+  return 2
+}
+export -f thyrox_toolchain_sudo_prefix
+
 # @description El nombre del binario de fan-out por elemento. Declarado, no
 # escrito en la funcion, por la misma razon que la ruta del interprete: un
 # control necesita poder apuntar la busqueda a un nombre ausente sin vaciar el
@@ -167,7 +210,7 @@ export THYROX_TOOLCHAIN_PARALLEL_BIN
 # control necesita inyectar un instalador que MIENTA —que salga cero sin
 # instalar nada— para comprobar que el exito se prueba re-comprobando el
 # binario y no leyendo el codigo de salida del instalador.
-THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
+THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y parallel}"
 export THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD
 
 # @description El hogar de estado de GNU parallel: hermano de `.venv`, en la
@@ -300,7 +343,7 @@ export -f thyrox_toolchain_require_parallel
 # @description El comando que instala el extractor de texto de PDF. Declarado
 # por la misma razon que su hermano de parallel: un control necesita inyectar
 # un instalador que MIENTA para probar que el exito se re-comprueba.
-export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y poppler-utils}"
 
 # @description Asegura `pdftotext` (poppler-utils), el extractor primario de
 # `src/corpus/pdf_to_text.py`. Mismo contrato que
@@ -323,7 +366,7 @@ export -f thyrox_toolchain_require_pdf_text
 # @description El comando que instala rsync. Declarado para que un control
 # pueda inyectar un instalador que MIENTA y probar que el exito se
 # re-comprueba.
-export THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD="${THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD:-sudo apt-get install -y rsync}"
+export THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD="${THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y rsync}"
 
 # @description Asegura `rsync`, que copia un arbol respetando exclusiones
 # (`--exclude node_modules`) sin rodearlo con `cp` o `tar`. Mismo contrato que
@@ -402,10 +445,11 @@ export -f thyrox_toolchain_pgvector_apt_package
 # @exitcode 0 El paquete no estaba instalado, o se quito y se re-comprobo.
 # @exitcode 3 Sigue instalado tras el intento de quitarlo. REHUSA sin compilar.
 function thyrox_toolchain_pgvector_purge_apt_package() {
-  local major="$1" package
+  local major="$1" package prefix
   package="$(thyrox_toolchain_pgvector_apt_package "$major")"
   "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1 || return 0
-  sudo "$THYROX_TOOLCHAIN_APT_GET_BIN" remove -y "$package" >&2
+  prefix="$(thyrox_toolchain_sudo_prefix)" || return 2
+  $prefix "$THYROX_TOOLCHAIN_APT_GET_BIN" remove -y "$package" >&2
   if "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1; then
     echo "thyrox_toolchain: '$package' sigue instalado tras 'apt-get remove -y';" >&2
     echo "                  no se compila encima. Quitalo a mano y reintenta." >&2
@@ -429,13 +473,14 @@ export -f thyrox_toolchain_pgvector_purge_apt_package
 function thyrox_toolchain_pgvector_install_default() {
   local major; major="$(thyrox_toolchain_pg_major)" || return 1
   thyrox_toolchain_pgvector_purge_apt_package "$major" || return $?
+  local prefix; prefix="$(thyrox_toolchain_sudo_prefix)" || return 2
   local version="${THYROX_PGVECTOR_VERSION:-0.8.6}"
   local source_url="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
   local dir; dir="$(mktemp -d)" || return 1
-  sudo apt-get install -y "postgresql-server-dev-$major" \
+  $prefix apt-get install -y "postgresql-server-dev-$major" \
     && git clone --branch "v$version" --depth 1 "$source_url" "$dir" \
     && make -C "$dir" "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN" \
-    && sudo make -C "$dir" install "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN"
+    && $prefix make -C "$dir" install "PG_CONFIG=$THYROX_TOOLCHAIN_PG_CONFIG_BIN"
   local rc=$?
   rm -rf "${dir:?}"
   return $rc
@@ -597,7 +642,7 @@ export -f thyrox_toolchain_require_postgres_test_db
 # razon que sus hermanos: un control necesita inyectar un instalador que
 # MIENTA —que salga cero sin instalar nada— para probar que el exito se
 # re-comprueba.
-export THYROX_TOOLCHAIN_REDIS_INSTALL_CMD="${THYROX_TOOLCHAIN_REDIS_INSTALL_CMD:-sudo apt-get install -y redis-server}"
+export THYROX_TOOLCHAIN_REDIS_INSTALL_CMD="${THYROX_TOOLCHAIN_REDIS_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y redis-server}"
 
 # @description Asegura `redis-server`, un adaptador posible de
 # `SharedStateStore` (ADR-THYROX-006) para el estado compartido en caliente
@@ -649,7 +694,7 @@ export -f thyrox_toolchain_require_redis
 # que sus hermanos: un control necesita inyectar un instalador que MIENTA
 # —que salga cero sin instalar nada— para probar que el exito se
 # re-comprueba.
-export THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD="${THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD:-sudo apt-get install -y podman}"
+export THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD="${THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y podman}"
 
 # @description Asegura `podman`, motor de contenedores sin daemon. Mismo
 # contrato que `thyrox_toolchain_require_redis`: instalar es opt-in
@@ -702,7 +747,7 @@ export -f thyrox_toolchain_require_podman
 # @description El comando que instala iproute2. Declarado para que un control
 # pueda inyectar un instalador que MIENTA y probar que el exito se
 # re-comprueba.
-export THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD="${THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD:-sudo apt-get install -y iproute2}"
+export THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD="${THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y iproute2}"
 
 # @description Asegura `ip` (iproute2), que la captura TPROXY necesita para su
 # regla de politica y su ruta local (`ip rule`, `ip route`). Mismo contrato
@@ -720,7 +765,7 @@ export -f thyrox_toolchain_require_iproute2
 
 # @description El comando que instala GNU Time. Declarado por la misma razon
 # que sus hermanos: un control necesita un instalador que MIENTA.
-export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-sudo apt-get install -y time}"
+export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y time}"
 
 # @description La ruta de GNU Time. Absoluta a proposito: `time` es tambien
 # una palabra reservada de bash, y `command -v time` la responde aunque el
@@ -778,7 +823,7 @@ export THYROX_TOOLCHAIN_AWK_BIN
 # su hermano de parallel: un control necesita inyectar un instalador que
 # MIENTA —que salga cero sin instalar nada— para comprobar que el exito se
 # prueba re-comprobando el binario y no leyendo el exit del instalador.
-export THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-sudo apt-get install -y gawk}"
+export THYROX_TOOLCHAIN_GAWK_INSTALL_CMD="${THYROX_TOOLCHAIN_GAWK_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y gawk}"
 
 # @description El programa que separa gawk de mawk por CONDUCTA.
 #
@@ -887,7 +932,7 @@ export THYROX_TOOLCHAIN_PDFTOPPM_BIN="${THYROX_TOOLCHAIN_PDFTOPPM_BIN:-pdftoppm}
 
 # @description El comando que instala poppler. Declarado para que un control
 # inyecte un instalador que MIENTA.
-export THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD="${THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+export THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD="${THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y poppler-utils}"
 
 # @description El PDF de la sonda, en base64: una pagina con el texto
 # THYROX-PDF-PROBE en Helvetica, 589 bytes, con su tabla xref correcta. Va
@@ -1047,7 +1092,7 @@ export -f thyrox_toolchain_texlive_compiles
 # @exitcode 0 Compila. @exitcode 2 No resuelve o no compila. REHUSA.
 function thyrox_toolchain_require_texlive() {
   local bin="$THYROX_TOOLCHAIN_XELATEX_BIN" installed=0
-  local cmd="${THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD:-sudo apt-get install -y --no-install-recommends $(thyrox_toolchain_texlive_packages)}"
+  local cmd="${THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y --no-install-recommends $(thyrox_toolchain_texlive_packages)}"
 
   if ! command -v "$bin" >/dev/null 2>&1; then
     if [[ "${THYROX_INSTALL_TEXLIVE:-}" != "1" ]]; then
@@ -1106,7 +1151,7 @@ export -f thyrox_toolchain_probe_texlive
 # diccionario que acepta todo, o que rechaza todo, resuelve como binario y no
 # mide nada; por eso la sonda exige las dos mitades.
 export THYROX_TOOLCHAIN_HUNSPELL_BIN="${THYROX_TOOLCHAIN_HUNSPELL_BIN:-hunspell}"
-export THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD="${THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD:-sudo apt-get install -y hunspell}"
+export THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD="${THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get install -y hunspell}"
 
 # @description ¿Acepta el diccionario la palabra buena y rechaza la mala?
 # @exitcode 0 Las dos mitades se cumplen.
