@@ -1,0 +1,489 @@
+diff --git a/bin/infrastructure_ensure b/bin/infrastructure_ensure
+new file mode 100755
+index 00000000..7e66452c
+--- /dev/null
++++ b/bin/infrastructure_ensure
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
++export THYROX_ROOT
++export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
++exec "$THYROX_ROOT/src/session/infrastructure_ensure.sh" "$@"
+diff --git a/src/session/infrastructure_ensure.sh b/src/session/infrastructure_ensure.sh
+new file mode 100755
+index 00000000..76d2b260
+--- /dev/null
++++ b/src/session/infrastructure_ensure.sh
+@@ -0,0 +1,180 @@
++#!/usr/bin/env bash
++# =============================================================================
++# infrastructure_ensure.sh — bootstrap idempotente de la infraestructura
++# gestionada (TASK-THYROX-0606, ADR-THYROX-007 v1.2.0 Regla 4)
++# =============================================================================
++#
++# Aqui no hay systemd (PID 1 es `process_api`): nada de lo que declara
++# `src/lib/infrastructure.sh` vuelve solo tras reiniciar la VM. Este guion es
++# el CONSUMIDOR de esa declaracion — la unica pieza que de verdad invoca
++# `podman` — con el flujo exacto del ADR, por contenedor:
++#
++#   cargar la declaracion -> inspeccionar -> validar el proceso real (estado
++#   reportado + PID vivo) -> ausente o stale (running con el PID muerto) ->
++#   rm -f + recrear -> arrancar -> correr el health check explicitamente,
++#   repetido hasta sano o hasta el plazo -> declararlo listo; si no, fallar
++#   con causa y diagnostico.
++#
++# La decision de conservar o recrear NUNCA sale solo del estado reportado:
++# `running` con el PID muerto es stale (medido, TASK-THYROX-0605: `podman
++# start` sobre ese estado sale 0 sin arrancar nada), y se recrea igual que un
++# contenedor ausente.
++#
++# Salida: una linea por contenedor en stdout (nombre, estado reportado, si
++# el PID vive, la accion tomada y el resultado de salud); el diagnostico de
++# lo que no llego a sano va a stderr.
++#
++# Exit 0  todos los contenedores quedaron sanos.
++# Exit 1  alguno no llego a sano dentro del plazo (nombrado en stderr).
++# Exit 2  falta podman o la credencial de PostgreSQL — no se toca nada.
++# =============================================================================
++set -uo pipefail
++
++_INFRA_ENSURE_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++# shellcheck source=/dev/null
++source "$_INFRA_ENSURE_HERE/../lib/toolchain.sh"
++# shellcheck source=/dev/null
++source "$_INFRA_ENSURE_HERE/../lib/infrastructure.sh"
++
++# Plazo e intervalo del health check, con prefijo THYROX_INFRA_ como el resto
++# de la declaracion. `THYROX_INFRA_ENSURE_SLEEP_BIN` no es un parametro de
++# produccion: es el punto de inyeccion que permite a la suite recorrer el
++# bucle de reintentos sin dormir de verdad.
++HEALTH_TIMEOUT="${THYROX_INFRA_HEALTH_TIMEOUT:-60}"
++HEALTH_INTERVAL="${THYROX_INFRA_HEALTH_INTERVAL:-2}"
++SLEEP_BIN="${THYROX_INFRA_ENSURE_SLEEP_BIN:-sleep}"
++
++# --- precondiciones: NADA se toca hasta que las dos esten satisfechas ---
++if [[ -z "${THYROX_INFRA_POSTGRES_PASSWORD:-}" ]]; then
++  echo "infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL)." >&2
++  echo "                       No se invoca podman ni se toca nada." >&2
++  exit 2
++fi
++
++if ! thyrox_toolchain_require_podman; then
++  echo "infrastructure_ensure: podman no esta disponible; no se toca nada." >&2
++  exit 2
++fi
++PODMAN="$THYROX_TOOLCHAIN_PODMAN_BIN"
++
++# @description Asegura la red propia de la infraestructura: existe -> nada,
++# falta -> se crea. La red vive en la misma declaracion que los contenedores
++# (`_INFRASTRUCTURE_NETWORK`, ya en scope tras sourcear infrastructure.sh).
++_infra_ensure_network() {
++  if "$PODMAN" network exists "$_INFRASTRUCTURE_NETWORK" >/dev/null 2>&1; then
++    return 0
++  fi
++  "$PODMAN" network create "$_INFRASTRUCTURE_NETWORK" >/dev/null 2>&1
++}
++
++if ! _infra_ensure_network; then
++  echo "infrastructure_ensure: no se pudo asegurar la red $_INFRASTRUCTURE_NETWORK." >&2
++  exit 1
++fi
++
++# @description Corre el comando de salud declarado, repitiendolo hasta que
++# responda sano o se agote el plazo. El plazo se mide en INTENTOS
++# (plazo/intervalo), no en reloj de pared: asi la espera entre intentos es lo
++# UNICO que hay que inyectar para que la suite no duerma.
++# @arg $1 string nombre del contenedor.
++# @stdout `healthy`, o `unhealthy: <ultima salida>`.
++# @exitcode 0 sano dentro del plazo.
++# @exitcode 1 nunca respondio sano.
++_infra_run_health_check() {
++  local name="$1"
++  local -a health_argv
++  mapfile -t health_argv < <(thyrox_infrastructure_health_check_argv "$name")
++
++  local max_attempts=$(( (HEALTH_TIMEOUT + HEALTH_INTERVAL - 1) / HEALTH_INTERVAL ))
++  (( max_attempts < 1 )) && max_attempts=1
++
++  local attempt=1 output="" rc=1
++  while (( attempt <= max_attempts )); do
++    output="$("$PODMAN" exec "$name" "${health_argv[@]}" 2>&1)"; rc=$?
++    if (( rc == 0 )); then
++      printf 'healthy'
++      return 0
++    fi
++    if (( attempt < max_attempts )); then
++      "$SLEEP_BIN" "$HEALTH_INTERVAL"
++    fi
++    attempt=$(( attempt + 1 ))
++  done
++  printf 'unhealthy: %s' "$output"
++  return 1
++}
++
++# @description Asegura un contenedor: inspecciona, decide kept/created/
++# recreated/started, ejecuta el health check y publica su linea de estado.
++# Acumula en FAILED_CONTAINERS cualquier contenedor que no llego a sano.
++# @arg $1 string nombre del contenedor (uno de los que declara infrastructure.sh).
++_infra_ensure_container() {
++  local name="$1"
++  local status pid pid_alive action inspect_out
++
++  if inspect_out="$("$PODMAN" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name" 2>/dev/null)"; then
++    status="${inspect_out%%$'\t'*}"
++    pid="${inspect_out##*$'\t'}"
++  else
++    status="absent"
++    pid="0"
++  fi
++
++  pid_alive="no"
++  if [[ "$status" == "running" && "$pid" != "0" ]] && kill -0 "$pid" 2>/dev/null; then
++    pid_alive="yes"
++  fi
++
++  if [[ "$status" == "running" && "$pid_alive" == "yes" ]]; then
++    action="kept"
++  else
++    if [[ "$status" == "absent" ]]; then
++      action="created"
++    elif [[ "$status" == "running" ]]; then
++      # running reportado, PID muerto: stale. rm -f SOLO retira el
++      # contenedor — el volumen con nombre (verdad durable de postgres)
++      # nunca aparece en este comando.
++      action="recreated"
++      "$PODMAN" rm -f "$name" >/dev/null 2>&1
++    else
++      action="started"
++    fi
++
++    if [[ "$action" == "created" || "$action" == "recreated" ]]; then
++      local -a create_argv
++      mapfile -t create_argv < <(thyrox_infrastructure_create_argv "$name")
++      if [[ "${#create_argv[@]}" -eq 0 ]]; then
++        printf '%s status=%s pid_alive=%s action=error health=no-intentado\n' \
++          "$name" "$status" "$pid_alive"
++        FAILED_CONTAINERS+=("$name: no se pudo componer el argv de creacion")
++        return
++      fi
++      "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
++    fi
++    "$PODMAN" start "$name" >/dev/null 2>&1
++  fi
++
++  local health_result
++  if health_result="$(_infra_run_health_check "$name")"; then
++    printf '%s status=%s pid_alive=%s action=%s health=healthy\n' \
++      "$name" "$status" "$pid_alive" "$action"
++  else
++    printf '%s status=%s pid_alive=%s action=%s health=%s\n' \
++      "$name" "$status" "$pid_alive" "$action" "$health_result"
++    FAILED_CONTAINERS+=("$name: $health_result")
++  fi
++}
++
++FAILED_CONTAINERS=()
++while IFS= read -r _infra_container_name; do
++  _infra_ensure_container "$_infra_container_name"
++done < <(thyrox_infrastructure_container_names)
++
++if [[ "${#FAILED_CONTAINERS[@]}" -gt 0 ]]; then
++  for _infra_failure in "${FAILED_CONTAINERS[@]}"; do
++    echo "infrastructure_ensure: $_infra_failure" >&2
++  done
++  exit 1
++fi
++
++exit 0
+diff --git a/tests/session/test-infrastructure-ensure.sh b/tests/session/test-infrastructure-ensure.sh
+new file mode 100755
+index 00000000..bb1995c4
+--- /dev/null
++++ b/tests/session/test-infrastructure-ensure.sh
+@@ -0,0 +1,285 @@
++#!/usr/bin/env bash
++# test-infrastructure-ensure.sh — contrato del bootstrap idempotente de
++# infraestructura gestionada (TASK-THYROX-0606, ADR-THYROX-007 v1.2.0 Regla 4).
++#
++# `src/session/infrastructure_ensure.sh` consume la DECLARACION de
++# `src/lib/infrastructure.sh` (argv puro, sin ejecutar nada) y es quien
++# efectivamente corre `podman`. Aqui `podman` es siempre un binario FALSO
++# —nunca se crea un contenedor real— que modela su estado con archivos en un
++# directorio de trabajo, y cuyo `start` deja un proceso `sleep` real y vivo en
++# el anfitrion para representar el PID que un `podman inspect` real reportaria.
++# Eso es lo que permite probar, sin systemd ni Podman real, la mitad de juicio
++# central del ADR: `running` con el PID muerto es STALE y se recrea; `running`
++# con el PID vivo se CONSERVA.
++set -uo pipefail
++
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++ROOT="$(cd "$HERE/../.." && pwd)"
++SUBJECT="$ROOT/src/session/infrastructure_ensure.sh"
++source "$ROOT/src/lib/assert.sh"
++ok()  { thyrox_ok "$*"; }
++bad() { thyrox_fail "$*" || true; }
++
++if [[ -x "$SUBJECT" ]]; then
++  ok "el sujeto existe y es ejecutable: $SUBJECT"
++else
++  bad "no existe o no es ejecutable: $SUBJECT"
++  thyrox_summary; exit 1
++fi
++
++WORK="$(mktemp -d)"
++MARKER="fake-podman-container-$$"
++cleanup() { pkill -f "$MARKER" 2>/dev/null; rm -rf "$WORK"; }
++trap cleanup EXIT
++
++STATE="$WORK/state"
++mkdir -p "$STATE"
++
++# --- el podman falso ---
++#
++# Modela: info, network exists/create, inspect, create, start, rm, exec.
++# Cada invocacion se registra en calls.log (una linea = argv completo), para
++# que la prueba de "nunca borra el volumen" mida el argv real y no una
++# promesa. `start` deja un `sleep 999` real, marcado con MARKER, y guarda su
++# PID — asi un `kill -0` posterior lo ve vivo de verdad.
++cat > "$WORK/podman-fake" <<STUB
++#!/usr/bin/env bash
++STATE="$STATE"
++MARKER="$MARKER"
++printf '%s\n' "\$*" >> "\$STATE/calls.log"
++case "\$1" in
++  info) exit 0 ;;
++  network)
++    case "\$2" in
++      exists) [[ -f "\$STATE/network-\${3}" ]] && exit 0 || exit 1 ;;
++      create) touch "\$STATE/network-\${3}"; exit 0 ;;
++    esac
++    exit 1
++    ;;
++  inspect)
++    name="\${@: -1}"
++    if [[ ! -f "\$STATE/\${name}.status" ]]; then
++      echo "Error: no such container \$name" >&2
++      exit 1
++    fi
++    status="\$(cat "\$STATE/\${name}.status")"
++    pid="\$(cat "\$STATE/\${name}.pid" 2>/dev/null || echo 0)"
++    printf '%s\t%s\n' "\$status" "\$pid"
++    exit 0
++    ;;
++  create)
++    name=""
++    prev=""
++    for a in "\$@"; do
++      [[ "\$prev" == "--name" ]] && name="\$a"
++      prev="\$a"
++    done
++    echo created > "\$STATE/\${name}.status"
++    echo 0 > "\$STATE/\${name}.pid"
++    exit 0
++    ;;
++  start)
++    name="\$2"
++    nohup bash -c "exec -a \${MARKER}-\${name} sleep 999" >/dev/null 2>&1 &
++    newpid=\$!
++    disown "\$newpid" 2>/dev/null || true
++    echo running > "\$STATE/\${name}.status"
++    echo "\$newpid" > "\$STATE/\${name}.pid"
++    exit 0
++    ;;
++  rm)
++    name="\${@: -1}"
++    rm -f "\$STATE/\${name}.status" "\$STATE/\${name}.pid"
++    exit 0
++    ;;
++  exec)
++    name="\$2"
++    result="\$(cat "\$STATE/\${name}.health" 2>/dev/null || echo fail)"
++    if [[ "\$result" == ok ]]; then
++      echo "healthy (fake)"
++      exit 0
++    fi
++    echo "unhealthy (fake)"
++    exit 1
++    ;;
++esac
++exit 1
++STUB
++chmod +x "$WORK/podman-fake"
++
++# `sleep` falso: instantaneo, para que el bucle de salud no duerma de verdad.
++cat > "$WORK/sleep-fake" <<'STUB'
++#!/usr/bin/env bash
++exit 0
++STUB
++chmod +x "$WORK/sleep-fake"
++
++reset_state() { rm -rf "$STATE"; mkdir -p "$STATE"; }
++run_ensure() {
++  THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" \
++  THYROX_INFRA_ENSURE_SLEEP_BIN="$WORK/sleep-fake" \
++  THYROX_INFRA_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-6}" \
++  THYROX_INFRA_HEALTH_INTERVAL="${TEST_HEALTH_INTERVAL:-2}" \
++  THYROX_INFRA_POSTGRES_PASSWORD="${TEST_PASSWORD-secret123}" \
++    bash "$SUBJECT"
++}
++
++# =====================================================================
++# Caso 1 — ausente: se crea y se arranca, y queda sano.
++# =====================================================================
++reset_state
++echo ok > "$STATE/thyrox-postgres.health"
++echo ok > "$STATE/thyrox-redis.health"
++out="$(run_ensure)"; rc=$?
++thyrox_check "caso 1: ausente -> exit 0" "0" "$rc"
++if [[ "$out" == *"thyrox-postgres"*"action=created"* ]]; then
++  ok "caso 1: postgres ausente se reporta con action=created"
++else
++  bad "caso 1: no se vio action=created para postgres: [$out]"
++fi
++if [[ "$out" == *"thyrox-redis"*"action=created"* ]]; then
++  ok "caso 1: redis ausente se reporta con action=created"
++else
++  bad "caso 1: no se vio action=created para redis: [$out]"
++fi
++if grep -q '^network create thyrox-infra$' "$STATE/calls.log"; then
++  ok "caso 1: la red thyrox-infra se crea cuando falta"
++else
++  bad "caso 1: no se creo la red thyrox-infra"
++fi
++
++# =====================================================================
++# Caso 2 — running + PID vivo + sano: se conserva, sin create ni start ni rm.
++# =====================================================================
++reset_state
++touch "$STATE/network-thyrox-infra"
++( exec -a "${MARKER}-alive" sleep 999 ) &
++alive_pid=$!
++disown "$alive_pid" 2>/dev/null || true
++for n in thyrox-postgres thyrox-redis; do
++  echo running > "$STATE/$n.status"
++  echo "$alive_pid" > "$STATE/$n.pid"
++  echo ok > "$STATE/$n.health"
++done
++out="$(run_ensure)"; rc=$?
++thyrox_check "caso 2: running+pid vivo+sano -> exit 0" "0" "$rc"
++if [[ "$out" == *"thyrox-postgres"*"pid_alive=yes"*"action=kept"* ]]; then
++  ok "caso 2: postgres vivo y sano se conserva (kept)"
++else
++  bad "caso 2: postgres no se conservo: [$out]"
++fi
++if grep -qE '^(create|start|rm) ' "$STATE/calls.log" 2>/dev/null; then
++  bad "caso 2: se llamo create/start/rm sobre un contenedor que debia conservarse"
++else
++  ok "caso 2: ningun create/start/rm se invoco al conservar"
++fi
++kill "$alive_pid" 2>/dev/null; wait "$alive_pid" 2>/dev/null
++
++# =====================================================================
++# Caso 3 — running + PID MUERTO: stale, se recrea (rm -f + create + start).
++# =====================================================================
++reset_state
++touch "$STATE/network-thyrox-infra"
++( exit 0 ) & dead_pid=$!
++wait "$dead_pid" 2>/dev/null
++for n in thyrox-postgres thyrox-redis; do
++  echo running > "$STATE/$n.status"
++  echo "$dead_pid" > "$STATE/$n.pid"
++  echo ok > "$STATE/$n.health"
++done
++out="$(run_ensure)"; rc=$?
++thyrox_check "caso 3: running+pid muerto -> exit 0 tras recrear" "0" "$rc"
++if [[ "$out" == *"thyrox-postgres"*"pid_alive=no"*"action=recreated"* ]]; then
++  ok "caso 3: postgres con PID muerto se recrea (recreated)"
++else
++  bad "caso 3: postgres no se recreo: [$out]"
++fi
++if grep -q '^rm -f thyrox-postgres$' "$STATE/calls.log"; then
++  ok "caso 3: se invoco rm -f sobre el contenedor stale"
++else
++  bad "caso 3: no se vio 'rm -f thyrox-postgres' en calls.log"
++fi
++if grep -E '^rm ' "$STATE/calls.log" | grep -q 'thyrox-postgres-data'; then
++  bad "caso 3: el volumen thyrox-postgres-data aparece en una linea de rm"
++else
++  ok "caso 3: ningun rm -f toca el volumen thyrox-postgres-data"
++fi
++
++# =====================================================================
++# Caso 4 — exited: se arranca (start), sin create ni rm.
++# =====================================================================
++reset_state
++touch "$STATE/network-thyrox-infra"
++for n in thyrox-postgres thyrox-redis; do
++  echo exited > "$STATE/$n.status"
++  echo 0 > "$STATE/$n.pid"
++  echo ok > "$STATE/$n.health"
++done
++out="$(run_ensure)"; rc=$?
++thyrox_check "caso 4: exited -> exit 0 tras arrancar" "0" "$rc"
++if [[ "$out" == *"thyrox-postgres"*"action=started"* ]]; then
++  ok "caso 4: postgres exited se arranca (started)"
++else
++  bad "caso 4: postgres no se arranco: [$out]"
++fi
++if grep -qE '^create ' "$STATE/calls.log" 2>/dev/null; then
++  bad "caso 4: se llamo create sobre un contenedor exited (solo debia arrancar)"
++else
++  ok "caso 4: exited no dispara create, solo start"
++fi
++
++# =====================================================================
++# Caso 5 — nunca sano: exit 1, nombrando el contenedor y su salud.
++# =====================================================================
++reset_state
++echo fail > "$STATE/thyrox-postgres.health"
++echo ok > "$STATE/thyrox-redis.health"
++err="$(TEST_HEALTH_TIMEOUT=4 TEST_HEALTH_INTERVAL=2 run_ensure 2>&1 >/dev/null)"; rc=$?
++thyrox_check "caso 5: nunca sano -> exit 1" "1" "$rc"
++if [[ "$err" == *"thyrox-postgres"* ]]; then
++  ok "caso 5: el fallo nombra el contenedor que nunca sano"
++else
++  bad "caso 5: el stderr no nombro thyrox-postgres: [$err]"
++fi
++
++# =====================================================================
++# Caso 6 — sin contraseña: exit 2, SIN llamar a podman.
++# =====================================================================
++reset_state
++out="$(TEST_PASSWORD='' run_ensure 2>&1)"; rc=$?
++thyrox_check "caso 6: sin contraseña -> exit 2" "2" "$rc"
++if [[ "$out" == *THYROX_INFRA_POSTGRES_PASSWORD* ]]; then
++  ok "caso 6: el rehuso nombra THYROX_INFRA_POSTGRES_PASSWORD"
++else
++  bad "caso 6: el rehuso no nombro la variable: [$out]"
++fi
++if [[ ! -f "$STATE/calls.log" ]]; then
++  ok "caso 6: podman jamas se invoco (calls.log no existe)"
++else
++  bad "caso 6: podman se invoco pese a la contraseña faltante: $(cat "$STATE/calls.log")"
++fi
++
++# =====================================================================
++# Caso 7 — idempotencia: dos invocaciones seguidas, la segunda conserva.
++# =====================================================================
++reset_state
++echo ok > "$STATE/thyrox-postgres.health"
++echo ok > "$STATE/thyrox-redis.health"
++first_out="$(run_ensure)"; first_rc=$?
++calls_after_first="$(wc -l < "$STATE/calls.log")"
++second_out="$(run_ensure)"; second_rc=$?
++thyrox_check "caso 7: primera invocacion -> exit 0" "0" "$first_rc"
++thyrox_check "caso 7: segunda invocacion -> exit 0" "0" "$second_rc"
++if [[ "$second_out" == *"thyrox-postgres"*"action=kept"* && \
++      "$second_out" == *"thyrox-redis"*"action=kept"* ]]; then
++  ok "caso 7: la segunda invocacion conserva los dos contenedores (kept)"
++else
++  bad "caso 7: la segunda invocacion no conservo: [$second_out]"
++fi
++if tail -n +$((calls_after_first + 1)) "$STATE/calls.log" | grep -qE '^(create|rm) '; then
++  bad "caso 7: la segunda invocacion volvio a crear o borrar algo"
++else
++  ok "caso 7: la segunda invocacion no recrea nada"
++fi
++
++thyrox_summary

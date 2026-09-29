@@ -1,0 +1,3 @@
+bin/infrastructure_ensure
+src/session/infrastructure_ensure.sh
+tests/session/test-infrastructure-ensure.sh
