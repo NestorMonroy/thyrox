@@ -1,0 +1,79 @@
+caso 1 (a,b) — el escritor desprendido con setsid no sobrevive al pool, y deja de escribir tras el veredicto
+  ok    declara su mecanismo de contención
+  ok    veredicto verificado
+  ok    (a) sin proceso vivo del escritor tras volver el pool
+  ok    (b) el archivo no crece 1 s después de existir <1.verdict>
+caso 2 (c) — lo mismo cuando es el --verify quien lanza al escritor desprendido
+  ok    veredicto verificado (verify lanzó y salió 0)
+  ok    (c) sin proceso vivo del escritor del verify
+  ok    (c) el archivo del verify no crece 1 s después del veredicto
+caso 3 (e) — sin cgroup disponible, el pool cae a árbol y sigue funcionando; el escritor SIN setsid es alcanzable
+  ok    declara modo árbol
+  ok    aun así, el ítem se verifica
+  ok    (e) el árbol alcanza al escritor sin setsid
+caso 4 (d) — un TERM al pool a media ejecución no deja vivo al escritor
+  ok    el escritor arrancó antes de interrumpir
+  ok    el pool termina tras el TERM
+  ok    (d) sin escritor vivo tras interrumpir al pool
+caso 5 (f) — drain sale 3 y nombra el pid cuando algo sobrevive
+  ok    drain con un cgroup.procs que no se vacía: exit 3
+  ok    drain nombra el pid que sigue listado
+test-item-containment: 15 aserciones — 15 ok, 0 falla(s)
+OK   tres items: exit 0
+OK   tres items: resumen
+OK   una salida json por item
+OK   el item llega al final del prompt
+OK   sin sesion persistida y en stream-json
+OK   el .json es la linea result del stream, sola
+OK   un stream por item, una linea por peticion
+OK   el indice empareja numero e item
+OK   un fallo: exit 1
+OK   un fallo: lo nombra
+OK   un fallo: resumen
+OK   timeout: exit 1
+OK   timeout: nombra al lento
+OK   alias: exit 2
+OK   alias: sin resumen
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin ejecutor: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude
+OK   HEADLESS_POOL_CLAUDE retirada: sin resumen
+OK   sin plantilla: exit 2
+OK   sin ejecutor declarado: thyrox -p (bin/cli)
+OK   memfree: exit 0
+OK   memfree: la cota llega a parallel
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
+OK   cache-ttl 5m: exit 0
+OK   cache-ttl 5m: llega a cada item
+OK   sin cache-ttl: no se fija
+OK   cache-ttl ilegible: exit 2
+OK   cache-ttl ilegible: sin resumen
+OK   variable sin --cache-ttl: llega sólo como THYROX_*
+OK   variable: el pool nombra la razón
+OK   la variable gana a --cache-ttl
+OK   forzar 5m gana a la variable y a la opción
+OK   sólo --cache-ttl: su razón es la opción
+OK   activar 1h sin opción ni variable: 1h
+OK   activar 1h: el pool nombra la razón
+OK   la opción gana a activar 1h
+OK   forzar 5m gana a activar 1h
+OK   activar 1h en Bedrock, con Bedrock: 1h
+OK   activar 1h en Bedrock: la razón es la misma regla
+OK   activar 1h en Bedrock sin Bedrock: no decide
+OK   variable ilegible: exit 2
+OK   variable ilegible: la nombra, sin resumen
+OK   con proxy: el item ve el socket y el marcador, sin credencial
+OK   con proxy: la credencial la recibe el proxy
+OK   con proxy: al terminar el pool el proxy ya no vive
+OK   proxy que no arranca: exit 2, sin resumen, y lo nombra
+OK   sin --credential-proxy el item conserva su entorno
+OK   con GNU time: un .time por item
+OK   con GNU time: memoria pico, pared, usuario y sistema
+OK   con GNU time: el .time del item fallido es solo la medida
+OK   con GNU time: el fallo del item sigue siendo fallo
+OK   GNU time real: el .time trae cuatro cifras
+OK   GNU time real: no declara que falte
