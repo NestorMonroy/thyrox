@@ -1,0 +1,2 @@
+src/lib/toolchain.sh
+tests/lib/test-toolchain-uid-aware.sh
