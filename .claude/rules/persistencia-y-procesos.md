@@ -51,12 +51,15 @@ Credenciales, hallazgos, errores y tareas **no** van ahí.
   siguiente. Varios proxies, con Redis caído o ausente: nunca una memoria por
   proxy en silencio. Lo que exige vista global (el lease del refresco, la
   cuota global) rehúsa con error explícito; lo que sólo empeora sin ella lo
-  declara por operación y avisa. Hasta R5 la fábrica no distingue el modo.
+  declara por operación y avisa. El modo se lee de `THYROX_PROXY_MODE`
+  (`single` por defecto) y cada consumidor declara su consistencia al pedir
+  su vista del puerto (`forConsistency`). Implementado y probado; la
+  activación en producción espera al proceso del proxy (C3, TASK-THYROX-0496).
 - Hoy el único consumidor previsto del puerto es el proxy local: describe el
   contrato actual, no lo prohíbe a otro estado efímero entre instancias.
 - `@thyrox/coordination` es otra cosa: el ledger de reclamos entre sesiones.
 
-Decisión: ADR-THYROX-006, revisión 1.1.0 (fases TASK-THYROX-0267 a 0271).
+Decisión: ADR-THYROX-006, revisiones 1.1.0 y 1.2.0 (fases TASK-THYROX-0267 a 0271).
 
 ## El daemon ejecuta; los dominios son dueños de sus datos
 
