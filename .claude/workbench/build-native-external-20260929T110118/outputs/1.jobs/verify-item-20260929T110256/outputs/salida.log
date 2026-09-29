@@ -1,0 +1,17 @@
+bun test v1.3.11 (af24e281)
+
+tests/typescript/buildJavascript.test.ts:
+pkg: repunte INERTE — 3 .js no emitido(s):
+  ./dist/index.js
+  ./dist/sub/reader.js
+  ./dist/index.js
+  Corre antes: typescript-build-javascript <paquete>
+
+ 10 pass
+ 0 fail
+ 25 expect() calls
+Ran 10 tests across 1 file. [193.00ms]
+transparent-napi: Bun.build falló
+ResolveMessage: Could not resolve: "../native/build/Release/transparent.node"
+buildJavascript: 1 paquete(s) con fallo (alcance medido: 51 paquete(s))
+__BG_EXIT__=1
