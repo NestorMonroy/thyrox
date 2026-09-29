@@ -64,6 +64,52 @@ if [[ ! "$RETRY_SECONDS" =~ ^[0-9]+$ ]]; then
     exit 2
 fi
 
+# Admisión por disco. Cada worktree es una copia del árbol, y varios pools a la
+# vez pueden agotar la asignación de disco de la sesión: un ítem ve entonces
+# desaparecer su directorio de trabajo y el pool muere sin veredicto. Antes de
+# crear el worktree se mide lo libre contra lo que ocupará el checkout (la suma
+# de los blobs de HEAD, con margen para lo que el ítem escriba) más una reserva
+# para el resto de escritores. Si no cabe se espera, porque otro ítem puede
+# terminar y liberar el suyo, y al vencer el plazo se rehúsa con exit 3.
+DISK_RESERVE_MB="${THYROX_ITEM_WORKTREE_DISK_RESERVE_MB:-1024}"
+DISK_WAIT_SECONDS="${THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS:-600}"
+CHECKOUT_MARGIN_PERCENT=125
+DISK_POLL_SECONDS=5
+EXIT_NOT_ADMITTED=3
+if [[ ! "$DISK_RESERVE_MB" =~ ^[0-9]+$ ]]; then
+    echo "item_worktree: THYROX_ITEM_WORKTREE_DISK_RESERVE_MB va en MiB enteros, no: $DISK_RESERVE_MB" >&2
+    exit 2
+fi
+if [[ ! "$DISK_WAIT_SECONDS" =~ ^[0-9]+$ ]]; then
+    echo "item_worktree: THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS va en segundos enteros, no: $DISK_WAIT_SECONDS" >&2
+    exit 2
+fi
+
+checkout_bytes() {
+    git -C "$1" ls-tree -r -l HEAD | gawk '$4 ~ /^[0-9]+$/ {s += $4} END {printf "%d\n", s}'
+}
+
+free_bytes() {
+    df -B1 --output=avail "$1" | gawk 'NR == 2 {print $1}'
+}
+
+admit_disk() {
+    local repo="$1" root="$2" checkout needed free deadline
+    checkout="$(checkout_bytes "$repo")" || return 2
+    needed=$(( checkout * CHECKOUT_MARGIN_PERCENT / 100 + DISK_RESERVE_MB * 1048576 ))
+    deadline=$((SECONDS + DISK_WAIT_SECONDS))
+    while true; do
+        free="$(free_bytes "$root")" || return 2
+        (( free >= needed )) && return 0
+        if (( SECONDS >= deadline )); then
+            printf 'item_worktree: no hay disco para el worktree: libres %d MiB, hacen falta %d MiB (checkout %d MiB con margen, reserva %d MiB)\n' \
+                $((free / 1048576)) $((needed / 1048576)) $((checkout * CHECKOUT_MARGIN_PERCENT / 100 / 1048576)) "$DISK_RESERVE_MB" >&2
+            return "$EXIT_NOT_ADMITTED"
+        fi
+        sleep "$DISK_POLL_SECONDS"
+    done
+}
+
 with_retries() {
     local deadline=$((SECONDS + RETRY_SECONDS)) pause=1 reason
     while true; do
@@ -82,15 +128,19 @@ with_retries() {
 # Los ítems de una misma ejecución se turnan con un candado propio mientras
 # dura el alta; los reintentos quedan para el choque con un escritor ajeno.
 prepare() {
-    local repo="$1" out="$2" n="$3" base dir
+    local repo="$1" out="$2" n="$3" base root dir
     base="$(run_dir "$repo" "$out")" || return 2
+    root="${base%/*}"
     exclude_default_root "$repo" || return 2
     dir="$base/$n"
     mkdir -p "$base" || return 2
+    # El candado es de la raíz, no de la ejecución: la admisión por disco sólo
+    # vale si ningún otro pool crea un worktree entre la medida y el alta.
     (
         flock 9 || exit 2
-        with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD
-    ) 9> "$base.lock" || return 2
+        admit_disk "$repo" "$root" || exit $?
+        with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD || exit 2
+    ) 9> "$root/.admission.lock" || return $?
     printf '%s\n' "$dir"
 }
 
