@@ -459,7 +459,8 @@ export function isSeedAdminPath(path: string): boolean {
 /** El almacén de revisión de settings (≙ `zr`). */
 export function isSettingsReviewStore(path: string): boolean {
   const target = comparableSessionPath(path)
-  const stateDir = nodePath.join(homedir(), '.claude', 'state')
+  // en 2.1.283 el store vive en <config>/state (`Xe(Se(),"state")`, claude_strings.txt), no homedir()/.claude a mano
+  const stateDir = nodePath.join(claudeConfigHome(), 'state')
   return [stateDir, nodePath.join(stateDir, 'settings-review.json')].some(p =>
     getPathsForPermissionCheck(p).some(spelled => comparableSessionPath(spelled) === target),
   )

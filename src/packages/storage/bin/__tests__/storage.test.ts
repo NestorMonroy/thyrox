@@ -13,7 +13,7 @@
  * segundo leería la caché del primero.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -24,7 +24,7 @@ import {
 } from '../../src/index.ts'
 import { getProjectDir, setOriginalCwd, setSessionId } from '../../src/sessionPaths.ts'
 import { appendTaskOutput, flushTaskOutput } from '../../src/task/diskOutput.ts'
-import { main } from '../storage.ts'
+import { applyStateRoot, main } from '../storage.ts'
 
 const backend = new LocalFileStorageBackend()
 
@@ -292,5 +292,32 @@ describe('la raíz del estado es un parámetro, con dos entradas de precedencia'
     const r = await run(['sessions', '--project', project])
     expect(r.code).toBe(0)
     expect(r.out).toContain(declaredRoot)
+  })
+})
+
+describe('sin flag ni variable, el hogar de configuración es el canónico (getConfigHomeDir), no ~/.claude a mano', () => {
+  test('THYROX_CONFIG_DIR apuntando a un mkdtemp: applyStateRoot usa exactamente ese directorio', () => {
+    delete process.env.THYROX_CONFIG_DIR
+    const declaredRoot = tmp('applied-root')
+    process.env.THYROX_CONFIG_DIR = declaredRoot
+
+    expect(applyStateRoot([])).toBe(declaredRoot)
+  })
+
+  test('sin THYROX_CONFIG_DIR: cae a ~/.thyrox del hogar inyectado cuando existe, no a ~/.claude', () => {
+    delete process.env.THYROX_CONFIG_DIR
+    const home = tmp('home')
+    mkdirSync(join(home, '.thyrox'))
+    mkdirSync(join(home, '.claude'))
+
+    expect(applyStateRoot([], home)).toBe(join(home, '.thyrox'))
+  })
+
+  test('sin THYROX_CONFIG_DIR ni ~/.thyrox: respaldo heredado ~/.claude si existe', () => {
+    delete process.env.THYROX_CONFIG_DIR
+    const home = tmp('home-legacy')
+    mkdirSync(join(home, '.claude'))
+
+    expect(applyStateRoot([], home)).toBe(join(home, '.claude'))
   })
 })

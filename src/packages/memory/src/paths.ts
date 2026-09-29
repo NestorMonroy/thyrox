@@ -19,6 +19,7 @@ import { isAbsolute, join, normalize, sep } from 'node:path'
 import { readEnv } from '@thyrox/config/env/utils'
 import { isMemoryPaused } from './memoryPause.js'
 import {
+  getConfigHomeDir,
   getFeatureValue_CACHED_MAY_BE_STALE,
   getInitialSettings,
   getSettingsForSource,
@@ -63,12 +64,9 @@ export function getMemoryBaseDir(): string {
     return remoteMemoryDir
   }
   const bindings = getMemoryHostBindings()
-  return (
-    bindings.getConfigHomeDir?.() ??
-    (readEnv('THYROX_CONFIG_DIR') ?? join(homedir(), '.claude')).normalize(
-      'NFC',
-    )
-  )
+  // `Se()` en 2.1.283 (`claude_strings.txt`): mismo resolutor que
+  // `@thyrox/config/env/configHome.ts`, no un cómputo manual de `~/.claude`.
+  return bindings.getConfigHomeDir?.() ?? getConfigHomeDir()
 }
 
 const AUTO_MEM_DIRNAME = 'memory'

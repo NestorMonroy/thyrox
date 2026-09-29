@@ -31,6 +31,7 @@
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { resolveConfigHomeDir, type ConfigHomeInputs } from '../env/configHome.ts'
 import {
   deferredCondition, deferredReason, keysByStatus, type KeyStatus,
 } from '../settings/inventory.ts'
@@ -52,15 +53,15 @@ function positional(argv: string[]): string | undefined {
 }
 
 /**
- * El hogar de los settings de usuario, sin traer `@thyrox/storage` sólo por
- * esta línea — mismo criterio que `app-host/src/main/startup/settings.ts` ya
- * aplicó al reimplementar piezas de un párrafo en vez de cruzar de paquete.
- * El patrón (`THYROX_CONFIG_DIR` o `~/.claude`) se repite igual en
- * `storage/src/{plans,projectPurge,sessionEnvironment,sessionPaths}.ts` y en
- * `app-host/src/startup/startupProfiler.ts`.
+ * El hogar de los settings de usuario: mismo resolutor que el resto del
+ * paquete, medido contra el ejecutable de referencia como
+ * `u(Se(),"settings")` — `settings.json` bajo el directorio que `Se()`
+ * resuelve (`THYROX_CONFIG_DIR` → `CLAUDE_CONFIG_DIR` → `~/.claude` si
+ * existe → `~/.thyrox`). Las entradas aceptan sobrescritura para pruebas sin
+ * tocar el `HOME` real.
  */
-function userConfigDir(): string {
-  return process.env.THYROX_CONFIG_DIR ?? join(homedir(), '.claude')
+export function userConfigDir(overrides: Partial<ConfigHomeInputs> = {}): string {
+  return resolveConfigHomeDir({ env: process.env, home: homedir(), exists: existsSync, ...overrides })
 }
 
 /** Las tres fuentes con convención de ruta conocida EN ESTE ÁRBOL. */

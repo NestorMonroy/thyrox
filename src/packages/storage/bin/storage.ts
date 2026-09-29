@@ -33,6 +33,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { resolveConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { envValue } from '@thyrox/paths/reach.ts'
 import { CACHE_PATHS, setCwdFn } from '../src/cache-paths.ts'
 import { BackendArtifactStore, FileSessionMetadataStore, FileTranscriptStore, LocalFileStorageBackend } from '../src/index.ts'
@@ -94,10 +95,16 @@ function arg(argv: string[], name: string): string | undefined {
  * para que `sessionPaths.ts` (que SÍ es el mecanismo real, no una copia)
  * la vea y derive `getProjectDir`/`getTranscriptPath` sobre ella. Evita una
  * segunda fuente de verdad para la misma resolución de ruta.
+ *
+ * Sin `--state-root` ni `STATE_ROOT_VAR` declarada, la raíz cae al hogar de
+ * configuración canónico (`resolveConfigHomeDir`: ~/.thyrox, o ~/.claude
+ * heredado si sólo ese existe) — nunca a un `join(homedir(), '.claude')`
+ * fijo, que en una instalación nueva apunta a un directorio distinto del
+ * resto de thyrox. `home` es un parámetro inyectable sólo para pruebas.
  */
-function applyStateRoot(argv: string[]): string {
+export function applyStateRoot(argv: string[], home: string = homedir()): string {
   const declared = arg(argv, 'state-root')
-  const value = declared ?? envValue(STATE_ROOT_VAR) ?? join(homedir(), '.claude')
+  const value = declared ?? envValue(STATE_ROOT_VAR) ?? resolveConfigHomeDir({ env: process.env, home, exists: existsSync })
   process.env[STATE_ROOT_VAR] = value
   return value
 }

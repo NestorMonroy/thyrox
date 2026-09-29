@@ -1,0 +1,12 @@
+pass=106 fail=0 errors=0 crashes=0 files=13 failed=0
+check-package-typecheck: 8 provider(s) reconstruido(s) por viejos: agent, config, local-observability, memory, permission, plan, provider, storage
+  agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  memory: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  permission: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  plan: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 7 de 7 paquete(s))
+__BG_EXIT__=0

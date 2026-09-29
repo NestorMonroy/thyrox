@@ -118,6 +118,10 @@ describe('checkEditableInternalPath (yyt)', () => {
       delete process.env.THYROX_CODE_HOST_CREDS_FILE
     }
   })
+  test('el almacen de revision de settings vive bajo el directorio de configuracion, no homedir()/.claude a mano', () => {
+    const store = touch(join(home, 'state', 'settings-review.json'))
+    expect(checkEditableInternalPath(store, input).behavior).toBe('deny')
+  })
 })
 
 describe('checkReadableInternalPath (hee)', () => {

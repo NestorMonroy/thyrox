@@ -44,7 +44,7 @@ export function isInClaudeFolder(filePath: string): boolean {
  * decidir si se muestra la opción de permiso especial de «.claude folder» en
  * los archivos del directorio personal del usuario.
  */
-export function isInGlobalClaudeFolder(filePath: string): boolean {
+export function isInGlobalConfigFolder(filePath: string): boolean {
   const absolutePath = expandPath(filePath)
   const globalClaudeFolderPath = join(homedir(), '.claude')
 
@@ -122,7 +122,7 @@ export function getFilePermissionOptions({
 
   // Comprobar si ésta es una ruta de carpeta .claude/, de proyecto o global
   const inClaudeFolder = isInClaudeFolder(filePath)
-  const inGlobalClaudeFolder = isInGlobalClaudeFolder(filePath)
+  const inGlobalConfigFolder = isInGlobalConfigFolder(filePath)
 
   // Opción 2: para la carpeta .claude/, mostrar la opción especial en vez de
   // la genérica de sesión.
@@ -130,13 +130,13 @@ export function getFilePermissionOptions({
   // afectan al estado en memoria, no a los ajustes persistidos. El ajuste
   // `allowManagedPermissionRulesOnly` sólo restringe las reglas de permiso
   // persistidas.
-  if ((inClaudeFolder || inGlobalClaudeFolder) && operationType !== 'read') {
+  if ((inClaudeFolder || inGlobalConfigFolder) && operationType !== 'read') {
     options.push({
       label: `Yes, and allow ${PRODUCT_NAME} to edit its own settings for this session`,
       value: 'yes-claude-folder',
       option: {
         type: 'accept-session',
-        scope: inGlobalClaudeFolder ? 'global-claude-folder' : 'claude-folder',
+        scope: inGlobalConfigFolder ? 'global-claude-folder' : 'claude-folder',
       },
     })
   } else {

@@ -1,0 +1,13 @@
+src/packages/memory/src/__tests__/memoryPause.test.ts
+src/packages/memory/src/__tests__/paths.test.ts
+src/packages/memory/src/__tests__/thyroxEnvReaders.test.ts
+src/packages/workbench/__tests__/paths.test.ts
+src/packages/agent/claudeInChrome/__tests__/chromeNativeHost.test.ts
+src/packages/plan/__tests__/planMode.test.ts
+src/packages/local-observability/src/__tests__/localEventLogger.test.ts
+src/packages/permission/__tests__/moduleLoad.test.ts
+src/packages/storage/bin/__tests__/storage.test.ts
+src/packages/permission/src/__tests__/memoryPausePermissions.test.ts
+src/packages/permission/src/__tests__/internalPaths.test.ts
+src/packages/permission/src/__tests__/permissionOptions.test.ts
+src/packages/provider/__tests__/modelCatalogCoverage.test.ts

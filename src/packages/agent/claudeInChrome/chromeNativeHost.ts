@@ -16,22 +16,27 @@ import {
   unlink,
 } from 'fs/promises'
 import { createServer, type Server, type Socket } from 'net'
-import { homedir, platform } from 'os'
+import { platform } from 'os'
 import { join } from 'path'
 import { z } from 'zod'
 import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { getSecureSocketPath, getSocketDir } from './common.js'
-import { readEnv } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const VERSION = '1.0.0'
 const MAX_MESSAGE_SIZE = 1024 * 1024 // 1MB - Max message size that can be sent to Chrome
 
-const LOG_FILE =
-  readEnv('USER_TYPE') === 'ant'
-    ? join(homedir(), '.claude', 'debug', 'chrome-native-host.txt')
-    : undefined
+// El directorio de depuración vive bajo el hogar de configuración
+// compartido (`Se(),"debug"` en la referencia 2.1.283), no bajo un
+// `~/.claude` calculado a mano.
+export function resolveChromeNativeHostLogFile(env: Record<string, string | undefined>): string | undefined {
+  if (env.USER_TYPE !== 'ant') return undefined
+  return join(getConfigHomeDir(), 'debug', 'chrome-native-host.txt')
+}
+
+const LOG_FILE = resolveChromeNativeHostLogFile(process.env)
 
 function log(message: string, ...args: unknown[]): void {
   if (LOG_FILE) {
