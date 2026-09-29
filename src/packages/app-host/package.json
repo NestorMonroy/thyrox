@@ -116,6 +116,11 @@
       "types": "./dist/state/store.d.ts",
       "default": "./src/state/store.ts"
     },
+    "./state/refusalFallbackRestore.js": {
+      "@thyrox/source": "./src/state/refusalFallbackRestore.ts",
+      "types": "./dist/state/refusalFallbackRestore.d.ts",
+      "default": "./src/state/refusalFallbackRestore.ts"
+    },
     "./state/AppState.js": {
       "@thyrox/source": "./src/state/AppState.tsx",
       "types": "./dist/state/AppState.d.ts",

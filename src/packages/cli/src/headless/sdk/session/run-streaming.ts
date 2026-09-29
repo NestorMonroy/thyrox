@@ -128,6 +128,7 @@ import {
   isShuttingDown,
 } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { onRefusalFallbackRestored } from '@thyrox/app-host/state/refusalFallbackRestore.js'
 import { createIdleTimeoutManager } from '@thyrox/agent/idleTimeout.js'
 import type {
   SDKStatus,
@@ -582,6 +583,15 @@ export function runHeadlessStreaming(
     }
   })
   let activeUserSpecifiedModel = options.userSpecifiedModel
+  // `b8r` (`chunk-ycnq45th.js`, 2.1.283): al restaurarse el respaldo por
+  // rechazo, el espejo local deja de reflejar el override que la
+  // restauración acaba de deshacer.
+  const unsubscribeRefusalFallbackRestore = onRefusalFallbackRestored(() => {
+    activeUserSpecifiedModel = undefined
+  })
+  registerCleanup(async () => {
+    unsubscribeRefusalFallbackRestore()
+  })
 
   function injectModelSwitchBreadcrumbs(
     modelArg: string,

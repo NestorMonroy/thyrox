@@ -29,13 +29,18 @@ import { onRefusalFallbackRestored } from '../state/refusalFallbackRestore.js'
 import type { AppState } from './appStateCompatShim.js'
 
 /**
- * `b8r(() => {_r = void 0})`: en 2.1.283 limpia, en el runner headless
- * (`chunk-ycnq45th.js`), un espejo local del override de modelo de sesión
- * que este árbol no porta todavía (vive en el subsistema SDK headless de
- * `cli`, fuera del alcance de este ítem — ver docstring de arriba). El
- * espejo equivalente que este árbol sí tiene es `mainLoopModelForSession`
- * en el propio `AppState` del store headless: el callback lo limpia ahí.
- * Exportada aparte para medirla sin pasar por `installCliHostBindings`.
+ * `b8r` YA NO es sólo esto: el `b8r(() => {_r = void 0})` literal de 2.1.283
+ * (`chunk-ycnq45th.js`) está portado en `run-streaming.ts`
+ * (`onRefusalFallbackRestored` limpia `activeUserSpecifiedModel`, el espejo
+ * real de `_r`). Esta función es OTRO consumidor de la misma señal, no un
+ * sustituto: `subscribeRefusalFallbackReset` sólo está cableado al AppState
+ * interactivo (`app-host/runtime/bootstrap.ts`), y el store que
+ * `createHeadlessSessionStore` construye para el SDK headless / `-p` mode
+ * (`agent/sessionStores.ts`) es un `AppState` propio y separado — nada más
+ * limpia su `mainLoopModelForSession` cuando la restauración ocurre. Sigue
+ * siendo necesaria mientras ese store exista y nadie la reemplace por
+ * `subscribeRefusalFallbackReset` cableado directamente a él. Exportada
+ * aparte para medirla sin pasar por `installCliHostBindings`.
  */
 export function wireRefusalFallbackRestoreForHeadlessStore(
   store: HeadlessSessionStore,
