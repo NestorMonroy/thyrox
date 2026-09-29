@@ -58,3 +58,20 @@ Lo que confirma y lo que añade:
 - `iterative_scan` importa si D5 prevé búsquedas vectoriales con filtro (por capa, por
   iniciativa): en 0.6.0 un filtro restrictivo puede devolver menos de `top_k` filas.
   Esa última frase es la conducta que documenta upstream, no medida aquí.
+
+## Decisión del ejecutor (2026-09-29): 0.8.6
+
+Vía, por la regla acordada: compilar la etiqueta `v0.8.6` contra el PostgreSQL de
+Ubuntu, no migrar a PGDG. Medido para esa vía, sin instalar nada (`apt-get -s`):
+
+- El servidor se compiló `--with-llvm` con `CLANG=/usr/bin/clang-17`; aquí sólo hay
+  `clang` 18. `postgresql-server-dev-16` trae `clang-17` y `llvm-17-dev`.
+- El candidato de ese paquete es `16.15-0ubuntu0.24.04.1` y exige el mismo servidor:
+  la simulación instala 23 paquetes y mueve `postgresql-16`, `postgresql-client-16` y
+  `libpq5` de 16.13 a 16.15. Es una actualización menor de Ubuntu (misma fuente,
+  `noble-updates`/`noble-security`), no PGDG, y reinicia el clúster al instalarse.
+- 16.13 ya no está en los índices: sólo 16.2 y 16.15. No hay forma de compilar contra
+  Ubuntu sin la actualización menor.
+
+El instalador lo lleva el ítem `.claude/workbench/pgvector-086-installer-*`; la
+instalación real queda para después de integrarlo.
