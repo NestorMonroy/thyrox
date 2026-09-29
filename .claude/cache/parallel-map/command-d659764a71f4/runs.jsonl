@@ -1,3 +1,5 @@
 {"items_measured": 3, "max_wall_s": 0.0, "min_wall_s": 0.0, "peak_kb": 3956, "median_kb": 3932, "p90_kb": 3956, "recorded_at": "2026-09-29T08:55:59Z", "items_gpu_measured": 0}
 {"items_measured": 3, "max_wall_s": 0.0, "min_wall_s": 0.0, "peak_kb": 3988, "median_kb": 3988, "p90_kb": 3988, "recorded_at": "2026-09-29T08:56:43Z", "items_gpu_measured": 0}
 {"items_measured": 3, "max_wall_s": 0.0, "min_wall_s": 0.0, "peak_kb": 4024, "median_kb": 3856, "p90_kb": 4024, "recorded_at": "2026-09-29T08:57:02Z", "items_gpu_measured": 0}
+{"items_measured": 3, "max_wall_s": 0.0, "min_wall_s": 0.0, "peak_kb": 3992, "median_kb": 3988, "p90_kb": 3992, "recorded_at": "2026-09-29T08:57:18Z", "items_gpu_measured": 0}
+{"items_measured": 3, "max_wall_s": 0.01, "min_wall_s": 0.0, "peak_kb": 3992, "median_kb": 3948, "p90_kb": 3992, "recorded_at": "2026-09-29T08:57:45Z", "items_gpu_measured": 0}
