@@ -1,0 +1,473 @@
+diff --git a/src/packages/task/schema.ts b/src/packages/task/schema.ts
+index 5016d33c..fa85bd3b 100644
+--- a/src/packages/task/schema.ts
++++ b/src/packages/task/schema.ts
+@@ -66,23 +66,41 @@ export const TABLERO_DDL = `CREATE TABLE IF NOT EXISTS tasks (
+ )`
+ 
+ /**
+- * La marca de agua contra reúso de id (DEC-TASK-02).
++ * La marca de agua LEGADA, por clave — semántica global.
+  *
+- * `siguienteOrdinal` numera con `MAX(task_id)` sobre las filas presentes; si la
+- * de id máximo se borrara, el siguiente `TaskCreate` reusaría ese id, con la
+- * ambigüedad de referencia cruzada que el `.highwatermark` de la referencia
+- * previene (`hccw: 11-task-system.md:154-186`). La tabla recuerda el máximo
+- * histórico aunque se borre la fila. Es global —una sola clave— porque el
+- * ordinal también lo es: dos sesiones no deben producir dos «#996».
++ * `siguienteOrdinal` (la superficie de herramienta) numeraba con `MAX(task_id)`
++ * más esta marca; contra reúso de id, no de sesión. Se CONSERVA INTACTA
++ * (DEC-TASK 2026-09-29, opción a): el código nuevo no la crea, no la lee y no
++ * la escribe. Si una base la trae, sobrevive al upgrade sin cambio de
++ * contenido ni de significado — hoy ninguna base real la tiene.
+  *
+- * Sólo la declara esta lengua: el lado Python no la conoce, porque su
+- * numeración no pasa por el ordinal de sesión.
++ * Medido: el store real repite 333 `task_id` entre sus seis sesiones, así que
++ * el ordinal NUNCA fue global — el comentario que llevaba esta constante lo
++ * afirmaba y atribuía la forma a la referencia, que no la tiene así (guarda
++ * su `.highwatermark` por LISTA de tareas: `TASK_SESSION_HIGHWATER_DDL`, más
++ * abajo). La identidad durable entre sesiones es `TASK-<LAYER>-NNNN`
++ * (`task_ids`), no este ordinal.
+  */
+ export const TASK_HIGHWATER_DDL = `CREATE TABLE IF NOT EXISTS task_highwater (
+   clave  TEXT NOT NULL PRIMARY KEY DEFAULT '__global__',
+   max_id INTEGER NOT NULL DEFAULT 0
+ )`
+ 
++/**
++ * La marca de agua POR SESIÓN: `next_task_id` es el PRÓXIMO id a asignar en
++ * esa sesión, no el mayor ya asignado.
++ *
++ * Medido: el store real repite 333 `task_id` entre sus seis sesiones — el
++ * ordinal reinicia por sesión. La referencia (2.1.283, `chunk-zgfcmyzt.js`)
++ * guarda su `.highwatermark` por LISTA de tareas, no globalmente. La
++ * identidad durable entre sesiones es `TASK-<LAYER>-NNNN` (`task_ids`), no
++ * este ordinal.
++ */
++export const TASK_SESSION_HIGHWATER_DDL = `CREATE TABLE IF NOT EXISTS task_session_highwater (
++  session_id   TEXT NOT NULL PRIMARY KEY,
++  next_task_id INTEGER NOT NULL CHECK (next_task_id >= 1)
++)`
++
+ /**
+  * `, citation_id` si la base la tiene, y cadena vacía si no.
+  *
+diff --git a/src/packages/tools/__tests__/taskCreateWorker.ts b/src/packages/tools/__tests__/taskCreateWorker.ts
+new file mode 100644
+index 00000000..52856fc3
+--- /dev/null
++++ b/src/packages/tools/__tests__/taskCreateWorker.ts
+@@ -0,0 +1,36 @@
++/**
++ * Un proceso `TaskCreate`: espera un archivo-barrera y crea `count` tareas en
++ * `sessionId`, sobre el mismo SQLite que otros procesos hermanos. Lo usa
++ * `taskSessionHighwater.test.ts` para medir (y, con el arreglo retirado,
++ * reproducir) la colisión de `asignarId` entre creaciones concurrentes de una
++ * misma sesión (TASK-THYROX-0311).
++ *
++ * Uso: `bun run taskCreateWorker.ts <dbPath> <sessionId> <barrierFile> <count> <workerId>`
++ * Imprime una línea JSON por resultado: `{ok:true, task_id}` o `{ok:false, error}`.
++ */
++import { taskTools } from '../src/tasks.ts'
++import type { ToolContext } from '@thyrox/agent/loop/types'
++
++const [dbPath, sessionId, barrierFile, countArg, workerId] = process.argv.slice(2)
++const count = Number(countArg)
++
++const contexto: ToolContext = { cwd: process.cwd(), sessionId: sessionId!, abort: new AbortController().signal, messages: [] }
++
++async function esperarBarrera(): Promise<void> {
++  while (!(await Bun.file(barrierFile!).exists())) await new Promise((r) => setTimeout(r, 2))
++}
++
++async function main(): Promise<void> {
++  await esperarBarrera()
++  const crear = taskTools({ dbPath: dbPath!, sessionId }).find((t) => t.name === 'TaskCreate')!
++  for (let i = 0; i < count; i++) {
++    try {
++      const res = await crear.run({ subject: `w${workerId}-${i}` }, contexto)
++      console.log(JSON.stringify({ ok: !res.isError, worker: workerId, ...JSON.parse(res.content) }))
++    } catch (error) {
++      console.log(JSON.stringify({ ok: false, worker: workerId, error: error instanceof Error ? error.message : String(error) }))
++    }
++  }
++}
++
++await main()
+diff --git a/src/packages/tools/__tests__/taskSessionHighwater.test.ts b/src/packages/tools/__tests__/taskSessionHighwater.test.ts
+new file mode 100644
+index 00000000..db4fe423
+--- /dev/null
++++ b/src/packages/tools/__tests__/taskSessionHighwater.test.ts
+@@ -0,0 +1,216 @@
++/**
++ * `task_session_highwater`: la marca de agua POR SESIÓN, en tabla propia, y
++ * la asignación atómica de `TaskCreate` (DEC-TASK 2026-09-29, opción a).
++ *
++ * `task_highwater` —la forma legada, global— NO es sujeto de este archivo
++ * salvo para probar que el código nuevo la deja intacta: no la crea, no la
++ * lee y no la escribe.
++ */
++import { describe, expect, test } from 'bun:test'
++import { Database } from 'bun:sqlite'
++import { existsSync, mkdtempSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_SESSION_HIGHWATER_DDL } from '@thyrox/task/schema.ts'
++import { taskTools } from '../src/tasks.ts'
++import type { ToolContext } from '@thyrox/agent/loop/types'
++
++const dir = () => mkdtempSync(join(tmpdir(), 'task-session-highwater-'))
++const nuevaBase = () => join(dir(), 'tablero.sqlite3')
++const ctx = (sessionId: string): ToolContext => ({ cwd: dir(), sessionId, abort: new AbortController().signal, messages: [] })
++
++/** El `TaskCreate` de una sesión, listo para `.run(...)`. */
++function crearDe(dbPath: string, sessionId: string) {
++  return taskTools({ dbPath, sessionId }).find((t) => t.name === 'TaskCreate')!
++}
++
++async function crear(dbPath: string, sessionId: string, subject = 'una tarea') {
++  const r = await crearDe(dbPath, sessionId).run({ subject }, ctx(sessionId))
++  return JSON.parse(r.content) as { task_id: string }
++}
++
++/** Inserta `n` filas 1..n en `sessionId`, sin pasar por la herramienta. */
++function siembra(db: Database, sessionId: string, n: number): void {
++  const ahora = new Date().toISOString()
++  for (let i = 1; i <= n; i++) {
++    db.run(
++      `INSERT INTO tasks (task_id, subject, status, session_id, created_at, updated_at)
++       VALUES (?, 'sembrada', 'pending', ?, ?, ?)`,
++      [String(i), sessionId, ahora, ahora],
++    )
++  }
++}
++
++const barrera = () => join(mkdtempSync(join(tmpdir(), 'barrier-')), 'go')
++const WORKER = join(import.meta.dir, 'taskCreateWorker.ts')
++
++type ResultadoWorker = { ok: boolean; worker: string; task_id?: string; status?: string; error?: string }
++
++/**
++ * Lanza un lote de procesos `TaskCreate` (uno por `spec`), todos detrás de la
++ * MISMA barrera, y devuelve sus resultados por línea JSON. Es el arnés de
++ * reproducción/control de TASK-THYROX-0311: sin la barrera, el arranque de
++ * cada proceso no se solapa con el de los demás.
++ */
++async function loteConcurrente(
++  dbPath: string,
++  specs: { sessionId: string; count: number }[],
++): Promise<{ sessionId: string; salidas: ResultadoWorker[] }[]> {
++  const go = barrera()
++  const procesos = specs.map((s, i) => ({
++    sessionId: s.sessionId,
++    proc: Bun.spawn(['bun', 'run', WORKER, dbPath, s.sessionId, go, String(s.count), `w${i}`], {
++      stdout: 'pipe',
++      stderr: 'pipe',
++    }),
++  }))
++  // Los procesos ya arrancaron y están sondeando la barrera: dar tiempo a que
++  // todos lleguen a la espera antes de soltarlos juntos.
++  await new Promise((r) => setTimeout(r, 200))
++  await Bun.write(go, '')
++  return Promise.all(
++    procesos.map(async ({ sessionId, proc }) => {
++      const texto = await new Response(proc.stdout).text()
++      await proc.exited
++      const salidas = texto
++        .trim()
++        .split('\n')
++        .filter(Boolean)
++        .map((l) => JSON.parse(l) as ResultadoWorker)
++      return { sessionId, salidas }
++    }),
++  )
++}
++
++describe('reproducción de la colisión concurrente (TASK-THYROX-0311)', () => {
++  test('con el arreglo en su sitio, 8 procesos x 10 creaciones de la misma sesión no colisionan', async () => {
++    const p = nuevaBase()
++    const resultados = await loteConcurrente(p, Array.from({ length: 8 }, () => ({ sessionId: 'sesion-conc', count: 10 })))
++    const salidas = resultados.flatMap((r) => r.salidas)
++    expect(salidas).toHaveLength(80)
++    expect(salidas.every((s) => s.ok)).toBe(true)
++    const ids = salidas.map((s) => Number(s.task_id)).sort((a, b) => a - b)
++    expect(ids).toEqual(Array.from({ length: 80 }, (_, i) => i + 1))
++    // Nota de reproducción (medida en esta sesión, fuera de este archivo):
++    // retirando `BEGIN IMMEDIATE` (dejando lectura e inserción sueltas), el
++    // mismo arnés con 8 procesos x 10 creaciones dio 42 `ok:true` y 38
++    // `UNIQUE constraint failed: tasks.session_id, tasks.task_id` — la
++    // colisión SÍ se reprodujo, no es riesgo sólo inferido. Ver el control
++    // de anulación de este ítem.
++  })
++})
++
++describe('task_session_highwater — casos 1 a 7 del contrato', () => {
++  test('1. base nueva: la primera creación da 1 y task_highwater sigue sin existir', async () => {
++    const p = nuevaBase()
++    const { task_id } = await crear(p, 's1')
++    expect(task_id).toBe('1')
++    const db = new Database(p, { readonly: true })
++    const tablas = (db.query("SELECT name FROM sqlite_master WHERE type = 'table'").all() as { name: string }[]).map((t) => t.name)
++    db.close()
++    expect(tablas).not.toContain('task_highwater')
++    expect(tablas).toContain('task_session_highwater')
++  })
++
++  test('2. base antigua con task_highwater: la marca legada se ignora, la sesión adopta desde sus filas', async () => {
++    const p = nuevaBase()
++    const db = new Database(p)
++    db.run(TABLERO_DDL)
++    db.run(TASK_HIGHWATER_DDL)
++    db.run(`INSERT INTO task_highwater (clave, max_id) VALUES ('__global__', 999)`)
++    siembra(db, 's2', 3)
++    const antesInfo = db.query('PRAGMA table_info(task_highwater)').all()
++    const antesSql = (db.query("SELECT sql FROM sqlite_master WHERE name = 'task_highwater'").get() as { sql: string }).sql
++    const antesFilas = db.query('SELECT * FROM task_highwater').all()
++    db.close()
++
++    const { task_id } = await crear(p, 's2')
++    expect(task_id).toBe('4')
++
++    const db2 = new Database(p, { readonly: true })
++    const despuesInfo = db2.query('PRAGMA table_info(task_highwater)').all()
++    const despuesSql = (db2.query("SELECT sql FROM sqlite_master WHERE name = 'task_highwater'").get() as { sql: string }).sql
++    const despuesFilas = db2.query('SELECT * FROM task_highwater').all()
++    db2.close()
++    // Caso 7: la tabla legada es idéntica antes y después — el código nuevo
++    // no la crea, no la lee y no la escribe.
++    expect(despuesInfo).toEqual(antesInfo)
++    expect(despuesSql).toEqual(antesSql)
++    expect(despuesFilas).toEqual(antesFilas)
++  })
++
++  test('3. dos sesiones mantienen marcas independientes: A con 1..5 da 6, B con 1..40 da 41; crear en A no mueve B', async () => {
++    const p = nuevaBase()
++    const db = new Database(p)
++    db.run(TABLERO_DDL)
++    db.run(TASK_SESSION_HIGHWATER_DDL)
++    siembra(db, 'a', 5)
++    siembra(db, 'b', 40)
++    db.close()
++
++    const dadoA = await crear(p, 'a')
++    expect(dadoA.task_id).toBe('6')
++
++    const marcaB = new Database(p, { readonly: true })
++      .query('SELECT next_task_id AS n FROM task_session_highwater WHERE session_id = ?')
++      .get('b') as { n: number } | undefined
++    expect(marcaB).toBeNull() // B nunca creó por la herramienta: no adoptó marca todavía.
++
++    const dadoB = await crear(p, 'b')
++    expect(dadoB.task_id).toBe('41')
++
++    const marcaADespues = new Database(p, { readonly: true })
++      .query('SELECT next_task_id AS n FROM task_session_highwater WHERE session_id = ?')
++      .get('a') as { n: number }
++    expect(marcaADespues.n).toBe(7) // sin moverse por la creación de B.
++  })
++
++  test('4. reinicio: cerrar y reabrir la base conserva la marca, y un id borrado no se reasigna', async () => {
++    const p = nuevaBase()
++    for (let i = 0; i < 5; i++) await crear(p, 'a', `tarea-${i + 1}`)
++    // Las cinco creaciones dejan next_task_id en 6.
++    const actualizar = taskTools({ dbPath: p, sessionId: 'a' }).find((t) => t.name === 'TaskUpdate')!
++    await actualizar.run({ task_id: '5', status: 'deleted' }, ctx('a'))
++    // Reabrir: un `Database` nuevo sobre el mismo archivo, como tras un reinicio.
++    const marca = new Database(p, { readonly: true })
++      .query('SELECT next_task_id AS n FROM task_session_highwater WHERE session_id = ?')
++      .get('a') as { n: number }
++    expect(marca.n).toBe(6) // borrar no bajó la marca.
++    const { task_id } = await crear(p, 'a', 'otra')
++    expect(task_id).toBe('6')
++    expect(task_id).not.toBe('5')
++  })
++
++  test('5. concurrencia: dos sesiones a la vez no colisionan, y dentro de una da ids distintos y consecutivos', async () => {
++    const p = nuevaBase()
++    const resultados = await loteConcurrente(p, [
++      ...Array.from({ length: 4 }, () => ({ sessionId: 'p', count: 5 })),
++      ...Array.from({ length: 4 }, () => ({ sessionId: 'q', count: 5 })),
++    ])
++    for (const sessionId of ['p', 'q']) {
++      const salidas = resultados.filter((r) => r.sessionId === sessionId).flatMap((r) => r.salidas)
++      expect(salidas).toHaveLength(20)
++      expect(salidas.every((s) => s.ok)).toBe(true)
++      const ids = salidas.map((s) => Number(s.task_id)).sort((a, b) => a - b)
++      expect(ids).toEqual(Array.from({ length: 20 }, (_, i) => i + 1))
++    }
++  })
++
++  test('6. idempotencia: crear el DDL dos y tres veces no cambia filas ni esquema', async () => {
++    const p = nuevaBase()
++    await crear(p, 's6')
++    const snapshot = () => {
++      const db = new Database(p, { readonly: true })
++      const info = db.query('PRAGMA table_info(task_session_highwater)').all()
++      const filas = db.query('SELECT * FROM task_session_highwater ORDER BY session_id').all()
++      db.close()
++      return { info, filas }
++    }
++    const antes = snapshot()
++    const db = new Database(p)
++    db.run(TASK_SESSION_HIGHWATER_DDL)
++    db.run(TASK_SESSION_HIGHWATER_DDL)
++    db.close()
++    expect(snapshot()).toEqual(antes)
++  })
++})
+diff --git a/src/packages/tools/src/tasks.ts b/src/packages/tools/src/tasks.ts
+index ae0a348f..7f662280 100644
+--- a/src/packages/tools/src/tasks.ts
++++ b/src/packages/tools/src/tasks.ts
+@@ -36,7 +36,7 @@
+ import { Database } from 'bun:sqlite'
+ import { openLocal } from '@thyrox/store/db.ts'
+ import {
+-  selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
++  selectCitationId, TABLERO_DDL, TASK_SESSION_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
+ } from '@thyrox/task/schema.ts'
+ import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
+ 
+@@ -62,7 +62,7 @@ function conBase<T>(dbPath: string, fn: (db: Database) => T): T {
+   const db = openLocal(dbPath)
+   try {
+     db.run(TABLERO_DDL)
+-    db.run(TASK_HIGHWATER_DDL)
++    db.run(TASK_SESSION_HIGHWATER_DDL)
+     return fn(db)
+   } finally {
+     db.close()
+@@ -97,29 +97,35 @@ function idsDeclarados(valor: unknown): string[] {
+ }
+ 
+ /**
+- * El ordinal siguiente, sobre TODO el tablero y no sobre la sesión.
+- *
+- * La cita `#996` es del proyecto, no de la sesión: dos sesiones que numeraran
+- * por separado producirían dos «#996» distintos en los hallazgos, que es el
+- * defecto que la clave compuesta tolera pero la prosa no.
++ * Adopción sin fila de marca: el mayor `task_id` numérico DE ESTA SESIÓN,
++ * más uno (1 si la sesión no tiene filas). Otras sesiones no influyen.
+  */
+-function siguienteOrdinal(db: Database): string {
+-  const fila = db.query('SELECT MAX(CAST(task_id AS INTEGER)) AS n FROM tasks').get() as { n: number | null }
+-  const marca = db.query(`SELECT max_id AS n FROM task_highwater WHERE clave = '__global__'`).get() as { n: number | null } | undefined
+-  // El siguiente id supera tanto al máximo presente como al histórico: un id
+-  // borrado no vuelve a asignarse (DEC-TASK-02).
+-  return String(Math.max(fila?.n ?? 0, marca?.n ?? 0) + 1)
++function adoptar(db: Database, sesion: string): number {
++  const fila = db.query('SELECT MAX(CAST(task_id AS INTEGER)) AS n FROM tasks WHERE session_id = ?').get(sesion) as
++    | { n: number | null }
++    | undefined
++  return (fila?.n ?? 0) + 1
+ }
+ 
+-/** Sube la marca de agua al id borrado, si es mayor que el histórico. */
+-function subirMarca(db: Database, id: string): void {
+-  const n = Number.parseInt(id, 10)
+-  if (!Number.isFinite(n)) return
++/**
++ * El próximo id de `sesion`, y deja la marca en `id + 1`.
++ *
++ * Se invoca DENTRO de la transacción `BEGIN IMMEDIATE` de `TaskCreate`: leer
++ * la marca y recién después insertar la fila, sin que las dos operaciones
++ * compartan un mismo lock exclusivo, es la ventana en la que dos creaciones
++ * concurrentes de la misma sesión leen el mismo id (TASK-THYROX-0311).
++ */
++function asignarId(db: Database, sesion: string): string {
++  const marca = db.query('SELECT next_task_id AS n FROM task_session_highwater WHERE session_id = ?').get(sesion) as
++    | { n: number }
++    | undefined
++  const id = marca?.n ?? adoptar(db, sesion)
+   db.run(
+-    `INSERT INTO task_highwater (clave, max_id) VALUES ('__global__', ?)
+-     ON CONFLICT(clave) DO UPDATE SET max_id = MAX(max_id, excluded.max_id)`,
+-    [n],
++    `INSERT INTO task_session_highwater (session_id, next_task_id) VALUES (?, ?)
++     ON CONFLICT(session_id) DO UPDATE SET next_task_id = excluded.next_task_id`,
++    [sesion, id + 1],
+   )
++  return String(id)
+ }
+ 
+ /** Quita `id` de las dos columnas de aristas de una fila. */
+@@ -138,13 +144,13 @@ function quitarArista(db: Database, sesion: string, fila_id: string, columna: 'b
+ }
+ 
+ /**
+- * Borra una tarea: sube la marca de agua, limpia las aristas que la nombran en
+- * las demás filas y elimina la fila. La referencia lo hace igual — «removes the
+- * file and cleans up references to it from other tasks» (`hccw:` estado
+- * `deleted`, `:65`).
++ * Borra una tarea: limpia las aristas que la nombran en las demás filas y
++ * elimina la fila. La referencia lo hace igual — «removes the file and
++ * cleans up references to it from other tasks» (`hccw:` estado `deleted`,
++ * `:65`). NO toca `task_session_highwater`: un id borrado nunca se reasigna,
++ * porque la marca sólo avanza en `asignarId` (DEC-TASK 2026-09-29, opción a).
+  */
+ function borrarTarea(db: Database, sesion: string, id: string): void {
+-  subirMarca(db, id)
+   const otras = db.query('SELECT task_id, blocks_json, blocked_by_json FROM tasks WHERE session_id = ? AND task_id != ?').all(sesion, id) as {
+     task_id: string
+     blocks_json: string | null
+@@ -268,28 +274,36 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
+       const bloqueadas = idsDeclarados(input.blocks)
+       const ahora = new Date().toISOString()
+       const taskId = conBase(opts.dbPath, (db) => {
+-        const id = siguienteOrdinal(db)
+-        db.run(
+-          `INSERT INTO tasks (task_id, subject, description, status, owner, blocks_json, blocked_by_json,
+-                              session_id, source, created_at, updated_at)
+-           VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, 'harness', ?, ?)`,
+-          [
+-            id,
+-            subject,
+-            (input.description as string) ?? null,
+-            (input.owner as string) ?? null,
+-            JSON.stringify(bloqueadas),
+-            JSON.stringify(bloqueantes),
+-            sesion,
+-            ahora,
+-            ahora,
+-          ],
+-        )
+-        // La arista se escribe en los dos extremos: una lista que sólo apunta
+-        // hacia atrás no responde «¿a quién desbloquea cerrar ésta?».
+-        for (const b of bloqueantes) anadirArista(db, sesion, b, 'blocks_json', id)
+-        for (const b of bloqueadas) anadirArista(db, sesion, b, 'blocked_by_json', id)
+-        return id
++        // BEGIN IMMEDIATE toma el lock de escritura antes de leer la marca:
++        // dos creaciones concurrentes de la misma sesión ya no pueden leer el
++        // mismo `next_task_id` (TASK-THYROX-0311). `.transaction(...)` hace
++        // el COMMIT al volver y el ROLLBACK si algo lanza; sin reintentos
++        // propios, porque `openLocal` ya fija `busy_timeout`.
++        const crear = db.transaction((): string => {
++          const id = asignarId(db, sesion)
++          db.run(
++            `INSERT INTO tasks (task_id, subject, description, status, owner, blocks_json, blocked_by_json,
++                                session_id, source, created_at, updated_at)
++             VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, 'harness', ?, ?)`,
++            [
++              id,
++              subject,
++              (input.description as string) ?? null,
++              (input.owner as string) ?? null,
++              JSON.stringify(bloqueadas),
++              JSON.stringify(bloqueantes),
++              sesion,
++              ahora,
++              ahora,
++            ],
++          )
++          // La arista se escribe en los dos extremos: una lista que sólo apunta
++          // hacia atrás no responde «¿a quién desbloquea cerrar ésta?».
++          for (const b of bloqueantes) anadirArista(db, sesion, b, 'blocks_json', id)
++          for (const b of bloqueadas) anadirArista(db, sesion, b, 'blocked_by_json', id)
++          return id
++        })
++        return crear.immediate()
+       })
+       return ok(JSON.stringify({ task_id: taskId, status: 'pending' }))
+     },
