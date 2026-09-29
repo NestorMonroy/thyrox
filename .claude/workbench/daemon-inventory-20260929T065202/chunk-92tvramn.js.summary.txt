@@ -1,0 +1,1 @@
+declarations: 100 de nivel superior en chunk-92tvramn.js (58 function, 1 class, 41 variable)

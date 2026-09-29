@@ -1,0 +1,3 @@
+==== ln: 1 definicion(es) de nivel superior
+---- chunk-92tvramn.js function ln [83901,84527)
+async function ln(r,e){{let w=Gr("tail",["-f",r],{stdio:"inherit",...ea("helper")});await new Promise((u)=>{w.on("exit",(k)=>{if(k)process.exitCode=k;u()}),w.on("error",(k)=>{z(`tail failed: ${k.message}`),process.exit(1)})});return}if(N()&&e!==void 0&&r===N7()){await cn(r,e);return}let o;try{o=await Hr(r,"r")}catch(w){z(`cannot open ${r}: ${l(w)}`),process.exit(1)}let n=(await o.stat()).size,a=Buffer.alloc(65536),h=!1;process.on("SIGINT",()=>{h=!0});while(!h){if((await o.stat()).size<n)n=0;let{bytesRead:u}=await o.read(a,0,a.length,n);if(u>0)process.stdout.write(a.subarray(0,u)),n+=u;else await Q(500)}await o.close()}
