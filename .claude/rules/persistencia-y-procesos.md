@@ -57,3 +57,13 @@ Credenciales, hallazgos, errores y tareas **no** van ahí.
 - `@thyrox/coordination` es otra cosa: el ledger de reclamos entre sesiones.
 
 Decisión: ADR-THYROX-006, revisión 1.1.0 (fases TASK-THYROX-0267 a 0271).
+
+## El daemon ejecuta; los dominios son dueños de sus datos
+
+El daemon es dueño de la ejecución en segundo plano —trabajos, roster, spool,
+watchdogs, adopción, `control.sock`— y ése es su único estado propio, en el
+nivel A (archivos del proceso). Una tarea, un hallazgo o un error que produzca
+un trabajo del daemon se persiste por la API de su dominio (`@thyrox/task`,
+`@thyrox/finding`, `recordError` del error store de `@thyrox/local-observability`), que a su vez va
+a `@thyrox/store`. El daemon no abre bases ni guarda datos de dominio en sus
+archivos: sería volverlo el dueño de todo.

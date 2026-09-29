@@ -30,6 +30,7 @@ import {
   renameSync,
   unlinkSync,
   watch,
+  writeFileSync,
 } from 'node:fs'
 import { basename, join } from 'node:path'
 
@@ -233,7 +234,6 @@ export function writeSpoolEnvelope(env: DispatchEnvelope): string {
   const id = `${env.createdAt}-${Math.random().toString(36).slice(2, 10)}`
   const tmp = join(dir, `${id}.tmp`)
   const dest = join(dir, `${id}.json`)
-  const { writeFileSync } = require('node:fs') as typeof import('node:fs')
   writeFileSync(tmp, JSON.stringify(env), { mode: 0o600 })
   renameSync(tmp, dest)
   return dest
