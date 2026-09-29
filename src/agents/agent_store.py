@@ -2255,20 +2255,35 @@ def _last_commit_dates(repo: Path, subtree: str) -> dict:
     Ciega al renombrado: sin ``--follow`` la historia se corta en la mudanza,
     asi que un archivo movido declara su fecha desde entonces. Es la direccion
     segura — una fecha posterior conserva de mas, nunca de menos.
+
+    Se pide con ``-z``, no con ``-c core.quotePath=false``: la segunda opcion
+    arregla el escape octal de bytes no ASCII pero deja intacto un salto de
+    linea dentro del nombre (raro, pero legal en un nombre de archivo); ``-z``
+    resuelve las dos cosas a la vez porque separa registros por NUL y por eso
+    deja de citar la ruta (H-THYROX-270, 3 de 6508 documentos con una tilde en
+    el nombre quedaban sin `commit_at` ni `updated_at`). Con ``-z`` cada
+    commit imprime ``@fecha`` seguido de un NUL, y la lista de archivos que le
+    sigue lleva un `\n` de separador ANTES del primer nombre — resabio de la
+    linea en blanco que ese mismo formato deja sin ``-z`` — asi que cada
+    fragmento se despoja de ese `\n` sobrante antes de decidir si es fecha o
+    ruta.
     """
     try:
         salida = subprocess.run(
-            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "--", subtree],
+            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "-z", "--", subtree],
             capture_output=True, text=True, check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return {}
     fechas, actual = {}, None
-    for linea in salida.splitlines():
-        if linea.startswith("@"):
-            actual = linea[1:]
-        elif linea.strip() and actual:
-            fechas.setdefault(linea.strip(), actual)
+    for chunk in salida.split("\0"):
+        chunk = chunk.lstrip("\n")
+        if not chunk:
+            continue
+        if chunk.startswith("@"):
+            actual = chunk[1:]
+        elif actual:
+            fechas.setdefault(chunk, actual)
     return fechas
 
 

@@ -267,6 +267,18 @@ c=sqlite3.connect(sys.argv[1] + '/agent_store.sqlite3')
 print(list(c.execute(\"select updated_at_source from documents where path='source/v.rst'\"))[0][0])" "$VIEJO")
 afirmar "15b la fila previa sobrevive a la migracion" "git-commit" "$SOBREVIVE"
 
+# --- 16 · H-THYROX-270: ruta con byte no ASCII --------------------------
+# `core.quotePath` (default true) hace que `git log --name-only` entrecomille
+# y escape en octal una ruta con bytes fuera de ASCII: la linea real es
+# `"source/h-i.rst"` con `\303\255` en vez de `i` con tilde, y esa cadena
+# jamas coincide con la ruta que el resto del store usa como clave. En el
+# store real quedaban exactamente 3 de 6508 documentos sin fechar por esto.
+doc "h-tilde-í.rst" "-" "H"
+git -C "$REPO" add -A
+commit_en "2026-08-01T00:00:00" "no ascii"
+python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
+afirmar "16 ruta no ASCII se fecha con su ruta real"  "git-commit"  "$(leer 'source/h-tilde-í.rst' updated_at_source)"
+
 echo
 echo "  $OK ok · $FALLO fallas"
 [[ $FALLO -eq 0 ]]
