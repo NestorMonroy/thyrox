@@ -39,7 +39,7 @@ let outputBuffer = ''
 export function ensureBridge(): boolean {
   if (bridgeProc) return true
   try {
-    const scriptPath = path.join(__dirname, 'bridge.py')
+    const scriptPath = path.join(import.meta.dir, 'bridge.py')
     bridgeProc = Bun.spawn(['python', '-u', scriptPath], {
       stdin: 'pipe',
       stdout: 'pipe',
@@ -153,7 +153,7 @@ export function callSync<T = unknown>(
   // For sync calls, spawn a one-shot Python process.
   // SECURITY: JSON is passed via stdin (not embedded in -c) to prevent code injection.
   try {
-    const scriptPath = path.join(__dirname, 'bridge.py')
+    const scriptPath = path.join(import.meta.dir, 'bridge.py')
     const req = JSON.stringify({ id: 1, method, params })
     const result = Bun.spawnSync({
       cmd: ['python', '-u', scriptPath],
