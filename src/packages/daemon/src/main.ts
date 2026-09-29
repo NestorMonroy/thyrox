@@ -1,29 +1,50 @@
 import { spawn, type ChildProcess } from 'child_process'
 import { resolve } from 'path'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
 import { logEvent } from '@thyrox/local-observability'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 /**
- * Exit code used by workers for permanent (non-retryable) failures.
+ * Código de salida de un worker con fallo permanente (no reintentable).
+ * `jq` en `chunk-92tvramn.js` (`class Ue`, referencia 2.1.283): mismo valor.
  * @see workerRegistry.ts EXIT_CODE_PERMANENT
  */
 const EXIT_CODE_PERMANENT = 78
 
 /**
- * Backoff config for restarting crashed workers.
+ * Backoff exponencial con jitter para reintentar un worker caído. Porte de
+ * `Ar`/`At` (`chunk-92tvramn.js`, `class Ue`, referencia 2.1.283):
+ * `Ar(r) = At(min(1000*2**r, Er))`, `At(r) = round(r*(0.5+random()))`.
+ *
+ * Divergencia declarada: lo que antes existía aquí —parking permanente tras
+ * `MAX_RAPID_FAILURES` fallos rápidos— no tiene equivalente en `Ue.onExit`:
+ * la referencia reintenta indefinidamente con este backoff (topado en
+ * `Er`=300000ms) y sólo aparca de forma permanente por `EXIT_CODE_PERMANENT`
+ * (`jq`). Se retira esa lógica para igualar la referencia.
  */
-const BACKOFF_INITIAL_MS = 2_000
-const BACKOFF_CAP_MS = 120_000
-const BACKOFF_MULTIPLIER = 2
-const MAX_RAPID_FAILURES = 5 // Park worker after this many fast crashes
+const WORKER_BACKOFF_BASE_MS = 1_000 // el `1000` de `Ar`
+const WORKER_BACKOFF_CAP_MS = 300_000 // `Er`
+
+/**
+ * Uptime mínimo para tratar una salida con código 0 como sana y resetear la
+ * racha de fallos. `br` (60000) en `Ue.onExit`, misma referencia.
+ *
+ * // pendiente: `Ue.onExit` también trata como fallo permanente (sin
+ * // reintentar) una salida limpia y rápida cuando el worker corre a través
+ * // de un "launcher" (`r===0 && n<zNe && lu().length>0`, `zNe`=12000ms) y
+ * // el reintento de spawn por error `ENOENT`/`EACCES` con código `Tpt`=75.
+ * // Ninguna de las dos aplica aquí: este supervisor lanza el worker
+ * // directamente con `spawn(process.execPath, …)`, sin el concepto de
+ * // "process wrapper"/launcher que esas dos ramas asumen.
+ */
+const WORKER_HEALTHY_UPTIME_MS = 60_000
 
 interface WorkerState {
   kind: string
   process: ChildProcess | null
-  backoffMs: number
-  failureCount: number
+  consecutiveCrashes: number
   parked: boolean
   lastStartTime: number
 }
@@ -52,9 +73,7 @@ export async function daemonMain(args: string[]): Promise<void> {
         // ant 5170 — startup_crash: supervisor failed to bring itself
         // online. Report so admins notice; rethrow to preserve exit
         // code semantics.
-        logEvent('tengu_daemon_startup_crash', {
-          error: errorMessage(e).slice(0, 200),
-        })
+        reportDaemonStartupCrash(e)
         throw e
       }
       break
@@ -67,10 +86,7 @@ export async function daemonMain(args: string[]): Promise<void> {
         try {
           code = await bgDaemonMain(args.slice(2))
         } catch (e) {
-          logEvent('tengu_daemon_startup_crash', {
-            error: errorMessage(e).slice(0, 200),
-            sub: 'bg',
-          })
+          reportDaemonStartupCrash(e, { sub: 'bg' })
           throw e
         }
         process.exitCode = code
@@ -297,8 +313,7 @@ async function runSupervisor(args: string[]): Promise<void> {
     {
       kind: 'remoteControl',
       process: null,
-      backoffMs: BACKOFF_INITIAL_MS,
-      failureCount: 0,
+      consecutiveCrashes: 0,
       parked: false,
       lastStartTime: 0,
     },
@@ -359,6 +374,114 @@ async function runSupervisor(args: string[]): Promise<void> {
   )
 
   console.log('[daemon] supervisor stopped')
+}
+
+const DAEMON_START_FEATURE = 'daemon_start'
+const DAEMON_START_CRASH_CODE = 'daemon_start_crash'
+
+/**
+ * Reporta un fallo de arranque del supervisor. Porte de la rama `catch` de
+ * `wa` para `run`/`start` (`chunk-92tvramn.js`, referencia 2.1.283):
+ * `catch(ce){d(ce); m("daemon_start","daemon_start_crash");
+ * await Promise.all([Tv("tengu_daemon_startup_crash",{}),
+ * $ct("tengu_daemon_startup_crash",{})]); le(1)}`.
+ *
+ * `d` es `logError` (`chunk-fmsbxtrp.js`): se conserva tal cual. `m` es
+ * `reportFeatureBad` (`@thyrox/local-observability/src/uds/featureTelemetry.ts`,
+ * porte propio de `chunk-d09a8ccq.js`), pero ese módulo no está en el
+ * `exports` público del paquete —no hay entrada `./uds/featureTelemetry.js`
+ * en su `package.json`—, así que aquí se emite a mano el evento
+ * `tengu_feature_bad` con la misma forma (`{feature_name, error_code}`) en
+ * vez de importarlo. `Tv` es `logEvent` local: se conserva. `$ct` reenvía el
+ * mismo evento al sumidero first-party de Datadog de la cuenta de Anthropic
+ * — no existe un sumidero remoto equivalente en thyrox.
+ *
+ * // pendiente: el reenvío a `$ct` (Datadog first-party) no se porta —
+ * // thyrox no tiene ese sumidero remoto.
+ *
+ * `le(1)` es `process.exit(1)`; ese control de salida lo sigue haciendo el
+ * llamador (`daemonMain`), no esta función.
+ */
+export function reportDaemonStartupCrash(
+  error: unknown,
+  context: Record<string, string> = {},
+  deps: {
+    logErrorFn?: (error: unknown) => void
+    logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
+  } = {},
+): void {
+  const { logErrorFn = logError, logEventFn = logEvent } = deps
+  logErrorFn(error)
+  logEventFn('tengu_feature_bad', {
+    feature_name: DAEMON_START_FEATURE,
+    error_code: DAEMON_START_CRASH_CODE,
+  })
+  logEventFn('tengu_daemon_startup_crash', {
+    error: errorMessage(error).slice(0, 200),
+    ...context,
+  })
+}
+
+/**
+ * Backoff exponencial con jitter para reintentar un worker caído. Porte de
+ * `Ar`/`At` (`chunk-92tvramn.js`, `class Ue`, referencia 2.1.283).
+ */
+export function computeWorkerBackoffMs(
+  consecutiveCrashes: number,
+  random: () => number = Math.random,
+): number {
+  const base = Math.min(
+    WORKER_BACKOFF_BASE_MS * 2 ** consecutiveCrashes,
+    WORKER_BACKOFF_CAP_MS,
+  )
+  return Math.round(base * (0.5 + random()))
+}
+
+/**
+ * Una salida es sana cuando el worker terminó con código 0 y corrió al
+ * menos `WORKER_HEALTHY_UPTIME_MS`. Porte de la condición `r===0 && n>=br`
+ * en `Ue.onExit`.
+ */
+export function isHealthyWorkerExit(
+  code: number | null,
+  uptimeMs: number,
+): boolean {
+  return code === 0 && uptimeMs >= WORKER_HEALTHY_UPTIME_MS
+}
+
+/**
+ * Línea de log de una salida no sana, formato exacto de `Ue.onExit`:
+ * `` `exited code=${r} sig=${e} uptime=${n}ms consecutive=${this.consecutiveCrashes} backoff=${h}ms` ``.
+ */
+export function formatWorkerExitLogLine(params: {
+  code: number | null
+  signal: NodeJS.Signals | null
+  uptimeMs: number
+  consecutive: number
+  backoffMs: number
+}): string {
+  const { code, signal, uptimeMs, consecutive, backoffMs } = params
+  return `exited code=${code} sig=${signal} uptime=${uptimeMs}ms consecutive=${consecutive} backoff=${backoffMs}ms`
+}
+
+/**
+ * Metadata de `tengu_daemon_worker_crash`, porte exacto de los cuatro
+ * campos que `Ue.onExit` pasa a `i(...)` (`chunk-ab7mw5d9.js`): `exit_code`
+ * queda `undefined` cuando el worker murió por señal (`r??void 0`).
+ */
+export function buildWorkerCrashEventMetadata(params: {
+  consecutive: number
+  exitCode: number | null
+  uptimeMs: number
+  workerKind: string
+}): Record<string, unknown> {
+  const { consecutive, exitCode, uptimeMs, workerKind } = params
+  return {
+    consecutive,
+    exit_code: exitCode ?? undefined,
+    uptime_ms: uptimeMs,
+    worker_kind: workerKind,
+  }
 }
 
 /**
@@ -440,47 +563,49 @@ function spawnWorker(
       return
     }
 
-    // ant 5170 — worker_crash: every non-zero non-permanent exit fires
-    // this. Includes the streak so consumers see the crash-loop trend.
-    logEvent('tengu_daemon_worker_crash', {
-      worker_kind: worker.kind,
-      exit_code: String(code ?? -1),
-      signal: sig ? String(sig) : '',
-      streak: String(worker.failureCount + 1),
-      uptime_ms: String(Date.now() - worker.lastStartTime),
-    })
+    const uptimeMs = Date.now() - worker.lastStartTime
 
-    // Check for rapid failure (crashed within 10s of starting)
-    const runDuration = Date.now() - worker.lastStartTime
-    if (runDuration < 10_000) {
-      worker.failureCount++
-      if (worker.failureCount >= MAX_RAPID_FAILURES) {
-        console.error(
-          `[daemon] worker '${worker.kind}' failed ${worker.failureCount} times rapidly — parking`,
-        )
-        worker.parked = true
-        return
-      }
-    } else {
-      // Ran for a reasonable time, reset failure count
-      worker.failureCount = 0
-      worker.backoffMs = BACKOFF_INITIAL_MS
+    if (isHealthyWorkerExit(code, uptimeMs)) {
+      // Porte de `Ue.onExit`, rama sana (r===0 && n>=br): resetea la racha
+      // y respawnea de inmediato, sin backoff.
+      worker.consecutiveCrashes = 0
+      console.log(
+        `[daemon] worker '${worker.kind}' exited code=${code} sig=${sig} uptime=${uptimeMs}ms (clean) — respawning`,
+      )
+      spawnWorker(worker, dir, config, signal)
+      return
     }
 
+    worker.consecutiveCrashes++
+    const backoffMs = computeWorkerBackoffMs(worker.consecutiveCrashes)
+
+    // ant 5170 — worker_crash: every non-permanent, non-healthy exit fires
+    // this. Porte de `Ue.onExit`: `i("tengu_daemon_worker_crash",
+    // {consecutive, exit_code, uptime_ms, worker_kind})`.
+    logEvent(
+      'tengu_daemon_worker_crash',
+      buildWorkerCrashEventMetadata({
+        consecutive: worker.consecutiveCrashes,
+        exitCode: code,
+        uptimeMs,
+        workerKind: worker.kind,
+      }),
+    )
+
     console.log(
-      `[daemon] worker '${worker.kind}' exited (code=${code}, signal=${sig}), restarting in ${worker.backoffMs}ms`,
+      `[daemon] worker '${worker.kind}' ${formatWorkerExitLogLine({
+        code,
+        signal: sig,
+        uptimeMs,
+        consecutive: worker.consecutiveCrashes,
+        backoffMs,
+      })}`,
     )
 
     setTimeout(() => {
       if (!signal.aborted && !worker.parked) {
         spawnWorker(worker, dir, config, signal)
       }
-    }, worker.backoffMs)
-
-    // Exponential backoff
-    worker.backoffMs = Math.min(
-      worker.backoffMs * BACKOFF_MULTIPLIER,
-      BACKOFF_CAP_MS,
-    )
+    }, backoffMs)
   })
 }

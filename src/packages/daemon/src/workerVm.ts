@@ -68,6 +68,74 @@ export interface WorkerSpawnConfig {
 export type SettleOutcome = 'done' | 'crashed' | 'killed'
 
 /**
+ * Entrada pura de `classifyExitOutcome` — el subconjunto de estado del
+ * `WorkerVm` que `g7#onExit` consulta para decidir `K` (ant
+ * `chunk-ygx717jg.js`, clase `g7`, método `onExit`, tengu_bg_worker_exit).
+ */
+export interface ExitClassificationInput {
+  /** Fase del VM al momento de la salida (`g7#phase.kind`). */
+  phase: WorkerPhase['kind']
+  exitCode: number
+  signal?: NodeJS.Signals
+  /** Cuántos intentos de spawn lleva el worker (`g7#attempt`). */
+  attempt: number
+  /** True una vez el worker señalizó que arrancó (`g7#workerReady`).
+   *  `WorkerVm` no tiene ese canal de señal todavía; el llamador aproxima
+   *  con `phase.kind === 'running'` — ver comentario en `onChildExit`. */
+  workerReady: boolean
+  /** Modo de lanzamiento (`g7#dispatch.launch.mode`). `WorkerVm` no
+   *  distingue hoy un modo `exec`; el llamador pasa `undefined` — ver
+   *  comentario en `onChildExit`. */
+  launchMode?: 'exec' | 'pty' | 'detached'
+}
+
+/**
+ * Puerto de la clasificación `K` de `g7#onExit` (ant `chunk-ygx717jg.js`,
+ * clase `g7`). Decide el desenlace ANTES de emitir `tengu_bg_worker_exit`,
+ * no después — al revés de como `onChildExit` lo hacía antes de este puerto.
+ *
+ * Función pura: no lee ni muta el estado del `WorkerVm`, sólo el `input`.
+ *
+ * Ramas portadas, en el mismo orden que la referencia:
+ *   1. fase `upgrading`             -> sin desenlace (se re-lanza desde cero)
+ *   2. `exitCode === 0`             -> 'done'
+ *   3. `launchMode === 'exec'`      -> 'killed' si la señal es de kill
+ *                                      (SIGINT/SIGQUIT), si no 'crashed'
+ *   4. `!workerReady && attempt>=2` -> 'crashed'
+ *
+ * Sin desenlace en cualquier otro caso: la referencia cae a `scheduleRespawn`
+ * y no fija `K`.
+ *
+ * Pendiente, no invocado: la referencia evalúa una segunda rama entre (1) y
+ * (2) — `_` en la fuente — que clasifica como 'crashed' cuando el lanzador
+ * ya salió (fork-and-exit en vez de exec) con éxito y sin que el worker
+ * llegara a listo, en menos de un umbral de tiempo. Depende de detectar el
+ * comando del lanzador y su cola de error de preinicio
+ * (`this.preInitErrorTail()`); `WorkerVm` no rastrea ninguno de los dos.
+ * La rama final de la referencia también evalúa cwd desaparecido, id de
+ * sesión ya tomado por otro worker, una racha repetida de la misma causa de
+ * salida y "listo pero agotó el presupuesto de intentos" — ninguna de esas
+ * señales existe hoy en `WorkerVm`; sólo se porta "no listo tras dos
+ * intentos", que sí puede evaluarse con `attempt` y `workerReady`.
+ */
+export function classifyExitOutcome(input: ExitClassificationInput): SettleOutcome | undefined {
+  const { phase, exitCode, signal, attempt, workerReady, launchMode } = input
+
+  if (phase === 'upgrading') return undefined
+
+  if (exitCode === 0) return 'done'
+
+  if (launchMode === 'exec') {
+    const killedByStopSignal = signal === 'SIGINT' || signal === 'SIGQUIT'
+    return killedByStopSignal ? 'killed' : 'crashed'
+  }
+
+  if (!workerReady && attempt >= 2) return 'crashed'
+
+  return undefined
+}
+
+/**
  * VM de worker. Una instancia por job bg. Es dueña del ciclo de vida del
  * subproceso.
  */
@@ -464,12 +532,40 @@ export class WorkerVm extends EventEmitter {
       this.heartbeatTimer = null
     }
     const uptime = Date.now() - this.record.startedAt
+    // ant g7#onExit clasifica K ANTES de emitir; workerReady no tiene canal
+    // propio en este puerto, así que se aproxima con la fase: `running`
+    // significa que el worker llegó a correr en este intento. launchMode
+    // queda pendiente: WorkerSpawnConfig no distingue un modo `exec`.
+    const outcome = classifyExitOutcome({
+      phase: this.phase.kind,
+      exitCode,
+      signal,
+      attempt: this.attempt,
+      workerReady: this.phase.kind === 'running',
+      launchMode: undefined,
+    })
     logEvent('tengu_bg_worker_exit', {
       short: this.config.short,
-      pid: String(this.record.pid),
-      exit_code: String(exitCode),
-      signal: signal ?? '',
-      uptime_ms: String(uptime),
+      code: exitCode,
+      signal,
+      attempt: this.attempt,
+      procUptimeMs: uptime,
+      // pendiente: WorkerSpawnConfig no rastrea el origen del despacho
+      // (`dispatch.source` en la referencia) — no se inventa.
+      source: undefined,
+      // pendiente: WorkerSpawnConfig no distingue un modo de lanzamiento
+      // `exec` de uno `pty` — no se inventa.
+      launch_mode: undefined,
+      outcome,
+      // pendiente: la causa de salida (`w` en la referencia, p. ej.
+      // "setcwd") sale de inspeccionar el log del pty-host; este puerto no
+      // lo hace todavía — no se inventa.
+      exitCause: undefined,
+      // pendiente, declarado explícitamente fuera de este porte: aunque
+      // `WorkerRecord.cliVersion` existe, no está confirmado contra la
+      // referencia que sea el mismo valor que `fi(this.record.cliVersion)`
+      // formatea para telemetría — no se asume la equivalencia sin medirla.
+      worker_cli_version: undefined,
     })
     if (this.isKilling()) {
       this.settle('killed')
