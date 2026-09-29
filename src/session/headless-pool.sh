@@ -538,11 +538,18 @@ _headless_item_run() {
         # en objetos de git bajo refs/thyrox/snapshots/<run>/<n>/<gen>: si algo
         # falla después, `recovery_controller recover` lo abre aparte. Una foto
         # que no se pudo tomar se declara en el `.err`; no cambia el veredicto.
-        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
-        bash "$HP_SNAPSHOT" take "$workdir" "${HP_LIVE##*/}" "$n" "$HP_ITEM_GENERATION" \
-            > "$HP_LIVE/$n.snapshot.json" 2>> "$HP_LIVE/$n.err" \
-            || echo "no se pudo guardar la foto del worktree del ítem" >> "$HP_LIVE/$n.err"
-        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
+        # Si la transición a SNAPSHOTTING se rehúsa, otra generación ya es dueña
+        # del ítem: su registro de foto no se reemplaza (I4).
+        if bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"; then
+            bash "$HP_SNAPSHOT" take "$workdir" "${HP_LIVE##*/}" "$n" "$HP_ITEM_GENERATION" \
+                > "$HP_LIVE/$n.snapshot.json.tmp" 2>> "$HP_LIVE/$n.err" \
+                && mv "$HP_LIVE/$n.snapshot.json.tmp" "$HP_LIVE/$n.snapshot.json" \
+                || echo "no se pudo guardar la foto del worktree del ítem" >> "$HP_LIVE/$n.err"
+            rm -f "$HP_LIVE/$n.snapshot.json.tmp"
+            bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
+        else
+            echo "la generación $HP_ITEM_GENERATION ya no es dueña del ítem; no se toma su foto" >> "$HP_LIVE/$n.err"
+        fi
         bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_LIVE" "$n" "$rc" "$HP_VERIFY"
     fi
     # El .json de siempre es la linea `result` del stream: sus consumidores

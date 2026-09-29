@@ -65,6 +65,10 @@ class SnapshotRefExistsError(SnapshotError):
     """La ref de esa generación ya existe: una foto no reemplaza a otra."""
 
 
+class SnapshotSupersededError(SnapshotError):
+    """Ya existe la foto de una generación posterior del mismo ítem (I4)."""
+
+
 @dataclass(frozen=True)
 class SnapshotManifest:
     run: str
@@ -99,6 +103,13 @@ def _git(repo: Path, *args: str, env: dict[str, str] | None = None, check: bool 
     return result.stdout.strip()
 
 
+def newer_generations(repo: Path, run: str, item: str, generation: int) -> list[int]:
+    """Generaciones del mismo ítem con foto, posteriores a ``generation``."""
+    listing = _git(repo, "for-each-ref", "--format=%(refname)", f"{REF_PREFIX}/{run}/{item}/")
+    found = (ref.rsplit("/", 1)[-1] for ref in listing.splitlines())
+    return sorted(int(name) for name in found if name.isdigit() and int(name) > generation)
+
+
 def _index_path(repo: Path) -> Path:
     return Path(_git(repo, "rev-parse", "--path-format=absolute", "--git-path", "index"))
 
@@ -117,15 +128,30 @@ def manifest_path(run: str, item: str, generation: int) -> Path:
 
 
 def take_snapshot(repo: Path, run: str, item: str, generation: int, *,
-                  capture_worktree: bool = True, create_only: bool = True) -> SnapshotManifest:
+                  capture_worktree: bool = True, create_only: bool = True,
+                  refuse_superseded: bool = True) -> SnapshotManifest:
     """Guarda el árbol de trabajo y el índice de ``repo`` bajo su ref, sin tocarlos.
 
-    ``capture_worktree`` y ``create_only`` existen sólo como controles de
-    anulación: sin el primero la foto se queda en lo preparado; sin el segundo
-    una ref existente se reemplaza.
+    Si el ítem ya tiene la foto de una generación posterior, su dueño anterior
+    fue desplazado y la foto se rehúsa sin escribir ref ni manifiesto (I4).
+
+    ``capture_worktree``, ``create_only`` y ``refuse_superseded`` existen sólo
+    como controles de anulación: sin el primero la foto se queda en lo
+    preparado; sin el segundo una ref existente se reemplaza; sin el tercero
+    la generación desplazada escribe su foto.
+
+    *Ciega a:* una foto de la generación posterior creada entre la consulta y
+    ``update-ref``. La frontera que cierra esa ventana es la generación del
+    estado del ítem, que el pool comprueba antes de tomar la foto.
     """
     repo = Path(repo).resolve()
     ref = snapshot_ref(run, item, generation)
+    if refuse_superseded:
+        newer = newer_generations(repo, run, item, generation)
+        if newer:
+            raise SnapshotSupersededError(
+                f"{run}/{item} ya tiene la foto de la generación {newer[-1]}; "
+                f"la generación {generation} ya no puede tomar la suya")
     base_head = _git(repo, "rev-parse", "--verify", "--quiet", "HEAD", check=False)
     with tempfile.TemporaryDirectory(prefix="thyrox-snapshot-") as scratch:
         scratch_dir = Path(scratch)
@@ -198,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
                 print("snapshot_store: el manifiesto no coincide con su sha256", file=sys.stderr)
                 return 2
             print(json.dumps(asdict(manifest), sort_keys=True))
-    except SnapshotRefExistsError as error:
+    except (SnapshotRefExistsError, SnapshotSupersededError) as error:
         print(f"snapshot_store: REHÚSA — {error}", file=sys.stderr)
         return EXIT_REF_EXISTS
     except SnapshotError as error:

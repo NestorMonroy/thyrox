@@ -11,11 +11,14 @@ Casos (numeración de la especificación de TASK-THYROX-0601):
  11. recuperar abre un worktree aparte y no toca el árbol del usuario;
  13. un ítem cancelado se clasifica recuperable, su foto sobrevive, y ``prune``
      rehúsa retirar su runtime.
+ 14. (I4) la foto de una generación desplazada se rehúsa si ya existe la de
+     la siguiente: no deja ref ni manifiesto, y la siguiente queda intacta.
 
 Controles de anulación:
 - ``capture_worktree=False``: la foto se queda en lo preparado y caen
   exactamente las aserciones de lo modificado, lo nuevo y lo binario.
 - ``create_only=False``: repetir una ref la reemplaza.
+- ``refuse_superseded=False``: la foto de la generación desplazada se escribe.
 - ``restore_in_place(confirm=True)``: la operación destructiva sí pisa el árbol,
   que es lo que la recuperación por defecto evita.
 """
@@ -216,6 +219,30 @@ with tempfile.TemporaryDirectory() as scratch:
           (rc.classify(live13, out13, "1"), rc.classify(live13, out13, "2")))
     rc.prune(live13, out13)
     check("prune retira el runtime ya publicado", False, live13.exists())
+
+    print("caso 14 (I4): la foto de una generación desplazada no toca la de la siguiente")
+    repo14 = make_repo(base / "repo14")
+    dirty(repo14)
+    newer = ss.take_snapshot(repo14, "r14", "1", 2)
+    (repo14 / "unstaged.txt").write_text("trabajo del dueño desplazado\n")
+    try:
+        ss.take_snapshot(repo14, "r14", "1", 1)
+        check("la foto de la generación 1 se rehúsa si ya existe la 2", "SnapshotSupersededError", "no rehusó")
+    except ss.SnapshotSupersededError:
+        check("la foto de la generación 1 se rehúsa si ya existe la 2", True, True)
+    check("... y no deja ref de la generación 1", "",
+          git(repo14, "for-each-ref", "--format=%(refname)", ss.snapshot_ref("r14", "1", 1)))
+    check("... ni manifiesto de la generación 1", None, ss.read_manifest("r14", "1", 1))
+    check("la ref de la generación 2 sigue en su foto", newer.snapshot_commit,
+          git(repo14, "rev-parse", ss.snapshot_ref("r14", "1", 2)))
+    check("el manifiesto de la generación 2 sigue íntegro", newer, ss.read_manifest("r14", "1", 2))
+    other_item = ss.take_snapshot(repo14, "r14", "2", 1)
+    check("otro ítem de la misma ejecución no queda afectado", 1, other_item.generation)
+
+    print("caso 14c: control — sin rehusar la generación desplazada, su foto se escribe")
+    stale = ss.take_snapshot(repo14, "r14", "1", 1, refuse_superseded=False)
+    check("control: la ref de la generación 1 existe", stale.snapshot_commit,
+          git(repo14, "rev-parse", ss.snapshot_ref("r14", "1", 1)))
 
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)

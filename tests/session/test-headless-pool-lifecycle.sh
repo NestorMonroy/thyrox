@@ -16,6 +16,8 @@
 #      lo declara recuperable y no borra nada, y la salida sigue sin el ítem.
 #   4. la recuperación toma el ítem en curso con una generación nueva: el pool
 #      conserva la anterior y su publicación se rehúsa.
+#   5. (I4) con aislamiento por worktree, el pool desplazado no toma la foto de
+#      su generación: ni ref, ni reemplazo del registro de foto del nuevo dueño.
 #   Controles de anulación:
 #   1c. con el runtime dentro del banco, el mismo pool ensucia `git status`.
 #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
@@ -45,17 +47,18 @@ printf 'banco\n' > "$REPO/$BENCH/README.md"
 printf '/.thyrox/runtime/\n' > "$REPO/.gitignore"
 git -C "$REPO" add -A && git -C "$REPO" -c user.name=t -c user.email=t@t commit -qm seed
 
-# start_pool <label> <runtime-dir>: lanza el pool en una sesión propia y espera
-# a que el ítem arranque.
+# start_pool <label> <runtime-dir> [opciones del pool]: lanza el pool en una
+# sesión propia y espera a que el ítem arranque.
 start_pool() {
   local label="$1" runtime="$2"
+  shift 2
   mkfifo "$F/$label.started" "$F/$label.release"
   printf 'one\n' | THYROX_ROOT="$ROOT" THYROX_RUNTIME_DIR="$runtime" \
       LIFECYCLE_TEST_STARTED="$F/$label.started" LIFECYCLE_TEST_RELEASE="$F/$label.release" \
       HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-time" \
       HEADLESS_POOL_HISTORY_DIR="$F/$label.history" HEADLESS_POOL_ITEM_DRAIN_SECONDS=5 \
       setsid bash "$ROOT/src/session/headless-pool.sh" --prompt "$F/prompt.md" \
-          --out "$REPO/$BENCH/$label" --model claude-sonnet-5 --width 1 > "$F/$label.log" 2>&1 &
+          --out "$REPO/$BENCH/$label" --model claude-sonnet-5 --width 1 "$@" > "$F/$label.log" 2>&1 &
   POOL_PID=$!
   exec {started_fd}<> "$F/$label.started"
   read -r -t 60 _ <&"$started_fd" || { echo "el ítem nunca arrancó:"; cat "$F/$label.log"; }
@@ -169,5 +172,22 @@ check "el rechazo nombra la generación" \
   "$(grep -c 'generación 1 ya no puede actuar' "$live4/1.lifecycle.err")" 1
 check "el ítem sigue a nombre del nuevo dueño" \
   "$(jq -r '"\(.generation) \(.owner_pid)"' "$live4/1.state.json")" "2 $$"
+
+# --- caso 5 (I4): el pool desplazado no toma la foto de su generación --------
+# El nuevo dueño ya registró su foto; el pool de la generación 1 sale después.
+start_pool run5 "$F/runtime5" --isolation worktree --cwd "$REPO"
+live5="$(dirname "$(compgen -G "$F/runtime5/pool/*/1.stream.jsonl")")"
+THYROX_RUNTIME_DIR="$F/runtime5" bash "$ROOT/bin/pool_lifecycle" transition "$live5" 1 ABANDONED_RECOVERABLE
+gen5="$(THYROX_RUNTIME_DIR="$F/runtime5" bash "$ROOT/bin/pool_lifecycle" claim "$live5" "$REPO/$BENCH/run5" 1 --owner $$)"
+check "tomar el ítem con worktree le da la generación 2" "$gen5" 2
+printf '{"generation": 2}\n' > "$live5/1.snapshot.json"
+release run5
+wait "$POOL_PID"
+check "el registro de foto del nuevo dueño sigue intacto" "$(cat "$live5/1.snapshot.json")" '{"generation": 2}'
+check "el pool desplazado no creó la ref de su generación" \
+  "$(git -C "$REPO" for-each-ref --format='%(refname)' "refs/thyrox/snapshots/${live5##*/}/1/1")" ""
+check "el pool declara que no toma la foto" \
+  "$(grep -c 'no se toma su foto' "$live5/1.err")" 1
+
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]
