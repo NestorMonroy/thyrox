@@ -66,21 +66,39 @@ export const TABLERO_DDL = `CREATE TABLE IF NOT EXISTS tasks (
 )`
 
 /**
- * La marca de agua contra reúso de id (DEC-TASK-02).
+ * La marca de agua LEGADA, por clave — semántica global.
  *
- * `siguienteOrdinal` numera con `MAX(task_id)` sobre las filas presentes; si la
- * de id máximo se borrara, el siguiente `TaskCreate` reusaría ese id, con la
- * ambigüedad de referencia cruzada que el `.highwatermark` de la referencia
- * previene (`hccw: 11-task-system.md:154-186`). La tabla recuerda el máximo
- * histórico aunque se borre la fila. Es global —una sola clave— porque el
- * ordinal también lo es: dos sesiones no deben producir dos «#996».
+ * `siguienteOrdinal` (la superficie de herramienta) numeraba con `MAX(task_id)`
+ * más esta marca; contra reúso de id, no de sesión. Se CONSERVA INTACTA
+ * (DEC-TASK 2026-09-29, opción a): el código nuevo no la crea, no la lee y no
+ * la escribe. Si una base la trae, sobrevive al upgrade sin cambio de
+ * contenido ni de significado — hoy ninguna base real la tiene.
  *
- * Sólo la declara esta lengua: el lado Python no la conoce, porque su
- * numeración no pasa por el ordinal de sesión.
+ * Medido: el store real repite 333 `task_id` entre sus seis sesiones, así que
+ * el ordinal NUNCA fue global — el comentario que llevaba esta constante lo
+ * afirmaba y atribuía la forma a la referencia, que no la tiene así (guarda
+ * su `.highwatermark` por LISTA de tareas: `TASK_SESSION_HIGHWATER_DDL`, más
+ * abajo). La identidad durable entre sesiones es `TASK-<LAYER>-NNNN`
+ * (`task_ids`), no este ordinal.
  */
 export const TASK_HIGHWATER_DDL = `CREATE TABLE IF NOT EXISTS task_highwater (
   clave  TEXT NOT NULL PRIMARY KEY DEFAULT '__global__',
   max_id INTEGER NOT NULL DEFAULT 0
+)`
+
+/**
+ * La marca de agua POR SESIÓN: `next_task_id` es el PRÓXIMO id a asignar en
+ * esa sesión, no el mayor ya asignado.
+ *
+ * Medido: el store real repite 333 `task_id` entre sus seis sesiones — el
+ * ordinal reinicia por sesión. La referencia (2.1.283, `chunk-zgfcmyzt.js`)
+ * guarda su `.highwatermark` por LISTA de tareas, no globalmente. La
+ * identidad durable entre sesiones es `TASK-<LAYER>-NNNN` (`task_ids`), no
+ * este ordinal.
+ */
+export const TASK_SESSION_HIGHWATER_DDL = `CREATE TABLE IF NOT EXISTS task_session_highwater (
+  session_id   TEXT NOT NULL PRIMARY KEY,
+  next_task_id INTEGER NOT NULL CHECK (next_task_id >= 1)
 )`
 
 /**

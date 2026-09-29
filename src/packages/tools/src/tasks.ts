@@ -36,7 +36,7 @@
 import { Database } from 'bun:sqlite'
 import { openLocal } from '@thyrox/store/db.ts'
 import {
-  selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
+  selectCitationId, TABLERO_DDL, TASK_SESSION_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
 } from '@thyrox/task/schema.ts'
 import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 
@@ -62,7 +62,7 @@ function conBase<T>(dbPath: string, fn: (db: Database) => T): T {
   const db = openLocal(dbPath)
   try {
     db.run(TABLERO_DDL)
-    db.run(TASK_HIGHWATER_DDL)
+    db.run(TASK_SESSION_HIGHWATER_DDL)
     return fn(db)
   } finally {
     db.close()
@@ -97,29 +97,35 @@ function idsDeclarados(valor: unknown): string[] {
 }
 
 /**
- * El ordinal siguiente, sobre TODO el tablero y no sobre la sesión.
- *
- * La cita `#996` es del proyecto, no de la sesión: dos sesiones que numeraran
- * por separado producirían dos «#996» distintos en los hallazgos, que es el
- * defecto que la clave compuesta tolera pero la prosa no.
+ * Adopción sin fila de marca: el mayor `task_id` numérico DE ESTA SESIÓN,
+ * más uno (1 si la sesión no tiene filas). Otras sesiones no influyen.
  */
-function siguienteOrdinal(db: Database): string {
-  const fila = db.query('SELECT MAX(CAST(task_id AS INTEGER)) AS n FROM tasks').get() as { n: number | null }
-  const marca = db.query(`SELECT max_id AS n FROM task_highwater WHERE clave = '__global__'`).get() as { n: number | null } | undefined
-  // El siguiente id supera tanto al máximo presente como al histórico: un id
-  // borrado no vuelve a asignarse (DEC-TASK-02).
-  return String(Math.max(fila?.n ?? 0, marca?.n ?? 0) + 1)
+function adopt(db: Database, sesion: string): number {
+  const fila = db.query('SELECT MAX(CAST(task_id AS INTEGER)) AS n FROM tasks WHERE session_id = ?').get(sesion) as
+    | { n: number | null }
+    | undefined
+  return (fila?.n ?? 0) + 1
 }
 
-/** Sube la marca de agua al id borrado, si es mayor que el histórico. */
-function subirMarca(db: Database, id: string): void {
-  const n = Number.parseInt(id, 10)
-  if (!Number.isFinite(n)) return
+/**
+ * El próximo id de `sesion`, y deja la marca en `id + 1`.
+ *
+ * Se invoca DENTRO de la transacción `BEGIN IMMEDIATE` de `TaskCreate`: leer
+ * la marca y recién después insertar la fila, sin que las dos operaciones
+ * compartan un mismo lock exclusivo, es la ventana en la que dos creaciones
+ * concurrentes de la misma sesión leen el mismo id (TASK-THYROX-0311).
+ */
+function assignId(db: Database, sesion: string): string {
+  const mark = db.query('SELECT next_task_id AS n FROM task_session_highwater WHERE session_id = ?').get(sesion) as
+    | { n: number }
+    | undefined
+  const id = mark?.n ?? adopt(db, sesion)
   db.run(
-    `INSERT INTO task_highwater (clave, max_id) VALUES ('__global__', ?)
-     ON CONFLICT(clave) DO UPDATE SET max_id = MAX(max_id, excluded.max_id)`,
-    [n],
+    `INSERT INTO task_session_highwater (session_id, next_task_id) VALUES (?, ?)
+     ON CONFLICT(session_id) DO UPDATE SET next_task_id = excluded.next_task_id`,
+    [sesion, id + 1],
   )
+  return String(id)
 }
 
 /** Quita `id` de las dos columnas de aristas de una fila. */
@@ -138,13 +144,13 @@ function quitarArista(db: Database, sesion: string, fila_id: string, columna: 'b
 }
 
 /**
- * Borra una tarea: sube la marca de agua, limpia las aristas que la nombran en
- * las demás filas y elimina la fila. La referencia lo hace igual — «removes the
- * file and cleans up references to it from other tasks» (`hccw:` estado
- * `deleted`, `:65`).
+ * Borra una tarea: limpia las aristas que la nombran en las demás filas y
+ * elimina la fila. La referencia lo hace igual — «removes the file and
+ * cleans up references to it from other tasks» (`hccw:` estado `deleted`,
+ * `:65`). NO toca `task_session_highwater`: un id borrado nunca se reasigna,
+ * porque la marca sólo avanza en `asignarId` (DEC-TASK 2026-09-29, opción a).
  */
 function borrarTarea(db: Database, sesion: string, id: string): void {
-  subirMarca(db, id)
   const otras = db.query('SELECT task_id, blocks_json, blocked_by_json FROM tasks WHERE session_id = ? AND task_id != ?').all(sesion, id) as {
     task_id: string
     blocks_json: string | null
@@ -246,7 +252,7 @@ export function resumenTablero(
 export function taskTools(opts: TaskToolOptions): Tool[] {
   const sesion = opts.sessionId ?? 'harness'
 
-  const crear: Tool = {
+  const create: Tool = {
     name: 'TaskCreate',
     description: 'Declara una tarea en el tablero del proyecto, con su condición de cierre en la descripción.',
     permission: 'write',
@@ -266,30 +272,38 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
       if (!subject) return err('una tarea sin asunto no es una tarea: falta `subject`')
       const bloqueantes = idsDeclarados(input.blocked_by)
       const bloqueadas = idsDeclarados(input.blocks)
-      const ahora = new Date().toISOString()
+      const now = new Date().toISOString()
       const taskId = conBase(opts.dbPath, (db) => {
-        const id = siguienteOrdinal(db)
-        db.run(
-          `INSERT INTO tasks (task_id, subject, description, status, owner, blocks_json, blocked_by_json,
-                              session_id, source, created_at, updated_at)
-           VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, 'harness', ?, ?)`,
-          [
-            id,
-            subject,
-            (input.description as string) ?? null,
-            (input.owner as string) ?? null,
-            JSON.stringify(bloqueadas),
-            JSON.stringify(bloqueantes),
-            sesion,
-            ahora,
-            ahora,
-          ],
-        )
-        // La arista se escribe en los dos extremos: una lista que sólo apunta
-        // hacia atrás no responde «¿a quién desbloquea cerrar ésta?».
-        for (const b of bloqueantes) anadirArista(db, sesion, b, 'blocks_json', id)
-        for (const b of bloqueadas) anadirArista(db, sesion, b, 'blocked_by_json', id)
-        return id
+        // BEGIN IMMEDIATE toma el lock de escritura antes de leer la marca:
+        // dos creaciones concurrentes de la misma sesión ya no pueden leer el
+        // mismo `next_task_id` (TASK-THYROX-0311). `.transaction(...)` hace
+        // el COMMIT al volver y el ROLLBACK si algo lanza; sin reintentos
+        // propios, porque `openLocal` ya fija `busy_timeout`.
+        const create = db.transaction((): string => {
+          const id = assignId(db, sesion)
+          db.run(
+            `INSERT INTO tasks (task_id, subject, description, status, owner, blocks_json, blocked_by_json,
+                                session_id, source, created_at, updated_at)
+             VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, 'harness', ?, ?)`,
+            [
+              id,
+              subject,
+              (input.description as string) ?? null,
+              (input.owner as string) ?? null,
+              JSON.stringify(bloqueadas),
+              JSON.stringify(bloqueantes),
+              sesion,
+              now,
+              now,
+            ],
+          )
+          // La arista se escribe en los dos extremos: una lista que sólo apunta
+          // hacia atrás no responde «¿a quién desbloquea cerrar ésta?».
+          for (const b of bloqueantes) anadirArista(db, sesion, b, 'blocks_json', id)
+          for (const b of bloqueadas) anadirArista(db, sesion, b, 'blocked_by_json', id)
+          return id
+        })
+        return create.immediate()
       })
       return ok(JSON.stringify({ task_id: taskId, status: 'pending' }))
     },
@@ -313,7 +327,7 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
         return err(`estado desconocido: ${estado}. Los del tablero son: ${TASK_STATUSES.join(', ')}`)
       }
       const limite = typeof input.limit === 'number' ? input.limit : 50
-      const filas = conBase(opts.dbPath, (db) => {
+      const rows = conBase(opts.dbPath, (db) => {
         // El tablero durable NO incluye la lista efímera: son dos ciclos de
         // vida distintos y mezclarlos haría que un `TodoWrite` borrara trabajo.
         const base = `SELECT task_id, subject, description, status, owner, blocks_json, blocked_by_json${selectCitationId(db)}
@@ -326,7 +340,7 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
         const vistas = crudas.map((f) => resolver(db, sesion, f))
         return (input.unblocked === true ? vistas.filter((v) => !v.blocked) : vistas).slice(0, limite)
       })
-      return ok(JSON.stringify(filas.map(({ description: _d, ...resto }) => resto)))
+      return ok(JSON.stringify(rows.map(({ description: _d, ...resto }) => resto)))
     },
   }
 
@@ -355,7 +369,7 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
     },
   }
 
-  const actualizar: Tool = {
+  const update: Tool = {
     name: 'TaskUpdate',
     description:
       'Cambia una tarea del tablero: estado (incluido deleted), asunto, descripción, gerundio, dueño, metadata o asociaciones.',
@@ -463,7 +477,7 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
         // El gerundio no es adorno: es lo que la lista muestra mientras corre.
         if (!String(t.activeForm ?? '').trim()) return err(`falta \`activeForm\` en «${content}»: es el gerundio que se muestra en curso`)
       }
-      const ahora = new Date().toISOString()
+      const now = new Date().toISOString()
       conBase(opts.dbPath, (db) => {
         // El borrado va acotado por sesión Y por fuente: es la frontera que
         // impide que una lista de tres entradas barra el tablero del proyecto.
@@ -472,7 +486,7 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
           db.run(
             `INSERT INTO tasks (task_id, subject, status, active_form, session_id, source, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [`todo-${i + 1}`, String(t.content), String(t.status), String(t.activeForm), sesion, FUENTE_TODO, ahora, ahora],
+            [`todo-${i + 1}`, String(t.content), String(t.status), String(t.activeForm), sesion, FUENTE_TODO, now, now],
           )
         })
       })
@@ -486,7 +500,7 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
     permission: 'read',
     input_schema: { type: 'object', properties: {} },
     async run(_input: Record<string, unknown>, _ctx: ToolContext): Promise<ToolResult> {
-      const filas = conBase(opts.dbPath, (db) =>
+      const rows = conBase(opts.dbPath, (db) =>
         db
           .query(
             `SELECT subject AS content, status, active_form AS activeForm FROM tasks
@@ -494,9 +508,9 @@ export function taskTools(opts: TaskToolOptions): Tool[] {
           )
           .all(sesion, FUENTE_TODO),
       )
-      return ok(JSON.stringify(filas))
+      return ok(JSON.stringify(rows))
     },
   }
 
-  return [crear, listar, obtener, actualizar, escribirTodos, leerTodos]
+  return [create, listar, obtener, update, escribirTodos, leerTodos]
 }
