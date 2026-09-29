@@ -490,6 +490,20 @@ check "runner claude con proxy: exit 0" "$CODE" "0"
 check "runner claude con proxy: el ítem ve el socket y el marcador, sin credencial" "$(cred_de)" "sock=$F/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin"
 check "runner claude con proxy: la credencial la recibe el proxy" "$(cut -d'|' -f1 "$F/proxy-saw" 2>/dev/null)" "sk-user"
 
+# Un `parallel` que muere sin correr ningún ítem —el disco lleno lo hizo— deja
+# el joblog con la cabecera sola. El total sale del índice, no del joblog: un
+# ítem sin fila no tiene veredicto, y eso es un fallo, no un cero.
+cat > "$F/parallel-dies" <<'SH'
+#!/usr/bin/env bash
+while [[ $# -gt 0 ]]; do [[ "$1" == --joblog ]] && { printf 'Seq\tHost\tStarttime\tJobRuntime\tSend\tReceive\tExitval\tSignal\tCommand\n' > "$2"; }; shift; done
+exit 0
+SH
+chmod +x "$F/parallel-dies"
+rm -rf "$F/out"; HEADLESS_POOL_PARALLEL="$F/parallel-dies" corre alfa beta gamma
+check "sin filas en el joblog: no sale 0" "$([[ $CODE -ne 0 ]] && echo si || echo no)" "si"
+check "sin filas en el joblog: el total es el del índice" \
+  "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=3 ok=0 fallidos=0 sin-veredicto=3"
+
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
 exit $((fallos > 0))

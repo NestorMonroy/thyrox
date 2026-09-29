@@ -491,13 +491,21 @@ fi
     _headless_item '{1}' '{2}' :::: "$OUT/index.tsv" >/dev/null 2>&1
 
 # El veredicto sale del joblog (columna Exitval), emparejado con el indice por
-# numero: no depende del orden en que terminaron.
+# numero: no depende del orden en que terminaron. El total sale del índice: un
+# `parallel` que muere sin correr un ítem no le deja fila, y ese ítem no tiene
+# veredicto — contarlo desde el joblog publicaba un cero que salía 0.
 gawk -F'\t' '
-    NR == FNR { item[$1] = $2; next }
+    NR == FNR { item[$1] = $2; total++; next }
     FNR == 1 { next }
-    { split($9, a, " "); n = a[2]; total++
+    { split($9, a, " "); n = a[2]; seen[n] = 1
       if ($7 == 0) ok++; else { printf "-- FALLIDO %s\n", item[n]; mal++ } }
-    END { printf "items=%d ok=%d fallidos=%d\n", total, ok, mal; exit (mal > 0) }
+    END {
+        for (n in item) if (!(n in seen)) { printf "-- SIN VEREDICTO %s\n", item[n]; missing++ }
+        printf "items=%d ok=%d fallidos=%d", total, ok, mal
+        if (missing) printf " sin-veredicto=%d", missing
+        print ""
+        exit (mal > 0 || missing > 0)
+    }
 ' "$OUT/index.tsv" "$OUT/joblog.tsv"
 STATUS=$?
 if [[ "$ISOLATION" == worktree ]]; then
