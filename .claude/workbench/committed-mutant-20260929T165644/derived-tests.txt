@@ -1,0 +1,3 @@
+tests/verify/test-script-naming.sh
+tests/verify/test-suite-discrimina.sh
+tests/agents/test_clasificar_agentes.py

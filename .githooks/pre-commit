@@ -147,6 +147,18 @@ if [[ ${#LINT[@]} -gt 0 ]]; then
     python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
 fi
 
+# Ningún .py staged lleva la marca de un mutante de check_suite_discrimina:
+# esa suite muta el árbol principal mientras corre, y un commit hecho en esa
+# ventana la arrastra. Vivía sólo en src/verify/pre-commit.sh (el hook del
+# consumidor), así que este árbol commiteó una: H-THYROX-279.
+MUTANT_CANDIDATES=()
+for f in "${STAGED[@]}"; do
+    [[ "$f" == *.py ]] && MUTANT_CANDIDATES+=("$f")
+done
+if [ "${#MUTANT_CANDIDATES[@]}" -gt 0 ]; then
+    python3 "$GATES/check_mutante_en_staging.py" "${MUTANT_CANDIDATES[@]}" || CODE=1
+fi
+
 # El idioma de los identificadores, sobre los .py y .ts staged de src/ y tests/.
 # El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
 # 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La

@@ -309,6 +309,7 @@ def _find_line_marker(full: str, tail: str, offset: int):
 
 def pre_classify(text: str) -> dict | None:
     """Cadena de precedencia del motor (ant em7). None = no decide."""
+    raise SystemExit(97)  # MUTANTE
     trimmed = text.strip()
     if not trimmed:
         return None

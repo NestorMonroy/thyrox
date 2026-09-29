@@ -1,0 +1,8 @@
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /home/user/kaupamex-docs/.claude/cache)
+0 hallazgo(s) nuevo(s): 0 inventado(s) · 0 prohibido(s) (alcance medido: 3 archivo(s); 0 hallazgo(s) en total; 820 en baseline; léxico: 1000000 formas; vetadas: 53)
+check-rst-sintaxis: 0 archivo(s) con errores de sintaxis
+  (alcance medido: 3 de 5854 — archivos indicados)
+check-rst-convenciones: OK — autoría canónica y tablas en list-table
+  (alcance medido: 3 archivos .rst pedidos por ruta; 3 declaraciones :autor:; bloques literales excluidos del check de tabla)
+  TASK-THYROX-0611 -> Keep mutation-test markers out of thyrox's own commits
+  TASK-THYROX-0612 -> Base the RST-gate interpreter test on the venv pair, not the system py
