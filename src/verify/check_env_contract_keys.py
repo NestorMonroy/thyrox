@@ -108,10 +108,24 @@ def declared_keys(env_example: pathlib.Path) -> set[str]:
     return keys
 
 
+def is_skipped(path: str) -> bool:
+    """Una ruta dentro de un directorio excluido (`SKIP_DIRS` lleva `/` a ambos lados)."""
+    return any(skip in path for skip in SKIP_DIRS)
+
+
 def tree_files(root: pathlib.Path) -> list[pathlib.Path]:
-    """Todo el árbol: la medición completa."""
-    return sorted(path for path in root.rglob("*")
-                  if path.is_file() and not any(skip in str(path) for skip in SKIP_DIRS))
+    """Todo el árbol: la medición completa.
+
+    Los directorios excluidos se podan ANTES de descender: recorrerlos para
+    descartar después sus archivos visitaba `node_modules` y `_references`
+    enteros en cada medición completa.
+    """
+    files: list[pathlib.Path] = []
+    for directory, subdirectories, names in os.walk(root):
+        subdirectories[:] = [name for name in subdirectories
+                             if not is_skipped(os.path.join(directory, name) + "/")]
+        files.extend(pathlib.Path(directory, name) for name in names)
+    return sorted(path for path in files if path.is_file() and not is_skipped(str(path)))
 
 
 def display_path(path: pathlib.Path, root: pathlib.Path) -> str:
@@ -146,6 +160,11 @@ def read_keys(root: pathlib.Path, paths: list[pathlib.Path] | None = None) -> di
         try:
             source = path.read_text(errors="ignore")
         except OSError:
+            continue
+        # Los tres lectores sólo devuelven nombres con el prefijo, tomados de
+        # literales del propio archivo: sin el prefijo en el texto no hay
+        # clave posible, y el análisis sintáctico se omite.
+        if PREFIX not in source:
             continue
         keys = reader(source)
         if suffix != ".sh":

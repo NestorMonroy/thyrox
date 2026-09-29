@@ -9,6 +9,7 @@ El caso negativo usa una clave REAL del repo, no una fabricada. Fabricar el
 incumplidor lo escribe quien escribió el patrón, y hereda su encuadre: pasaría
 igual con un gate que sólo supiera ver la forma que su autor imaginó.
 """
+import importlib.util
 import pathlib
 import subprocess
 import sys
@@ -31,6 +32,15 @@ def run(*args: str) -> subprocess.CompletedProcess:
         capture_output=True, text=True,
     )
 
+
+
+def load_gate():
+    """El gate como módulo, para observar su recorrido sin lanzar un proceso."""
+    spec = importlib.util.spec_from_file_location('check_env_contract_keys', GATE)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 class EnvContractKeysGate(unittest.TestCase):
     def test_arbol_real_sin_claves_sin_declarar(self):
@@ -105,6 +115,67 @@ class EnvContractKeysGate(unittest.TestCase):
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertNotIn('sin declarar:', result.stdout)
 
+
+
+class TraversalCost(unittest.TestCase):
+    """El recorrido completo no desciende a lo excluido ni analiza lo que no puede leer claves.
+
+    Medido el 2026-09-29: el modo de árbol entero tardaba 48.5 s porque
+    `rglob` entraba en `node_modules` y `_references` antes de descartarlos y
+    porque cada uno de los 6209 `.py` pasaba por `ast.parse`, aunque la gran
+    mayoría no nombra ninguna clave. Las dos pruebas observan el recorrido y el
+    análisis, no el resultado: el resultado es el mismo con y sin la mejora.
+    """
+
+    def setUp(self):
+        self.gate = load_gate()
+
+    def test_walk_does_not_descend_into_skipped_directories(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            (root / 'src').mkdir()
+            (root / 'src' / 'reader.py').write_text('import os\nos.environ.get("THYROX_A")\n')
+            deep = root / 'node_modules' / 'pkg' / 'deep'
+            deep.mkdir(parents=True)
+            (deep / 'reader.py').write_text('import os\nos.environ.get("THYROX_B")\n')
+            visited = []
+            real_walk = self.gate.os.walk
+
+            def recording_walk(top, *args, **kwargs):
+                for entry in real_walk(top, *args, **kwargs):
+                    visited.append(entry[0])
+                    yield entry
+
+            self.gate.os.walk = recording_walk
+            try:
+                files = self.gate.tree_files(root)
+            finally:
+                self.gate.os.walk = real_walk
+            self.assertEqual([root / 'src' / 'reader.py'], files)
+            self.assertIn(str(root), visited, 'el recorrido tiene que pasar por os.walk para poder podarse')
+            self.assertFalse([path for path in visited if 'node_modules' in path], visited)
+
+    def test_only_files_naming_the_prefix_are_parsed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            reader = root / 'reader.py'
+            reader.write_text('import os\nos.environ.get("THYROX_A")\n')
+            unrelated = root / 'unrelated.py'
+            unrelated.write_text('import os\nos.environ.get("HOME")\n')
+            parsed = []
+            real_parse = self.gate.ast.parse
+
+            def recording_parse(source, *args, **kwargs):
+                parsed.append(source)
+                return real_parse(source, *args, **kwargs)
+
+            self.gate.ast.parse = recording_parse
+            try:
+                keys = self.gate.read_keys(root, [reader, unrelated])
+            finally:
+                self.gate.ast.parse = real_parse
+            self.assertEqual({'THYROX_A'}, set(keys))
+            self.assertEqual(1, len(parsed), 'sólo el archivo que nombra el prefijo pasa por el parser')
 
 if __name__ == '__main__':
     unittest.main()
