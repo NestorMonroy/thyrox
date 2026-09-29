@@ -1,0 +1,398 @@
+diff --git a/src/packages/agent/SessionMemory/prompts.ts b/src/packages/agent/SessionMemory/prompts.ts
+index cc276a20..cf5021f1 100644
+--- a/src/packages/agent/SessionMemory/prompts.ts
++++ b/src/packages/agent/SessionMemory/prompts.ts
+@@ -1,7 +1,7 @@
+ /**
+  * V7 §10.3 facade — moved to `@thyrox/memory/sessionMemoryPrompts`.
+  */
+-export * from '@thyrox/memory/sessionMemoryPrompts'
++export type * from '@thyrox/memory/sessionMemoryPrompts'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { buildSessionMemoryUpdatePrompt, DEFAULT_SESSION_MEMORY_TEMPLATE, isSessionMemoryEmpty, loadSessionMemoryPrompt, loadSessionMemoryTemplate, truncateSessionMemoryForCompact } from '@thyrox/memory/sessionMemoryPrompts'
+diff --git a/src/packages/agent/SessionMemory/sessionMemoryUtils.ts b/src/packages/agent/SessionMemory/sessionMemoryUtils.ts
+index b1dd43dc..3e695c46 100644
+--- a/src/packages/agent/SessionMemory/sessionMemoryUtils.ts
++++ b/src/packages/agent/SessionMemory/sessionMemoryUtils.ts
+@@ -1,7 +1,7 @@
+ /**
+  * V7 §10.3 facade — moved to `@thyrox/memory/sessionMemoryUtils`.
+  */
+-export * from '@thyrox/memory/sessionMemoryUtils'
++export type * from '@thyrox/memory/sessionMemoryUtils'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { DEFAULT_SESSION_MEMORY_CONFIG, getLastSummarizedMessageId, getSessionMemoryConfig, getSessionMemoryContent, getToolCallsBetweenUpdates, hasMetInitializationThreshold, hasMetUpdateThreshold, isSessionMemoryInitialized, markExtractionCompleted, markExtractionStarted, markSessionMemoryInitialized, recordExtractionTokenCount, resetSessionMemoryState, setLastSummarizedMessageId, setSessionMemoryConfig, waitForSessionMemoryExtraction } from '@thyrox/memory/sessionMemoryUtils'
+diff --git a/src/packages/agent/constants/apiLimits.ts b/src/packages/agent/constants/apiLimits.ts
+index 22854134..94dedf3d 100644
+--- a/src/packages/agent/constants/apiLimits.ts
++++ b/src/packages/agent/constants/apiLimits.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/provider/apiLimits.
+-export * from '@thyrox/provider/apiLimits.js'
++export type * from '@thyrox/provider/apiLimits.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { API_IMAGE_MAX_BASE64_SIZE, API_MAX_MEDIA_PER_REQUEST, API_PDF_MAX_PAGES, IMAGE_MAX_HEIGHT, IMAGE_MAX_WIDTH, IMAGE_TARGET_RAW_SIZE, PDF_AT_MENTION_INLINE_THRESHOLD, PDF_EXTRACT_SIZE_THRESHOLD, PDF_MAX_EXTRACT_SIZE, PDF_MAX_PAGES_PER_READ, PDF_TARGET_RAW_SIZE } from '@thyrox/provider/apiLimits.js'
+diff --git a/src/packages/agent/constants/betas.ts b/src/packages/agent/constants/betas.ts
+index 720a7c75..0a0fbffe 100644
+--- a/src/packages/agent/constants/betas.ts
++++ b/src/packages/agent/constants/betas.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/provider/betasConstants.
+-export * from '@thyrox/provider/betasConstants.js'
++export type * from '@thyrox/provider/betasConstants.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { ADVISOR_BETA_HEADER, AFK_MODE_BETA_HEADER, BEDROCK_EXTRA_PARAMS_HEADERS, CACHE_DIAGNOSIS_BETA_HEADER, CACHE_EDITING_BETA_HEADER, CLAUDE_CODE_20250219_BETA_HEADER, CLI_INTERNAL_BETA_HEADER, CONTEXT_1M_BETA_HEADER, CONTEXT_MANAGEMENT_BETA_HEADER, EFFORT_BETA_HEADER, EXTENDED_CACHE_TTL_BETA_HEADER, FAST_MODE_BETA_HEADER, INTERLEAVED_THINKING_BETA_HEADER, LN_BETA_HEADER, MID_CONVERSATION_SYSTEM_BETA_HEADER, PROMPT_CACHING_SCOPE_BETA_HEADER, REDACT_THINKING_BETA_HEADER, STRUCTURED_OUTPUTS_BETA_HEADER, TASK_BUDGETS_BETA_HEADER, TOKEN_EFFICIENT_TOOLS_BETA_HEADER, TOOL_SEARCH_BETA_HEADER_1P, TOOL_SEARCH_BETA_HEADER_3P, VERTEX_COUNT_TOKENS_ALLOWED_BETAS, WEB_SEARCH_BETA_HEADER } from '@thyrox/provider/betasConstants.js'
+diff --git a/src/packages/agent/constants/common.ts b/src/packages/agent/constants/common.ts
+index ee71a5c9..e650bdc8 100644
+--- a/src/packages/agent/constants/common.ts
++++ b/src/packages/agent/constants/common.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/commonConstants.
+-export * from '@thyrox/config/commonConstants.js'
++export type * from '@thyrox/config/commonConstants.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { getLocalISODate, getLocalMonthYear, getSessionStartDate } from '@thyrox/config/commonConstants.js'
+diff --git a/src/packages/agent/constants/oauth.ts b/src/packages/agent/constants/oauth.ts
+index aed46730..d403f401 100644
+--- a/src/packages/agent/constants/oauth.ts
++++ b/src/packages/agent/constants/oauth.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/provider/oauthConstants.
+-export * from '@thyrox/provider/oauthConstants'
++export type * from '@thyrox/provider/oauthConstants'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { ALL_OAUTH_SCOPES, CLAUDE_AI_INFERENCE_SCOPE, CLAUDE_AI_OAUTH_SCOPES, CLAUDE_AI_PROFILE_SCOPE, CONSOLE_OAUTH_SCOPES, fileSuffixForOauthConfig, getOauthConfig, LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS, MCP_CLIENT_METADATA_URL, OAUTH_BETA_HEADER } from '@thyrox/provider/oauthConstants'
+diff --git a/src/packages/agent/constants/outputStyles.ts b/src/packages/agent/constants/outputStyles.ts
+index 576be84e..fee67600 100644
+--- a/src/packages/agent/constants/outputStyles.ts
++++ b/src/packages/agent/constants/outputStyles.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/outputStyles.
+-export * from '@thyrox/config/outputStyles.js'
++export type * from '@thyrox/config/outputStyles.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearAllOutputStylesCache, clearOutputStyleCaches, DEFAULT_OUTPUT_STYLE_NAME, getAllOutputStyles, getOutputStyleConfig, getOutputStyleDirStyles, hasCustomOutputStyle, OUTPUT_STYLE_CONFIG } from '@thyrox/config/outputStyles.js'
+diff --git a/src/packages/agent/constants/product.ts b/src/packages/agent/constants/product.ts
+index 3d558acd..ac0607de 100644
+--- a/src/packages/agent/constants/product.ts
++++ b/src/packages/agent/constants/product.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/product.
+-export * from '@thyrox/config/product'
++export type * from '@thyrox/config/product'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { CLAUDE_AI_BASE_URL, CLAUDE_AI_LOCAL_BASE_URL, CLAUDE_AI_STAGING_BASE_URL, getClaudeAiBaseUrl, getRemoteSessionUrl, isRemoteSessionLocal, isRemoteSessionStaging, PRODUCT_NAME, PRODUCT_URL } from '@thyrox/config/product'
+diff --git a/src/packages/agent/constants/system.ts b/src/packages/agent/constants/system.ts
+index c1e92603..9421ef35 100644
+--- a/src/packages/agent/constants/system.ts
++++ b/src/packages/agent/constants/system.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/provider/systemConstants.
+-export * from '@thyrox/provider/systemConstants.js'
++export type * from '@thyrox/provider/systemConstants.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { CLI_SYSPROMPT_PREFIXES, getAttributionHeader, getClientPlatform, getCLISyspromptPrefix } from '@thyrox/provider/systemConstants.js'
+diff --git a/src/packages/agent/constants/systemPromptSections.ts b/src/packages/agent/constants/systemPromptSections.ts
+index d0edd913..602110f7 100644
+--- a/src/packages/agent/constants/systemPromptSections.ts
++++ b/src/packages/agent/constants/systemPromptSections.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/provider/systemPromptSections.
+-export * from '@thyrox/provider/systemPromptSections'
++export type * from '@thyrox/provider/systemPromptSections'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearSystemPromptSections, DANGEROUS_uncachedSystemPromptSection, resolveSystemPromptSections, systemPromptSection } from '@thyrox/provider/systemPromptSections'
+diff --git a/src/packages/agent/git/gitConfigParser.ts b/src/packages/agent/git/gitConfigParser.ts
+index 847f2cd4..de7ef1bb 100644
+--- a/src/packages/agent/git/gitConfigParser.ts
++++ b/src/packages/agent/git/gitConfigParser.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/git/gitConfigParser.
+-export * from '@thyrox/config/git/gitConfigParser.js'
++export type * from '@thyrox/config/git/gitConfigParser.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { parseConfigString, parseGitConfigValue } from '@thyrox/config/git/gitConfigParser.js'
+diff --git a/src/packages/agent/git/gitFilesystem.ts b/src/packages/agent/git/gitFilesystem.ts
+index 1cd4d652..9e2b01e9 100644
+--- a/src/packages/agent/git/gitFilesystem.ts
++++ b/src/packages/agent/git/gitFilesystem.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/gitFilesystem.
+-export * from '@thyrox/config/gitFilesystem.js'
++export type * from '@thyrox/config/gitFilesystem.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearResolveGitDirCache, getCachedBranch, getCachedDefaultBranch, getCachedHead, getCachedRemoteUrl, getCommonDir, getHeadForDir, getRemoteUrlForDir, getWorktreeCountFromFs, isSafeRefName, isShallowClone, isValidGitSha, readGitHead, readRawSymref, readWorktreeHeadSha, resetGitFileWatcher, resolveGitDir, resolveRef } from '@thyrox/config/gitFilesystem.js'
+diff --git a/src/packages/agent/hooks/hookEvents.ts b/src/packages/agent/hooks/hookEvents.ts
+index bbada67a..1ed58239 100644
+--- a/src/packages/agent/hooks/hookEvents.ts
++++ b/src/packages/agent/hooks/hookEvents.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/repl/hookEvents.
+-export * from '@thyrox/repl/hookEvents.js'
++export type * from '@thyrox/repl/hookEvents.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearHookEventState, emitHookProgress, emitHookResponse, emitHookStarted, registerHookEventHandler, setAllHookEventsEnabled, startHookProgressInterval } from '@thyrox/repl/hookEvents.js'
+diff --git a/src/packages/agent/memory/types.ts b/src/packages/agent/memory/types.ts
+index dcaeb190..2e29710c 100644
+--- a/src/packages/agent/memory/types.ts
++++ b/src/packages/agent/memory/types.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/memory/memorySourceTypes.
+-export * from '@thyrox/memory/memorySourceTypes'
++export type * from '@thyrox/memory/memorySourceTypes'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { MEMORY_TYPE_VALUES } from '@thyrox/memory/memorySourceTypes'
+diff --git a/src/packages/agent/sdkControlSchemas.ts b/src/packages/agent/sdkControlSchemas.ts
+index 060693fa..72b9d748 100644
+--- a/src/packages/agent/sdkControlSchemas.ts
++++ b/src/packages/agent/sdkControlSchemas.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/headless-sdk/controlSchemas.
+-export * from '@thyrox/headless-sdk/controlSchemas.js'
++export type * from '@thyrox/headless-sdk/controlSchemas.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { ControlErrorResponseSchema, ControlResponseSchema, JSONRPCMessagePlaceholder, SDKControlApplyFlagSettingsRequestSchema, SDKControlCancelAsyncMessageRequestSchema, SDKControlCancelAsyncMessageResponseSchema, SDKControlCancelRequestSchema, SDKControlChannelEnableRequestSchema, SDKControlClaudeAuthenticateRequestSchema, SDKControlClaudeOAuthCallbackRequestSchema, SDKControlClaudeOAuthWaitForCompletionRequestSchema, SDKControlElicitationRequestSchema, SDKControlElicitationResponseSchema, SDKControlEndSessionRequestSchema, SDKControlGenerateSessionTitleRequestSchema, SDKControlGetContextUsageRequestSchema, SDKControlGetContextUsageResponseSchema, SDKControlGetSettingsRequestSchema, SDKControlGetSettingsResponseSchema, SDKControlInitializeRequestSchema, SDKControlInitializeResponseSchema, SDKControlInterruptRequestSchema, SDKControlMcpAuthenticateRequestSchema, SDKControlMcpClearAuthRequestSchema, SDKControlMcpMessageRequestSchema, SDKControlMcpOAuthCallbackUrlRequestSchema, SDKControlMcpReconnectRequestSchema, SDKControlMcpSetServersRequestSchema, SDKControlMcpSetServersResponseSchema, SDKControlMcpStatusRequestSchema, SDKControlMcpStatusResponseSchema, SDKControlMcpToggleRequestSchema, SDKControlPermissionRequestSchema, SDKControlReloadPluginsRequestSchema, SDKControlReloadPluginsResponseSchema, SDKControlRemoteControlRequestSchema, SDKControlRequestInnerSchema, SDKControlRequestSchema, SDKControlResponseSchema, SDKControlRewindFilesRequestSchema, SDKControlRewindFilesResponseSchema, SDKControlSeedReadStateRequestSchema, SDKControlSetMaxThinkingTokensRequestSchema, SDKControlSetModelRequestSchema, SDKControlSetPermissionModeRequestSchema, SDKControlSideQuestionRequestSchema, SDKControlStopTaskRequestSchema, SDKHookCallbackMatcherSchema, SDKHookCallbackRequestSchema, SDKKeepAliveMessageSchema, SDKUpdateEnvironmentVariablesMessageSchema, StdinMessageSchema, StdoutMessageSchema } from '@thyrox/headless-sdk/controlSchemas.js'
+diff --git a/src/packages/agent/services/diagnosticTracking.ts b/src/packages/agent/services/diagnosticTracking.ts
+index faa7a7cf..40ed0ef2 100644
+--- a/src/packages/agent/services/diagnosticTracking.ts
++++ b/src/packages/agent/services/diagnosticTracking.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/tool-registry/diagnosticTracking.
+-export * from '@thyrox/tool-registry/diagnosticTracking.js'
++export type * from '@thyrox/tool-registry/diagnosticTracking.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { diagnosticTracker, DiagnosticTrackingService } from '@thyrox/tool-registry/diagnosticTracking.js'
+diff --git a/src/packages/app-host/src/state/store.ts b/src/packages/app-host/src/state/store.ts
+index ce3c1817..e686b461 100644
+--- a/src/packages/app-host/src/state/store.ts
++++ b/src/packages/app-host/src/state/store.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/repl/stateStore.
+-export * from '@thyrox/repl/stateStore.js'
++export type * from '@thyrox/repl/stateStore.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { createStore } from '@thyrox/repl/stateStore.js'
+diff --git a/src/packages/cli/src/pluginLoader.ts b/src/packages/cli/src/pluginLoader.ts
+index f44af2bb..44548ab6 100644
+--- a/src/packages/cli/src/pluginLoader.ts
++++ b/src/packages/cli/src/pluginLoader.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/plugin/pluginLoader.
+-export * from '@thyrox/config/plugin/pluginLoader'
++export type * from '@thyrox/config/plugin/pluginLoader'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { cachePlugin, cachePluginSettings, clearPluginCache, copyDir, copyPluginToVersionedCache, createPluginFromPath, generateTemporaryCacheNameForPlugin, getLegacyCachePath, getPluginCachePath, getVersionedCachePath, getVersionedCachePathIn, getVersionedZipCachePath, gitClone, installFromGitSubdir, installFromNpm, InvalidManifestError, loadAllPlugins, loadAllPluginsCacheOnly, loadPluginManifest, mergePluginSources, probeSeedCacheAnyVersion, resolvePluginPath } from '@thyrox/config/plugin/pluginLoader'
+diff --git a/src/packages/cli/src/remoteManagedSettings.ts b/src/packages/cli/src/remoteManagedSettings.ts
+index 9a5d671f..3ee956c4 100644
+--- a/src/packages/cli/src/remoteManagedSettings.ts
++++ b/src/packages/cli/src/remoteManagedSettings.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/config/remote.
+-export * from '@thyrox/config/remote'
++export type * from '@thyrox/config/remote'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearRemoteManagedSettingsCache, computeChecksumFromSettings, initializeRemoteManagedSettingsLoadingPromise, isEligibleForRemoteManagedSettings, loadRemoteManagedSettings, refreshRemoteManagedSettings, startBackgroundPolling, stopBackgroundPolling, waitForRemoteManagedSettingsToLoad } from '@thyrox/config/remote'
+diff --git a/src/packages/command-runtime/src/commands/rename/generateSessionName.ts b/src/packages/command-runtime/src/commands/rename/generateSessionName.ts
+index 5ac71810..cc762344 100644
+--- a/src/packages/command-runtime/src/commands/rename/generateSessionName.ts
++++ b/src/packages/command-runtime/src/commands/rename/generateSessionName.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/permission/commands/rename/generateSessionName.
+-export * from '@thyrox/permission/commands/rename/generateSessionName.js'
++export type * from '@thyrox/permission/commands/rename/generateSessionName.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { generateSessionName } from '@thyrox/permission/commands/rename/generateSessionName.js'
+diff --git a/src/packages/repl/src/commands/add-dir/validation.ts b/src/packages/repl/src/commands/add-dir/validation.ts
+index fcdae948..664bb68b 100644
+--- a/src/packages/repl/src/commands/add-dir/validation.ts
++++ b/src/packages/repl/src/commands/add-dir/validation.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/permission/commands/add-dir/validation.
+-export * from '@thyrox/permission/commands/add-dir/validation.js'
++export type * from '@thyrox/permission/commands/add-dir/validation.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { addDirHelpMessage, validateDirectoryForWorkspace } from '@thyrox/permission/commands/add-dir/validation.js'
+diff --git a/src/packages/repl/src/fastMode.ts b/src/packages/repl/src/fastMode.ts
+index 5aa86bdb..6c0ee9af 100644
+--- a/src/packages/repl/src/fastMode.ts
++++ b/src/packages/repl/src/fastMode.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/provider/fastMode.
+-export * from '@thyrox/provider/fastMode.js'
++export type * from '@thyrox/provider/fastMode.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+-export { clearFastModeCooldown, FAST_MODE_MODEL_DISPLAY, getFastModeModel, getFastModeModelDisplay, getFastModeRuntimeState, getFastModeState, getFastModeUnavailableReason, getInitialFastModeSetting, handleFastModeOverageRejection, handleFastModeRejectedByAPI, isFastModeAvailable, isFastModeCooldown, isFastModeEnabled, isFastModeSupportedByModel, onCooldownExpired, onCooldownTriggered, onFastModeOverageRejection, onOrgFastModeChanged, prefetchFastModeStatus, resolveFastModeStatusFromCache, triggerFastModeCooldown } from '@thyrox/provider/fastMode.js'
++export { _resetFastModeOrgStatusForTesting, _setFastModeOrgStatusForTesting, clearFastModeCooldown, FAST_MODE_MODEL_DISPLAY, getFastModeModel, getFastModeModelDisplay, getFastModeRuntimeState, getFastModeState, getFastModeUnavailableReason, getInitialFastModeSetting, handleFastModeOverageRejection, handleFastModeRejectedByAPI, isFastModeAvailable, isFastModeCooldown, isFastModeEnabled, isFastModeSupportedByModel, onCooldownExpired, onCooldownTriggered, onFastModeOverageRejection, onOrgFastModeChanged, prefetchFastModeStatus, processFastModeAvailabilityContext, processFastModeSelectionContext, rearmFastModeCreditsExhaustedNotice, resolveFastModeStatusFromCache, shouldShowFastModeIndicatorForProcess, triggerFastModeCooldown } from '@thyrox/provider/fastMode.js'
+diff --git a/src/packages/repl/src/replTypes/command.ts b/src/packages/repl/src/replTypes/command.ts
+index 6bd0e28b..81067e59 100644
+--- a/src/packages/repl/src/replTypes/command.ts
++++ b/src/packages/repl/src/replTypes/command.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/agent/command.
+-export * from '@thyrox/agent/command.js'
++export type * from '@thyrox/agent/command.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { getCommandName, isCommandEnabled } from '@thyrox/agent/command.js'
+diff --git a/src/packages/repl/src/replTypes/hooks.ts b/src/packages/repl/src/replTypes/hooks.ts
+index a5b777c9..3944f857 100644
+--- a/src/packages/repl/src/replTypes/hooks.ts
++++ b/src/packages/repl/src/replTypes/hooks.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/agent/types/hooks.
+-export * from '@thyrox/agent/types/hooks.js'
++export type * from '@thyrox/agent/types/hooks.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { HOOK_EVENTS, hookJSONOutputSchema, isAsyncHookJSONOutput, isHookEvent, isSyncHookJSONOutput, promptRequestSchema } from '@thyrox/agent/types/hooks.js'
+diff --git a/src/packages/repl/src/replTypes/logs.ts b/src/packages/repl/src/replTypes/logs.ts
+index 58071390..61e4d612 100644
+--- a/src/packages/repl/src/replTypes/logs.ts
++++ b/src/packages/repl/src/replTypes/logs.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/agent/logsTypes.
+-export * from '@thyrox/agent/logsTypes.js'
++export type * from '@thyrox/agent/logsTypes.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { sortLogs } from '@thyrox/agent/logsTypes.js'
+diff --git a/src/packages/repl/src/replTypes/permissions.ts b/src/packages/repl/src/replTypes/permissions.ts
+index 512d49bf..c88ac307 100644
+--- a/src/packages/repl/src/replTypes/permissions.ts
++++ b/src/packages/repl/src/replTypes/permissions.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/permission/permissionTypes.
+-export * from '@thyrox/permission/permissionTypes'
++export type * from '@thyrox/permission/permissionTypes'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { EXTERNAL_PERMISSION_MODES, PERMISSION_MODES } from '@thyrox/permission/permissionTypes'
+diff --git a/src/packages/repl/src/suggestions/skillUsageTracking.ts b/src/packages/repl/src/suggestions/skillUsageTracking.ts
+index 59b222bc..f3d1779b 100644
+--- a/src/packages/repl/src/suggestions/skillUsageTracking.ts
++++ b/src/packages/repl/src/suggestions/skillUsageTracking.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/tool-registry/suggestions/skillUsageTracking.
+-export * from '@thyrox/tool-registry/suggestions/skillUsageTracking.js'
++export type * from '@thyrox/tool-registry/suggestions/skillUsageTracking.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { _test_resetSkillUsageDebounce, getSkillUsageScore, recordSkillUsage } from '@thyrox/tool-registry/suggestions/skillUsageTracking.js'
+diff --git a/src/packages/repl/src/toolPool.ts b/src/packages/repl/src/toolPool.ts
+index bb29ab13..e206bca4 100644
+--- a/src/packages/repl/src/toolPool.ts
++++ b/src/packages/repl/src/toolPool.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/tool-registry/toolPool.
+-export * from '@thyrox/tool-registry/toolPool.js'
++export type * from '@thyrox/tool-registry/toolPool.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { applyCoordinatorToolFilter, isPrActivitySubscriptionTool, mergeAndFilterTools } from '@thyrox/tool-registry/toolPool.js'
+diff --git a/src/packages/storage/src/secureStorage/keychainPrefetch.ts b/src/packages/storage/src/secureStorage/keychainPrefetch.ts
+index 499859b6..85f0d3da 100644
+--- a/src/packages/storage/src/secureStorage/keychainPrefetch.ts
++++ b/src/packages/storage/src/secureStorage/keychainPrefetch.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/cli/secureStorage/keychainPrefetch.
+-export * from '@thyrox/cli/secureStorage/keychainPrefetch.js'
++export type * from '@thyrox/cli/secureStorage/keychainPrefetch.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearLegacyApiKeyPrefetch, ensureKeychainPrefetchCompleted, getLegacyApiKeyPrefetchResult, startKeychainPrefetch } from '@thyrox/cli/secureStorage/keychainPrefetch.js'
+diff --git a/src/packages/storage/src/secureStorage/macOsKeychainHelpers.ts b/src/packages/storage/src/secureStorage/macOsKeychainHelpers.ts
+index 2122b022..f1e51942 100644
+--- a/src/packages/storage/src/secureStorage/macOsKeychainHelpers.ts
++++ b/src/packages/storage/src/secureStorage/macOsKeychainHelpers.ts
+@@ -1,5 +1,5 @@
+ // Canonical owner is @thyrox/mcp-runtime/macOsKeychainHelpers.
+-export * from '@thyrox/mcp-runtime/macOsKeychainHelpers.js'
++export type * from '@thyrox/mcp-runtime/macOsKeychainHelpers.js'
+ // Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no
+ // los ve a través de un `export *` externo cuando el shim también es entrada.
+ export { clearKeychainCache, CREDENTIALS_SERVICE_SUFFIX, getMacOsKeychainStorageServiceName, getUsername, KEYCHAIN_CACHE_TTL_MS, keychainCacheState, primeKeychainCacheFromPrefetch } from '@thyrox/mcp-runtime/macOsKeychainHelpers.js'
+diff --git a/src/verify/expandStarShims.ts b/src/verify/expandStarShims.ts
+index cfa5b68f..bcbc2371 100644
+--- a/src/verify/expandStarShims.ts
++++ b/src/verify/expandStarShims.ts
+@@ -1,13 +1,17 @@
+ /**
+- * Expande los shims `export * from '@thyrox/…'` con sus nombres de VALOR.
++ * Expande los shims `export type * from '@thyrox/…'` con sus nombres de VALOR.
+  *
+- * Un shim de paquete —un archivo que sólo hace `export * from '@thyrox/x/…'`—
+- * que además es entrada del build rompe `bun build` 1.3.11: toda importación
+- * con nombre que otra entrada haga a través de él cae con «No matching
+- * export», aunque en ejecución resuelva. Reproducido en el banco
+- * `broken-imports-*` (sonda mínima y sonda en `repl`). Con los nombres de
+- * valor declarados al lado del `*`, construye; los tipos siguen viajando por
+- * el `*`, que se conserva.
++ * Un shim de paquete —un archivo que hace `export type * from '@thyrox/x/…'`
++ * más la lista explícita de nombres de valor— evita dos roturas de
++ * `bun build` 1.3.11 que un `export *` de VALORES produce ahí: como entrada
++ * del build, rompe toda importación con nombre que otra entrada haga a
++ * través de él («No matching export», aunque en ejecución resuelva;
++ * reproducido en el banco `broken-imports-*`); y cargado perezosamente
++ * (`require` dentro de otro módulo), el bundler lo envuelve en
++ * `__esm(() => { … })`, donde un `export *` de valores no parsea
++ * (`SyntaxError: Unexpected keyword 'export'`). `export type *` se borra al
++ * compilar —ninguna de las dos formas lo ve—, así que el `*` que se conserva
++ * es sólo de tipos; los valores viajan por la lista explícita al lado.
+  *
+  * Los nombres salen de `Bun.Transpiler.scan` —valores, sin tipos— siguiendo
+  * cada `export * from` (no los `export type * from`) con `Bun.resolveSync`,
+@@ -26,7 +30,7 @@ import { dirname, extname } from 'node:path'
+ 
+ const MARK = '// Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no'
+ const MARK_TAIL = '// los ve a través de un `export *` externo cuando el shim también es entrada.'
+-const STAR = /^export\s+\*\s+from\s+['"](@thyrox\/[^'"]+)['"]\s*;?$/
++const STAR = /^export\s+(?:type\s+)?\*\s+from\s+['"](@thyrox\/[^'"]+)['"]\s*;?$/
+ const GENERATED = /^export\s+\{[^}]*\}\s+from\s+['"](@thyrox\/[^'"]+)['"]\s*;?$/
+ 
+ function codeLines(text: string): string[] {
+diff --git a/tests/verify/expandStarShims.test.ts b/tests/verify/expandStarShims.test.ts
+index 84cca588..29cf97d4 100644
+--- a/tests/verify/expandStarShims.test.ts
++++ b/tests/verify/expandStarShims.test.ts
+@@ -94,3 +94,19 @@ describe('checkShim', () => {
+     expect(checkShim(shim)?.missing).toEqual(['theta'])
+   })
+ })
++
++describe('export type * (H-THYROX-262)', () => {
++  test('se reconoce, y expandido su check pasa con la lista correcta', () => {
++    const { shim } = fixture()
++    writeFileSync(shim, "// El puente del paquete.\nexport type * from '@thyrox/x/mod.js'\n")
++    writeFileSync(shim, expandShim(shim))
++    expect(checkShim(shim)).toEqual({ spec: '@thyrox/x/mod.js', missing: [], extra: [] })
++  })
++  test('la reescritura emite la forma export type *', () => {
++    const { shim } = fixture()
++    writeFileSync(shim, "// El puente del paquete.\nexport type * from '@thyrox/x/mod.js'\n")
++    const out = expandShim(shim)
++    expect(out).toContain("export type * from '@thyrox/x/mod.js'")
++    expect(out).toContain("export { alpha, BETA, Epsilon, zeta } from '@thyrox/x/mod.js'")
++  })
++})

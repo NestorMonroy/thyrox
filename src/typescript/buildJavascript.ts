@@ -15,6 +15,14 @@
  * - `target: 'bun'`: el runtime de thyrox; conserva `bun:*` como importación.
  * - `root`: el mismo `rootDir` con que se emiten las declaraciones
  *   (`projectShape`), para que `dist/x.js` quede al lado de `dist/x.d.ts`.
+ * - `external: ['*.node']`: sin ella, un `.node` opcional que no existe
+ *   (`transparent-napi`, pendiente de compilar) hace fallar el build entero
+ *   porque el empaquetador intenta resolverlo; y uno que sí existe se copia
+ *   a `dist/` duplicando lo que ya vive en `vendor/` (13 MB en
+ *   `ripgrep-napi`). Con `external` el `require('../vendor/…')` y el
+ *   `require('../native/…')` quedan tal cual en el `.js` emitido, y siguen
+ *   resolviendo porque `dist/` y `src/` quedan a la misma profundidad
+ *   (`rootDir: "src"` en `tsconfig.build.json` de los ocho `*-napi`).
  *
  * Se invoca por `bin/typescript-build-javascript` (`bin/buildJavascript.ts`).
  */
@@ -80,6 +88,7 @@ export async function buildPackage(packageDir: string): Promise<Bun.BuildOutput>
     outdir: join(packageDir, OUTPUT_DIR),
     target: 'bun',
     packages: 'external',
+    external: ['*.node'],
     splitting: true,
     throw: false,
   })

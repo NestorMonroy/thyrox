@@ -63,6 +63,37 @@ function writePackage(root: string): string {
   return pkg
 }
 
+/** Un paquete al estilo `*-napi`: dos `.node` por `require` literal, uno vendorizado y otro no. */
+function writeNapiPackage(root: string): string {
+  const pkg = join(root, 'napi')
+  writeFile(join(pkg, 'src/index.ts'), [
+    "export function loadVendored(): unknown { return require('../vendor/x.node') }",
+    "export function loadLocal(): unknown { return require('../native/y.node') }",
+    '',
+  ].join('\n'))
+  writeFile(join(pkg, 'vendor/x.node'), 'binary\n')
+  const manifest = {
+    name: '@probe/napi', version: '0.1.0', private: true, type: 'module',
+    main: './src/index.ts',
+    exports: { '.': { '@thyrox/source': './src/index.ts', default: './src/index.ts' } },
+  }
+  writeFileSync(join(pkg, 'package.json'), JSON.stringify(manifest, null, 2) + '\n')
+  return pkg
+}
+
+describe('build con .node externos', () => {
+  test('construye, conserva los require relativos y no copia .node a dist', async () => {
+    const pkg = writeNapiPackage(tempDir('build-js-napi-'))
+    const result = await buildPackage(pkg)
+    expect(result.success).toBe(true)
+    const js = readFileSync(join(pkg, 'dist/index.js'), 'utf8')
+    expect(js).toContain("require(\"../vendor/x.node\")")
+    expect(js).toContain("require(\"../native/y.node\")")
+    expect(existsSync(join(pkg, 'dist/x.node'))).toBe(false)
+    expect(existsSync(join(pkg, 'dist/y.node'))).toBe(false)
+  })
+})
+
 describe('distEntry', () => {
   test('.ts a .js bajo dist', () => expect(distEntry('./index.ts')).toBe('./dist/index.js'))
   test('.tsx anidado', () => expect(distEntry('./sub/reader.tsx')).toBe('./dist/sub/reader.js'))
