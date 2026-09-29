@@ -15,6 +15,7 @@
     "configConstants.ts",
     "dxt/**/*",
     "embeddedTools.ts",
+    "entrypoint.ts",
     "env/**/*",
     "feature-flags.ts",
     "frontmatterParser.ts",

@@ -11,8 +11,9 @@
 // este objeto — validar con otra cosa sería reimplementar su semántica.
 import { z } from 'zod'
 
-/** Los niveles nombrados de `effort`. La fuente admite además un entero. */
-export const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'] as const
+/** Los niveles nombrados de `effort`, de la hoja `./effortLevels.ts`. La fuente admite además un entero. */
+export { NAMED_EFFORT_LEVELS as EFFORT_LEVELS } from './effortLevels.ts'
+import { NAMED_EFFORT_LEVELS as EFFORT_LEVELS } from './effortLevels.ts'
 
 /** `memory:le(["user","project","local"])` en el bloque delimitado. */
 export const MEMORY_SCOPES = ['user', 'project', 'local'] as const

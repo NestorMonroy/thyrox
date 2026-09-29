@@ -91,6 +91,9 @@
       ],
       "@thyrox/cli/transports/HybridTransport.js": [
         "./src/transports/HybridTransport.ts"
+      ],
+      "@thyrox/cli/host.js": [
+        "./src/host.ts"
       ]
     }
   },

@@ -51,26 +51,18 @@
  * de la cadena corta antes de llegar a ese eslabón. Se sustituye por
  * `undefined` — el mismo valor que "no hay default para este modelo".
  *
- * NO confundir con `EFFORT_LEVELS` de `./schema.ts`: ése es el enum de 5
- * niveles (sin `none`) que valida el campo `effort:` del frontmatter de un
- * agente — otro dominio, otra fuente de verdad. Éste es el de 6 niveles que
- * gobierna la resolución de esfuerzo de la sesión/modelo.
+ * El vocabulario (`EFFORT_LEVELS`, `NAMED_EFFORT_LEVELS`) se declara en la
+ * hoja `./effortLevels.ts`; este módulo lo re-exporta.
  */
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { isProSubscriber } from '@thyrox/provider/authAlias.js'
 import { canonicalModelName, MODELS } from './models.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
-export const EFFORT_LEVELS = [
-  'none',
-  'low',
-  'medium',
-  'high',
-  'xhigh',
-  'max',
-] as const
+import { EFFORT_LEVELS, type EffortLevel } from './effortLevels.ts'
 
-export type EffortLevel = (typeof EFFORT_LEVELS)[number]
+export { EFFORT_LEVELS, NAMED_EFFORT_LEVELS } from './effortLevels.ts'
+export type { EffortLevel, NamedEffortLevel } from './effortLevels.ts'
 export type EffortValue = EffortLevel | number
 
 export function isEffortLevel(value: string): value is EffortLevel {

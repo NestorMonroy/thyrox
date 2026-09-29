@@ -12,14 +12,28 @@
  * cuenta como ausente: queda `didNotLoad`, para que la composición falle
  * cerrado en vez de caer a la fuente siguiente.
  *
- * Divergencias declaradas:
- * - La validación es `SettingsSchema` de este paquete, no la de 2.1.283
- *   (`os`/`At`), que rescata campo a campo y registra sustitutos. Por eso no
- *   hay `onlySubstitutes` por documento ni la lista `removed`, y el suelo de
- *   sustitutos entre fragmentos (`pd`) no se porta. pendiente: con el esquema
- *   de rescate.
- * - `C$o` descarta además las claves que `Ed` reconoce como retiradas; aquí
- *   cuenta toda clave de política con valor. pendiente: con `Ed`.
+ * Cada documento se valida con el rescate campo a campo de
+ * `./policyFieldRescue.ts` (porte de `os`/`Ho`, con `Zo` derivada de
+ * `RESTRICTIVE_SETTINGS`/`Qe`). Un campo inválido no invalida el documento
+ * entero, y una puerta restrictiva
+ * inválida se sustituye en vez de descartarse (`substituted: true`); una
+ * puerta `"disable"` con un `false` válido se lee como no-op (`removed:
+ * true`). `writesPolicy` usa `isPolicyNoOp` (`Ed`, reducida a claves de nivel
+ * superior — ver el pendiente en `policyFieldRescue.ts`) para no contar un
+ * `null` ni un `false` de no-op como intento de escribir política.
+ *
+ * Divergencias que siguen declaradas:
+ * - El "suelo" entre fragmentos de `readFilePolicy` (`pd`) se generaliza a
+ *   CUALQUIER campo sustituido, no sólo a los de la tabla `_n` del binario
+ *   (no extraída): un valor real ya establecido por un fragmento anterior
+ *   protege esa ruta de un sustituto posterior, sin la distinción "inerte" de
+ *   `_n` que decide cuándo el sustituto se aplica igual con aviso.
+ * - `onlySubstitutes` sigue sin ser por documento (`i` en `os`): un documento
+ *   con sólo sustitutos y sin escritura real no se distingue todavía de uno
+ *   con contenido genuino, más allá de lo que `isPolicyNoOp` ya filtra.
+ * - `isPolicyNoOp` no recorre rutas anidadas (`Sn`/`kd`/`gn`, no extraído) ni
+ *   reconoce los alias de mercados de plugins (`dt`), hoy *diferidos* en
+ *   `inventory.ts`.
  * - La capa remota no emite el aviso de servidores MCP retenidos (`MRe`,
  *   `agn`) ni los fallos `ruled_empty` del último intento (`jx`), y
  *   `servedSnapshot` es siempre falso: esos tres leen el estado de la sesión
@@ -42,8 +56,7 @@ import {
   type PolicyRead,
 } from './policyComposition.ts'
 import { mergeManagedValue } from './policyMerge.ts'
-import { SettingsSchema } from './types.ts'
-import { formatZodError } from './validation.ts'
+import { isPolicyNoOp, rescuePolicyDocument } from './policyFieldRescue.ts'
 import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
 
 type PolicyDocument = Record<string, unknown>
@@ -76,9 +89,9 @@ function errnoOf(error: unknown): string | undefined {
   return typeof error === 'object' && error !== null && 'code' in error ? String((error as { code: unknown }).code) : undefined
 }
 
-/** `C$o`: el documento escribe alguna clave de política con valor. */
+/** `C$o`, con `Ed` (`isPolicyNoOp`): el documento escribe alguna clave de política con valor. */
 function writesPolicy(document: PolicyDocument, settings: PolicyDocument | null): boolean {
-  return Object.entries(document).some(([key, value]) => value !== null && !(NON_POLICY_KEYS as readonly string[]).includes(key))
+  return Object.entries(document).some(([key, value]) => !isPolicyNoOp(key, value) && !(NON_POLICY_KEYS as readonly string[]).includes(key))
     || (settings !== null && hasPolicyKeys(settings))
 }
 
@@ -87,17 +100,29 @@ type DocumentRead = PolicySourceRead & { loadState: PolicyLoadState; documentHas
 /** `md`: la validación de cada documento, por documento y por nombre de fuente. */
 const validated = new WeakMap<object, Map<string, DocumentRead>>()
 
-/** `Ty`. */
+/**
+ * `Ty`, con el rescate campo a campo (`os`) en vez de un `safeParse` atómico:
+ * un campo inválido no tira el documento entero, y `loadState` es siempre
+ * `'loaded'` cuando la forma de nivel superior es un objeto — que es la única
+ * forma con que se llega aquí (`readManagedDocument` ya descarta lo que no lo
+ * es antes de llamar).
+ */
 function validatePolicyDocument(document: PolicyDocument, file: string): DocumentRead {
-  const candidate = structuredClone(document)
+  const candidate = structuredClone(document) as PolicyDocument
   const warnings = sanitizeCrossSessionInbound(candidate, file, { policySource: true })
-  const parsed = SettingsSchema().safeParse(candidate)
-  if (!parsed.success) {
-    return { settings: null, errors: [...warnings, ...formatZodError(parsed.error, file)], documentHasPolicyContent: false, loadState: 'didNotLoad' }
-  }
-  const data = parsed.data as PolicyDocument
-  const settings = Object.keys(data).length > 0 ? data : null
-  return { settings, errors: warnings, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
+  const { settings: rescued, issues } = rescuePolicyDocument(candidate)
+  const errors: PolicyError[] = [
+    ...warnings,
+    ...issues.map(issue => ({
+      file,
+      path: issue.path,
+      message: issue.message,
+      ...(issue.substituted && { substituted: issue.substituted }),
+      ...(issue.removed && { removed: issue.removed }),
+    })),
+  ]
+  const settings = Object.keys(rescued).length > 0 ? rescued : null
+  return { settings, errors, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
 }
 
 /** `gd`: cada llamada recibe su copia, para que nadie mute la de la caché. */
@@ -186,6 +211,11 @@ export function readFilePolicy(directory: string, files: PolicyFiles = NODE_POLI
   let authored = false
   let hasContent = false
   let loadState: PolicyLoadState = 'absent'
+  // `pd`: el "suelo" — una ruta cuyo valor actual en `merged` viene de un
+  // sustituto (`substituted: true`) queda marcada aquí; mientras lo esté, un
+  // sustituto posterior en la misma ruta no dispara el aviso de abajo. Ver la
+  // divergencia declarada en el encabezado del archivo.
+  const floors = new Set<string>()
 
   const apply = (read: PolicySourceRead) => {
     errors.push(...read.errors)
@@ -193,7 +223,25 @@ export function readFilePolicy(directory: string, files: PolicyFiles = NODE_POLI
     loadState = combineLoadState(loadState, loadStateOf(read))
     const { settings } = read
     if (!settings || Object.keys(settings).length === 0) return
-    merged = mergeWith(merged, settings, mergeManagedValue)
+    const substitutedPaths = new Set(read.errors.filter(error => error.substituted).map(error => error.path))
+    const toMerge: PolicyDocument = {}
+    for (const [key, value] of Object.entries(settings)) {
+      const isSubstitute = substitutedPaths.has(key)
+      if (isSubstitute && merged[key] !== undefined && !floors.has(key)) {
+        const substituteFile = read.errors.find(error => error.path === key && error.substituted)?.file ?? ''
+        errors.push({
+          file: substituteFile,
+          path: key,
+          message: `That substitute is not applied: "${key}" keeps the value an earlier managed-settings document of this folder wrote.`,
+          statusOnly: true,
+        })
+      } else {
+        toMerge[key] = value
+      }
+      if (isSubstitute) floors.add(key)
+      else floors.delete(key)
+    }
+    if (Object.keys(toMerge).length > 0) merged = mergeWith(merged, toMerge, mergeManagedValue)
     found = true
     if (hasPolicyValues(settings) && !read.onlySubstitutes) authored = true
   }

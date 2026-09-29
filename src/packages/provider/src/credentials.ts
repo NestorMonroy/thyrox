@@ -15,9 +15,18 @@
  *   almacén de credenciales; esas ramas de `jc()` no se portan;
  * - el descriptor se lee una vez y no se reescribe a disco (`k()` del binario
  *   lo copia a `~/.claude/.oauth_token`); persistir un secreto no se decide
- *   aquí.
+ *   aquí;
+ * - la conexión de `provider_connections` sólo entra a la cadena si quien
+ *   llama pasa el store: `resolveCredential` no abre por su cuenta el store
+ *   del disco (`accounts/connectionStoreHome.ts`), para no añadir E/S de
+ *   archivo a toda llamada sin credencial de entorno. pendiente: cablear ese
+ *   store en los puntos de llamada (`anthropicHttp.ts`, `agent/cacheTtl.ts`).
  */
 import { readFileSync } from 'node:fs'
+
+import type { ConnectionStore } from './accounts/connectionStore.ts'
+import { looksEncrypted, STORAGE_KEY_VARIABLE } from './accounts/fieldCipher.ts'
+import { ANTHROPIC_PROVIDER_ID } from './accounts/imports/anthropicAuthFile.ts'
 
 /** Beta que el servicio exige con un token OAuth (`ep` en chunk-d6bkh9x7). */
 export const OAUTH_BETA = 'oauth-2025-04-20'
@@ -28,6 +37,7 @@ export type CredentialSource =
   | 'THYROX_CODE_OAUTH_TOKEN'
   | 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
   | 'ANTHROPIC_API_KEY'
+  | 'PROVIDER_CONNECTION'
   | 'none'
 
 export type Credential = {
@@ -84,11 +94,55 @@ export function tunnelSocket(env: Env = process.env): string | undefined {
 }
 
 /**
- * El orden de `jc()` para el token y, al final, la llave de `Qf()`. En
- * túnel la fuente es `proxy` y no hay secreto: la credencial la pone quien
- * escucha en el socket (`dt`/`at` de 2.1.283).
+ * Lo que aporta la conexión de mayor prioridad de `provider_connections`:
+ * un secreto listo para usar, o una causa que explica
+ * por qué esa conexión no dio ninguno. `{}` es "no hay conexión utilizable
+ * para este proveedor" — distinto de un `error`, que es "había una conexión
+ * y su credencial no se dejó leer".
  */
-export function resolveCredential(env: Env = process.env, readFd: ReadFd = readFdFromProc): Credential {
+type ConnectionAttempt = { secret?: string; kind?: 'api_key' | 'oauth'; error?: string }
+
+/** El campo de la fila que lleva el secreto, según el tipo de autenticación de la conexión. */
+function connectionCredentialField(authType: unknown): 'accessToken' | 'apiKey' {
+  return authType === 'oauth' ? 'accessToken' : 'apiKey'
+}
+
+/**
+ * La conexión activa de mayor prioridad para Anthropic (`ANTHROPIC_PROVIDER_ID`)
+ * en el store recibido. Una credencial que sigue cifrada porque falta
+ * `THYROX_STORAGE_ENCRYPTION_KEY`, o que no descifra con la que hay, se
+ * declara como error — nunca como si la conexión no existiera.
+ */
+function connectionCredential(store: ConnectionStore): ConnectionAttempt {
+  const candidate = store
+    .listRaw({ provider: ANTHROPIC_PROVIDER_ID, isActive: true })
+    .find(row => row.authType === 'apikey' || row.authType === 'oauth')
+  if (!candidate) return {}
+  const row = store.getById(candidate.id as string)
+  if (!row) return {}
+  const label = typeof row.name === 'string' && row.name ? row.name : String(row.id)
+  if (row.credentialDecryptFailed) {
+    return { error: `provider_connections: la conexión "${label}" no se pudo descifrar. Revisa ${STORAGE_KEY_VARIABLE}.` }
+  }
+  const field = connectionCredentialField(row.authType)
+  const value = row[field]
+  if (typeof value === 'string' && looksEncrypted(value)) {
+    return { error: `provider_connections: la conexión "${label}" está cifrada y ${STORAGE_KEY_VARIABLE} no está definida.` }
+  }
+  const secret = typeof value === 'string' ? value.trim() : ''
+  if (!secret) return {}
+  return { secret, kind: field === 'accessToken' ? 'oauth' : 'api_key' }
+}
+
+/**
+ * El orden de `jc()` para el token, después la llave de `Qf()` y, al final,
+ * la conexión de `provider_connections`. En túnel la fuente es `proxy` y no
+ * hay secreto: la credencial la pone quien escucha en el socket (`dt`/`at`
+ * de 2.1.283). `store` es opcional y sólo se consulta si llega. El error de
+ * un descriptor ilegible viaja con la credencial que se resuelva después, y
+ * se une al de la conexión cuando ninguna resuelve.
+ */
+export function resolveCredential(env: Env = process.env, readFd: ReadFd = readFdFromProc, store?: ConnectionStore): Credential {
   const tunnel = tunnelSocket(env)
   if (tunnel) return { source: 'proxy', unixSocket: tunnel }
   const unixSocket = env.ANTHROPIC_UNIX_SOCKET?.trim() || undefined
@@ -102,7 +156,10 @@ export function resolveCredential(env: Env = process.env, readFd: ReadFd = readF
   const err = fd.error ? { error: fd.error } : {}
   const apiKey = env.ANTHROPIC_API_KEY?.trim()
   if (apiKey) return { ...base, ...err, source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: apiKey }
-  return { ...base, ...err, source: 'none' }
+  const connection = store ? connectionCredential(store) : {}
+  if (connection.secret) return { ...base, ...err, source: 'PROVIDER_CONNECTION', kind: connection.kind, secret: connection.secret }
+  const causes = [fd.error, connection.error].filter(Boolean)
+  return { ...base, ...(causes.length ? { error: causes.join('; ') } : {}), source: 'none' }
 }
 
 /** Las cabeceras de autenticación de una credencial resuelta. */

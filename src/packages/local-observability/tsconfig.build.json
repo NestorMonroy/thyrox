@@ -83,6 +83,57 @@
       "@thyrox/local-observability/uds/udsMessaging.js": [
         "./src/uds/udsMessaging.ts"
       ],
+      "@thyrox/local-observability/uds/peerAddress.js": [
+        "./src/uds/peerAddress.ts"
+      ],
+      "@thyrox/local-observability/uds/peerFiles.js": [
+        "./src/uds/peerFiles.ts"
+      ],
+      "@thyrox/local-observability/uds/confusableTagPatterns.js": [
+        "./src/uds/confusableTagPatterns.ts"
+      ],
+      "@thyrox/local-observability/uds/unicodeSanitize.js": [
+        "./src/uds/unicodeSanitize.ts"
+      ],
+      "@thyrox/local-observability/uds/stringUnits.js": [
+        "./src/uds/stringUnits.ts"
+      ],
+      "@thyrox/local-observability/uds/sessionRename.js": [
+        "./src/uds/sessionRename.ts"
+      ],
+      "@thyrox/local-observability/uds/renameNotice.js": [
+        "./src/uds/renameNotice.ts"
+      ],
+      "@thyrox/local-observability/storageKeys.js": [
+        "./src/storageKeys.ts"
+      ],
+      "@thyrox/local-observability/uds/fleetHeartbeat.js": [
+        "./src/uds/fleetHeartbeat.ts"
+      ],
+      "@thyrox/local-observability/uds/messagingState.js": [
+        "./src/uds/messagingState.ts"
+      ],
+      "@thyrox/local-observability/uds/pidFileRecord.js": [
+        "./src/uds/pidFileRecord.ts"
+      ],
+      "@thyrox/local-observability/uds/registrySweep.js": [
+        "./src/uds/registrySweep.ts"
+      ],
+      "@thyrox/local-observability/uds/registrySweepPermission.js": [
+        "./src/uds/registrySweepPermission.ts"
+      ],
+      "@thyrox/local-observability/uds/spareSession.js": [
+        "./src/uds/spareSession.ts"
+      ],
+      "@thyrox/local-observability/uds/sessionKind.js": [
+        "./src/uds/sessionKind.ts"
+      ],
+      "@thyrox/local-observability/uds/sessionRegistration.js": [
+        "./src/uds/sessionRegistration.ts"
+      ],
+      "@thyrox/local-observability/uds/sessionRegistryState.js": [
+        "./src/uds/sessionRegistryState.ts"
+      ],
       "@thyrox/local-observability/uds/udsClient.js": [
         "./src/uds/udsClient.ts"
       ],

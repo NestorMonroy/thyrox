@@ -50,6 +50,7 @@
  */
 import { installPackageHostBindings } from '../packageHostSetup.ts'
 import { createInteractiveSessionStore } from '@thyrox/agent/sessionStores'
+import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { getCwd } from '../bootstrap/cwd.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations'
@@ -132,7 +133,7 @@ export function installRuntimeSkeletonBindings(): void {
       // store, que lo habría invocado como función: nació de una copia local
       // de `Store` con `setState(next)` que no era la real.
       createInteractiveStore: initialState =>
-        createInteractiveSessionStore(initialState as never),
+        createInteractiveSessionStore(initialState as never, onChangeAppState),
       getConfigHomeDir: () => requireClaudeConfigHomeDir()(),
       getGlobalClaudeFile: () => requireGlobalClaudeFile()(),
       getProjectRoot: () => requireFindCanonicalGitRoot()(getCwd()),

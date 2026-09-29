@@ -42,6 +42,10 @@ export type PolicyError = {
   statusOnly?: boolean
   startupFatal?: boolean
   errorClass?: 'unreadable'
+  /** El rescate por campo (`os`) sustituyó un valor inválido por el restrictivo de su puerta. */
+  substituted?: boolean
+  /** El rescate por campo (`os`/`Ho`) leyó un `false` no-op en una puerta "disable" y sugiere borrar la clave. */
+  removed?: boolean
 }
 
 /** `lt`: las claves que gobiernan la composición y no son política. */

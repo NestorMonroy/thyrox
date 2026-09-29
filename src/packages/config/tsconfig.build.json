@@ -98,6 +98,12 @@
       "@thyrox/config/dxt/zip.js": [
         "./dxt/zip.ts"
       ],
+      "@thyrox/config/entrypoint": [
+        "./entrypoint.ts"
+      ],
+      "@thyrox/config/entrypoint.js": [
+        "./entrypoint.ts"
+      ],
       "@thyrox/config/embeddedTools.js": [
         "./embeddedTools.ts"
       ],
@@ -422,6 +428,7 @@
     "commonConstants.ts",
     "configConstants.ts",
     "embeddedTools.ts",
+    "entrypoint.ts",
     "feature-flags.ts",
     "frontmatterParser.ts",
     "generators.ts",

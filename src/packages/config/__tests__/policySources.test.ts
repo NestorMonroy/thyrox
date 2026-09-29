@@ -4,6 +4,13 @@
  * fragmentos) de `chunk-379zyrv7.js` en el ejecutable 2.1.283 (extracción en
  * `.claude/workbench/policy-settings-port-20260927T083804/`). La remota y la
  * MDM se inyectan; el archivo se lee de un directorio temporal real.
+ *
+ * Los casos del rescate campo a campo (`os`/`Ho`/`Ed`, en
+ * `./policyFieldRescue.ts`) están aquí y no en `policyFieldRescue.test.ts`
+ * porque lo que este archivo prueba es su EFECTO en `readPolicyDocument`/
+ * `readFilePolicy`: que un campo roto no tira el documento, que una puerta
+ * sustituida se ve en `documentHasPolicyContent`, y que el suelo (`pd`)
+ * protege un valor real ya escrito por un fragmento anterior.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
@@ -39,13 +46,42 @@ describe('un documento de política (HRe)', () => {
   test('uno vacío carga sin settings ni contenido', () => {
     expect(S.readPolicyDocument({}, 'f')).toMatchObject({ settings: null, loadState: 'loaded', documentHasPolicyContent: false })
   })
-  test('uno que el esquema rechaza no carga', () => {
+  test('un campo inválido se rescata: el documento carga y el campo se descarta (os)', () => {
     const read = S.readPolicyDocument({ permissions: 'nope' }, 'f')
     expect(read.settings).toBeNull()
-    expect(read.loadState).toBe('didNotLoad')
-    expect(read.documentHasPolicyContent).toBe(false)
+    // Antes de portar el rescate campo a campo, un campo roto invalidaba el
+    // documento entero (`loadState: 'didNotLoad'`). Ahora el documento SÍ
+    // carga — el campo roto sólo se descarta — y por eso cuenta como intento
+    // de escribir política (`Ed`): un `permissions` inválido sigue siendo un
+    // intento de fijar `permissions`, no un documento vacío.
+    expect(read.loadState).toBe('loaded')
+    expect(read.documentHasPolicyContent).toBe(true)
     expect(read.errors.length).toBeGreaterThan(0)
     expect(read.errors.every(error => error.file === 'f')).toBe(true)
+    expect(read.errors[0]!.substituted).toBeUndefined()
+  })
+  test('un campo con puerta inválido se sustituye por su valor restrictivo (Zo)', () => {
+    const read = S.readPolicyDocument({ allowManagedMcpServersOnly: 'nope' }, 'f')
+    expect(read.settings).toEqual({ allowManagedMcpServersOnly: true })
+    expect(read.loadState).toBe('loaded')
+    expect(read.documentHasPolicyContent).toBe(true)
+    expect(read.errors).toEqual([{
+      file: 'f',
+      path: 'allowManagedMcpServersOnly',
+      message: '"allowManagedMcpServersOnly" was present but invalid; treating it as true (its restrictive value) until it is fixed.',
+      substituted: true,
+    }])
+  })
+  test('un "false" válido en una puerta "disable" es un no-op: se retira y no cuenta como política (Ho/Ed)', () => {
+    const read = S.readPolicyDocument({ disableAutoMode: false }, 'f')
+    expect(read.settings).toBeNull()
+    expect(read.documentHasPolicyContent).toBe(false)
+    expect(read.errors).toEqual([{
+      file: 'f',
+      path: 'disableAutoMode',
+      message: '"disableAutoMode" was set to false; reading it as absent (the key\'s only value is "disable"). Remove the key instead.',
+      removed: true,
+    }])
   })
   test('cada lectura recibe su copia de la caché', () => {
     const document = { permissions: { allow: ['Read'] } }
@@ -169,5 +205,30 @@ describe('el archivo administrado (njr)', () => {
     const read = S.readFilePolicy(managedDir({ 'managed-settings.json': JSON.stringify({ managedSourcesBehavior: 'merge' }) }))
     expect(read.settings).toBeNull()
     expect(read.loadState).toBe('loaded')
+  })
+  test('el suelo (pd): un sustituto no desplaza el valor real que ya escribió un fragmento anterior', () => {
+    const dir = managedDir({
+      'managed-settings.json': JSON.stringify({ allowManagedHooksOnly: false }),
+      // Inválido: sin la puerta, este valor se sustituiría por `true` — el
+      // más restrictivo — y pisaría el `false` real de arriba.
+      'managed-settings.d/a.json': JSON.stringify({ allowManagedHooksOnly: 'nope' }),
+    })
+    const read = S.readFilePolicy(dir)
+    expect(read.settings).toEqual({ allowManagedHooksOnly: false })
+    expect(read.errors).toContainEqual({
+      file: join(dir, 'managed-settings.d', 'a.json'),
+      path: 'allowManagedHooksOnly',
+      message: 'That substitute is not applied: "allowManagedHooksOnly" keeps the value an earlier managed-settings document of this folder wrote.',
+      statusOnly: true,
+    })
+  })
+  test('el suelo (pd): dos sustitutos seguidos en la misma ruta no se avisan entre sí', () => {
+    const dir = managedDir({
+      'managed-settings.d/10-a.json': JSON.stringify({ allowManagedHooksOnly: 'nope' }),
+      'managed-settings.d/20-b.json': JSON.stringify({ allowManagedHooksOnly: 'tampoco' }),
+    })
+    const read = S.readFilePolicy(dir)
+    expect(read.settings).toEqual({ allowManagedHooksOnly: true })
+    expect(read.errors.filter(error => error.message.startsWith('That substitute is not applied'))).toEqual([])
   })
 })

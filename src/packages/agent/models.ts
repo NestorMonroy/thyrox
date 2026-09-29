@@ -35,7 +35,9 @@ export type PricingTier = {
   web_search: number
 }
 
-export type EffortLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max'
+/** Los niveles que indexan `default_effort` y `effort_cost_index`, de la hoja `./effortLevels.ts`. */
+export type { NamedEffortLevel as EffortLevel } from './effortLevels.ts'
+import type { NamedEffortLevel as EffortLevel } from './effortLevels.ts'
 
 export type ModelRecord = {
   id: string

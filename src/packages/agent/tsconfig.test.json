@@ -71,6 +71,7 @@
     "messagesMappers.ts",
     "misc/**/*",
     "modelCapabilities.ts",
+    "modelScope.ts",
     "models.ts",
     "postSamplingHooks.ts",
     "proactive/**/*",

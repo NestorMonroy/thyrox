@@ -131,6 +131,11 @@
       "@thyrox/source": "./src/transports/HybridTransport.ts",
       "types": "./dist/transports/HybridTransport.d.ts",
       "default": "./src/transports/HybridTransport.ts"
+    },
+    "./host.js": {
+      "@thyrox/source": "./src/host.ts",
+      "types": "./dist/host.d.ts",
+      "default": "./src/host.ts"
     }
   },
   "scripts": {
