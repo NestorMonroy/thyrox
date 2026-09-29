@@ -46,3 +46,22 @@ El ejecutor respondió sin preferencia; se aplica la opción recomendada, **marc
 entre sesiones; la identidad durable es `TASK-<LAYER>-NNNN`. Implementación en #311: clave por
 `session_id`, asignación en `BEGIN IMMEDIATE`, comentario corregido y DDL por la historia de Python
 (depende de #289).
+
+## Contrato fijado con el ejecutor (2026-09-29)
+
+1. Pertenece a una sesión (`session_id`); no es global.
+2. Semántica: `(session_id, next_task_id)`, el próximo id a asignar. Hoy el código guarda la otra
+   (`max_id`, el mayor id asignado); la migración de #311 no mezcla las dos.
+3. No se usa para `citation_id` ni para `board_ordinal`.
+4. Adopción sin tabla: `next_task_id = MAX(task_id numérico de la sesión) + 1`, derivado de filas
+   existentes; ciego a los ids borrados antes de adoptar.
+5. Asignación atómica: `BEGIN IMMEDIATE` → leer → asignar → incrementar → insertar → `COMMIT`.
+
+La colisión concurrente del código actual es **riesgo inferido**, no hallazgo medido, hasta
+reproducirla; #311 intenta reproducirla antes de arreglarla.
+
+| Identidad | Alcance |
+|---|---|
+| `board_ordinal` | tarjeta dentro de la sesión |
+| `task_id` | interna, por sesión |
+| `citation_id` (`TASK-<LAYER>-NNNN`) | durable |
