@@ -408,6 +408,58 @@ function thyrox_toolchain_require_pgvector() {
 }
 export -f thyrox_toolchain_require_pgvector
 
+# @description El comando que instala redis-server. Declarado por la misma
+# razon que sus hermanos: un control necesita inyectar un instalador que
+# MIENTA —que salga cero sin instalar nada— para probar que el exito se
+# re-comprueba.
+export THYROX_TOOLCHAIN_REDIS_INSTALL_CMD="${THYROX_TOOLCHAIN_REDIS_INSTALL_CMD:-sudo apt-get install -y redis-server}"
+
+# @description Asegura `redis-server`, un adaptador posible de
+# `SharedStateStore` (ADR-THYROX-006) para el estado compartido en caliente
+# entre proxies. Mismo contrato que `thyrox_toolchain_require_pgvector` y
+# `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_REDIS=1`), el rechazo no emite conteo, y el exito NO se lee
+# del codigo de salida de apt: se RE-COMPRUEBA invocando `redis-server
+# --version`, porque `command -v` sólo prueba que el nombre resuelve en el
+# PATH, no que el binario responda. La ruta resuelta queda exportada en
+# THYROX_TOOLCHAIN_REDIS_BIN para quien la necesite sin volver a buscarla.
+# @noargs
+# @exitcode 0 El binario responde; THYROX_TOOLCHAIN_REDIS_BIN resuelto.
+# @exitcode 2 No esta, o no responde, y no se pudo o no se quiso instalar.
+function thyrox_toolchain_require_redis() {
+  local bin="${THYROX_TOOLCHAIN_REDIS_BIN:-redis-server}"
+  local resolved
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -n "$resolved" ]] && "$resolved" --version >/dev/null 2>&1; then
+    THYROX_TOOLCHAIN_REDIS_BIN="$resolved"
+    export THYROX_TOOLCHAIN_REDIS_BIN
+    return 0
+  fi
+
+  if [[ "${THYROX_INSTALL_REDIS:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin' (paquete redis-server) y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_REDIS=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+
+  $THYROX_TOOLCHAIN_REDIS_INSTALL_CMD >&2 2>&1 || true
+
+  resolved="$(command -v "$bin" 2>/dev/null)" || resolved=""
+  if [[ -z "$resolved" ]] || ! "$resolved" --version >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin responder --version." >&2
+    echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+    return 2
+  fi
+
+  THYROX_TOOLCHAIN_REDIS_BIN="$resolved"
+  export THYROX_TOOLCHAIN_REDIS_BIN
+  return 0
+}
+export -f thyrox_toolchain_require_redis
+
 # @description El comando que instala iproute2. Declarado para que un control
 # pueda inyectar un instalador que MIENTA y probar que el exito se
 # re-comprueba.

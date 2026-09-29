@@ -49,7 +49,9 @@
  *   Fuera de los 16 (no es state/AppState, state/store, ni runtime/bootstrap).
  */
 import { installPackageHostBindings } from '../packageHostSetup.ts'
-import { createInteractiveSessionStore } from '@thyrox/agent/sessionStores'
+import { createInteractiveSessionStore, type InteractiveSessionStore } from '@thyrox/agent/sessionStores'
+import { subscribeRefusalFallbackReset } from '../state/refusalFallbackRestore.ts'
+import { createRefusalFallbackRestoreDeps } from '../state/refusalFallbackRestoreDeps.ts'
 import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { getCwd } from '../bootstrap/cwd.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
@@ -117,6 +119,18 @@ function requireSyncRuntimeHandlesFromAppState(): (
   }).syncRuntimeHandlesFromAppState
 }
 
+/**
+ * `Pyt(Z.setState)`: 2.1.283 suscribe la restauración del modelo de respaldo
+ * al store interactivo justo tras crearlo, antes de resolver permisos
+ * (`chunk-fa2jy0nf.js`). Exportada aparte para poder medirla sin levantar la
+ * cadena entera de `installRuntimeSkeletonBindings`.
+ */
+export function wireRefusalFallbackRestoreForInteractiveStore(
+  store: InteractiveSessionStore,
+): () => void {
+  return subscribeRefusalFallbackReset(store.setState, createRefusalFallbackRestoreDeps())
+}
+
 let runtimeSkeletonBindingsInstalled = false
 
 export function installRuntimeSkeletonBindings(): void {
@@ -132,8 +146,11 @@ export function installRuntimeSkeletonBindings(): void {
       // adaptador que había aplicaba el actualizador y le pasaba el VALOR al
       // store, que lo habría invocado como función: nació de una copia local
       // de `Store` con `setState(next)` que no era la real.
-      createInteractiveStore: initialState =>
-        createInteractiveSessionStore(initialState as never, onChangeAppState),
+      createInteractiveStore: initialState => {
+        const store = createInteractiveSessionStore(initialState as never, onChangeAppState)
+        wireRefusalFallbackRestoreForInteractiveStore(store)
+        return store
+      },
       getConfigHomeDir: () => requireClaudeConfigHomeDir()(),
       getGlobalClaudeFile: () => requireGlobalClaudeFile()(),
       getProjectRoot: () => requireFindCanonicalGitRoot()(getCwd()),

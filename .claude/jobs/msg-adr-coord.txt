@@ -1,0 +1,6 @@
+Tell the shared-state package from coordination
+
+The ADR row named the package but did not say why it is not
+@thyrox/coordination, which already exists as the claims ledger
+between sessions. The earlier command meant to add the sentence
+stalled on a bare cat reading the host socket and never ran it.

@@ -193,7 +193,7 @@ export function isWindowsPosixCwd(cwd: string | undefined, deps: Pick<RegistrySw
  * con registro, por lo que su `cwd` delata en windows y en macos.
  */
 export function recordInPidDomain(
-  record: RegistryRecord | null,
+  record: Pick<RegistryRecord, 'pidDomain' | 'cwd'> | null,
   domain: string,
   keyDomains: Array<string | undefined> = [],
   deps: Pick<RegistrySweepDeps, 'platform' | 'isInteractive' | 'homedir'> = processRegistrySweepDeps,

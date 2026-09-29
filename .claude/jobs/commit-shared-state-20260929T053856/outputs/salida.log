@@ -1,0 +1,20 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 28 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 28 archivo(s) pedido(s))
+OK: identificadores en inglés (2 archivos medidos, 4259 en deuda heredada).
+0
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 26115 especificador(es) en 4764 archivo(s) de 51 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 7 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 211 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 63427 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1549 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 288 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1818 lectura(s) en 3947 archivo(s) de producción — propias 782, proveedor 94, cliente ajeno 18, sin prefijo 924)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 133 congelada(s), 0 obsoleta(s) (alcance medido: 323 variable(s) propia(s), 2006 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 464 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 20 clave(s) en 1 archivo(s) ignorado(s), 473 declarada(s) en .env.example)
+  TASK-THYROX-0267 -> Coordinación R1 — toolchain de Redis, puerto CoordinationStore y adapt
+0c937c3a Add @thyrox/shared-state with its port and contract
+__BG_EXIT__=0

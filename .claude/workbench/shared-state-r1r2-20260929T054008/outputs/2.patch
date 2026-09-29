@@ -1,0 +1,189 @@
+diff --git a/src/packages/shared-state/__tests__/memory.test.ts b/src/packages/shared-state/__tests__/memory.test.ts
+new file mode 100644
+index 00000000..6fddc5e6
+--- /dev/null
++++ b/src/packages/shared-state/__tests__/memory.test.ts
+@@ -0,0 +1,75 @@
++/**
++ * Suite del adaptador `memory`: la suite de contrato compartida más los
++ * bordes que sólo un reloj inyectado puede fijar con exactitud (el instante
++ * mismo en que algo caduca, el cambio de ventana).
++ */
++import { describe, expect, test } from 'bun:test'
++
++import { describeSharedStateStoreContract } from '../contract.ts'
++import { createMemorySharedStateStore } from '../memory.ts'
++
++describeSharedStateStoreContract('memory', async () => createMemorySharedStateStore())
++
++describe('memory: bordes con reloj inyectado', () => {
++  function clockStore() {
++    let currentTime = 0
++    const store = createMemorySharedStateStore({ now: () => currentTime })
++    return {
++      store,
++      advanceTo(time: number) {
++        currentTime = time
++      },
++    }
++  }
++
++  test('un lease caduca en su instante exacto, no un tick después', async () => {
++    const { store, advanceTo } = clockStore()
++    await store.acquireLease('l', 'p1', 100)
++    advanceTo(99)
++    expect(await store.acquireLease('l', 'p2', 100)).toBe(false)
++    advanceTo(100)
++    expect(await store.acquireLease('l', 'p2', 100)).toBe(true)
++  })
++
++  test('un valor caduca en su instante exacto, no un tick después', async () => {
++    const { store, advanceTo } = clockStore()
++    await store.setWithTtl('v', 'valor', 50)
++    advanceTo(49)
++    expect(await store.getWithTtl('v')).toBe('valor')
++    advanceTo(50)
++    expect(await store.getWithTtl('v')).toBeNull()
++  })
++
++  test('releaseLease sobre un lease ya caducado devuelve false', async () => {
++    const { store, advanceTo } = clockStore()
++    await store.acquireLease('l', 'p1', 100)
++    advanceTo(100)
++    expect(await store.releaseLease('l', 'p1')).toBe(false)
++  })
++
++  test('incrementWindow cambia de ventana exactamente en el múltiplo de windowMs', async () => {
++    const { store, advanceTo } = clockStore()
++    expect(await store.incrementWindow('w', 100, 3)).toBe(3)
++    advanceTo(99)
++    expect(await store.incrementWindow('w', 100)).toBe(4)
++    advanceTo(100)
++    expect(await store.incrementWindow('w', 100)).toBe(1)
++  })
++
++  test('incrementWindow rechaza by cero o negativo', async () => {
++    const { store } = clockStore()
++    await expect(store.incrementWindow('w', 100, 0)).rejects.toThrow()
++    await expect(store.incrementWindow('w', 100, -1)).rejects.toThrow()
++  })
++
++  test('close vacía el estado: lo previo no sobrevive', async () => {
++    const { store } = clockStore()
++    await store.incrementWindow('w', 10_000, 5)
++    await store.acquireLease('l', 'p1', 10_000)
++    await store.setWithTtl('v', 'valor', 10_000)
++    await store.close()
++    expect(await store.incrementWindow('w', 10_000)).toBe(1)
++    expect(await store.acquireLease('l', 'p2', 10_000)).toBe(true)
++    expect(await store.getWithTtl('v')).toBeNull()
++  })
++})
+diff --git a/src/packages/shared-state/memory.ts b/src/packages/shared-state/memory.ts
+new file mode 100644
+index 00000000..24293f8e
+--- /dev/null
++++ b/src/packages/shared-state/memory.ts
+@@ -0,0 +1,102 @@
++/**
++ * Adaptador `memory` de `SharedStateStore`: coordina dentro de un solo
++ * proceso, con el reloj de pared por defecto (`options.now` lo sustituye
++ * para pruebas deterministas). No abre sockets ni temporizadores: la
++ * caducidad de un lease o un valor se resuelve al leerlo (perezosa), así
++ * que nada mantiene el proceso vivo.
++ */
++import type { SharedStateStore } from './port.ts'
++
++interface WindowEntry {
++  windowIndex: number
++  count: number
++}
++
++interface LeaseEntry {
++  owner: string
++  expiresAt: number
++}
++
++interface ValueEntry {
++  value: string
++  expiresAt: number
++}
++
++export interface MemorySharedStateStoreOptions {
++  now?: () => number
++}
++
++/**
++ * Un lease o un valor caduca en el instante `expiresAt`: en ese instante ya
++ * está libre, no un tick después. `>=` (no `>`) es la frontera que hace que
++ * el borde exacto cuente como caducado.
++ */
++function hasExpired(expiresAt: number, now: number): boolean {
++  return now >= expiresAt
++}
++
++export function createMemorySharedStateStore(options: MemorySharedStateStoreOptions = {}): SharedStateStore {
++  const now = options.now ?? Date.now
++  const windows = new Map<string, WindowEntry>()
++  const leases = new Map<string, LeaseEntry>()
++  const values = new Map<string, ValueEntry>()
++
++  return {
++    async incrementWindow(key, windowMs, by = 1) {
++      if (by <= 0) {
++        throw new Error(`incrementWindow: "by" tiene que ser positivo, llegó ${by}`)
++      }
++      const windowIndex = Math.floor(now() / windowMs)
++      const existing = windows.get(key)
++      const count = existing !== undefined && existing.windowIndex === windowIndex ? existing.count + by : by
++      windows.set(key, { windowIndex, count })
++      return count
++    },
++
++    async acquireLease(key, owner, ttlMs) {
++      const current = now()
++      const existing = leases.get(key)
++      if (existing !== undefined && !hasExpired(existing.expiresAt, current) && existing.owner !== owner) {
++        return false
++      }
++      leases.set(key, { owner, expiresAt: current + ttlMs })
++      return true
++    },
++
++    async releaseLease(key, owner) {
++      const current = now()
++      const existing = leases.get(key)
++      if (existing === undefined || hasExpired(existing.expiresAt, current)) {
++        return false
++      }
++      if (existing.owner !== owner) {
++        return false
++      }
++      leases.delete(key)
++      return true
++    },
++
++    async getWithTtl(key) {
++      const current = now()
++      const existing = values.get(key)
++      if (existing === undefined) {
++        return null
++      }
++      if (hasExpired(existing.expiresAt, current)) {
++        values.delete(key)
++        return null
++      }
++      return existing.value
++    },
++
++    async setWithTtl(key, value, ttlMs) {
++      values.set(key, { value, expiresAt: now() + ttlMs })
++    },
++
++    async close() {
++      windows.clear()
++      leases.clear()
++      values.clear()
++    },
++  }
++}

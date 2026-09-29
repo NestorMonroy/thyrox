@@ -23,9 +23,27 @@
 import { installCliHostBindings } from '@thyrox/cli/host.js'
 import { runHeadless } from '@thyrox/cli/print.js'
 import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
-import { createHeadlessSessionStore, type HeadlessStoreParams } from '@thyrox/agent/sessionStores.js'
+import { createHeadlessSessionStore, type HeadlessSessionStore, type HeadlessStoreParams } from '@thyrox/agent/sessionStores.js'
 import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
+import { onRefusalFallbackRestored } from '../state/refusalFallbackRestore.js'
 import type { AppState } from './appStateCompatShim.js'
+
+/**
+ * `b8r(() => {_r = void 0})`: en 2.1.283 limpia, en el runner headless
+ * (`chunk-ycnq45th.js`), un espejo local del override de modelo de sesión
+ * que este árbol no porta todavía (vive en el subsistema SDK headless de
+ * `cli`, fuera del alcance de este ítem — ver docstring de arriba). El
+ * espejo equivalente que este árbol sí tiene es `mainLoopModelForSession`
+ * en el propio `AppState` del store headless: el callback lo limpia ahí.
+ * Exportada aparte para medirla sin pasar por `installCliHostBindings`.
+ */
+export function wireRefusalFallbackRestoreForHeadlessStore(
+  store: HeadlessSessionStore,
+): () => void {
+  return onRefusalFallbackRestored(() => {
+    store.setState(prev => ({ ...prev, mainLoopModelForSession: null }))
+  })
+}
 
 let cliBindingsInstalled = false
 
@@ -35,6 +53,7 @@ export function installCliBindings(): void {
   installCliHostBindings({
     createHeadlessStore: params => {
       const store = createHeadlessSessionStore(params as HeadlessStoreParams, onChangeAppState)
+      wireRefusalFallbackRestoreForHeadlessStore(store)
       return {
         getState: () => store.getState(),
         // Lo que llega es el actualizador de `setAppState`; el store lo aplica.
