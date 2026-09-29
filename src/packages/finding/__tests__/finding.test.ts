@@ -37,6 +37,16 @@ const INDEX =
   '   * - :ref:`h-thyrox-1`\n     - BAJA\n     - RESUELTO\n\n' +
   '.. toctree::\n   :maxdepth: 1\n\n   hallazgo-H-THYROX-1-previo\n'
 const NAME = 'hallazgo-H-THYROX-9-el-pool-lanzaba-claude-aunque-thyrox-p-existia.rst'
+const INDEX_4_COLUMNS =
+  'Hallazgos\n=========\n\n.. list-table::\n   :header-rows: 1\n\n' +
+  '   * - ID\n     - Severidad\n     - Estado\n     - Descripcion\n' +
+  '   * - :ref:`h-thyrox-1`\n     - BAJA\n     - RESUELTO\n     - Previo\n\n' +
+  '.. toctree::\n   :maxdepth: 1\n\n   hallazgo-H-THYROX-1-previo\n'
+const INDEX_UNSUPPORTED_COLUMNS =
+  'Hallazgos\n=========\n\n.. list-table::\n   :header-rows: 1\n\n' +
+  '   * - ID\n     - Severidad\n' +
+  '   * - :ref:`h-thyrox-1`\n     - BAJA\n\n' +
+  '.. toctree::\n   :maxdepth: 1\n\n   hallazgo-H-THYROX-1-previo\n'
 
 {
   const db = new Database(storeFile)
@@ -127,6 +137,21 @@ describe('el índice', () => {
     const reapplied = addIndexEntry(applied, record, 'hallazgo-H-THYROX-9-x', 'DOCUMENTADO')
     expect(reapplied).toBe(applied)
     expect(reapplied.split(':ref:`h-thyrox-9`').length).toBe(2)
+  })
+
+  test('10. un índice de 4 columnas recibe la 4a celda con el marcador de descripción ausente', () => {
+    const record = readFindingRecord(storeFile, 'H-THYROX-9')!
+    const index = addIndexEntry(INDEX_4_COLUMNS, record, 'hallazgo-H-THYROX-9-x', 'DOCUMENTADO')
+    expect(index).toContain(
+      '   * - :ref:`h-thyrox-1`\n     - BAJA\n     - RESUELTO\n     - Previo\n' +
+        '   * - :ref:`h-thyrox-9`\n     - MEDIA\n     - DOCUMENTADO\n     - —\n',
+    )
+  })
+
+  // Anulación: sin la comprobación de forma soportada, esta fila se escribiría con 2 celdas.
+  test('11. una forma de tabla que no sabe rellenar se rehúsa sin escribir', () => {
+    const record = readFindingRecord(storeFile, 'H-THYROX-9')!
+    expect(() => addIndexEntry(INDEX_UNSUPPORTED_COLUMNS, record, 'hallazgo-H-THYROX-9-x', 'DOCUMENTADO')).toThrow()
   })
 })
 

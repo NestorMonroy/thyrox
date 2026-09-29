@@ -140,9 +140,39 @@ export function writeFinding(record: FindingRecord, options: RenderOptions): str
   return target
 }
 
+const ROW_START = '   * - '
+const ROW_CONTINUATION = '     - '
+
+/** El marcador que ya usa este índice para una descripción ausente. */
+const MISSING_DESCRIPTION = '—'
+
+/**
+ * Cuántas celdas trae la primera fila de la tabla (la de encabezado, bajo
+ * `:header-rows: 1`). Determina cuántas columnas hay que rellenar.
+ */
+function columnCountOf(lines: string[]): number {
+  const start = lines.findIndex(line => line.startsWith(ROW_START))
+  if (start < 0) return 0
+  let count = 1
+  for (let i = start + 1; i < lines.length && lines[i]!.startsWith(ROW_CONTINUATION); i++) count++
+  return count
+}
+
+/**
+ * Las celdas de la fila nueva, en las dos formas conocidas del índice de
+ * hallazgos. Una forma que no es ninguna de las dos se rehúsa: no hay cómo
+ * saber qué va en una columna que ninguna convención declaró.
+ */
+function cellsForColumns(columnCount: number, ref: string, severity: string, state: string): string[] {
+  if (columnCount === 3) return [ref, severity, state]
+  if (columnCount === 4) return [ref, severity, state, MISSING_DESCRIPTION]
+  throw new Error(`el índice declara ${columnCount} columnas; no hay convención para rellenarlas`)
+}
+
 /**
  * La entrada del hallazgo en el índice: su fila tras la última de la tabla y
- * su nombre tras el último del toctree. Si ya estaba, el texto no cambia.
+ * su nombre tras el último del toctree. Si ya estaba, el texto no cambia. La
+ * fila nueva lleva tantas celdas como declare la tabla destino.
  */
 export function addIndexEntry(index: string, record: FindingRecord, documentName: string, state: string): string {
   const lines = index.split('\n')
@@ -151,13 +181,13 @@ export function addIndexEntry(index: string, record: FindingRecord, documentName
     let lastRowEnd = -1
     lines.forEach((line, i) => {
       // Una fila empieza con `* -`; sus celdas siguen, contiguas, con `-`.
-      const startsRow = line.startsWith('   * - ')
-      const continuesRow = lastRowEnd === i - 1 && line.startsWith('     - ')
+      const startsRow = line.startsWith(ROW_START)
+      const continuesRow = lastRowEnd === i - 1 && line.startsWith(ROW_CONTINUATION)
       if (startsRow || continuesRow) lastRowEnd = i
     })
     if (lastRowEnd < 0) throw new Error('el índice no tiene list-table')
-    lines.splice(lastRowEnd + 1, 0,
-      `   * - :ref:\`${label}\``, `     - ${record.severity ?? 'SIN DECLARAR'}`, `     - ${state}`)
+    const cells = cellsForColumns(columnCountOf(lines), `:ref:\`${label}\``, record.severity ?? 'SIN DECLARAR', state)
+    lines.splice(lastRowEnd + 1, 0, `${ROW_START}${cells[0]}`, ...cells.slice(1).map(cell => `${ROW_CONTINUATION}${cell}`))
   }
   if (!lines.join('\n').includes(`hallazgo-${record.findingId}-`)) {
     const start = lines.findIndex(line => line.startsWith('.. toctree::'))
