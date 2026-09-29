@@ -1,0 +1,18 @@
+  FALLA el pool sale 0 — esperado [0] obtenido [1]
+  FALLA resumen del pool — esperado [items=2 ok=2 fallidos=0] obtenido [items=2 ok=0 fallidos=2]
+  ok   un .json por ítem
+  FALLA el .json es la línea result, de éxito — esperado [result/success] obtenido []
+  FALLA con el texto del modelo — esperado [concepto: admisión] obtenido []
+  FALLA el stream abre con system/init — esperado [system/init] obtenido []
+  FALLA las herramientas del pool llegan acotadas — esperado [["Read"]] obtenido []
+  FALLA una línea assistant por petición, con su uso — esperado [2x500] obtenido []
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only" && uv sync
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only" && uv sync
+historial: sin ejecución previa de /tmp/tmp.xpJE5mxAya/thyrox-p en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO beta
+-- FALLIDO alfa
+items=2 ok=0 fallidos=2
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
