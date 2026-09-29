@@ -210,3 +210,15 @@ OK: todas las aserciones pasan
   ok   el árbol tiene al menos un entrypoint con import relativo
   ok   bin/cache_probe --help sale 0
   ok   bin/manifest --help sale 0
+  ok   0 envoltorios .py fallan al cargar en el arbol real
+  ok   el envoltorio ejecuta el interprete del proveedor
+  ok   y el ejercicio USA el interprete que se le pasa
+  ok   el arbol real declara al menos 14 entrypoints .ts
+  ok   todos los .ts del arbol llegan al plan de bin/
+  ok   ningun entrypoint TS sale de un node_modules
+  ok   los cuatro emit.ts del arbol real estan los cuatro
+  ok   ningun envoltorio del arbol real lleva 'exit 2'
+  ok   y el plan medido no esta vacio
+
+119 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+__BG_EXIT__=1
