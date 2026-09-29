@@ -5,6 +5,14 @@ import { logError } from '@thyrox/local-observability/logging'
 import { logEvent } from '@thyrox/local-observability'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import {
+  WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
+  parseWorkerToSupervisorMessage,
+  scheduleForceKill,
+  sendWorkerShutdownMessage,
+  writeWorkerBootstrap,
+} from './workerIpc.js'
+import { computeWorkerStatus, isWorkerBusy, type WorkerStatusSnapshot } from './workerRegistry.js'
 
 /**
  * Código de salida de un worker con fallo permanente (no reintentable).
@@ -47,6 +55,15 @@ interface WorkerState {
   consecutiveCrashes: number
   parked: boolean
   lastStartTime: number
+  /** Directorio servido por este worker — insumo de `Oe`/`computeWorkerStatus`. */
+  servedFolderDir?: string
+  /** Porte de `this.lastBusy`/`this.lastBusyAt` (`Ue`), fijados por el mensaje IPC `rc_busy`. */
+  lastBusy: boolean
+  lastBusyAt: number
+  /** Porte de `Ge.get(this)` (`Ue`), fijado por el mensaje IPC `rc_serving_tools`. */
+  servedToolsCount: number
+  /** Timer de SIGKILL de gracia armado por `stopWorkerProcess` — porte del `a` de `Ue.stop`. */
+  forceKillTimer: NodeJS.Timeout | null
 }
 
 /**
@@ -316,6 +333,10 @@ async function runSupervisor(args: string[]): Promise<void> {
       consecutiveCrashes: 0,
       parked: false,
       lastStartTime: 0,
+      lastBusy: false,
+      lastBusyAt: 0,
+      servedToolsCount: 0,
+      forceKillTimer: null,
     },
   ]
 
@@ -327,7 +348,7 @@ async function runSupervisor(args: string[]): Promise<void> {
     controller.abort()
     for (const w of workers) {
       if (w.process && !w.process.killed) {
-        w.process.kill('SIGTERM')
+        stopWorkerProcess(w)
       }
     }
   }
@@ -350,7 +371,10 @@ async function runSupervisor(args: string[]): Promise<void> {
     controller.signal.addEventListener('abort', () => resolve(), { once: true })
   })
 
-  // Wait for all workers to exit
+  // Wait for all workers to exit. `stopWorkerProcess` (invocado por
+  // `shutdown`) ya programó su propio SIGKILL de gracia
+  // (`WORKER_SHUTDOWN_SIGKILL_GRACE_MS`) — porte de `if(o) await o` en
+  // `Ue.stop`, sin un segundo kill independiente.
   await Promise.all(
     workers
       .filter(w => w.process && !w.process.killed)
@@ -362,13 +386,6 @@ async function runSupervisor(args: string[]): Promise<void> {
               return
             }
             w.process.on('exit', () => resolve())
-            // Force kill after grace period
-            setTimeout(() => {
-              if (w.process && !w.process.killed) {
-                w.process.kill('SIGKILL')
-              }
-              resolve()
-            }, 30_000)
           }),
       ),
   )
@@ -518,13 +535,50 @@ function spawnWorker(
 
   console.log(`[daemon] spawning worker '${worker.kind}'`)
 
+  worker.servedFolderDir = dir
+  worker.lastBusy = false
+  worker.servedToolsCount = 0
+
+  // `stdio[3]='ipc'` abre el canal de mensajes que `Ue.spawn` usa para
+  // `rc_busy`/`rc_serving_tools` (worker→supervisor) y `shutdown`
+  // (supervisor→worker); `stdin` deja de ser `'ignore'` porque el
+  // bootstrap viaja por ahí (`writeWorkerBootstrap`).
   const child = spawn(process.execPath, execArgs, {
     env,
     cwd: dir,
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
   })
 
   worker.process = child
+
+  // Porte de `n.stdin.on("error", ...)` + `n.stdin.write(...)`,
+  // `n.stdin.end()` en `Ue.spawn`. `initialAccessToken` queda fuera del
+  // payload: este supervisor no gestiona tokens de auth por worker (el
+  // worker resuelve el suyo con la lectura OAuth de su credencial,
+  // `workerRegistry.ts`), a diferencia de `this.authManager` en la
+  // referencia.
+  //
+  // pendiente: `this.authManager.attachWorker(n)` (propagación de
+  // refresh de token al worker vivo) no tiene equivalente aquí — no hay
+  // `authManager` en este supervisor.
+  if (child.stdin) {
+    writeWorkerBootstrap(child.stdin, { config: { dir, ...config } }, error => {
+      console.error(`[daemon] worker '${worker.kind}' stdin write error: ${error.message}`)
+    })
+  }
+
+  // Porte del `n.on("message", (u) => {...})` de `Ue.spawn`: valida y
+  // aplica `rc_busy`/`rc_serving_tools` vía `parseWorkerToSupervisorMessage`.
+  child.on('message', raw => {
+    const message = parseWorkerToSupervisorMessage(raw)
+    if (!message) return
+    if (message.type === 'rc_busy') {
+      worker.lastBusy = message.busy
+      worker.lastBusyAt = Date.now()
+    } else {
+      worker.servedToolsCount = message.count
+    }
+  })
 
   // Pipe worker stdout/stderr to supervisor with prefix
   child.stdout?.on('data', (data: Buffer) => {
@@ -542,6 +596,12 @@ function spawnWorker(
 
   child.on('exit', (code, sig) => {
     worker.process = null
+    worker.lastBusy = false
+    worker.servedToolsCount = 0
+    if (worker.forceKillTimer) {
+      clearTimeout(worker.forceKillTimer)
+      worker.forceKillTimer = null
+    }
 
     if (signal.aborted) {
       // Supervisor is shutting down, don't restart
@@ -608,4 +668,52 @@ function spawnWorker(
       }
     }, backoffMs)
   })
+}
+
+/**
+ * Apaga un worker de forma ordenada — porte exacto de `Ue.stop`
+ * (`chunk-92tvramn.js`, referencia 2.1.283, resuelto con
+ * `bin/binary symbol`): manda `shutdown` por IPC; si no es Windows o el
+ * envío falló, también manda SIGTERM; y programa SIGKILL de gracia
+ * (`WORKER_SHUTDOWN_SIGKILL_GRACE_MS`) sin importar cuál de las dos vías
+ * respondió — el `child.on('exit', ...)` de `spawnWorker` limpia el
+ * timer cuando el proceso ya salió, igual que el `clearTimeout(a)` tras
+ * `await o` en la referencia.
+ */
+export function stopWorkerProcess(worker: WorkerState, cause?: string): void {
+  if (worker.forceKillTimer) {
+    clearTimeout(worker.forceKillTimer)
+    worker.forceKillTimer = null
+  }
+  const child = worker.process
+  if (!child) return
+  const sent = sendWorkerShutdownMessage(child, cause)
+  if (process.platform !== 'win32' || !sent) {
+    child.kill('SIGTERM')
+  }
+  worker.forceKillTimer = scheduleForceKill(child, WORKER_SHUTDOWN_SIGKILL_GRACE_MS)
+}
+
+/**
+ * Snapshot de estado de un worker — envoltorio de `computeWorkerStatus`
+ * (porte de `Ue.get status()`) sobre los campos de `WorkerState`.
+ */
+export function getWorkerStatus(worker: WorkerState): WorkerStatusSnapshot | null {
+  return computeWorkerStatus({
+    pid: worker.process?.pid,
+    startedAt: worker.lastStartTime,
+    config: worker.servedFolderDir !== undefined ? { dir: worker.servedFolderDir } : undefined,
+    servedSessionsCount: worker.servedToolsCount,
+  })
+}
+
+/**
+ * Envoltorio de `isWorkerBusy` (porte de `Ue.isBusy()`) sobre los campos
+ * de `WorkerState`.
+ */
+export function isWorkerBusyNow(worker: WorkerState, now: number = Date.now()): boolean {
+  return isWorkerBusy(
+    { lastBusy: worker.lastBusy, lastBusyAt: worker.lastBusyAt, hasChild: worker.process !== null },
+    now,
+  )
 }

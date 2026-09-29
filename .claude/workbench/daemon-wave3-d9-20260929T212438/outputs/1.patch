@@ -1,0 +1,1283 @@
+diff --git a/src/packages/daemon/src/__tests__/dispatchDedupAndLowMem.test.ts b/src/packages/daemon/src/__tests__/dispatchDedupAndLowMem.test.ts
+new file mode 100644
+index 00000000..3d5cbd2e
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/dispatchDedupAndLowMem.test.ts
+@@ -0,0 +1,92 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  DUPLICATE_DISPATCH_MAX_ATTEMPTS,
++  DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT,
++  decideDuplicateDispatchOutcome,
++  retireNonPinnedSettledWorkers,
++  retirePinnedSettledWorkers,
++} from '../bgDaemon.js'
++
++// Porte de la porción de dedup-dispatch y de la eviction por baja memoria
++// de `Dt` (`chunk-92tvramn.js`, referencia 2.1.283), resuelta con
++// `bin/binary symbol`.
++
++function makeWorker(canRetire: boolean) {
++  const calls: number[] = []
++  return {
++    retireIfSettled: () => {
++      calls.push(calls.length)
++      return canRetire
++    },
++    calls,
++  }
++}
++
++describe('retireNonPinnedSettledWorkers', () => {
++  test('retira sólo los settled que NO están pinned', () => {
++    const workers = new Map([
++      ['a', makeWorker(true)],
++      ['b', makeWorker(true)],
++    ])
++    const retired = retireNonPinnedSettledWorkers(workers, new Set(['b']))
++    expect(retired).toEqual(['a'])
++    expect(workers.get('b')!.calls).toEqual([]) // pinned: ni se llama
++  })
++
++  test('no retira uno cuyo retireIfSettled devuelve false', () => {
++    const workers = new Map([['a', makeWorker(false)]])
++    expect(retireNonPinnedSettledWorkers(workers, new Set())).toEqual([])
++  })
++
++  test('un worker sin retireIfSettled se salta sin lanzar', () => {
++    const workers = new Map([['a', {}]])
++    expect(retireNonPinnedSettledWorkers(workers, new Set())).toEqual([])
++  })
++})
++
++describe('retirePinnedSettledWorkers', () => {
++  test('retira sólo los settled que SÍ están pinned', () => {
++    const workers = new Map([
++      ['a', makeWorker(true)],
++      ['b', makeWorker(true)],
++    ])
++    const retired = retirePinnedSettledWorkers(workers, new Set(['b']))
++    expect(retired).toEqual(['b'])
++    expect(workers.get('a')!.calls).toEqual([]) // no pinned: ni se llama
++  })
++})
++
++describe('decideDuplicateDispatchOutcome', () => {
++  test('settling y dentro del presupuesto: retry, sin escalar', () => {
++    expect(decideDuplicateDispatchOutcome({ isSettling: true, attempt: 0 })).toEqual({
++      action: 'retry',
++      escalateToSigkill: false,
++    })
++  })
++
++  test('settling en el intento de escalación exacto: retry Y escala a SIGKILL', () => {
++    expect(
++      decideDuplicateDispatchOutcome({
++        isSettling: true,
++        attempt: DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT,
++      }),
++    ).toEqual({ action: 'retry', escalateToSigkill: true })
++  })
++
++  test('settling y presupuesto agotado: dropped', () => {
++    expect(
++      decideDuplicateDispatchOutcome({
++        isSettling: true,
++        attempt: DUPLICATE_DISPATCH_MAX_ATTEMPTS,
++      }),
++    ).toEqual({ action: 'dropped', escalateToSigkill: false })
++  })
++
++  test('no settling (handle genuinamente vivo): dup-live sin importar el intento', () => {
++    expect(decideDuplicateDispatchOutcome({ isSettling: false, attempt: 0 })).toEqual({
++      action: 'dup-live',
++      escalateToSigkill: false,
++    })
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/workerIpc.test.ts b/src/packages/daemon/src/__tests__/workerIpc.test.ts
+new file mode 100644
+index 00000000..2f362fd7
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerIpc.test.ts
+@@ -0,0 +1,180 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  MAX_SERVED_TOOLS_COUNT,
++  WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
++  buildWorkerShutdownMessage,
++  encodeWorkerBootstrap,
++  parseWorkerToSupervisorMessage,
++  scheduleForceKill,
++  sendWorkerShutdownMessage,
++  writeWorkerBootstrap,
++} from '../workerIpc.js'
++
++// Porte de las piezas IPC de `class Ue` (`chunk-92tvramn.js`, referencia
++// 2.1.283), resueltas con `bin/binary symbol`.
++
++describe('encodeWorkerBootstrap', () => {
++  test('serializa config+token y termina con salto de línea, como `b(...)+"\\n"`', () => {
++    expect(encodeWorkerBootstrap({ config: { dir: '/x' }, initialAccessToken: 'tok' })).toBe(
++      '{"config":{"dir":"/x"},"initialAccessToken":"tok"}\n',
++    )
++  })
++
++  test('initialAccessToken ausente no aparece en el JSON (undefined se omite)', () => {
++    expect(encodeWorkerBootstrap({ config: null })).toBe('{"config":null}\n')
++  })
++})
++
++describe('writeWorkerBootstrap', () => {
++  test('escribe el bootstrap codificado y cierra stdin', () => {
++    const writes: string[] = []
++    let ended = false
++    const stdin = {
++      write: (chunk: string) => {
++        writes.push(chunk)
++        return true
++      },
++      end: () => {
++        ended = true
++      },
++      on: () => stdin,
++    }
++    writeWorkerBootstrap(stdin, { config: { a: 1 } })
++    expect(writes).toEqual(['{"config":{"a":1}}\n'])
++    expect(ended).toBe(true)
++  })
++
++  test('registra el listener de error de stdin ANTES de escribir, si se provee', () => {
++    const order: string[] = []
++    const stdin = {
++      write: () => {
++        order.push('write')
++        return true
++      },
++      end: () => order.push('end'),
++      on: () => order.push('on-error'),
++    }
++    writeWorkerBootstrap(stdin, { config: null }, () => {})
++    expect(order).toEqual(['on-error', 'write', 'end'])
++  })
++})
++
++describe('parseWorkerToSupervisorMessage — rc_busy', () => {
++  test('acepta {type:"rc_busy", busy:boolean}', () => {
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_busy', busy: true })).toEqual({
++      type: 'rc_busy',
++      busy: true,
++    })
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_busy', busy: false })).toEqual({
++      type: 'rc_busy',
++      busy: false,
++    })
++  })
++
++  test('rehúsa si busy no es boolean', () => {
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_busy', busy: 'yes' })).toBeUndefined()
++  })
++
++  test('rehúsa si falta la clave busy', () => {
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_busy' })).toBeUndefined()
++  })
++})
++
++describe('parseWorkerToSupervisorMessage — rc_serving_tools', () => {
++  test('acepta un entero entre 0 y MAX_SERVED_TOOLS_COUNT', () => {
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_serving_tools', count: 0 })).toEqual({
++      type: 'rc_serving_tools',
++      count: 0,
++    })
++    expect(
++      parseWorkerToSupervisorMessage({ type: 'rc_serving_tools', count: MAX_SERVED_TOOLS_COUNT }),
++    ).toEqual({ type: 'rc_serving_tools', count: MAX_SERVED_TOOLS_COUNT })
++  })
++
++  test('rehúsa count por encima del tope', () => {
++    expect(
++      parseWorkerToSupervisorMessage({
++        type: 'rc_serving_tools',
++        count: MAX_SERVED_TOOLS_COUNT + 1,
++      }),
++    ).toBeUndefined()
++  })
++
++  test('rehúsa count negativo o no entero', () => {
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_serving_tools', count: -1 })).toBeUndefined()
++    expect(parseWorkerToSupervisorMessage({ type: 'rc_serving_tools', count: 1.5 })).toBeUndefined()
++  })
++})
++
++describe('parseWorkerToSupervisorMessage — formas rechazadas', () => {
++  test('null, no-objeto y type desconocido devuelven undefined', () => {
++    expect(parseWorkerToSupervisorMessage(null)).toBeUndefined()
++    expect(parseWorkerToSupervisorMessage('rc_busy')).toBeUndefined()
++    expect(parseWorkerToSupervisorMessage({ type: 'unknown' })).toBeUndefined()
++    expect(parseWorkerToSupervisorMessage({})).toBeUndefined()
++  })
++})
++
++describe('buildWorkerShutdownMessage', () => {
++  test('sin causa, la clave cause está AUSENTE (no undefined)', () => {
++    const message = buildWorkerShutdownMessage()
++    expect(message).toEqual({ type: 'shutdown' })
++    expect('cause' in message).toBe(false)
++  })
++
++  test('con causa, se incluye tal cual', () => {
++    expect(buildWorkerShutdownMessage('reload')).toEqual({ type: 'shutdown', cause: 'reload' })
++  })
++})
++
++describe('sendWorkerShutdownMessage', () => {
++  test('manda el mensaje por send() y devuelve su resultado', () => {
++    const sent: unknown[] = []
++    const child = { send: (m: unknown) => (sent.push(m), true) }
++    expect(sendWorkerShutdownMessage(child, 'reload')).toBe(true)
++    expect(sent).toEqual([{ type: 'shutdown', cause: 'reload' }])
++  })
++
++  test('sin send(), degrada a false en silencio', () => {
++    expect(sendWorkerShutdownMessage({})).toBe(false)
++  })
++
++  test('si send() lanza, degrada a false en silencio (catch{})', () => {
++    const child = {
++      send: () => {
++        throw new Error('epipe')
++      },
++    }
++    expect(sendWorkerShutdownMessage(child)).toBe(false)
++  })
++})
++
++describe('scheduleForceKill', () => {
++  test('llama a kill("SIGKILL") tras el plazo de gracia', async () => {
++    const calls: string[] = []
++    const target = { kill: (signal: string) => calls.push(signal) }
++    scheduleForceKill(target, 10)
++    expect(calls).toEqual([])
++    await new Promise(resolve => setTimeout(resolve, 30))
++    expect(calls).toEqual(['SIGKILL'])
++  })
++
++  test('el default es WORKER_SHUTDOWN_SIGKILL_GRACE_MS=5000', () => {
++    const target = { kill: () => {} }
++    const timer = scheduleForceKill(target)
++    clearTimeout(timer)
++    // @ts-expect-error -- acceso a un detalle interno de Timeout sólo para el control de anulación
++    const delay = timer._idleTimeout as number
++    expect(delay).toBe(WORKER_SHUTDOWN_SIGKILL_GRACE_MS)
++  })
++
++  test('el timer se puede cancelar con clearTimeout antes de disparar', async () => {
++    const calls: string[] = []
++    const target = { kill: (signal: string) => calls.push(signal) }
++    const timer = scheduleForceKill(target, 10)
++    clearTimeout(timer)
++    await new Promise(resolve => setTimeout(resolve, 30))
++    expect(calls).toEqual([])
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/workerRegistryStatus.test.ts b/src/packages/daemon/src/__tests__/workerRegistryStatus.test.ts
+new file mode 100644
+index 00000000..7464fe89
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerRegistryStatus.test.ts
+@@ -0,0 +1,133 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  WORKER_BUSY_STALE_MS,
++  computeWorkerStatus,
++  getPinnedWorkerShorts,
++  isWorkerBusy,
++  safeExtractServedFolderDir,
++} from '../workerRegistry.js'
++
++// Porte de `Oe`, `Qe` y `Ue.get status()`/`isBusy()` (`chunk-92tvramn.js`,
++// referencia 2.1.283), resueltos con `bin/binary symbol`.
++
++describe('safeExtractServedFolderDir', () => {
++  test('extrae dir cuando el objeto lo trae como string', () => {
++    expect(safeExtractServedFolderDir({ dir: '/repo' })).toBe('/repo')
++  })
++
++  test('devuelve undefined si dir no es string', () => {
++    expect(safeExtractServedFolderDir({ dir: 42 })).toBeUndefined()
++  })
++
++  test('devuelve undefined si no hay clave dir', () => {
++    expect(safeExtractServedFolderDir({ other: 1 })).toBeUndefined()
++  })
++
++  test('devuelve undefined para null o no-objeto', () => {
++    expect(safeExtractServedFolderDir(null)).toBeUndefined()
++    expect(safeExtractServedFolderDir('x')).toBeUndefined()
++    expect(safeExtractServedFolderDir(42)).toBeUndefined()
++  })
++})
++
++describe('getPinnedWorkerShorts', () => {
++  test('con loader exitoso, devuelve el set que resuelve', async () => {
++    const result = await getPinnedWorkerShorts(async () => new Set(['abc123']))
++    expect(result).toEqual(new Set(['abc123']))
++  })
++
++  test('sin loader, el default no toca disco y devuelve set vacío', async () => {
++    const result = await getPinnedWorkerShorts()
++    expect(result).toEqual(new Set())
++  })
++
++  test('si el loader falla, registra el error con logErrorFn y degrada a set vacío', async () => {
++    const errors: unknown[] = []
++    const boom = new Error('pinned store unreadable')
++    const result = await getPinnedWorkerShorts(
++      async () => {
++        throw boom
++      },
++      { logErrorFn: e => errors.push(e) },
++    )
++    expect(result).toEqual(new Set())
++    expect(errors).toEqual([boom])
++  })
++})
++
++describe('isWorkerBusy', () => {
++  test('ocupado cuando lastBusy=true, hay child y lastBusyAt es reciente', () => {
++    const now = 1_000_000
++    expect(
++      isWorkerBusy({ lastBusy: true, lastBusyAt: now - 1000, hasChild: true }, now),
++    ).toBe(true)
++  })
++
++  test('no ocupado si lastBusy=false', () => {
++    const now = 1_000_000
++    expect(isWorkerBusy({ lastBusy: false, lastBusyAt: now, hasChild: true }, now)).toBe(false)
++  })
++
++  test('no ocupado sin child vivo', () => {
++    const now = 1_000_000
++    expect(isWorkerBusy({ lastBusy: true, lastBusyAt: now, hasChild: false }, now)).toBe(false)
++  })
++
++  test('no ocupado si lastBusyAt es más viejo que WORKER_BUSY_STALE_MS', () => {
++    const now = 1_000_000
++    expect(
++      isWorkerBusy(
++        { lastBusy: true, lastBusyAt: now - WORKER_BUSY_STALE_MS, hasChild: true },
++        now,
++      ),
++    ).toBe(false)
++    expect(
++      isWorkerBusy(
++        { lastBusy: true, lastBusyAt: now - (WORKER_BUSY_STALE_MS - 1), hasChild: true },
++        now,
++      ),
++    ).toBe(true)
++  })
++})
++
++describe('computeWorkerStatus', () => {
++  test('null cuando no hay pid (worker no corriendo)', () => {
++    expect(
++      computeWorkerStatus({ pid: undefined, startedAt: 0, config: {}, servedSessionsCount: 0 }),
++    ).toBeNull()
++  })
++
++  test('sin servedFolder cuando servedSessionsCount es 0', () => {
++    expect(
++      computeWorkerStatus({
++        pid: 123,
++        startedAt: 456,
++        config: { dir: '/repo' },
++        servedSessionsCount: 0,
++      }),
++    ).toEqual({ pid: 123, startedAt: 456 })
++  })
++
++  test('sin servedFolder cuando la config no trae dir', () => {
++    expect(
++      computeWorkerStatus({
++        pid: 123,
++        startedAt: 456,
++        config: {},
++        servedSessionsCount: 3,
++      }),
++    ).toEqual({ pid: 123, startedAt: 456 })
++  })
++
++  test('con servedFolder cuando hay sesiones servidas Y dir válido', () => {
++    expect(
++      computeWorkerStatus({
++        pid: 123,
++        startedAt: 456,
++        config: { dir: '/repo' },
++        servedSessionsCount: 3,
++      }),
++    ).toEqual({ pid: 123, startedAt: 456, servedFolder: { dir: '/repo', sessions: 3 } })
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/workerSupervision.test.ts b/src/packages/daemon/src/__tests__/workerSupervision.test.ts
+new file mode 100644
+index 00000000..4b5d8a89
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerSupervision.test.ts
+@@ -0,0 +1,148 @@
++import type { ChildProcess } from 'node:child_process'
++import { EventEmitter } from 'node:events'
++
++import { describe, expect, test } from 'bun:test'
++
++import { getWorkerStatus, isWorkerBusyNow, stopWorkerProcess } from '../main.js'
++
++// Porte de `Ue.stop`/`Ue.get status()`/`Ue.isBusy()` (`chunk-92tvramn.js`,
++// referencia 2.1.283), resueltos con `bin/binary symbol`, sobre los campos
++// de `WorkerState` (`main.ts`).
++
++function makeWorkerState(overrides: Partial<Record<string, unknown>> = {}) {
++  return {
++    kind: 'remoteControl',
++    process: null,
++    consecutiveCrashes: 0,
++    parked: false,
++    lastStartTime: 0,
++    servedFolderDir: undefined,
++    lastBusy: false,
++    lastBusyAt: 0,
++    servedToolsCount: 0,
++    forceKillTimer: null,
++    ...overrides,
++    // eslint-disable-next-line @typescript-eslint/no-explicit-any
++  } as any
++}
++
++function makeFakeChild(): {
++  child: ChildProcess
++  sent: unknown[]
++  killed: string[]
++  emitter: EventEmitter
++} {
++  const sent: unknown[] = []
++  const killed: string[] = []
++  const emitter = new EventEmitter() as unknown as ChildProcess
++  Object.assign(emitter, {
++    pid: 4242,
++    send: (message: unknown) => {
++      sent.push(message)
++      return true
++    },
++    kill: (signal: string) => {
++      killed.push(signal)
++      return true
++    },
++  })
++  return { child: emitter, sent, killed, emitter: emitter as unknown as EventEmitter }
++}
++
++describe('stopWorkerProcess', () => {
++  test('sin proceso vivo, no hace nada', () => {
++    const worker = makeWorkerState()
++    expect(() => stopWorkerProcess(worker)).not.toThrow()
++  })
++
++  test('manda shutdown por IPC y, fuera de windows, también SIGTERM', () => {
++    const originalPlatform = process.platform
++    Object.defineProperty(process, 'platform', { value: 'linux' })
++    try {
++      const { child, sent, killed } = makeFakeChild()
++      const worker = makeWorkerState({ process: child })
++      stopWorkerProcess(worker, 'reload')
++      expect(sent).toEqual([{ type: 'shutdown', cause: 'reload' }])
++      expect(killed).toEqual(['SIGTERM'])
++    } finally {
++      Object.defineProperty(process, 'platform', { value: originalPlatform })
++    }
++  })
++
++  test('en windows, si el envío IPC tuvo éxito, NO manda SIGTERM', () => {
++    const originalPlatform = process.platform
++    Object.defineProperty(process, 'platform', { value: 'win32' })
++    try {
++      const { child, sent, killed } = makeFakeChild()
++      const worker = makeWorkerState({ process: child })
++      stopWorkerProcess(worker)
++      expect(sent).toEqual([{ type: 'shutdown' }])
++      expect(killed).toEqual([])
++    } finally {
++      Object.defineProperty(process, 'platform', { value: originalPlatform })
++    }
++  })
++
++  test('programa un forceKillTimer de gracia y lo deja en worker.forceKillTimer', () => {
++    const { child } = makeFakeChild()
++    const worker = makeWorkerState({ process: child })
++    stopWorkerProcess(worker)
++    expect(worker.forceKillTimer).not.toBeNull()
++    clearTimeout(worker.forceKillTimer as NodeJS.Timeout)
++  })
++
++  test('un forceKillTimer previo se cancela de verdad, no sólo se reemplaza la referencia', async () => {
++    const { child } = makeFakeChild()
++    let staleFired = false
++    const staleTimer = setTimeout(() => {
++      staleFired = true
++    }, 10)
++    const worker = makeWorkerState({ process: child, forceKillTimer: staleTimer })
++    stopWorkerProcess(worker)
++    await new Promise(resolve => setTimeout(resolve, 30))
++    expect(staleFired).toBe(false)
++    clearTimeout(worker.forceKillTimer as NodeJS.Timeout)
++  })
++})
++
++describe('getWorkerStatus', () => {
++  test('null sin proceso vivo', () => {
++    expect(getWorkerStatus(makeWorkerState())).toBeNull()
++  })
++
++  test('pid+startedAt sin servedFolder cuando servedToolsCount es 0', () => {
++    const { child } = makeFakeChild()
++    const worker = makeWorkerState({ process: child, lastStartTime: 999, servedFolderDir: '/repo' })
++    expect(getWorkerStatus(worker)).toEqual({ pid: 4242, startedAt: 999 })
++  })
++
++  test('con servedFolder cuando hay sesiones servidas y dir', () => {
++    const { child } = makeFakeChild()
++    const worker = makeWorkerState({
++      process: child,
++      lastStartTime: 999,
++      servedFolderDir: '/repo',
++      servedToolsCount: 2,
++    })
++    expect(getWorkerStatus(worker)).toEqual({
++      pid: 4242,
++      startedAt: 999,
++      servedFolder: { dir: '/repo', sessions: 2 },
++    })
++  })
++})
++
++describe('isWorkerBusyNow', () => {
++  test('ocupado cuando lastBusy=true, hay proceso vivo y lastBusyAt es reciente', () => {
++    const { child } = makeFakeChild()
++    const now = 1_000_000
++    const worker = makeWorkerState({ process: child, lastBusy: true, lastBusyAt: now - 1000 })
++    expect(isWorkerBusyNow(worker, now)).toBe(true)
++  })
++
++  test('no ocupado sin proceso vivo, aunque lastBusy quedara en true', () => {
++    const now = 1_000_000
++    const worker = makeWorkerState({ process: null, lastBusy: true, lastBusyAt: now })
++    expect(isWorkerBusyNow(worker, now)).toBe(false)
++  })
++})
+diff --git a/src/packages/daemon/src/bgDaemon.ts b/src/packages/daemon/src/bgDaemon.ts
+index 911c0f55..157af1b6 100644
+--- a/src/packages/daemon/src/bgDaemon.ts
++++ b/src/packages/daemon/src/bgDaemon.ts
+@@ -61,6 +61,7 @@ import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
+ import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
+ import type { ProtoOp } from './socketProto.js'
+ import { WorkerVm } from './workerVm.js'
++import { getPinnedWorkerShorts } from './workerRegistry.js'
+ 
+ /**
+  * Arma un valor con forma de Socket no-op para rutas RPC de dispara-y-
+@@ -125,6 +126,99 @@ function parseArgs(args: readonly string[]): ParsedArgs {
+   return out
+ }
+ 
++/**
++ * Superficie mínima de retiro que la eviction por baja memoria necesita.
++ * `WorkerVm` todavía no implementa `retireIfSettled` (porte pendiente de
++ * `Ze`/`workerVm.ts`, fuera de esta tarea) — el duck-typing existente en
++ * el manejador `dispatch` ya asumía esta forma opcional; estas dos
++ * funciones sólo separan la decisión de a QUIÉN llamar (pinned o no).
++ */
++export interface RetirableWorker {
++  retireIfSettled?: () => boolean
++}
++
++/**
++ * Retira los workers settled NO pinned. Porte de la porción de nivel 1
++ * de `Ke` y de la llamada a `Qe` dentro de `ue` (`chunk-92tvramn.js`,
++ * función `Dt`, referencia 2.1.283, resuelta con `bin/binary symbol`):
++ * ambas pasan el set de shorts pinned a `retireIfSettled` para que los
++ * pinned queden exentos.
++ */
++export function retireNonPinnedSettledWorkers<W extends RetirableWorker>(
++  workers: ReadonlyMap<string, W>,
++  pinnedShorts: ReadonlySet<string>,
++): string[] {
++  const retiredShorts: string[] = []
++  for (const [short, worker] of workers) {
++    if (pinnedShorts.has(short)) continue
++    if (typeof worker.retireIfSettled === 'function' && worker.retireIfSettled()) {
++      retiredShorts.push(short)
++    }
++  }
++  return retiredShorts
++}
++
++/**
++ * Último recurso: retira también los workers pinned. Porte del nivel 3
++ * de `Ke` (`chunk-92tvramn.js`, `Dt`): `` r("bg: low memory persists
++ * after shedding non-pinned — retiring pinned settled workers as a last
++ * resort"), i("tengu_bg_retire_pinned_low_mem",{}) `` — el evento y el
++ * log los emite el llamador, que es quien sabe si de verdad hace falta
++ * (memoria aún baja tras el nivel 1).
++ */
++export function retirePinnedSettledWorkers<W extends RetirableWorker>(
++  workers: ReadonlyMap<string, W>,
++  pinnedShorts: ReadonlySet<string>,
++): string[] {
++  const retiredShorts: string[] = []
++  for (const [short, worker] of workers) {
++    if (!pinnedShorts.has(short)) continue
++    if (typeof worker.retireIfSettled === 'function' && worker.retireIfSettled()) {
++      retiredShorts.push(short)
++    }
++  }
++  return retiredShorts
++}
++
++/** Presupuesto de reintentos del dedup de dispatch — `T<30` en `ue`. */
++export const DUPLICATE_DISPATCH_MAX_ATTEMPTS = 30
++
++/** Intento en el que se escala a SIGKILL — `T===15` en `ue`. */
++export const DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT = 15
++
++export interface DuplicateDispatchDecision {
++  action: 'retry' | 'dropped' | 'dup-live'
++  escalateToSigkill: boolean
++}
++
++/**
++ * Decide qué hacer ante un dispatch para un `short` ya presente en
++ * `state.workers`. Porte exacto de la rama de dedup de `ue`
++ * (`chunk-92tvramn.js`, función `Dt`, referencia 2.1.283, resuelta con
++ * `bin/binary symbol`): `` if((fe.isKilling||fe.isRetiring||fe.record.
++ * outcome)&&T<30){ if(T===15&&(...)) escalate; return retry } let
++ * s=fe.isKilling||fe.isRetiring||fe.record.outcome; if(s) return
++ * "dropped"; return "dup-live" ``.
++ */
++export function decideDuplicateDispatchOutcome(params: {
++  isSettling: boolean
++  attempt: number
++  maxAttempts?: number
++  escalationAttempt?: number
++}): DuplicateDispatchDecision {
++  const {
++    isSettling,
++    attempt,
++    maxAttempts = DUPLICATE_DISPATCH_MAX_ATTEMPTS,
++    escalationAttempt = DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT,
++  } = params
++  if (isSettling && attempt < maxAttempts) {
++    return { action: 'retry', escalateToSigkill: attempt === escalationAttempt }
++  }
++  if (isSettling) return { action: 'dropped', escalateToSigkill: false }
++  return { action: 'dup-live', escalateToSigkill: false }
++}
++
+ /**
+  * Arranca el bg daemon. Se resuelve una vez que el daemon se apagó
+  * (señal u op de shutdown recibido). Devuelve el código de salida del
+@@ -405,7 +499,28 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+         logEventFn('tengu_bg_dispatch_rejected', { short, reason: 'missing_nonce' })
+         return err('EBADREQ', 'dispatch: missing nonce')
+       }
+-      if (state.workers.has(short)) {
++      // Dedup de dispatch — porte de la rama de `ue` que reintenta hasta
++      // `DUPLICATE_DISPATCH_MAX_ATTEMPTS` veces (100ms de espera cada
++      // una) mientras el handle existente está "settling" (killing,
++      // retiring, o ya no `running`), escalando a SIGKILL en el intento
++      // `DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT`.
++      for (let attempt = 0; state.workers.has(short); attempt++) {
++        const existing = state.workers.get(short)!
++        const isSettling =
++          existing.isKilling() || existing.isRetiring() || existing.getRecord().status !== 'running'
++        const decision = decideDuplicateDispatchOutcome({ isSettling, attempt })
++        if (decision.escalateToSigkill) {
++          logEventFn('tengu_bg_dispatch_sigkill_escalate', { short })
++          existing.kill('reap')
++        }
++        if (decision.action === 'retry') {
++          await new Promise(resolve => setTimeout(resolve, 100))
++          continue
++        }
++        if (decision.action === 'dropped') {
++          logEventFn('tengu_bg_dispatch_rejected', { short, reason: 'dup_retry_exhausted' })
++          return err('EBUSY', `worker ${short} dropped — retry budget exhausted`, { short })
++        }
+         logEventFn('tengu_bg_dispatch_rejected', { short, reason: 'already_running' })
+         return err('EALIVE', `worker ${short} already running`, { short })
+       }
+@@ -442,19 +557,24 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+           const thresholdBytes = thresholdMb * 1024 * 1024
+           const freeBytes = freemem()
+           if (freeBytes < thresholdBytes) {
+-            let retired = 0
+-            for (const [s, w] of state.workers.entries()) {
+-              const retireIfSettled = (
+-                w as { retireIfSettled?: () => boolean }
+-              ).retireIfSettled
+-              if (typeof retireIfSettled === 'function') {
+-                if (retireIfSettled.call(w)) {
+-                  retired++
+-                  state.workers.delete(s)
+-                  state.pending.delete(s)
+-                }
+-              }
++            const pinnedShorts = await getPinnedWorkerShorts()
++            // `WorkerVm` todavía no implementa `retireIfSettled` (`Ze`,
++            // fuera de esta tarea) — el cast reproduce el mismo
++            // duck-typing que ya usaba este bloque antes del porte.
++            const retirableWorkers = state.workers as unknown as ReadonlyMap<string, RetirableWorker>
++            let retiredShorts = retireNonPinnedSettledWorkers(retirableWorkers, pinnedShorts)
++            // Último recurso — porte del nivel 3 de `Ke`: si ningún
++            // worker no-pinned cedió y la memoria libre sigue baja, se
++            // retiran también los pinned.
++            if (retiredShorts.length === 0 && pinnedShorts.size > 0 && freemem() < thresholdBytes) {
++              logEventFn('tengu_bg_retire_pinned_low_mem', { handles: String(state.workers.size) })
++              retiredShorts = retirePinnedSettledWorkers(retirableWorkers, pinnedShorts)
++            }
++            for (const s of retiredShorts) {
++              state.workers.delete(s)
++              state.pending.delete(s)
+             }
++            const retired = retiredShorts.length
+             logEventFn('tengu_bg_dispatch_low_mem', {
+               free_mb: String(Math.floor(freeBytes / (1024 * 1024))),
+               handles: String(state.workers.size),
+diff --git a/src/packages/daemon/src/main.ts b/src/packages/daemon/src/main.ts
+index e66dfc45..4bbfbae9 100644
+--- a/src/packages/daemon/src/main.ts
++++ b/src/packages/daemon/src/main.ts
+@@ -5,6 +5,14 @@ import { logError } from '@thyrox/local-observability/logging'
+ import { logEvent } from '@thyrox/local-observability'
+ import { PRODUCT_NAME } from '@thyrox/config/product'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++import {
++  WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
++  parseWorkerToSupervisorMessage,
++  scheduleForceKill,
++  sendWorkerShutdownMessage,
++  writeWorkerBootstrap,
++} from './workerIpc.js'
++import { computeWorkerStatus, isWorkerBusy, type WorkerStatusSnapshot } from './workerRegistry.js'
+ 
+ /**
+  * Código de salida de un worker con fallo permanente (no reintentable).
+@@ -47,6 +55,15 @@ interface WorkerState {
+   consecutiveCrashes: number
+   parked: boolean
+   lastStartTime: number
++  /** Directorio servido por este worker — insumo de `Oe`/`computeWorkerStatus`. */
++  servedFolderDir?: string
++  /** Porte de `this.lastBusy`/`this.lastBusyAt` (`Ue`), fijados por el mensaje IPC `rc_busy`. */
++  lastBusy: boolean
++  lastBusyAt: number
++  /** Porte de `Ge.get(this)` (`Ue`), fijado por el mensaje IPC `rc_serving_tools`. */
++  servedToolsCount: number
++  /** Timer de SIGKILL de gracia armado por `stopWorkerProcess` — porte del `a` de `Ue.stop`. */
++  forceKillTimer: NodeJS.Timeout | null
+ }
+ 
+ /**
+@@ -316,6 +333,10 @@ async function runSupervisor(args: string[]): Promise<void> {
+       consecutiveCrashes: 0,
+       parked: false,
+       lastStartTime: 0,
++      lastBusy: false,
++      lastBusyAt: 0,
++      servedToolsCount: 0,
++      forceKillTimer: null,
+     },
+   ]
+ 
+@@ -327,7 +348,7 @@ async function runSupervisor(args: string[]): Promise<void> {
+     controller.abort()
+     for (const w of workers) {
+       if (w.process && !w.process.killed) {
+-        w.process.kill('SIGTERM')
++        stopWorkerProcess(w)
+       }
+     }
+   }
+@@ -350,7 +371,10 @@ async function runSupervisor(args: string[]): Promise<void> {
+     controller.signal.addEventListener('abort', () => resolve(), { once: true })
+   })
+ 
+-  // Wait for all workers to exit
++  // Wait for all workers to exit. `stopWorkerProcess` (invocado por
++  // `shutdown`) ya programó su propio SIGKILL de gracia
++  // (`WORKER_SHUTDOWN_SIGKILL_GRACE_MS`) — porte de `if(o) await o` en
++  // `Ue.stop`, sin un segundo kill independiente.
+   await Promise.all(
+     workers
+       .filter(w => w.process && !w.process.killed)
+@@ -362,13 +386,6 @@ async function runSupervisor(args: string[]): Promise<void> {
+               return
+             }
+             w.process.on('exit', () => resolve())
+-            // Force kill after grace period
+-            setTimeout(() => {
+-              if (w.process && !w.process.killed) {
+-                w.process.kill('SIGKILL')
+-              }
+-              resolve()
+-            }, 30_000)
+           }),
+       ),
+   )
+@@ -518,14 +535,51 @@ function spawnWorker(
+ 
+   console.log(`[daemon] spawning worker '${worker.kind}'`)
+ 
++  worker.servedFolderDir = dir
++  worker.lastBusy = false
++  worker.servedToolsCount = 0
++
++  // `stdio[3]='ipc'` abre el canal de mensajes que `Ue.spawn` usa para
++  // `rc_busy`/`rc_serving_tools` (worker→supervisor) y `shutdown`
++  // (supervisor→worker); `stdin` deja de ser `'ignore'` porque el
++  // bootstrap viaja por ahí (`writeWorkerBootstrap`).
+   const child = spawn(process.execPath, execArgs, {
+     env,
+     cwd: dir,
+-    stdio: ['ignore', 'pipe', 'pipe'],
++    stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+   })
+ 
+   worker.process = child
+ 
++  // Porte de `n.stdin.on("error", ...)` + `n.stdin.write(...)`,
++  // `n.stdin.end()` en `Ue.spawn`. `initialAccessToken` queda fuera del
++  // payload: este supervisor no gestiona tokens de auth por worker (el
++  // worker resuelve el suyo vía `getClaudeAIOAuthTokens`,
++  // `workerRegistry.ts`), a diferencia de `this.authManager` en la
++  // referencia.
++  //
++  // pendiente: `this.authManager.attachWorker(n)` (propagación de
++  // refresh de token al worker vivo) no tiene equivalente aquí — no hay
++  // `authManager` en este supervisor.
++  if (child.stdin) {
++    writeWorkerBootstrap(child.stdin, { config: { dir, ...config } }, error => {
++      console.error(`[daemon] worker '${worker.kind}' stdin write error: ${error.message}`)
++    })
++  }
++
++  // Porte del `n.on("message", (u) => {...})` de `Ue.spawn`: valida y
++  // aplica `rc_busy`/`rc_serving_tools` vía `parseWorkerToSupervisorMessage`.
++  child.on('message', raw => {
++    const message = parseWorkerToSupervisorMessage(raw)
++    if (!message) return
++    if (message.type === 'rc_busy') {
++      worker.lastBusy = message.busy
++      worker.lastBusyAt = Date.now()
++    } else {
++      worker.servedToolsCount = message.count
++    }
++  })
++
+   // Pipe worker stdout/stderr to supervisor with prefix
+   child.stdout?.on('data', (data: Buffer) => {
+     const lines = data.toString().trimEnd().split('\n')
+@@ -542,6 +596,12 @@ function spawnWorker(
+ 
+   child.on('exit', (code, sig) => {
+     worker.process = null
++    worker.lastBusy = false
++    worker.servedToolsCount = 0
++    if (worker.forceKillTimer) {
++      clearTimeout(worker.forceKillTimer)
++      worker.forceKillTimer = null
++    }
+ 
+     if (signal.aborted) {
+       // Supervisor is shutting down, don't restart
+@@ -609,3 +669,51 @@ function spawnWorker(
+     }, backoffMs)
+   })
+ }
++
++/**
++ * Apaga un worker de forma ordenada — porte exacto de `Ue.stop`
++ * (`chunk-92tvramn.js`, referencia 2.1.283, resuelto con
++ * `bin/binary symbol`): manda `shutdown` por IPC; si no es Windows o el
++ * envío falló, también manda SIGTERM; y programa SIGKILL de gracia
++ * (`WORKER_SHUTDOWN_SIGKILL_GRACE_MS`) sin importar cuál de las dos vías
++ * respondió — el `child.on('exit', ...)` de `spawnWorker` limpia el
++ * timer cuando el proceso ya salió, igual que el `clearTimeout(a)` tras
++ * `await o` en la referencia.
++ */
++export function stopWorkerProcess(worker: WorkerState, cause?: string): void {
++  if (worker.forceKillTimer) {
++    clearTimeout(worker.forceKillTimer)
++    worker.forceKillTimer = null
++  }
++  const child = worker.process
++  if (!child) return
++  const sent = sendWorkerShutdownMessage(child, cause)
++  if (process.platform !== 'win32' || !sent) {
++    child.kill('SIGTERM')
++  }
++  worker.forceKillTimer = scheduleForceKill(child, WORKER_SHUTDOWN_SIGKILL_GRACE_MS)
++}
++
++/**
++ * Snapshot de estado de un worker — envoltorio de `computeWorkerStatus`
++ * (porte de `Ue.get status()`) sobre los campos de `WorkerState`.
++ */
++export function getWorkerStatus(worker: WorkerState): WorkerStatusSnapshot | null {
++  return computeWorkerStatus({
++    pid: worker.process?.pid,
++    startedAt: worker.lastStartTime,
++    config: worker.servedFolderDir !== undefined ? { dir: worker.servedFolderDir } : undefined,
++    servedSessionsCount: worker.servedToolsCount,
++  })
++}
++
++/**
++ * Envoltorio de `isWorkerBusy` (porte de `Ue.isBusy()`) sobre los campos
++ * de `WorkerState`.
++ */
++export function isWorkerBusyNow(worker: WorkerState, now: number = Date.now()): boolean {
++  return isWorkerBusy(
++    { lastBusy: worker.lastBusy, lastBusyAt: worker.lastBusyAt, hasChild: worker.process !== null },
++    now,
++  )
++}
+diff --git a/src/packages/daemon/src/workerIpc.ts b/src/packages/daemon/src/workerIpc.ts
+new file mode 100644
+index 00000000..1626638f
+--- /dev/null
++++ b/src/packages/daemon/src/workerIpc.ts
+@@ -0,0 +1,180 @@
++/**
++ * Contrato IPC entre el supervisor (`main.ts`) y el proceso worker que
++ * arranca (`workerRegistry.ts`, `claude --daemon-worker=<kind>`).
++ *
++ * Puerto de las piezas de IPC de `class Ue` (`chunk-92tvramn.js`,
++ * referencia 2.1.283, resueltas con `bin/binary symbol`):
++ *
++ *   - bootstrap por stdin: `n.stdin.write(b({config:this.config,
++ *     initialAccessToken:this.authManager?.getAccessToken()})+"\n"),
++ *     n.stdin.end()` (en `Ue.spawn`).
++ *   - mensaje `shutdown` por el canal IPC: `e.send(r!==void 0?
++ *     {type:"shutdown",cause:r}:{type:"shutdown"})`, con `catch{}`
++ *     silencioso (en `Ue.stop`) y escalada a SIGKILL tras `yr`=5000ms:
++ *     `setTimeout((h)=>h.kill("SIGKILL"),yr,e)`.
++ *   - mensajes worker→supervisor `rc_busy`/`rc_serving_tools`, validados
++ *     con guardas de forma exactas (en el `n.on("message", ...)` de
++ *     `Ue.spawn`); `Ybn`=64 es el tope de `count`.
++ *
++ * `b` es `JSON.stringify` (porte directo, sin equivalente propio en este
++ * paquete).
++ */
++
++/** Tope de `count` en `rc_serving_tools` — `Ybn` (`chunk-egkwesgj.js`). */
++export const MAX_SERVED_TOOLS_COUNT = 64
++
++/**
++ * Plazo de gracia entre mandar el mensaje `shutdown` (o SIGTERM) y
++ * escalar a SIGKILL — `yr` (`chunk-92tvramn.js`, `class Ue`).
++ */
++export const WORKER_SHUTDOWN_SIGKILL_GRACE_MS = 5_000
++
++/** Payload que el supervisor manda por stdin al arrancar el worker. */
++export interface WorkerBootstrapPayload {
++  config: unknown
++  initialAccessToken?: string
++}
++
++/** El worker avisa que empezó/dejó de estar ocupado sirviendo una sesión. */
++export interface WorkerBusyMessage {
++  type: 'rc_busy'
++  busy: boolean
++}
++
++/** El worker avisa cuántas sesiones remoteControl está sirviendo. */
++export interface WorkerServingToolsMessage {
++  type: 'rc_serving_tools'
++  count: number
++}
++
++export type WorkerToSupervisorMessage = WorkerBusyMessage | WorkerServingToolsMessage
++
++/** El supervisor pide al worker que se apague de forma ordenada. */
++export interface WorkerShutdownMessage {
++  type: 'shutdown'
++  cause?: string
++}
++
++/**
++ * Codifica el bootstrap para escribirlo por stdin. Porte de
++ * `` b({config,initialAccessToken})+"\n" `` (`b`=`JSON.stringify`).
++ */
++export function encodeWorkerBootstrap(payload: WorkerBootstrapPayload): string {
++  return `${JSON.stringify(payload)}\n`
++}
++
++/**
++ * Mínima superficie de un stdin escribible que este módulo necesita —
++ * evita acoplar la firma a `NodeJS.WritableStream` completo.
++ */
++export interface WritableStdinLike {
++  write(chunk: string): boolean
++  end(): void
++  on(event: 'error', listener: (error: Error) => void): unknown
++}
++
++/**
++ * Escribe el bootstrap y cierra stdin — porte de `n.stdin.write(...),
++ * n.stdin.end()`. `onError` es el listener de `n.stdin.on("error", ...)`
++ * que la referencia registra antes de escribir; aquí se registra en el
++ * mismo orden si se provee.
++ */
++export function writeWorkerBootstrap(
++  stdin: WritableStdinLike,
++  payload: WorkerBootstrapPayload,
++  onError?: (error: Error) => void,
++): void {
++  if (onError) stdin.on('error', onError)
++  stdin.write(encodeWorkerBootstrap(payload))
++  stdin.end()
++}
++
++/**
++ * Valida un mensaje entrante worker→supervisor. Porte exacto de las
++ * guardas de forma del `n.on("message", (u) => {...})` de `Ue.spawn`:
++ * `rc_busy` exige `busy: boolean`; `rc_serving_tools` exige `count`
++ * entero en `[0, MAX_SERVED_TOOLS_COUNT]`. Cualquier otra forma —
++ * incluido `null`/no-objeto/tipo desconocido— devuelve `undefined`, la
++ * misma degradación segura que la referencia aplica dejando el mensaje
++ * sin efecto.
++ */
++export function parseWorkerToSupervisorMessage(
++  raw: unknown,
++): WorkerToSupervisorMessage | undefined {
++  if (typeof raw !== 'object' || raw === null || !('type' in raw)) return undefined
++  const message = raw as Record<string, unknown>
++  if (message.type === 'rc_busy' && 'busy' in message && typeof message.busy === 'boolean') {
++    return { type: 'rc_busy', busy: message.busy }
++  }
++  if (
++    message.type === 'rc_serving_tools' &&
++    'count' in message &&
++    typeof message.count === 'number' &&
++    Number.isInteger(message.count) &&
++    message.count >= 0 &&
++    message.count <= MAX_SERVED_TOOLS_COUNT
++  ) {
++    return { type: 'rc_serving_tools', count: message.count }
++  }
++  return undefined
++}
++
++/**
++ * Arma el mensaje de apagado ordenado — porte exacto de
++ * `` r!==void 0?{type:"shutdown",cause:r}:{type:"shutdown"} ``: la clave
++ * `cause` está ausente (no `undefined`) cuando no se provee causa.
++ */
++export function buildWorkerShutdownMessage(cause?: string): WorkerShutdownMessage {
++  return cause !== undefined ? { type: 'shutdown', cause } : { type: 'shutdown' }
++}
++
++/**
++ * Mínima superficie de un child con canal IPC que este módulo necesita.
++ * `send` va en sintaxis de método (no de propiedad-flecha) para que la
++ * comparación de parámetros sea bivariante y `ChildProcess` —cuyo `send`
++ * real exige `Serializable`, más angosto que `unknown`— siga siendo un
++ * `IpcSendable` válido.
++ */
++export interface IpcSendable {
++  send?(message: unknown): boolean
++}
++
++/**
++ * Manda el mensaje de apagado por el canal IPC. Porte de:
++ * `` if(typeof e.send==="function")try{n=e.send(...)}catch{} ``. Un
++ * `send` ausente o que lanza se degrada en silencio a `false` — el
++ * llamador decide entonces mandar SIGTERM (mismo criterio que
++ * `Ue.stop`: `if(O()!=="windows"||!n)e.kill("SIGTERM")`).
++ */
++export function sendWorkerShutdownMessage(child: IpcSendable, cause?: string): boolean {
++  if (typeof child.send !== 'function') return false
++  try {
++    return child.send(buildWorkerShutdownMessage(cause))
++  } catch {
++    return false
++  }
++}
++
++/**
++ * Mínima superficie de un proceso matable que este módulo necesita.
++ * `signal` es `NodeJS.Signals` (no `string` a secas) y el retorno es
++ * `unknown` para que `ChildProcess.kill` —que devuelve `boolean` y sólo
++ * acepta `NodeJS.Signals | number`— siga siendo un `KillableLike` válido.
++ */
++export interface KillableLike {
++  kill(signal: NodeJS.Signals): unknown
++}
++
++/**
++ * Programa el SIGKILL de gracia tras mandar `shutdown`/SIGTERM — porte
++ * de `` let a=setTimeout((h)=>h.kill("SIGKILL"),yr,e); a.unref() ``. El
++ * llamador limpia el timer (`clearTimeout`) cuando el worker ya salió.
++ */
++export function scheduleForceKill(
++  target: KillableLike,
++  graceMs: number = WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
++): NodeJS.Timeout {
++  const timer = setTimeout(() => target.kill('SIGKILL'), graceMs)
++  timer.unref()
++  return timer
++}
+diff --git a/src/packages/daemon/src/workerRegistry.ts b/src/packages/daemon/src/workerRegistry.ts
+index ef3447e6..88b6d23b 100644
+--- a/src/packages/daemon/src/workerRegistry.ts
++++ b/src/packages/daemon/src/workerRegistry.ts
+@@ -33,6 +33,7 @@ import {
+   BridgeHeadlessPermanentError,
+   runBridgeHeadless,
+ } from '@thyrox/bridge/bridgeMain.js'
++import { logError } from '@thyrox/local-observability/logging'
+ import { errorMessage, getClaudeAIOAuthTokens } from './internal/pendingCrossPackageDeps.js'
+ 
+ /**
+@@ -140,3 +141,129 @@ async function runRemoteControlWorker(): Promise<void> {
+     process.off('SIGINT', onSignal)
+   }
+ }
++
++/**
++ * Extrae con seguridad el campo `dir` de una config de worker arbitraria
++ * — arma `servedFolder` en `Ue.status`. Porte exacto de `Oe`
++ * (`chunk-92tvramn.js`, referencia 2.1.283, resuelto con
++ * `bin/binary symbol`): `` function Oe(r){if(typeof r!=="object"||
++ * r===null||!("dir"in r))return;let{dir:e}=r;return typeof e==="string"?
++ * e:void 0} ``.
++ */
++export function safeExtractServedFolderDir(config: unknown): string | undefined {
++  if (typeof config !== 'object' || config === null || !('dir' in config)) return undefined
++  const { dir } = config as { dir: unknown }
++  return typeof dir === 'string' ? dir : undefined
++}
++
++/**
++ * Fuente inyectable para el set de shorts (identificadores de sesión bg)
++ * marcados como "pinned" — exentos de retiro por baja memoria.
++ */
++export type PinnedWorkerShortsLoader = () => Promise<Set<string>>
++
++/**
++ * Sin almacén de shorts pinned portado todavía: `N0e`
++ * (`chunk-mxz6ht5b.js`) lee/escribe un archivo propio del dominio de
++ * sesiones/shorts (fuera de `@thyrox/daemon` — el daemon ejecuta, los
++ * dominios son dueños de sus datos). El default no toca disco y
++ * devuelve un set vacío, así que ningún worker queda exento hasta que
++ * ese dominio exponga el loader real.
++ *
++ * // pendiente: portar `N0e` cuando el dominio de sesiones/shorts
++ * // exponga su almacén de shorts pinned; hoy `getPinnedWorkerShorts`
++ * // sólo reproduce la degradación segura de `Qe`, no la lectura real.
++ */
++const loadPinnedWorkerShortsDefault: PinnedWorkerShortsLoader = async () => new Set()
++
++/**
++ * Set de shorts pinned, con degradación segura ante fallo. Porte exacto
++ * de `Qe` (`chunk-92tvramn.js`): `` function Qe(r){return N0e(r).
++ * catch((e)=>(d(e),new Set))} ``. `d` es `logError`.
++ */
++export async function getPinnedWorkerShorts(
++  loader: PinnedWorkerShortsLoader = loadPinnedWorkerShortsDefault,
++  deps: { logErrorFn?: (error: unknown) => void } = {},
++): Promise<Set<string>> {
++  const { logErrorFn = logError } = deps
++  try {
++    return await loader()
++  } catch (e) {
++    logErrorFn(e)
++    return new Set()
++  }
++}
++
++/**
++ * Umbrales de sintonía de la clase supervisora del worker (`Ue`),
++ * `chunk-92tvramn.js`, referencia 2.1.283 (resueltos con
++ * `bin/binary symbol`) — `WORKER_BACKOFF_BASE_MS`/`WORKER_BACKOFF_CAP_MS`/
++ * `WORKER_HEALTHY_UPTIME_MS` ya viven en `main.ts` (`Ar`/`At`/`Er`/`br`).
++ */
++
++/** `$r`: base del backoff de reintento tras una salida tempfail (`Tpt`=75). */
++export const WORKER_TEMPFAIL_RETRY_BASE_MS = 30_000
++
++/** `Dr`: espera antes de reintentar cuando el wrapper/launcher no está listo. */
++export const WORKER_WRAPPER_RETRY_MS = 60_000
++
++/**
++ * `He`: escalón entre arranques sucesivos de workers del mismo kind
++ * (`start(W++*He)` en `Tt`, `chunk-92tvramn.js` — la función que
++ * construye instancias de `Ue` desde config; no está en la lista de
++ * símbolos de esta tarea, pero la constante vive en el mismo bloque que
++ * `Qe`/`Ue`/`Oe` y sin ella el resto de umbrales quedaría incompleto).
++ *
++ * // pendiente: `main.ts` arranca un único worker fijo (`remoteControl`)
++ * // sin lista config-driven de instancias por kind — no hay "sucesivos
++ * // arranques del mismo kind" que escalonar todavía.
++ */
++export const WORKER_START_STAGGER_MS = 2_000
++
++/** `Rr`: ventana de frescura de `lastBusyAt` para considerar un worker ocupado. */
++export const WORKER_BUSY_STALE_MS = 300_000
++
++/**
++ * Estado de ocupación reportado vía IPC por el worker. Porte de
++ * `isBusy()`: `` return this.lastBusy&&this.child!==null&&Date.now()-
++ * this.lastBusyAt<Rr ``. `hasChild` sustituye `this.child!==null` — el
++ * llamador decide con qué valor lo satisface (el `ChildProcess` vivo).
++ */
++export function isWorkerBusy(
++  state: { lastBusy: boolean; lastBusyAt: number; hasChild: boolean },
++  now: number = Date.now(),
++  staleMs: number = WORKER_BUSY_STALE_MS,
++): boolean {
++  return state.lastBusy && state.hasChild && now - state.lastBusyAt < staleMs
++}
++
++/** Snapshot de estado que expone un worker vivo — porte de `get status()`. */
++export interface WorkerStatusSnapshot {
++  pid: number
++  startedAt: number
++  servedFolder?: { dir: string; sessions: number }
++}
++
++/**
++ * Arma el snapshot de estado de un worker vivo. Porte exacto de
++ * `Ue.get status()`: `` let e={pid:r,startedAt:this.spawnedAt},o=Oe(this
++ * .config),n=Ge.get(this)??0;if(n>0&&o!==void 0)e.servedFolder=
++ * {dir:o,sessions:n};return e ``. Devuelve `null` cuando no hay pid (el
++ * worker no está corriendo), igual que la referencia devuelve `null`
++ * cuando `this.child?.pid===void 0`.
++ */
++export function computeWorkerStatus(params: {
++  pid: number | undefined
++  startedAt: number
++  config: unknown
++  servedSessionsCount: number
++}): WorkerStatusSnapshot | null {
++  const { pid, startedAt, config, servedSessionsCount } = params
++  if (pid === undefined) return null
++  const snapshot: WorkerStatusSnapshot = { pid, startedAt }
++  const dir = safeExtractServedFolderDir(config)
++  if (servedSessionsCount > 0 && dir !== undefined) {
++    snapshot.servedFolder = { dir, sessions: servedSessionsCount }
++  }
++  return snapshot
++}

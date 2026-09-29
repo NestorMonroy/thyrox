@@ -61,6 +61,7 @@ import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
 import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
 import type { ProtoOp } from './socketProto.js'
 import { WorkerVm } from './workerVm.js'
+import { getPinnedWorkerShorts } from './workerRegistry.js'
 
 /**
  * Arma un valor con forma de Socket no-op para rutas RPC de dispara-y-
@@ -123,6 +124,99 @@ function parseArgs(args: readonly string[]): ParsedArgs {
     else if (a === '--spawned-by') out.spawnedBy = args[++i]
   }
   return out
+}
+
+/**
+ * Superficie mínima de retiro que la eviction por baja memoria necesita.
+ * `WorkerVm` todavía no implementa `retireIfSettled` (porte pendiente de
+ * `Ze`/`workerVm.ts`, fuera de esta tarea) — el duck-typing existente en
+ * el manejador `dispatch` ya asumía esta forma opcional; estas dos
+ * funciones sólo separan la decisión de a QUIÉN llamar (pinned o no).
+ */
+export interface RetirableWorker {
+  retireIfSettled?: () => boolean
+}
+
+/**
+ * Retira los workers settled NO pinned. Porte de la porción de nivel 1
+ * de `Ke` y de la llamada a `Qe` dentro de `ue` (`chunk-92tvramn.js`,
+ * función `Dt`, referencia 2.1.283, resuelta con `bin/binary symbol`):
+ * ambas pasan el set de shorts pinned a `retireIfSettled` para que los
+ * pinned queden exentos.
+ */
+export function retireNonPinnedSettledWorkers<W extends RetirableWorker>(
+  workers: ReadonlyMap<string, W>,
+  pinnedShorts: ReadonlySet<string>,
+): string[] {
+  const retiredShorts: string[] = []
+  for (const [short, worker] of workers) {
+    if (pinnedShorts.has(short)) continue
+    if (typeof worker.retireIfSettled === 'function' && worker.retireIfSettled()) {
+      retiredShorts.push(short)
+    }
+  }
+  return retiredShorts
+}
+
+/**
+ * Último recurso: retira también los workers pinned. Porte del nivel 3
+ * de `Ke` (`chunk-92tvramn.js`, `Dt`): `` r("bg: low memory persists
+ * after shedding non-pinned — retiring pinned settled workers as a last
+ * resort"), i("tengu_bg_retire_pinned_low_mem",{}) `` — el evento y el
+ * log los emite el llamador, que es quien sabe si de verdad hace falta
+ * (memoria aún baja tras el nivel 1).
+ */
+export function retirePinnedSettledWorkers<W extends RetirableWorker>(
+  workers: ReadonlyMap<string, W>,
+  pinnedShorts: ReadonlySet<string>,
+): string[] {
+  const retiredShorts: string[] = []
+  for (const [short, worker] of workers) {
+    if (!pinnedShorts.has(short)) continue
+    if (typeof worker.retireIfSettled === 'function' && worker.retireIfSettled()) {
+      retiredShorts.push(short)
+    }
+  }
+  return retiredShorts
+}
+
+/** Presupuesto de reintentos del dedup de dispatch — `T<30` en `ue`. */
+export const DUPLICATE_DISPATCH_MAX_ATTEMPTS = 30
+
+/** Intento en el que se escala a SIGKILL — `T===15` en `ue`. */
+export const DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT = 15
+
+export interface DuplicateDispatchDecision {
+  action: 'retry' | 'dropped' | 'dup-live'
+  escalateToSigkill: boolean
+}
+
+/**
+ * Decide qué hacer ante un dispatch para un `short` ya presente en
+ * `state.workers`. Porte exacto de la rama de dedup de `ue`
+ * (`chunk-92tvramn.js`, función `Dt`, referencia 2.1.283, resuelta con
+ * `bin/binary symbol`): `` if((fe.isKilling||fe.isRetiring||fe.record.
+ * outcome)&&T<30){ if(T===15&&(...)) escalate; return retry } let
+ * s=fe.isKilling||fe.isRetiring||fe.record.outcome; if(s) return
+ * "dropped"; return "dup-live" ``.
+ */
+export function decideDuplicateDispatchOutcome(params: {
+  isSettling: boolean
+  attempt: number
+  maxAttempts?: number
+  escalationAttempt?: number
+}): DuplicateDispatchDecision {
+  const {
+    isSettling,
+    attempt,
+    maxAttempts = DUPLICATE_DISPATCH_MAX_ATTEMPTS,
+    escalationAttempt = DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT,
+  } = params
+  if (isSettling && attempt < maxAttempts) {
+    return { action: 'retry', escalateToSigkill: attempt === escalationAttempt }
+  }
+  if (isSettling) return { action: 'dropped', escalateToSigkill: false }
+  return { action: 'dup-live', escalateToSigkill: false }
 }
 
 /**
@@ -405,7 +499,28 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         logEventFn('tengu_bg_dispatch_rejected', { short, reason: 'missing_nonce' })
         return err('EBADREQ', 'dispatch: missing nonce')
       }
-      if (state.workers.has(short)) {
+      // Dedup de dispatch — porte de la rama de `ue` que reintenta hasta
+      // `DUPLICATE_DISPATCH_MAX_ATTEMPTS` veces (100ms de espera cada
+      // una) mientras el handle existente está "settling" (killing,
+      // retiring, o ya no `running`), escalando a SIGKILL en el intento
+      // `DUPLICATE_DISPATCH_SIGKILL_ESCALATION_ATTEMPT`.
+      for (let attempt = 0; state.workers.has(short); attempt++) {
+        const existing = state.workers.get(short)!
+        const isSettling =
+          existing.isKilling() || existing.isRetiring() || existing.getRecord().status !== 'running'
+        const decision = decideDuplicateDispatchOutcome({ isSettling, attempt })
+        if (decision.escalateToSigkill) {
+          logEventFn('tengu_bg_dispatch_sigkill_escalate', { short })
+          existing.kill('reap')
+        }
+        if (decision.action === 'retry') {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          continue
+        }
+        if (decision.action === 'dropped') {
+          logEventFn('tengu_bg_dispatch_rejected', { short, reason: 'dup_retry_exhausted' })
+          return err('EBUSY', `worker ${short} dropped — retry budget exhausted`, { short })
+        }
         logEventFn('tengu_bg_dispatch_rejected', { short, reason: 'already_running' })
         return err('EALIVE', `worker ${short} already running`, { short })
       }
@@ -442,19 +557,24 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
           const thresholdBytes = thresholdMb * 1024 * 1024
           const freeBytes = freemem()
           if (freeBytes < thresholdBytes) {
-            let retired = 0
-            for (const [s, w] of state.workers.entries()) {
-              const retireIfSettled = (
-                w as { retireIfSettled?: () => boolean }
-              ).retireIfSettled
-              if (typeof retireIfSettled === 'function') {
-                if (retireIfSettled.call(w)) {
-                  retired++
-                  state.workers.delete(s)
-                  state.pending.delete(s)
-                }
-              }
+            const pinnedShorts = await getPinnedWorkerShorts()
+            // `WorkerVm` todavía no implementa `retireIfSettled` (`Ze`,
+            // fuera de esta tarea) — el cast reproduce el mismo
+            // duck-typing que ya usaba este bloque antes del porte.
+            const retirableWorkers = state.workers as unknown as ReadonlyMap<string, RetirableWorker>
+            let retiredShorts = retireNonPinnedSettledWorkers(retirableWorkers, pinnedShorts)
+            // Último recurso — porte del nivel 3 de `Ke`: si ningún
+            // worker no-pinned cedió y la memoria libre sigue baja, se
+            // retiran también los pinned.
+            if (retiredShorts.length === 0 && pinnedShorts.size > 0 && freemem() < thresholdBytes) {
+              logEventFn('tengu_bg_retire_pinned_low_mem', { handles: String(state.workers.size) })
+              retiredShorts = retirePinnedSettledWorkers(retirableWorkers, pinnedShorts)
             }
+            for (const s of retiredShorts) {
+              state.workers.delete(s)
+              state.pending.delete(s)
+            }
+            const retired = retiredShorts.length
             logEventFn('tengu_bg_dispatch_low_mem', {
               free_mb: String(Math.floor(freeBytes / (1024 * 1024))),
               handles: String(state.workers.size),

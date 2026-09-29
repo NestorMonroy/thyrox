@@ -33,6 +33,7 @@ import {
   BridgeHeadlessPermanentError,
   runBridgeHeadless,
 } from '@thyrox/bridge/bridgeMain.js'
+import { logError } from '@thyrox/local-observability/logging'
 import { errorMessage, getClaudeAIOAuthTokens } from './internal/pendingCrossPackageDeps.js'
 
 /**
@@ -139,4 +140,130 @@ async function runRemoteControlWorker(): Promise<void> {
     process.off('SIGTERM', onSignal)
     process.off('SIGINT', onSignal)
   }
+}
+
+/**
+ * Extrae con seguridad el campo `dir` de una config de worker arbitraria
+ * — arma `servedFolder` en `Ue.status`. Porte exacto de `Oe`
+ * (`chunk-92tvramn.js`, referencia 2.1.283, resuelto con
+ * `bin/binary symbol`): `` function Oe(r){if(typeof r!=="object"||
+ * r===null||!("dir"in r))return;let{dir:e}=r;return typeof e==="string"?
+ * e:void 0} ``.
+ */
+export function safeExtractServedFolderDir(config: unknown): string | undefined {
+  if (typeof config !== 'object' || config === null || !('dir' in config)) return undefined
+  const { dir } = config as { dir: unknown }
+  return typeof dir === 'string' ? dir : undefined
+}
+
+/**
+ * Fuente inyectable para el set de shorts (identificadores de sesión bg)
+ * marcados como "pinned" — exentos de retiro por baja memoria.
+ */
+export type PinnedWorkerShortsLoader = () => Promise<Set<string>>
+
+/**
+ * Sin almacén de shorts pinned portado todavía: `N0e`
+ * (`chunk-mxz6ht5b.js`) lee/escribe un archivo propio del dominio de
+ * sesiones/shorts (fuera de `@thyrox/daemon` — el daemon ejecuta, los
+ * dominios son dueños de sus datos). El default no toca disco y
+ * devuelve un set vacío, así que ningún worker queda exento hasta que
+ * ese dominio exponga el loader real.
+ *
+ * // pendiente: portar `N0e` cuando el dominio de sesiones/shorts
+ * // exponga su almacén de shorts pinned; hoy `getPinnedWorkerShorts`
+ * // sólo reproduce la degradación segura de `Qe`, no la lectura real.
+ */
+const loadPinnedWorkerShortsDefault: PinnedWorkerShortsLoader = async () => new Set()
+
+/**
+ * Set de shorts pinned, con degradación segura ante fallo. Porte exacto
+ * de `Qe` (`chunk-92tvramn.js`): `` function Qe(r){return N0e(r).
+ * catch((e)=>(d(e),new Set))} ``. `d` es `logError`.
+ */
+export async function getPinnedWorkerShorts(
+  loader: PinnedWorkerShortsLoader = loadPinnedWorkerShortsDefault,
+  deps: { logErrorFn?: (error: unknown) => void } = {},
+): Promise<Set<string>> {
+  const { logErrorFn = logError } = deps
+  try {
+    return await loader()
+  } catch (e) {
+    logErrorFn(e)
+    return new Set()
+  }
+}
+
+/**
+ * Umbrales de sintonía de la clase supervisora del worker (`Ue`),
+ * `chunk-92tvramn.js`, referencia 2.1.283 (resueltos con
+ * `bin/binary symbol`) — `WORKER_BACKOFF_BASE_MS`/`WORKER_BACKOFF_CAP_MS`/
+ * `WORKER_HEALTHY_UPTIME_MS` ya viven en `main.ts` (`Ar`/`At`/`Er`/`br`).
+ */
+
+/** `$r`: base del backoff de reintento tras una salida tempfail (`Tpt`=75). */
+export const WORKER_TEMPFAIL_RETRY_BASE_MS = 30_000
+
+/** `Dr`: espera antes de reintentar cuando el wrapper/launcher no está listo. */
+export const WORKER_WRAPPER_RETRY_MS = 60_000
+
+/**
+ * `He`: escalón entre arranques sucesivos de workers del mismo kind
+ * (`start(W++*He)` en `Tt`, `chunk-92tvramn.js` — la función que
+ * construye instancias de `Ue` desde config; no está en la lista de
+ * símbolos de esta tarea, pero la constante vive en el mismo bloque que
+ * `Qe`/`Ue`/`Oe` y sin ella el resto de umbrales quedaría incompleto).
+ *
+ * // pendiente: `main.ts` arranca un único worker fijo (`remoteControl`)
+ * // sin lista config-driven de instancias por kind — no hay "sucesivos
+ * // arranques del mismo kind" que escalonar todavía.
+ */
+export const WORKER_START_STAGGER_MS = 2_000
+
+/** `Rr`: ventana de frescura de `lastBusyAt` para considerar un worker ocupado. */
+export const WORKER_BUSY_STALE_MS = 300_000
+
+/**
+ * Estado de ocupación reportado vía IPC por el worker. Porte de
+ * `isBusy()`: `` return this.lastBusy&&this.child!==null&&Date.now()-
+ * this.lastBusyAt<Rr ``. `hasChild` sustituye `this.child!==null` — el
+ * llamador decide con qué valor lo satisface (el `ChildProcess` vivo).
+ */
+export function isWorkerBusy(
+  state: { lastBusy: boolean; lastBusyAt: number; hasChild: boolean },
+  now: number = Date.now(),
+  staleMs: number = WORKER_BUSY_STALE_MS,
+): boolean {
+  return state.lastBusy && state.hasChild && now - state.lastBusyAt < staleMs
+}
+
+/** Snapshot de estado que expone un worker vivo — porte de `get status()`. */
+export interface WorkerStatusSnapshot {
+  pid: number
+  startedAt: number
+  servedFolder?: { dir: string; sessions: number }
+}
+
+/**
+ * Arma el snapshot de estado de un worker vivo. Porte exacto de
+ * `Ue.get status()`: `` let e={pid:r,startedAt:this.spawnedAt},o=Oe(this
+ * .config),n=Ge.get(this)??0;if(n>0&&o!==void 0)e.servedFolder=
+ * {dir:o,sessions:n};return e ``. Devuelve `null` cuando no hay pid (el
+ * worker no está corriendo), igual que la referencia devuelve `null`
+ * cuando `this.child?.pid===void 0`.
+ */
+export function computeWorkerStatus(params: {
+  pid: number | undefined
+  startedAt: number
+  config: unknown
+  servedSessionsCount: number
+}): WorkerStatusSnapshot | null {
+  const { pid, startedAt, config, servedSessionsCount } = params
+  if (pid === undefined) return null
+  const snapshot: WorkerStatusSnapshot = { pid, startedAt }
+  const dir = safeExtractServedFolderDir(config)
+  if (servedSessionsCount > 0 && dir !== undefined) {
+    snapshot.servedFolder = { dir, sessions: servedSessionsCount }
+  }
+  return snapshot
 }
