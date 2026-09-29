@@ -8,6 +8,7 @@ RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 POOL="${HEADLESS_POOL_MODULE:-$RAIZ/src/session/headless-pool.sh}"
 INTEGRATE="${POOL_INTEGRATE_MODULE:-$RAIZ/src/session/pool_integrate.sh}"
 export HEADLESS_POOL_ITEM_WORKTREE="${ITEM_WORKTREE_MODULE:-$RAIZ/src/session/item_worktree.sh}"
+export ITEM_WORKTREE_REAL="$HEADLESS_POOL_ITEM_WORKTREE"
 failures=0; total=0
 check() {
     local label="$1" obtained="$2" expected="$3"
@@ -40,6 +41,10 @@ case "$verb" in
   # Como un ítem real bajo `bin/cli`: hereda THYROX_ROOT del árbol principal y
   # lanza un trabajo con thyrox-bg.
   launch) THYROX_ROOT="$MAIN_ROOT" bash "$MAIN_ROOT/bin/thyrox-bg" start "$path" --grace 0 -- true >/dev/null ;;
+  # Sale 1 si el candado de la ejecución está tomado, que es lo que protege
+  # los worktrees del pool de un barrido de huérfanos.
+  probe-lock) lock="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" lock-path "$HP_WORKDIR" "$HP_OUT")"
+              flock -n "$lock" true; printf '%s\n' "$?" > "$PROBE_LOG" ;;
 esac
 jq -cn '{type:"result",result:"hecho"}'
 SH
@@ -108,7 +113,7 @@ check "su parche nombra el archivo" "$(cat "$F/out7/1.files")" "nuevo.txt"
 echo "caso 7 — si el worktree no se prepara, el .err del ítem trae el motivo"
 cat > "$F/failing-worktree" <<'SH'
 #!/usr/bin/env bash
-[[ "$1" == prepare ]] || exit 0
+[[ "$1" == prepare ]] || exec bash "$ITEM_WORKTREE_REAL" "$@"
 echo "fatal: Unable to create worktrees.lock: File exists." >&2
 exit 2
 SH
@@ -129,6 +134,13 @@ check "el trabajo aparece bajo la salida del ítem" \
     "$(find "$F/out9/1.jobs" -maxdepth 1 -name "$probe-*" 2>/dev/null | wc -l)" "1"
 check "el árbol principal no recibe el trabajo" \
     "$(find "$main_jobs" -maxdepth 1 -name "$probe-*" | wc -l)" "0"
+
+echo "caso 9 — el pool retiene el candado de su ejecución y no deja rastro al salir"
+printf '%s\n' 'probe-lock x' | PROBE_LOG="$F/probe.log" pool --out "$F/out10" --verify true >/dev/null
+check "el ítem ve el candado tomado" "$(cat "$F/probe.log")" "1"
+run="$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out10" | sha1sum | cut -c1-12)"
+check "sin directorio de la ejecución al terminar" "$(test -e "$run" && echo si || echo no)" "no"
+check "sin candado de la ejecución al terminar" "$(test -e "$run.lock" && echo si || echo no)" "no"
 
 echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
 [[ $failures -eq 0 ]]

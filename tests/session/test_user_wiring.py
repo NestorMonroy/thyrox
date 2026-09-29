@@ -113,6 +113,22 @@ _r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=
 check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",
       ("{}", ""), (_r1.stdout.strip(), _r1.stderr.strip()))
 
+# Al arrancar una sesión se recogen los worktrees de un pool que murió: su
+# `sweep` final nunca corrió, y cada uno es una copia del árbol en disco.
+_startup = next((e for e in w.declared_wiring()["hooks"].get("SessionStart", [])
+                 if e.get("matcher") == "startup"), {})
+_sweeps = [h["command"] for h in _startup.get("hooks", [])]
+check("SessionStart declara el barrido de huérfanos al arrancar", True,
+      bool(_sweeps) and all("bin/item_worktree sweep-orphans" in c for c in _sweeps))
+check("el barrido cubre el árbol del proveedor", True,
+      any(c.endswith(f" {w.thyrox_root()}") for c in _sweeps))
+import tempfile as _tf0  # noqa: E402
+with _tf0.TemporaryDirectory() as _root0:
+    _r2 = [_sp0.run(c, shell=True, cwd="/", capture_output=True, text=True,
+                    env={**_env0, "THYROX_POOL_WORKTREES_DIR": _root0}) for c in _sweeps]
+check("sin huérfanos, cada barrido sale 0 y calla", [(0, "")] * len(_sweeps),
+      [(r.returncode, r.stdout.strip()) for r in _r2])
+
 print("== 2. el control VE una ruta que no existe ==")
 falso = {"hooks": {"SubagentStop": [{"hooks": [
     {"type": "command", "command": "python3 /no/existe/hook.py --stop"}]}]}}
@@ -291,8 +307,8 @@ for _ev, _gs in w.declared_wiring()["hooks"].items():
     for _g in _gs:
         for _h in _g["hooks"]:
             # El ejecutable es el primer argumento que es una ruta: lo que
-            # viene despues de python3/node/bun run.
-            _m = _re.search(r"(?:python3|node|bun run)\s+(\S+)", _h["command"])
+            # viene despues de python3/node/bun run/bash.
+            _m = _re.search(r"(?:python3|node|bun run|bash)\s+(\S+)", _h["command"])
             if _m:
                 _ejecutables.append((_ev, _m.group(1)))
 _expected = sum(len(_g["hooks"]) for _gs in d["hooks"].values() for _g in _gs)

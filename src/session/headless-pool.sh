@@ -456,6 +456,16 @@ export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
+# El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
+# y mientras alguno viva, el barrido de huérfanos de una sesión nueva no toca
+# estos worktrees.
+if [[ "$ISOLATION" == worktree ]]; then
+    HP_RUN_LOCK="$(bash "$HP_ITEM_WORKTREE" lock-path "$WORKDIR" "$HP_OUT")" && [[ -n "$HP_RUN_LOCK" ]] \
+        || rehusa "no se pudo resolver el candado de la ejecución"
+    mkdir -p "${HP_RUN_LOCK%/*}" || rehusa "no se pudo crear ${HP_RUN_LOCK%/*}"
+    exec 8> "$HP_RUN_LOCK"
+    flock -n 8 || rehusa "otra ejecución con la misma salida retiene $HP_RUN_LOCK"
+fi
 # Qué decidió el TTL, para que el paso lo registre y no haya que deducirlo.
 [[ -z "$CACHE_TTL" ]] || echo "cache-ttl: $CACHE_TTL ($CACHE_TTL_WHY)"
 

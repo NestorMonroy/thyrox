@@ -8,6 +8,8 @@
 #   item_worktree.sh prepare  REPO OUT N          -> imprime el directorio
 #   item_worktree.sh finalize REPO DIR OUT N RC [VERIFY]
 #   item_worktree.sh sweep    REPO OUT            -> retira los que queden
+#   item_worktree.sh sweep-orphans REPO           -> retira los de pools muertos
+#   item_worktree.sh lock-path REPO OUT           -> candado de la ejecución
 #
 # Veredictos: `fallido` (el ítem salió con error), `sin-cambios` (diff vacío),
 # `verificado` / `rechazado` (VERIFY salió 0 / con error, corrido en el
@@ -154,6 +156,65 @@ sweep() {
             [[ "$path" == "$base"/* ]] && with_retries git -C "$repo" worktree remove --force "$path"
         done
     git -C "$repo" worktree prune
+    # Ni el directorio de la ejecución ni su candado sobreviven al pool.
+    rmdir "$base" 2>/dev/null
+    rm -f "$base.lock"
+}
+
+# El candado de la ejecución de OUT. El pool lo retiene toda su vida; mientras
+# lo tenga, ningún barrido de huérfanos toca sus worktrees.
+lock_path() {
+    local base
+    base="$(run_dir "$1" "$2")" || return 2
+    printf '%s.lock\n' "$base"
+}
+
+# Un directorio de ejecución sigue en uso si algún proceso vivo tiene su
+# directorio de trabajo dentro. Cubre al pool lanzado antes de que existiera
+# el candado, cuyo ítem en curso trabaja con su cwd en el worktree.
+run_dir_in_use() {
+    local base="$1" cwd link
+    for cwd in /proc/[0-9]*/cwd; do
+        link="$(readlink "$cwd" 2>/dev/null)" || continue
+        [[ "$link" == "$base" || "$link" == "$base"/* ]] && return 0
+    done
+    return 1
+}
+
+# Guarda como parche lo que el ítem dejó en su worktree sin entregar, porque
+# el pool murió antes de su `finalize`. Imprime la ruta del parche.
+salvage() {
+    local dir="$1" target="$2"
+    git -C "$dir" add -A || return 2
+    git -C "$dir" diff --cached --quiet HEAD && return 0
+    mkdir -p "${target%/*}" || return 2
+    git -C "$dir" diff --cached --binary HEAD > "$target" || return 2
+    printf 'salvado: %s\n' "$target"
+}
+
+# Retira los directorios de ejecución cuyo pool ya no vive: su candado está
+# libre y ningún proceso trabaja dentro. Es lo que corre al arrancar una
+# sesión, porque un pool que muere no llega a su `sweep`.
+sweep_orphans() {
+    local repo="$1" root base name path
+    root="$(worktrees_root "$repo")" || return 2
+    [[ -d "$root" ]] || return 0
+    for base in "$root"/*/; do
+        base="${base%/}"; name="${base##*/}"
+        [[ "$name" =~ ^[0-9a-f]{12}$ ]] || continue
+        (
+            flock -n 9 || exit 0
+            run_dir_in_use "$base" && exit 0
+            git -C "$repo" worktree list --porcelain | gawk '/^worktree /{print substr($0, 10)}' \
+                | while read -r path; do
+                    [[ "$path" == "$base"/* ]] || continue
+                    salvage "$path" "$root/salvaged/$name-${path##*/}.patch" || exit 2
+                    with_retries git -C "$repo" worktree remove --force "$path" || exit 2
+                done || exit 2
+            git -C "$repo" worktree prune
+            rm -rf "${base:?}" && rm -f "$base.lock"
+        ) 9> "$base.lock" || return 2
+    done
 }
 
 finalize() {
@@ -180,5 +241,7 @@ case "${1:-}" in
     prepare) shift; prepare "$@" ;;
     finalize) shift; finalize "$@" ;;
     sweep) shift; sweep "$@" ;;
-    *) echo "item_worktree: uso: prepare|finalize|sweep …" >&2; exit 2 ;;
+    sweep-orphans) shift; sweep_orphans "$@" ;;
+    lock-path) shift; lock_path "$@" ;;
+    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path …" >&2; exit 2 ;;
 esac

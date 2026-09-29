@@ -145,6 +145,15 @@ def declared_wiring(root: Path | None = None,
                               f"{base}/src/hooks/compact_context.py "
                               + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
                               timeout=20)],
+            }, {
+                # Un pool que muere no llega a su `sweep`: sus worktrees —cada
+                # uno una copia del árbol— quedan en disco para la sesión
+                # siguiente. Al arrancar se retiran los de pools sin dueño vivo,
+                # y lo que dejaron sin entregar se salva como parche.
+                "matcher": "startup",
+                "hooks": [cmd(f"bash {base}/bin/item_worktree sweep-orphans {repo}",
+                              timeout=120)
+                          for repo in dict.fromkeys([str(base), *(str(ruta) for _, ruta in sorted(reach().items()))])],
             }],
             "PreModelSwitch": [{"hooks": [
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
