@@ -29,9 +29,11 @@ import {
   WeightedRoundRobinSelector,
 } from './credentialSelectors.ts'
 import { connectionProxyCredentials } from '../accounts/proxyCredentials.ts'
+import { createProviderRefreshDispatch } from '../accounts/refresh/providerRefreshDispatch.ts'
 import { openSharedStateStore, type OpenedSharedState } from '@thyrox/shared-state/factory.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
 import { ComboRouter } from './combo/comboRouter.ts'
+import { createConnectionRefresher, type ConnectionRefresher, type ConnectionRefreshStore } from './connectionRefresh.ts'
 import { CredentialCooldown } from './resilience/credentialCooldown.ts'
 import type { ProviderTraits } from './resilience/errorClassifier.ts'
 import { RateLimitManager, type RateLimitQueueSettings } from './resilience/rateLimitManager.ts'
@@ -93,8 +95,19 @@ export type ProxyStartConfig = {
    * El store de conexiones de proveedor. Un upstream sin credenciales
    * declaradas toma las conexiones de su proveedor, releídas en cada petición:
    * una cuenta añadida, desactivada o enfriada rige sin reiniciar el proxy.
+   * `getById`/`update` son los que el refresco de OAuth (R5c) necesita para
+   * persistir el resultado; una implementación real, `ConnectionStore`
+   * (`../accounts/connectionStore.ts`), ya los trae.
    */
-  connections?: { list(filter: { provider: string }): Record<string, unknown>[] }
+  connections?: ConnectionRefreshStore
+  /**
+   * El refrescador de conexiones OAuth (R5c). Sin declarar, `startProxyServer`
+   * abre el suyo propio con `createConnectionRefresher`, cableado con
+   * `sharedState.forConsistency('requiresGlobalConsistency')` y
+   * `createProviderRefreshDispatch(...).refresh` — sólo si `connections` está
+   * declarado. Inyectarlo es sólo para pruebas, igual que `sharedState`.
+   */
+  connectionRefresher?: ConnectionRefresher
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -119,7 +132,8 @@ export type SessionAffinityOptions = {
 export type RunningProxy = {
   url: string
   /**
-   * Para `Bun.serve` y cierra el estado compartido —el inyectado incluido:
+   * Para `Bun.serve`, espera el refresco de conexiones en curso (R5c, sin
+   * dejarlo colgado) y cierra el estado compartido —el inyectado incluido:
    * una vez recibido, este proxy es su dueño—. Idempotente: una segunda
    * llamada no falla ni vuelve a cerrar nada.
    */
@@ -182,6 +196,17 @@ function storeCredentialsOf(
   }
 }
 
+/** Los proveedores que `storeCredentialsOf` sirve del store: sin credenciales propias declaradas. Son los mismos que el refresco de OAuth (R5c) tiene que mantener vigentes. */
+function connectionBackedProviders(config: ProxyStartConfig, declared: ProxyStartConfig['credentials']): string[] {
+  if (!config.connections) return []
+  const providers = new Set<string>()
+  for (const upstream of config.routing.upstreams) {
+    if (declared[upstream.name]?.length) continue
+    providers.add(upstream.provider)
+  }
+  return [...providers]
+}
+
 export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   if (!isLoopbackListenHost(config.host)) {
     throw new Error(`el proxy local sólo escucha en loopback; "${config.host}" no lo es`)
@@ -203,6 +228,17 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   const sharedState = config.sharedState ?? openSharedStateStore({ env: config.env })
   const rateLimit = config.rateLimit
     && protectApiKeyCredentials(new RateLimitManager(config.rateLimit, sharedState.forConsistency('requiresGlobalConsistency')), config)
+  // El refresco de OAuth (R5c) comparte el mismo lease que la ventana global:
+  // en multi con redis caído, requiresGlobalConsistency falla explícito y
+  // nunca cae a un refresco sin coordinación entre proxies.
+  const connectionRefresher = config.connectionRefresher
+    ?? (config.connections
+      && createConnectionRefresher({
+        sharedState: sharedState.forConsistency('requiresGlobalConsistency'),
+        connections: config.connections,
+        refresh: createProviderRefreshDispatch({ env: config.env }).refresh,
+      }))
+  const refreshableProviders = connectionBackedProviders(config, credentials)
   const handler = createProxyHandler({
     access: new AccessManager([keyProvider]),
     routing: config.routing,
@@ -234,12 +270,30 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
       options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },
     }),
   })
-  const server = Bun.serve({ hostname: config.host, port: config.port, fetch: handler })
+  let pendingRefresh: Promise<void> = Promise.resolve()
+  const fetchWithRefresh =
+    connectionRefresher
+      ? async (request: Request) => {
+          // Un fallo de refresco no tumba la petición: la credencial vigente
+          // (o vencida, camino al 401 y al enfriamiento de siempre) sigue
+          // sirviendo. `ensureFreshOAuthConnections` en sí misma ya falla
+          // explícito ante `SharedStateUnavailableError` — eso se prueba
+          // directamente sobre el refrescador, no a través de esta ruta HTTP.
+          pendingRefresh = connectionRefresher.ensureFreshOAuthConnections(refreshableProviders).catch(() => {})
+          await pendingRefresh
+          return handler(request)
+        }
+      : handler
+  const server = Bun.serve({ hostname: config.host, port: config.port, fetch: fetchWithRefresh })
   const shownHost = config.host.includes(':') && !config.host.startsWith('[') ? `[${config.host}]` : config.host
   let stopped = false
   const stop = async () => {
     if (stopped) return
     stopped = true
+    // Se espera antes de cerrar el estado compartido: `pendingRefresh` nunca
+    // rechaza (el propio `fetchWithRefresh` ya atrapa el fallo), pero un
+    // refresco en curso puede seguir usando el lease hasta soltarlo.
+    await pendingRefresh
     server.stop(true)
     await sharedState.close()
   }
