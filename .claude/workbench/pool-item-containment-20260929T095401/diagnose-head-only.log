@@ -16,3 +16,17 @@ historial: sin ejecución previa de /tmp/tmp.xpJE5mxAya/thyrox-p en esta plantil
 -- FALLIDO alfa
 items=2 ok=0 fallidos=2
 memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+  FALLA por el túnel: el pool sale 0 — esperado [0] obtenido [2]
+  FALLA por el túnel: el ítem termina bien — esperado [items=1 ok=1 fallidos=0] obtenido []
+gawk: fatal: cannot open file `/tmp/tmp.xpJE5mxAya/requests.log' for reading: No such file or directory
+  FALLA por el túnel: el servicio recibe la llave que puso el proxy — esperado [auth=x-api-key] obtenido []
+  ok   por el túnel: el socket no queda al terminar
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only" && uv sync
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only" && uv sync
+historial: sin ejecución previa de /home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — el proxy de credencial no arrancó (/home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only/bin/provider-credential-proxy): thyrox_toolchain: 'bun' resuelve, y /home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only/node_modules esta ausente o vacio. IMPORTANT si desea usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli es necesario corregir cd /home/user/thyrox/.thyrox/pool-worktrees/diag303-head-only && bun install por el momento, continua sin usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli 
+
+2 ok · 10 falla(s) (alcance medido: headless-pool con thyrox -p)
