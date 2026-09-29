@@ -32,8 +32,8 @@ D2b sigue abierto hasta que D5 fije: entidades, volumen inicial y crecimiento, m
 dimensionalidad, denso frente a disperso, necesidad de `halfvec`, patrón de escritura,
 `top_k`, objetivo de recall y latencia, y presupuesto de memoria y almacenamiento.
 Después se mide exacto frente a HNSW frente a IVFFlat con un corpus representativo.
-Preferencia: paquete (PGDG) sobre compilación; compilar sólo si D5 exige algo que no
-esté empaquetado. 0.6.0 basta para un primer corte con embeddings densos.
+0.6.0 basta para un primer corte con embeddings densos. La preferencia «paquete PGDG
+antes que compilar» quedó RETIRADA por H-THYROX-256 (ver la sección siguiente).
 
 ## Simulación APT con PGDG, sin tocar el sistema (2026-09-29)
 
@@ -56,3 +56,16 @@ Consecuencia para D2b: «PGDG 0.8.6 sólo para pgvector» no existe. Las opcione
 fijando además `libpq5` si no se quiere la 18; (3) compilar pgvector ≥0.7 contra el
 servidor de Ubuntu (`postgresql-server-dev-16` de Ubuntu, sin tocar el servidor).
 La (3) es la única que conserva el PostgreSQL de Ubuntu con una versión moderna.
+
+## Regla de decisión vigente tras H-THYROX-256 (acordada con el ejecutor, 2026-09-29)
+
+1. Si D5 queda cubierto por 0.6.0: se conserva pgvector 0.6.0 de Ubuntu.
+2. Si D5 exige capacidades de 0.8.x y se conserva el PostgreSQL 16 de Ubuntu: compilar
+   pgvector contra ese servidor (`postgresql-server-dev-16` de Ubuntu).
+3. Migrar el servidor, el cliente y `libpq` a PGDG sólo con una razón independiente de
+   pgvector; nunca únicamente para obtener una extensión más nueva.
+
+Evidencia: los `Breaks`/`Provides` declarados y los cambios que APT propone
+(`apt-simulation.txt`). Inferencia no medida: la causa concreta del `Breaks` en LLVM/JIT.
+No se tocan los repositorios APT reales ni `toolchain.sh` hasta que D5 concluya que 0.6.0
+no basta.
