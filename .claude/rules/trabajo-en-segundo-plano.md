@@ -19,6 +19,7 @@ forma del problema:
 | un trabajo | `src/session/bg.sh` | `bin/thyrox-bg` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
 | N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
 | la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
+| un comando sobre N ítems, en primer plano | `src/session/parallel_map.sh` | `bin/parallel_map` | GNU Parallel con la anchura de `width_cap`, `-k` y la fuente de ítems declarada; cada ítem se mide con GNU Time y reserva su RAM antes de correr |
 | N lecturas **con juicio**, una por item | `src/session/headless-pool.sh` | `bin/headless-pool` | una conversación `thyrox -p` por item, repartidas con GNU Parallel; salida y veredicto por item |
 | N implementaciones **con juicio**, una por item | `headless-pool --isolation worktree` + `src/session/pool_integrate.sh` | `bin/headless-pool`, `bin/pool_integrate` | cada item escribe en su propio worktree y se verifica ahí; la integración aplica al árbol lo verificado y disjunto, y declara cada conflicto |
 
@@ -145,7 +146,14 @@ pico justo antes de lanzarse: la admisión de `--memfree` (`parallel` 20231122,
 4113-4118). Su otra mitad —matar al más joven cuando lo libre cae a la
 mitad— no se porta: mataría un ítem a media petición.
 
-**Comprobar no basta: la admisión RESERVA.** Con 5000 MiB libres y dos ítems
+**Comprobar no basta: la admisión RESERVA** — para la VRAM y para la RAM. El
+registro y el bucle de comprobar-y-reservar viven en
+`src/session/resource_admission.py`; cada recurso aporta sólo su medida
+(`nvidia-smi` o `MemAvailable` y el RSS del árbol). Por eso `bin/parallel_map`
+no pasa `--memfree`: esa cota de GNU Parallel mide al lanzar y no reserva, y es
+la misma ventana de comprobar-y-usar con la RAM en lugar de la VRAM.
+
+Con 5000 MiB libres de VRAM y dos ítems
 de 3000, dos comprobaciones sueltas ven sitio las dos y arrancan los dos —la
 carrera de comprobar-y-usar, reproducida por
 `.claude/workbench/vram-toctou-*/probe-toctou.sh`—. `gpu_monitor admit` mide,

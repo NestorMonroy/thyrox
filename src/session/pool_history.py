@@ -324,7 +324,6 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
     ``reserve_kb`` es la memoria de un VECINO que corre junto al pool (el
     ``tsc`` del pipeline, en ``tsc_cycle``): se suma a lo medido del ítem,
     porque la admisión de Parallel tiene que dejar sitio a los dos."""
-    reserve_note = f" + reserva {reserve_kb} KB" if reserve_kb else ""
     row = _last_row(history, runner, item_model)
     vram_cap, need, vram_why = _vram_decision(row, free_vram_mib, vram_reserve_mib, margin,
                                               vram_floor_mib, gpu_interval_s,
@@ -346,12 +345,45 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
         return Decision(None, None, f"{missing}: nada que derivar" + vram_why,
                         vram_cap, None, vram_cap, need)
     ttl, ttl_why = model_catalog.choose_cache_ttl(catalog, model, row["max_wall_s"] / 60)
-    memfree = _mebibytes(row["peak_kb"] * margin + reserve_kb)
+    memory = _memory_from_row(row, margin, reserve_kb, available_ram_kb)
+    why = f"{memory.why}; TTL {ttl}: {ttl_why}"
+    caps = [c for c in (memory.ram_cap, vram_cap) if c is not None]
+    return Decision(ttl, memory.memfree, why + memory.cap_why + vram_why,
+                    min(caps) if caps else None, memory.ram_cap, vram_cap, need)
+
+
+@dataclass(frozen=True)
+class MemoryDecision:
+    """La mitad de memoria de una derivación: la cota por ítem y el tope de
+    anchura por RAM. No depende de modelo ni de TTL, así que la comparten el
+    pool y ``parallel_map``."""
+    memfree: str | None
+    ram_cap: int | None
+    why: str
+    cap_why: str = ""
+    #: La misma cota en kB, entera: lo que un registro de admisión reserva.
+    need_kb: int | None = None
+
+
+def _memory_from_row(row: dict, margin: float, reserve_kb: int,
+                     available_ram_kb: int | None) -> MemoryDecision:
+    reserve_note = f" + reserva {reserve_kb} KB" if reserve_kb else ""
+    need_kb = math.ceil(row["peak_kb"] * margin + reserve_kb)
+    memfree = _mebibytes(need_kb)
     why = (f"última ejecución: {row['items_measured']} ítems, pared máx {row['max_wall_s']:g} s, "
-           f"pico {row['peak_kb']} KB × {margin:g}{reserve_note} -> {memfree}; TTL {ttl}: {ttl_why}")
-    ram_cap, ram_why = _cap("RAM", "KB", available_ram_kb, reserve_kb, row.get("peak_kb"), margin)
-    caps = [c for c in (ram_cap, vram_cap) if c is not None]
-    return Decision(ttl, memfree, why + ram_why + vram_why, min(caps) if caps else None, ram_cap, vram_cap, need)
+           f"pico {row['peak_kb']} KB × {margin:g}{reserve_note} -> {memfree}")
+    ram_cap, cap_why = _cap("RAM", "KB", available_ram_kb, reserve_kb, row.get("peak_kb"), margin)
+    return MemoryDecision(memfree, ram_cap, why, cap_why, need_kb)
+
+
+def derive_memory(history: Path, margin: float = DEFAULT_MARGIN, reserve_kb: int = 0,
+                  available_ram_kb: int | None = None) -> MemoryDecision:
+    """``--memfree`` y el tope de anchura por RAM desde la última ejecución
+    medida; sin ninguna no inventa: sin cota, y dice por qué."""
+    row = _last_row(history)
+    if row is None:
+        return MemoryDecision(None, None, "sin ejecución previa de este historial: nada que derivar")
+    return _memory_from_row(row, margin, reserve_kb, available_ram_kb)
 
 
 def main(argv: list[str]) -> int:

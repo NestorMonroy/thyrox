@@ -250,7 +250,10 @@ catálogo de arriba no bastaba para elegir bien:
   y el porqué están en `search-the-git-index.md`.
 - **`detect_parallel_opportunity`** — un `for`/`while read`/`xargs` que corre
   un comando externo por elemento, con iteraciones independientes, va a
-  `parallel -j N -k`. Episodio: un `git log --follow` por archivo sobre 97
+  `bin/parallel_map '<comando> {}' ::: <ítems>` (o `:::: -` para leer stdin):
+  deriva la anchura, conserva el orden y exige la fuente declarada, porque el
+  stdin implícito de esta herramienta es un socket del anfitrión que no se
+  cierra. Episodio: un `git log --follow` por archivo sobre 97
   archivos no terminó en 120 s en serie; con `parallel -j8 -k`, 3 min 38 s.
   No avisa si el cuerpo escribe el índice de git (un único escritor), si
   modifica en sitio un archivo que no depende de la variable del bucle (las

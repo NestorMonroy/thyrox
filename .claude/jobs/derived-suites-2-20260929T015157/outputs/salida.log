@@ -1,0 +1,11 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+tests/session/test-gpu-admission-cli.sh exit=0
+tests/session/test-headless-pool.sh exit=0
+tests/session/test_gpu_monitor.py exit=0
+tests/session/test_gpu_scenarios.py exit=0
+tests/session/test_parallel_map_history.py exit=0
+tests/session/test_pool_history.py exit=0
+tests/session/test_resource_admission.py exit=0
+tests/verify/test_step_report.py exit=0
+tests/session/test-parallel-map.sh exit=0
+__BG_EXIT__=0

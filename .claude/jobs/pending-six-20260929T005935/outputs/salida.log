@@ -1,0 +1,5 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+/home/user/thyrox/src/session/headless-pool.sh: line 483: syntax error near unexpected token `)'
+/home/user/thyrox/src/session/headless-pool.sh: line 483: `           thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || HP_TIME=""'
+__BG_EXIT__=2

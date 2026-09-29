@@ -1,0 +1,582 @@
+diff --git a/src/packages/config/__tests__/policyFieldRescue.test.ts b/src/packages/config/__tests__/policyFieldRescue.test.ts
+new file mode 100644
+index 00000000..73608d61
+--- /dev/null
++++ b/src/packages/config/__tests__/policyFieldRescue.test.ts
+@@ -0,0 +1,113 @@
++/**
++ * El rescate de política campo a campo — porte de `os` (`chunk-379zyrv7.js`,
++ * ejecutable 2.1.283; extracción en
++ * `.claude/workbench/policy-settings-port-20260927T083804/`). `os` valida
++ * TODO el documento de una vez: un campo inválido invalidaba el documento
++ * entero. Este módulo valida campo a campo: un campo inválido se descarta o,
++ * si es una de las claves restrictivas de `Zo` (aquí, `restrictiveGates`,
++ * derivada de `RESTRICTIVE_SETTINGS` — el porte ya existente de `Qe` en
++ * `policyMerge.ts`), se sustituye por su valor restrictivo.
++ */
++import { describe, expect, test } from 'bun:test'
++import { z } from 'zod'
++import * as R from '../settings/policyFieldRescue.ts'
++
++describe('las puertas restrictivas (Zo, derivadas de Qe)', () => {
++  test('sólo incluye claves de un solo nivel presentes en el esquema, sin las gestionadas aparte', () => {
++    const keys = R.restrictiveGates().map(gate => gate.key)
++    expect(keys).toContain('allowManagedHooksOnly')
++    expect(keys).toContain('allowManagedMcpServersOnly')
++    expect(keys).toContain('allowManagedPermissionRulesOnly')
++    expect(keys).toContain('disableAutoMode')
++    // Gestionadas aparte en el binario: fuera de Zo() aunque estén en hn().
++    expect(keys).not.toContain('strictPluginOnlyCustomization')
++    expect(keys).not.toContain('disableAllHooks')
++    // De Qe pero no declarada en nuestro SettingsSchema: no puede aparecer.
++    expect(keys).not.toContain('enforceAvailableModels')
++  })
++})
++
++describe('rescueField: un campo, su esquema y la tabla de puertas', () => {
++  test('un valor válido no produce ningún aviso', () => {
++    const result = R.rescueField('model', 'claude-sonnet-5', z.string())
++    expect(result).toEqual({ value: 'claude-sonnet-5' })
++  })
++
++  test('un campo inválido sin puerta se descarta y queda rescatado', () => {
++    const result = R.rescueField('maxTurns', 'nope', z.number().int().positive())
++    expect(result.value).toBeUndefined()
++    expect(result.issue?.path).toBe('maxTurns')
++    expect(result.issue?.substituted).toBeUndefined()
++    expect(result.issue?.removed).toBeUndefined()
++  })
++
++  test('un campo inválido con puerta se sustituye por su valor restrictivo', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'allowManagedHooksOnly', restrictive: true }]
++    const result = R.rescueField('allowManagedHooksOnly', 'nope', z.boolean(), gates)
++    expect(result.value).toBe(true)
++    expect(result.issue).toMatchObject({ path: 'allowManagedHooksOnly', substituted: true })
++  })
++
++  test('una puerta "disable" sustituye con el booleano más restrictivo, no con la cadena', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'disableAutoMode', restrictive: 'disable' }]
++    const result = R.rescueField('disableAutoMode', 3, z.boolean(), gates)
++    expect(result.value).toBe(true)
++    expect(result.issue).toMatchObject({ path: 'disableAutoMode', substituted: true })
++  })
++
++  test('un "false" válido en una puerta "disable" es un no-op: se retira y se marca removed', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'disableAutoMode', restrictive: 'disable' }]
++    const result = R.rescueField('disableAutoMode', false, z.boolean(), gates)
++    expect(result.value).toBeUndefined()
++    expect(result.issue).toMatchObject({ path: 'disableAutoMode', removed: true })
++    expect(result.issue?.substituted).toBeUndefined()
++  })
++
++  test('un "true" válido en una puerta "disable" se conserva tal cual', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'disableAutoMode', restrictive: 'disable' }]
++    const result = R.rescueField('disableAutoMode', true, z.boolean(), gates)
++    expect(result).toEqual({ value: true })
++  })
++})
++
++describe('rescuePolicyDocument: el documento entero, campo a campo', () => {
++  test('un campo inválido no invalida a los demás — la diferencia con SettingsSchema().safeParse', () => {
++    const result = R.rescuePolicyDocument({ model: 'claude-sonnet-5', maxTurns: 'nope' })
++    expect(result.settings).toEqual({ model: 'claude-sonnet-5' })
++    expect(result.issues).toHaveLength(1)
++    expect(result.issues[0]!.path).toBe('maxTurns')
++  })
++
++  test('una clave sin declarar en el esquema pasa sin tocar (passthrough)', () => {
++    const result = R.rescuePolicyDocument({ managedSourcesBehavior: 'merge' })
++    expect(result.settings).toEqual({ managedSourcesBehavior: 'merge' })
++    expect(result.issues).toEqual([])
++  })
++
++  test('una puerta inválida se sustituye dentro del documento completo', () => {
++    const result = R.rescuePolicyDocument({ allowManagedMcpServersOnly: 'nope' })
++    expect(result.settings).toEqual({ allowManagedMcpServersOnly: true })
++    expect(result.issues[0]).toMatchObject({ path: 'allowManagedMcpServersOnly', substituted: true })
++  })
++})
++
++describe('isPolicyNoOp (Ed, reducida a lo que hn()/ts() deciden sin rutas anidadas)', () => {
++  test('un valor null nunca cuenta como escritura de política', () => {
++    expect(R.isPolicyNoOp('model', null)).toBe(true)
++  })
++  test('un valor normal cuenta como escritura de política', () => {
++    expect(R.isPolicyNoOp('model', 'claude-sonnet-5')).toBe(false)
++  })
++  test('"false" en una puerta "disable" es un no-op', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'disableAutoMode', restrictive: 'disable' }]
++    expect(R.isPolicyNoOp('disableAutoMode', false, gates)).toBe(true)
++  })
++  test('"true" en una puerta "disable" SÍ cuenta como escritura de política', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'disableAutoMode', restrictive: 'disable' }]
++    expect(R.isPolicyNoOp('disableAutoMode', true, gates)).toBe(false)
++  })
++  test('"false" en una puerta booleana simple (no "disable") sí cuenta', () => {
++    const gates: readonly R.RestrictiveGate[] = [{ key: 'skipWebFetchPreflight', restrictive: false }]
++    expect(R.isPolicyNoOp('skipWebFetchPreflight', false, gates)).toBe(false)
++  })
++})
+diff --git a/src/packages/config/__tests__/policySources.test.ts b/src/packages/config/__tests__/policySources.test.ts
+index e691eb93..de6e4d1a 100644
+--- a/src/packages/config/__tests__/policySources.test.ts
++++ b/src/packages/config/__tests__/policySources.test.ts
+@@ -4,6 +4,13 @@
+  * fragmentos) de `chunk-379zyrv7.js` en el ejecutable 2.1.283 (extracción en
+  * `.claude/workbench/policy-settings-port-20260927T083804/`). La remota y la
+  * MDM se inyectan; el archivo se lee de un directorio temporal real.
++ *
++ * Los casos del rescate campo a campo (`os`/`Ho`/`Ed`, en
++ * `./policyFieldRescue.ts`) están aquí y no en `policyFieldRescue.test.ts`
++ * porque lo que este archivo prueba es su EFECTO en `readPolicyDocument`/
++ * `readFilePolicy`: que un campo roto no tira el documento, que una puerta
++ * sustituida se ve en `documentHasPolicyContent`, y que el suelo (`pd`)
++ * protege un valor real ya escrito por un fragmento anterior.
+  */
+ import { afterEach, describe, expect, test } from 'bun:test'
+ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+@@ -39,13 +46,42 @@ describe('un documento de política (HRe)', () => {
+   test('uno vacío carga sin settings ni contenido', () => {
+     expect(S.readPolicyDocument({}, 'f')).toMatchObject({ settings: null, loadState: 'loaded', documentHasPolicyContent: false })
+   })
+-  test('uno que el esquema rechaza no carga', () => {
++  test('un campo inválido se rescata: el documento carga y el campo se descarta (os)', () => {
+     const read = S.readPolicyDocument({ permissions: 'nope' }, 'f')
+     expect(read.settings).toBeNull()
+-    expect(read.loadState).toBe('didNotLoad')
+-    expect(read.documentHasPolicyContent).toBe(false)
++    // Antes de portar el rescate campo a campo, un campo roto invalidaba el
++    // documento entero (`loadState: 'didNotLoad'`). Ahora el documento SÍ
++    // carga — el campo roto sólo se descarta — y por eso cuenta como intento
++    // de escribir política (`Ed`): un `permissions` inválido sigue siendo un
++    // intento de fijar `permissions`, no un documento vacío.
++    expect(read.loadState).toBe('loaded')
++    expect(read.documentHasPolicyContent).toBe(true)
+     expect(read.errors.length).toBeGreaterThan(0)
+     expect(read.errors.every(error => error.file === 'f')).toBe(true)
++    expect(read.errors[0]!.substituted).toBeUndefined()
++  })
++  test('un campo con puerta inválido se sustituye por su valor restrictivo (Zo)', () => {
++    const read = S.readPolicyDocument({ allowManagedMcpServersOnly: 'nope' }, 'f')
++    expect(read.settings).toEqual({ allowManagedMcpServersOnly: true })
++    expect(read.loadState).toBe('loaded')
++    expect(read.documentHasPolicyContent).toBe(true)
++    expect(read.errors).toEqual([{
++      file: 'f',
++      path: 'allowManagedMcpServersOnly',
++      message: '"allowManagedMcpServersOnly" was present but invalid; treating it as true (its restrictive value) until it is fixed.',
++      substituted: true,
++    }])
++  })
++  test('un "false" válido en una puerta "disable" es un no-op: se retira y no cuenta como política (Ho/Ed)', () => {
++    const read = S.readPolicyDocument({ disableAutoMode: false }, 'f')
++    expect(read.settings).toBeNull()
++    expect(read.documentHasPolicyContent).toBe(false)
++    expect(read.errors).toEqual([{
++      file: 'f',
++      path: 'disableAutoMode',
++      message: '"disableAutoMode" was set to false; reading it as absent (the key\'s only value is "disable"). Remove the key instead.',
++      removed: true,
++    }])
+   })
+   test('cada lectura recibe su copia de la caché', () => {
+     const document = { permissions: { allow: ['Read'] } }
+@@ -170,4 +206,29 @@ describe('el archivo administrado (njr)', () => {
+     expect(read.settings).toBeNull()
+     expect(read.loadState).toBe('loaded')
+   })
++  test('el suelo (pd): un sustituto no desplaza el valor real que ya escribió un fragmento anterior', () => {
++    const dir = managedDir({
++      'managed-settings.json': JSON.stringify({ allowManagedHooksOnly: false }),
++      // Inválido: sin la puerta, este valor se sustituiría por `true` — el
++      // más restrictivo — y pisaría el `false` real de arriba.
++      'managed-settings.d/a.json': JSON.stringify({ allowManagedHooksOnly: 'nope' }),
++    })
++    const read = S.readFilePolicy(dir)
++    expect(read.settings).toEqual({ allowManagedHooksOnly: false })
++    expect(read.errors).toContainEqual({
++      file: join(dir, 'managed-settings.d', 'a.json'),
++      path: 'allowManagedHooksOnly',
++      message: 'That substitute is not applied: "allowManagedHooksOnly" keeps the value an earlier managed-settings document of this folder wrote.',
++      statusOnly: true,
++    })
++  })
++  test('el suelo (pd): dos sustitutos seguidos en la misma ruta no se avisan entre sí', () => {
++    const dir = managedDir({
++      'managed-settings.d/10-a.json': JSON.stringify({ allowManagedHooksOnly: 'nope' }),
++      'managed-settings.d/20-b.json': JSON.stringify({ allowManagedHooksOnly: 'tampoco' }),
++    })
++    const read = S.readFilePolicy(dir)
++    expect(read.settings).toEqual({ allowManagedHooksOnly: true })
++    expect(read.errors.filter(error => error.message.startsWith('That substitute is not applied'))).toEqual([])
++  })
+ })
+diff --git a/src/packages/config/settings/policyComposition.ts b/src/packages/config/settings/policyComposition.ts
+index b29b3f3e..67793cad 100644
+--- a/src/packages/config/settings/policyComposition.ts
++++ b/src/packages/config/settings/policyComposition.ts
+@@ -42,6 +42,10 @@ export type PolicyError = {
+   statusOnly?: boolean
+   startupFatal?: boolean
+   errorClass?: 'unreadable'
++  /** El rescate por campo (`os`) sustituyó un valor inválido por el restrictivo de su puerta. */
++  substituted?: boolean
++  /** El rescate por campo (`os`/`Ho`) leyó un `false` no-op en una puerta "disable" y sugiere borrar la clave. */
++  removed?: boolean
+ }
+ 
+ /** `lt`: las claves que gobiernan la composición y no son política. */
+diff --git a/src/packages/config/settings/policyFieldRescue.ts b/src/packages/config/settings/policyFieldRescue.ts
+new file mode 100644
+index 00000000..d07a6e7d
+--- /dev/null
++++ b/src/packages/config/settings/policyFieldRescue.ts
+@@ -0,0 +1,207 @@
++/**
++ * El rescate de política campo a campo: porte de `os` de `chunk-379zyrv7.js`
++ * en el ejecutable 2.1.283 (extracción en
++ * `.claude/workbench/policy-settings-port-20260927T083804/`, ampliada con
++ * `hn`, `Zo`, `ts`, `Ho` y `Ed` del mismo chunk).
++ *
++ * `SettingsSchema().safeParse(documento)` valida el documento ENTERO de una
++ * vez: un solo campo inválido (`maxTurns: "nope"`) tira el documento
++ * completo, incluidos los campos válidos que traía al lado. `os` en 2.1.283
++ * no hace eso — valida cada campo por separado, y un campo roto no arrastra
++ * a los demás. Este módulo es ese mismo criterio, campo a campo sobre
++ * `SettingsSchema().shape`:
++ *
++ * - un campo sin puerta que no valida se DESCARTA (se ignora, con su aviso);
++ * - un campo con puerta (`restrictiveGates`, porte de `Zo`) que no valida se
++ *   SUSTITUYE por su valor restrictivo, marcado `substituted: true`;
++ * - una puerta de tipo `"disable"` (el sustituto de `Ho` para las claves cuyo
++ *   único valor legible es "restringir") trata un `false` válido como un
++ *   no-op — nadie escribe `false` para no hacer nada — y lo retira con
++ *   `removed: true`, sugiriendo borrar la clave en vez de escribirla.
++ *
++ * `isPolicyNoOp` es el porte reducido de `Ed`: decide si una clave con un
++ * valor dado cuenta como intento de escribir política. Su forma completa
++ * (`Ed`/`Sn`/`kd`) recorre rutas anidadas con un resolutor de rutas del
++ * esquema (`gn`) que esta extracción no incluye, y cubre alias de claves de
++ * mercados de plugins (`dt`: `additionalMarketplaces`→`extraKnownMarketplaces`,
++ * `allowedMarketplaces`→`strictKnownMarketplaces`) que hoy son *diferidas* en
++ * `inventory.ts` — no están en `SettingsSchema`. Por eso esta versión sólo
++ * decide sobre claves de nivel superior, con la tabla de puertas de arriba:
++ * cualquier ruta anidada cuenta siempre como escritura de política si no es
++ * `null`, y los alias de mercados no se reconocen. pendiente: cuando exista
++ * `gn`/las claves de mercados dejen de ser diferidas.
++ *
++ * Símbolos de `symbol-UP-level3.txt` que este pase NO porta, y por qué:
++ * - `tm` — `structuredClone` con trazado; utilidad genérica sin relación con
++ *   el rescate, y sin infraestructura de trazado en este puerto.
++ * - `At` — agrega nueve validadores de entradas de servidor MCP
++ *   (`policySource`, `mcpServerEntrySalvageOnly`, mapa de patrones de
++ *   mercado); ninguno de esos nueve símbolos está en la extracción, y el
++ *   concepto no existe en nuestro `SettingsSchema`.
++ * - `Od` — arma el callback `(issue) => void` que este módulo reemplaza por
++ *   construir el arreglo de avisos directamente; filtra `MRe` (aviso de
++ *   servidores MCP retenidos de una sesión remota) y registra por un logger
++ *   `t` que este paquete no tiene — ninguno de los dos existe aquí.
++ * - `kt` — aplana `ZodError` con desdoblado especial de la unión
++ *   `attribution` y un motor de sugerencias (`sd`) no extraído; el archivo ya
++ *   usa `formatZodError` para los errores de documento completo (JSON roto,
++ *   no-objeto), y el rescate por campo no necesita desdoblar una unión que
++ *   este esquema no declara.
++ * - `fz` — cachea por archivo con una variante "pinned"; `readPolicyDocument`
++ *   ya cachea por documento y archivo sin esa variante, que no existe en
++ *   `PolicyFiles`.
++ * - `V2o`, `BUt` — ya portados verbatim como `isFragment`/`unreadable` en
++ *   `policySources.ts`.
++ * - `le`, `lgn`, `Ka`, `Ta` — la caché de sesión de la capa remota y su
++ *   elegibilidad por host; el propio encabezado de `policySources.ts` ya
++ *   declara que esa sesión remota no se modela aquí.
++ * - `ls`, `Cne`, `fa` — el mapa `policyHelpers` por sistema operativo (2.1.283).
++ *   Este paquete sólo porta el `policyHelper` singular de 2.1.136
++ *   (`policyHelper.ts`); el mapa por SO es una fase siguiente, no de este ítem.
++ * - `Bt` — trunca una cadena para mostrarla; ningún mensaje de este módulo
++ *   incrusta texto sin cota del usuario que necesite truncarse hoy.
++ */
++import { z } from 'zod'
++import { RESTRICTIVE_SETTINGS } from './policyMerge.ts'
++import { SettingsSchema } from './types.ts'
++
++/** `Zo`: una puerta de nivel superior con su valor restrictivo. */
++export type RestrictiveGate = { key: string; restrictive: boolean | string }
++
++/** Un aviso del rescate de un campo. */
++export type RescueIssue = { path: string; message: string; substituted?: boolean; removed?: boolean }
++
++export type RescuedField = { value: unknown; issue?: RescueIssue }
++
++export type RescueResult = { settings: Record<string, unknown>; issues: RescueIssue[] }
++
++/**
++ * `Zo`: filtra `RESTRICTIVE_SETTINGS` (el porte ya existente de `Qe`, en
++ * `policyMerge.ts`) igual que el binario — sólo rutas de un solo nivel, sin
++ * las dos claves que 2.1.283 gestiona aparte (`strictPluginOnlyCustomization`,
++ * `disableAllHooks`), y sólo las presentes en `SettingsSchema`. Se deriva de
++ * `RESTRICTIVE_SETTINGS` en vez de declarar una segunda tabla: dos tablas de
++ * la misma información divergen solas.
++ */
++const SEPARATELY_HANDLED = new Set(['strictPluginOnlyCustomization', 'disableAllHooks'])
++
++export function restrictiveGates(): readonly RestrictiveGate[] {
++  const shape = SettingsSchema().shape as Record<string, unknown>
++  return RESTRICTIVE_SETTINGS
++    .filter(entry => entry.path.length === 1
++      && !SEPARATELY_HANDLED.has(entry.path[0]!)
++      && (typeof entry.restrictive === 'boolean' || typeof entry.restrictive === 'string')
++      && shape[entry.path[0]!] !== undefined)
++    .map(entry => ({ key: entry.path[0]!, restrictive: entry.restrictive as boolean | string }))
++}
++
++const DEFAULT_GATES = restrictiveGates()
++
++function gateFor(key: string, gates: readonly RestrictiveGate[]): RestrictiveGate | undefined {
++  return gates.find(gate => gate.key === key)
++}
++
++/**
++ * El valor que sustituye a una puerta inválida. Una puerta `"disable"` no
++ * tiene tercer estado en nuestro esquema (los campos son `z.boolean()`
++ * llanos): se sustituye con `true`, el booleano más restrictivo — no con la
++ * cadena `"disable"` que el binario asigna, que violaría el tipo de la
++ * propia clave.
++ */
++function restrictiveSubstitute(gate: RestrictiveGate): boolean | string {
++  return gate.restrictive === 'disable' ? true : gate.restrictive
++}
++
++/** `ta`: un `false` exacto. */
++function isFalse(value: unknown): value is false {
++  return value === false
++}
++
++/**
++ * `Ho`, reducida a lo que aplica sin la coerción de cadena a booleano
++ * (`Bx`, no extraída): una puerta `"disable"` con un `false` válido es un
++ * no-op — su único valor legible es la restricción — y se lee como ausente.
++ */
++function rescueDisableNoOp(key: string, rawValue: unknown, gate: RestrictiveGate | undefined): RescuedField | undefined {
++  if (gate?.restrictive !== 'disable' || !isFalse(rawValue)) return undefined
++  return {
++    value: undefined,
++    issue: {
++      path: key,
++      message: `"${key}" was set to false; reading it as absent (the key's only value is "disable"). Remove the key instead.`,
++      removed: true,
++    },
++  }
++}
++
++/**
++ * `os` (un campo): valida `rawValue` con su propio esquema; si no valida y
++ * la clave tiene puerta, sustituye por el valor restrictivo (`substituted:
++ * true`); si no tiene puerta, la descarta con su aviso.
++ */
++export function rescueField(
++  key: string,
++  rawValue: unknown,
++  schema: z.ZodType,
++  gates: readonly RestrictiveGate[] = DEFAULT_GATES,
++): RescuedField {
++  const gate = gateFor(key, gates)
++  const noOp = rescueDisableNoOp(key, rawValue, gate)
++  if (noOp) return noOp
++
++  const parsed = schema.safeParse(rawValue)
++  if (parsed.success) return { value: parsed.data }
++
++  if (gate !== undefined) {
++    const substitute = restrictiveSubstitute(gate)
++    return {
++      value: substitute,
++      issue: {
++        path: key,
++        message: `"${key}" was present but invalid; treating it as ${String(substitute)} (its restrictive value) until it is fixed.`,
++        substituted: true,
++      },
++    }
++  }
++
++  const firstIssue = parsed.error.issues[0]?.message ?? 'Failed schema validation'
++  return { value: undefined, issue: { path: key, message: `${firstIssue}. This field was ignored.` } }
++}
++
++/**
++ * `os` (el documento): rescata cada clave declarada en `SettingsSchema` por
++ * separado; una clave que el esquema no declara pasa sin tocar, como el
++ * `.passthrough()` de la propia validación en un solo paso ya hacía.
++ */
++export function rescuePolicyDocument(
++  document: Record<string, unknown>,
++  gates: readonly RestrictiveGate[] = DEFAULT_GATES,
++): RescueResult {
++  const shape = SettingsSchema().shape as Record<string, z.ZodType>
++  const issues: RescueIssue[] = []
++  const settings: Record<string, unknown> = {}
++  for (const [key, rawValue] of Object.entries(document)) {
++    const fieldSchema = shape[key]
++    if (fieldSchema === undefined) {
++      settings[key] = rawValue
++      continue
++    }
++    const { value, issue } = rescueField(key, rawValue, fieldSchema, gates)
++    if (issue) issues.push(issue)
++    if (value !== undefined) settings[key] = value
++  }
++  return { settings, issues }
++}
++
++/**
++ * `Ed`, reducida a claves de nivel superior (ver el pendiente en el
++ * encabezado): decide si `key`/`value` cuenta como un intento de escribir
++ * política. `null` nunca cuenta — es limpiar la clave, no fijarla — y un
++ * `false` en una puerta `"disable"` tampoco, por la misma razón de no-op que
++ * `rescueDisableNoOp` aplica al rescatar el campo.
++ */
++export function isPolicyNoOp(key: string, value: unknown, gates: readonly RestrictiveGate[] = DEFAULT_GATES): boolean {
++  if (value === null) return true
++  const gate = gateFor(key, gates)
++  return gate?.restrictive === 'disable' && isFalse(value)
++}
+diff --git a/src/packages/config/settings/policySources.ts b/src/packages/config/settings/policySources.ts
+index 055cbfd1..46a786c3 100644
+--- a/src/packages/config/settings/policySources.ts
++++ b/src/packages/config/settings/policySources.ts
+@@ -12,14 +12,28 @@
+  * cuenta como ausente: queda `didNotLoad`, para que la composición falle
+  * cerrado en vez de caer a la fuente siguiente.
+  *
+- * Divergencias declaradas:
+- * - La validación es `SettingsSchema` de este paquete, no la de 2.1.283
+- *   (`os`/`At`), que rescata campo a campo y registra sustitutos. Por eso no
+- *   hay `onlySubstitutes` por documento ni la lista `removed`, y el suelo de
+- *   sustitutos entre fragmentos (`pd`) no se porta. pendiente: con el esquema
+- *   de rescate.
+- * - `C$o` descarta además las claves que `Ed` reconoce como retiradas; aquí
+- *   cuenta toda clave de política con valor. pendiente: con `Ed`.
++ * La validación de cada documento ya NO es un `SettingsSchema().safeParse`
++ * atómico: es el rescate campo a campo de `./policyFieldRescue.ts` (porte de
++ * `os`/`Ho`, con `Zo` derivada de `RESTRICTIVE_SETTINGS`/`Qe`). Un campo
++ * inválido ya no invalida el documento entero, y una puerta restrictiva
++ * inválida se sustituye en vez de descartarse (`substituted: true`); una
++ * puerta `"disable"` con un `false` válido se lee como no-op (`removed:
++ * true`). `writesPolicy` usa `isPolicyNoOp` (`Ed`, reducida a claves de nivel
++ * superior — ver el pendiente en `policyFieldRescue.ts`) para no contar un
++ * `null` ni un `false` de no-op como intento de escribir política.
++ *
++ * Divergencias que siguen declaradas:
++ * - El "suelo" entre fragmentos de `readFilePolicy` (`pd`) se generaliza a
++ *   CUALQUIER campo sustituido, no sólo a los de la tabla `_n` del binario
++ *   (no extraída): un valor real ya establecido por un fragmento anterior
++ *   protege esa ruta de un sustituto posterior, sin la distinción "inerte" de
++ *   `_n` que decide cuándo el sustituto se aplica igual con aviso.
++ * - `onlySubstitutes` sigue sin ser por documento (`i` en `os`): un documento
++ *   con sólo sustitutos y sin escritura real no se distingue todavía de uno
++ *   con contenido genuino, más allá de lo que `isPolicyNoOp` ya filtra.
++ * - `isPolicyNoOp` no recorre rutas anidadas (`Sn`/`kd`/`gn`, no extraído) ni
++ *   reconoce los alias de mercados de plugins (`dt`), hoy *diferidos* en
++ *   `inventory.ts`.
+  * - La capa remota no emite el aviso de servidores MCP retenidos (`MRe`,
+  *   `agn`) ni los fallos `ruled_empty` del último intento (`jx`), y
+  *   `servedSnapshot` es siempre falso: esos tres leen el estado de la sesión
+@@ -42,8 +56,7 @@ import {
+   type PolicyRead,
+ } from './policyComposition.ts'
+ import { mergeManagedValue } from './policyMerge.ts'
+-import { SettingsSchema } from './types.ts'
+-import { formatZodError } from './validation.ts'
++import { isPolicyNoOp, rescuePolicyDocument } from './policyFieldRescue.ts'
+ import { sanitizeCrossSessionInbound } from './crossSessionInbound.ts'
+ 
+ type PolicyDocument = Record<string, unknown>
+@@ -76,9 +89,9 @@ function errnoOf(error: unknown): string | undefined {
+   return typeof error === 'object' && error !== null && 'code' in error ? String((error as { code: unknown }).code) : undefined
+ }
+ 
+-/** `C$o`: el documento escribe alguna clave de política con valor. */
++/** `C$o`, con `Ed` (`isPolicyNoOp`): el documento escribe alguna clave de política con valor. */
+ function writesPolicy(document: PolicyDocument, settings: PolicyDocument | null): boolean {
+-  return Object.entries(document).some(([key, value]) => value !== null && !(NON_POLICY_KEYS as readonly string[]).includes(key))
++  return Object.entries(document).some(([key, value]) => !isPolicyNoOp(key, value) && !(NON_POLICY_KEYS as readonly string[]).includes(key))
+     || (settings !== null && hasPolicyKeys(settings))
+ }
+ 
+@@ -87,17 +100,29 @@ type DocumentRead = PolicySourceRead & { loadState: PolicyLoadState; documentHas
+ /** `md`: la validación de cada documento, por documento y por nombre de fuente. */
+ const validated = new WeakMap<object, Map<string, DocumentRead>>()
+ 
+-/** `Ty`. */
++/**
++ * `Ty`, con el rescate campo a campo (`os`) en vez de un `safeParse` atómico:
++ * un campo inválido ya no tira el documento entero, y `loadState` es siempre
++ * `'loaded'` cuando la forma de nivel superior es un objeto — que es la única
++ * forma con que se llega aquí (`readManagedDocument` ya descarta lo que no lo
++ * es antes de llamar).
++ */
+ function validatePolicyDocument(document: PolicyDocument, file: string): DocumentRead {
+-  const candidate = structuredClone(document)
++  const candidate = structuredClone(document) as PolicyDocument
+   const warnings = sanitizeCrossSessionInbound(candidate, file, { policySource: true })
+-  const parsed = SettingsSchema().safeParse(candidate)
+-  if (!parsed.success) {
+-    return { settings: null, errors: [...warnings, ...formatZodError(parsed.error, file)], documentHasPolicyContent: false, loadState: 'didNotLoad' }
+-  }
+-  const data = parsed.data as PolicyDocument
+-  const settings = Object.keys(data).length > 0 ? data : null
+-  return { settings, errors: warnings, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
++  const { settings: rescued, issues } = rescuePolicyDocument(candidate)
++  const errors: PolicyError[] = [
++    ...warnings,
++    ...issues.map(issue => ({
++      file,
++      path: issue.path,
++      message: issue.message,
++      ...(issue.substituted && { substituted: issue.substituted }),
++      ...(issue.removed && { removed: issue.removed }),
++    })),
++  ]
++  const settings = Object.keys(rescued).length > 0 ? rescued : null
++  return { settings, errors, documentHasPolicyContent: writesPolicy(document, settings), loadState: 'loaded' }
+ }
+ 
+ /** `gd`: cada llamada recibe su copia, para que nadie mute la de la caché. */
+@@ -186,6 +211,11 @@ export function readFilePolicy(directory: string, files: PolicyFiles = NODE_POLI
+   let authored = false
+   let hasContent = false
+   let loadState: PolicyLoadState = 'absent'
++  // `pd`: el "suelo" — una ruta cuyo valor actual en `merged` viene de un
++  // sustituto (`substituted: true`) queda marcada aquí; mientras lo esté, un
++  // sustituto posterior en la misma ruta no dispara el aviso de abajo. Ver la
++  // divergencia declarada en el encabezado del archivo.
++  const floors = new Set<string>()
+ 
+   const apply = (read: PolicySourceRead) => {
+     errors.push(...read.errors)
+@@ -193,7 +223,25 @@ export function readFilePolicy(directory: string, files: PolicyFiles = NODE_POLI
+     loadState = combineLoadState(loadState, loadStateOf(read))
+     const { settings } = read
+     if (!settings || Object.keys(settings).length === 0) return
+-    merged = mergeWith(merged, settings, mergeManagedValue)
++    const substitutedPaths = new Set(read.errors.filter(error => error.substituted).map(error => error.path))
++    const toMerge: PolicyDocument = {}
++    for (const [key, value] of Object.entries(settings)) {
++      const isSubstitute = substitutedPaths.has(key)
++      if (isSubstitute && merged[key] !== undefined && !floors.has(key)) {
++        const substituteFile = read.errors.find(error => error.path === key && error.substituted)?.file ?? ''
++        errors.push({
++          file: substituteFile,
++          path: key,
++          message: `That substitute is not applied: "${key}" keeps the value an earlier managed-settings document of this folder wrote.`,
++          statusOnly: true,
++        })
++      } else {
++        toMerge[key] = value
++      }
++      if (isSubstitute) floors.add(key)
++      else floors.delete(key)
++    }
++    if (Object.keys(toMerge).length > 0) merged = mergeWith(merged, toMerge, mergeManagedValue)
+     found = true
+     if (hasPolicyValues(settings) && !read.onlySubstitutes) authored = true
+   }
