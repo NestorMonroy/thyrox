@@ -37,7 +37,7 @@ no ocurre es deuda, un turno roto es una interrupcion. Mismo criterio que
 claves (``hook_event_name``, ``session_id``, ``task_id``).
 *Ciega a:* una tarjeta creada mientras el hook no esta cableado — el acuñado es
 en el alta, no un barrido; la reconciliacion posterior es
-``bin/task_ids ingerir-board``. Y ciega a que el board haya escrito ya el
+``bin/task_ids ingest-board``. Y ciega a que el board haya escrito ya el
 archivo de la tarjeta: si el cliente despacha el evento antes de escribirlo,
 ``mint_created_card`` no la encuentra y este modulo lo reporta sin fallar.
 """

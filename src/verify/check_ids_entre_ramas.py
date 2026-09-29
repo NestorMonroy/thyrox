@@ -48,7 +48,7 @@ EXIT_GUARD = 2
 #: literales independientes divergirian, y una capa ausente de uno dejaria sin
 #: la guarda de colision de `H-THYROX-26` a los hallazgos de esa capa.
 #:
-#: NO se importa el `--capa` de `task_ids.py`: aquel enumera capas de TAREA e
+#: NO se importa el `--layer` de `task_ids.py`: aquel enumera capas de TAREA e
 #: incluye `gen`, que no es prefijo de ningun hallazgo. Compartir el literal
 #: acoplaria este gate a un universo distinto del que mide.
 LAYERS: tuple[str, ...] = ('api', 'db', 'docs', 'server', 'thyrox', 'ui')

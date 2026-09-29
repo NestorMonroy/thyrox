@@ -209,8 +209,9 @@ def citation_index(records, store_path=None, session_id=None):
             if key is None:
                 continue
             # Un sujeto con DOS citas no desambigua: se descarta en vez de
-            # elegir una al azar. Es el mismo criterio que `mint` aplica, y lo
-            # que `task_ids duplicados` mide (93 sujetos hoy, TASK-DB-0002).
+            # elegir una al azar. Es el mismo criterio que `assign_missing_ids`
+            # aplica, y lo que `task_ids duplicates` mide (93 sujetos hoy,
+            # TASK-DB-0002).
             by_subject[key] = None if key in by_subject else citation
     except sqlite3.Error:
         return {}

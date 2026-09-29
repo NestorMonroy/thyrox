@@ -32,7 +32,7 @@ Que aporta cada mitad
 faltaba era el **disparo**. Este modulo lo acota a la tarjeta **recien creada**
 y a nada mas: bajo un hook ``TaskCreate|TaskUpdate``, acuñar tambien en el
 update convertiria cada renombre en fila nueva con cita nueva — el duplicado
-que ``task_ids duplicados`` existe para detectar, y la ceguera que
+que ``task_ids duplicates`` existe para detectar, y la ceguera que
 ``ingest_board`` ya declara (compara por texto exacto).
 
 **#184 — propagar el renombre y el cierre.** La tarjeta pide emparejar «por

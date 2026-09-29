@@ -280,7 +280,7 @@ Tres cosas que el cierre midió y la tarea suponía:
 - **La cita de este párrafo estaba mal, y era anterior.** Decía
   `TASK-THYROX-0018`, que en el store nombra otro sujeto vivo —barrer los 84
   `sys.path.insert`, `pending`—. El correcto es `TASK-THYROX-0028`, cuya
-  descripción es literalmente este trabajo. Un `TASK-<CAPA>-NNNN` resuelve
+  descripción es literalmente este trabajo. Un `TASK-<LAYER>-NNNN` resuelve
   siempre al mismo sujeto; transcribirlo a prosa de memoria, no.
 - **0028 figuraba `completed` desde el 2026-09-15** con sus 24 citas en pie.
   El estado declarado no envejece solo y ningún gate lo mide: ése es el
@@ -306,9 +306,9 @@ una referencia rota desde el primer momento. La forma que resuelve siempre a
 la misma tarea es `TASK-THYROX-NNNN`, y se acuña — no se compone a mano:
 
 ```bash
-bash bin/task_ids ingerir-board <session_id> <ordinal> --capa thyrox
-bash bin/task_ids cita <session_id> <ordinal>   # verificar
-bash bin/task_ids censo                          # conteo por capa
+bash bin/task_ids ingest-board <session_id> <ordinal> --layer thyrox
+bash bin/task_ids lookup <session_id> <ordinal>   # verificar
+bash bin/task_ids census                          # conteo por capa
 ```
 
 Un hallazgo —algo que el trabajo destapó y que alguien podría volver a asumir

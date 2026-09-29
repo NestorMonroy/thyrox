@@ -37,7 +37,7 @@ def test_warns_on_a_bare_board_ordinal_in_a_commit_message():
     warning = _commit("Fix incomplete exports maps, T-9")
     assert warning is not None
     assert "T-9" in warning
-    assert "TASK-<CAPA>-NNNN" in warning
+    assert "TASK-<LAYER>-NNNN" in warning
 
 
 def test_warns_on_board_hash_form():

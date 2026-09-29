@@ -34,8 +34,8 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
    no se asume.
 3. Trabajar en TDD, con la mitad roja persistida y su control de anulación.
 4. **Antes de citar una tarea propia** en un commit, un banco o un hallazgo:
-   acuñar su cita durable con `src/task/task_ids.py ingerir-board <session_id>
-   <ordinal> --capa thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
+   acuñar su cita durable con `src/task/task_ids.py ingest-board <session_id>
+   <ordinal> --layer thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
    board **reinicia por sesión** (332 de 337 ids miden colisión entre dos
    sesiones, `task_ids.py`) — citarlo en texto que sobrevive al turno es
    fabricar una referencia rota desde el primer commit. `TASK-THYROX-NNNN` es

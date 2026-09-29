@@ -2049,7 +2049,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
                     # La capa, y `gen` NO es lo mismo que NULL (TASK-THYROX-0021).
                     # Este INSERT escribia quince columnas y `submodule` no era
                     # una de ellas, asi que toda fila que no viniera de
-                    # `ingerir-board` nacia con la columna en NULL. Medido sobre
+                    # `ingest-board` nacia con la columna en NULL. Medido sobre
                     # el store vivo: 404 de 1636 filas, todas con cita TASK-GEN-,
                     # y 402 de esas 404 indecidibles por evidencia de commit — la
                     # clasificacion retroactiva no las alcanza.

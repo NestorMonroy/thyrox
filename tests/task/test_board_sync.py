@@ -214,10 +214,10 @@ _entorno[bs.BOARD_ROOT_VAR] = str(_raiz_g)
 _entorno.pop("THYROX_ENV_FILE", None)
 _sin_board = subprocess.run(
     [sys.executable, str(TASK_IDS_PATH), "--store", str(DBG),
-     "ingerir-board", SESION_FALSA, "3", "--capa", "docs"],
+     "ingest-board", SESION_FALSA, "3", "--layer", "docs"],
     capture_output=True, text=True, env=_entorno)
 check(_sin_board.returncode == 0,
-      "1g: `ingerir-board` SIN --board resuelve el board por la constante")
+      "1g: `ingest-board` SIN --board resuelve el board por la constante")
 check("TASK-DOCS-" in _sin_board.stdout,
       "1h: y acuña la cita de la tarjeta que ahi encontro")
 

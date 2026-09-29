@@ -271,7 +271,7 @@ afirmar "null->sin dato, []->vacio, lista->ids, None->vacio" \
 
 echo "== 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) =="
 # El camino de insercion compartido escribia quince columnas y `submodule` no
-# era una de ellas: solo `ingerir-board` la escribia. Medido el 2026-09-12
+# era una de ellas: solo `ingest-board` la escribia. Medido el 2026-09-12
 # sobre el store vivo: 404 de 1636 filas con `submodule` NULL, todas con cita
 # TASK-GEN-, y 402 de esas 404 indecidibles por evidencia de commit — o sea que
 # la clasificacion retroactiva no las alcanza y el universo de una consulta por
