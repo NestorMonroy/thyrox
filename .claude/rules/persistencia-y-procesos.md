@@ -46,8 +46,14 @@ adaptadores (`memory` para un solo proxy, `redis` con `THYROX_REDIS_URL`).
 Credenciales, hallazgos, errores y tareas **no** van ahí.
 
 - Ningún consumidor escribe comandos de Redis: usa el puerto.
-- Sin `THYROX_REDIS_URL` con varios proxies, lo que exige vista global
-  (lease, cuota global) rehúsa en vez de actuar cada uno por su cuenta.
+- El modo se declara (un proxy o varios); la URL sólo dice dónde está Redis.
+- Un proxy: si Redis cae, memoria con aviso y reintento en la llamada
+  siguiente. Varios proxies, con Redis caído o ausente: nunca una memoria por
+  proxy en silencio. Lo que exige vista global (el lease del refresco, la
+  cuota global) rehúsa con error explícito; lo que sólo empeora sin ella lo
+  declara por operación y avisa. Hasta R5 la fábrica no distingue el modo.
+- Hoy el único consumidor previsto del puerto es el proxy local: describe el
+  contrato actual, no lo prohíbe a otro estado efímero entre instancias.
 - `@thyrox/coordination` es otra cosa: el ledger de reclamos entre sesiones.
 
 Decisión: ADR-THYROX-006, revisión 1.1.0 (fases TASK-THYROX-0267 a 0271).
