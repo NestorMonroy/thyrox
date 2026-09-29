@@ -588,6 +588,7 @@
         "@thyrox/output": "0.1.0",
         "@thyrox/permission": "0.1.0",
         "@thyrox/repl": "0.0.0",
+        "@thyrox/shared-state": "0.1.0",
         "@thyrox/shell": "0.1.0",
         "@thyrox/storage": "0.1.0",
         "@thyrox/store": "0.1.0",

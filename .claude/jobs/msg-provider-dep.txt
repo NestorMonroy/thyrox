@@ -1,0 +1,6 @@
+Let the provider consume the shared-state port
+
+R3 and R4 plug the SharedStateStore port into token refresh,
+credential cooldowns and the request window. The provider needs the
+package as a dependency before the pool worktrees, which start from
+HEAD, can import it. The R3-R4 bench is recorded with it.
