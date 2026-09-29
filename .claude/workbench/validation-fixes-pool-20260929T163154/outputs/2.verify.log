@@ -1,0 +1,3 @@
+3/3 aserciones verdes
+4/5 aserciones verdes
+VERIFY FAIL: tests/verify/test_rst_gate_interpreter.py
