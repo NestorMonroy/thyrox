@@ -296,3 +296,5 @@ resultado: 18 de 18 aserciones en verde
   ok    test_warns_on_a_bare_board_ordinal_in_a_commit_message
   ok    test_warns_on_board_hash_form
 resumen: 0 fallo(s)
+OK: identificadores en inglés (1 archivos medidos, 4259 en deuda heredada).
+__BG_EXIT__=0
