@@ -1,0 +1,3 @@
+src/packages/provider/src/__tests__/fastModeSurface.test.ts
+src/packages/provider/src/fastMode.ts
+src/packages/provider/src/fastModeSelection.ts

@@ -86,11 +86,17 @@ import { canonicalModelName, MODELS } from '@thyrox/agent/models'
 import { isCoworkEntrypoint, isTruthyFlag } from '@thyrox/config/entrypoint'
 import {
   fastModeUnavailableMessage,
+  isFastModeAvailableFor,
   type FastModeAvailabilityContext,
   type FastModeAvailabilityOptions,
   type FastModeOrgStatusSnapshot,
 } from './fastModeAvailability.ts'
 import { isModelAllowed } from './model/modelAllowlist.ts'
+import {
+  fastModePreferenceEnabled,
+  shouldShowFastModeIndicator,
+  type FastModeSelectionContext,
+} from './fastModeSelection.ts'
 import {
   getInitialSettings,
   getSettingsForSource,
@@ -110,6 +116,18 @@ type MissingAppHostState = {
 function requireAppHostBootstrapState(): MissingAppHostState {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require('@thyrox/app-host/bootstrap/state.js') as MissingAppHostState
+}
+
+// El almacén de capacidades de superficie (`ve`) vive en app-host, que ya
+// depende de provider: se lee con un `require()` diferido para no cerrar un
+// ciclo estático.
+type SurfaceCapabilities = {
+  isRemoteSurface: () => boolean
+  hasRemoteControlChannel: () => boolean
+}
+function requireSurfaceCapabilities(): SurfaceCapabilities {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@thyrox/app-host/state/surfaceCapabilities.js') as SurfaceCapabilities
 }
 
 type MissingGlobalConfig = {
@@ -180,8 +198,7 @@ export function processFastModeAvailabilityContext(): FastModeAvailabilityContex
     isModelAllowed,
     fastModeModel: 'opus' + (isOpus1mMergeEnabled() ? '[1m]' : ''),
     resolveModel: model => (model !== undefined ? String(model ?? getDefaultMainLoopModelSetting()) : getMainLoopModel()),
-    // pendiente: `Ea` (canal de control de una sesión remota), fase R-2b-3.
-    hasRemoteControlChannel: false,
+    hasRemoteControlChannel: requireSurfaceCapabilities().hasRemoteControlChannel(),
     supportsFastMode: isFastModeSupportedByModel,
     flagSettingsFastMode: getSettingsForSource('flagSettings')?.fastMode,
     policyFastMode: policy?.fastMode,
@@ -198,6 +215,27 @@ export function processFastModeAvailabilityContext(): FastModeAvailabilityContex
     usageCreditsLink: undefined,
     usageCreditsInstruction: undefined,
   }
+}
+
+/** El contexto de `Ndn`/`oA` leído del proceso: `Dt`, `Yl` y `Bk` sobre `processFastModeAvailabilityContext()`. */
+export function processFastModeSelectionContext(): FastModeSelectionContext {
+  const settings = getInitialSettings()
+  return {
+    fastModeEnabled: isFastModeEnabled(),
+    remoteSurface: requireSurfaceCapabilities().isRemoteSurface(),
+    supportsFastMode: isFastModeSupportedByModel,
+    isAvailableFor: model => isFastModeAvailableFor(model, processFastModeAvailabilityContext()),
+    preferenceEnabled: fastModePreferenceEnabled(
+      settings,
+      getSettingsForSource('policySettings') ?? undefined,
+      getSettingsForSource('flagSettings') ?? undefined,
+    ),
+  }
+}
+
+/** `iLr` sobre el contexto leído del proceso. */
+export function shouldShowFastModeIndicatorForProcess(fastMode: boolean | undefined, pendingIndicator: boolean): boolean {
+  return shouldShowFastModeIndicator(fastMode, pendingIndicator, processFastModeSelectionContext())
 }
 
 // Constante para callers que resuelven el nombre a la carga del módulo. El

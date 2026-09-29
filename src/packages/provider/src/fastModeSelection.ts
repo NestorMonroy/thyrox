@@ -46,7 +46,7 @@ export type FastModeSelectionContext = {
   fastModeEnabled: boolean
   remoteSurface: boolean
   supportsFastMode: (model: string | null) => boolean
-  isAvailableFor: (model: string | null) => boolean
+  isAvailableFor: (model?: string | null) => boolean
   preferenceEnabled: boolean
 }
 
@@ -77,4 +77,19 @@ export function resolveFastModeForModel(
   }
   if (!context.supportsFastMode(model)) return false
   return !!previousValue || shouldEnableFastModeForModel(model, context)
+}
+
+/**
+ * `iLr`: sin `fastModeEnabled` nunca se muestra; con él, el indicador exige
+ * `fastMode` encendido y —superficie remota, disponibilidad para el modelo
+ * actual (`Bk()`, sin modelo, es `isAvailableFor(undefined)`), o el
+ * indicador ya pendiente de otro turno— cualquiera de los tres basta.
+ */
+export function shouldShowFastModeIndicator(
+  fastMode: boolean | undefined,
+  pendingIndicator: boolean,
+  context: Pick<FastModeSelectionContext, 'fastModeEnabled' | 'remoteSurface' | 'isAvailableFor'>,
+): boolean {
+  if (!context.fastModeEnabled) return false
+  return !!fastMode && (context.remoteSurface || context.isAvailableFor() || pendingIndicator)
 }
