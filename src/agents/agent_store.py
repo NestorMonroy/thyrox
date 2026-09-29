@@ -1463,8 +1463,16 @@ TASK_SESSION_HIGHWATER_DDL = """CREATE TABLE IF NOT EXISTS task_session_highwate
 _TASK_HIGHWATER_LEGACY_COLUMNS = {"clave", "max_id"}
 
 
+#: Las tablas que ``CORE_SCHEMA`` crea. Adoptar la migracion 1 exige TODAS: una
+#: base heredada que solo tenia ``agent_sessions`` (el esquema de ocho columnas
+#: que ``test-agent-store-usage-columns.sh`` reproduce) quedaba registrada como
+#: migrada sin ``tasks``, ``documents`` ni ``findings_history``. Como el DDL es
+#: todo ``IF NOT EXISTS``, aplicarlo sobre una base parcial solo crea lo que falta.
+_CORE_TABLES = ("agent_sessions", "findings_history", "tasks", "documents")
+
+
 def _core_schema_already_applied(conn: sqlite3.Connection) -> bool:
-    return _table_exists(conn, "agent_sessions")
+    return all(_table_exists(conn, table) for table in _CORE_TABLES)
 
 
 def _apply_core_schema(conn: sqlite3.Connection) -> None:

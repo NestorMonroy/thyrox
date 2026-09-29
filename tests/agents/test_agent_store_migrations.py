@@ -11,8 +11,8 @@ Lo que tiene que poder fallar:
 
 * **base nueva**: ``connect()`` deja el ledger completo, una fila por
   migracion declarada, sin re-ejecutar nada en una segunda apertura.
-* **base heredada con filas**: una base creada con el CODIGO DE HOY (antes de
-  este runner, sin ledger — ``git show HEAD:src/agents/agent_store.py``)
+* **base heredada con filas**: una base creada con el codigo ANTERIOR al
+  ledger (``git show <LEGACY_REVISION>:src/agents/agent_store.py``)
   converge sin perder filas, y el ledger queda completo.
 * **rechazo de una base mas nueva que el codigo** (version en el ledger que
   la lista ya no declara).
@@ -80,8 +80,14 @@ def ledger_rows(conn: sqlite3.Connection) -> list:
     )]
 
 
+#: El ultimo commit cuyo ``agent_store.py`` aun no tiene ledger: el padre de
+#: TASK-THYROX-0532. Fijo y no ``HEAD``, porque desde ese commit ``HEAD`` ya
+#: crea el ledger y la base "heredada" dejaria de serlo.
+LEGACY_REVISION = "6703fd2e9332"
+
+
 def legacy_module():
-    """El ``agent_store.py`` TAL COMO ESTABA en HEAD — antes de este runner —
+    """El ``agent_store.py`` TAL COMO ESTABA antes del ledger
     cargado desde un archivo temporal para no tocar el arbol de trabajo. Sus
     importaciones de paquetes hermanos (``agents.agents_paths``,
     ``corpus.*``, ``paths.*``, ``task.*``, ``measurement.*``) resuelven
@@ -89,7 +95,7 @@ def legacy_module():
     modulos que este cambio no toca.
     """
     source = subprocess.run(
-        ["git", "show", "HEAD:src/agents/agent_store.py"],
+        ["git", "show", f"{LEGACY_REVISION}:src/agents/agent_store.py"],
         cwd=ROOT, capture_output=True, text=True, check=True,
     ).stdout
     target = Path(tempfile.mkdtemp(prefix="legacy-agent-store-")) / "legacy_agent_store.py"
@@ -130,7 +136,7 @@ conn2.close()
 shutil.rmtree(d1, ignore_errors=True)
 
 print()
-print("== 2. base heredada: creada con el codigo de HOY, sin ledger, con filas ==")
+print("== 2. base heredada: creada con el codigo anterior al ledger, sin ledger, con filas ==")
 legacy = legacy_module()
 d2 = Path(tempfile.mkdtemp(prefix="agent-store-migrations-heredada-"))
 old_conn = legacy.connect(d2)
@@ -202,6 +208,28 @@ conn4.close()
 check_raises("reabrir con la version 1 registrada bajo otro nombre lanza MigrationError",
              MigrationError, lambda: connect(d4))
 shutil.rmtree(d4, ignore_errors=True)
+
+print("== 5. base heredada PARCIAL: solo agent_sessions, sin el resto del nucleo ==")
+# La migracion 1 no se adopta mientras falte una tabla del nucleo: una base
+# con solo `agent_sessions` quedaba registrada como migrada sin `tasks`,
+# `documents` ni `findings_history`.
+d5 = Path(tempfile.mkdtemp(prefix="agent-store-migrations-parcial-"))
+raw5 = sqlite3.connect(d5 / "agent_store.sqlite3")
+raw5.execute(
+    "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT NOT NULL, "
+    "session_id TEXT NOT NULL, status TEXT NOT NULL, output_key TEXT, "
+    "started_at TEXT NOT NULL, updated_at TEXT NOT NULL, timeout_at TEXT)"
+)
+raw5.commit()
+raw5.close()
+conn5 = connect(d5)
+for table in ("findings_history", "tasks", "documents"):
+    check(f"la tabla {table} se crea sobre la base parcial", True, conn5.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
+    ).fetchone() is not None)
+check("y el ledger queda completo", len(CORE_MIGRATIONS), len(ledger_rows(conn5)))
+conn5.close()
+shutil.rmtree(d5, ignore_errors=True)
 
 print()
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
