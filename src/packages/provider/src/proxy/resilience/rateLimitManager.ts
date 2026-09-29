@@ -19,6 +19,7 @@
  *   la vigilancia de colas atascadas ni la expulsión por inactividad: piezas
  *   de un servicio que vive semanas con miles de conexiones.
  */
+import type { SharedStateStore } from '@thyrox/shared-state/port.ts'
 import { requestCapSettings, parseRequestCapFromBody } from './requestCap.ts'
 import { ANTHROPIC_HEADERS, parseResetTime, STANDARD_HEADERS, toPlainHeaders } from './rateLimitHeaders.ts'
 import { RequestLimiter, type RequestLimiterSettings } from './requestLimiter.ts'
@@ -79,8 +80,13 @@ export class RateLimitManager {
   private readonly limiters = new Map<string, RequestLimiter>()
   private readonly enabled = new Set<string>()
   private readonly learned = new Map<string, LearnedLimit>()
+  /** Ventanas locales de `checkGlobalWindow` cuando no hay `sharedState`: una por credencial, sin vista entre proxies. */
+  private readonly localWindows = new Map<string, { windowIndex: number; count: number }>()
 
-  constructor(private readonly queue: RateLimitQueueSettings = {}) {}
+  constructor(
+    private readonly queue: RateLimitQueueSettings = {},
+    private readonly sharedState?: SharedStateStore,
+  ) {}
 
   enable(credentialId: string): void {
     this.enabled.add(credentialId)
@@ -105,6 +111,20 @@ export class RateLimitManager {
   withRateLimit<T>(provider: string, credentialId: string, model: string | null, task: () => Promise<T>, signal?: AbortSignal): Promise<T> {
     if (!this.isEnabled(credentialId)) return task()
     return this.limiterFor(provider, credentialId, model).schedule(task, signal)
+  }
+
+  /**
+   * Cuenta una petición de `credentialId` en la ventana fija de `windowMs`
+   * y dice si con ella ya se pasó `limit`. Con `sharedState` la cuenta es
+   * global entre proxies (ADR-THYROX-006); sin él, local a esta instancia,
+   * con la misma semántica de ventana fija.
+   */
+  async checkGlobalWindow(credentialId: string, limit: number, windowMs: number): Promise<boolean> {
+    const key = `rate-window:${credentialId}`
+    const count = this.sharedState
+      ? await this.sharedState.incrementWindow(key, windowMs)
+      : this.incrementLocalWindow(key, windowMs)
+    return count > limit
   }
 
   /** Aprende de las cabeceras de una respuesta; un 429 retira el limitador. */
@@ -201,6 +221,15 @@ export class RateLimitManager {
 
   private keyOf(provider: string, credentialId: string, model: string | null): string {
     return MODEL_SCOPED_PROVIDERS.has(provider) && model ? `${provider}:${credentialId}:${model}` : `${provider}:${credentialId}`
+  }
+
+  /** La cuenta local de `checkGlobalWindow` cuando no hay `sharedState`, con la misma ventana fija que `incrementWindow`. */
+  private incrementLocalWindow(key: string, windowMs: number): number {
+    const windowIndex = Math.floor(Date.now() / windowMs)
+    const existing = this.localWindows.get(key)
+    const count = existing !== undefined && existing.windowIndex === windowIndex ? existing.count + 1 : 1
+    this.localWindows.set(key, { windowIndex, count })
+    return count
   }
 
   private credentialOf(key: string): string {

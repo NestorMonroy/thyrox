@@ -20,6 +20,7 @@
  * - Sin las ramas propias de un proveedor (Codex, Alibaba, Grok, agentrouter)
  *   ni la desactivación automática de una cuenta dada de baja.
  */
+import type { SharedStateStore } from '@thyrox/shared-state/port.ts'
 import type { ProxyCredential } from '../credentialSelectors.ts'
 import { checkFallbackError, type CooldownOptions, type FallbackDecision, isProviderModelUnsupported400 } from './accountCooldown.ts'
 
@@ -41,7 +42,11 @@ export class CredentialCooldown {
   /** Las credenciales dadas de baja: un fallo transitorio no las rehabilita. */
   private readonly terminal = new Set<string>()
 
-  constructor(private readonly options: CooldownOptions = {}) {}
+  constructor(
+    private readonly options: CooldownOptions = {},
+    /** El estado compartido entre proxies; sin él, la conducta es local, como hoy. */
+    private readonly sharedState?: SharedStateStore,
+  ) {}
 
   backoffLevelOf(credentialId: string): number {
     return this.backoffLevels.get(credentialId) ?? 0
@@ -78,8 +83,28 @@ export class CredentialCooldown {
       // Como `MarkResult` de CLIProxyAPI: sólo un 429 es cuota, y el selector
       // distingue por ella «enfriada» (429 con causa) de «no disponible» (503).
       if (status === 429) credential.quota = { exceeded: true, reason: 'quota', nextRecoverAt: until }
+      this.publishCooldown(credential.id, decision.reason, until, decision.cooldownMs)
     }
     return decision
+  }
+
+  /** Publica el enfriamiento en el store compartido, si hay uno; sin él, no hace nada. */
+  private publishCooldown(credentialId: string, reason: string | undefined, until: Date, cooldownMs: number): void {
+    if (!this.sharedState) return
+    const payload = JSON.stringify({ reason: reason ?? null, until: until.toISOString() })
+    void this.sharedState.setWithTtl(sharedCooldownKey(credentialId), payload, cooldownMs).catch(() => {})
+  }
+
+  /**
+   * ¿Sigue enfriada esta credencial? Primero lo local —el propio objeto, que
+   * no exige red—; sólo si hace falta, el store compartido.
+   */
+  async isCoolingDown(credential: ProxyCredential, now: Date = new Date()): Promise<boolean> {
+    if (this.terminal.has(credential.id)) return true
+    if (cooledUntil(credential, now) > 0) return true
+    if (!this.sharedState) return false
+    const shared = await this.sharedState.getWithTtl(sharedCooldownKey(credential.id))
+    return shared !== null
   }
 
   /** Un acierto: la credencial vuelve a estar disponible y su retroceso a cero, salvo una baja. */
@@ -110,4 +135,9 @@ export class CredentialCooldown {
 function cooledUntil(credential: ProxyCredential, now: Date): number {
   if (!credential.unavailable || !credential.nextRetryAfter) return 0
   return Math.max(credential.nextRetryAfter.getTime() - now.getTime(), 0)
+}
+
+/** La clave del estado compartido bajo la que vive el enfriamiento de una credencial. */
+function sharedCooldownKey(credentialId: string): string {
+  return `credential-cooldown:${credentialId}`
 }

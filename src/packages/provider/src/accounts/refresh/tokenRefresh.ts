@@ -12,6 +12,10 @@
  * `_refreshWithFreshCredentials`, `getAllAccessTokens` y
  * `getConnectionRefreshMutexStatus` de `omniroute: open-sse/services/tokenRefresh.ts` (MIT).
  */
+import { randomUUID } from 'node:crypto'
+
+import type { SharedStateStore } from '@thyrox/shared-state/port.ts'
+
 import { casGuardShouldSkipPersist } from './casGuard.ts'
 import { activePersist, type RefreshPersistFn } from './persistContext.ts'
 import type { ProviderRefreshOutcome, RefreshCredentials } from './providerRefreshDispatch.ts'
@@ -21,6 +25,10 @@ import { createRotationMap, refreshCacheKey, type RotatedTokens } from './rotati
 
 /** Una fila guardada vigente al menos este margen se usa tal cual. */
 const STORED_TOKEN_MIN_VALIDITY_MS = 60_000
+/** El máximo que un dueño puede retener el lease de un refresco compartido. */
+const SHARED_LEASE_TTL_MS = 15_000
+/** El sondeo de un lease ajeno, cada este tanto, hasta el mismo plazo que su TTL. */
+const SHARED_LEASE_POLL_INTERVAL_MS = 25
 
 export interface StoredConnectionTokens {
   refreshToken?: string | null
@@ -40,6 +48,10 @@ export interface TokenRefresherDeps {
   readConnection?: (connectionId: string) => StoredConnectionTokens | null | undefined | Promise<StoredConnectionTokens | null | undefined>
   now?: () => number
   log?: RefreshLogger
+  /** El estado compartido en caliente entre proxies (ADR-THYROX-006). Sin él, sólo coordina el mutex en proceso. */
+  sharedState?: SharedStateStore
+  /** El id de esta instancia como dueño de un lease. Por defecto, uno aleatorio por proceso. */
+  leaseOwner?: string
 }
 
 export interface ConnectionTokenSource {
@@ -55,9 +67,59 @@ export function createTokenRefresher(deps: TokenRefresherDeps) {
   const serialize = deps.serialize ?? createRefreshSerializer()
   const rotations = deps.rotations ?? createRotationMap({ now: deps.now })
   const now = deps.now ?? Date.now
-  const { log } = deps
+  const { log, sharedState } = deps
+  const leaseOwner = deps.leaseOwner ?? randomUUID()
   const connectionMutex = new Map<string, { promise: Promise<ProviderRefreshOutcome>; waiters: number }>()
   const inFlightByToken = new Map<string, Promise<ProviderRefreshOutcome>>()
+
+  const leaseKeyFor = (connectionId: string) => `token-refresh:${connectionId}`
+  const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
+
+  /** El token que el dueño del lease ya persistió, leído por la fuente de la conexión. */
+  async function readPersistedTokens(connectionId: string): Promise<ProviderRefreshOutcome> {
+    if (!deps.readConnection) return null
+    const stored = await deps.readConnection(connectionId)
+    if (!hasAccessToken(stored ?? {})) return null
+    return { accessToken: stored!.accessToken as string, refreshToken: stored!.refreshToken ?? undefined, expiresAt: stored!.expiresAt ?? undefined }
+  }
+
+  /**
+   * Sondea el lease ajeno hasta que se libere o venza el plazo. Comprobar que
+   * está libre es tomarlo por un instante (TTL 0) y soltarlo enseguida: el
+   * puerto no expone una lectura sin efecto, y esta es la única forma de
+   * preguntar sin arriesgar un segundo refresco.
+   */
+  async function waitForPeerRefresh(store: SharedStateStore, connectionId: string): Promise<ProviderRefreshOutcome> {
+    const key = leaseKeyFor(connectionId)
+    const deadlineAt = now() + SHARED_LEASE_TTL_MS
+    let released = false
+    while (now() < deadlineAt) {
+      if (await store.acquireLease(key, leaseOwner, 0)) {
+        await store.releaseLease(key, leaseOwner)
+        released = true
+        break
+      }
+      await sleep(SHARED_LEASE_POLL_INTERVAL_MS)
+    }
+    if (!released) {
+      log?.warn?.('TOKEN_REFRESH', `Timed out waiting for the shared token-refresh lease on ${connectionId}`)
+      return null
+    }
+    return readPersistedTokens(connectionId)
+  }
+
+  /** Con `sharedState`, sólo el dueño del lease refresca; sin él, la conducta de siempre. */
+  async function refreshUnderLease(provider: string, credentials: AccessTokenCredentials, persist: RefreshPersistFn | undefined, connectionId: string): Promise<ProviderRefreshOutcome> {
+    if (!sharedState) return refreshInLane(provider, credentials).then(result => persistResult(result, persist, `onPersist callback failed for ${provider}/${connectionId}`))
+    const key = leaseKeyFor(connectionId)
+    if (!(await sharedState.acquireLease(key, leaseOwner, SHARED_LEASE_TTL_MS))) return waitForPeerRefresh(sharedState, connectionId)
+    try {
+      const result = await refreshInLane(provider, credentials)
+      return await persistResult(result, persist, `onPersist callback failed for ${provider}/${connectionId}`)
+    } finally {
+      await sharedState.releaseLease(key, leaseOwner)
+    }
+  }
 
   /** La fila guardada gana si tiene otro refresh token: vigente, se usa; por caducar, es la que se refresca. */
   async function refreshWithFreshCredentials(provider: string, credentials: AccessTokenCredentials): Promise<ProviderRefreshOutcome> {
@@ -118,9 +180,7 @@ export function createTokenRefresher(deps: TokenRefresherDeps) {
         log?.info?.('TOKEN_REFRESH', 'Concurrent refresh detected — sharing in-flight refresh', { provider, connectionId, waiters: existing.waiters })
         return existing.promise
       }
-      const promise = refreshInLane(provider, credentials)
-        .then(result => persistResult(result, effectivePersist, `onPersist callback failed for ${provider}/${connectionId}`))
-        .finally(() => connectionMutex.delete(connectionId))
+      const promise = refreshUnderLease(provider, credentials, effectivePersist, connectionId).finally(() => connectionMutex.delete(connectionId))
       connectionMutex.set(connectionId, { promise, waiters: 0 })
       return promise
     }
