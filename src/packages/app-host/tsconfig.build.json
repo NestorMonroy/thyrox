@@ -53,6 +53,9 @@
       "@thyrox/app-host/state/hostSessionState.js": [
         "./src/state/hostSessionState.ts"
       ],
+      "@thyrox/app-host/state/surfaceCapabilities.js": [
+        "./src/state/surfaceCapabilities.ts"
+      ],
       "@thyrox/app-host/state/AppStateStore.js": [
         "./src/state/AppStateStore.ts"
       ],
