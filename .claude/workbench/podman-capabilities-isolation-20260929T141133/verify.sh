@@ -16,7 +16,8 @@ grep -q -- "--read-only-tmpfs=false" "$S" || fail "read_only_rootfs sin --read-o
 main_tree="$(cd "$(git rev-parse --git-common-dir)/.." && pwd)"
 SC="$(command -v shellcheck || echo "$main_tree/.venv/bin/shellcheck")"
 [ -x "$SC" ] || fail "no se encontró shellcheck ($SC)"
-"$SC" "$S" "$T" || fail "shellcheck"
+# La severidad es la del plan de cero errores del repositorio (.shellcheckrc): warning.
+"$SC" -S warning "$S" "$T" || fail "shellcheck"
 out=$(bash "$T" 2>&1) || { echo "$out" | tail -20 >&2; fail "suite de la sonda en rojo"; }
 echo "$out" | tail -5
 lines=$(bash "$S" | grep -c $'\t') || true
