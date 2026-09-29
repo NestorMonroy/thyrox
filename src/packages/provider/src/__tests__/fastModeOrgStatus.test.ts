@@ -4,7 +4,7 @@
  * `$Oo` con su guarda de origen, `source: 'server'` cuando el estado se lee
  * del servidor, y el rechazo por excedente `lC`/`UOo`.
  */
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -13,6 +13,10 @@ import { join } from 'node:path'
 import { installConfigHostBindings } from '@thyrox/config/host'
 import { InMemoryConfig } from '@thyrox/config/testing'
 import { saveGlobalConfig } from '@thyrox/config'
+
+// Copia, no el namespace: `mock.module` reescribe en su sitio el namespace de
+// un módulo ya cargado, así que guardarlo tal cual guardaría el doble.
+const realAxios = { ...(await import('axios')) }
 
 // `saveGlobalConfig` real no conoce `penguinModeOrgEnabled` (no tiene sitio
 // en `GlobalConfig`, ver docstring de `fastMode.ts`) — el mismo motivo por
@@ -209,6 +213,12 @@ describe('resolveFastModeStatusFromCache (lLr)', () => {
 describe('prefetchFastModeStatus — la lectura del endpoint y el catch de red', () => {
   afterEach(() => {
     mock.restore()
+  })
+  // `mock.restore()` no deshace `mock.module`: sin volver a registrar el
+  // `axios` real, los archivos que corren después reciben el doble de este
+  // bloque (sin `create` ni interceptores) y fallan lejos de aquí.
+  afterAll(() => {
+    mock.module('axios', () => realAxios)
   })
 
   test('éxito: source server y razón normalizada contra el conjunto conocido', async () => {

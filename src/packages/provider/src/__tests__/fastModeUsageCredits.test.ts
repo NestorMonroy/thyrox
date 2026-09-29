@@ -3,7 +3,7 @@
  * (`_6e` y `hy() && Ex() ? Run()`) calculadas sobre el contexto de sesión que
  * arman `Te`, `yu` y `Jx` de `@thyrox/config/entrypoint`.
  */
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -13,7 +13,9 @@ import { installConfigHostBindings } from '@thyrox/config/host'
 import { InMemoryConfig } from '@thyrox/config/testing'
 import { isInsideAgentShell, isTopLevelDesktopSession, processEntrypointContext } from '@thyrox/config/entrypoint'
 
-const realCredits = await import('../extraUsageCredits.js')
+// Copia, no el namespace: `mock.module` reescribe en su sitio el namespace de
+// un módulo ya cargado, así que guardarlo tal cual guardaría el doble.
+const realCredits = { ...(await import('../extraUsageCredits.js')) }
 const seen: unknown[] = []
 mock.module('../extraUsageCredits.js', () => ({
   ...realCredits,
@@ -40,6 +42,12 @@ beforeEach(() => {
 afterEach(() => {
   if (saved === undefined) delete process.env.ANTHROPIC_API_KEY
   else process.env.ANTHROPIC_API_KEY = saved
+})
+// `mock.module` sustituye el módulo para todo el proceso de `bun test`, no sólo
+// para este archivo: sin restaurarlo, `extraUsageCredits.test.ts` recibe el
+// doble si corre después y sus aserciones leen los valores fijos de arriba.
+afterAll(() => {
+  mock.module('../extraUsageCredits.js', () => realCredits)
 })
 
 describe('créditos de uso en el contexto de disponibilidad', () => {
