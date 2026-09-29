@@ -1,0 +1,11 @@
+live-store	.claude/workbench/task-highwater-inputs-20260929T095545/probe.sh: line 9: sqlite3: command not found
+live-store	.claude/workbench/task-highwater-inputs-20260929T095545/probe.sh: line 13: sqlite3: command not found
+ordinal-collisions	.claude/workbench/task-highwater-inputs-20260929T095545/probe.sh: line 15: sqlite3: command not found
+schema-history	.claude/workbench/task-highwater-inputs-20260929T095545/probe.sh: line 18: sqlite3: command not found
+schema-history	python_menciona_highwater	0
+write-atomicity	begin_immediate_en_tasks_ts	0
+write-atomicity	lineas_siguienteOrdinal	271,
+write-atomicity	lineas_subirMarca	115,147,
+tests	pruebas_que_nombran_highwater	
+reference	referencia_archivo	_references/claude-code-bin/2.1.283/bunfs-root/chunk-zgfcmyzt.js
+reference	referencia_contexto	ubject:o(),description:o(),activeForm:o().optional(),owner:o().optional(),status:cat(),blocks:A(o()),blockedBy:A(o()),metadata:fe(o(),ae()).optional()})),rxr=".highwatermark",$e=16,ct=new Set(["ELOOP","EISDIR","ENXIO"]);function pt(e){return e.code==="AlreadyExists"||e.code==="Failed"&&e.telemetryCode!==void 0&&ct.has(e.telemetryCode)}var oe={retries:{retries:30,minTimeo
