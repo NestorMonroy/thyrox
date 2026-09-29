@@ -20,6 +20,19 @@ Clasificación
   completa;
 - ``closed``: publicado y coherente.
 
+Tomar la propiedad
+-------------------
+``recover_to_worktree`` sólo lee la foto; no dice nada sobre quién es el
+dueño del ítem en ``pool_lifecycle``. Cuando la recuperación DECIDE
+continuar el trabajo de un ítem ``abandoned-recoverable``, ``claim_and_recover``
+toma la propiedad con ``pool_lifecycle.claim`` ANTES de abrir el worktree: el
+ítem pasa a una generación mayor que la abandonada, y cualquier actor que
+siga citando la generación vieja queda rechazado con ``StaleGenerationError``
+en su próxima transición o publicación, sin que le haga falta enterarse del
+worktree nuevo. El destino y la rama se nombran con la generación tomada;
+el contenido que reproducen sigue siendo el de la foto de la generación
+abandonada, que es la última que existe.
+
 Lo que nunca hace
 -----------------
 No borra un runtime sin publicar: ``prune`` rehúsa mientras quede un ítem de
@@ -38,7 +51,7 @@ import sys
 from pathlib import Path
 
 from session import pool_lifecycle as lc
-from session.snapshot_store import SnapshotError, read_manifest
+from session.snapshot_store import SnapshotError, SnapshotManifest, read_manifest
 
 ACTIVE = "active"
 CLOSING = "closing"
@@ -81,25 +94,20 @@ def recovery_branch(run: str, item: str, generation: int) -> str:
     return f"refs/heads/thyrox/recovery/{run}/{item}/{generation}"
 
 
-def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
-                        into: Path | None = None, restore_index: bool = True) -> Path:
-    """Reproduce la foto en un worktree y una rama temporales; el árbol del usuario no cambia.
+def _open_worktree_from_manifest(repo: Path, manifest: SnapshotManifest, target: Path, branch: str, *,
+                                 restore_index: bool) -> Path:
+    """Crea el worktree y la rama de recuperación, y reproduce la foto en su árbol.
 
-    El worktree queda como estaba el del ítem al tomar la foto: ``HEAD`` en
+    Deja el worktree como estaba el del ítem al tomar la foto: ``HEAD`` en
     ``base_head``, el índice en ``original_index_tree`` y los archivos del
     ``snapshot_commit``. Así lo preparado y lo no preparado siguen separados.
-    ``restore_index`` existe sólo como control de anulación.
+    Compartida por ``recover_to_worktree`` y ``claim_and_recover``: la única
+    diferencia entre ambas es de dónde sale la generación con la que se nombran
+    el destino y la rama.
     """
-    manifest = read_manifest(run, item, generation)
-    if manifest is None:
-        raise RecoveryError(f"no hay foto de {run}/{item}/{generation}")
-    if not manifest.is_intact():
-        raise RecoveryError(f"el manifiesto de {run}/{item}/{generation} no coincide con su sha256")
-    target = Path(into) if into else recovery_path(run, item, generation)
     if target.exists():
         raise RecoveryError(f"{target} ya existe; no se reutiliza un destino de recuperación")
     target.parent.mkdir(parents=True, exist_ok=True)
-    branch = recovery_branch(run, item, generation).removeprefix("refs/heads/")
     base = manifest.base_head or manifest.snapshot_commit
     steps = [["git", "-C", str(repo), "worktree", "add", "-q", "-b", branch, str(target), base]]
     if restore_index:
@@ -111,6 +119,59 @@ def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
         if result.returncode != 0:
             raise RecoveryError(f"{' '.join(command[3:5])} salió {result.returncode}: {result.stderr.strip()}")
     return target
+
+
+def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
+                        into: Path | None = None, restore_index: bool = True) -> Path:
+    """Reproduce la foto en un worktree y una rama temporales; el árbol del usuario no cambia.
+
+    No toma la propiedad del ítem en ``pool_lifecycle``: es la lectura simple
+    de una foto ya tomada, y su destino se nombra con la misma generación que
+    la foto. ``claim_and_recover`` es la forma que sí toma la propiedad antes
+    de abrir el worktree. ``restore_index`` existe sólo como control de
+    anulación.
+    """
+    manifest = read_manifest(run, item, generation)
+    if manifest is None:
+        raise RecoveryError(f"no hay foto de {run}/{item}/{generation}")
+    if not manifest.is_intact():
+        raise RecoveryError(f"el manifiesto de {run}/{item}/{generation} no coincide con su sha256")
+    target = Path(into) if into else recovery_path(run, item, generation)
+    branch = recovery_branch(run, item, generation).removeprefix("refs/heads/")
+    return _open_worktree_from_manifest(repo, manifest, target, branch, restore_index=restore_index)
+
+
+def claim_and_recover(repo: Path, live_dir: Path, out_dir: Path, run: str, item: str,
+                      owner_pid: int, *, into: Path | None = None, restore_index: bool = True) -> Path:
+    """La recuperación decide continuar: toma el ítem antes de abrir su foto.
+
+    ``pool_lifecycle.claim`` mueve el ítem a una generación mayor que la
+    abandonada y que la publicada ANTES de abrir ningún worktree: desde ese
+    momento cualquier actor que siga citando la generación abandonada queda
+    rechazado con ``StaleGenerationError`` en su próxima transición o
+    publicación, exista o no exista ya el worktree de recuperación. El destino
+    y la rama se nombran con la generación nueva; el contenido que reproducen
+    sigue siendo el de la última foto tomada, la de la generación abandonada.
+    Sólo se puede tomar un ítem ``ABANDONED_RECOVERABLE`` (la precondición de
+    ``claim``); si no hay foto íntegra de la generación abandonada, se rehúsa
+    sin tomar la propiedad. ``recover_to_worktree`` es la forma sin esta toma
+    de propiedad, para una foto que ya se sabe cerrada y sin dueño que disputar.
+    """
+    stale = lc.read_state(live_dir, item)
+    if stale is None:
+        raise RecoveryError(f"el ítem {item} no tiene estado en {live_dir}")
+    manifest = read_manifest(run, item, stale.generation)
+    if manifest is None:
+        raise RecoveryError(f"no hay foto de {run}/{item}/{stale.generation}")
+    if not manifest.is_intact():
+        raise RecoveryError(f"el manifiesto de {run}/{item}/{stale.generation} no coincide con su sha256")
+    try:
+        claimed = lc.claim(live_dir, out_dir, item, owner_pid)
+    except lc.LifecycleError as error:
+        raise RecoveryError(str(error)) from error
+    target = Path(into) if into else recovery_path(run, item, claimed.generation)
+    branch = recovery_branch(run, item, claimed.generation).removeprefix("refs/heads/")
+    return _open_worktree_from_manifest(repo, manifest, target, branch, restore_index=restore_index)
 
 
 def restore_in_place(repo: Path, run: str, item: str, generation: int, *, confirm: bool = False) -> None:

@@ -13,6 +13,10 @@ Casos (numeración de la especificación de TASK-THYROX-0601):
      rehúsa retirar su runtime.
  14. (I4) la foto de una generación desplazada se rehúsa si ya existe la de
      la siguiente: no deja ref ni manifiesto, y la siguiente queda intacta.
+ 15. (TASK-THYROX-0621) la recuperación que decide continuar toma la
+     propiedad del ítem antes de abrir el worktree: la generación sube, el
+     destino se nombra con la nueva, y un actor de la generación abandonada
+     queda rechazado con ``StaleGenerationError`` al transicionar o publicar.
 
 Controles de anulación:
 - ``capture_worktree=False``: la foto se queda en lo preparado y caen
@@ -21,6 +25,10 @@ Controles de anulación:
 - ``refuse_superseded=False``: la foto de la generación desplazada se escribe.
 - ``restore_in_place(confirm=True)``: la operación destructiva sí pisa el árbol,
   que es lo que la recuperación por defecto evita.
+- caso 15 vs. 15c: usar ``recover_to_worktree`` (sin claim) en vez de
+  ``claim_and_recover`` deja la generación abandonada vigente, y caen
+  exactamente las dos aserciones de rechazo por generación —el resto del
+  caso 15 no depende de la toma de propiedad y no cae.
 """
 from __future__ import annotations
 
@@ -50,6 +58,13 @@ def check(label: str, expected, obtained) -> None:
     else:
         print(f"  FALLO {label}\n        esperado=[{expected}] obtenido=[{obtained}]")
         FAILED += 1
+
+
+def existing_state(live: Path, item: str):
+    """El estado registrado del ítem; su ausencia es un fallo de la prueba, no un None que seguir."""
+    state = lc.read_state(live, item)
+    assert state is not None, f"el ítem {item} no tiene estado registrado"
+    return state
 
 
 def git(repo: Path, *args: str) -> str:
@@ -243,6 +258,68 @@ with tempfile.TemporaryDirectory() as scratch:
     stale = ss.take_snapshot(repo14, "r14", "1", 1, refuse_superseded=False)
     check("control: la ref de la generación 1 existe", stale.snapshot_commit,
           git(repo14, "rev-parse", ss.snapshot_ref("r14", "1", 1)))
+
+
+    print("caso 15 (TASK-THYROX-0621): la recuperación que decide continuar toma la propiedad")
+    repo15 = make_repo(base / "repo15")
+    dirty(repo15)
+    status15 = git(repo15, "status", "--porcelain")
+    ss.take_snapshot(repo15, "r15", "1", 1)
+    out15 = base / "out15"
+    out15.mkdir()
+    live15 = lc.open_run(out15, os.getpid(), run_id="r15")
+    dead15 = subprocess.Popen(["true"])
+    dead15.wait()
+    lc.begin(live15, out15, "1", owner_pid=dead15.pid)
+    lc.transition(live15, "1", lc.ABANDONED_RECOVERABLE)
+    new_owner = os.getpid()
+    target15 = rc.claim_and_recover(repo15, live15, out15, "r15", "1", new_owner)
+    claimed15 = existing_state(live15, "1")
+    check("el ítem queda en la generación nueva, con el dueño nuevo", (2, new_owner),
+          (claimed15.generation, claimed15.owner_pid))
+    check("el worktree de recuperación se nombra con la generación nueva",
+          rc.recovery_path("r15", "1", 2), target15)
+    check("la rama de recuperación es la de la generación nueva",
+          rc.recovery_branch("r15", "1", 2), git(target15, "symbolic-ref", "-q", "HEAD"))
+    check("el contenido recuperado es el de la foto de la generación abandonada", status15,
+          git(target15, "status", "--porcelain"))
+    check("... exactamente lo que esa foto capturó", ("sin preparar\n", "nuevo\n"),
+          ((target15 / "unstaged.txt").read_text(), (target15 / "untracked.txt").read_text()))
+    try:
+        lc.transition(live15, "1", lc.CLOSING, generation=1)
+        check("un actor de la generación abandonada queda rechazado al transicionar",
+              "StaleGenerationError", "no rechazó")
+    except lc.StaleGenerationError:
+        check("un actor de la generación abandonada queda rechazado al transicionar", True, True)
+    try:
+        lc.publish(live15, out15, "1", generation=1)
+        check("...también al publicar con esa generación", "StaleGenerationError", "no rechazó")
+    except lc.StaleGenerationError:
+        check("...también al publicar con esa generación", True, True)
+    lc.transition(live15, "1", lc.CLOSING, generation=2)
+    check("... y la generación tomada sí puede seguir trabajando", lc.CLOSING,
+          existing_state(live15, "1").state)
+
+    print("caso 15c: control — recuperar sin claim deja actuar a la generación abandonada")
+    repo15c = make_repo(base / "repo15c")
+    dirty(repo15c)
+    ss.take_snapshot(repo15c, "r15c", "1", 1)
+    out15c = base / "out15c"
+    out15c.mkdir()
+    live15c = lc.open_run(out15c, os.getpid(), run_id="r15c")
+    dead15c = subprocess.Popen(["true"])
+    dead15c.wait()
+    lc.begin(live15c, out15c, "1", owner_pid=dead15c.pid)
+    lc.transition(live15c, "1", lc.ABANDONED_RECOVERABLE)
+    rc.recover_to_worktree(repo15c, "r15c", "1", 1)
+    check("control: sin claim, el ítem se queda en la generación abandonada", 1,
+          existing_state(live15c, "1").generation)
+    lc.transition(live15c, "1", lc.CLOSING, generation=1)
+    check("control: sin claim, un actor de la generación abandonada NO se rechaza al transicionar",
+          lc.CLOSING, existing_state(live15c, "1").state)
+    lc.publish(live15c, out15c, "1", generation=1)
+    check("control: sin claim, tampoco se rechaza al publicar con la generación abandonada", True,
+          lc.is_closed(out15c, "1"))
 
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)
