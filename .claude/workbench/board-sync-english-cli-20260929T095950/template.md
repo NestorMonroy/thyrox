@@ -28,7 +28,8 @@ Lo que se pide:
 4. Comentarios en español sin coloquialismos.
 
 Cierre del ítem (obligatorio):
-- Todo en primer plano. No lances trabajos en segundo plano ni termines esperando una notificación.
+- Todo en primer plano. No lances trabajos en segundo plano, no uses `git stash` ni termines esperando una notificación.
+- Corre Python con `uv run --python 3.12 python`, nunca con `python3` a secas.
 - Tu mensaje final incluye la roja inicial, el verde final de cada suite del verify, el control de
   anulación con sus conteos y la salida de
   `git grep -nE "acunar-tarjeta|--capa\b|--evento\b|p_mint|\.minted" -- src tests ':!tests/task/fixtures'`
