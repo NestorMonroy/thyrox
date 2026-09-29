@@ -38,3 +38,11 @@ con el módulo `sqlite3` de Python en modo `ro`: el contenedor no trae el client
 
 En las tres, si la tabla se queda: su DDL entra por la historia que posee Python (#289) y la
 asignación del id pasa a una transacción `BEGIN IMMEDIATE`.
+
+## Decisión (2026-09-29)
+
+El ejecutor respondió sin preferencia; se aplica la opción recomendada, **marca por sesión**:
+`task_highwater` garantiza que dentro de una sesión un id borrado no se reusa. No garantiza unicidad
+entre sesiones; la identidad durable es `TASK-<LAYER>-NNNN`. Implementación en #311: clave por
+`session_id`, asignación en `BEGIN IMMEDIATE`, comentario corregido y DDL por la historia de Python
+(depende de #289).
