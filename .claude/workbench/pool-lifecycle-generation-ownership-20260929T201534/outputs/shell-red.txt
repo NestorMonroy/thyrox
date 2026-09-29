@@ -1,0 +1,30 @@
+OK   en curso, git status del banco no cambia
+OK   en curso, la salida no tiene artefactos del ítem
+OK   en curso, el stream vive en el runtime
+OK   en curso, ningún consumidor ve el ítem
+OK   el pool termina bien
+OK   el ítem quedó cerrado
+OK   su manifiesto coincide con la salida
+OK   la ejecución dejó run.closed
+OK   el runtime de la ejecución se retiró
+OK   el resultado es el del ítem
+OK   control: con el runtime en el banco, git status cambia en curso
+OK   pool_integrate no aplica un ítem sin cerrar
+OK   el árbol destino no cambió
+OK   pool_integrate no aplica un ítem incoherente
+OK   control: la guarda se retiró
+OK   control: sin la guarda, el ítem sin cerrar se aplica
+OK   cancelado: la salida no tiene artefactos del ítem
+OK   cancelado: el runtime conserva el stream parcial
+OK   reconcile declara el ítem recuperable
+OK   reconcile no borró el runtime
+OK   la salida sigue sin el ítem
+OK   tomar el ítem en curso le da la generación 2
+FAIL el pool no termina bien — expected 'yes', got ''
+FAIL el pool no publicó el ítem que ya no es suyo — expected '0', got '1'
+grep: /tmp/tmp.pqD4sgycYL/runtime4/pool/5247b918e4ca-20260929T201654-26138/1.lifecycle.err: No such file or directory
+FAIL el rechazo nombra la generación — expected '1', got ''
+jq: error: Could not open file /tmp/tmp.pqD4sgycYL/runtime4/pool/5247b918e4ca-20260929T201654-26138/1.state.json: No such file or directory
+FAIL el ítem sigue a nombre del nuevo dueño — expected '2 25577', got ''
+result: 22 of 26 assertions green
+exit=1

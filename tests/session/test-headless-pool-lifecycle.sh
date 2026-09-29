@@ -14,6 +14,8 @@
 #      aplica un ítem sin cerrar, ni uno cuyo artefacto ya no coincide.
 #   3. (prueba 13) un pool cancelado a mitad conserva su runtime; `reconcile`
 #      lo declara recuperable y no borra nada, y la salida sigue sin el ítem.
+#   4. la recuperación toma el ítem en curso con una generación nueva: el pool
+#      conserva la anterior y su publicación se rehúsa.
 #   Controles de anulación:
 #   1c. con el runtime dentro del banco, el mismo pool ensucia `git status`.
 #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
@@ -150,5 +152,22 @@ check "reconcile declara el ítem recuperable" \
 check "reconcile no borró el runtime" "$([[ -f "$live3/1.stream.jsonl" ]] && echo yes)" yes
 check "la salida sigue sin el ítem" "$(bash "$ROOT/bin/pool_lifecycle" closed-items "$REPO/$BENCH/run3" | wc -l)" 0
 
+# --- caso 4: la recuperación toma el ítem en curso; el pool ya no lo publica -
+# Mientras el ítem corre, otro actor lo declara abandonado y lo toma con una
+# generación nueva. El pool conserva la anterior: su publicación se rehúsa.
+start_pool run4 "$F/runtime4"
+live4="$(dirname "$(compgen -G "$F/runtime4/pool/*/1.stream.jsonl")")"
+THYROX_RUNTIME_DIR="$F/runtime4" bash "$ROOT/bin/pool_lifecycle" transition "$live4" 1 ABANDONED_RECOVERABLE
+gen4="$(THYROX_RUNTIME_DIR="$F/runtime4" bash "$ROOT/bin/pool_lifecycle" claim "$live4" "$REPO/$BENCH/run4" 1 --owner $$)"
+check "tomar el ítem en curso le da la generación 2" "$gen4" 2
+release run4
+wait "$POOL_PID"; code4=$?
+check "el pool no termina bien" "$([[ "$code4" -ne 0 ]] && echo yes)" yes
+check "el pool no publicó el ítem que ya no es suyo" \
+  "$(bash "$ROOT/bin/pool_lifecycle" closed-items "$REPO/$BENCH/run4" | wc -l)" 0
+check "el rechazo nombra la generación" \
+  "$(grep -c 'generación 1 ya no puede actuar' "$live4/1.lifecycle.err")" 1
+check "el ítem sigue a nombre del nuevo dueño" \
+  "$(jq -r '"\(.generation) \(.owner_pid)"' "$live4/1.state.json")" "2 $$"
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]

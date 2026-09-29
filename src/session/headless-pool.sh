@@ -385,7 +385,9 @@ done
 # mueve sus artefactos, los verifica contra su sha256 y deja `<n>.closed` como
 # última escritura. Se publica también el ítem que falló —su `.err` es el
 # motivo—; si la publicación misma falla, el runtime se conserva para
-# `pool_lifecycle reconcile` y el ítem sale con 7.
+# `pool_lifecycle reconcile` y el ítem sale con 7. Cada transición y la
+# publicación presentan la generación del ítem: si la recuperación lo tomó
+# mientras corría, la suya ya no es la vigente y `pool_lifecycle` rehúsa.
 _headless_item() {
     local n="$1" rc=0 publish_rc=0
     local -r publish_failed_exit=7
@@ -394,7 +396,7 @@ _headless_item() {
     export HP_ITEM_GENERATION
     rm -f "${HP_LIVE:?}/${n:?}.lifecycle.err"
     _headless_item_run "$@" || rc=$?
-    bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" \
+    bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" --generation "$HP_ITEM_GENERATION" \
         2>> "$HP_LIVE/$n.lifecycle.err" || publish_rc=$?
     [[ "$publish_rc" -eq 0 ]] || return "$publish_failed_exit"
     # La ref de la foto del worktree se conserva también cuando el ítem se
@@ -536,11 +538,11 @@ _headless_item_run() {
         # en objetos de git bajo refs/thyrox/snapshots/<run>/<n>/<gen>: si algo
         # falla después, `recovery_controller recover` lo abre aparte. Una foto
         # que no se pudo tomar se declara en el `.err`; no cambia el veredicto.
-        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING 2>> "$HP_LIVE/$n.err"
+        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
         bash "$HP_SNAPSHOT" take "$workdir" "${HP_LIVE##*/}" "$n" "$HP_ITEM_GENERATION" \
             > "$HP_LIVE/$n.snapshot.json" 2>> "$HP_LIVE/$n.err" \
             || echo "no se pudo guardar la foto del worktree del ítem" >> "$HP_LIVE/$n.err"
-        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING 2>> "$HP_LIVE/$n.err"
+        bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
         bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_LIVE" "$n" "$rc" "$HP_VERIFY"
     fi
     # El .json de siempre es la linea `result` del stream: sus consumidores

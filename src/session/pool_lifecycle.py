@@ -225,10 +225,20 @@ def write_state(live_dir: Path, state: ItemState) -> None:
     _write_atomic(live_dir / f"{state.item}{STATE_SUFFIX}", json.dumps(state.to_json()) + "\n")
 
 
-def transition(live_dir: Path, item: str, target: str, **changes: object) -> ItemState:
+def _assert_current_generation(state: ItemState, generation: int | None) -> None:
+    """Rehúsa a un actor cuya generación ya no es la vigente del ítem."""
+    if generation is not None and generation != state.generation:
+        raise StaleGenerationError(
+            f"el ítem {state.item} está en la generación {state.generation}; "
+            f"un actor de la generación {generation} ya no puede actuar sobre él")
+
+
+def transition(live_dir: Path, item: str, target: str, *, generation: int | None = None,
+               **changes: object) -> ItemState:
     current = read_state(live_dir, item)
     if current is None:
         raise LifecycleError(f"el ítem {item} no tiene estado en {live_dir}")
+    _assert_current_generation(current, generation)
     if target not in TRANSITIONS[current.state]:
         raise LifecycleError(f"transición no admitida para el ítem {item}: {current.state} → {target}")
     updated = ItemState(item=item, state=target,
@@ -300,6 +310,26 @@ def begin(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState
     return transition(live_dir, item, RUNNING)
 
 
+def claim(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState:
+    """La recuperación toma un ítem abandonado: nueva generación, nuevo dueño.
+
+    Sólo un ítem ``ABANDONED_RECOVERABLE`` se puede tomar. La generación nueva
+    supera tanto la del estado como la publicada, así que cualquier actor que
+    conserve la anterior queda rehusado por ``transition`` y ``publish``.
+    """
+    with _out_lock(out_dir, item):
+        state = read_state(live_dir, item)
+        if state is None:
+            raise LifecycleError(f"el ítem {item} no tiene estado en {live_dir}")
+        if state.state != ABANDONED_RECOVERABLE:
+            raise LifecycleError(f"el ítem {item} está en {state.state}; sólo se toma uno abandonado")
+        claimed = ItemState(item=item, state=ABANDONED_RECOVERABLE,
+                            generation=max(state.generation, closed_generation(out_dir, item)) + 1,
+                            owner_pid=owner_pid, exit_code=state.exit_code)
+        write_state(live_dir, claimed)
+        return claimed
+
+
 def _place(source: Path, dest: Path) -> None:
     """Lleva un artefacto a la salida: ``rename`` si comparten sistema de archivos.
 
@@ -352,7 +382,8 @@ def assert_no_foreign_writers(live_dir: Path, item: str) -> None:
 
 
 def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None = None,
-            fail_after_moves: int | None = None, staged: bool = True) -> dict:
+            generation: int | None = None, fail_after_moves: int | None = None,
+            staged: bool = True) -> dict:
     """Cierra y publica el ítem; idempotente y reanudable desde su plan.
 
     ``staged=False`` escribe cada artefacto directamente con su nombre final;
@@ -365,6 +396,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
             raise LifecycleError(f"el ítem {item} no tiene estado en {live_dir}")
         if state.state == CLOSED:
             return read_closed(out_dir, item) or {}
+        _assert_current_generation(state, generation)
         assert_no_foreign_writers(live_dir, item)
         plan_path = live_dir / f"{item}{PLAN_SUFFIX}"
         plan = _read_json(plan_path)
@@ -561,11 +593,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("live_dir", type=Path)
     p.add_argument("item")
     p.add_argument("state", choices=sorted(TRANSITIONS))
+    p.add_argument("--generation", type=int, help="la generación de quien actúa")
+    p = sub.add_parser("claim", help="toma un ítem abandonado con una generación nueva y la imprime")
+    p.add_argument("live_dir", type=Path)
+    p.add_argument("out_dir", type=Path)
+    p.add_argument("item")
+    p.add_argument("--owner", type=int, required=True)
     p = sub.add_parser("publish", help="publica un ítem en la salida, <n>.closed al final")
     p.add_argument("live_dir", type=Path)
     p.add_argument("out_dir", type=Path)
     p.add_argument("item")
     p.add_argument("--exit", dest="exit_code", type=int)
+    p.add_argument("--generation", type=int, help="la generación de quien publica")
     p.add_argument("--fail-after-moves", type=int, help=argparse.SUPPRESS)
     p.add_argument("--direct", action="store_true", help=argparse.SUPPRESS)
     p = sub.add_parser("close-run", help="publica index/joblog y run.closed")
@@ -588,10 +627,13 @@ def main(argv: list[str] | None = None) -> int:
             state = begin(args.live_dir, args.out_dir, args.item, args.owner)
             print(state.generation)
         elif args.command == "transition":
-            transition(args.live_dir, args.item, args.state)
+            transition(args.live_dir, args.item, args.state, generation=args.generation)
+        elif args.command == "claim":
+            print(claim(args.live_dir, args.out_dir, args.item, args.owner).generation)
         elif args.command == "publish":
             publish(args.live_dir, args.out_dir, args.item, exit_code=args.exit_code,
-                    fail_after_moves=args.fail_after_moves, staged=not args.direct)
+                    generation=args.generation, fail_after_moves=args.fail_after_moves,
+                    staged=not args.direct)
         elif args.command == "close-run":
             pending = close_run(args.live_dir, args.out_dir)
             if pending:

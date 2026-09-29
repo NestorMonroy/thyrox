@@ -14,6 +14,9 @@ Controles de anulación
 - Sin la etapa oculta (``--direct``: cada artefacto va directo a su nombre
   final), una caída a mitad deja la generación anterior cerrada y con
   artefactos que ya no coinciden con su manifiesto.
+- Sin la guarda de generación en ``transition`` y ``publish``, el dueño
+  anterior de un ítem que la recuperación tomó sigue actuando sobre él: caen
+  exactamente las cuatro aserciones del caso 7h que miden el rechazo.
 """
 from __future__ import annotations
 
@@ -289,6 +292,36 @@ with tempfile.TemporaryDirectory() as scratch:
     holder.wait(timeout=10)
     lc.publish(live, out, "4", exit_code=0)
     check("sin el escritor, se publica", ([], 1), (lc.verify_closed(out, "4"), lc.closed_generation(out, "4")))
+
+# Caso 7h: la recuperación que toma el ítem sube su generación, y desde ese
+# momento el dueño anterior no puede cambiar su estado ni publicarlo.
+with tempfile.TemporaryDirectory() as scratch:
+    base = Path(scratch)
+    os.environ["THYROX_RUNTIME_DIR"] = str(base / "runtime")
+    print("caso 7h: tomar el ítem sube la generación y anula al dueño anterior")
+    out = base / "out"
+    out.mkdir()
+    live = lc.open_run(out, os.getpid(), run_id="claim")
+    run_item(live, out, "5", {"stream.jsonl": "del dueño anterior\n", "err": ""})
+    old = state_of(live, "5").generation
+    check("tomar un ítem con dueño se rehúsa",
+          True, raises(lc.LifecycleError, lambda: lc.claim(live, out, "5", owner_pid=os.getpid())))
+    lc.transition(live, "5", lc.ABANDONED_RECOVERABLE)
+    claimed = lc.claim(live, out, "5", owner_pid=os.getpid())
+    check("tomar el ítem abandonado sube la generación", old + 1, claimed.generation)
+    check("... y lo deja a nombre del nuevo dueño en su estado persistido",
+          (old + 1, os.getpid()), (state_of(live, "5").generation, state_of(live, "5").owner_pid))
+    check("el dueño anterior no puede cambiar el estado",
+          True, raises(lc.StaleGenerationError,
+                       lambda: lc.transition(live, "5", lc.CLOSING, generation=old)))
+    check("... ni publicar", True,
+          raises(lc.StaleGenerationError, lambda: lc.publish(live, out, "5", exit_code=0, generation=old)))
+    check("... y por la línea de órdenes rehúsa con exit 5",
+          lc.EXIT_REJECTED, publish_cli(live, out, "5", "--exit", "0", "--generation", str(old)))
+    check("el rechazo no publica nada", False, lc.is_closed(out, "5"))
+    lc.publish(live, out, "5", exit_code=0, generation=old + 1)
+    check("el nuevo dueño publica su generación", ([], old + 1),
+          (lc.verify_closed(out, "5"), lc.closed_generation(out, "5")))
 
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)
