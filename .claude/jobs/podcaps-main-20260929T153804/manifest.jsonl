@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash tests/lib/test-podman-capabilities.sh 2>&1 | tail -4; .venv/bin/shellcheck -S warning src/lib/podman_capabilities.sh tests/lib/test-podman-capabilities.sh && echo SC-OK", "started_at": "2026-09-29T15:38:04+00:00"}

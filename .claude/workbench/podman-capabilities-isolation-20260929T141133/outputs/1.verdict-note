@@ -1,0 +1,1 @@
+Veredicto cambiado de rechazado a verificado: el verify original fallaba con dos avisos info de shellcheck (SC1091, SC2329) ya presentes en HEAD. Corregido a -S warning, la severidad de .shellcheckrc, y el parche se verificó de nuevo en un worktree aislado: 32 casos, 0 fallos, VERIFY OK (1.reverify.log).

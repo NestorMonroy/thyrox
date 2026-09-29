@@ -4,8 +4,9 @@
 # Tres casos. El primero mide el rechazo: sin Podman en el PATH, la sonda
 # REHUSA con exit 2 y no imprime ninguna linea de veredicto — un veredicto
 # fabricado sin poder medir seria peor que ningun veredicto. El segundo mide
-# el camino real: con el Podman de este contenedor, salen exactamente cuatro
-# lineas TSV, una por capacidad, y `run`/`cleanup` —las dos que este
+# el camino real: con el Podman de este contenedor, salen exactamente ocho
+# lineas TSV, una por capacidad, y `run`/`cleanup`/`network_none`/
+# `read_only_rootfs`/`cpu_limit`/`readonly_mount` —las seis que este
 # contenedor sostiene sin condicion— dan `efectivo`. El tercero confirma que
 # la sonda no deja rastro: ni la imagen ni ningun contenedor propio sobreviven
 # a la ejecucion.
@@ -25,7 +26,7 @@ fi
 ok "el sujeto existe y es ejecutable"
 
 VALID_VERDICTS='efectivo no-efectivo error'
-EXPECTED_CAPABILITIES='run pids_limit memory_limit cleanup'
+EXPECTED_CAPABILITIES='run pids_limit memory_limit cleanup network_none read_only_rootfs cpu_limit readonly_mount'
 
 # --- Caso 1: sin podman en el PATH, la sonda rehusa sin imprimir veredictos ---
 #
@@ -80,10 +81,10 @@ if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
   fi
 
   LINE_COUNT="$(printf '%s\n' "$REAL_OUT" | grep -c . || true)"
-  if [[ "$LINE_COUNT" -eq 4 ]]; then
-    ok "publica exactamente cuatro lineas"
+  if [[ "$LINE_COUNT" -eq 8 ]]; then
+    ok "publica exactamente ocho lineas"
   else
-    bad "esperaba 4 lineas, dio $LINE_COUNT. Salida:\n$REAL_OUT"
+    bad "esperaba 8 lineas, dio $LINE_COUNT. Salida:\n$REAL_OUT"
   fi
 
   declare -A SEEN_CAP=()
@@ -117,6 +118,17 @@ if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
   else
     bad "'cleanup' esperaba efectivo, dio '${VERDICT_OF[cleanup]:-(ausente)}'"
   fi
+  # Las cuatro capacidades nuevas se sostienen sin condicion en este
+  # anfitrion (Podman 4.9.3, uid 0), medido en
+  # .claude/workbench/podman-isolation-2b-20260929T100450/ y
+  # .claude/workbench/podman-isolation-2b-gaps-20260929T140754/.
+  for cap in network_none read_only_rootfs cpu_limit readonly_mount; do
+    if [[ "${VERDICT_OF[$cap]:-}" == "efectivo" ]]; then
+      ok "'$cap' da efectivo"
+    else
+      bad "'$cap' esperaba efectivo, dio '${VERDICT_OF[$cap]:-(ausente)}'"
+    fi
+  done
   # pids_limit y memory_limit se informan tal cual: no se fuerza su veredicto.
   if [[ -n "${VERDICT_OF[pids_limit]:-}" ]]; then
     ok "'pids_limit' se informa (${VERDICT_OF[pids_limit]}), sin forzar el valor"
