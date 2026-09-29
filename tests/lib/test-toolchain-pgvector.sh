@@ -190,4 +190,103 @@ else
   bad "falta THYROX_PGVECTOR_SOURCE_URL en .env.example"
 fi
 
+
+# --- Guarda de apt: el paquete instalado se quita ANTES de `make install` --
+FAKEBIN2="$WORK/fakebin-apt-guard"; mkdir -p "$FAKEBIN2"
+export APT_TRACE="$WORK/apt-trace.log"; : > "$APT_TRACE"
+STATE="$WORK/pkg-installed-marker"
+
+cat > "$FAKEBIN2/sudo" <<'STUB'
+#!/usr/bin/env bash
+exec "$@"
+STUB
+cat > "$FAKEBIN2/dpkg" <<STUB
+#!/usr/bin/env bash
+echo "dpkg \$*" >> "$APT_TRACE"
+if [[ "\$1" == "-s" ]]; then
+  [[ -f "$STATE" ]] && exit 0 || exit 1
+fi
+exit 1
+STUB
+cat > "$FAKEBIN2/apt-get" <<STUB
+#!/usr/bin/env bash
+echo "apt-get \$*" >> "$APT_TRACE"
+if [[ "\$1" == "remove" ]]; then
+  if [[ "\${THYROX_TEST_STUBBORN:-}" != "1" ]]; then
+    rm -f "$STATE"
+  fi
+fi
+STUB
+cat > "$FAKEBIN2/git" <<'STUB'
+#!/usr/bin/env bash
+exec true
+STUB
+cat > "$FAKEBIN2/make" <<STUB
+#!/usr/bin/env bash
+echo "make \$*" >> "$APT_TRACE"
+STUB
+chmod +x "$FAKEBIN2"/sudo "$FAKEBIN2"/dpkg "$FAKEBIN2"/apt-get "$FAKEBIN2"/git "$FAKEBIN2"/make
+
+# Caso A — paquete de apt PRESENTE: se quita antes de compilar/instalar, y el
+# resto de la cadena (git/make/make install) sigue corriendo.
+: > "$STATE"
+: > "$APT_TRACE"
+( PATH="$FAKEBIN2:$PATH" THYROX_PGVECTOR_VERSION=0.8.6 \
+  THYROX_TOOLCHAIN_PG_CONFIG_BIN="$WORK/pg_config" \
+  THYROX_TOOLCHAIN_DPKG_BIN="$FAKEBIN2/dpkg" \
+  THYROX_TOOLCHAIN_APT_GET_BIN="$FAKEBIN2/apt-get" \
+  thyrox_toolchain_pgvector_install_default )
+rc=$?
+trace="$(cat "$APT_TRACE" 2>/dev/null)"
+if [[ $rc -eq 0 ]]; then ok "paquete de apt presente: el instalador termina 0"
+else bad "paquete de apt presente: esperaba rc 0, dio $rc: '$trace'"; fi
+if [[ "$trace" == *"apt-get remove -y postgresql-16-pgvector"* ]]; then
+  ok "paquete de apt presente: se llama a 'apt-get remove' antes de compilar"
+else bad "no se llamo a apt-get remove: '$trace'"; fi
+if [[ "$trace" == *"make -C"*"install"* ]]; then
+  ok "paquete de apt presente: make sigue corriendo tras quitar el paquete"
+else bad "make no corrio tras quitar el paquete: '$trace'"; fi
+if [[ ! -f "$STATE" ]]; then
+  ok "paquete de apt presente: la re-comprobacion confirma que ya no esta"
+else bad "el marcador de paquete instalado seguia presente"; fi
+
+# Caso B — paquete de apt AUSENTE: no se llama a 'apt-get remove'.
+rm -f "$STATE"
+: > "$APT_TRACE"
+( PATH="$FAKEBIN2:$PATH" THYROX_PGVECTOR_VERSION=0.8.6 \
+  THYROX_TOOLCHAIN_PG_CONFIG_BIN="$WORK/pg_config" \
+  THYROX_TOOLCHAIN_DPKG_BIN="$FAKEBIN2/dpkg" \
+  THYROX_TOOLCHAIN_APT_GET_BIN="$FAKEBIN2/apt-get" \
+  thyrox_toolchain_pgvector_install_default )
+rc=$?
+trace="$(cat "$APT_TRACE" 2>/dev/null)"
+if [[ $rc -eq 0 ]]; then ok "paquete de apt ausente: el instalador termina 0"
+else bad "paquete de apt ausente: esperaba rc 0, dio $rc: '$trace'"; fi
+if [[ "$trace" != *"apt-get remove"* ]]; then
+  ok "paquete de apt ausente: no se llama a 'apt-get remove'"
+else bad "se llamo a apt-get remove sin necesidad: '$trace'"; fi
+
+# Caso C — LA RE-COMPROBACION FALLA (el paquete sigue instalado tras
+# 'apt-get remove'): rehusa con exit distinto de 0, nombra el paquete, y NO
+# compila (ni git ni make corren).
+: > "$STATE"
+: > "$APT_TRACE"
+( PATH="$FAKEBIN2:$PATH" THYROX_PGVECTOR_VERSION=0.8.6 THYROX_TEST_STUBBORN=1 \
+  THYROX_TOOLCHAIN_PG_CONFIG_BIN="$WORK/pg_config" \
+  THYROX_TOOLCHAIN_DPKG_BIN="$FAKEBIN2/dpkg" \
+  THYROX_TOOLCHAIN_APT_GET_BIN="$FAKEBIN2/apt-get" \
+  thyrox_toolchain_pgvector_install_default ) >"$WORK/stubborn.out" 2>&1
+rc=$?
+out="$(cat "$WORK/stubborn.out" 2>/dev/null)"
+trace="$(cat "$APT_TRACE" 2>/dev/null)"
+if [[ $rc -ne 0 ]]; then ok "re-comprobacion fallida: rehusa con exit distinto de 0"
+else bad "re-comprobacion fallida: esperaba exit distinto de 0, dio $rc"; fi
+if [[ "$out" == *"postgresql-16-pgvector"* ]]; then
+  ok "re-comprobacion fallida: el rechazo nombra el paquete"
+else bad "el rechazo no nombro postgresql-16-pgvector: '$out'"; fi
+if [[ "$trace" != *"make"* ]]; then
+  ok "re-comprobacion fallida: no se compila (make no corre)"
+else bad "make corrio pese a que el paquete seguia instalado: '$trace'"; fi
+rm -f "$STATE"
+
 thyrox_summary

@@ -377,6 +377,44 @@ function thyrox_toolchain_pgvector_installed_version() {
 }
 export -f thyrox_toolchain_pgvector_installed_version
 
+# @description El `dpkg` y el `apt-get` con que se detecta y retira el
+# paquete de Ubuntu de pgvector antes de compilar encima. Declarados para que
+# un control apunte a uno falso, mismo patron que `THYROX_TOOLCHAIN_PG_CONFIG_BIN`.
+export THYROX_TOOLCHAIN_DPKG_BIN="${THYROX_TOOLCHAIN_DPKG_BIN:-dpkg}"
+export THYROX_TOOLCHAIN_APT_GET_BIN="${THYROX_TOOLCHAIN_APT_GET_BIN:-apt-get}"
+
+# @description El nombre del paquete de Ubuntu que compite con la extension
+# compilada desde el fuente para la version mayor dada.
+# @arg $1 string La version mayor del servidor.
+# @stdout `postgresql-<major>-pgvector`.
+function thyrox_toolchain_pgvector_apt_package() {
+  printf 'postgresql-%s-pgvector' "$1"
+}
+export -f thyrox_toolchain_pgvector_apt_package
+
+# @description Si `postgresql-<major>-pgvector` esta instalado por apt, lo
+# retira ANTES de que `make install` escriba encima sus archivos (`vector.so`,
+# `vector.control`): sin esto, apt sigue atribuyendose esos archivos y un
+# `apt upgrade`/`apt remove` posterior los pisa o los borra (H-THYROX-273,
+# medido con `dpkg -S` sobre checksums distintos). Re-comprueba con `dpkg -s`
+# tras el `remove` — no confia en el exit de `apt-get`.
+# @arg $1 string La version mayor del servidor.
+# @exitcode 0 El paquete no estaba instalado, o se quito y se re-comprobo.
+# @exitcode 3 Sigue instalado tras el intento de quitarlo. REHUSA sin compilar.
+function thyrox_toolchain_pgvector_purge_apt_package() {
+  local major="$1" package
+  package="$(thyrox_toolchain_pgvector_apt_package "$major")"
+  "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1 || return 0
+  sudo "$THYROX_TOOLCHAIN_APT_GET_BIN" remove -y "$package" >&2
+  if "$THYROX_TOOLCHAIN_DPKG_BIN" -s "$package" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: '$package' sigue instalado tras 'apt-get remove -y';" >&2
+    echo "                  no se compila encima. Quitalo a mano y reintenta." >&2
+    return 3
+  fi
+  return 0
+}
+export -f thyrox_toolchain_pgvector_purge_apt_package
+
 # @description El instalador por defecto de pgvector: NO el paquete de Ubuntu
 # (0.6.0, desactualizado) ni PGDG (arrastra el servidor a otro repositorio,
 # H-THYROX-256), sino compilar la etiqueta `v$THYROX_PGVECTOR_VERSION` contra
@@ -390,6 +428,7 @@ export -f thyrox_toolchain_pgvector_installed_version
 # @noargs
 function thyrox_toolchain_pgvector_install_default() {
   local major; major="$(thyrox_toolchain_pg_major)" || return 1
+  thyrox_toolchain_pgvector_purge_apt_package "$major" || return $?
   local version="${THYROX_PGVECTOR_VERSION:-0.8.6}"
   local source_url="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
   local dir; dir="$(mktemp -d)" || return 1
