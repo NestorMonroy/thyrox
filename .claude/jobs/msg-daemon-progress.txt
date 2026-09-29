@@ -1,0 +1,4 @@
+Record in-flight output of the daemon reference pool
+
+The pool is still running; its bench keeps the per-item streams so
+far, so the run survives the container.
