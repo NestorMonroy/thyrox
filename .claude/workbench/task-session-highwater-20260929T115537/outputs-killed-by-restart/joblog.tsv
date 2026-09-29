@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790683028.756	    30.109	0	0	143	0	_headless_item 1 'Marca de agua por sesión en tabla propia (task_session_highwater) y asignación atómica de TaskCreate: src/packages/tools/src/tasks.ts, src/packages/task/schema.ts, src/packages/tools/__tests__/taskSessionHighwater.test.ts (nuevo), src/packages/tools/__tests__/taskCreateWorker.ts (nuevo, sólo si la concurrencia lo necesita), src/packages/agent/__tests__/resetTaskList.test.ts'
