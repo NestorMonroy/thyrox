@@ -26,7 +26,7 @@
  * `.rst`, por `build-logs.md`.
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '@thyrox/store/db.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 import { createHash } from 'node:crypto'
 import type { Message } from '@thyrox/agent/loop/types'
 import { CLEARED_MARKER } from '@thyrox/agent/loop/context/microcompact'
@@ -117,7 +117,7 @@ export function makeClearedPersister(opts: ClearedPersisterOptions): ClearedPers
   const failures = new Map<string, { reason: UnpersistedReason; detail?: string }>()
   let db: Database
   try {
-    db = openStore(opts.dbPath)
+    db = openLocal(opts.dbPath)
     ensureClearedTable(db)
   } catch (e) {
     // Sin store no hay registro, y sin registro no se limpia: devolver un

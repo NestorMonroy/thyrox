@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -q --author=Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com> -F .claude/jobs/msg-gen.txt -- src/typescript/emit_declarations.py tests/typescript/test_emit_declarations.py", "started_at": "2026-09-29T04:46:56+00:00"}

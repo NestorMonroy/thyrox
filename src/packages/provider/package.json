@@ -645,6 +645,7 @@
     "@thyrox/repl": "0.0.0",
     "@thyrox/shell": "0.1.0",
     "@thyrox/storage": "0.1.0",
+    "@thyrox/store": "0.1.0",
     "@thyrox/teleport": "0.1.0",
     "@thyrox/tool-registry": "0.1.0",
     "axios": "^1.20.0",

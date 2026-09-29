@@ -27,6 +27,12 @@
  * día, por el veredicto del análisis de la referencia. Las tres raíces del
  * árbol que alojan un mecanismo de dos lenguas —`paths/`, `store/`, `task/`—
  * comparten hoy la misma forma.
+ *
+ * ADR-THYROX-006 regla 3: es el ÚNICO módulo que abre una conexión SQLite
+ * local. `openLocal` reemplaza a los `new Database(...)` que vivían sueltos
+ * en `connectionStoreHome.ts`, `generateStorageKey.ts` y `finding/index.ts` —
+ * mismo `busy_timeout`, con `readonly`/`create` como opciones pasadas tal
+ * cual al driver.
  */
 import { Database } from 'bun:sqlite'
 
@@ -37,13 +43,20 @@ import { Database } from 'bun:sqlite'
  */
 export const BUSY_TIMEOUT_MS = 3000
 
+export type OpenLocalOptions = {
+  /** Abre sin permiso de escritura; no crea el archivo si falta. */
+  readonly?: boolean
+  /** Crea el archivo si no existe. */
+  create?: boolean
+}
+
 /**
- * Abre el store con `busy_timeout` fijado. Es el único sitio que construye una
- * `Database` sobre el store: así la política de contención vale para los tres
- * escritores sin repetirla.
+ * Abre una base SQLite local con `busy_timeout` fijado. Es el único sitio que
+ * construye una `Database`: así la política de contención vale para todo
+ * escritor sin repetirla.
  */
-export function openStore(dbPath: string): Database {
-  const db = new Database(dbPath)
+export function openLocal(dbPath: string, options?: OpenLocalOptions): Database {
+  const db = new Database(dbPath, options)
   db.run(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS}`)
   return db
 }
@@ -58,7 +71,7 @@ export type StoreProbe = { ok: true } | { ok: false; detail: string }
 export function probeStore(dbPath: string): StoreProbe {
   let db: Database | undefined
   try {
-    db = openStore(dbPath)
+    db = openLocal(dbPath)
     db.query('SELECT 1').get()
     return { ok: true }
   } catch (e) {

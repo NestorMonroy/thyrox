@@ -10,7 +10,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { ACTION_TRAIL_CAPACITY, createActionTrail } from '../src/errorStore/actionTrail.ts'
-import { dialectOf } from '../src/errorStore/dialect.ts'
 import {
   disableErrorRecording,
   enableErrorRecording,
@@ -50,13 +49,6 @@ describe('registro de acciones', () => {
 })
 
 describe('motor por URL', () => {
-  test('sqlite y postgres se reconocen; otro esquema no', () => {
-    expect(dialectOf('sqlite:///tmp/e.sqlite3')).toBe('sqlite')
-    expect(dialectOf('postgres://u@h/db')).toBe('postgres')
-    expect(dialectOf('postgresql://u@h/db')).toBe('postgres')
-    expect(dialectOf('mysql://u@h/db')).toBeNull()
-  })
-
   test('THYROX_OBSERVABILITY_DATABASE_URL gana; sin ella, el SQLite del hogar de datos', () => {
     expect(resolveErrorStoreUrl({ THYROX_OBSERVABILITY_DATABASE_URL: 'postgres://u@h/db' })).toBe('postgres://u@h/db')
     expect(resolveErrorStoreUrl({ THYROX_OBSERVABILITY_DATA_DIR: '/data/obs' })).toBe(`sqlite:///data/obs/${ERRORS_DB_FILE}`)

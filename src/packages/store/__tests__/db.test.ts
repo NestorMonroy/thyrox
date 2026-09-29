@@ -6,14 +6,14 @@ import { Database } from 'bun:sqlite'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { openStore, probeStore, BUSY_TIMEOUT_MS } from '../db.ts'
+import { openLocal, probeStore, BUSY_TIMEOUT_MS } from '../db.ts'
 
 const tmp = () => join(mkdtempSync(join(tmpdir(), 'db-')), 's.sqlite3')
 
-describe('openStore fija busy_timeout (#28)', () => {
-  test('un store abierto con openStore tiene busy_timeout > 0', () => {
+describe('openLocal fija busy_timeout (#28)', () => {
+  test('un store abierto con openLocal tiene busy_timeout > 0', () => {
     const p = tmp(); new Database(p).run('CREATE TABLE t(x)')
-    const db = openStore(p)
+    const db = openLocal(p)
     const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
     db.close()
     expect(bt).toBe(BUSY_TIMEOUT_MS)
@@ -25,6 +25,29 @@ describe('openStore fija busy_timeout (#28)', () => {
     const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
     db.close()
     expect(bt).toBe(0)
+  })
+  test('con { readonly: true } también fija busy_timeout, y la conexión rehúsa escribir', () => {
+    const p = tmp(); new Database(p).run('CREATE TABLE t(x)')
+    const db = openLocal(p, { readonly: true })
+    const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
+    expect(bt).toBe(BUSY_TIMEOUT_MS)
+    expect(() => db.run('INSERT INTO t VALUES (1)')).toThrow()
+    db.close()
+  })
+  // CONTROL: sin pasar `readonly`, la misma conexión sí escribe — la
+  // guarda de arriba mide la opción, no un defecto de bun:sqlite.
+  test('sin { readonly: true } la conexión escribe', () => {
+    const p = tmp(); new Database(p).run('CREATE TABLE t(x)')
+    const db = openLocal(p)
+    expect(() => db.run('INSERT INTO t VALUES (1)')).not.toThrow()
+    db.close()
+  })
+  test('con { create: true } crea el archivo si falta, con busy_timeout fijado', () => {
+    const p = tmp() // mkdtempSync crea el directorio; el archivo no existe todavía
+    const db = openLocal(p, { create: true })
+    const bt = (db.query('PRAGMA busy_timeout').get() as any).timeout
+    db.close()
+    expect(bt).toBe(BUSY_TIMEOUT_MS)
   })
 })
 

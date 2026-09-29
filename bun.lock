@@ -325,6 +325,7 @@
       "dependencies": {
         "@anthropic-ai/sdk": "^0.124.0",
         "@thyrox/agent": "0.4.0",
+        "@thyrox/config": "0.1.0",
       },
     },
     "src/packages/finding": {
@@ -421,6 +422,7 @@
         "@thyrox/config": "0.1.0",
         "@thyrox/output": "0.1.0",
         "@thyrox/storage": "0.1.0",
+        "@thyrox/store": "0.1.0",
         "axios": "^1.20.0",
         "cacache": "^21.0.1",
         "chalk": "^6.0.0",
@@ -585,6 +587,7 @@
         "@thyrox/repl": "0.0.0",
         "@thyrox/shell": "0.1.0",
         "@thyrox/storage": "0.1.0",
+        "@thyrox/store": "0.1.0",
         "@thyrox/teleport": "0.1.0",
         "@thyrox/tool-registry": "0.1.0",
         "axios": "^1.20.0",

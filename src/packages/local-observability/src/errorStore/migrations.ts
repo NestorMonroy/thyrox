@@ -10,7 +10,7 @@
  */
 import type { SQL } from 'bun'
 
-import type { Dialect } from './dialect.ts'
+import type { Dialect } from '@thyrox/store/sql.ts'
 import { ERROR_TYPES } from './errorType.ts'
 
 export const ERROR_SOURCES = ['log_error', 'component_boundary'] as const

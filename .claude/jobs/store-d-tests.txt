@@ -19,5 +19,6 @@ src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
 src/packages/provider/src/__tests__/generateStorageKey.test.ts
 src/packages/repl/src/__tests__/errorBoundary.test.ts
 src/packages/store/__tests__/db.test.ts
+src/packages/store/__tests__/sql.test.ts
 src/packages/tools/__tests__/subagent.test.ts
 src/packages/tools/__tests__/todoWrite.test.ts

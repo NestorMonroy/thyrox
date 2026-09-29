@@ -1,0 +1,9 @@
+bun.lock
+src/packages/local-observability/__tests__/errorStore.test.ts
+src/packages/local-observability/package.json
+src/packages/local-observability/src/errorStore/dialect.ts
+src/packages/local-observability/src/errorStore/errorStore.ts
+src/packages/local-observability/src/errorStore/errorStoreHome.ts
+src/packages/local-observability/src/errorStore/migrations.ts
+src/packages/store/__tests__/sql.test.ts
+src/packages/store/sql.ts

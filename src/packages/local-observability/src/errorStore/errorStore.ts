@@ -10,7 +10,7 @@
 import type { SQL } from 'bun'
 
 import type { RecordedAction } from './actionTrail.ts'
-import { type Dialect, jsonParam, readId, readJson, readTimestamp } from './dialect.ts'
+import { type Dialect, jsonParam, readId, readJson, readTimestamp } from '@thyrox/store/sql.ts'
 import { classifyError, type ErrorType } from './errorType.ts'
 import { ERROR_SOURCES, type ErrorSource, migrate } from './migrations.ts'
 

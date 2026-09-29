@@ -29,10 +29,10 @@
  * thyrox para el valor por defecto), o el `.env` rotado no se pudo publicar.
  */
 import { randomBytes } from 'node:crypto'
-import { Database } from 'bun:sqlite'
 import { existsSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { thyroxRoot } from '@thyrox/paths/reach.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 
 import { CONNECTIONS_DB_FILE, resolveProvidersDataDir } from '../src/accounts/connectionStoreHome.ts'
 import { STORAGE_KEY_VARIABLE } from '../src/accounts/fieldCipher.ts'
@@ -132,7 +132,7 @@ function rotate(envFile: string, deps: GenerateStorageKeyDeps): number {
   writeFileSync(staged, withKeyReplaced(readFileSync(envFile, 'utf8'), next), { mode: statSync(envFile).mode })
 
   const storePath = join(resolveProvidersDataDir(process.env), CONNECTIONS_DB_FILE)
-  const db = existsSync(storePath) ? new Database(storePath) : null
+  const db = existsSync(storePath) ? openLocal(storePath) : null
   try {
     const outcome: RotationOutcome = db ? rotateStorageKey(db, previous, next) : { kind: 'rotated', fields: 0 }
     if (outcome.kind === 'refused') {

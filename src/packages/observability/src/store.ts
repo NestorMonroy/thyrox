@@ -17,7 +17,7 @@
  *   promoverse a sí mismo (`niveles-de-retencion.md`).
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '@thyrox/store/db.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 import { join, resolve } from 'node:path'
 import { thyroxRoot } from '@thyrox/paths/reach.ts'
 import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '@thyrox/paths/reach.ts'
@@ -163,7 +163,7 @@ export type HarnessSessionRow = {
  * inflaría cualquier agregado del store con la misma sesión contada dos veces.
  */
 export function recordHarnessSession(dbPath: string, row: HarnessSessionRow): void {
-  const db = openStore(dbPath)
+  const db = openLocal(dbPath)
   try {
     const ahora = new Date().toISOString()
     db.run(
@@ -236,7 +236,7 @@ export type StaleRow = { agentId: string; verdict: Adoption }
  * harness, que es un momento conocido; no necesita disparo.
  */
 export function reconcileStaleRunningRows(dbPath: string): StaleRow[] {
-  const db = openStore(dbPath)
+  const db = openLocal(dbPath)
   try {
     ensureUpdatedAtTrigger(db)
     const rows = db.query(

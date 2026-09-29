@@ -8,13 +8,13 @@
  * cambia el directorio—, sólo del dueño: los errores llevan rutas, URLs y
  * mensajes del trabajo del usuario.
  */
-import { SQL } from 'bun'
+import type { SQL } from 'bun'
 import fs from 'node:fs'
 import { join } from 'node:path'
 
 import { resolveDataDir } from '@thyrox/config/env/configHome'
 
-import { type Dialect, dialectOf } from './dialect.ts'
+import { type Dialect, dialectOf, openByUrl } from '@thyrox/store/sql.ts'
 import { createErrorStore, type ErrorStore } from './errorStore.ts'
 
 export const OBSERVABILITY_DATA_SUBDIR = 'observability'
@@ -41,16 +41,14 @@ export async function openErrorStoreOn(sql: SQL, dialect: Dialect): Promise<Erro
 
 export async function openErrorStore(options: { env?: Env } = {}): Promise<{ store: ErrorStore; close(): Promise<void> }> {
   const url = resolveErrorStoreUrl(options.env ?? process.env)
-  const dialect = dialectOf(url)
-  if (!dialect) throw new Error(`unsupported error store URL '${url.replace(/\/\/[^@/]*@/, '//***@')}': expected sqlite:// or postgres://`)
-  if (dialect === 'sqlite') {
+  if (dialectOf(url) === 'sqlite') {
     const dir = resolveObservabilityDataDir(options.env ?? process.env)
     if (url.includes(dir)) {
       fs.mkdirSync(dir, { recursive: true, mode: OWNER_ONLY })
       fs.chmodSync(dir, OWNER_ONLY)
     }
   }
-  const sql = new SQL(url)
+  const { sql, dialect } = openByUrl(url)
   return { store: await openErrorStoreOn(sql, dialect), close: () => sql.close() }
 }
 

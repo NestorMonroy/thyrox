@@ -7,13 +7,18 @@
  * El directorio se crea sólo para el dueño: la base guarda credenciales, y las
  * cifra con la clave que el entorno declare (`fieldCipherFromEnv`).
  *
+ * La conexión se abre con `openLocal` (`@thyrox/store`, ADR-THYROX-006 regla
+ * 3): el proxy la lee en cada petición mientras la CLI escribe, y sin
+ * `busy_timeout` esa contención fallaba al instante en vez de esperar.
+ *
  * Porte de `omniroute: bin/cli/data-dir.mjs` y `bin/cli/sqlite.mjs` (MIT).
  */
-import { Database } from 'bun:sqlite'
+import type { Database } from 'bun:sqlite'
 import fs from 'node:fs'
 import { join } from 'node:path'
 
 import { resolveDataDir } from '@thyrox/config/env/configHome'
+import { openLocal } from '@thyrox/store/db.ts'
 
 import { createConnectionStore, type ConnectionStore } from './connectionStore.ts'
 import { fieldCipherFromEnv } from './fieldCipher.ts'
@@ -28,6 +33,8 @@ export function resolveProvidersDataDir(env: Record<string, string | undefined> 
 
 export interface OpenedConnectionStore {
   store: ConnectionStore
+  /** La conexión subyacente; expuesta para inspeccionar su `PRAGMA` en pruebas. */
+  db: Database
   close(): void
 }
 
@@ -37,7 +44,7 @@ export function openConnectionStore(options: { env?: Record<string, string | und
   const dir = resolveProvidersDataDir(env)
   fs.mkdirSync(dir, { recursive: true, mode: OWNER_ONLY })
   fs.chmodSync(dir, OWNER_ONLY)
-  const db = new Database(join(dir, CONNECTIONS_DB_FILE), { create: true })
+  const db = openLocal(join(dir, CONNECTIONS_DB_FILE), { create: true })
   const store = createConnectionStore({ db, cipher: fieldCipherFromEnv(env, options.report) })
-  return { store, close: () => db.close() }
+  return { store, db, close: () => db.close() }
 }

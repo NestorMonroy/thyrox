@@ -9,6 +9,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { BUSY_TIMEOUT_MS } from '@thyrox/store/db.ts'
 import { CONNECTIONS_DB_FILE, openConnectionStore, resolveProvidersDataDir } from '../../src/accounts/connectionStoreHome.ts'
 
 const dirs: string[] = []
@@ -54,5 +55,15 @@ describe('opening the connection store', () => {
     fs.chmodSync(dir, 0o755)
     openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: dir } }).close()
     expect(fs.statSync(dir).mode & 0o777).toBe(0o700)
+  })
+
+  // La base la lee el proxy en cada petición mientras la CLI escribe: sin
+  // busy_timeout, esa contención fallaría al instante en vez de esperar.
+  test('opens with busy_timeout fijado (ADR-THYROX-006 regla 3)', () => {
+    const dir = path.join(tempDir(), 'providers')
+    const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: dir } })
+    const timeout = (opened.db.query('PRAGMA busy_timeout').get() as { timeout: number }).timeout
+    opened.close()
+    expect(timeout).toBe(BUSY_TIMEOUT_MS)
   })
 })

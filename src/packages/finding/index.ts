@@ -16,10 +16,10 @@
  * Un hallazgo publicado es evidencia fechada: `writeFinding` no escribe sobre
  * un archivo que ya existe.
  */
-import { Database } from 'bun:sqlite'
 import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join } from 'node:path'
 import { findingPath, type Submodule } from '@thyrox/paths/docs.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 
 export type FindingRecord = {
   findingId: string
@@ -46,7 +46,7 @@ export function slugOf(summary: string): string {
 /** La fila de `findingId`, o `null` si el store no la tiene. Abre en sólo lectura. */
 export function readFindingRecord(storeFile: string, findingId: string): FindingRecord | null {
   if (!existsSync(storeFile)) return null
-  const db = new Database(storeFile, { readonly: true })
+  const db = openLocal(storeFile, { readonly: true })
   try {
     const found = db
       .query(

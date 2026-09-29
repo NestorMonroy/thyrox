@@ -10,7 +10,7 @@ import type { Database } from 'bun:sqlite'
 import { mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-import { openStore } from '@thyrox/store/db.ts'
+import { openLocal } from '@thyrox/store/db.ts'
 
 import { resolveMitmDataDir } from '../dataDir.ts'
 import { ensureAgentBridgeSchema } from './schema.ts'
@@ -24,7 +24,7 @@ export function mitmStateStorePath(): string {
 /** Abre la base (por defecto la del directorio del MITM) con el esquema aplicado. */
 export function openMitmStateStore(path: string = mitmStateStorePath()): Database {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
-  const db = openStore(path)
+  const db = openLocal(path)
   ensureAgentBridgeSchema(db)
   return db
 }
