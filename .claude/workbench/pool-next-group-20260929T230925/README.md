@@ -32,3 +32,28 @@ un ítem sano (`d4a-three-way-merge-*/README.md`, «Resultado»). Ahora
 `probes/verify-item.sh` ejecuta cada prueba según su forma: Python como guion,
 shell con bash, TypeScript con `bun test` desde su paquete. La plantilla lo
 declara y prohíbe importar `pytest`.
+
+## Resultado
+
+El pool terminó en 1632.25 s: 4 ítems, 4 `verificado`, 0 rechazados. La
+integración con `pool_integrate` aplicó los 4 sin conflictos, y las pruebas
+derivadas del árbol integrado (`probes/derived-tests.sh`) dieron verde, con 0
+errores propios de typecheck en `provider` y `finding`.
+
+| Ítem | Tarea | Commit |
+|---|---|---|
+| 1 | TASK-THYROX-0621 | `6de9bf07` |
+| 2 | TASK-THYROX-0625 | `38b75e29` |
+| 3 | TASK-THYROX-0563 | `1173d4a5` |
+| 4 | TASK-THYROX-0271 R5c | `06f1d9e0` |
+
+**El verify no veía lo que el pre-commit sí.** Los cuatro pasaron sus
+pruebas, pero el pre-commit rechazó dos: 5 accesos a un `Optional` sin
+comprobar en `test_snapshot_recovery.py` (pyright) y 2 variables sin uso en
+`test-agent-store-fecha-documento.sh` (SC2034). Se corrigieron a mano antes
+del commit, junto con un identificador en español (`salida`) de
+`agent_store.py`. El grupo siguiente añade al verify los mismos linters que
+corre el pre-commit sobre los archivos tocados.
+
+El ítem 4 probó el lease contra un `redis-server` real del toolchain, no
+contra un doble: dos refrescadores en modo `multi` y sólo uno llega a la red.
