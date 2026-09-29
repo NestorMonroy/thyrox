@@ -1,5 +1,0 @@
-log=/home/user/thyrox/.claude/workbench/build-runtime-assets-20260929T111144/outputs/1.jobs/verify3-20260929T112813/outputs/salida.log
-pid=24281
-proc_start=4484699
-cmd=bash -c /usr/bin/time -q -f %M\ %e\ %U\ %S -o /home/user/thyrox/.claude/workbench/build-runtime-assets-20260929T111144/outputs/1.jobs/verify3-20260929T112813/outputs/salida.log.time env -u THYROX_ROOT bash .claude/workbench/build-runtime-assets-20260929T111144/verify.sh ; printf '%s%s\n' '__BG_EXIT__=' "$?" 
-marker=^__BG_EXIT__=[0-9]+
