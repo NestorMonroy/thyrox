@@ -1,0 +1,16 @@
+SessionRecordsUnreadableError
+session records directory unreadable
+tengu_session_stable_address
+tengu_harbor_kite
+cloud-session
+bridge-session
+untitled session
+[TeammateTool] Failed to read team file
+[bridge:population]
+primePeerIdentityOwner
+listBridgePeerSessions
+hasCloudPeerAccess
+dynamicTeamContext
+registeredName
+environmentKind
+bridgeSessionId
