@@ -101,6 +101,11 @@
       "types": "./dist/state/hostSessionState.d.ts",
       "default": "./src/state/hostSessionState.ts"
     },
+    "./state/surfaceCapabilities.js": {
+      "@thyrox/source": "./src/state/surfaceCapabilities.ts",
+      "types": "./dist/state/surfaceCapabilities.d.ts",
+      "default": "./src/state/surfaceCapabilities.ts"
+    },
     "./state/AppStateStore.js": {
       "@thyrox/source": "./src/state/AppStateStore.ts",
       "types": "./dist/state/AppStateStore.d.ts",
