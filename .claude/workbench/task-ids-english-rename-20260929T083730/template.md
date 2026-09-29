@@ -46,3 +46,9 @@ Lo que se pide:
 Criterio de cierre: todas las suites del `--verify` en verde, y
 `git grep -nE "ingerir-board|acunar|corregir-capa" -- src tests bin README.md .claude/CLAUDE.md`
 sin resultados.
+
+Cierre del ítem (obligatorio):
+- No lances trabajos en segundo plano ni termines el turno esperando una notificación: corre
+  cada prueba en primer plano y lee su resultado antes de seguir.
+- Tu mensaje final incluye: la salida roja inicial, el conteo verde final de cada suite del
+  verify y la verificación de que no queda ningún nombre viejo (el `git grep` de arriba en 0).
