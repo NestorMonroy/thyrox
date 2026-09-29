@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/cli && bun run typecheck", "started_at": "2026-09-29T21:06:20+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T21:07:48+00:00", "duration_seconds": 88.997037}

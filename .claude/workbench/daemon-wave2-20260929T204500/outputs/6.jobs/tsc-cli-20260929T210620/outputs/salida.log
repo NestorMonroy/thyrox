@@ -1,0 +1,2 @@
+$ tsc --noEmit -p tsconfig.json
+__BG_EXIT__=0

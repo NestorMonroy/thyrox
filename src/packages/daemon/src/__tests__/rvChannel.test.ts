@@ -18,6 +18,7 @@ import {
   test,
 } from 'bun:test'
 import { mkdtempSync, rmSync } from 'node:fs'
+import { createServer, type Socket } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -383,5 +384,53 @@ describe('rv channel — state + done persist to disk', () => {
       | undefined
     expect(statePush?.patch.state).toBe('done')
     client.close()
+  })
+})
+
+describe('rv channel — malformed line resilience', () => {
+  /**
+   * Raw `node:net` server instead of the fleet rvServer fixture: this test
+   * needs wire-level control (write an invalid JSON line, then a valid one)
+   * that `sendRv`'s typed API doesn't expose.
+   *
+   * Reference: chunk-ygx717jg.js `Be` composes `Zzt` (chunk-y641zpzf.js,
+   * newline-frame reader) with an inline `try{P=J(A)}catch{return}` per
+   * line — one malformed line is dropped silently and the connection stays
+   * open for the next line. `rvClient.ts` used to hand the whole stream to
+   * `socketProto.ts::createLineDecoder`, whose `onError` is wired to
+   * `sock.destroy()` for ANY parse failure — worse coverage than the
+   * reference, which only loses that one line.
+   */
+  test('a malformed JSON line is dropped; the connection and later valid frames survive', async () => {
+    const sock = freshSockPath()
+    let rawSocket: Socket | undefined
+    const server = createServer(s => {
+      rawSocket = s
+      // Discard the handshake line (role marker) — nothing to do with it here.
+    })
+    await new Promise<void>(resolve => server.listen(sock, resolve))
+
+    const received: RvServerMessage[] = []
+    let connected = false
+    const client = createRvClient(
+      sock,
+      m => received.push(m),
+      () => {},
+      () => {
+        connected = true
+      },
+    )
+    await until(() => connected)
+    await until(() => rawSocket !== undefined)
+
+    rawSocket!.write('not-json-at-all\n')
+    rawSocket!.write(`${JSON.stringify({ type: 'heartbeat' })}\n`)
+
+    await until(() => received.some(m => m.type === 'heartbeat'))
+    expect(received.filter(m => m.type === 'heartbeat').length).toBe(1)
+    expect(received.length).toBe(1)
+
+    client.close()
+    server.close()
   })
 })

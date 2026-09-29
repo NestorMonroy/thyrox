@@ -7,10 +7,13 @@
  * @dynamicRequire
  */
 
-import { statSync } from 'node:fs'
-
 import { logEvent } from '@thyrox/local-observability'
 
+import {
+  type BinaryStat,
+  hasBinaryChanged as hasBinaryChangedDefault,
+  resolveBinaryStat as resolveBinaryStatDefault,
+} from './upgradeProbe.js'
 import type { WorkerVm } from './workerVm.js'
 
 /**
@@ -82,46 +85,78 @@ export function setupIdleExitWatchdog(opts: IdleExitOptions): {
 }
 
 /**
- * Set up the binary-upgrade watchdog. Watches argv[1] (the ccb binary)
- * for mtime change; on detection, emits tengu_daemon_self_restart_on_upgrade
- * and aborts the controller so the wrapper / launchAgent restarts the
- * supervisor under the new binary. Bg workers are re-adopted from the
- * roster on the next supervisor's boot.
+ * Set up the binary-upgrade watchdog. Resuelve argv[1] (el binario ccb)
+ * con `It` (`resolveBinaryStat`, sigue symlinks) y compara sucesivas
+ * lecturas con `Fr` (`hasBinaryChanged`) — target distinto siempre
+ * cuenta, mtime distinto cuenta salvo en un build administrado por
+ * versión (`Kat`/`isManagedVersionedBuild`). Al detectar cambio, emite
+ * tengu_daemon_self_restart_on_upgrade y aborta el controller para que
+ * el wrapper / launchAgent reinicie el supervisor bajo el binario
+ * nuevo. Los bg workers se re-adoptan desde el roster en el arranque
+ * del siguiente supervisor.
  *
- * Returns initial mtime + dispose function. If argv[1] is unreadable
- * (which happens on some compiled-bundle paths), returns initialMtime=null
- * and the probe is a no-op.
+ * Si argv[1] es ilegible (ENOENT — pasa en algunas rutas de build
+ * compilado), `resolveBinaryStat` da `null` y el sondeo periódico ni se
+ * arma.
+ *
+ * pendiente: la máquina de estados de `xt` alrededor de `Fr`/`It` en la
+ * referencia —defer mientras el daemon está ocupado
+ * (`upgradeBusyDeferCapMs`), rechazo de upgrade obsoleto
+ * (`tengu_daemon_refuse_stale_upgrade`)— no se porta aquí; este sondeo
+ * dispara en cuanto detecta el cambio, sin ese margen.
  */
+export interface UpgradeWatchdogOptions {
+  /** Cadencia del sondeo; 30_000ms en la referencia. */
+  intervalMs?: number
+  binaryPath?: string
+  /** Punto de inyección para pruebas — por defecto `It` (./upgradeProbe.ts). */
+  resolveBinaryStat?: (path: string) => Promise<BinaryStat | null>
+  /** Punto de inyección para pruebas — por defecto `Fr` (./upgradeProbe.ts). */
+  hasBinaryChanged?: (previous: BinaryStat, current: BinaryStat) => boolean
+}
+
 export function setupUpgradeWatchdog(
   abort: AbortController,
+  opts: UpgradeWatchdogOptions = {},
 ): { dispose: () => void } {
-  const binaryPath = process.argv[1] ?? process.execPath
-  let initialMtime: number | null = null
-  try {
-    initialMtime = statSync(binaryPath).mtimeMs
-  } catch {
-    return { dispose: () => {} }
-  }
-  const timer = setInterval(() => {
-    if (initialMtime === null) return
-    if (abort.signal.aborted) return
-    try {
-      const current = statSync(binaryPath).mtimeMs
-      if (current !== initialMtime) {
-        logEvent('tengu_daemon_self_restart_on_upgrade', {
-          old_mtime: String(initialMtime),
-          new_mtime: String(current),
+  const binaryPath = opts.binaryPath ?? process.argv[1] ?? process.execPath
+  const resolveStat = opts.resolveBinaryStat ?? resolveBinaryStatDefault
+  const changed = opts.hasBinaryChanged ?? hasBinaryChangedDefault
+  let initialStat: BinaryStat | null = null
+  let timer: ReturnType<typeof setInterval> | null = null
+  let disposed = false
+
+  // `It` — el primer stat es asíncrono (sigue symlinks vía
+  // fs/promises.realpath); si el binario es ilegible (ENOENT), el
+  // sondeo periódico ni se arma, igual que la referencia deja
+  // `initialMtime=null` y el probe queda como no-op.
+  void resolveStat(binaryPath).then(stat => {
+    if (disposed || stat === null) return
+    initialStat = stat
+    timer = setInterval(() => {
+      if (abort.signal.aborted) return
+      void resolveStat(binaryPath)
+        .then(current => {
+          if (current === null || initialStat === null) return
+          if (changed(initialStat, current)) {
+            logEvent('tengu_daemon_self_restart_on_upgrade', {
+              old_mtime: String(initialStat.mtimeMs),
+              new_mtime: String(current.mtimeMs),
+            })
+            abort.abort()
+          }
         })
-        abort.abort()
-      }
-    } catch {
-      // best-effort
-    }
-  }, 30_000)
-  timer.unref()
+        .catch(() => {
+          // best-effort — un error transitorio de stat no debe tumbar el watchdog
+        })
+    }, opts.intervalMs ?? 30_000)
+    timer.unref()
+  })
+
   return {
     dispose() {
-      clearInterval(timer)
+      disposed = true
+      if (timer) clearInterval(timer)
     },
   }
 }

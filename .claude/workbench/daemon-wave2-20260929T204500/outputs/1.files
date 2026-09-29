@@ -1,0 +1,2 @@
+src/packages/daemon/src/__tests__/supervisorLog.test.ts
+src/packages/daemon/src/supervisorLog.ts

@@ -1,0 +1,514 @@
+diff --git a/src/packages/daemon/src/__tests__/supervisorLog.test.ts b/src/packages/daemon/src/__tests__/supervisorLog.test.ts
+new file mode 100644
+index 00000000..7057a015
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/supervisorLog.test.ts
+@@ -0,0 +1,293 @@
++import { afterEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES,
++  closeSupervisorLogStream,
++  createSupervisorLog,
++  openSupervisorLogAppendStream,
++  rotateSupervisorLog,
++  tailSupervisorLog,
++} from '../supervisorLog.js'
++
++const dirs: string[] = []
++
++function tmpScope(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'supervisor-log-test-'))
++  dirs.push(dir)
++  return dir
++}
++
++afterEach(() => {
++  while (dirs.length) {
++    const dir = dirs.pop()
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  }
++})
++
++describe('SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES', () => {
++  test('es el umbral de la referencia (`at` = 10 MiB)', () => {
++    expect(SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES).toBe(10_485_760)
++  })
++})
++
++describe('openSupervisorLogAppendStream / closeSupervisorLogStream', () => {
++  test('abre en modo append y silencia los errores del stream', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    writeFileSync(path, 'linea previa\n')
++    const stream = openSupervisorLogAppendStream(path)
++    stream.write('linea nueva\n')
++    // Un 'error' emitido a mano no debe propagarse: sin listener silencioso
++    // esto tiraría el proceso de pruebas abajo.
++    stream.emit('error', new Error('boom'))
++    await closeSupervisorLogStream(stream)
++    expect(readFileSync(path, 'utf8')).toBe('linea previa\nlinea nueva\n')
++  })
++
++  test('close resuelve enseguida si el stream ya está cerrado', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const stream = openSupervisorLogAppendStream(path)
++    await closeSupervisorLogStream(stream)
++    // Segunda llamada: `stream.closed` ya es true, así que resuelve sin
++    // esperar un segundo evento 'close' que no volverá a emitirse.
++    await closeSupervisorLogStream(stream)
++    expect(stream.closed).toBe(true)
++  })
++})
++
++describe('rotateSupervisorLog', () => {
++  test('renombra <path> a <path>.1', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    writeFileSync(path, 'contenido')
++    await rotateSupervisorLog(path)
++    expect(existsSync(path)).toBe(false)
++    expect(readFileSync(`${path}.1`, 'utf8')).toBe('contenido')
++  })
++
++  test('si el archivo no existe (ENOENT), resuelve sin crear .1 y sin tocar el .1 anterior', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'no-existe.log')
++    await rotateSupervisorLog(path)
++    expect(existsSync(`${path}.1`)).toBe(false)
++  })
++
++  test('ENOENT corta antes del intento de borrar/reintentar — no llama a unlinkFn', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'no-existe.log')
++    let unlinkCalls = 0
++    await rotateSupervisorLog(path, {
++      renameFn: async () => {
++        const error = new Error('ENOENT') as NodeJS.ErrnoException
++        error.code = 'ENOENT'
++        throw error
++      },
++      unlinkFn: async () => { unlinkCalls += 1 },
++    })
++    expect(unlinkCalls).toBe(0)
++  })
++
++  test('si el primer renombrado falla por otra causa, borra el .1 viejo y reintenta', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    writeFileSync(path, 'contenido nuevo')
++    writeFileSync(`${path}.1`, 'contenido viejo')
++    let unlinkCalls = 0
++    let renameCalls = 0
++    await rotateSupervisorLog(path, {
++      renameFn: async (oldPath, newPath) => {
++        renameCalls += 1
++        if (renameCalls === 1) {
++          const error = new Error('EBUSY') as NodeJS.ErrnoException
++          error.code = 'EBUSY'
++          throw error
++        }
++        writeFileSync(newPath, readFileSync(oldPath, 'utf8'))
++        rmSync(oldPath)
++      },
++      unlinkFn: async target => {
++        unlinkCalls += 1
++        rmSync(target)
++      },
++    })
++    expect(unlinkCalls).toBe(1)
++    expect(renameCalls).toBe(2)
++    expect(readFileSync(`${path}.1`, 'utf8')).toBe('contenido nuevo')
++  })
++
++  test('si el reintento también falla, borra el original', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    writeFileSync(path, 'contenido')
++    let renameCalls = 0
++    let originalUnlinked = false
++    await rotateSupervisorLog(path, {
++      renameFn: async () => {
++        renameCalls += 1
++        const error = new Error('EBUSY') as NodeJS.ErrnoException
++        error.code = 'EBUSY'
++        throw error
++      },
++      unlinkFn: async target => {
++        if (target === path) originalUnlinked = true
++      },
++    })
++    expect(renameCalls).toBe(2)
++    expect(originalUnlinked).toBe(true)
++  })
++})
++
++describe('createSupervisorLog', () => {
++  test('escribe una línea con timestamp y etiqueta', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const writer = await createSupervisorLog(path)
++    writer.write('supervisor', '─── daemon start ───')
++    await writer.close()
++    const content = readFileSync(path, 'utf8')
++    expect(content).toMatch(/^\[[^\]]+] \[supervisor] ─── daemon start ───\n$/)
++  })
++
++  test('ecoa a stdout sólo cuando isTty es true', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const echoed: string[] = []
++    const writer = await createSupervisorLog(path, { isTty: true, echo: chunk => { echoed.push(chunk) } })
++    writer.write('supervisor', 'hola')
++    await writer.close()
++    expect(echoed.length).toBe(1)
++
++    const path2 = join(dir, 'daemon2.log')
++    const echoed2: string[] = []
++    const writer2 = await createSupervisorLog(path2, { isTty: false, echo: chunk => { echoed2.push(chunk) } })
++    writer2.write('supervisor', 'hola')
++    await writer2.close()
++    expect(echoed2.length).toBe(0)
++  })
++
++  test('rota al superar el umbral y sigue escribiendo en el archivo nuevo', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const writer = await createSupervisorLog(path, { thresholdBytes: 10 })
++    writer.write('supervisor', 'linea-larga-que-supera-el-umbral')
++    writer.write('supervisor', 'segunda')
++    await writer.close()
++    expect(existsSync(`${path}.1`)).toBe(true)
++    const rotated = readFileSync(`${path}.1`, 'utf8')
++    const current = readFileSync(path, 'utf8')
++    expect(rotated).toContain('linea-larga-que-supera-el-umbral')
++    expect(current).toContain('segunda')
++  })
++
++  test('rota al arrancar si el archivo ya supera el umbral', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    writeFileSync(path, 'x'.repeat(2000))
++    const writer = await createSupervisorLog(path, { thresholdBytes: 1000 })
++    writer.write('supervisor', 'nueva')
++    await writer.close()
++    expect(existsSync(`${path}.1`)).toBe(true)
++    expect(readFileSync(`${path}.1`, 'utf8')).toBe('x'.repeat(2000))
++    expect(readFileSync(path, 'utf8')).toContain('nueva')
++  })
++
++  test('close espera a que una rotación en curso termine antes de cerrar', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const writer = await createSupervisorLog(path, { thresholdBytes: 5 })
++    writer.write('supervisor', 'linea-que-dispara-rotacion')
++    await writer.close()
++    // Si close() no esperase la rotación, el archivo rotado podría faltar
++    // o el stream cerrarse a mitad de la reapertura.
++    expect(existsSync(`${path}.1`)).toBe(true)
++  })
++
++  test('tras close(), escribir no lanza y no toca el disco', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const writer = await createSupervisorLog(path)
++    await writer.close()
++    const before = readFileSync(path, 'utf8')
++    expect(() => writer.write('supervisor', 'tarde')).not.toThrow()
++    expect(readFileSync(path, 'utf8')).toBe(before)
++  })
++
++  test('tras close(), escribir por encima del umbral no dispara una rotación sobre el stream ya cerrado', async () => {
++    const dir = tmpScope()
++    const path = join(dir, 'daemon.log')
++    const writer = await createSupervisorLog(path, { thresholdBytes: 50 })
++    writer.write('supervisor', 'short')
++    await writer.close()
++    // Sin la guarda `closed`, esta escritura post-close superaría el
++    // umbral y dispararía una rotación de fondo sobre el stream ya
++    // terminado: renombraría el `daemon.log` real a `.1` sin que nadie
++    // vuelva a cerrarlo.
++    writer.write('supervisor', 'x'.repeat(200))
++    await new Promise(resolve => setTimeout(resolve, 100))
++    expect(existsSync(`${path}.1`)).toBe(false)
++    expect(readFileSync(path, 'utf8')).toContain('short')
++  })
++})
++
++describe('tailSupervisorLog', () => {
++  test('propaga el código de salida del subproceso', async () => {
++    const originalExitCode = process.exitCode
++    process.exitCode = 0
++    const listeners: Record<string, (arg: unknown) => void> = {}
++    const fake = {
++      on: (event: string, listener: (arg: unknown) => void) => {
++        listeners[event] = listener
++        return fake
++      },
++    }
++    const promise = tailSupervisorLog('daemon.log', { spawnFn: () => fake as never })
++    listeners.exit?.(2)
++    await promise
++    expect(process.exitCode).toBe(2)
++    // Bun ignora la asignación de `undefined`: sin el `?? 0` el proceso de pruebas sale con el código fijado arriba.
++    process.exitCode = originalExitCode ?? 0
++  })
++
++  test('no toca process.exitCode si el subproceso sale con código 0', async () => {
++    const originalExitCode = process.exitCode
++    process.exitCode = 0
++    const listeners: Record<string, (arg: unknown) => void> = {}
++    const fake = {
++      on: (event: string, listener: (arg: unknown) => void) => {
++        listeners[event] = listener
++        return fake
++      },
++    }
++    const promise = tailSupervisorLog('daemon.log', { spawnFn: () => fake as never })
++    listeners.exit?.(0)
++    await promise
++    expect(process.exitCode).toBe(0)
++    // Bun ignora la asignación de `undefined`: sin el `?? 0` el proceso de pruebas sale con el código fijado arriba.
++    process.exitCode = originalExitCode ?? 0
++  })
++
++  test('un fallo de spawn se reporta y termina el proceso, sin matar las pruebas', async () => {
++    const listeners: Record<string, (arg: unknown) => void> = {}
++    const fake = {
++      on: (event: string, listener: (arg: unknown) => void) => {
++        listeners[event] = listener
++        return fake
++      },
++    }
++    const errors: string[] = []
++    const exitCodes: number[] = []
++    const promise = tailSupervisorLog('daemon.log', {
++      spawnFn: () => fake as never,
++      logErrorFn: message => { errors.push(message) },
++      exitFn: code => { exitCodes.push(code) },
++    })
++    listeners.error?.(new Error('ENOENT'))
++    await promise
++    expect(errors).toEqual(['tail failed: ENOENT'])
++    expect(exitCodes).toEqual([1])
++  })
++})
+diff --git a/src/packages/daemon/src/supervisorLog.ts b/src/packages/daemon/src/supervisorLog.ts
+new file mode 100644
+index 00000000..8b964a57
+--- /dev/null
++++ b/src/packages/daemon/src/supervisorLog.ts
+@@ -0,0 +1,209 @@
++/**
++ * Log persistente del supervisor del daemon (`daemon.log`): escritura en
++ * modo append con rotación a `<path>.1` al superar el umbral de tamaño, eco
++ * a stdout cuando hay TTY, y buffer de reintento mientras la rotación está
++ * en curso.
++ *
++ * Porte de `chunk-92tvramn.js` (referencia 2.1.283), resuelto con
++ * `bin/binary symbol`: `Le` (createSupervisorLog), `st`
++ * (openSupervisorLogAppendStream), `dt` (closeSupervisorLogStream), `lt`
++ * (rotateSupervisorLog), `at` (SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES) y
++ * `ln` (tailSupervisorLog, sólo su rama alcanzable: el resto del cuerpo de
++ * `ln` es código inalcanzable tras el `return` incondicional del primer
++ * bloque — lectura manual sin `tail` y el desvío a Windows `cn` — y no se
++ * porta).
++ *
++ * Clasificación de fallos (medida contra la referencia, no supuesta):
++ * `Le` engulle en silencio cualquier error del ciclo de rotación (1
++ * `catch{}`), `lt` hace lo mismo con sus tres intentos de
++ * renombrar/borrar (1 `catch(o)` + 2 `.catch(()=>{})` encadenados) y `st`
++ * silencia los errores del propio stream (1 `.on('error',()=>{})`). Los
++ * tres son silencio intencional en la referencia — no `logError` ni
++ * `logEvent` — porque el propio log es el canal de error, y hacerlo fallar
++ * al escribir un error de escritura sería recursivo. `ln` no envuelve su
++ * rama alcanzable en ningún `catch`: el fallo de spawn llega por
++ * `w.on('error', ...)`.
++ *
++ * pendiente: `Vo(k)` aplica `Z.redact` (`chunk-zkn0228z.js`, clase `nt`) al
++ * mensaje antes de escribirlo — un motor de reglas de escaneo de secretos
++ * con caché de resultados, fuera de alcance de esta pieza (D6, sólo el log
++ * rotado). El mensaje se escribe sin redactar.
++ *
++ * pendiente: `main.ts::bgDaemonTailLog` (invocada desde `daemonMain` en
++ * `daemon bg log`) hoy tailea un archivo de telemetría fijo, no el
++ * `daemon.log` real. El cableado a `tailSupervisorLog` con la ruta real
++ * (`join(getConfigHomeDir(), 'daemon', 'daemon.log')`, ya usada por
++ * `daemonLaunchAgentVerb`) es de otra ola — no se toca `main.ts` aquí.
++ */
++import { type ChildProcess, spawn } from 'node:child_process'
++import { type WriteStream, createWriteStream } from 'node:fs'
++import { rename, stat, unlink } from 'node:fs/promises'
++
++/** `at` — umbral de bytes acumulados que dispara la rotación. */
++export const SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES = 10_485_760
++
++export interface SupervisorLogWriter {
++  write(label: string, message: string): void
++  close(): Promise<void>
++}
++
++export interface CreateSupervisorLogOptions {
++  /** Por defecto `SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES` (`at`). */
++  thresholdBytes?: number
++  /** Por defecto `process.stdout.isTTY` (`e` en la referencia). */
++  isTty?: boolean
++  /** Por defecto `process.stdout.write`. Inyectable para pruebas. */
++  echo?: (chunk: string) => void
++}
++
++/** `st` — abre el log en modo append y silencia los errores del stream. */
++export function openSupervisorLogAppendStream(path: string): WriteStream {
++  const stream = createWriteStream(path, { flags: 'a' })
++  stream.on('error', () => {})
++  return stream
++}
++
++/**
++ * `dt` — cierra el stream de forma ordenada: si ya está cerrado resuelve
++ * enseguida, si no espera el evento `close` tras llamar a `end()`.
++ */
++export function closeSupervisorLogStream(stream: WriteStream): Promise<void> {
++  return new Promise(resolve => {
++    if (stream.closed) {
++      resolve()
++      return
++    }
++    stream.once('close', () => resolve())
++    stream.end()
++  })
++}
++
++export interface RotateSupervisorLogDeps {
++  renameFn?: (oldPath: string, newPath: string) => Promise<void>
++  unlinkFn?: (target: string) => Promise<void>
++}
++
++/**
++ * `lt` — rota el log renombrando `<path>` a `<path>.1`. Si el renombrado
++ * falla por otra causa que no exista el archivo, borra el `.1` anterior y
++ * reintenta; si eso también falla, borra el original. Las tres ramas de
++ * fallo son silenciosas en la referencia.
++ */
++export async function rotateSupervisorLog(
++  path: string,
++  deps: RotateSupervisorLogDeps = {},
++): Promise<void> {
++  const { renameFn = rename, unlinkFn = unlink } = deps
++  const rotated = `${path}.1`
++  try {
++    await renameFn(path, rotated)
++  } catch (error) {
++    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return
++    await unlinkFn(rotated).catch(() => {})
++    await renameFn(path, rotated).catch(() => unlinkFn(path).catch(() => {}))
++  }
++}
++
++/**
++ * `Le` — crea el escritor del log persistente del supervisor: rota al
++ * arrancar si ya supera el umbral, abre el stream de append, y por cada
++ * línea escrita ecoa a stdout si hay TTY, acumula bytes y dispara una
++ * rotación en segundo plano cuando el acumulado supera el umbral,
++ * almacenando en un buffer lo que se escriba mientras la rotación está en
++ * curso para volcarlo sobre el stream nuevo al terminar.
++ */
++export async function createSupervisorLog(
++  path: string,
++  options: CreateSupervisorLogOptions = {},
++): Promise<SupervisorLogWriter> {
++  const threshold = options.thresholdBytes ?? SUPERVISOR_LOG_ROTATION_THRESHOLD_BYTES
++  const isTty = options.isTty ?? Boolean(process.stdout.isTTY)
++  const echo = options.echo ?? ((chunk: string) => { process.stdout.write(chunk) })
++
++  let accumulatedBytes = await stat(path).then(info => info.size).catch(() => 0)
++  if (accumulatedBytes > threshold) {
++    await rotateSupervisorLog(path)
++    accumulatedBytes = 0
++  }
++  let stream = openSupervisorLogAppendStream(path)
++  let pendingRotation: Promise<void> | null = null
++  let rotationBuffer: string[] | null = null
++  let closed = false
++
++  return {
++    write(label, message) {
++      const line = `[${new Date().toISOString()}] [${label}] ${message}\n`
++      if (isTty) echo(line)
++      if (closed) return
++      accumulatedBytes += Buffer.byteLength(line)
++      if (rotationBuffer) rotationBuffer.push(line)
++      else stream.write(line)
++      if (accumulatedBytes > threshold && !pendingRotation) {
++        const previousStream = stream
++        const buffer: string[] = []
++        rotationBuffer = buffer
++        pendingRotation = (async () => {
++          try {
++            await closeSupervisorLogStream(previousStream)
++            await rotateSupervisorLog(path)
++            stream = openSupervisorLogAppendStream(path)
++            accumulatedBytes = 0
++            for (const pending of buffer) {
++              accumulatedBytes += Buffer.byteLength(pending)
++              stream.write(pending)
++            }
++          } catch {
++            // silencio intencional — `Le` engulle cualquier error del
++            // ciclo de rotación (ver clasificación de fallos arriba).
++          } finally {
++            rotationBuffer = null
++            pendingRotation = null
++          }
++        })()
++      }
++    },
++    async close() {
++      closed = true
++      await pendingRotation
++      await closeSupervisorLogStream(stream)
++    },
++  }
++}
++
++export interface TailSupervisorLogDeps {
++  /** Por defecto `spawn('tail', ['-f', path], {stdio: 'inherit'})`. */
++  spawnFn?: (path: string) => ChildProcess
++  /** Por defecto `process.exit`. Inyectable para no matar el proceso de pruebas. */
++  exitFn?: (code: number) => void
++  /** Por defecto `console.error`. */
++  logErrorFn?: (message: string) => void
++}
++
++/**
++ * `ln` (rama alcanzable) — hace `tail -f` del log como subproceso con
++ * stdio heredado y propaga su código de salida. El resto del cuerpo de la
++ * referencia es inalcanzable tras el `return` incondicional del primer
++ * bloque y no se porta.
++ */
++export async function tailSupervisorLog(
++  path: string,
++  deps: TailSupervisorLogDeps = {},
++): Promise<void> {
++  const spawnFn = deps.spawnFn ?? ((target: string): ChildProcess => spawn('tail', ['-f', target], { stdio: 'inherit' }))
++  const exitFn = deps.exitFn ?? process.exit.bind(process)
++  const logErrorFn = deps.logErrorFn ?? ((message: string) => { console.error(message) })
++  const tail = spawnFn(path)
++  await new Promise<void>(resolve => {
++    tail.on('exit', code => {
++      if (code) process.exitCode = code
++      resolve()
++    })
++    tail.on('error', error => {
++      logErrorFn(`tail failed: ${error.message}`)
++      exitFn(1)
++      // `process.exit` real es inmediato y no vuelve; resolvemos igual para
++      // que un `exitFn` inyectado (pruebas) no deje la promesa colgada.
++      resolve()
++    })
++  })
++}

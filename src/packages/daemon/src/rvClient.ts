@@ -29,8 +29,12 @@
  *     about this worker). Returns false when the frame couldn't be written.
  *
  * Wire framing matches the rest of the daemon protocol (socketProto.ts):
- * one JSON object per line, `\n`-terminated. The handshake carries a
- * `role` field; the server (rvServer.ts) discards any frame that has one,
+ * one JSON object per line, `\n`-terminated. Reading it, though, is its
+ * own local decoder (`createRvLineReader`, ported from `Zzt`/`Be`), not
+ * `socketProto.ts::createLineDecoder` — a single malformed line is
+ * dropped, not fatal to the connection (see the decoder's own docstring).
+ * The handshake carries a `role` field; the server (rvServer.ts) discards
+ * any frame that has one,
  * so the handshake is a pure marker and never reaches the worker's
  * command handler (ant kb3: `if("role"in _)return`).
  *
@@ -41,7 +45,7 @@ import { Socket } from 'node:net'
 
 import { logEvent } from '@thyrox/local-observability'
 
-import { PROTO_VERSION, createLineDecoder, encodeFrame } from './socketProto.js'
+import { PROTO_VERSION, encodeFrame } from './socketProto.js'
 
 /**
  * Messages the worker's rv server pushes to the supervisor. Mirrors ant
@@ -74,10 +78,54 @@ export interface RvClient {
   close(): void
 }
 
-/** ant naK backoff (`daK`, assigned in 5017.js iaK init). */
+/** ant naK backoff (`daK`, assigned in 5017.js iaK init) — chunk-ygx717jg.js `Me`. */
 const RV_BACKOFF_MS = [100, 250, 500, 1000, 2000] as const
-/** ant naK max attempts (`caK = 30`). */
+/** ant naK max attempts (`caK = 30`) — chunk-ygx717jg.js `Ve`. */
 const RV_MAX_ATTEMPTS = 30
+
+/**
+ * Newline-delimited frame reader with PER-LINE resilience — port of
+ * chunk-y641zpzf.js `Zzt` (generic newline-frame reader over a
+ * `StringDecoder`, cap `p=1048576`) composed with `Be`'s own inline
+ * `try{P=J(A)}catch{return}` (chunk-ygx717jg.js), both cited above `Be`.
+ * A single malformed JSON line is dropped silently and reading continues
+ * on the next line — the connection is never torn down for it. Only a
+ * pending (unterminated) buffer that grows past `MAX_LINE_BYTES` destroys
+ * the socket, matching `Zzt`'s own overflow guard.
+ *
+ * `socketProto.ts::createLineDecoder` is deliberately NOT reused here:
+ * its `onError` permanently latches (`stopped = true`) on the FIRST bad
+ * line, for ANY parse failure, and the caller's only recourse was
+ * `sock.destroy()` — strictly worse coverage than the reference, which
+ * only loses the one corrupt frame. rv frames are heartbeat/state pushes;
+ * losing the whole connection over one corrupt frame is a worse outcome
+ * than losing that one frame, and the reconnect backoff above exists
+ * precisely so losing the whole connection is never free.
+ */
+const MAX_LINE_BYTES = 1024 * 1024
+
+function createRvLineReader(
+  onLine: (raw: string) => void,
+  onOverflow: () => void,
+): (chunk: string | Buffer) => void {
+  let buf = ''
+  let stopped = false
+  return (chunk: string | Buffer) => {
+    if (stopped) return
+    buf += typeof chunk === 'string' ? chunk : chunk.toString('utf8')
+    let idx: number
+    while ((idx = buf.indexOf('\n')) >= 0) {
+      const line = buf.slice(0, idx)
+      buf = buf.slice(idx + 1)
+      if (line.length > 0) onLine(line)
+    }
+    if (buf.length > MAX_LINE_BYTES) {
+      stopped = true
+      buf = ''
+      onOverflow()
+    }
+  }
+}
 
 /**
  * Open a rendezvous client against `socketPath`.
@@ -135,8 +183,16 @@ export function createRvClient(
       } catch {
         // best-effort — a write failure here triggers close/error → retry.
       }
-      const decode = createLineDecoder(
-        msg => {
+      const decode = createRvLineReader(
+        line => {
+          // ant `Be`: `try{P=J(A)}catch{return}` — one bad line, dropped.
+          let msg: unknown
+          try {
+            msg = JSON.parse(line)
+          } catch {
+            sock.destroy()
+            return
+          }
           if (msg && typeof msg === 'object' && 'type' in msg) {
             onMessage(msg as RvServerMessage)
           }
