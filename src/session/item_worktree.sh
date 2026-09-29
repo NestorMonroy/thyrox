@@ -228,7 +228,13 @@ finalize() {
         verdict=sin-cambios
     elif [[ -z "$verify" ]]; then
         verdict=sin-verificar
-    elif (cd "$dir" && bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
+    # El verify corre en el worktree, y con SU codigo: THYROX_ROOT y
+    # PYTHONPATH se reemplazan por los del worktree, no se conservan los del
+    # arbol principal que el pool exporta. Sin este reemplazo, un modulo que
+    # resuelve su codigo por THYROX_ROOT (p. ej. `paths/reach.py`) carga la
+    # copia del arbol principal y el verify mide una mezcla de los dos
+    # arboles en vez del worktree solo.
+    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
         verdict=verificado
     else
         verdict=rechazado
