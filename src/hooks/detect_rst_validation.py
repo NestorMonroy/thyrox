@@ -31,9 +31,13 @@ from paths import reach  # noqa: E402
 #: ``parents[1]`` acertaba hoy y fallaba **en silencio** al mover el archivo:
 #: este aviso sólo CITA el comando, nunca lo ejecuta, así que una ruta mal
 #: compuesta se publica y nadie la ejercita — el mismo defecto mudo que el
-#: docstring de arriba narra para el literal ``src/gates/``.
-GATE_PATH = reach.thyrox_root() / 'src' / 'verify' / 'check_rst_sintaxis.py'
-GATE = f'python3 {GATE_PATH}'
+#: docstring de arriba narra para el literal ``src/gates/``. Y ``python3
+#: <ruta>.py`` es él mismo el defecto que
+#: ``src/hooks/detect_library_path_invocation.py`` ataja: el módulo invocado
+#: por ruta directa muere con ``ModuleNotFoundError: paths`` porque no
+#: compone ``PYTHONPATH``. El envoltorio de ``bin/`` sí lo hace.
+GATE_PATH = reach.thyrox_root() / 'bin' / 'check_rst_sintaxis'
+GATE = f'bash {GATE_PATH}'
 
 #: Señales de que el comando valida RST por su cuenta.
 HAND_ROLLED = re.compile(
