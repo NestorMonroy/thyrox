@@ -100,8 +100,10 @@ Por eso la decisión del ejecutor tiene dos preguntas, no una:
    camino es un puerto de dominio con adaptadores SQLite y PostgreSQL (Python
    dueño del esquema, psycopg). Si no, el motor no cambia nada.
 2. **Mientras tanto, ¿se corrige la unión?** Sin cambiar de motor:
-   última escritura gana por `updated_at` para las filas mutables, y clave
-   natural (`finding_id`) en lugar del `id` local para `findings_history`.
+   reconciliación por fila con resultado explícito (idéntica, insertada,
+   actualizada o conflicto) y clave natural (`finding_id`) en lugar del `id`
+   local para `findings_history`. El criterio de orden se fija en §7: hoy
+   `updated_at` no es un orden fiable.
 
 `documents` y las tablas por sesión no necesitan viajar en ningún caso.
 
@@ -130,8 +132,30 @@ Una reconstrucción desde los `.rst` borraría 79 hallazgos. La declaración
 ventana entre fila y archivo que `CLAUDE.md` admite como legítima se congeló
 en 79 casos. Hasta que esos 79 tengan su `.rst` (se generan desde su fila con
 `bin/finding rst`; TASK-THYROX-0628), `findings_history` es verdad
-durable compartida y su unión tiene que preservar filas. Cuando la brecha sea
-cero, pasa a ser caché local y deja de necesitar viajar.
+durable compartida y su unión tiene que preservar filas.
+
+Llegar a brecha cero una vez no basta. `findings_history` podrá
+reclasificarse como índice reconstruible, y dejar de replicarse entre
+sesiones, sólo cuando se cumplan las dos condiciones:
+
+1. **brecha histórica = 0** (TASK-THYROX-0628, relleno explícito: el
+   `DocumentationPublisher` de TASK-THYROX-0624 publica ítems del pool que
+   cierran, no hallazgos históricos);
+2. **invariante que impida reabrirla:** ningún hallazgo puede quedar de forma
+   permanente sólo como fila.
+
+El instrumento de la segunda ya existe y hoy no gobierna.
+`check_finding_id_unique.py` (mitad A: «toda fila tiene su `.rst`») está en el
+registro de `thyrox-audit` sólo como aviso, y su baseline congela 3 ids
+(`H-THYROX-1..3`). Corrido el 2026-09-29 desde `kaupamex-docs`:
+**78 filas sin `.rst` fuera del baseline, exit 0**. Coincide con la sonda de
+este banco salvo `L-032`, que no tiene la forma `H-`. Es un instrumento
+distinto que da la misma cifra. Y muestra cómo se abrió la brecha: la mitad A
+se escribió cuando eran 3, y creció a 78 porque nada la hace bloquear. El
+invariante es esa mitad A en modo `--strict` en un punto que el flujo no
+pueda saltarse (el cierre de sesión o el `pre-push` de thyrox), con una
+ventana de gracia para la fila recién registrada. Qué punto bloquea lo decide
+el ejecutor.
 
 *Métrica:* `finding_id` de la tabla contra los nombres `hallazgo-<ID>-*.rst`
 de todo `source/`, más una búsqueda del id en los monolitos `audits/hallazgos-*`.
@@ -161,10 +185,11 @@ migraciones se decide después.
 ### Dos tareas, no una
 
 - **D4-A — corrección de la replicación SQLite+git** (TASK-THYROX-0626,
-  implementable ya): última escritura gana por `updated_at` en filas mutables,
-  `findings_history` unida por `finding_id`, y un informe por tabla que separe
-  fila idéntica, insertada, actualizada y conflicto real. En TDD, con la sonda
-  de este banco como caso rojo y su control.
+  implementable ya, con el criterio de orden de abajo): `findings_history`
+  unida por `finding_id`, y cada fila en conflicto clasificada como idéntica,
+  insertada, actualizada o conflicto real, con un informe por tabla. Un mismo
+  `finding_id` con contenido incompatible es **conflicto declarado**, no «se
+  queda una». En TDD, con la sonda de este banco como caso rojo y su control.
 - **D4-B — topología de la autoridad durable compartida** (TASK-THYROX-0627,
   discovery): dónde
   vive un PostgreSQL común, quién lo opera, cómo lo encuentran las sesiones,
@@ -172,3 +197,47 @@ migraciones se decide después.
   Python abre la base directamente o pasa por un puerto o servicio. No se
   toca `InfrastructureBootstrap`: su PostgreSQL es local a cada sesión.
   Ninguna migración de motor antes de que D4-B tenga respuesta.
+
+### El criterio de orden de D4-A: `updated_at` hoy no lo es — medido
+
+`updated-at-resolution.txt`:
+
+| Tabla | Formato | Valores repetidos |
+|---|---|---|
+| `agent_sessions` | segundos sin zona; sólo 42 filas (las del trigger `agent_sessions_stamp_updated`) con milisegundos y `Z` | 359 de 1837 |
+| `tasks` | segundos, sin zona | 1681 de 2240 |
+| `findings_history` | segundos, sin zona | 1537 de 1659 |
+
+Con resolución de un segundo, dos sesiones que escriben la misma fila en el
+mismo segundo empatan. Sin zona horaria, dos contenedores con distinto `TZ`
+escriben valores que no se pueden comparar. Y aunque los dos problemas se
+resolvieran, el reloj de pared de contenedores distintos no es un orden total.
+Última escritura gana por `updated_at` sería una resolución silenciosa e
+indefinida. Por eso D4-A fija:
+
+1. **una revisión lógica por fila** (`revision` entera, +1 en cada escritura,
+   la escriba Python o TypeScript) para `agent_sessions` y `tasks`. Gana la
+   revisión mayor;
+2. **empate de revisión con contenido distinto = conflicto declarado**, nunca
+   una elección arbitraria. El driver lo informa por tabla y por clave, y deja
+   las dos versiones recuperables;
+3. `updated_at` pasa a ISO 8601 UTC con milisegundos en todos los escritores,
+   pero como dato informativo, no como árbitro;
+4. el criterio de desempate determinista (por ejemplo, por `session_id`) sólo
+   se admite en tablas donde el ejecutor declare que perder una de las dos
+   versiones es aceptable. Por defecto no se admite.
+
+*Métrica:* formato y repetición de los valores de `updated_at` por tabla.
+*Ciega a:* la desviación real entre relojes de dos contenedores (no hay dos
+sesiones vivas a la vez que medir), y a si un valor repetido corresponde a la
+misma fila en dos lados o a filas distintas: la cifra mide resolución, no
+colisiones de merge.
+
+### Reproducir las cifras
+
+Todas salen de instrumentos versionados en este banco, no de lectura:
+`probes/union-lost-writes.py` (con `PROBE_CONTROL=1` para el control),
+`writer-census.txt` (`bin/writer_census --store …`), `pk-por-tabla.txt`,
+`findings-rebuildable.txt` y `updated-at-resolution.txt`. La cifra de 78/79
+tiene además un instrumento independiente:
+`bin/check_finding_id_unique` corrido desde `kaupamex-docs`.
