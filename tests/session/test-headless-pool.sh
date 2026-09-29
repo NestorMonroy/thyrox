@@ -18,10 +18,10 @@ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else e
 # reserva viva el archivo se RETIRA — "en reposo no deja archivo en el árbol",
 # así que ausente y "length 0" son el mismo estado y no dos. Un JSON roto no
 # cuenta como vacío: se distingue con una cadena no numérica.
-reservas_en_registro() {
-  local archivo="$1" n
-  [[ -e "$archivo" ]] || { echo 0; return; }
-  n="$(jq -r 'length' "$archivo" 2>/dev/null)"
+ledger_reservation_count() {
+  local ledger="$1" n
+  [[ -e "$ledger" ]] || { echo 0; return; }
+  n="$(jq -r 'length' "$ledger" 2>/dev/null)"
   [[ "$n" =~ ^[0-9]+$ ]] && echo "$n" || echo ilegible
 }
 
@@ -321,11 +321,11 @@ check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if (
 # registro no guarda nada suyo. Sin el `release` quedaría una fila por ítem.
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
 check "reserva: los items admitidos arrancan" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
-check "reserva: el registro queda vacio al terminar" "$(reservas_en_registro "$HIST/vram-reservations.json")" "0"
+check "reserva: el registro queda vacio al terminar" "$(ledger_reservation_count "$HIST/vram-reservations.json")" "0"
 # El JSON roto no es "vacío": un registro presente pero ilegible tiene que
 # distinguirse del reposo (archivo ausente), no confundirse con él.
 printf '{roto' > "$HIST/vram-reservations.json"
-check "reserva: registro ilegible no cuenta como vacio" "$(reservas_en_registro "$HIST/vram-reservations.json")" "ilegible"
+check "reserva: registro ilegible no cuenta como vacio" "$(ledger_reservation_count "$HIST/vram-reservations.json")" "ilegible"
 rm -f "$HIST/vram-reservations.json"
 # La última fila midió UN ítem; lanzar dos a la vez con ella es extrapolar su
 # dispersión. Calibrado exige min(anchura, ítems) medidos.
@@ -373,7 +373,7 @@ check "dos pools: los dos items terminan" \
 # Cuántos ítems corrieron a la vez, de los instantes de arranque y fin.
 check "dos pools: nunca corren juntos (máximo simultáneo 1)" \
   "$(sort -k2,2n "$RAMPA_LOG" | gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}')" "1"
-check "dos pools: el registro queda vacío" "$(reservas_en_registro "$HIST/vram-reservations.json")" "0"
+check "dos pools: el registro queda vacío" "$(ledger_reservation_count "$HIST/vram-reservations.json")" "0"
 check "dos pools: la ejecución concurrente también se mide (una fila por pool)" \
   "$(gawk 'END{print NR}' "$HIST"/*/runs.jsonl 2>/dev/null)" "3"
 # H-THYROX-192 en producción, no en el montaje del test: el historial trae un
