@@ -1,146 +1,162 @@
 /**
- * El runner de migraciones común (`runMigrations`), sobre sqlite en memoria.
- * La cobertura de postgres vive en el ítem de contrato — aquí sólo sqlite.
+ * El contrato de `migrationRunnerContract.ts`, aplicado a las dos
+ * implementaciones que `@thyrox/store` ofrece hoy: `runMigrationsSync`
+ * (sync, `bun:sqlite`) y `runMigrations` (async, `Bun.SQL`) sobre SQLite y,
+ * si `THYROX_TEST_POSTGRES_URL` está declarada, sobre PostgreSQL — misma
+ * forma de tres ramas que `contract.test.ts` ya usa para `sql.ts`.
  */
-import { describe, expect, test } from 'bun:test'
+import { Database } from 'bun:sqlite'
 import type { SQL } from 'bun'
+import { describe, test } from 'bun:test'
+
 import { openByUrl } from '../sql.ts'
-import { runMigrations, type Migration } from '../migrations.ts'
+import { runMigrations } from '../migrations.ts'
+import { runMigrationsSync } from '../migrationsSync.ts'
+import { resolvePostgresTestUrl, withDisposableSchema } from '../testing/postgresTestSchema.ts'
+import { defineMigrationRunnerContract, type MigrationRunnerEngine } from './migrationRunnerContract.ts'
 
-function memory() {
-  return openByUrl('sqlite://:memory:')
-}
-
-async function tableExists(sql: SQL, name: string): Promise<boolean> {
-  const rows = (await sql.unsafe(`SELECT name FROM sqlite_master WHERE type='table' AND name = $1`, [name])) as { name: string }[]
-  return rows.length > 0
-}
-
-async function controlVersions(sql: SQL, table: string): Promise<number[]> {
-  const rows = (await sql.unsafe(`SELECT version FROM ${table} ORDER BY version`)) as { version: number }[]
-  return rows.map(row => Number(row.version))
-}
-
-describe('runMigrations crea la tabla de control si falta', () => {
-  test('con una lista vacía, la tabla nace con version y applied_at', async () => {
-    const { sql, dialect } = memory()
-    const applied = await runMigrations(sql, dialect, { table: 'schema_migrations', migrations: [] })
-    expect(applied).toEqual([])
-    expect(await tableExists(sql, 'schema_migrations')).toBe(true)
-    const columns = (await sql.unsafe('PRAGMA table_info(schema_migrations)')) as { name: string; notnull: number; pk: number }[]
-    const byName = Object.fromEntries(columns.map(c => [c.name, c]))
-    expect(byName.version?.pk).toBe(1)
-    expect(byName.applied_at?.notnull).toBe(1)
-  })
-})
-
-describe('runMigrations aplica sólo las versiones que faltan, en orden ascendente', () => {
-  const migrations: readonly Migration[] = [
-    { version: 1, statements: { sqlite: ['CREATE TABLE seq (label TEXT)', `INSERT INTO seq VALUES ('v1')`], postgres: [] } },
-    {
-      version: 2,
-      // depende de que 'seq' ya exista: si el runner aplicara fuera de orden esto fallaría.
-      statements: { sqlite: [`INSERT INTO seq VALUES ('v2')`], postgres: [] },
+function syncSqliteEngine(db: Database): MigrationRunnerEngine {
+  return {
+    async run(options) {
+      return runMigrationsSync(db, options)
     },
-  ]
+    async tableExists(name) {
+      return (db.query(`SELECT name FROM sqlite_master WHERE type='table' AND name = ?`).all(name) as { name: string }[]).length > 0
+    },
+    async controlColumns(table) {
+      return db.query(`PRAGMA table_info(${table})`).all() as { name: string; notnull: number; pk: number }[]
+    },
+    async controlVersions(table) {
+      return (db.query(`SELECT version FROM ${table} ORDER BY version`).all() as { version: number }[]).map(row => Number(row.version))
+    },
+    async seqLabels() {
+      return (db.query(`SELECT label FROM seq ORDER BY id`).all() as { label: string }[]).map(row => row.label)
+    },
+  }
+}
 
-  test('la primera llamada aplica las dos versiones, en orden, y las devuelve', async () => {
-    const { sql, dialect } = memory()
-    const applied = await runMigrations(sql, dialect, { table: 'schema_migrations', migrations })
-    expect(applied).toEqual([1, 2])
-    const rows = (await sql.unsafe('SELECT label FROM seq ORDER BY rowid')) as { label: string }[]
-    expect(rows.map(r => r.label)).toEqual(['v1', 'v2'])
-    expect(await controlVersions(sql, 'schema_migrations')).toEqual([1, 2])
-  })
+function asyncSqliteEngine(sql: SQL): MigrationRunnerEngine {
+  return {
+    async run(options) {
+      return runMigrations(sql, 'sqlite', options)
+    },
+    async tableExists(name) {
+      const rows = (await sql.unsafe(`SELECT name FROM sqlite_master WHERE type='table' AND name = $1`, [name])) as { name: string }[]
+      return rows.length > 0
+    },
+    async controlColumns(table) {
+      return (await sql.unsafe(`PRAGMA table_info(${table})`)) as { name: string; notnull: number; pk: number }[]
+    },
+    async controlVersions(table) {
+      const rows = (await sql.unsafe(`SELECT version FROM ${table} ORDER BY version`)) as { version: number }[]
+      return rows.map(row => Number(row.version))
+    },
+    async seqLabels() {
+      const rows = (await sql.unsafe(`SELECT label FROM seq ORDER BY id`)) as { label: string }[]
+      return rows.map(row => row.label)
+    },
+  }
+}
 
-  test('una segunda llamada con la misma lista es idempotente: no aplica nada y devuelve []', async () => {
-    const { sql, dialect } = memory()
-    await runMigrations(sql, dialect, { table: 'schema_migrations', migrations })
-    const second = await runMigrations(sql, dialect, { table: 'schema_migrations', migrations })
-    expect(second).toEqual([])
-    // CONTROL: la versión 1 usa `CREATE TABLE seq` sin IF NOT EXISTS. Si la
-    // guarda de "ya aplicada" (`if (applied.has(version)) continue`) se retira,
-    // esta segunda llamada intenta recrear 'seq' y lanza en vez de devolver [].
-  })
+/**
+ * `information_schema.columns` no filtra por `search_path`: sin
+ * `table_schema = current_schema()` vería también las tablas homónimas de
+ * otro esquema de prueba desechable.
+ */
+function asyncPostgresEngine(sql: SQL): MigrationRunnerEngine {
+  return {
+    async run(options) {
+      return runMigrations(sql, 'postgres', options)
+    },
+    async tableExists(name) {
+      const [row] = (await sql`SELECT to_regclass(${name}) IS NOT NULL AS found`) as { found: boolean }[]
+      return Boolean(row?.found)
+    },
+    async controlColumns(table) {
+      const rows = (await sql`
+        SELECT c.column_name AS name,
+               (c.is_nullable = 'NO')::int AS notnull,
+               (pk.column_name IS NOT NULL)::int AS pk
+        FROM information_schema.columns c
+        LEFT JOIN (
+          SELECT kcu.column_name
+          FROM information_schema.table_constraints tc
+          JOIN information_schema.key_column_usage kcu
+            ON kcu.constraint_name = tc.constraint_name AND kcu.table_name = tc.table_name
+          WHERE tc.table_name = ${table} AND tc.constraint_type = 'PRIMARY KEY'
+        ) pk ON pk.column_name = c.column_name
+        WHERE c.table_name = ${table} AND c.table_schema = current_schema()
+      `) as { name: string; notnull: number; pk: number }[]
+      return rows.map(row => ({ name: row.name, notnull: Number(row.notnull), pk: Number(row.pk) }))
+    },
+    async controlVersions(table) {
+      const rows = (await sql.unsafe(`SELECT version FROM ${table} ORDER BY version`)) as { version: number | string }[]
+      return rows.map(row => Number(row.version))
+    },
+    async seqLabels() {
+      const rows = (await sql`SELECT label FROM seq ORDER BY id`) as { label: string }[]
+      return rows.map(row => row.label)
+    },
+  }
+}
 
-  test('una lista extendida sólo aplica la versión nueva', async () => {
-    const { sql, dialect } = memory()
-    await runMigrations(sql, dialect, { table: 'schema_migrations', migrations })
-    const extended: readonly Migration[] = [
-      ...migrations,
-      { version: 3, statements: { sqlite: [`INSERT INTO seq VALUES ('v3')`], postgres: [] } },
-    ]
-    const third = await runMigrations(sql, dialect, { table: 'schema_migrations', migrations: extended })
-    expect(third).toEqual([3])
-    expect(await controlVersions(sql, 'schema_migrations')).toEqual([1, 2, 3])
-  })
-})
-
-describe('runMigrations es transaccional: una sentencia que falla no deja rastro', () => {
-  test('el error nombra la versión y ni la tabla de control ni el DDL previo de esa versión quedan', async () => {
-    const { sql, dialect } = memory()
-    const migrations: readonly Migration[] = [
-      {
-        version: 7,
-        statements: {
-          sqlite: ['CREATE TABLE rollback_check (x INTEGER)', 'THIS IS NOT VALID SQL'],
-          postgres: [],
-        },
-      },
-    ]
-    await expect(runMigrations(sql, dialect, { table: 'schema_migrations', migrations })).rejects.toThrow(/version 7/)
-    expect(await tableExists(sql, 'rollback_check')).toBe(false)
-    expect(await controlVersions(sql, 'schema_migrations')).toEqual([])
-  })
-})
-
-describe('runMigrations rehúsa una lista mal formada ANTES de tocar la base', () => {
-  test('versiones duplicadas', async () => {
-    const { sql, dialect } = memory()
-    const migrations: readonly Migration[] = [
-      { version: 1, statements: { sqlite: [], postgres: [] } },
-      { version: 1, statements: { sqlite: [], postgres: [] } },
-    ]
-    await expect(runMigrations(sql, dialect, { table: 'schema_migrations', migrations })).rejects.toThrow(/duplicate.*1/i)
-    expect(await tableExists(sql, 'schema_migrations')).toBe(false)
-  })
-
-  test('una versión no entera o no positiva (cero, negativa, fraccionaria)', async () => {
-    const { sql, dialect } = memory()
-    for (const bad of [0, -1, 1.5]) {
-      const migrations: readonly Migration[] = [{ version: bad, statements: { sqlite: [], postgres: [] } }]
-      await expect(runMigrations(sql, dialect, { table: 'schema_migrations', migrations })).rejects.toThrow(/positive integer/)
+defineMigrationRunnerContract({
+  name: 'sync — bun:sqlite (runMigrationsSync)',
+  async withEngine(body) {
+    const db = new Database(':memory:')
+    try {
+      await body(syncSqliteEngine(db))
+    } finally {
+      db.close()
     }
-    expect(await tableExists(sql, 'schema_migrations')).toBe(false)
-  })
+  },
+})
 
-  test('versiones desordenadas', async () => {
-    const { sql, dialect } = memory()
-    const migrations: readonly Migration[] = [
-      { version: 2, statements: { sqlite: [], postgres: [] } },
-      { version: 1, statements: { sqlite: [], postgres: [] } },
-    ]
-    await expect(runMigrations(sql, dialect, { table: 'schema_migrations', migrations })).rejects.toThrow(/order/i)
-    expect(await tableExists(sql, 'schema_migrations')).toBe(false)
-  })
-
-  test('un nombre de tabla de control que no es un identificador simple', async () => {
-    const { sql, dialect } = memory()
-    for (const badTable of ['schema-migrations', 'Schema_Migrations', '1schema', 'schema; DROP TABLE t; --', '']) {
-      await expect(runMigrations(sql, dialect, { table: badTable, migrations: [] })).rejects.toThrow(/identifier/)
+defineMigrationRunnerContract({
+  name: 'async — sqlite vía Bun.SQL (runMigrations)',
+  async withEngine(body) {
+    const { sql } = openByUrl('sqlite://:memory:')
+    try {
+      await body(asyncSqliteEngine(sql))
+    } finally {
+      await sql.close()
     }
-  })
+  },
 })
 
-describe('runMigrations rehúsa una base más nueva que el código', () => {
-  test('una versión registrada que ya no está en la lista se nombra en el error', async () => {
-    const { sql, dialect } = memory()
-    const migrations: readonly Migration[] = [
-      { version: 1, statements: { sqlite: [], postgres: [] } },
-      { version: 2, statements: { sqlite: [], postgres: [] } },
-    ]
-    await runMigrations(sql, dialect, { table: 'schema_migrations', migrations })
-    const olderCode: readonly Migration[] = [migrations[0]!]
-    await expect(runMigrations(sql, dialect, { table: 'schema_migrations', migrations: olderCode })).rejects.toThrow(/version 2/)
+let postgresUrl: string | null = null
+let postgresUrlError: Error | null = null
+try {
+  postgresUrl = resolvePostgresTestUrl(process.env)
+} catch (e) {
+  postgresUrlError = e instanceof Error ? e : new Error(String(e))
+}
+
+if (postgresUrlError) {
+  // La variable está declarada pero mal escrita: eso no es "no medido", es un
+  // dato roto, y se dice en rojo en vez de tratarlo como ausencia silenciosa.
+  const error = postgresUrlError
+  describe('contrato del runner de migraciones — async — postgres', () => {
+    test(`THYROX_TEST_POSTGRES_URL inválida: ${error.message}`, () => {
+      throw error
+    })
   })
-})
+} else if (postgresUrl) {
+  const url = postgresUrl
+  defineMigrationRunnerContract({
+    name: 'async — postgres vía Bun.SQL (runMigrations)',
+    async withEngine(body) {
+      await withDisposableSchema(url, async sql => body(asyncPostgresEngine(sql)))
+    },
+  })
+} else if (process.env.THYROX_TEST_REQUIRE_POSTGRES === '1') {
+  describe('contrato del runner de migraciones — async — postgres', () => {
+    test('THYROX_TEST_REQUIRE_POSTGRES=1 exige el contrato en postgres, y THYROX_TEST_POSTGRES_URL no está declarada', () => {
+      throw new Error('THYROX_TEST_REQUIRE_POSTGRES=1 exige THYROX_TEST_POSTGRES_URL, que no está declarada')
+    })
+  })
+} else {
+  describe('contrato del runner de migraciones — async — postgres', () => {
+    test.todo('NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correr el contrato en postgres', () => {})
+  })
+}
