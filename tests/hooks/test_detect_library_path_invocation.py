@@ -70,6 +70,20 @@ check("una ruta que no lleva src/ calla", False,
 check("el mismo comando dentro de un heredoc no se ejecuta: calla", False,
       bool(warns("cat <<'EOF'\npython3 src/verify/check_rst_sintaxis.py\nEOF")))
 
+# Mitad 3 — comillas de datos vs. código ejecutable.
+check("el valor de --content es dato: calla", False,
+      bool(warns('bash bin/agent_store agregar-hallazgo --content '
+                 '"... python3 src/verify/check_rst_sintaxis.py ..."')))
+check("el cuerpo de printf es dato: calla", False,
+      bool(warns("printf '%s' 'python3 src/verify/check_rst_sintaxis.py' > nota.txt")))
+check("un JSON por tubería es dato: calla", False,
+      bool(warns('printf \'%s\' \'{"command":"python3 src/verify/check_rst_sintaxis.py"}\' '
+                  '| bash bin/tool_use_preflight')))
+check("bash -c SÍ ejecuta su argumento: avisa", True,
+      bool(warns("bash -c 'python3 src/verify/check_rst_sintaxis.py'")))
+check("eval SÍ ejecuta su argumento: avisa", True,
+      bool(warns("eval 'python3 src/verify/check_rst_sintaxis.py'")))
+
 # Fuera de familia.
 check("bin/check_rst_sintaxis por su envoltorio ya no lleva src/…py: calla", False,
       bool(warns("bash bin/check_rst_sintaxis --archivos x.rst")))

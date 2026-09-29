@@ -60,3 +60,56 @@ def heredoc_writes(command: str) -> list[tuple[str | None, str]]:
         for index, marker in enumerate(markers):
             pending.append((marker, target if index == 0 else None, []))
     return writes
+
+
+_QUOTED_SPAN = re.compile(r"'[^']*'|\"[^\"]*\"")
+
+#: Shells cuyo ``-c`` recibe CÓDIGO, no un dato: el texto entre comillas que
+#: lo sigue lo va a correr esa misma shell.
+_EXECUTABLE_SHELLS = {"bash", "sh", "zsh"}
+
+#: Palabras que tratan lo que sigue como EL COMANDO, aunque venga entre
+#: comillas: ``eval`` lo evalúa, y ``env``/``nohup``/``xargs`` lo ejecutan tal
+#: cual llega.
+_EXECUTABLE_PRECEDING = {"eval", "env", "nohup", "xargs"}
+
+
+def _is_executable_context(prefix: str) -> bool:
+    """Si la comilla que sigue a ``prefix`` es código que una shell corre.
+
+    La comilla por defecto es un dato: el valor de un ``flag``, el cuerpo de
+    un ``printf``, un JSON por tubería. La excepción es angosta y nombrada:
+    el argumento de ``bash -c``/``sh -c``/``zsh -c`` o ``eval``, y el comando
+    que sigue a ``timeout N``, ``env``, ``nohup``, ``xargs``.
+    """
+    tokens = prefix.split()
+    if not tokens:
+        return False
+    last = tokens[-1]
+    if last == "-c":
+        shell = tokens[-2].rsplit("/", 1)[-1] if len(tokens) >= 2 else ""
+        return shell in _EXECUTABLE_SHELLS
+    if last in _EXECUTABLE_PRECEDING:
+        return True
+    return last.isdigit() and len(tokens) >= 2 and tokens[-2] == "timeout"
+
+
+def mask_data_quotes(command: str) -> str:
+    """El comando con el CONTENIDO de sus comillas de DATOS vaciado.
+
+    Un argumento entrecomillado es casi siempre un dato —el valor de un
+    ``flag``, el cuerpo de un ``printf``, un JSON por tubería— y ese texto no
+    lo ejecuta ninguna shell; un análisis léxico que lo trata como comando da
+    falso positivo (medido: ``printf '%s' 'python3 src/…py'`` avisaba de una
+    invocación que nunca corre). La excepción es cuando la comilla ES el
+    código que una shell va a correr —ver ``_is_executable_context``—, y ahí
+    el contenido se conserva intacto para que el resto del análisis lo siga
+    viendo.
+    """
+    def replace(match: re.Match[str]) -> str:
+        span = match.group(0)
+        if _is_executable_context(command[:match.start()]):
+            return span
+        return "#" * len(span)
+
+    return _QUOTED_SPAN.sub(replace, command)

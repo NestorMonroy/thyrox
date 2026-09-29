@@ -18,6 +18,14 @@ python`` sobre una ruta que contiene un componente ``src/`` y termina en
 módulo es biblioteca, o no tiene envoltorio generado— calla: no hay forma
 corta que ofrecer.
 
+El texto dentro de comillas que es un DATO —el valor de un ``flag``, el
+cuerpo de un ``printf``, un JSON por tubería— no cuenta: se vacía con
+``mask_data_quotes`` antes de buscar la invocación (medido:
+``printf '%s' 'python3 src/…py'`` avisaba sin razón). La excepción es
+cuando la comilla ES código que una shell va a correr —el argumento de
+``bash -c``/``sh -c``/``zsh -c``/``eval``, o el comando que sigue a
+``timeout N``/``env``/``nohup``/``xargs``—: ahí se conserva.
+
 Ciega a: el intérprete que llega por variable o alias, y una ruta compuesta
 en tiempo de ejecución (``$MOD``) que el análisis léxico no puede resolver.
 
@@ -27,7 +35,7 @@ from __future__ import annotations
 
 import re
 
-from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
+from hooks.shell_text import mask_data_quotes, strip_heredoc_bodies  # noqa: E402
 from paths import reach  # noqa: E402
 
 #: ``python3 <ruta>.py``, ``python <ruta>.py`` o ``uv run python3 <ruta>.py``,
@@ -59,7 +67,7 @@ def detect(payload: dict) -> str | None:
     command = (payload.get("tool_input") or {}).get("command")
     if not isinstance(command, str) or not command.strip():
         return None
-    found = _bin_wrapper_paths(strip_heredoc_bodies(command))
+    found = _bin_wrapper_paths(mask_data_quotes(strip_heredoc_bodies(command)))
     if not found:
         return None
     shown = "; ".join(f"`{path}` → `bin/{stem}`" for path, stem in found[:3])
