@@ -10,10 +10,9 @@
  */
 import { SQL } from 'bun'
 import fs from 'node:fs'
-import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 
-import { resolveConfigHomeDir } from '@thyrox/config/env/configHome'
+import { resolveDataDir } from '@thyrox/config/env/configHome'
 
 import { type Dialect, dialectOf } from './dialect.ts'
 import { createErrorStore, type ErrorStore } from './errorStore.ts'
@@ -25,9 +24,7 @@ const OWNER_ONLY = 0o700
 type Env = Record<string, string | undefined>
 
 export function resolveObservabilityDataDir(env: Env = process.env): string {
-  const declared = env.THYROX_OBSERVABILITY_DATA_DIR?.trim()
-  if (declared) return resolve(declared)
-  return join(resolveConfigHomeDir({ env, home: homedir(), exists: fs.existsSync }), OBSERVABILITY_DATA_SUBDIR)
+  return resolveDataDir('THYROX_OBSERVABILITY_DATA_DIR', OBSERVABILITY_DATA_SUBDIR, env)
 }
 
 /** La URL de la base: la declarada, o el SQLite del hogar de datos. */

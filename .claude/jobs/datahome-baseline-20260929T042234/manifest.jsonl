@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/run_ts_isolated < .claude/jobs/datahome-a-tests.txt; echo A=$?; bash bin/run_ts_isolated < .claude/jobs/datahome-b-tests.txt; echo B=$?", "started_at": "2026-09-29T04:22:34+00:00"}

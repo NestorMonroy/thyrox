@@ -16,7 +16,7 @@
  */
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 export const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
 export const LEGACY_CONFIG_DIR_ENV = 'CLAUDE_CONFIG_DIR' // thyrox-rename: keep — respaldo heredado de configHome
@@ -56,4 +56,16 @@ export function getConfigHomeDir(): string {
   const value = resolveConfigHomeDir({ env: process.env, home, exists: existsSync })
   cache = { key, value }
   return value
+}
+
+/**
+ * El directorio de datos de un paquete: la variable declarada gana, resuelta
+ * a ruta absoluta; sin ella, `subdir` bajo el hogar de configuración. Único
+ * punto de esta forma — antes cada paquete (observabilidad, MITM,
+ * proveedores) la repetía con su propia variable.
+ */
+export function resolveDataDir(envVar: string, subdir: string, env: Record<string, string | undefined> = process.env): string {
+  const declared = env[envVar]?.trim()
+  if (declared) return resolve(declared)
+  return join(resolveConfigHomeDir({ env, home: homedir(), exists: existsSync }), subdir)
 }

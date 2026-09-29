@@ -1,6 +1,6 @@
 /**
  * El hogar del store de conexiones de proveedor y su apertura. Cuelga del
- * hogar de configuración de thyrox (`resolveConfigHomeDir`) en vez de componer
+ * hogar de configuración de thyrox (`resolveDataDir`) en vez de componer
  * uno propio por plataforma, como hace OmniRoute con `DATA_DIR`;
  * `THYROX_PROVIDERS_DATA_DIR` lo declara aparte y vacía no cuenta.
  *
@@ -11,10 +11,9 @@
  */
 import { Database } from 'bun:sqlite'
 import fs from 'node:fs'
-import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 
-import { resolveConfigHomeDir } from '@thyrox/config/env/configHome'
+import { resolveDataDir } from '@thyrox/config/env/configHome'
 
 import { createConnectionStore, type ConnectionStore } from './connectionStore.ts'
 import { fieldCipherFromEnv } from './fieldCipher.ts'
@@ -24,9 +23,7 @@ export const CONNECTIONS_DB_FILE = 'connections.sqlite3'
 const OWNER_ONLY = 0o700
 
 export function resolveProvidersDataDir(env: Record<string, string | undefined> = process.env): string {
-  const declared = env.THYROX_PROVIDERS_DATA_DIR?.trim()
-  if (declared) return resolve(declared)
-  return join(resolveConfigHomeDir({ env, home: homedir(), exists: fs.existsSync }), PROVIDERS_DATA_SUBDIR)
+  return resolveDataDir('THYROX_PROVIDERS_DATA_DIR', PROVIDERS_DATA_SUBDIR, env)
 }
 
 export interface OpenedConnectionStore {

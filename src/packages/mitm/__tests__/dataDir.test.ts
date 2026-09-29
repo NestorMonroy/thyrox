@@ -31,3 +31,9 @@ test('THYROX_MITM_DATA_DIR vacía no cuenta como declarada', () => {
   process.env.THYROX_CONFIG_DIR = '/srv/otro'
   expect(resolveMitmDataDir()).toBe(join('/srv/otro', 'mitm'))
 })
+
+test('acepta un `env` inyectado en vez del global del proceso', () => {
+  delete process.env.THYROX_MITM_DATA_DIR
+  process.env.THYROX_CONFIG_DIR = '/global'
+  expect(resolveMitmDataDir({ THYROX_CONFIG_DIR: '/inyectado' })).toBe(join('/inyectado', 'mitm'))
+})

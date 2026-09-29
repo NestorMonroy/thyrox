@@ -6,7 +6,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import {
   CONFIG_DIR_ENV,
   CONFIG_DIR_NAME,
@@ -14,6 +14,7 @@ import {
   LEGACY_CONFIG_DIR_NAME,
   getConfigHomeDir,
   resolveConfigHomeDir,
+  resolveDataDir,
 } from '../env/configHome.js'
 
 const HOME = '/home/u'
@@ -90,6 +91,34 @@ describe('getConfigHomeDir', () => {
       expect(getConfigHomeDir()).toBe(resolveConfigHomeDir({ env: {}, home: homedir(), exists: existsSync }))
     } finally {
       restore()
+    }
+  })
+})
+
+describe('resolveDataDir', () => {
+  const ENV_VAR = 'THYROX_TEST_DATA_DIR'
+  const SUBDIR = 'test-subdir'
+
+  test('la variable declarada gana, resuelta a ruta absoluta', () => {
+    expect(resolveDataDir(ENV_VAR, SUBDIR, { [ENV_VAR]: 'rel/dir' })).toBe(resolve('rel/dir'))
+  })
+
+  test('una variable en blanco no cuenta como declarada', () => {
+    expect(resolveDataDir(ENV_VAR, SUBDIR, { [ENV_VAR]: '   ', THYROX_CONFIG_DIR: '/cfg' })).toBe(join('/cfg', SUBDIR))
+  })
+
+  test('sin declaración, respalda en el hogar de configuración', () => {
+    expect(resolveDataDir(ENV_VAR, SUBDIR, { THYROX_CONFIG_DIR: '/cfg' })).toBe(join('/cfg', SUBDIR))
+  })
+
+  test('respeta el `env` inyectado, no el global del proceso', () => {
+    const saved = process.env.THYROX_CONFIG_DIR
+    try {
+      process.env.THYROX_CONFIG_DIR = '/global'
+      expect(resolveDataDir(ENV_VAR, SUBDIR, { THYROX_CONFIG_DIR: '/inyectado' })).toBe(join('/inyectado', SUBDIR))
+    } finally {
+      if (saved === undefined) delete process.env.THYROX_CONFIG_DIR
+      else process.env.THYROX_CONFIG_DIR = saved
     }
   })
 })

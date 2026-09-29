@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/check_package_typecheck --strict config local-observability mitm provider", "started_at": "2026-09-29T04:28:17+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T04:29:24+00:00", "duration_seconds": 67.252295}

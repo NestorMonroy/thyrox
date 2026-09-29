@@ -1,6 +1,6 @@
 /**
  * El hogar de datos del MITM: certificados y estado del puente. Cuelga del
- * hogar de configuración de thyrox (`getConfigHomeDir`, que ya resuelve
+ * hogar de configuración de thyrox (`resolveDataDir`, que ya resuelve
  * `THYROX_CONFIG_DIR` y su respaldo heredado) en vez de componer uno propio
  * por plataforma, como hace OmniRoute con `DATA_DIR`/`APPDATA`/`XDG_CONFIG_HOME`.
  *
@@ -8,13 +8,10 @@
  *
  * Porte de `omniroute: src/mitm/dataDir.ts` (MIT).
  */
-import { join, resolve } from 'node:path'
-import { getConfigHomeDir } from '@thyrox/config/env/utils'
+import { resolveDataDir } from '@thyrox/config/env/configHome'
 
 export const MITM_DATA_SUBDIR = 'mitm'
 
-export function resolveMitmDataDir(): string {
-  const declared = process.env.THYROX_MITM_DATA_DIR?.trim()
-  if (declared) return resolve(declared)
-  return join(getConfigHomeDir(), MITM_DATA_SUBDIR)
+export function resolveMitmDataDir(env: Record<string, string | undefined> = process.env): string {
+  return resolveDataDir('THYROX_MITM_DATA_DIR', MITM_DATA_SUBDIR, env)
 }
