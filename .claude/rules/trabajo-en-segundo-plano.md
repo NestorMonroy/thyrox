@@ -237,8 +237,11 @@ python3 tests/hooks/test_detect_agent_dispatch.py
 
 Cuando cada item tiene que **escribir** —implementar un cambio, no sólo
 leerlo—, el pool le da lo mismo que `isolation: worktree` le da a un
-subagente: un worktree propio desde `HEAD`, herramientas de escritura y una
-verificación en su sitio. El árbol principal no cambia mientras el pool corre.
+subagente: un worktree propio desde `HEAD` y una verificación en su sitio. El
+árbol principal no cambia mientras el pool corre. Por defecto el ítem recibe
+sólo `Bash`, no `Edit` ni `Write`: si el pool se las ofrece, las usa en vez de
+`sed`, `gawk` o `bin/replace_literal` (medido en R-2b-3: 2 `Write` junto a
+16 `Bash`). `--tools` las devuelve cuando un ítem las necesite de verdad.
 
 ```bash
 printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \

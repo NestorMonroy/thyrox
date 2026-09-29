@@ -34,7 +34,7 @@
 # trabajo y sin entrega (`error_max_turns`).
 #
 # `--isolation worktree` hace que cada item implemente: corre en su propio
-# worktree desde HEAD (`item_worktree.sh`), con herramientas de escritura por
+# worktree desde HEAD (`item_worktree.sh`), con Bash como única herramienta por
 # defecto, y al terminar deja <n>.patch, <n>.files y <n>.verdict
 # (`verificado`, `rechazado`, `sin-verificar`, `sin-cambios` o `fallido`;
 # `--verify CMD` corre en el worktree). El arbol principal no cambia:
@@ -161,15 +161,17 @@ case "$MODEL" in
     *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
 esac
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
-# Con --isolation worktree cada ítem implementa en su propio worktree: por
-# defecto recibe herramientas de escritura, y el árbol principal no cambia
-# hasta que `pool_integrate` aplique lo verificado.
+# Con --isolation worktree cada ítem implementa en su propio worktree, y el
+# árbol principal no cambia hasta que `pool_integrate` aplique lo verificado.
+# Por defecto recibe sólo Bash: lee, busca y escribe con cat, rg, gawk y
+# bin/replace_literal (operaciones-de-archivo-con-bash.md). Si se le ofrecen
+# Edit y Write, el ítem los usa en su lugar.
 case "$ISOLATION" in
     "") [[ -z "$VERIFY" ]] || rehusa "--verify sólo aplica con --isolation worktree" ;;
     worktree)
         git -C "$WORKDIR" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
             || rehusa "--isolation worktree exige que --cwd sea un árbol de git: $WORKDIR"
-        [[ -n "$TOOLS_SET" ]] || TOOLS="Read,Edit,Write,Glob,Grep,Bash" ;;
+        [[ -n "$TOOLS_SET" ]] || TOOLS="Bash" ;;
     *) rehusa "--isolation va vacío o \"worktree\", no: $ISOLATION" ;;
 esac
 # El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Sin

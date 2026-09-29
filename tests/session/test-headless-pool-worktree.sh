@@ -61,7 +61,11 @@ check "veredictos en orden" "$(for n in 1 2 3 4 5 6; do tr -d '\n' < "$F/out/$n.
 check "el parche nombra su archivo" "$(cat "$F/out/1.files")" "a.txt"
 check "la línea de resumen cuenta los veredictos" \
   "$(printf '%s\n' "$output" | grep -c '^verificados=3 rechazados=1 sin-cambios=1 fallidos=1$')" "1"
-check "las herramientas por defecto escriben" "$(tr ',' '\n' < "$F/tools.log" | grep -cxE 'Edit|Write|Bash')" "3"
+# Las operaciones de archivo van por Bash (operaciones-de-archivo-con-bash.md):
+# si el pool ofrece Edit/Write, el ítem los usa en vez de sed, gawk o
+# bin/replace_literal.
+check "el ítem escribe por Bash" "$(tr ',' '\n' < "$F/tools.log" | grep -cx 'Bash')" "1"
+check "sin herramientas dedicadas de escritura" "$(tr ',' '\n' < "$F/tools.log" | grep -cxE 'Edit|Write')" "0"
 
 echo "caso 2 — la integración aplica lo verificado y disjunto, y declara el conflicto"
 integration="$(bash "$INTEGRATE" "$F/out" --repo "$F/repo" 2>&1)"; rc=$?
