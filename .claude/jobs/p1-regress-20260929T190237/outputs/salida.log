@@ -1,0 +1,23 @@
+tests/session/test-headless-pool.sh exit=0 :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-worktree.sh exit=0 :: test-headless-pool-worktree: 32 aserciones — 32 ok, 0 falla(s)
+tests/session/test-headless-pool-thyrox-p.sh exit=1 :: 2 ok · 10 falla(s) (alcance medido: headless-pool con thyrox -p)
+  FALLA el pool sale 0 — esperado [0] obtenido [1]
+  FALLA resumen del pool — esperado [items=2 ok=2 fallidos=0] obtenido [items=2 ok=0 fallidos=2]
+  FALLA el .json es la línea result, de éxito — esperado [result/success] obtenido []
+  FALLA con el texto del modelo — esperado [concepto: admisión] obtenido []
+  FALLA el stream abre con system/init — esperado [system/init] obtenido []
+  FALLA las herramientas del pool llegan acotadas — esperado [["Read"]] obtenido []
+  FALLA una línea assistant por petición, con su uso — esperado [2x500] obtenido []
+  FALLA por el túnel: el pool sale 0 — esperado [0] obtenido [2]
+tests/session/test-gnu-time-launchers.sh exit=0 :: test-gnu-time-launchers: 13 ok, 0 falla(s)
+tests/session/test-gpu-admission-cli.sh exit=0 :: aserciones: 3 de 3 · fallos: 0
+tests/session/test-item-worktree-stash.sh exit=0 :: item_worktree stash guard: 19/19
+tests/skills/test-evals-use-thyrox-p.sh exit=0 :: 4 ok, 0 fallo(s)
+tests/session/test-headless-pool-frozen-launcher.sh exit=0 :: result: 6 of 6 assertions green
+tests/session/test_gpu_scenarios.py exit=5 :: no tests ran in 0.03s
+tests/session/test_pool_history.py exit=3 :: no tests ran in 0.08s
+tests/session/test_parallel_map_history.py exit=3 :: no tests ran in 0.05s
+tests/verify/test_tsc_cycle.py exit=3 :: no tests ran in 0.28s
+tests/hooks/test_detect_agent_dispatch.py exit=0 :: 11 passed in 0.04s
+tests/hooks/test_detect_foreground_long_command.py exit=0 :: 14 passed in 0.11s
+__BG_EXIT__=1
