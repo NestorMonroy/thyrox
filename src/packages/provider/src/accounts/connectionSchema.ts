@@ -1,14 +1,20 @@
 /**
  * Esquema de `provider_connections`: una fila por cuenta de un upstream.
- * Idempotente, se aplica al abrir el store.
+ * Versión 1 del ledger de migraciones (`@thyrox/store/migrationsSync.ts`),
+ * con `alreadyApplied` que adopta una base creada antes de que este ledger
+ * existiera (la tabla ya está ahí, y se registra la versión sin re-ejecutar
+ * su DDL).
  *
  * Porte de `omniroute: src/lib/db/core.ts` (la tabla y sus tres índices) con
  * las columnas que sus migraciones 123, 125 y 177 añadieron después (MIT).
  */
 import type { Database } from 'bun:sqlite'
+import { runMigrationsSync, type Migration } from '@thyrox/store/migrationsSync.ts'
 
-const PROVIDER_CONNECTIONS_SCHEMA = `
-CREATE TABLE IF NOT EXISTS provider_connections (
+const PROVIDER_CONNECTIONS_MIGRATIONS_TABLE = 'provider_connections_migrations'
+
+const CREATE_PROVIDER_CONNECTIONS_TABLE = `
+CREATE TABLE provider_connections (
   id TEXT PRIMARY KEY,
   provider TEXT NOT NULL,
   auth_type TEXT,
@@ -56,11 +62,32 @@ CREATE TABLE IF NOT EXISTS provider_connections (
   synced_models_at TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_pc_provider ON provider_connections(provider);
-CREATE INDEX IF NOT EXISTS idx_pc_active ON provider_connections(is_active);
-CREATE INDEX IF NOT EXISTS idx_pc_priority ON provider_connections(provider, priority);
-`
+)`
+
+const CREATE_INDEX_PROVIDER = 'CREATE INDEX idx_pc_provider ON provider_connections(provider)'
+const CREATE_INDEX_ACTIVE = 'CREATE INDEX idx_pc_active ON provider_connections(is_active)'
+const CREATE_INDEX_PRIORITY = 'CREATE INDEX idx_pc_priority ON provider_connections(provider, priority)'
+
+function providerConnectionsTableExists(db: Database): boolean {
+  return db.query(`SELECT name FROM sqlite_master WHERE type='table' AND name = 'provider_connections'`).get() !== null
+}
+
+/**
+ * Sólo `bun:sqlite`: este store nunca se abre sobre `Bun.SQL`/PostgreSQL, así
+ * que `statements.postgres` queda vacío a propósito — `runMigrationsSync`
+ * únicamente lee `statements.sqlite`.
+ */
+const MIGRATIONS: readonly Migration[] = [
+  {
+    version: 1,
+    name: 'create_provider_connections',
+    statements: {
+      sqlite: [CREATE_PROVIDER_CONNECTIONS_TABLE, CREATE_INDEX_PROVIDER, CREATE_INDEX_ACTIVE, CREATE_INDEX_PRIORITY],
+      postgres: [],
+    },
+    alreadyApplied: providerConnectionsTableExists,
+  },
+]
 
 /**
  * Las columnas reales de la tabla. Una proyección se interpola en el SELECT,
@@ -81,5 +108,5 @@ export const PROVIDER_CONNECTIONS_COLUMNS: ReadonlySet<string> = new Set([
 ])
 
 export function ensureProviderConnectionsSchema(db: Database): void {
-  db.exec(PROVIDER_CONNECTIONS_SCHEMA)
+  runMigrationsSync(db, { table: PROVIDER_CONNECTIONS_MIGRATIONS_TABLE, migrations: MIGRATIONS })
 }

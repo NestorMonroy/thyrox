@@ -1,16 +1,21 @@
 /**
  * El esquema de la base de errores, en migraciones versionadas por motor.
  *
- * Mismo mecanismo que OmniRoute (`migrationRunner.ts`: cada versión en su
- * transacción, registrada en una tabla), con una variante por motor porque el
- * DDL no es portable: identidad (`INTEGER PRIMARY KEY` frente a
+ * Corre sobre el runner compartido de `@thyrox/store/migrations.ts` — misma
+ * forma que OmniRoute (`migrationRunner.ts`: cada versión en su transacción,
+ * registrada en una tabla), con una variante por motor porque el DDL no es
+ * portable: identidad (`INTEGER PRIMARY KEY` frente a
  * `BIGINT GENERATED ALWAYS AS IDENTITY`), tiempos (`TEXT` frente a
  * `TIMESTAMPTZ`) y JSON (`TEXT` frente a `JSONB`, como CLIProxyAPI en
- * `internal/store/postgresstore.go`).
+ * `internal/store/postgresstore.go`). La tabla de control,
+ * `error_store_migrations`, existía antes de que el runner común tuviera
+ * columna `name`: el runner adopta ese ledger heredado solo, dándole nombre a
+ * la versión ya registrada.
  */
 import type { SQL } from 'bun'
 
 import type { Dialect } from '@thyrox/store/sql.ts'
+import { runMigrations, type Migration } from '@thyrox/store/migrations.ts'
 import { ERROR_TYPES } from './errorType.ts'
 
 export const ERROR_SOURCES = ['log_error', 'component_boundary'] as const
@@ -18,11 +23,12 @@ export type ErrorSource = (typeof ERROR_SOURCES)[number]
 
 const inList = (values: readonly string[]) => values.map(value => `'${value}'`).join(',')
 
-type Migration = { version: number; statements: Record<Dialect, string[]> }
+const MIGRATIONS_TABLE = 'error_store_migrations'
 
 const MIGRATIONS: readonly Migration[] = [
   {
     version: 1,
+    name: 'create_errors_and_actions',
     statements: {
       sqlite: [
         `CREATE TABLE errors (
@@ -76,19 +82,7 @@ const MIGRATIONS: readonly Migration[] = [
   },
 ]
 
-const MIGRATIONS_TABLE = 'error_store_migrations'
-
 /** Aplica las versiones que falten, cada una en su transacción. Idempotente. */
 export async function migrate(sql: SQL, dialect: Dialect): Promise<void> {
-  await sql.unsafe(`CREATE TABLE IF NOT EXISTS ${MIGRATIONS_TABLE} (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)`)
-  const applied = new Set(
-    ((await sql.unsafe(`SELECT version FROM ${MIGRATIONS_TABLE}`)) as { version: number | string }[]).map(row => Number(row.version)),
-  )
-  for (const migration of MIGRATIONS) {
-    if (applied.has(migration.version)) continue
-    await sql.begin(async tx => {
-      for (const statement of migration.statements[dialect]) await tx.unsafe(statement)
-      await tx`INSERT INTO error_store_migrations (version, applied_at) VALUES (${migration.version}, ${new Date().toISOString()})`
-    })
-  }
+  await runMigrations(sql, dialect, { table: MIGRATIONS_TABLE, migrations: MIGRATIONS })
 }
