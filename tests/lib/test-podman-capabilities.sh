@@ -4,12 +4,17 @@
 # Tres casos. El primero mide el rechazo: sin Podman en el PATH, la sonda
 # REHUSA con exit 2 y no imprime ninguna linea de veredicto — un veredicto
 # fabricado sin poder medir seria peor que ningun veredicto. El segundo mide
-# el camino real: con el Podman de este contenedor, salen exactamente ocho
+# el camino real: con el Podman de este contenedor, salen exactamente doce
 # lineas TSV, una por capacidad, y `run`/`cleanup`/`network_none`/
-# `read_only_rootfs`/`cpu_limit`/`readonly_mount` —las seis que este
-# contenedor sostiene sin condicion— dan `efectivo`. El tercero confirma que
-# la sonda no deja rastro: ni la imagen ni ningun contenedor propio sobreviven
-# a la ejecucion.
+# `read_only_rootfs`/`cpu_limit`/`readonly_mount`/`overlay_mount`/
+# `exit_code_propagation`/`signal_propagation` —las nueve que este
+# contenedor sostiene sin condicion— dan `efectivo`. `credential_injection`
+# se informa sin forzar su valor: medido 2026-09-29, ni `--env` ni `--secret`
+# evitan que el valor aparezca en `podman inspect` tras ejecutar el
+# contenedor, asi que da `no-efectivo` en este anfitrion — eso tambien es
+# una medida valida, no un fallo del guion. El tercero confirma que la sonda
+# no deja rastro: ni la imagen ni ningun contenedor propio sobreviven a la
+# ejecucion.
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,7 +31,7 @@ fi
 ok "el sujeto existe y es ejecutable"
 
 VALID_VERDICTS='efectivo no-efectivo error'
-EXPECTED_CAPABILITIES='run pids_limit memory_limit cleanup network_none read_only_rootfs cpu_limit readonly_mount'
+EXPECTED_CAPABILITIES='run pids_limit memory_limit cleanup network_none read_only_rootfs cpu_limit readonly_mount overlay_mount exit_code_propagation signal_propagation credential_injection'
 
 # --- Caso 1: sin podman en el PATH, la sonda rehusa sin imprimir veredictos ---
 #
@@ -81,10 +86,10 @@ if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
   fi
 
   LINE_COUNT="$(printf '%s\n' "$REAL_OUT" | grep -c . || true)"
-  if [[ "$LINE_COUNT" -eq 8 ]]; then
-    ok "publica exactamente ocho lineas"
+  if [[ "$LINE_COUNT" -eq 12 ]]; then
+    ok "publica exactamente doce lineas"
   else
-    bad "esperaba 8 lineas, dio $LINE_COUNT. Salida:\n$REAL_OUT"
+    bad "esperaba 12 lineas, dio $LINE_COUNT. Salida:\n$REAL_OUT"
   fi
 
   declare -A SEEN_CAP=()
@@ -118,28 +123,32 @@ if command -v podman >/dev/null 2>&1 && podman info >/dev/null 2>&1; then
   else
     bad "'cleanup' esperaba efectivo, dio '${VERDICT_OF[cleanup]:-(ausente)}'"
   fi
-  # Las cuatro capacidades nuevas se sostienen sin condicion en este
+  # Las siete capacidades nuevas y viejas se sostienen sin condicion en este
   # anfitrion (Podman 4.9.3, uid 0), medido en
-  # .claude/workbench/podman-isolation-2b-20260929T100450/ y
-  # .claude/workbench/podman-isolation-2b-gaps-20260929T140754/.
-  for cap in network_none read_only_rootfs cpu_limit readonly_mount; do
+  # .claude/workbench/podman-isolation-2b-20260929T100450/,
+  # .claude/workbench/podman-isolation-2b-gaps-20260929T140754/ y la
+  # ejecucion real que valido overlay_mount/exit_code_propagation/
+  # signal_propagation del 2026-09-29.
+  for cap in network_none read_only_rootfs cpu_limit readonly_mount \
+             overlay_mount exit_code_propagation signal_propagation; do
     if [[ "${VERDICT_OF[$cap]:-}" == "efectivo" ]]; then
       ok "'$cap' da efectivo"
     else
       bad "'$cap' esperaba efectivo, dio '${VERDICT_OF[$cap]:-(ausente)}'"
     fi
   done
-  # pids_limit y memory_limit se informan tal cual: no se fuerza su veredicto.
-  if [[ -n "${VERDICT_OF[pids_limit]:-}" ]]; then
-    ok "'pids_limit' se informa (${VERDICT_OF[pids_limit]}), sin forzar el valor"
-  else
-    bad "'pids_limit' no aparecio"
-  fi
-  if [[ -n "${VERDICT_OF[memory_limit]:-}" ]]; then
-    ok "'memory_limit' se informa (${VERDICT_OF[memory_limit]}), sin forzar el valor"
-  else
-    bad "'memory_limit' no aparecio"
-  fi
+  # pids_limit, memory_limit y credential_injection se informan tal cual: no
+  # se fuerza su veredicto. credential_injection midio 'no-efectivo' en este
+  # anfitrion el 2026-09-29 (ni --env ni --secret evitan que el valor
+  # aparezca en 'podman inspect' tras ejecutar el contenedor) — forzar
+  # 'efectivo' aqui fabricaria una medida que este host no sostiene.
+  for cap in pids_limit memory_limit credential_injection; do
+    if [[ -n "${VERDICT_OF[$cap]:-}" ]]; then
+      ok "'$cap' se informa (${VERDICT_OF[$cap]}), sin forzar el valor"
+    else
+      bad "'$cap' no aparecio"
+    fi
+  done
 
   # --- Caso 3: no queda rastro ---
   LEFTOVER_IMAGES="$(podman images --format '{{.Repository}}' 2>/dev/null \

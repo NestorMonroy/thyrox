@@ -15,7 +15,7 @@
 # poder medir: falta Podman, falta gcc, o `podman import` no deja una imagen
 # usable.
 #
-# Ocho capacidades, en este orden:
+# Doce capacidades, en este orden:
 #   run                 el contenedor corre y sale 0
 #   pids_limit          con --pids-limit 16, el ayudante que intenta 64
 #                       procesos logra <= 16
@@ -34,8 +34,25 @@
 #                       limite pedido y el techo sin limite de 2 hilos
 #   readonly_mount      con un directorio propio (no el repo) montado :ro,
 #                       leer un archivo sembrado funciona Y escribir falla
+#   overlay_mount       un directorio del anfitrion montado `:O` en /w: leer
+#                       el archivo sembrado funciona, escribir dentro del
+#                       contenedor funciona, y esa escritura NO aparece en el
+#                       directorio del anfitrion
+#   exit_code_propagation
+#                       el ayudante sale con un codigo no trivial declarado
+#                       como constante; efectivo si `podman run` devuelve
+#                       exactamente ese codigo
+#   signal_propagation  el ayudante espera una senal; `podman kill --signal
+#                       TERM` sobre el contenedor; efectivo si el proceso
+#                       registra la senal recibida Y su codigo de salida lo
+#                       refleja
+#   credential_injection
+#                       mide dos mecanismos —`--env NAME` heredado del
+#                       entorno y `--secret ...,type=env,target=NAME`— y es
+#                       efectivo solo si alguno entrega el valor al proceso
+#                       SIN que aparezca en `podman inspect`
 #
-# @exitcode 0 Se pudieron medir las ocho capacidades (cualquiera sea su
+# @exitcode 0 Se pudieron medir las doce capacidades (cualquiera sea su
 #             veredicto).
 # @exitcode 2 No se pudo medir: falta Podman (via
 #             `thyrox_toolchain_require_podman`, SIN opt-in de instalacion),
@@ -65,6 +82,23 @@ _PODMAN_CAP_HELPER_MARKER="thyrox-podman-capabilities-helper-${_PODMAN_CAP_RUN_I
 readonly _PODMAN_CAP_CPU_LIMIT_THRESHOLD='1.0'
 readonly _PODMAN_CAP_CPU_LIMIT_THREADS=2
 
+# Codigo de salida no trivial que el ayudante devuelve en modo 'exitcode':
+# mide exit_code_propagation por igualdad exacta contra lo que 'podman run'
+# reporta.
+readonly _PODMAN_CAP_EXIT_CODE=42
+
+# Mismo codigo que SIGTERM_RECEIVED_EXIT_CODE en el ayudante — se declara
+# aqui tambien para no depender de parsear el .c al verificar el resultado.
+readonly _PODMAN_CAP_SIGTERM_EXIT_CODE=77
+
+# Credencial de prueba para credential_injection: un nombre y un valor que
+# no colisionan con nada del entorno real, y el nombre del secreto de Podman
+# que la sonda crea y retira.
+readonly _PODMAN_CAP_CREDENTIAL_TARGET='THYROX_PROBE_CREDENTIAL'
+readonly _PODMAN_CAP_CREDENTIAL_VALUE="thyrox-probe-credential-${_PODMAN_CAP_RUN_ID}"
+_PODMAN_CAP_SECRET_NAME="thyrox-podman-cap-secret-${_PODMAN_CAP_RUN_ID}"
+_PODMAN_CAP_SECRET_CREATED=""
+
 _PODMAN_CAP_WORK=""
 _PODMAN_CAP_IMAGE_IMPORTED=""
 declare -a _PODMAN_CAP_CONTAINERS=()
@@ -80,6 +114,9 @@ _podman_cap_cleanup() {
   done
   if [[ -n "$_PODMAN_CAP_IMAGE_IMPORTED" ]]; then
     "$PODMAN" rmi -f "$_PODMAN_CAP_IMAGE" >/dev/null 2>&1 || true
+  fi
+  if [[ -n "$_PODMAN_CAP_SECRET_CREATED" ]]; then
+    "$PODMAN" secret rm "$_PODMAN_CAP_SECRET_NAME" >/dev/null 2>&1 || true
   fi
   if [[ -n "$_PODMAN_CAP_WORK" && -d "$_PODMAN_CAP_WORK" ]]; then
     rm -rf -- "$_PODMAN_CAP_WORK"
@@ -118,14 +155,21 @@ cd "$_PODMAN_CAP_WORK" || exit 2
 #                respuesta?
 #   cpu <n>      <n> hilos giran unos segundos; publica el cociente
 #                CPU/pared, que es cuantos nucleos obtuvo el contenedor.
-#   write <ruta> intenta crear/abrir <ruta> en escritura.
-#   read <ruta>  intenta abrir <ruta> en lectura.
+#   write <ruta>  intenta crear/abrir <ruta> en escritura.
+#   read <ruta>   intenta abrir <ruta> en lectura.
+#   exitcode <n>  sale con el codigo <n> — mide exit_code_propagation.
+#   sigterm       instala un manejador de SIGTERM, espera hasta 3 segundos a
+#                 recibirla, imprime si la recibio y sale con un codigo
+#                 distinto segun el caso — mide signal_propagation.
+#   env <nombre>  imprime el valor de la variable de entorno <nombre>, o
+#                 "(unset)" si no esta — mide credential_injection.
 cat > "$_PODMAN_CAP_WORK/helper.c" <<'HELPER_C_EOF'
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -135,6 +179,13 @@ cat > "$_PODMAN_CAP_WORK/helper.c" <<'HELPER_C_EOF'
 #include <time.h>
 #include <unistd.h>
 
+/* Codigo de salida que 'sigterm' devuelve SOLO si de verdad recibio la
+ * senal — asi el codigo de salida distingue "la recibi" de "me rendi tras
+ * esperar" (que devuelve 1). Y el techo de espera, para no colgar la sonda
+ * si --signal TERM no llega nunca. */
+#define SIGTERM_RECEIVED_EXIT_CODE 77
+#define SIGTERM_MAX_WAIT_CYCLES 30
+
 static void *spin(void *arg) {
     volatile unsigned long x = 0;
     time_t end = time(NULL) + *(int *)arg;
@@ -142,9 +193,16 @@ static void *spin(void *arg) {
     return NULL;
 }
 
+static volatile sig_atomic_t g_got_sigterm = 0;
+static void mark_sigterm(int sig) {
+    (void) sig;
+    g_got_sigterm = 1;
+}
+
 int main(int argc, char **argv) {
     if (argc < 2) {
-        fprintf(stderr, "uso: helper <run|fork|mem|sleep|net|dns|cpu|write|read> [n|ruta]\n");
+        fprintf(stderr,
+                "uso: helper <run|fork|mem|sleep|net|dns|cpu|write|read|exitcode|sigterm|env> [n|ruta|nombre]\n");
         return 1;
     }
 
@@ -272,6 +330,30 @@ int main(int argc, char **argv) {
         const char *path = argc > 2 ? argv[2] : "";
         int fd = path[0] == '\0' ? -1 : open(path, O_RDONLY);
         printf("read=%s errno=%s\n", fd >= 0 ? "ok" : "fail", fd >= 0 ? "-" : strerror(errno));
+        return 0;
+    }
+
+    if (strcmp(argv[1], "exitcode") == 0) {
+        int code = argc > 2 ? atoi(argv[2]) : 0;
+        return code;
+    }
+
+    if (strcmp(argv[1], "sigterm") == 0) {
+        int waited_cycles = 0;
+        signal(SIGTERM, mark_sigterm);
+        while (!g_got_sigterm && waited_cycles < SIGTERM_MAX_WAIT_CYCLES) {
+            usleep(100000);
+            waited_cycles++;
+        }
+        printf("got_sigterm=%d\n", g_got_sigterm);
+        fflush(stdout);
+        return g_got_sigterm ? SIGTERM_RECEIVED_EXIT_CODE : 1;
+    }
+
+    if (strcmp(argv[1], "env") == 0) {
+        const char *name = argc > 2 ? argv[2] : "";
+        const char *value = name[0] == '\0' ? NULL : getenv(name);
+        printf("env=%s\n", value != NULL ? value : "(unset)");
         return 0;
     }
 
@@ -568,6 +650,196 @@ _podman_cap_measure_readonly_mount() {
   fi
 }
 
+# --- capacidad: overlay_mount ---
+#
+# Monta un directorio DESECHABLE PROPIO —nunca el repo— con `:O` en /w.
+# `efectivo` solo si leer el archivo sembrado funciona, escribir uno nuevo
+# DENTRO del contenedor funciona, Y esa escritura no aparece en el
+# directorio del anfitrion (la mitad que distingue overlay de un bind `:rw`
+# normal).
+_podman_cap_measure_overlay_mount() {
+  local cname_read="${_PODMAN_CAP_CONTAINER_PREFIX}-overlay-read"
+  local cname_write="${_PODMAN_CAP_CONTAINER_PREFIX}-overlay-write"
+  local hostdir="$_PODMAN_CAP_WORK/overlay-mount"
+  local out_read out_write rc_read rc_write read_ok=0 write_ok=0 leaked=0
+  _PODMAN_CAP_CONTAINERS+=("$cname_read")
+  _PODMAN_CAP_CONTAINERS+=("$cname_write")
+
+  mkdir -p "$hostdir"
+  printf 'seed\n' > "$hostdir/seed.txt"
+
+  out_read="$("$PODMAN" run --rm --network none -v "$hostdir:/w:O" \
+        --name "$cname_read" "$_PODMAN_CAP_IMAGE" /bin/helper read /w/seed.txt 2>&1)"
+  rc_read=$?
+  if _podman_cap_is_podman_level_error "$rc_read"; then
+    printf 'overlay_mount\terror\tpodman rc=%s (read): %s\n' "$rc_read" "${out_read:0:200}"
+    return
+  fi
+
+  out_write="$("$PODMAN" run --rm --network none -v "$hostdir:/w:O" \
+        --name "$cname_write" "$_PODMAN_CAP_IMAGE" /bin/helper write /w/leak.txt 2>&1)"
+  rc_write=$?
+  if _podman_cap_is_podman_level_error "$rc_write"; then
+    printf 'overlay_mount\terror\tpodman rc=%s (write): %s\n' "$rc_write" "${out_write:0:200}"
+    return
+  fi
+
+  [[ "$out_read" == *"read=ok"* ]] && read_ok=1
+  [[ "$out_write" == *"write=ok"* ]] && write_ok=1
+  [[ -e "$hostdir/leak.txt" ]] && leaked=1
+
+  if [[ "$read_ok" -eq 1 && "$write_ok" -eq 1 && "$leaked" -eq 0 ]]; then
+    printf 'overlay_mount\tefectivo\tlee del anfitrion, escribe dentro del contenedor, no filtra al anfitrion: %s | %s\n' \
+      "$out_read" "$out_write"
+  else
+    printf 'overlay_mount\tno-efectivo\tread=%s write=%s filtrado=%s con montaje :O\n' \
+      "$out_read" "$out_write" "$leaked"
+  fi
+}
+
+# --- capacidad: exit_code_propagation ---
+#
+# El ayudante sale con `_PODMAN_CAP_EXIT_CODE`, un codigo no trivial y ajeno
+# a las convenciones 125/126/127 de Podman. `efectivo` solo si `podman run`
+# devuelve EXACTAMENTE ese codigo.
+_podman_cap_measure_exit_code_propagation() {
+  local cname="${_PODMAN_CAP_CONTAINER_PREFIX}-exitcode" rc
+  _PODMAN_CAP_CONTAINERS+=("$cname")
+  "$PODMAN" run --rm --network none --name "$cname" \
+    "$_PODMAN_CAP_IMAGE" /bin/helper exitcode "$_PODMAN_CAP_EXIT_CODE" \
+    >"$_PODMAN_CAP_WORK/exitcode.out" 2>"$_PODMAN_CAP_WORK/exitcode.err"
+  rc=$?
+  if _podman_cap_is_podman_level_error "$rc"; then
+    printf 'exit_code_propagation\terror\tpodman rc=%s: %s\n' "$rc" \
+      "$(head -c 200 "$_PODMAN_CAP_WORK/exitcode.err")"
+  elif [[ "$rc" -eq "$_PODMAN_CAP_EXIT_CODE" ]]; then
+    printf 'exit_code_propagation\tefectivo\tpodman run devolvio %s, igual al declarado por el ayudante\n' "$rc"
+  else
+    printf 'exit_code_propagation\tno-efectivo\tpodman run devolvio %s, esperaba %s\n' \
+      "$rc" "$_PODMAN_CAP_EXIT_CODE"
+  fi
+}
+
+# --- capacidad: signal_propagation ---
+#
+# El ayudante en modo 'sigterm' instala un manejador y espera hasta 3
+# segundos. Se lanza detached, se le manda `podman kill --signal TERM`, y se
+# mide DOS cosas: que el log del ayudante registre la senal recibida Y que
+# el codigo de salida sea `_PODMAN_CAP_SIGTERM_EXIT_CODE` (no el 1 que el
+# ayudante devuelve si se rindio esperando).
+_podman_cap_measure_signal_propagation() {
+  local cname="${_PODMAN_CAP_CONTAINER_PREFIX}-signal"
+  local start_err logs rc
+  _PODMAN_CAP_CONTAINERS+=("$cname")
+
+  if ! "$PODMAN" run -d --network none --name "$cname" "$_PODMAN_CAP_IMAGE" \
+       /bin/helper sigterm >/dev/null 2>"$_PODMAN_CAP_WORK/signal-start.err"; then
+    start_err="$(head -c 200 "$_PODMAN_CAP_WORK/signal-start.err")"
+    printf 'signal_propagation\terror\tno se pudo lanzar el contenedor: %s\n' "$start_err"
+    return
+  fi
+
+  sleep 0.3
+  if ! "$PODMAN" kill --signal TERM "$cname" >/dev/null 2>"$_PODMAN_CAP_WORK/signal-kill.err"; then
+    printf 'signal_propagation\terror\t%s kill fallo: %s\n' "$PODMAN" \
+      "$(head -c 200 "$_PODMAN_CAP_WORK/signal-kill.err")"
+    return
+  fi
+
+  rc="$("$PODMAN" wait "$cname" 2>"$_PODMAN_CAP_WORK/signal-wait.err")"
+  if [[ -z "$rc" ]]; then
+    printf 'signal_propagation\terror\t%s wait no devolvio codigo: %s\n' "$PODMAN" \
+      "$(head -c 200 "$_PODMAN_CAP_WORK/signal-wait.err")"
+    return
+  fi
+  logs="$("$PODMAN" logs "$cname" 2>/dev/null)"
+
+  if [[ "$logs" == *"got_sigterm=1"* && "$rc" -eq "$_PODMAN_CAP_SIGTERM_EXIT_CODE" ]]; then
+    printf 'signal_propagation\tefectivo\tel proceso registro SIGTERM y salio %s: %s\n' "$rc" "$logs"
+  else
+    printf 'signal_propagation\tno-efectivo\tlogs=%s exit=%s tras kill --signal TERM\n' "$logs" "$rc"
+  fi
+}
+
+# --- capacidad: credential_injection ---
+#
+# Mide DOS candidatos de entrega: `--env NAME` (heredado del entorno del
+# proceso que invoca `podman run`) y `--secret NAME,type=env,target=TARGET`
+# (sobre `podman secret create`). Para cada uno: ¿el proceso vio el valor? ¿el
+# valor aparece en `podman inspect`? `efectivo` solo si el candidato
+# `--secret` entrega SIN exponer — el perfil de TypeScript usara ese
+# mecanismo; si no cumpliera, el veredicto lo dice y el perfil de la seccion
+# (b) rehusa declarar credencial en vez de exponerla en silencio.
+_podman_cap_credential_probe() {
+  local cname="$1"; shift
+  local rc logs inspect_out
+  "$PODMAN" run -d --network none --name "$cname" "$@" \
+    "$_PODMAN_CAP_IMAGE" /bin/helper env "$_PODMAN_CAP_CREDENTIAL_TARGET" \
+    >/dev/null 2>"$_PODMAN_CAP_WORK/cred-${cname}.err"
+  rc=$?
+  if [[ "$rc" -ne 0 ]]; then
+    _PODMAN_CAP_CRED_ERROR="$(head -c 200 "$_PODMAN_CAP_WORK/cred-${cname}.err")"
+    return 1
+  fi
+  "$PODMAN" wait "$cname" >/dev/null 2>&1
+  logs="$("$PODMAN" logs "$cname" 2>/dev/null)"
+  inspect_out="$("$PODMAN" inspect "$cname" 2>/dev/null)"
+  _PODMAN_CAP_CRED_DELIVERED=0
+  _PODMAN_CAP_CRED_LEAKED=0
+  [[ "$logs" == *"env=${_PODMAN_CAP_CREDENTIAL_VALUE}"* ]] && _PODMAN_CAP_CRED_DELIVERED=1
+  [[ "$inspect_out" == *"$_PODMAN_CAP_CREDENTIAL_VALUE"* ]] && _PODMAN_CAP_CRED_LEAKED=1
+  return 0
+}
+
+_podman_cap_measure_credential_injection() {
+  local cname_env="${_PODMAN_CAP_CONTAINER_PREFIX}-cred-env"
+  local cname_secret="${_PODMAN_CAP_CONTAINER_PREFIX}-cred-secret"
+  local env_delivered env_leaked secret_delivered secret_leaked
+  local env_summary secret_summary create_err
+  _PODMAN_CAP_CONTAINERS+=("$cname_env")
+  _PODMAN_CAP_CONTAINERS+=("$cname_secret")
+
+  # --- candidato 1: --env NAME, heredado del entorno de este proceso ---
+  export "${_PODMAN_CAP_CREDENTIAL_TARGET}=${_PODMAN_CAP_CREDENTIAL_VALUE}"
+  if ! _podman_cap_credential_probe "$cname_env" --env "$_PODMAN_CAP_CREDENTIAL_TARGET"; then
+    unset "${_PODMAN_CAP_CREDENTIAL_TARGET}"
+    printf 'credential_injection\terror\tno se pudo lanzar el candidato --env: %s\n' "$_PODMAN_CAP_CRED_ERROR"
+    return
+  fi
+  unset "${_PODMAN_CAP_CREDENTIAL_TARGET}"
+  env_delivered="$_PODMAN_CAP_CRED_DELIVERED"
+  env_leaked="$_PODMAN_CAP_CRED_LEAKED"
+  env_summary="--env: entregado=${env_delivered} en-inspect=${env_leaked}"
+
+  # --- candidato 2: podman secret, type=env ---
+  printf '%s' "$_PODMAN_CAP_CREDENTIAL_VALUE" \
+    | "$PODMAN" secret create "$_PODMAN_CAP_SECRET_NAME" - \
+      >/dev/null 2>"$_PODMAN_CAP_WORK/cred-secret-create.err"
+  if [[ $? -ne 0 ]]; then
+    create_err="$(head -c 200 "$_PODMAN_CAP_WORK/cred-secret-create.err")"
+    printf 'credential_injection\terror\t%s secret create fallo: %s\n' "$PODMAN" "$create_err"
+    return
+  fi
+  _PODMAN_CAP_SECRET_CREATED=1
+
+  if ! _podman_cap_credential_probe "$cname_secret" \
+       --secret "${_PODMAN_CAP_SECRET_NAME},type=env,target=${_PODMAN_CAP_CREDENTIAL_TARGET}"; then
+    printf 'credential_injection\terror\tno se pudo lanzar el candidato --secret: %s\n' "$_PODMAN_CAP_CRED_ERROR"
+    return
+  fi
+  secret_delivered="$_PODMAN_CAP_CRED_DELIVERED"
+  secret_leaked="$_PODMAN_CAP_CRED_LEAKED"
+  secret_summary="--secret: entregado=${secret_delivered} en-inspect=${secret_leaked}"
+
+  if [[ "$secret_delivered" -eq 1 && "$secret_leaked" -eq 0 ]]; then
+    printf 'credential_injection\tefectivo\t--secret entrega sin exponer en inspect (%s | %s)\n' \
+      "$env_summary" "$secret_summary"
+  else
+    printf 'credential_injection\tno-efectivo\tningun candidato entrega sin exponer en inspect (%s | %s)\n' \
+      "$env_summary" "$secret_summary"
+  fi
+}
+
 _podman_cap_measure_run
 _podman_cap_measure_pids_limit
 _podman_cap_measure_memory_limit
@@ -576,5 +848,9 @@ _podman_cap_measure_network_none
 _podman_cap_measure_read_only_rootfs
 _podman_cap_measure_cpu_limit
 _podman_cap_measure_readonly_mount
+_podman_cap_measure_overlay_mount
+_podman_cap_measure_exit_code_propagation
+_podman_cap_measure_signal_propagation
+_podman_cap_measure_credential_injection
 
 exit 0

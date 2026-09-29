@@ -1,0 +1,4 @@
+src/lib/podman_capabilities.sh
+src/packages/daemon/src/__tests__/repositoryJobProfile.test.ts
+src/packages/daemon/src/podman/repositoryJobProfile.ts
+tests/lib/test-podman-capabilities.sh
