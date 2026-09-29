@@ -114,7 +114,7 @@ export interface PeerDeliveryDeps {
 type UserMessage = Record<string, unknown> & { type: string }
 
 /** `aEn`: el socket al que se puede responder, si `from` lo nombra. */
-function replyableTarget(from: string, ownSocket: string, peerPid: number, state: InboxState): string | undefined {
+export function replyableTarget(from: string, ownSocket: string, peerPid: number, state: InboxState): string | undefined {
   if (!from.startsWith('uds:') || !isPeerAddress(from)) return undefined
   const { target } = parseAddress(from)
   return target && isReplyableSocket(target, ownSocket, { verifiedPeerPid: peerPid, ownerUids: state.peerDirOwnerUids }) ? target : undefined
