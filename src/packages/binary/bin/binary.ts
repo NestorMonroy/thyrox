@@ -4,7 +4,10 @@
  *
  * Subcomandos:
  *   info                 version declarada, secciones, tamano de la tabla
- *   extract [--out R]    escribe el corpus en <R>/<version>/ con MANIFEST
+ *   extract [--out R] [--base V]
+ *                        escribe el corpus en <R>/<version>/ con MANIFEST y
+ *                        PROVENANCE.tsv (sha256, fecha); con --base V compara
+ *                        contra <R>/V/MANIFEST.tsv y deja DIFF-V.tsv
  *   graph [--json]       grafo de imports entre modulos
  *   freshness [--root R] compara el corpus con el ejecutable vivo
  *   reflow <mod> [--out F] [--root R]
@@ -31,11 +34,13 @@
  * cifra.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { BUNFS_PREFIX, deriveVersion, readModuleTable } from '../src/bunfs.ts'
 import { locatePayload } from '../src/payload.ts'
 import { buildGraph } from '../src/graph.ts'
-import { writeCorpus } from '../src/corpus.ts'
-import { corpusVersion, freshness } from '../src/freshness.ts'
+import { MANIFEST, writeCorpus } from '../src/corpus.ts'
+import { freshness } from '../src/freshness.ts'
+import { resolveReadRoot } from '../src/canonical.ts'
 import { reflow } from '../src/reflow.ts'
 import { resolveSymbol, scanReferences } from '../src/symbol.ts'
 import { scanLiteral } from '../src/declaration.ts'
@@ -95,9 +100,19 @@ if (command === 'info') {
 } else if (command === 'extract') {
   const { bytes, payload, version, table } = open(argv)
   const root = option(argv, '--out', DEFAULT_CORPUS)
-  const r = writeCorpus(root, version, payload, table.entries, bytes)
+  const baseVersion = option(argv, '--base', '')
+  let base: { version: string; manifestPath: string } | undefined
+  if (baseVersion) {
+    const manifestPath = join(root, baseVersion, MANIFEST)
+    if (!existsSync(manifestPath)) guard(`--base ${baseVersion}: no existe ${manifestPath}`)
+    base = { version: baseVersion, manifestPath }
+  }
+  const executableSha256 = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
+  const extractedAt = new Date().toISOString()
+  const r = writeCorpus(root, version, payload, table.entries, bytes, { executableSha256, extractedAt, base })
   console.log(`escrito ${r.files} archivo(s), ${r.bytes} B en ${r.root}`)
   console.log(`(alcance medido: ${r.files} de ${table.entries.length} entradas de la tabla)`)
+  console.log(`procedencia: sha256=${executableSha256} extraido=${extractedAt}${base ? ` base=${base.version}` : ''} — ver ${join(r.root, 'PROVENANCE.tsv')}`)
 } else if (command === 'graph') {
   const { payload, table, version } = open(argv)
   const g = buildGraph(payload, table.entries)
@@ -139,14 +154,14 @@ if (command === 'info') {
   if (destination) writeFileSync(destination, output)
   else process.stdout.write(output)
 } else if (command === 'symbol') {
-  // Sin `--root`, la build más reciente del corpus: un literal fijo dejaba de
-  // ser la última en cuanto se extraía otra.
-  const latest = corpusVersion(DEFAULT_CORPUS)
-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  // Sin `--root`, la raíz canónica: la build más reciente extraída no es el
+  // defecto — cambiar contra qué se lee es una decisión explícita, no el
+  // efecto lateral de haber extraído otra build.
+  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
   const [chunk, ...rest] = argv.slice(1)
   const names = rest.filter((x, i) => !x.startsWith('--') && rest[i - 1] !== '--root')
   if (!chunk || names.length === 0) guard('uso: symbol <chunk> <nombre>... [--root R]')
+  if (!existsSync(root)) guard(`no existe el corpus en ${root}; use --root`)
   if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
   let missing = 0
   for (const name of names) {
@@ -161,9 +176,8 @@ if (command === 'info') {
 } else if (command === 'literal') {
   // La pregunta con la que empieza una extracción: qué declaraciones llevan
   // este literal. Su salida alimenta a `symbol <chunk> <nombre>`.
-  const latest = corpusVersion(DEFAULT_CORPUS)
-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  // Sin `--root`, la raíz canónica — no la build más reciente extraída.
+  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
   const literal = argv[1]
   if (!literal || literal.startsWith('--')) guard('uso: literal <texto> [--root R]')
   if (!existsSync(root)) guard(`no existe ${root}`)
@@ -174,11 +188,11 @@ if (command === 'info') {
 } else if (command === 'references') {
   // La dirección que `symbol` no recorre: de la definición a sus usos, con el
   // miembro que cada uso llama. Es el flujo de un mecanismo, no sus literales.
-  const latest = corpusVersion(DEFAULT_CORPUS)
-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  // Sin `--root`, la raíz canónica — no la build más reciente extraída.
+  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
   const [chunk, name] = argv.slice(1)
   if (!chunk || !name || name.startsWith('--')) guard('uso: references <chunk> <nombre> [--root R]')
+  if (!existsSync(root)) guard(`no existe el corpus en ${root}; use --root`)
   if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
   const scan = scanReferences(root, chunk, name)
   for (const r of scan.references) console.log(`${r.file} ${r.kind} ${r.binding ?? '-'} ${r.member ? '.' + r.member : '-'} @${r.start}`)
@@ -187,11 +201,11 @@ if (command === 'info') {
   process.exit(scan.references.length > 0 ? 0 : 1)
 } else if (command === 'declarations') {
   // La pregunta anterior a portar un subsistema: qué contiene el chunk entero.
-  const latest = corpusVersion(DEFAULT_CORPUS)
-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  // Sin `--root`, la raíz canónica — no la build más reciente extraída.
+  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
   const chunk = argv[1]
   if (!chunk || chunk.startsWith('--')) guard('uso: declarations <chunk> [--root R]')
+  if (!existsSync(root)) guard(`no existe el corpus en ${root}; use --root`)
   if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
   const declarations = listTopLevelDeclarations(readFileSync(`${root}/${chunk}`, 'utf8'))
   for (const d of declarations) {

@@ -11,9 +11,10 @@
  * lo que hace verificable la extraccion: cualquiera la repite sobre el mismo
  * binario y compara, sin confiar en este codigo.
  */
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { BUNFS_PREFIX, BUNFS_ROOT_DIR, type ModuleEntry } from './bunfs.ts'
+import { diffManifests, type ManifestDiff } from './corpusDiff.ts'
 
 /** El archivo que declara que una build esta extraida. Lo comparte `freshness`. */
 export const MANIFEST = 'MANIFEST.tsv'
@@ -21,6 +22,8 @@ export const MANIFEST = 'MANIFEST.tsv'
 export const STRINGS = 'claude_strings.txt'
 /** La descripcion del corpus, derivada del MANIFEST y del volcado. */
 export const README = 'README.md'
+/** La procedencia de una extraccion: sha256 del ejecutable, fecha y su diff contra una base. */
+export const PROVENANCE = 'PROVENANCE.tsv'
 /** Longitud minima de una cadena: la de `strings -n 4`, con que se citan todas. */
 const MIN_STRING = 4
 
@@ -108,40 +111,95 @@ function safeTarget(base: string, name: string): string {
   return destino
 }
 
+/** La procedencia declarada al escribir un corpus: de dónde salió, y contra qué base se compara. */
+export type WriteCorpusOptions = {
+  executableSha256: string
+  extractedAt: string
+  base?: { version: string; manifestPath: string }
+}
+
 export function writeCorpus(
   root: string,
   version: string,
   payload: Buffer,
   entries: ModuleEntry[],
   binary?: Buffer,
+  options?: WriteCorpusOptions,
 ): CorpusResult {
-  const base = join(root, version)
+  const dest = join(root, version)
   // El discriminador es el MANIFEST, el mismo que usa `corpusVersion`. Con la
   // existencia del directorio, un `2.1.258/` que solo trae prosa quedaba a la
   // vez «sin corpus» para el gate e «intocable» para la escritura.
-  if (existsSync(join(base, MANIFEST))) throw new Error(`version ya extraida: ${base}`)
+  if (existsSync(join(dest, MANIFEST))) throw new Error(`version ya extraida: ${dest}`)
 
   const filas: string[] = ['archivo\tbytes\ttipo\tsha256']
   let total = 0
 
   for (const e of entries) {
-    const destino = safeTarget(base, e.name)
+    const destino = safeTarget(dest, e.name)
     const datos = payload.subarray(e.offset, e.offset + e.length)
     mkdirSync(dirname(destino), { recursive: true })
     writeFileSync(destino, datos)
     const sha = new Bun.CryptoHasher('sha256').update(datos).digest('hex')
-    filas.push([relative(base, destino), datos.length, measureType(datos), sha].join('\t'))
+    filas.push([relative(dest, destino), datos.length, measureType(datos), sha].join('\t'))
     total += datos.length
   }
 
-  writeFileSync(join(base, MANIFEST), filas.join('\n') + '\n')
+  const manifestText = filas.join('\n') + '\n'
+  writeFileSync(join(dest, MANIFEST), manifestText)
   if (binary) {
     // El volcado y el README son parte del corpus: una build sin ellos queda
     // a medias y alguien los termina a mano (medido en 2.1.282).
     const cadenas = extractStrings(binary)
-    writeFileSync(join(base, STRINGS), cadenas)
+    writeFileSync(join(dest, STRINGS), cadenas)
     const lineas = cadenas ? cadenas.split('\n').length - 1 : 0
-    writeFileSync(join(base, README), renderReadme(version, entries.length, total, lineas))
+    writeFileSync(join(dest, README), renderReadme(version, entries.length, total, lineas))
   }
-  return { root: base, files: entries.length, bytes: total }
+  if (options) writeProvenance(dest, version, entries.length, total, manifestText, options)
+  return { root: dest, files: entries.length, bytes: total }
+}
+
+/**
+ * Deja `PROVENANCE.tsv` con el sha256 del ejecutable y la fecha de
+ * extraccion; con `options.base`, ademas compara contra el MANIFEST de esa
+ * version y deja `DIFF-<base>.tsv` — nunca escribe en el directorio de la
+ * base, solo lo lee.
+ */
+function writeProvenance(
+  dest: string,
+  version: string,
+  files: number,
+  bytes: number,
+  manifestText: string,
+  options: WriteCorpusOptions,
+): void {
+  const filas: [string, string][] = [
+    ['version', version],
+    ['executable_sha256', options.executableSha256],
+    ['extracted_at', options.extractedAt],
+    ['files', String(files)],
+    ['bytes', String(bytes)],
+  ]
+  if (options.base) {
+    const baseText = readFileSync(options.base.manifestPath, 'utf8')
+    const diff = diffManifests(baseText, manifestText)
+    filas.push(
+      ['base_version', options.base.version],
+      ['added', String(diff.added.length)],
+      ['removed', String(diff.removed.length)],
+      ['changed', String(diff.changed.length)],
+      ['unchanged', String(diff.unchanged.length)],
+    )
+    writeDiffFile(dest, options.base.version, diff)
+  }
+  writeFileSync(join(dest, PROVENANCE), filas.map(f => f.join('\t')).join('\n') + '\n')
+}
+
+/** Una fila por archivo que difiere entre la base y esta extraccion. Los `unchanged` no se listan. */
+function writeDiffFile(dest: string, baseVersion: string, diff: ManifestDiff): void {
+  const filas: string[] = ['estado\truta\tbytes_antes\tbytes_despues']
+  for (const e of diff.added) filas.push(['added', e.path, '', String(e.bytes)].join('\t'))
+  for (const e of diff.removed) filas.push(['removed', e.path, String(e.bytes), ''].join('\t'))
+  for (const c of diff.changed) filas.push(['changed', c.path, String(c.before.bytes), String(c.after.bytes)].join('\t'))
+  writeFileSync(join(dest, `DIFF-${baseVersion}.tsv`), filas.join('\n') + '\n')
 }

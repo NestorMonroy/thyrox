@@ -21,7 +21,7 @@ import { findSection } from '../src/elf.ts'
 import { BUNFS_PREFIX, SECTION_HEADER, deriveVersion, readModuleTable } from '../src/bunfs.ts'
 import { buildGraph, importsOf } from '../src/graph.ts'
 import { corpusVersion, freshness } from '../src/freshness.ts'
-import { README, STRINGS, extractStrings, renderReadme, writeCorpus } from '../src/corpus.ts'
+import { PROVENANCE, README, STRINGS, extractStrings, renderReadme, writeCorpus } from '../src/corpus.ts'
 
 const BINARY = '/opt/claude-code/bin/claude'
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null
@@ -214,5 +214,63 @@ describe('el corpus trae su volcado de cadenas y su README', () => {
     const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
     const r = writeCorpus(raiz, '9.9.7', tabla.payload, tabla.table.entries.slice(0, 1))
     expect(existsSync(join(r.root, STRINGS))).toBe(false)
+  })
+})
+
+describe('procedencia de la extracción — PROVENANCE.tsv y su DIFF contra una base', () => {
+  function readTsv(path: string): Record<string, string> {
+    return Object.fromEntries(readFileSync(path, 'utf8').trim().split('\n').map(l => l.split('\t')))
+  }
+
+  test.if(tabla !== null)('sin opciones no escribe PROVENANCE.tsv', () => {
+    // El proposito: sin sha256 ni fecha medidos, inventar el archivo seria
+    // publicar una procedencia que nadie midio (evidencia-antes-de-afirmar).
+    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const r = writeCorpus(raiz, '9.9.6', tabla!.payload, tabla!.table.entries.slice(0, 2))
+    expect(existsSync(join(r.root, PROVENANCE))).toBe(false)
+  })
+
+  test.if(tabla !== null)('con opciones escribe PROVENANCE.tsv con sha256, fecha, archivos y bytes', () => {
+    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const r = writeCorpus(raiz, '9.9.5', tabla!.payload, tabla!.table.entries.slice(0, 2), undefined, {
+      executableSha256: 'deadbeef',
+      extractedAt: '2026-09-29T00:00:00.000Z',
+    })
+    const provenance = readTsv(join(r.root, PROVENANCE))
+    expect(provenance.version).toBe('9.9.5')
+    expect(provenance.executable_sha256).toBe('deadbeef')
+    expect(provenance.extracted_at).toBe('2026-09-29T00:00:00.000Z')
+    expect(provenance.files).toBe(String(r.files))
+    expect(provenance.bytes).toBe(String(r.bytes))
+    expect(provenance.base_version).toBeUndefined()
+  })
+
+  test.if(tabla !== null)('con --base compara contra el MANIFEST anterior y deja DIFF-<base>.tsv', () => {
+    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const base = writeCorpus(raiz, '1.0.0', tabla!.payload, tabla!.table.entries.slice(0, 3))
+    // Una entrada retirada (indice 0), dos que se conservan igual (1 y 2) y
+    // una nueva (indice 3): control de que el escenario ejercita added Y removed.
+    const next = [tabla!.table.entries[1]!, tabla!.table.entries[2]!, tabla!.table.entries[3]!]
+    const r = writeCorpus(raiz, '2.0.0', tabla!.payload, next, undefined, {
+      executableSha256: 'cafe',
+      extractedAt: '2026-09-29T00:00:00.000Z',
+      base: { version: '1.0.0', manifestPath: join(base.root, 'MANIFEST.tsv') },
+    })
+    const provenance = readTsv(join(r.root, PROVENANCE))
+    expect(provenance.base_version).toBe('1.0.0')
+    expect(Number(provenance.added)).toBe(1)
+    expect(Number(provenance.removed)).toBe(1)
+    expect(Number(provenance.unchanged)).toBe(2)
+
+    const diffPath = join(r.root, 'DIFF-1.0.0.tsv')
+    const diffRows = readFileSync(diffPath, 'utf8').trim().split('\n')
+    expect(diffRows[0]).toBe('estado\truta\tbytes_antes\tbytes_despues')
+    expect(diffRows.filter(l => l.startsWith('added\t'))).toHaveLength(1)
+    expect(diffRows.filter(l => l.startsWith('removed\t'))).toHaveLength(1)
+    // Los `unchanged` no aparecen en el diff: solo lo que difiere.
+    expect(diffRows).toHaveLength(3)
+
+    // El proposito: la base es evidencia inmutable de una extraccion previa.
+    expect(existsSync(join(base.root, 'DIFF-1.0.0.tsv'))).toBe(false)
   })
 })
