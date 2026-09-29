@@ -58,6 +58,9 @@ describe('isStarShim', () => {
     writeFileSync(shim, expandShim(shim))
     expect(isStarShim(readFileSync(shim, 'utf8'))).toBe('@thyrox/x/mod.js')
   })
+  test('export type * from también cuenta como shim, mismo spec', () => {
+    expect(isStarShim("// c\nexport type * from '@thyrox/a/b.js'\n")).toBe('@thyrox/a/b.js')
+  })
 })
 
 describe('valueExportNames', () => {
@@ -80,6 +83,13 @@ describe('expandShim', () => {
     writeFileSync(shim, expandShim(shim))
     expect(expandShim(shim)).toBe(readFileSync(shim, 'utf8'))
   })
+  test('export type * se conserva y gana su lista de valores', () => {
+    const { shim } = fixture()
+    writeFileSync(shim, "export type * from '@thyrox/x/mod.js'\n")
+    const out = expandShim(shim)
+    expect(out).toContain("export type * from '@thyrox/x/mod.js'")
+    expect(out).toContain("export { alpha, BETA, Epsilon, zeta } from '@thyrox/x/mod.js'")
+  })
 })
 
 describe('checkShim', () => {
@@ -92,5 +102,11 @@ describe('checkShim', () => {
     writeFileSync(shim, expandShim(shim))
     writeFileSync(target, readFileSync(target, 'utf8') + '\nexport const theta = 5\n')
     expect(checkShim(shim)?.missing).toEqual(['theta'])
+  })
+  test('export type * expandido: alineado', () => {
+    const { shim } = fixture()
+    writeFileSync(shim, "export type * from '@thyrox/x/mod.js'\n")
+    writeFileSync(shim, expandShim(shim))
+    expect(checkShim(shim)).toEqual({ spec: '@thyrox/x/mod.js', missing: [], extra: [] })
   })
 })

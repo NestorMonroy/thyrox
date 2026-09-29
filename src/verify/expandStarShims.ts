@@ -1,13 +1,20 @@
 /**
- * Expande los shims `export * from '@thyrox/…'` con sus nombres de VALOR.
+ * Expande los shims `export (type)? * from '@thyrox/…'` con sus nombres de VALOR.
  *
  * Un shim de paquete —un archivo que sólo hace `export * from '@thyrox/x/…'`—
- * que además es entrada del build rompe `bun build` 1.3.11: toda importación
- * con nombre que otra entrada haga a través de él cae con «No matching
- * export», aunque en ejecución resuelva. Reproducido en el banco
- * `broken-imports-*` (sonda mínima y sonda en `repl`). Con los nombres de
- * valor declarados al lado del `*`, construye; los tipos siguen viajando por
- * el `*`, que se conserva.
+ * que además es entrada del build rompe `bun build` 1.3.11 de dos formas
+ * distintas. La primera (`broken-imports-*`, sonda en `repl`): toda
+ * importación con nombre que otra entrada haga a través de él cae con «No
+ * matching export», aunque en ejecución resuelva — se resuelve con los
+ * nombres de valor declarados al lado del `*`. La segunda (H-THYROX-262): un
+ * `export *` de VALOR que termina envuelto en el `__esm(() => { … })` que
+ * `bun build` genera para un módulo con `require()` perezoso no parsea —
+ * `SyntaxError: Unexpected keyword 'export'`, porque un `export` sólo es
+ * válido al tope del módulo, no dentro de una función. `export type * from`
+ * no tiene este problema: TypeScript lo borra por completo al compilar, así
+ * que no queda ningún `export` de valor que envolver. Por eso el `*` de un
+ * shim puede escribirse `export type *` sin perder nada: los valores ya
+ * viajan por la lista explícita que este script mantiene al lado.
  *
  * Los nombres salen de `Bun.Transpiler.scan` —valores, sin tipos— siguiendo
  * cada `export * from` (no los `export type * from`) con `Bun.resolveSync`,
@@ -26,7 +33,7 @@ import { dirname, extname } from 'node:path'
 
 const MARK = '// Nombres de valor generados por src/verify/expandStarShims.ts — `bun build` no'
 const MARK_TAIL = '// los ve a través de un `export *` externo cuando el shim también es entrada.'
-const STAR = /^export\s+\*\s+from\s+['"](@thyrox\/[^'"]+)['"]\s*;?$/
+const STAR = /^export\s+(?:type\s+)?\*\s+from\s+['"](@thyrox\/[^'"]+)['"]\s*;?$/
 const GENERATED = /^export\s+\{[^}]*\}\s+from\s+['"](@thyrox\/[^'"]+)['"]\s*;?$/
 
 function codeLines(text: string): string[] {
