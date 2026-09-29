@@ -60,6 +60,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from session.writer_inspector import LiveWriterError, UnprovableAbsenceError, find_open_writers
+
 CREATED = "CREATED"
 RUNNING = "RUNNING"
 SNAPSHOTTING = "SNAPSHOTTING"
@@ -328,6 +330,27 @@ def _remove(path: Path) -> None:
         path.unlink()
 
 
+def assert_no_foreign_writers(live_dir: Path, item: str) -> None:
+    """I3: ningún proceso, salvo el que publica, tiene abierto en escritura un artefacto del ítem.
+
+    El que publica queda fuera porque hereda como salida de errores uno de
+    esos artefactos (``<n>.lifecycle.err``) y no escribe en él mientras mueve.
+    """
+    paths = [live_dir / name for name in item_artifacts(live_dir, item)]
+    if not paths:
+        return
+    scan = find_open_writers(paths)
+    own = os.getpid()
+    writers = [w for w in scan.writers if w.pid != own]
+    if writers:
+        described = ", ".join(f"pid {w.pid} fd {w.fd} -> {w.path}" for w in writers)
+        raise LiveWriterError(f"el ítem {item} tiene escritores vivos: {described}")
+    unreadable = [pid for pid in scan.unreadable_pids if pid != own]
+    if unreadable:
+        raise UnprovableAbsenceError(
+            f"no se pudo probar que el ítem {item} no tenga escritores: " + ", ".join(map(str, unreadable)))
+
+
 def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None = None,
             fail_after_moves: int | None = None, staged: bool = True) -> dict:
     """Cierra y publica el ítem; idempotente y reanudable desde su plan.
@@ -342,6 +365,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
             raise LifecycleError(f"el ítem {item} no tiene estado en {live_dir}")
         if state.state == CLOSED:
             return read_closed(out_dir, item) or {}
+        assert_no_foreign_writers(live_dir, item)
         plan_path = live_dir / f"{item}{PLAN_SUFFIX}"
         plan = _read_json(plan_path)
         if plan is None:
@@ -477,7 +501,7 @@ def reconcile(pool_root: Path | None = None) -> list[str]:
                     outcome = "publicado"
                 except StaleGenerationError as error:
                     outcome = f"rechazado: {error}"
-                except LifecycleError as error:
+                except (LifecycleError, LiveWriterError, UnprovableAbsenceError) as error:
                     outcome = f"sin completar: {error}"
             elif state.state in OWNED_STATES and not pid_alive(state.owner_pid):
                 transition(live_dir, item, ABANDONED_RECOVERABLE)
@@ -585,7 +609,7 @@ def main(argv: list[str] | None = None) -> int:
             problems = verify_closed(args.out_dir, args.item)
             print("\n".join(problems) or "coherente")
             return 1 if problems else 0
-    except StaleGenerationError as error:
+    except (StaleGenerationError, LiveWriterError, UnprovableAbsenceError) as error:
         print(f"pool_lifecycle: REHÚSA — {error}", file=sys.stderr)
         return EXIT_REJECTED
     except LifecycleError as error:

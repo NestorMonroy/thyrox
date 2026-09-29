@@ -1,0 +1,10 @@
+tests/session/test-headless-pool-lifecycle.sh :: result: 21 of 21 assertions green
+tests/session/test-headless-pool-worktree.sh :: test-headless-pool-worktree: 37 aserciones — 37 ok, 0 falla(s)
+tests/session/test-headless-pool.sh :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-item-drain.sh :: result: 15 of 16 assertions green
+tests/session/test-headless-pool-thyrox-p.sh :: 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+tests/session/test_pool_lifecycle.py :: resultado: 47 de 47 aserciones en verde
+tests/session/test_snapshot_recovery.py :: resultado: 38 de 38 aserciones en verde
+tests/verify/test_bench_untracked.py :: test_bench_untracked: 23 aserciones — 23 ok, 0 falla(s)
+tests/verify/test_pool_pipeline.py :: test_pool_pipeline: 66 aserciones — 66 ok, 0 falla(s)
+__BG_EXIT__=0

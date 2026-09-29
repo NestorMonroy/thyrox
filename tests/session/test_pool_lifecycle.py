@@ -260,5 +260,35 @@ with tempfile.TemporaryDirectory() as scratch:
     check("la inyección recorre las ocho operaciones de la publicación", 8, crash_points)
     check("ninguna caída deja un cierre incoherente ni impide completar la generación 2", [], broken)
 
+# I3: un ítem no se publica mientras un proceso vivo tenga abierto en
+# escritura uno de sus artefactos. reconcile publica ítems cuyo dueño murió,
+# y un hijo huérfano puede seguir escribiendo en su runtime.
+with tempfile.TemporaryDirectory() as scratch:
+    base = Path(scratch)
+    os.environ["THYROX_RUNTIME_DIR"] = str(base / "runtime")
+    print("caso 7g: I3 — un escritor vivo impide publicar")
+    out = base / "out"
+    out.mkdir()
+    live = lc.open_run(out, os.getpid(), run_id="i3")
+    run_item(live, out, "4", {"stream.jsonl": "parcial\n", "err": ""})
+    holder = subprocess.Popen(
+        [sys.executable, "-c", "import sys\nf = open(sys.argv[1], 'a')\nprint('ready', flush=True)\n"
+         "sys.stdin.read()\n", str(live / "4.stream.jsonl")],
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    assert holder.stdout is not None and holder.stdin is not None
+    holder.stdout.readline()
+    try:
+        lc.publish(live, out, "4", exit_code=0)
+        refused = "no rehusó"
+    except Exception as error:  # noqa: BLE001 — se mide el tipo por su nombre
+        refused = type(error).__name__
+    check("publicar con un escritor vivo se rehúsa", "LiveWriterError", refused)
+    check("... y el ítem no queda publicado", False, lc.is_closed(out, "4"))
+    check("... ni con un plan de publicación a medias", False, (live / "4.plan.json").exists())
+    holder.stdin.close()
+    holder.wait(timeout=10)
+    lc.publish(live, out, "4", exit_code=0)
+    check("sin el escritor, se publica", ([], 1), (lc.verify_closed(out, "4"), lc.closed_generation(out, "4")))
+
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)

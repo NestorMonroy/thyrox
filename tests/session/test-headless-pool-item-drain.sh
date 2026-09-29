@@ -92,7 +92,9 @@ check "nadie escribe ya en las salidas del ítem" \
 
 # --- caso 3: control de anulación ---------------------------------------------
 # Sin el bloque de drenaje, el pool cierra con el hijo vivo y escribiendo en
-# su salida. Si este caso dejara de reproducirlo, el caso 1 no mediría nada.
+# los artefactos del ítem. Si este caso dejara de reproducirlo, el caso 1 no
+# mediría nada. La segunda defensa (I3 en la publicación) sigue en pie: con
+# el hijo escribiendo, el ítem no se publica y su stream queda en el runtime.
 mkdir -p "$F/undrained/src"
 cp -R "$ROOT/src/session" "$ROOT/src/lib" "$F/undrained/src/"
 gawk -i inplace '/^ *# >>> item-drain/{skip=1} !skip{print} /^ *# <<< item-drain/{skip=0}' \
@@ -102,8 +104,11 @@ check "control: el bloque de drenaje se retiró" \
 start_case "$F/undrained" undrained 30
 wait "$POOL_PID"
 check "control: sin drenaje el pool cierra con el hijo vivo" "$(alive "$CHILD_PID" && echo yes || echo no)" yes
-check "control: y el hijo sigue escribiendo en la salida" \
-  "$(bash "$ROOT/bin/writer_inspector" "$F/undrained.out/1.stream.jsonl" >/dev/null; echo $?)" 1
+undrained_stream="$(compgen -G "$F/undrained.runtime/pool/*/1.stream.jsonl")"
+check "control: y el hijo sigue escribiendo en el stream del ítem" \
+  "$(bash "$ROOT/bin/writer_inspector" "$undrained_stream" >/dev/null; echo $?)" 1
+check "control: con el escritor vivo, la publicación rehúsa y el ítem no se cierra" \
+  "$(test -e "$F/undrained.out/1.closed" && echo cerrado || echo sin-cerrar)" sin-cerrar
 release_child undrained
 timeout 10 tail --pid="$CHILD_PID" -f /dev/null
 
