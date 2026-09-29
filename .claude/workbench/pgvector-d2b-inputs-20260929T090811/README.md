@@ -34,3 +34,25 @@ dimensionalidad, denso frente a disperso, necesidad de `halfvec`, patrón de esc
 Después se mide exacto frente a HNSW frente a IVFFlat con un corpus representativo.
 Preferencia: paquete (PGDG) sobre compilación; compilar sólo si D5 exige algo que no
 esté empaquetado. 0.6.0 basta para un primer corte con embeddings densos.
+
+## Simulación APT con PGDG, sin tocar el sistema (2026-09-29)
+
+Configuración APT privada (fuentes, listas y caché en el scratchpad; `/etc/apt` y
+`/var/lib/apt` intactos, comprobado con md5 de `sources.list.d` y `preferences.d`
+vacío). Salida en `apt-simulation.txt`.
+
+- **Sin pinning, instalar sólo `postgresql-16-pgvector` ya migra el servidor**:
+  `postgresql-16` 16.13 Ubuntu → 16.15 PGDG, `postgresql-client-16` igual, y `libpq5`
+  16.13 → **18.6** (cambio de versión mayor de la biblioteca cliente). Un `upgrade`
+  después movería también `postgresql-common` 257 → 293.
+- **Con pinning (`pgdg-pgvector-only.pref`: PGDG a 100, pgvector de PGDG a 600) la
+  instalación es imposible**: `postgresql-16-pgvector : Breaks: postgresql-16-jit-llvm (< 19)`.
+  El `postgresql-16` de Ubuntu declara `Provides: postgresql-16-jit-llvm (= 17)`
+  (JIT sobre LLVM 17); el de PGDG, `(= 19)`. La razón del Breaks es inferida, no medida:
+  el bitcode de JIT de pgvector compilado con LLVM 19 no lo carga un JIT de LLVM 17.
+
+Consecuencia para D2b: «PGDG 0.8.6 sólo para pgvector» no existe. Las opciones reales son
+(1) quedarse en 0.6.0 Ubuntu; (2) migrar el servidor completo a PGDG, a propósito,
+fijando además `libpq5` si no se quiere la 18; (3) compilar pgvector ≥0.7 contra el
+servidor de Ubuntu (`postgresql-server-dev-16` de Ubuntu, sin tocar el servidor).
+La (3) es la única que conserva el PostgreSQL de Ubuntu con una versión moderna.
