@@ -35,7 +35,10 @@ while ROOT != ROOT.parent and not (ROOT / "src/paths/reach.py").exists():
 sys.path.insert(0, str(ROOT / "src"))
 
 from agents.agent_store import (  # noqa: E402
+    AGENT_SESSIONS_STAMP_UPDATED_DDL,
+    CLEARED_TOOL_RESULTS_DDL,
     CORE_MIGRATIONS,
+    CORE_SCHEMA,
     MIGRATIONS_TABLE,
     MigrationError,
     connect,
@@ -119,13 +122,16 @@ check("una fila por migracion declarada", len(CORE_MIGRATIONS), len(rows))
 check("los nombres coinciden en orden con CORE_MIGRATIONS",
       [(m.version, m.name) for m in CORE_MIGRATIONS], rows)
 for table in ("agent_sessions", "findings_history", "tasks", "documents",
-              "task_session_highwater"):
+              "task_session_highwater", "cleared_tool_results"):
     check(f"la tabla {table} existe", True, conn.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
     ).fetchone() is not None)
 check("task_highwater (legada) NO se crea", None, conn.execute(
     "SELECT 1 FROM sqlite_master WHERE type='table' AND name='task_highwater'"
 ).fetchone())
+check("el trigger agent_sessions_stamp_updated existe", True, conn.execute(
+    "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name='agent_sessions_stamp_updated'"
+).fetchone() is not None)
 conn.close()
 
 conn2 = connect(d1)
@@ -230,6 +236,48 @@ for table in ("findings_history", "tasks", "documents"):
 check("y el ledger queda completo", len(CORE_MIGRATIONS), len(ledger_rows(conn5)))
 conn5.close()
 shutil.rmtree(d5, ignore_errors=True)
+
+print()
+print("== 6. base heredada que YA trae cleared_tool_results y el trigger: se adoptan ==")
+# Ambos con exactamente el DDL de las migraciones 13/14 — la migracion NO
+# vuelve a ejecutar CREATE, solo acuna la version en el ledger.
+d6 = Path(tempfile.mkdtemp(prefix="agent-store-migrations-adopcion-observability-"))
+raw6 = sqlite3.connect(d6 / "agent_store.sqlite3")
+raw6.executescript(CORE_SCHEMA)
+raw6.execute(CLEARED_TOOL_RESULTS_DDL)
+raw6.execute(AGENT_SESSIONS_STAMP_UPDATED_DDL)
+raw6.commit()
+raw6.close()
+conn6 = connect(d6)
+check("las 14 migraciones quedan en el ledger", len(CORE_MIGRATIONS), len(ledger_rows(conn6)))
+check("cleared_tool_results sigue siendo la unica tabla con ese nombre", 1, conn6.execute(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='cleared_tool_results'"
+).fetchone()[0])
+check("agent_sessions_stamp_updated sigue siendo el unico trigger con ese nombre", 1, conn6.execute(
+    "SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name='agent_sessions_stamp_updated'"
+).fetchone()[0])
+conn6.close()
+shutil.rmtree(d6, ignore_errors=True)
+
+print()
+print("== 7. el trigger agent_sessions_stamp_updated sigue estampando updated_at ==")
+d7 = Path(tempfile.mkdtemp(prefix="agent-store-migrations-trigger-"))
+conn7 = connect(d7)
+conn7.execute(
+    "INSERT INTO agent_sessions (agent_id, subagent_type, session_id, status, "
+    "started_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ("agente-trigger", "general-purpose", "sesion-trigger", "running",
+     "2026-01-01T00:00:00Z", "viejo"),
+)
+conn7.commit()
+conn7.execute("UPDATE agent_sessions SET status = 'completed' WHERE agent_id = 'agente-trigger'")
+conn7.commit()
+new_updated_at = conn7.execute(
+    "SELECT updated_at FROM agent_sessions WHERE agent_id = 'agente-trigger'"
+).fetchone()[0]
+check("updated_at ya no es el valor viejo", True, new_updated_at != "viejo")
+conn7.close()
+shutil.rmtree(d7, ignore_errors=True)
 
 print()
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")

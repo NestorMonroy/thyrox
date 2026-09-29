@@ -15,6 +15,7 @@ import { join } from 'node:path'
 import { Database } from 'bun:sqlite'
 import { THRASHING_MESSAGE } from '../loop/context/contextLevel.ts'
 import { CLEARED_TABLE } from '@thyrox/observability/clearedResults'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { transcriptShapeOf } from '@thyrox/observability/transcriptShape'
 import { runLoop, streamLoop } from '../loop/index.ts'
 import { Transcript } from '../loop/transcript.ts'
@@ -278,8 +279,10 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
   test('con store, el mismo caso SÍ se limpia — el control que discrimina', async () => {
     const d = dir()
     process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
+    const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     const eventos = await correr(d, [...conResultado('tu_con', 25_000), relleno(1_000)],
-      { keepToolResults: 0, persistCleared: join(d, 'store.sqlite3') })
+      { keepToolResults: 0, persistCleared: db })
     expect(eventos.some((e) => e.type === 'cleared_unpersisted')).toBe(false)
     const purga = eventos.find((e) => e.type === 'compaction')
     expect((purga as { cleared: number }).cleared).toBe(1)
@@ -289,6 +292,7 @@ describe('lo que no se pudo registrar NO se limpia — y se dice por qué', () =
     const d = dir()
     process.env.THYROX_AUTOCOMPACT_PCT_OVERRIDE = '4'
     const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     await correr(d, [...conResultado('tu_fila', 25_000), relleno(1_000)],
       { keepToolResults: 0, persistCleared: db })
     const filas = new Database(db).query(

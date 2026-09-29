@@ -1317,6 +1317,12 @@ def _index_exists(conn: sqlite3.Connection, name: str) -> bool:
     ).fetchone() is not None
 
 
+def _trigger_exists(conn: sqlite3.Connection, name: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='trigger' AND name=?", (name,)
+    ).fetchone() is not None
+
+
 def _columns(conn: sqlite3.Connection, table: str) -> set:
     return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
 
@@ -1567,11 +1573,61 @@ def _adopt_task_highwater_legacy(conn: sqlite3.Connection) -> None:
     return None
 
 
+#: `CLEARED_TOOL_RESULTS_DDL` — mismo DDL que
+#: ``src/packages/observability/src/clearedResults.ts::ensureClearedTable``.
+#: Vive aqui porque DEC-TASK 2026-09-29 (opcion 1) hace a Python el dueno del
+#: schema; observability ya no ejecuta este DDL, solo valida contra el ledger
+#: que esta migracion escribe (TASK-THYROX-0534).
+CLEARED_TOOL_RESULTS_DDL = """CREATE TABLE IF NOT EXISTS cleared_tool_results (
+    session_id     TEXT NOT NULL,
+    tool_use_id    TEXT NOT NULL,
+    tool           TEXT NOT NULL,
+    input_json     TEXT NOT NULL,
+    content_sha256 TEXT NOT NULL,
+    content_chars  INTEGER NOT NULL,
+    cleared_at     TEXT NOT NULL,
+    PRIMARY KEY (session_id, tool_use_id)
+)"""
+
+
+def _cleared_tool_results_already_applied(conn: sqlite3.Connection) -> bool:
+    return _table_exists(conn, "cleared_tool_results")
+
+
+def _apply_cleared_tool_results(conn: sqlite3.Connection) -> None:
+    conn.execute(CLEARED_TOOL_RESULTS_DDL)
+    conn.commit()
+
+
+#: `AGENT_SESSIONS_STAMP_UPDATED_DDL` — mismo cuerpo que
+#: ``src/packages/observability/src/store.ts::ensureUpdatedAtTrigger``.
+#: Misma razon que `CLEARED_TOOL_RESULTS_DDL`: Python lo crea, observability
+#: solo valida que ya esta (TASK-THYROX-0534).
+AGENT_SESSIONS_STAMP_UPDATED_DDL = """CREATE TRIGGER IF NOT EXISTS agent_sessions_stamp_updated
+    AFTER UPDATE OF status ON agent_sessions
+    WHEN NEW.status <> OLD.status
+    BEGIN
+      UPDATE agent_sessions
+      SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+      WHERE rowid = NEW.rowid;
+    END"""
+
+
+def _agent_sessions_stamp_updated_already_applied(conn: sqlite3.Connection) -> bool:
+    return _trigger_exists(conn, "agent_sessions_stamp_updated")
+
+
+def _apply_agent_sessions_stamp_updated(conn: sqlite3.Connection) -> None:
+    conn.execute(AGENT_SESSIONS_STAMP_UPDATED_DDL)
+    conn.commit()
+
+
 #: El orden es el mismo que ``connect()`` invocaba suelto antes de este
 #: cambio (``_migrate_agent_sessions_usage_columns`` .. ``_migrate_documents_
-#: drop_scanned_at``), mas las dos versiones nuevas de esta tarea:
-#: `task_session_highwater` (TASK-THYROX-0532) y la adopcion de la forma
-#: legada `task_highwater`.
+#: drop_scanned_at``), mas las cuatro versiones nuevas: `task_session_highwater`
+#: y la adopcion de la forma legada `task_highwater` (TASK-THYROX-0532), y
+#: `cleared_tool_results` mas el trigger `agent_sessions_stamp_updated`,
+#: portados desde observability (TASK-THYROX-0534).
 CORE_MIGRATIONS: tuple = (
     Migration(1, "create_core_schema", _apply_core_schema, _core_schema_already_applied),
     Migration(2, "add_agent_sessions_usage_columns", _migrate_agent_sessions_usage_columns,
@@ -1596,6 +1652,10 @@ CORE_MIGRATIONS: tuple = (
               _task_session_highwater_already_applied),
     Migration(12, "adopt_task_highwater", _adopt_task_highwater_legacy,
               _task_highwater_legacy_already_applied),
+    Migration(13, "create_cleared_tool_results", _apply_cleared_tool_results,
+              _cleared_tool_results_already_applied),
+    Migration(14, "create_agent_sessions_stamp_updated_trigger", _apply_agent_sessions_stamp_updated,
+              _agent_sessions_stamp_updated_already_applied),
 )
 
 

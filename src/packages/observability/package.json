@@ -42,6 +42,7 @@
   "dependencies": {
     "@thyrox/agent": "0.4.0",
     "@thyrox/paths": "0.1.0",
-    "@thyrox/store": "0.1.0"
+    "@thyrox/store": "0.1.0",
+    "@thyrox/task": "0.1.0"
   }
 }

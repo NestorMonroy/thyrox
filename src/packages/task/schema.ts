@@ -27,6 +27,8 @@ import { Database } from 'bun:sqlite'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { thyroxRoot } from '@thyrox/paths/reach.ts'
+import { validateMigrationLedgerSync } from '@thyrox/store/migrationLedger.ts'
+import type { Migration } from '@thyrox/store/migrationContract.ts'
 
 export const TASK_STATUSES = ['pending', 'in_progress', 'completed'] as const
 export type TaskStatus = (typeof TASK_STATUSES)[number]
@@ -307,6 +309,39 @@ export function pythonMigrations(): { version: number; name: string }[] {
   }
   if (salida.length === 0) throw new Error('CORE_MIGRATIONS no declaró ninguna migración')
   return salida
+}
+
+/** El ledger compartido con el lado Python (`agent_store.py::MIGRATIONS_TABLE`). */
+export const CORE_MIGRATIONS_TABLE = 'schema_migrations'
+
+let coreMigrationsCache: Migration[] | null = null
+
+/**
+ * `pythonMigrations()`, con la forma que `validateMigrationLedgerSync` exige
+ * — memoizada porque relee y parsea `agent_store.py` en cada llamada, y esta
+ * función corre por cada apertura de base en el camino caliente. `statements`
+ * vacío: Bun nunca ejecuta DDL sobre esta base, sólo valida el ledger.
+ */
+export function coreMigrations(): Migration[] {
+  if (!coreMigrationsCache) {
+    coreMigrationsCache = pythonMigrations().map((m) => ({ ...m, statements: { sqlite: [] as string[], postgres: [] as string[] } }))
+  }
+  return coreMigrationsCache
+}
+
+/**
+ * Confirma, sin escribir nada, que `db` ya migró el schema del que Python es
+ * dueño (DEC-TASK 2026-09-29, opción 1). Rehúsa con el mensaje explícito de
+ * `validateMigrationLedgerSync` —nombra la versión que falta o el desacuerdo
+ * de provenance— si el ledger no existe o quedó incompleto.
+ *
+ * Punto único para todo escritor de `agent_store.sqlite3` que no migra por sí
+ * mismo: lo usan `tasks.ts::conBase` y `@thyrox/observability`
+ * (`store.ts`, `clearedResults.ts`), en vez de cada uno repitiendo la misma
+ * validación contra la misma tabla.
+ */
+export function assertCoreSchemaMigrated(db: Database): void {
+  validateMigrationLedgerSync(db, { table: CORE_MIGRATIONS_TABLE, migrations: coreMigrations() })
 }
 
 /**

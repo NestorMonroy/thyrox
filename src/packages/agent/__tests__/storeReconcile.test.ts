@@ -11,10 +11,23 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { recordHarnessSession, reconcileStaleRunningRows, ensureUpdatedAtTrigger } from '@thyrox/observability/store'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { readProcStart } from '../loop/session/reconcile.ts'
 import { USAGE_CERO } from '../loop/types.ts'
 
-const ESQUEMA = `CREATE TABLE agent_sessions (
+/**
+ * Una base con el ledger COMPLETO — `agent_store.py` es el dueño del schema
+ * (DEC-TASK 2026-09-29), así que un fixture de prueba se migra igual que un
+ * despliegue real, no fabrica su esquema a mano.
+ */
+function db() {
+  const p = join(mkdtempSync(join(tmpdir(), 'store-')), 's.sqlite3')
+  createMigratedTaskDb(p)
+  return p
+}
+
+/** Una base sin ledger — sólo `agent_sessions`, para el caso "rehúsa". */
+const SCHEMA_WITHOUT_LEDGER = `CREATE TABLE agent_sessions (
   agent_id TEXT PRIMARY KEY, subagent_type TEXT NOT NULL, session_id TEXT NOT NULL,
   status TEXT NOT NULL CHECK(status IN ('running','completed','failed')),
   started_at TEXT NOT NULL, updated_at TEXT NOT NULL, model TEXT, description TEXT,
@@ -23,9 +36,9 @@ const ESQUEMA = `CREATE TABLE agent_sessions (
   source TEXT, metadata_json TEXT, retention_level INTEGER, usage_source TEXT,
   compactions INTEGER, dropped_tokens INTEGER)`
 
-function db() {
-  const p = join(mkdtempSync(join(tmpdir(), 'store-')), 's.sqlite3')
-  new Database(p).run(ESQUEMA)
+function dbWithoutLedger() {
+  const p = join(mkdtempSync(join(tmpdir(), 'store-sin-ledger-')), 's.sqlite3')
+  new Database(p).run(SCHEMA_WITHOUT_LEDGER)
   return p
 }
 const fila = (over: Partial<Parameters<typeof recordHarnessSession>[1]> = {}) => ({
@@ -127,5 +140,14 @@ describe('trigger de updated_at (contabilidad)', () => {
     // guardia NEW<>OLD evita que re-estampe. Sin el guardia, updated_at cambia.
     d.run(`UPDATE agent_sessions SET status='running' WHERE agent_id='t2'`)
     expect((d.query(`SELECT updated_at FROM agent_sessions WHERE agent_id='t2'`).get() as any).updated_at).toBe('fijo')
+  })
+
+  // CONTROL: sin ledger (DEC-TASK 2026-09-29, Python dueño del schema),
+  // `ensureUpdatedAtTrigger` ya NO crea el trigger — sólo valida. Sobre una
+  // base sin `schema_migrations` rehúsa, nombrando la tabla que falta.
+  test('sin ledger de migraciones, rehúsa en vez de crear el trigger', () => {
+    const p = dbWithoutLedger()
+    const d = new Database(p)
+    expect(() => ensureUpdatedAtTrigger(d)).toThrow(/schema_migrations/)
   })
 })

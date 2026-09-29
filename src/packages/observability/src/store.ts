@@ -21,6 +21,7 @@ import { openLocal } from '@thyrox/store/db.ts'
 import { join, resolve } from 'node:path'
 import { thyroxRoot } from '@thyrox/paths/reach.ts'
 import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '@thyrox/paths/reach.ts'
+import { assertCoreSchemaMigrated } from '@thyrox/task/schema.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 import type { TranscriptShape } from './transcriptShape.ts'
 import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/agent/loop/session/reconcile'
@@ -273,14 +274,11 @@ export function reconcileStaleRunningRows(dbPath: string): StaleRow[] {
  * seguro sobre la tabla compartida: `recursive_triggers` está apagado por
  * defecto, así que el `UPDATE` de adentro no vuelve a disparar el trigger. El
  * patrón ya existe en esta DB (los tres triggers de `findings_history`).
+ *
+ * El DDL ya no vive aquí: `agent_store.py` es el dueño del schema (DEC-TASK
+ * 2026-09-29), y esta función sólo confirma que su migración ya lo creó —
+ * rehúsa, nombrando lo que falta, si el ledger está incompleto.
  */
 export function ensureUpdatedAtTrigger(db: Database): void {
-  db.run(`CREATE TRIGGER IF NOT EXISTS agent_sessions_stamp_updated
-    AFTER UPDATE OF status ON agent_sessions
-    WHEN NEW.status <> OLD.status
-    BEGIN
-      UPDATE agent_sessions
-      SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-      WHERE rowid = NEW.rowid;
-    END`)
+  assertCoreSchemaMigrated(db)
 }
