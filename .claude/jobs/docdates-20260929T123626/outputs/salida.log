@@ -1,5 +1,2 @@
 gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
 historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
-items=1 ok=1 fallidos=0
-verificados=1 rechazados=0 sin-cambios=0 fallidos=0
-__BG_EXIT__=0
