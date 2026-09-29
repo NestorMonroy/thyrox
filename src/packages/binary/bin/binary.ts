@@ -18,6 +18,10 @@
  *                        importan —por nombre o como namespace: import*as,
  *                        import() y el cargador que lo devuelve—, con el
  *                        miembro que cada uso llama
+ *   declarations <chunk> [--root R]
+ *                        todas las declaraciones de nivel superior del
+ *                        chunk, con los métodos de cada clase y los eventos
+ *                        tengu_* que emite cada una
  *   literal <texto> [--root R]
  *                        declaraciones que contienen el literal, con su
  *                        chunk y su nombre: lo que se pasa luego a symbol
@@ -35,6 +39,7 @@ import { corpusVersion, freshness } from '../src/freshness.ts'
 import { reflow } from '../src/reflow.ts'
 import { resolveSymbol, scanReferences } from '../src/symbol.ts'
 import { scanLiteral } from '../src/declaration.ts'
+import { listTopLevelDeclarations } from '../src/inventory.ts'
 
 const DEFAULT_BINARY = '/opt/claude-code/bin/claude'
 const DEFAULT_CORPUS = '_references/claude-code-bin'
@@ -180,6 +185,23 @@ if (command === 'info') {
   const files = new Set(scan.references.map(r => r.file)).size
   console.error(`references: ${scan.references.length} uso(s) de ${name} en ${files} chunk(s), exportado como ${scan.exportedAs.join(', ') || '(no se exporta)'} (alcance medido: ${scan.chunks} chunk(s))`)
   process.exit(scan.references.length > 0 ? 0 : 1)
+} else if (command === 'declarations') {
+  // La pregunta anterior a portar un subsistema: qué contiene el chunk entero.
+  const latest = corpusVersion(DEFAULT_CORPUS)
+  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  const chunk = argv[1]
+  if (!chunk || chunk.startsWith('--')) guard('uso: declarations <chunk> [--root R]')
+  if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
+  const declarations = listTopLevelDeclarations(readFileSync(`${root}/${chunk}`, 'utf8'))
+  for (const d of declarations) {
+    const methods = d.methods ? ` methods=${d.methods.join(',')}` : ''
+    const events = d.events.length > 0 ? ` events=${d.events.join(',')}` : ''
+    console.log(`${d.kind} ${d.name} [${d.start},${d.end})${methods}${events}`)
+  }
+  const kinds = ['function', 'class', 'variable'].map(k => `${declarations.filter(d => d.kind === k).length} ${k}`)
+  console.error(`declarations: ${declarations.length} de nivel superior en ${chunk} (${kinds.join(', ')})`)
+  process.exit(declarations.length > 0 ? 0 : 1)
 } else {
-  guard(`subcomando desconocido: ${command}. Use info | extract | graph | freshness | reflow | symbol | literal | references`)
+  guard(`subcomando desconocido: ${command}. Use info | extract | graph | freshness | reflow | symbol | literal | references | declarations`)
 }
