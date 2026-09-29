@@ -159,6 +159,7 @@ with tempfile.TemporaryDirectory() as scratch:
     print("caso 11: recuperar abre un worktree aparte y no toca el árbol del usuario")
     repo11 = make_repo(base / "repo11")
     dirty(repo11)
+    status11 = git(repo11, "status", "--porcelain")
     m11 = ss.take_snapshot(repo11, "r11", "1", 1)
     (repo11 / "unstaged.txt").write_text("trabajo posterior del usuario\n")
     before11 = fingerprint(repo11)
@@ -168,8 +169,12 @@ with tempfile.TemporaryDirectory() as scratch:
     check("HEAD, rama e índice del usuario intactos", before11, fingerprint(repo11))
     check("el worktree de recuperación trae la foto", ("sin preparar\n", "nuevo\n"),
           ((target / "unstaged.txt").read_text(), (target / "untracked.txt").read_text()))
-    check("el worktree de recuperación está desacoplado", "", subprocess.run(
-        ["git", "-C", str(target), "symbolic-ref", "-q", "HEAD"], capture_output=True, text=True).stdout.strip())
+    check("la recuperación trabaja en una rama temporal propia", rc.recovery_branch("r11", "1", 1),
+          git(target, "symbolic-ref", "-q", "HEAD"))
+    check("la rama temporal parte de base_head", m11.base_head, git(target, "rev-parse", "HEAD"))
+    check("el índice recuperado es original_index_tree", m11.original_index_tree, git(target, "write-tree"))
+    check("preparado, sin preparar y sin seguir quedan como estaban al tomar la foto", status11,
+          git(target, "status", "--porcelain"))
     try:
         rc.recover_to_worktree(repo11, "r11", "1", 1)
         check("recuperar dos veces al mismo destino se rehúsa", "RecoveryError", "no rehusó")

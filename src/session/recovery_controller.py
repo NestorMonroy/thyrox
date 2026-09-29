@@ -77,9 +77,19 @@ def recovery_path(run: str, item: str, generation: int) -> Path:
     return lc.runtime_root() / "recovery" / f"{run}-{item}-g{generation}"
 
 
+def recovery_branch(run: str, item: str, generation: int) -> str:
+    return f"refs/heads/thyrox/recovery/{run}/{item}/{generation}"
+
+
 def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
-                        into: Path | None = None) -> Path:
-    """Abre la foto en un worktree temporal y desacoplado; el árbol del usuario no cambia."""
+                        into: Path | None = None, restore_index: bool = True) -> Path:
+    """Reproduce la foto en un worktree y una rama temporales; el árbol del usuario no cambia.
+
+    El worktree queda como estaba el del ítem al tomar la foto: ``HEAD`` en
+    ``base_head``, el índice en ``original_index_tree`` y los archivos del
+    ``snapshot_commit``. Así lo preparado y lo no preparado siguen separados.
+    ``restore_index`` existe sólo como control de anulación.
+    """
     manifest = read_manifest(run, item, generation)
     if manifest is None:
         raise RecoveryError(f"no hay foto de {run}/{item}/{generation}")
@@ -89,10 +99,17 @@ def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
     if target.exists():
         raise RecoveryError(f"{target} ya existe; no se reutiliza un destino de recuperación")
     target.parent.mkdir(parents=True, exist_ok=True)
-    result = subprocess.run(["git", "-C", str(repo), "worktree", "add", "-q", "--detach", str(target),
-                             manifest.snapshot_commit], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise RecoveryError(f"git worktree add salió {result.returncode}: {result.stderr.strip()}")
+    branch = recovery_branch(run, item, generation).removeprefix("refs/heads/")
+    base = manifest.base_head or manifest.snapshot_commit
+    steps = [["git", "-C", str(repo), "worktree", "add", "-q", "-b", branch, str(target), base]]
+    if restore_index:
+        steps.append(["git", "-C", str(target), "read-tree", manifest.original_index_tree])
+    steps.append(["git", "-C", str(target), "restore", f"--source={manifest.snapshot_commit}",
+                  "--worktree", "--", "."])
+    for command in steps:
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RecoveryError(f"{' '.join(command[3:5])} salió {result.returncode}: {result.stderr.strip()}")
     return target
 
 
