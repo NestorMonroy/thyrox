@@ -10,7 +10,12 @@
  * archivos locales, y el backend de storage (`N()`) por `ye`, `J4n`, `Ee`,
  * `Ks` y `rt` (`chunk-5mcqvwzx.js`, `chunk-mp7hmykc.js`, `chunk-nwpc1c89.js`).
  * `SessionKeyStorage` es sólo la parte del contrato de storage que estas
- * funciones consumen; el backend que lo implementa es otra fase.
+ * funciones consumen, y se conserva por fidelidad al porte. Ningún backend lo
+ * implementa, y es a propósito: en 2.1.283 la fábrica del backend (`uVn`)
+ * siempre devuelve `undefined`, así que la rama que rige es la de archivos.
+ * La clave es estado de un proceso (pid, modo 0600, escritura atómica) y por
+ * eso vive en archivo, no en una base ni detrás de un servidor
+ * (ADR-THYROX-006).
  */
 import { mkdir, readdir, readFile, stat, unlink } from 'node:fs/promises'
 import { basename, join } from 'node:path'
