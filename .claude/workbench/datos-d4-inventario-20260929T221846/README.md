@@ -241,3 +241,84 @@ Todas salen de instrumentos versionados en este banco, no de lectura:
 `findings-rebuildable.txt` y `updated-at-resolution.txt`. La cifra de 78/79
 tiene además un instrumento independiente:
 `bin/check_finding_id_unique` corrido desde `kaupamex-docs`.
+
+## 8. Decisión del ejecutor sobre el invariante (2026-09-29)
+
+- **Bloqueo primario: el cierre limpio de sesión.** `SESSION_CLOSED` ⇒
+  ningún hallazgo durable de esa sesión queda sólo en `findings_history`. Al
+  cerrar, los `PENDING_RST` se reconcilian o publican; si no se resuelven, el
+  cierre limpio se rechaza.
+- **La ventana de gracia vive mientras vive el productor.** No sobrevive a un
+  cierre limpio: al cerrar, el hallazgo pierde al único dueño que lo iba a
+  completar.
+- **Un crash no es un cierre limpio.** Deja estado recuperable, y no se
+  finge que el invariante se cumplió.
+- **Defensa secundaria: `pre-push` de thyrox** con el mismo gate
+  (`check_finding_id_unique`, mitad A, `--strict`), para lo que haya salido
+  del ciclo de vida correcto. Es una frontera de transporte, no dueña del
+  invariante.
+- TASK-THYROX-0628 sigue separada de `DocumentationPublisher` (0624):
+  una elimina deuda histórica, la otra gobierna la publicación futura.
+
+```text
+fila del hallazgo -> PENDING_RST -> RST_PUBLISHED -> COMPLETE
+SESSION_CLOSE: ¿PENDING_RST? no -> CLOSED
+                             sí -> reconciliar/publicar -> ¿resuelto? sí -> CLOSED
+                                                                    no -> CLOSE_REJECTED
+```
+
+## 9. Cómo lo resuelve OmniRoute — leído en `omniroute@113de57b9`
+
+Leído del árbol versionado (`git show HEAD:<ruta>`), no del directorio de
+trabajo: ese clon tiene 24 231 cambios sin commit en su índice, que no son de
+esta sesión y no se tocaron. Una lectura sin `-c gc.auto=0` disparó el
+empaquetado automático de git en ese clon; el contenido no cambia, y el resto
+de lecturas lo desactivaron.
+
+**OmniRoute no fusiona filas entre instancias.** Tiene una autoridad y copias:
+
+| Mecanismo | Dónde | Qué hace |
+|---|---|---|
+| sincronización de configuración | `src/lib/sync/bundle.ts:186-238` | la instancia autoridad arma un paquete completo (conexiones, nodos, combos, claves, ajustes, reglas) y lo publica; el receptor lo toma entero |
+| versión del paquete | `bundle.ts:178-184` | `sha256` del JSON canónico (claves ordenadas, listas ordenadas por clave estable): la versión es el contenido, no un reloj |
+| conflictos de referencia | `bundle.ts:252-285` (`reconcileReasoningRulesForSync`) | una regla que apunta a una clave, combo o conexión que el destino no tiene **se desactiva y se informa como conflicto**; no se descarta ni se aplica a ciegas |
+| identidad | `src/lib/db/core.ts:221-486` | toda tabla que viaja en el paquete usa `id TEXT PRIMARY KEY`; `AUTOINCREMENT` aparece sólo en tablas locales de la instancia (`usage_history`, `domain_budget_reset_logs`, `domain_cost_history`, `quota_snapshots`), que el paquete no incluye |
+| importación de una base | `src/app/api/db-backups/import/route.ts:48-51,123-134,162` | reemplazo completo, nunca unión: `integrity_check`, validación de esquema y tablas, y copia de respaldo previa (`backupDbFile("pre-import")`) |
+| cierre | `core.ts:1447-1480` (`shutdownDbInstance`, `closeDbInstance`) | el ciclo de vida detiene la salud, hace `wal_checkpoint(TRUNCATE)` y cierra. Un fallo del checkpoint **avisa y no bloquea** el cierre |
+
+### Qué toma THYROX de ahí
+
+1. **Identidad global para todo lo que viaja; entero local sólo para lo que
+   no viaja.** Es la partición de OmniRoute, y confirma pasar
+   `findings_history` a `finding_id`. En THYROX lo que viaja es la base
+   entera, así que la regla se aplica tabla por tabla: una tabla que se une
+   entre sesiones no usa `AUTOINCREMENT` como identidad.
+2. **Versión por contenido para distinguir idéntica de distinta.** El
+   `sha256` del contenido canónico de la fila es lo que D4-A necesita para
+   clasificar «misma revisión, mismo contenido → idéntica» frente a «misma
+   revisión, contenido distinto → conflicto». La revisión ordena; el hash
+   compara.
+3. **Conflicto declarado, no descartado.** `reconcileReasoningRulesForSync`
+   es la forma: el elemento en conflicto queda marcado y recuperable, y el
+   informe lo nombra.
+4. **Respaldo previo antes de reemplazar o unir.** Su `pre-import` es la
+   política que TASK #295 pide para `agent_store.sqlite3` antes de una
+   migración o de un merge.
+
+### Dónde THYROX NO copia a OmniRoute
+
+- **Topología.** OmniRoute tiene una autoridad y réplicas de sólo lectura (la
+  forma de D4-B). THYROX hoy tiene varias sesiones que escriben la misma base,
+  así que D4-A necesita una unión con revisión y conflictos que OmniRoute
+  nunca tuvo que escribir. Si D4-B elige una autoridad común, el modelo de
+  OmniRoute pasa a aplicar tal cual.
+- **Cierre.** El cierre de OmniRoute garantiza la durabilidad del archivo
+  local, y un fallo no lo bloquea. El invariante de THYROX
+  (`SESSION_CLOSED` ⇒ ningún hallazgo sólo como fila) es de completitud de
+  dominio, y por decisión del ejecutor **sí** rechaza el cierre. Coinciden en
+  que el dueño es el ciclo de vida, no el transporte.
+
+*Métrica:* lectura del código versionado de OmniRoute en las rutas citadas.
+*Ciega a:* cómo se comportan esas rutas en ejecución (no se ejecutó
+OmniRoute), y a mecanismos de sincronización que vivan fuera de `src/lib/sync`
+y `src/app/api/db-backups`.
