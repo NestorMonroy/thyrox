@@ -11,6 +11,14 @@
  * (`THYROX_REDIS_URL`). Los dos pasan la misma suite de contrato
  * (`contract.ts`), así que un consumidor no distingue cuál tiene detrás
  * salvo por el alcance: `memory` sólo coordina dentro de su proceso.
+ *
+ * Con varias instancias (`THYROX_PROXY_MODE=multi`), un `SharedStateStore`
+ * suelto ya no basta: qué hacer cuando redis falla depende de si el
+ * consumidor necesita ver lo mismo que los demás proxies o le basta con la
+ * vista de su propio proceso. Esa distinción es `ConsistencyClass`
+ * (`consistency.ts`), y `openSharedStateStore` (`factory.ts`) la resuelve por
+ * `forConsistency(cls)`, no este puerto: la interfaz de abajo describe un
+ * almacén ya elegido, sea cual sea su procedencia.
  */
 export interface SharedStateStore {
   /**

@@ -19,7 +19,7 @@ const REDIS_CLIENT_INPUT = /(^|\/)node_modules\/(ioredis|redis)\//
 
 /** El metafile publica rutas relativas al directorio de trabajo: se resuelven antes de compararlas. */
 function isForbidden(input: string): boolean {
-  return resolve(process.cwd(), input).startsWith(SHARED_STATE_DIR) || REDIS_CLIENT_INPUT.test(input)
+  return resolve(PACKAGE_DIR, input).startsWith(SHARED_STATE_DIR) || REDIS_CLIENT_INPUT.test(input)
 }
 
 function sourceFiles(dir: string): string[] {
@@ -33,11 +33,34 @@ function sourceFiles(dir: string): string[] {
   return files
 }
 
-/** Módulos del grafo (un addon nativo sin compilar queda externo: no es JS que importe nada)  de `entrypoints` que pertenecen al estado compartido o a un cliente de Redis. */
-export async function forbiddenModules(entrypoints: string[]): Promise<string[]> {
-  const result = await Bun.build({ entrypoints, target: 'bun', metafile: true, throw: false, external: ['*.node'] })
-  if (!result.success) throw new Error(`el empaquetado falló: ${result.logs.map(String).join('\n')}`)
-  return Object.keys(result.metafile?.inputs ?? {}).filter(isForbidden)
+/**
+ * El grafo se empaqueta en un proceso `bun` aparte, no dentro de `bun test`:
+ * en el runtime de pruebas `Bun.build` no resuelve los `require()` relativos
+ * de `@thyrox/provider` (`authAlias.ts`) que un proceso normal sí resuelve.
+ * La condición `@thyrox/source` va explícita para no heredarla del tsconfig
+ * del cwd, y un addon nativo sin compilar queda externo: no importa nada.
+ */
+const GRAPH_SCRIPT = `
+const entrypoints = JSON.parse(process.argv[1])
+const result = await Bun.build({ entrypoints, target: 'bun', metafile: true, throw: false,
+  external: ['*.node'], conditions: ['@thyrox/source'] })
+if (!result.success) {
+  for (const log of result.logs) console.error(String(log), 'desde', log.position?.file ?? '?')
+  process.exit(2)
+}
+console.log(JSON.stringify(Object.keys(result.metafile?.inputs ?? {})))
+`
+
+/** Módulos del grafo de `entrypoints` que pertenecen al estado compartido o a un cliente de Redis. */
+export function forbiddenModules(entrypoints: string[]): string[] {
+  const child = Bun.spawnSync([process.execPath, '-e', GRAPH_SCRIPT, JSON.stringify(entrypoints)], {
+    cwd: PACKAGE_DIR,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  if (child.exitCode !== 0) throw new Error(`el empaquetado falló: ${child.stderr.toString()}`)
+  const inputs: string[] = JSON.parse(child.stdout.toString())
+  return inputs.filter(isForbidden)
 }
 
 describe('@thyrox/mitm no llega al estado compartido', () => {
@@ -54,16 +77,16 @@ describe('@thyrox/mitm no llega al estado compartido', () => {
     expect(offenders.map(path => relative(PACKAGE_DIR, path))).toEqual([])
   })
 
-  test('el grafo de módulos del paquete entero no incluye estado compartido ni Redis', async () => {
-    expect(await forbiddenModules(sourceFiles(join(PACKAGE_DIR, 'src')))).toEqual([])
+  test('el grafo de módulos del paquete entero no incluye estado compartido ni Redis', () => {
+    expect(forbiddenModules(sourceFiles(join(PACKAGE_DIR, 'src')))).toEqual([])
   }, 120_000)
 
-  test('control: un archivo que importa @thyrox/shared-state sí se detecta', async () => {
+  test('control: un archivo que importa @thyrox/shared-state sí se detecta', () => {
     // La sonda vive fuera de `src/` para que el caso del paquete entero no la vea.
     const probe = join(import.meta.dir, `.boundary-probe-${process.pid}.ts`)
     writeFileSync(probe, "export { openSharedStateStore } from '@thyrox/shared-state/factory.ts'\n")
     try {
-      expect((await forbiddenModules([probe])).length).toBeGreaterThan(0)
+      expect(forbiddenModules([probe]).length).toBeGreaterThan(0)
     } finally {
       rmSync(probe, { force: true })
     }

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { SharedStateUnavailableError } from '../consistency.ts'
 import { openSharedStateStore, REDIS_URL_ENV } from '../factory.ts'
 import type { SharedStateStore } from '../port.ts'
 
@@ -128,5 +129,127 @@ describe('openSharedStateStore', () => {
     await opened.store.close()
     expect(calls).toContain('redis:close')
     expect(calls).toContain('memory:close')
+  })
+})
+
+describe('openSharedStateStore: THYROX_PROXY_MODE (R5a)', () => {
+  test('sin THYROX_PROXY_MODE el modo por omisión es single', () => {
+    const opened = openSharedStateStore({
+      env: {},
+      createMemory: () => fakeStore('memory', []),
+    })
+    expect(opened.mode).toBe('single')
+  })
+
+  test('un valor inválido de THYROX_PROXY_MODE falla en openSharedStateStore nombrando la variable', () => {
+    expect(() =>
+      openSharedStateStore({
+        env: { THYROX_PROXY_MODE: 'todos' },
+        createMemory: () => fakeStore('memory', []),
+      }),
+    ).toThrow(/THYROX_PROXY_MODE/)
+  })
+
+  test('la URL no infiere el modo: con THYROX_REDIS_URL y sin THYROX_PROXY_MODE el modo sigue siendo single', () => {
+    const opened = openSharedStateStore({
+      env: { [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', []),
+      createRedis: () => fakeStore('redis', []),
+    })
+    expect(opened.mode).toBe('single')
+  })
+
+  test('multi sin THYROX_REDIS_URL falla al abrir con un error tipado', () => {
+    expect(() =>
+      openSharedStateStore({
+        env: { THYROX_PROXY_MODE: 'multi' },
+        createMemory: () => fakeStore('memory', []),
+      }),
+    ).toThrow(SharedStateUnavailableError)
+  })
+})
+
+describe('openSharedStateStore: forConsistency en modo single (R5a)', () => {
+  test('single: las tres clases se comportan igual que store (redis preferido, memoria con aviso)', async () => {
+    const calls: string[] = []
+    const opened = openSharedStateStore({
+      env: { [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => fakeStore('redis', calls),
+    })
+    await opened.forConsistency('requiresGlobalConsistency').incrementWindow('k', 1000)
+    await opened.forConsistency('bestEffortShared').incrementWindow('k', 1000)
+    await opened.forConsistency('localAllowed').incrementWindow('k', 1000)
+    expect(calls).toEqual(['redis', 'redis', 'redis'])
+  })
+})
+
+describe('openSharedStateStore: forConsistency en modo multi (R5a)', () => {
+  test('multi con redis vivo: requiresGlobalConsistency y bestEffortShared usan redis', async () => {
+    const calls: string[] = []
+    const opened = openSharedStateStore({
+      env: { THYROX_PROXY_MODE: 'multi', [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => fakeStore('redis', calls),
+    })
+    expect(await opened.forConsistency('requiresGlobalConsistency').getWithTtl('k')).toBe('v')
+    expect(await opened.forConsistency('bestEffortShared').getWithTtl('k')).toBe('v')
+    expect(calls).toEqual(['redis', 'redis'])
+  })
+
+  test('multi con redis vivo: localAllowed usa memoria siempre, también con redis vivo', async () => {
+    const calls: string[] = []
+    const opened = openSharedStateStore({
+      env: { THYROX_PROXY_MODE: 'multi', [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => fakeStore('redis', calls),
+    })
+    expect(await opened.forConsistency('localAllowed').getWithTtl('k')).toBe('v')
+    expect(calls).toEqual(['memory'])
+  })
+
+  test('multi con redis caído: requiresGlobalConsistency lanza SharedStateUnavailableError y NUNCA cae a memoria', async () => {
+    const calls: string[] = []
+    const opened = openSharedStateStore({
+      env: { THYROX_PROXY_MODE: 'multi', [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => fakeStore('redis', calls, true),
+    })
+    const strict = opened.forConsistency('requiresGlobalConsistency')
+    await expect(strict.acquireLease('l', 'a', 1000)).rejects.toBeInstanceOf(SharedStateUnavailableError)
+    await expect(strict.acquireLease('l', 'a', 1000)).rejects.toBeInstanceOf(SharedStateUnavailableError)
+    // Cada llamada volvió a intentar redis; ninguna tocó memoria.
+    expect(calls).toEqual(['redis', 'redis'])
+  })
+
+  test('multi con redis caído: bestEffortShared degrada a memoria con aviso y degraded() da verdadero', async () => {
+    const calls: string[] = []
+    const warnings: string[] = []
+    const opened = openSharedStateStore({
+      env: { THYROX_PROXY_MODE: 'multi', [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => fakeStore('redis', calls, true),
+      warn: message => warnings.push(message),
+    })
+    expect(await opened.forConsistency('bestEffortShared').getWithTtl('k')).toBe('v')
+    expect(calls).toEqual(['redis', 'memory'])
+    expect(warnings).toHaveLength(1)
+    expect(opened.degraded()).toBe(true)
+  })
+
+  test('multi: close() es idempotente y cierra redis, el fallback de bestEffortShared y la memoria de localAllowed una sola vez', async () => {
+    const calls: string[] = []
+    const opened = openSharedStateStore({
+      env: { THYROX_PROXY_MODE: 'multi', [REDIS_URL_ENV]: 'redis://x' },
+      createMemory: () => fakeStore('memory', calls),
+      createRedis: () => fakeStore('redis', calls, true),
+      warn: () => {},
+    })
+    await opened.forConsistency('bestEffortShared').getWithTtl('k')
+    await opened.forConsistency('localAllowed').getWithTtl('k')
+    await opened.close()
+    await opened.close()
+    expect(calls.filter(c => c === 'redis:close')).toHaveLength(1)
+    expect(calls.filter(c => c === 'memory:close')).toHaveLength(2)
   })
 })
