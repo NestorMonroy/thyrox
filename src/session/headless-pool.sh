@@ -106,6 +106,30 @@
 # *Ciega a:* la CALIDAD de lo que cada item devuelve. El veredicto es de
 # despacho —termino, fallo, se corto—; que el resultado sirva lo juzga quien lo
 # agrega.
+
+# >>> frozen-launcher
+# El pool corre desde una copia de su capa de shell tomada al lanzar
+# (`launcher_freeze.sh`): bash lee este archivo por partes mientras corre, y
+# editarlo en el checkout cambiaría lo que un pool vivo hace después. Este
+# bloque es lo único que se lee del checkout; el resto lo lee la copia. La
+# marca `_HP_FROZEN_LAUNCHER` nombra la copia en curso y se retira en cuanto
+# la copia arranca, así que un pool anidado —el que lance un ítem— congela la
+# suya.
+_hp_source_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+if [[ "${_HP_FROZEN_LAUNCHER:-}" != "$_hp_source_root" ]]; then
+    export THYROX_ROOT="${THYROX_ROOT:-$_hp_source_root}"
+    source "$_hp_source_root/src/lib/launcher_freeze.sh" || exit 2
+    _hp_frozen="$(thyrox_launcher_freeze "$_hp_source_root" headless-pool)" || {
+        echo "headless-pool: REHUSA — no se pudo copiar el lanzador bajo $(thyrox_runtime_dir "$_hp_source_root")" >&2
+        exit 2
+    }
+    _HP_FROZEN_LAUNCHER="$_hp_frozen" bash "$_hp_frozen/src/session/headless-pool.sh" "$@"
+    _hp_exit=$?
+    rm -rf "${_hp_frozen:?}"
+    exit "$_hp_exit"
+fi
+unset _HP_FROZEN_LAUNCHER
+# <<< frozen-launcher
 set -uo pipefail
 
 PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
@@ -150,7 +174,7 @@ command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
 [[ -z "${HEADLESS_POOL_CLAUDE+x}" ]] || rehusa "HEADLESS_POOL_CLAUDE se retiró: el ejecutor se declara con --runner claude."
 case "$RUNNER_KIND" in
-    thyrox) RUNNER_BIN="${HEADLESS_POOL_RUNNER:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}" ;;
+    thyrox) RUNNER_BIN="${HEADLESS_POOL_RUNNER:-$THYROX_ROOT/bin/cli}" ;;
     claude) RUNNER_BIN=claude ;;
     *) rehusa "--runner va thyrox o claude, no: $RUNNER_KIND" ;;
 esac
@@ -222,8 +246,9 @@ HP_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # ilegible no se deja a la interpretación de Parallel.
 source "$HP_HERE/../lib/memory.sh"
 # Las herramientas Python se invocan por su interfaz en `bin/`, no por su
-# fuente: el envoltorio resuelve el intérprete y PYTHONPATH.
-HP_BIN="$HP_HERE/../../bin"
+# fuente: el envoltorio resuelve el intérprete y PYTHONPATH. `bin/` se resuelve
+# contra THYROX_ROOT y no contra este archivo, que corre desde su copia.
+HP_BIN="$THYROX_ROOT/bin"
 pool_history() { bash "$HP_BIN/pool_history" "$@"; }
 HISTORY="$(pool_history dir "$PROMPT")" || rehusa "no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)"
 
@@ -321,7 +346,7 @@ mkdir -p "$OUT"
 # nada.
 HP_PROXY_SOCKET=""
 if [[ -n "$CREDENTIAL_PROXY" ]]; then
-    proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-${THYROX_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}/bin/provider-credential-proxy}"
+    proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-credential-proxy}"
     proxy_socket="$OUT/.credential-proxy.sock"
     proxy_log="$OUT/.credential-proxy.log"
     "$proxy_bin" --socket "$proxy_socket" > "$proxy_log" 2>&1 &

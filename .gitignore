@@ -181,3 +181,10 @@ agent-results/mutantes-en-vuelo.jsonl
 # La cascara de store del proveedor: 0 filas de negocio, tracked sin el
 # driver de merge que .gitattributes da al store real. La retira TASK-THYROX-0153.
 .claude/agent-results/agent_store.sqlite3
+
+# Estado local de ejecución de los lanzadores de repository/job: copias
+# congeladas de su capa de shell y, más adelante, sus artefactos vivos. Se
+# nombra cada espacio en vez de ignorar `.thyrox/` entero, para que ese
+# directorio no se vuelva un cajón invisible para Git.
+/.thyrox/runtime/
+/.thyrox/pool-worktrees/
