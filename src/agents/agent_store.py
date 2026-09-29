@@ -2681,6 +2681,28 @@ def _parse_declared_date(texto: str):
     return None, None
 
 
+def _is_shallow_repo(repo: Path) -> bool | None:
+    """Si `repo` es un clon superficial (`git clone --depth`), o `None` si no
+    se pudo preguntar.
+
+    Un clon superficial injerta su commit mas viejo sin padres: un `git log
+    --name-only` sobre esa historia listaria en ese commit TODO archivo del
+    arbol, como si hubiera cambiado ahi — la frontera del clon se leeria como
+    la fecha real de cualquier documento sin historia previa dentro de el.
+    `None` es su propio veredicto, distinto de `False`: «no se pudo medir» no
+    es lo mismo que «se midio y no es superficial», y tratarlos igual
+    escribiria una fecha fabricada con la misma confianza que una real.
+    """
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "--is-shallow-repository"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return output == "true"
+
+
 def _last_commit_dates(repo: Path, subtree: str) -> dict:
     """Fecha del ultimo commit por archivo, en UNA pasada sobre el log.
 
@@ -2758,6 +2780,25 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
     raiz = repo / args.subtree
     if not raiz.is_dir():
         print(f"ERROR — no existe {raiz}", file=sys.stderr)
+        raise SystemExit(2)
+
+    shallow = _is_shallow_repo(repo)
+    if shallow is None:
+        print(
+            f"ERROR — no se pudo preguntar a git si {repo} es un clon "
+            "superficial (git rev-parse --is-shallow-repository fallo); "
+            "sin esa garantia no se fecha ningun documento",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    if shallow:
+        print(
+            f"ERROR — {repo} es un clon superficial (git clone --depth): "
+            "su commit mas viejo grafeado se veria como el origen de TODO "
+            "archivo sin historia dentro del clon, asi que fechar-documentos "
+            "rehusa en vez de atribuirle la fecha de esa frontera",
+            file=sys.stderr,
+        )
         raise SystemExit(2)
 
     commits = _last_commit_dates(repo, args.subtree)
