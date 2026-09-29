@@ -19,6 +19,10 @@ fi
 if echo "$changed" | grep -q '^src/verify/check_rst_sintaxis.py$'; then
   ran=1
   timeout 300 uv run --quiet python tests/verify/test_check_rst_sintaxis_args.py | tail -1 || fail "rst args"
+  for t in tests/verify/test_rst_gate_interpreter.py tests/verify/test_rst_gate_root.py; do
+    timeout 600 uv run --quiet python "$t" | tail -1 || fail "$t"
+  done
+  timeout 600 bash tests/verify/test-suite-discrimina.sh | tail -1 || fail "test-suite-discrimina"
 fi
 [ "$ran" = 1 ] || fail "ningún área conocida cambió: $changed"
 echo "VERIFY OK"
