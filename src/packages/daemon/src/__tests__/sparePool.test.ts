@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  SPARE_REFILL_MIN_GAP_MS,
   _resetSparePoolForTest,
   claimSpare,
   clearSpare,
@@ -7,6 +8,7 @@ import {
   getSpareSlot,
   isSparePoolEnabled,
   markSpareReady,
+  recordSpareExit,
   recordSpareSpawn,
   setPrewarmInFlight,
   shouldPrewarm,
@@ -72,9 +74,21 @@ describe('claimSpare', () => {
       expect(r.short).toBe('abc12345')
       expect(r.sessionId).toBe('sess-1')
       expect(r.ptySocket).toBe('/tmp/sock')
+      // ant 4644.js I9n genera un claimAuth de 16 bytes hex por repuesto;
+      // claimSpare lo entrega para que el emisor arme la trama con `auth`.
+      expect(r.claimAuth).toMatch(/^[0-9a-f]{32}$/)
     }
     // Slot consumed.
     expect(getSpareSlot()).toBe(null)
+  })
+
+  test('claimAuth explícito (pasado por el llamador) se respeta tal cual', () => {
+    enableSparePool()
+    recordSpareSpawn('abc12345', '/cwd', 'sess-1', '/tmp/sock', 'fixed-auth')
+    markSpareReady('abc12345')
+    const r = claimSpare('/cwd')
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.claimAuth).toBe('fixed-auth')
   })
 })
 
@@ -147,5 +161,22 @@ describe('shouldPrewarm', () => {
     expect(shouldPrewarm()).toBe(false)
     clearSpare()
     expect(shouldPrewarm()).toBe(true)
+  })
+})
+
+describe('recordSpareExit + SPARE_REFILL_MIN_GAP_MS (ant 4644.js cr, min-gap de refill tras un exit)', () => {
+  test('false justo tras un exit, true una vez pasado el hueco mínimo', () => {
+    enableSparePool()
+    recordSpareExit(1_000)
+    expect(shouldPrewarm(1_000)).toBe(false)
+    expect(shouldPrewarm(1_000 + SPARE_REFILL_MIN_GAP_MS - 1)).toBe(false)
+    expect(shouldPrewarm(1_000 + SPARE_REFILL_MIN_GAP_MS)).toBe(true)
+  })
+
+  test('un slot existente sigue ganando aunque el hueco ya haya pasado', () => {
+    enableSparePool()
+    recordSpareExit(1_000)
+    recordSpareSpawn('a', '/c', 's1', '/t1')
+    expect(shouldPrewarm(1_000 + SPARE_REFILL_MIN_GAP_MS)).toBe(false)
   })
 })

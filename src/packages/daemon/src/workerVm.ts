@@ -36,6 +36,7 @@ import {
   writeWorkerRecord,
 } from './bgWorkerRegistry.js'
 import { type RvClient, type RvServerMessage, createRvClient } from './rvClient.js'
+import { formatPhaseLabel, isLegalPhaseTransition } from './workerPhase.js'
 
 const RING_BUFFER_BYTES = 1024 * 1024
 
@@ -187,6 +188,31 @@ export class WorkerVm extends EventEmitter {
     return this.phase
   }
 
+  /**
+   * Guarda de transición de fase — TODA asignación a `this.phase`, salvo
+   * el valor inicial fijado en el constructor, pasa por aquí. `ant
+   * chunk-ygx717jg.js`, clase `g7`, método `transitionTo`: en la
+   * referencia `this.phase=e` sólo aparece una vez en toda la clase, y es
+   * la línea de más abajo. Devuelve `false` sin mutar `this.phase` ante
+   * una transición ilegal (`isLegalPhaseTransition`), para que el
+   * llamador decida si aborta la operación.
+   */
+  private transitionTo(next: WorkerPhase): boolean {
+    if (!isLegalPhaseTransition(this.phase, next)) {
+      // ant `t(...,{level:"warn"})` — sin logger de texto en nivel warn
+      // cableado a @thyrox/daemon todavía (ver internal/
+      // pendingCrossPackageDeps.ts); console.error es el mismo canal de
+      // diagnóstico no-fatal que ya usa workerRegistry.ts en este paquete.
+      console.error(
+        `[bg] illegal worker-phase transition ${formatPhaseLabel(this.phase)} → ${formatPhaseLabel(next)} for ${this.config.short}`,
+      )
+      logEvent('tengu_bg_phase_illegal', {})
+      return false
+    }
+    this.phase = next
+    return true
+  }
+
   /** Snapshot del registro actual. */
   getRecord(): WorkerRecord {
     return this.record
@@ -260,7 +286,6 @@ export class WorkerVm extends EventEmitter {
    * socket, no a stdout/err). Fija phase=running ante un spawn exitoso.
    */
   spawn(): void {
-    this.phase = { kind: 'spawning', attempt: this.attempt }
     const [cmd, ...args] = this.config.cmd
     if (!cmd) {
       logEvent('tengu_bg_pty_unavailable', { short: this.config.short, reason: 'empty_cmd' })
@@ -293,7 +318,7 @@ export class WorkerVm extends EventEmitter {
       procStart: readProcStart(child.pid) || undefined,
     }
     writeWorkerRecord(this.record)
-    this.phase = { kind: 'running' }
+    this.transitionTo({ kind: 'running' })
     this.startHeartbeatPoll()
     this.startHeartbeatStream()
     this.connectRv()
@@ -315,7 +340,7 @@ export class WorkerVm extends EventEmitter {
       this.settle(v === 'recycled' ? 'crashed' : 'done')
       return
     }
-    this.phase = { kind: 'running' }
+    this.transitionTo({ kind: 'running' })
     this.startHeartbeatPoll()
     this.startHeartbeatStream()
     this.connectRv()
@@ -598,7 +623,7 @@ export class WorkerVm extends EventEmitter {
     }
     // Programa el respawn con backoff.
     this.attempt++
-    this.phase = { kind: 'spawning', attempt: this.attempt }
+    this.transitionTo({ kind: 'spawning', attempt: this.attempt })
     if (this.backoffTimer) clearTimeout(this.backoffTimer)
     this.backoffTimer = setTimeout(() => {
       this.backoffTimer = null
@@ -615,11 +640,7 @@ export class WorkerVm extends EventEmitter {
    * quiere dejar al worker corriendo pero el daemon debe olvidarse de él).
    */
   kill(reason: 'grace' | 'reap' | 'stop'): void {
-    if (this.phase.kind === 'retired') {
-      logEvent('tengu_bg_phase_illegal', { short: this.config.short, op: 'kill', current: 'retired', requested: reason })
-      return
-    }
-    this.phase = { kind: 'retiring', reason }
+    if (!this.transitionTo({ kind: 'retiring', reason })) return
     logEvent('tengu_bg_retired', { short: this.config.short, reason })
     if (reason === 'stop') {
       // Sólo se desatiende; se deja al worker corriendo (se re-adoptará
@@ -663,12 +684,8 @@ export class WorkerVm extends EventEmitter {
    * este WorkerVm del `Map<short, WorkerVm>` del registro.
    */
   private settle(outcome: SettleOutcome): void {
-    if (this.settled) {
-      logEvent('tengu_bg_phase_illegal', { short: this.config.short, op: 'settle', current: this.settled, requested: outcome })
-      return
-    }
+    if (!this.transitionTo({ kind: 'retired', outcome })) return
     this.settled = outcome
-    this.phase = { kind: 'retired', outcome }
     this.stopHeartbeatStream()
     if (this.rv) {
       this.rv.close()

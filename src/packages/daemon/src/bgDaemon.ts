@@ -50,10 +50,13 @@ import {
   claimSpare,
   enableSparePool,
   markSpareReady,
+  recordSpareExit,
   recordSpareSpawn,
   setPrewarmInFlight,
   shouldPrewarm,
 } from './sparePool.js'
+import { claimSpareWorker, sweepOrphanSpareSockets } from './spareClaim.js'
+import { getDaemonScopeDir } from './socketPaths.js'
 import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
 import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
 import type { ProtoOp } from './socketProto.js'
@@ -210,6 +213,14 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
           }
         } catch (e) {
           logEventFn('tengu_bg_spare_claim_fail', { reason: 'prewarm-spawn-failed', error: (e as Error).message.slice(0, 80) })
+          // ant 4644.js `ne()`/`cr` — un spawn de repuesto fallido no
+          // reintenta en tight-loop: se exige `SPARE_REFILL_MIN_GAP_MS`
+          // antes del próximo refill. Divergencia declarada: la referencia
+          // arma este gate sobre el EXIT del proceso host ya spawneado
+          // (`_.exited.then(...)`, `I9n`); aquí `spawnPtyHost` no expone un
+          // hook de salida del proceso, así que el gate sólo cubre el
+          // fallo SÍNCRONO de spawn — pendiente cuando ese hook exista.
+          recordSpareExit()
         } finally {
           setPrewarmInFlight(false)
         }
@@ -233,6 +244,17 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
     r.workers = {}
     for (const [s, vm] of state.workers) r.workers[s] = recordToRosterEntry(vm.getRecord())
   }).catch(() => {})
+  // `ant 4644.js` O9n — barrido de sockets de repuesto huérfanos (sin
+  // worker vivo detrás) que hayan quedado del spool de una corrida
+  // anterior del daemon. Best-effort: no bloquea el arranque.
+  void sweepOrphanSpareSockets(
+    getDaemonScopeDir(),
+    new Set(
+      Array.from(state.workers.values())
+        .map(vm => vm.getRecord().ptySocket)
+        .filter((s): s is string => Boolean(s)),
+    ),
+  ).catch(() => {})
   const adoptTimer = setInterval(() => adoptRunningPtyRecords(state.workers), 5000)
   adoptTimer.unref()
   // Refresco periódico del roster (atrapa cambios de estado que no pasan
@@ -444,23 +466,25 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
       } catch {
         // El chequeo de baja memoria no debe bloquear un dispatch legítimo — se sigue adelante.
       }
-      // `ant 4644.js`: intenta reclamar un repuesto antes de un spawn
-      // fresco. Si un repuesto listo coincide en cwd, manda una trama de
-      // control 'claim' con el intent despachado para que el repuesto
-      // corriendo lo recoja; se salta el spawn fresco.
+      // `ant 4644.js` P9n: intenta reclamar un repuesto antes de un spawn
+      // fresco. Si un repuesto listo coincide en cwd, manda la trama de
+      // claim (Bt) con reintento y presupuesto (Ut/Ft, en spareClaim.ts)
+      // para que el repuesto corriendo la recoja; se salta el spawn
+      // fresco. Ante fallo, claimSpareWorker ya clasifica el motivo, loguea
+      // `tengu_bg_sendclaim_failed` y manda SIGTERM de limpieza al pty del
+      // repuesto.
       const claim = claimSpare((d.cwd as string) ?? process.cwd())
       if (claim.ok) {
-        const intent = (d.intent as string) ?? (d.directive as string) ?? ''
-        try {
-          await new Promise<void>((resolve, reject) => {
-            const sock = connect(claim.ptySocket)
-            sock.once('connect', () => {
-              sock.write(encodeCtrlFrame({ t: 'claim', intent, cwd: (d.cwd as string), sessionId: claim.sessionId }))
-              sock.end()
-              resolve()
-            })
-            sock.once('error', e => reject(e))
-          })
+        const result = await claimSpareWorker({
+          short: claim.short,
+          ptySocket: claim.ptySocket,
+          cwd: d.cwd as string | undefined,
+          sessionId: claim.sessionId,
+          env: d.env as NodeJS.ProcessEnv | undefined,
+          argv: d.cmd as string[] | undefined,
+          auth: claim.claimAuth,
+        })
+        if (result.ok) {
           // El worker de repuesto sigue corriendo con su short existente
           // — se devuelve su short en vez de generar uno fresco.
           state.pending.set(claim.short, { nonce, acked: true, pid: undefined, startedAt: Date.now() })
@@ -471,10 +495,8 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
             ms: '0',
           })
           return ok({ op: 'dispatch', short: claim.short, nonce, pid: -1, via: 'spare-claim' })
-        } catch (e) {
-          // El envío del claim falló → se cae al spawn fresco.
-          logEventFn('tengu_bg_sendclaim_failed', { reason: 'connect-error', short: claim.short, error: (e as Error).message.slice(0, 80) })
         }
+        // El envío del claim falló del todo → se cae al spawn fresco.
       }
       const vm = new WorkerVm({
         short,

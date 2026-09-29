@@ -8,7 +8,8 @@
  * @dynamicRequire
  */
 
-import { existsSync as existsSyncFn } from 'node:fs'
+import { existsSync as existsSyncFn, readdirSync, unlinkSync } from 'node:fs'
+import { join } from 'node:path'
 
 import { logEvent } from '@thyrox/local-observability'
 
@@ -20,6 +21,7 @@ import {
   writeWorkerRecord,
 } from './bgWorkerRegistry.js'
 import { readRoster } from './roster.js'
+import { getDaemonScopeDir } from './socketPaths.js'
 import { WorkerVm } from './workerVm.js'
 
 /**
@@ -188,6 +190,63 @@ export function adoptRunningPtyRecords(workers: Map<string, WorkerVm>): void {
       sock_exists: String(sockExists),
       verified: String(record.procStart !== undefined && record.procStart !== 0),
     })
+  }
+}
+
+/**
+ * Barre `<daemon-scope>/*.pty.sock` en busca de hosts "roster-less": un
+ * socket de PTY en disco sin handle vivo en `workers`. Ref `pr`
+ * (chunk-92tvramn.js), rama no-Windows.
+ *
+ * Simplificaciones frente a la referencia, declaradas porque no se omiten
+ * en silencio:
+ * - pendiente: la referencia también barre huérfanos de `.err`/`.late`/
+ *   `.exec-exit`/`.err.read` sin su `.sock` correspondiente (primera mitad
+ *   del bucle de `pr`) — aquí sólo se reapan los `.sock` sin handle.
+ * - pendiente: antes de marcar `failed` la referencia espera al archivo
+ *   `.exec-exit` (`NIe`/`cl`/`ua`) para no pisar un proceso que está
+ *   terminando de escribir su salida; aquí se marca de inmediato.
+ * - pendiente: la rama `storageV5` (`o.storageV5`) no aplica — ccb no
+ *   tiene ese store.
+ */
+export function reapOrphanPtySockets(
+  workers: Map<string, WorkerVm>,
+  log: (message: string) => void,
+): void {
+  let entries: string[]
+  try {
+    entries = readdirSync(getDaemonScopeDir())
+  } catch {
+    return
+  }
+  let reaped = 0
+  for (const entry of entries) {
+    if (!entry.endsWith('.pty.sock')) continue
+    const short = entry.slice(0, -'.pty.sock'.length)
+    if (workers.has(short)) continue
+    reaped++
+    const record = readWorkerRecord(short)
+    if (record && record.status === 'running') {
+      try {
+        writeWorkerRecord({
+          ...record,
+          status: 'failed',
+          failedReason: 'reaped (roster gap)',
+          exitedAt: Date.now(),
+        })
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      unlinkSync(join(getDaemonScopeDir(), entry))
+    } catch {
+      // best-effort
+    }
+  }
+  if (reaped > 0) {
+    log(`bg orphan-reap: ${reaped} roster-less pty host(s)`)
+    logEvent('tengu_bg_orphan_reap', { reaped: String(reaped) })
   }
 }
 
