@@ -152,8 +152,10 @@ export function pythonBaseColumns(): string[] {
   return columnNames(tableBody(pythonSource(), 'tasks'))
 }
 
-/** Los tres grupos de columnas que el lado Python añade por `ALTER TABLE`. */
-const ALTER_GROUPS = ['_TASK_LAYER_COLUMNS', '_TASK_CITATION_COLUMNS', '_TASK_OPENING_COLUMNS']
+/** Los grupos de columnas que el lado Python añade por `ALTER TABLE`. */
+const ALTER_GROUPS = [
+  '_TASK_LAYER_COLUMNS', '_TASK_CITATION_COLUMNS', '_TASK_BOARD_ORDINAL_COLUMNS', '_TASK_OPENING_COLUMNS',
+]
 
 export function alterColumns(): string[] {
   const py = pythonSource()
@@ -245,7 +247,7 @@ export type SchemaDrift = {
  * El estado del invariante entre las dos declaraciones.
  *
  * Métrica: nombres de columna del `CREATE TABLE tasks` de cada lengua, más los
- * tres grupos de ALTER del lado Python.
+ * grupos de ALTER del lado Python.
  * Ciega a: el TIPO de cada columna, y toda restricción que no sea `NOT NULL`
  * ni el `CHECK` de `status` — un `CHECK` sobre otra columna, un `UNIQUE` o un
  * `DEFAULT` divergente pasan sin verse. Y a cualquier declaración del esquema
@@ -279,5 +281,62 @@ export function schemaDrift(): SchemaDrift {
       floorStatuses.length > 0 &&
       pythonDdlCarriesCheck() &&
       floorStatuses.join('\u0000') === baseStatuses.join('\u0000'),
+  }
+}
+
+/**
+ * Las migraciones (`version`, `name`) que el lado Python declara en
+ * `CORE_MIGRATIONS` — leídas de su fuente, no copiadas: DEC-TASK 2026-09-29
+ * (opción 1) hace a Python el dueño del schema, así que este archivo no
+ * puede tener su propia lista sin volverse la segunda fuente de verdad que
+ * diverge en cuanto Python añada una versión. `statements` no se extrae —
+ * Bun nunca las ejecuta, sólo valida el ledger (`tasks.ts::conBase`).
+ */
+export function pythonMigrations(): { version: number; name: string }[] {
+  const py = pythonSource()
+  const i = py.indexOf('CORE_MIGRATIONS')
+  if (i < 0) throw new Error('no se encontró CORE_MIGRATIONS en el lado Python')
+  const j = py.indexOf('\n)\n', i)
+  if (j < 0) throw new Error('declaración de CORE_MIGRATIONS sin cierre')
+  const cuerpo = py.slice(i, j)
+  const salida: { version: number; name: string }[] = []
+  for (const m of cuerpo.matchAll(/Migration\(\s*(\d+),\s*"([a-z_]+)"/g)) {
+    const version = m[1]
+    const name = m[2]
+    if (version && name) salida.push({ version: Number(version), name })
+  }
+  if (salida.length === 0) throw new Error('CORE_MIGRATIONS no declaró ninguna migración')
+  return salida
+}
+
+/**
+ * Materializa una base de tareas COMPLETA (todas las tablas y el ledger de
+ * `CORE_MIGRATIONS`) en `dbPath`, invocando al dueño del schema — nunca DDL
+ * de este lado. Es el equivalente de prueba de lo que un hook de Python
+ * (`register_agent_session.py`) ya hace en producción antes de que
+ * `taskTools` opere: `conBase` sólo VALIDA, así que un fixture de prueba
+ * tiene que migrar la base de la misma forma que la migraría un despliegue
+ * real, no fabricar un ledger a mano.
+ *
+ * `migrate-file` (y no `init`) porque `init` fija `DB_FILENAME`
+ * (`agent_store.sqlite3`); las pruebas de este árbol eligen su propio
+ * nombre de archivo (p. ej. `tablero.sqlite3`).
+ *
+ * `THYROX_ROOT` se fija EXPLÍCITAMENTE al valor resuelto por `thyroxRoot()`
+ * y no se hereda del entorno del proceso: `bin/agent_store` prioriza la
+ * variable heredada sobre su propio cálculo, y un entorno con varios
+ * worktrees puede traer la de OTRO árbol — apuntaría el subproceso al
+ * `agent_store.py` equivocado.
+ */
+export function createMigratedTaskDb(dbPath: string): void {
+  const root = thyroxRoot()
+  const bin = join(root, 'bin', 'agent_store')
+  const proc = Bun.spawnSync([bin, 'migrate-file', dbPath], {
+    env: { ...process.env, THYROX_ROOT: root },
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  if (proc.exitCode !== 0) {
+    throw new Error(`no se pudo migrar la base de prueba en ${dbPath}: ${proc.stderr.toString()}`)
   }
 }

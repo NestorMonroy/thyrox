@@ -27,17 +27,33 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { renderAttachment } from '../loop/context/attachments.ts'
-import { TABLERO_DDL } from '@thyrox/task/schema.ts'
+import { createMigratedTaskDb, selectCitationId, TABLERO_DDL } from '@thyrox/task/schema.ts'
 import { resumenTablero, taskTools } from '@thyrox/tools/tasks'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'taskcit-'))
 
-/** Una base con el esquema del harness, y opcionalmente la columna del store. */
-function baseCon(conCita: boolean): string {
+/**
+ * Una base migrada por el dueño del schema — SIEMPRE trae `citation_id`
+ * (migración 6, `add_tasks_citation_columns`): DEC-TASK 2026-09-29 hace que
+ * `conBase` sólo opere sobre una base con el ledger completo, así que ya no
+ * existe una base que `taskTools`/`resumenTablero` acepten sin la columna.
+ */
+function baseCon(): string {
+  const ruta = join(dir(), 'tablero.sqlite3')
+  createMigratedTaskDb(ruta)
+  return ruta
+}
+
+/**
+ * El piso SOLO, sin migrar — nunca pasa por `conBase` (rehusaría sin
+ * ledger). Existe para probar la sensada de `selectCitationId` en el nivel
+ * que sigue siendo alcanzable: una conexión abierta por fuera de esta
+ * herramienta, como la dejaba el harness ANTES de DEC-TASK 2026-09-29.
+ */
+function unmigratedDb(): string {
   const ruta = join(dir(), 'tablero.sqlite3')
   const db = new Database(ruta)
   db.run(TABLERO_DDL)
-  if (conCita) db.run('ALTER TABLE tasks ADD COLUMN citation_id TEXT')
   db.close()
   return ruta
 }
@@ -97,7 +113,7 @@ describe('task_reminder — el ID segmentado se ve en el tablero que el modelo l
 
 describe('resumenTablero — lee la cita del store cuando la columna existe', () => {
   test('con la columna: devuelve citationId por fila', () => {
-    const ruta = baseCon(true)
+    const ruta = baseCon()
     sembrar(ruta, [{ id: '1', subject: 'A', cita: 'TASK-API-0001' }, { id: '2', subject: 'B' }])
     const board = resumenTablero(ruta, 'S')
     expect(board).toEqual([
@@ -106,16 +122,22 @@ describe('resumenTablero — lee la cita del store cuando la columna existe', ()
     ])
   })
 
-  test('CONTROL — sin la columna: no lanza y omite el campo', () => {
-    const ruta = baseCon(false)
+  test('CONTROL — sin la columna: la sensada no lanza y omite la cláusula SELECT', () => {
+    // `taskTools`/`resumenTablero` ya no pueden ejercitar este caso: `conBase`
+    // exige el ledger completo (DEC-TASK 2026-09-29), y la migración 6 añade
+    // `citation_id` siempre. Lo que sigue siendo alcanzable es la sensada
+    // misma, con una conexión abierta por fuera de esta herramienta.
+    const ruta = unmigratedDb()
+    const db = new Database(ruta)
     sembrar(ruta, [{ id: '1', subject: 'A' }])
-    expect(resumenTablero(ruta, 'S')).toEqual([{ id: '1', status: 'pending', subject: 'A' }])
+    expect(selectCitationId(db)).toBe('')
+    db.close()
   })
 })
 
 describe('el enlace completo — del store a la línea que el modelo lee', () => {
   test('lo que resumenTablero devuelve entra en renderAttachment sin traducción', () => {
-    const ruta = baseCon(true)
+    const ruta = baseCon()
     sembrar(ruta, [{ id: '114', subject: 'Decide el corte del tablero', cita: 'TASK-API-0057' },
                    { id: '115', subject: 'Sin acuñar' }])
     const linea = lineasDe(resumenTablero(ruta, 'S'))
@@ -139,7 +161,7 @@ describe('TaskList y TaskGet — la cita también donde el modelo consulta', () 
   const ctx = { cwd: '.', sessionId: 'S', abort: new AbortController().signal, messages: [] }
 
   test('TaskList devuelve citation_id por fila cuando la columna existe', async () => {
-    const ruta = baseCon(true)
+    const ruta = baseCon()
     sembrar(ruta, [{ id: '114', subject: 'Con cita', cita: 'TASK-API-0057' }, { id: '115', subject: 'Sin acuñar' }])
     const r = await util(ruta, 'TaskList').run({}, ctx)
     const filas = JSON.parse(r.content as string) as { task_id: string; citation_id?: string | null }[]
@@ -147,19 +169,21 @@ describe('TaskList y TaskGet — la cita también donde el modelo consulta', () 
   })
 
   test('TaskGet devuelve la cita de la tarea pedida', async () => {
-    const ruta = baseCon(true)
+    const ruta = baseCon()
     sembrar(ruta, [{ id: '114', subject: 'Con cita', cita: 'TASK-API-0057' }])
     const r = await util(ruta, 'TaskGet').run({ task_id: '114' }, ctx)
     expect((JSON.parse(r.content as string) as { citation_id?: string }).citation_id).toBe('TASK-API-0057')
   })
 
-  test('CONTROL — sin la columna las dos siguen respondiendo, sin el campo', async () => {
-    const ruta = baseCon(false)
+  test('CONTROL — sin la columna, la sensada que ambas interpolan omite la cláusula', () => {
+    // Mismo límite que en `resumenTablero`: `TaskList`/`TaskGet` sólo corren
+    // sobre una base con el ledger completo (`conBase`), que SIEMPRE trae
+    // `citation_id`. Las dos interpolan `${selectCitationId(db)}` en su SQL
+    // —no duplican la sensada—, así que probarla una vez cubre a las dos.
+    const ruta = unmigratedDb()
+    const db = new Database(ruta)
     sembrar(ruta, [{ id: '1', subject: 'A' }])
-    const lista = JSON.parse((await util(ruta, 'TaskList').run({}, ctx)).content as string) as Record<string, unknown>[]
-    expect(lista[0]!.task_id).toBe('1')
-    expect('citation_id' in lista[0]!).toBe(false)
-    const uno = JSON.parse((await util(ruta, 'TaskGet').run({ task_id: '1' }, ctx)).content as string) as Record<string, unknown>
-    expect('citation_id' in uno).toBe(false)
+    expect(selectCitationId(db)).toBe('')
+    db.close()
   })
 })

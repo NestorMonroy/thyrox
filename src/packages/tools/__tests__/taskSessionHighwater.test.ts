@@ -8,15 +8,21 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { existsSync, mkdtempSync } from 'node:fs'
+import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_SESSION_HIGHWATER_DDL } from '@thyrox/task/schema.ts'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '../src/tasks.ts'
 import type { ToolContext } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'task-session-highwater-'))
 const newBase = () => join(dir(), 'tablero.sqlite3')
+/** Una base lista para operar: `conBase` sólo valida, así que el fixture migra ANTES de crearla. */
+const migratedBase = () => {
+  const p = newBase()
+  createMigratedTaskDb(p)
+  return p
+}
 const ctx = (sessionId: string): ToolContext => ({ cwd: dir(), sessionId, abort: new AbortController().signal, messages: [] })
 
 /** El `TaskCreate` de una sesión, listo para `.run(...)`. */
@@ -40,7 +46,6 @@ function seed(db: Database, sessionId: string, n: number): void {
     )
   }
 }
-
 const barrier = () => join(mkdtempSync(join(tmpdir(), 'barrier-')), 'go')
 const WORKER = join(import.meta.dir, 'taskCreateWorker.ts')
 
@@ -84,7 +89,7 @@ async function concurrentBatch(
 
 describe('reproducción de la colisión concurrente (TASK-THYROX-0311)', () => {
   test('con el arreglo en su sitio, 8 procesos x 10 creaciones de la misma sesión no colisionan', async () => {
-    const p = newBase()
+    const p = migratedBase()
     const results = await concurrentBatch(p, Array.from({ length: 8 }, () => ({ sessionId: 'sesion-conc', count: 10 })))
     const outputs = results.flatMap((r) => r.outputs)
     expect(outputs).toHaveLength(80)
@@ -102,7 +107,7 @@ describe('reproducción de la colisión concurrente (TASK-THYROX-0311)', () => {
 
 describe('task_session_highwater — casos 1 a 7 del contrato', () => {
   test('1. base nueva: la primera creación da 1 y task_highwater sigue sin existir', async () => {
-    const p = newBase()
+    const p = migratedBase()
     const { task_id } = await create(p, 's1')
     expect(task_id).toBe('1')
     const db = new Database(p, { readonly: true })
@@ -113,11 +118,18 @@ describe('task_session_highwater — casos 1 a 7 del contrato', () => {
   })
 
   test('2. base antigua con task_highwater: la marca legada se ignora, la sesión adopta desde sus filas', async () => {
+    // La forma legada TAL COMO LA DEJABA una base anterior a `task_session_highwater`
+    // — se siembra ANTES de migrar, para que la migración de Python la
+    // encuentre y la ADOPTE (versión 12, `adopt_task_highwater`) en vez de
+    // crearla desde cero.
     const p = newBase()
+    const pre = new Database(p)
+    pre.run(`CREATE TABLE task_highwater (clave TEXT NOT NULL PRIMARY KEY DEFAULT '__global__', max_id INTEGER NOT NULL DEFAULT 0)`)
+    pre.run(`INSERT INTO task_highwater (clave, max_id) VALUES ('__global__', 999)`)
+    pre.close()
+    createMigratedTaskDb(p)
+
     const db = new Database(p)
-    db.run(TABLERO_DDL)
-    db.run(TASK_HIGHWATER_DDL)
-    db.run(`INSERT INTO task_highwater (clave, max_id) VALUES ('__global__', 999)`)
     seed(db, 's2', 3)
     const beforeInfo = db.query('PRAGMA table_info(task_highwater)').all()
     const beforeSql = (db.query("SELECT sql FROM sqlite_master WHERE name = 'task_highwater'").get() as { sql: string }).sql
@@ -140,10 +152,8 @@ describe('task_session_highwater — casos 1 a 7 del contrato', () => {
   })
 
   test('3. dos sesiones mantienen marcas independientes: A con 1..5 da 6, B con 1..40 da 41; crear en A no mueve B', async () => {
-    const p = newBase()
+    const p = migratedBase()
     const db = new Database(p)
-    db.run(TABLERO_DDL)
-    db.run(TASK_SESSION_HIGHWATER_DDL)
     seed(db, 'a', 5)
     seed(db, 'b', 40)
     db.close()
@@ -166,7 +176,7 @@ describe('task_session_highwater — casos 1 a 7 del contrato', () => {
   })
 
   test('4. reinicio: cerrar y reabrir la base conserva la marca, y un id borrado no se reasigna', async () => {
-    const p = newBase()
+    const p = migratedBase()
     for (let i = 0; i < 5; i++) await create(p, 'a', `tarea-${i + 1}`)
     // Las cinco creaciones dejan next_task_id en 6.
     const update = taskTools({ dbPath: p, sessionId: 'a' }).find((t) => t.name === 'TaskUpdate')!
@@ -182,7 +192,7 @@ describe('task_session_highwater — casos 1 a 7 del contrato', () => {
   })
 
   test('5. concurrencia: dos sesiones a la vez no colisionan, y dentro de una da ids distintos y consecutivos', async () => {
-    const p = newBase()
+    const p = migratedBase()
     const results = await concurrentBatch(p, [
       ...Array.from({ length: 4 }, () => ({ sessionId: 'p', count: 5 })),
       ...Array.from({ length: 4 }, () => ({ sessionId: 'q', count: 5 })),
@@ -196,8 +206,11 @@ describe('task_session_highwater — casos 1 a 7 del contrato', () => {
     }
   })
 
-  test('6. idempotencia: crear el DDL dos y tres veces no cambia filas ni esquema', async () => {
-    const p = newBase()
+  test('6. idempotencia: dos y tres listados seguidos no cambian filas ni esquema', async () => {
+    // `conBase` ya no ejecuta DDL — sólo VALIDA el ledger en cada llamada
+    // (DEC-TASK 2026-09-29). Lo que aquí se prueba es que esa validación
+    // repetida es un no-op: ni el esquema ni las filas se mueven.
+    const p = migratedBase()
     await create(p, 's6')
     const snapshot = () => {
       const db = new Database(p, { readonly: true })
@@ -207,10 +220,9 @@ describe('task_session_highwater — casos 1 a 7 del contrato', () => {
       return { info, rows }
     }
     const before = snapshot()
-    const db = new Database(p)
-    db.run(TASK_SESSION_HIGHWATER_DDL)
-    db.run(TASK_SESSION_HIGHWATER_DDL)
-    db.close()
+    const list = taskTools({ dbPath: p, sessionId: 's6' }).find((t) => t.name === 'TaskList')!
+    await list.run({}, ctx('s6'))
+    await list.run({}, ctx('s6'))
     expect(snapshot()).toEqual(before)
   })
 })

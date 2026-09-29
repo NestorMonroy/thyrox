@@ -35,8 +35,9 @@
  */
 import { Database } from 'bun:sqlite'
 import { openLocal } from '@thyrox/store/db.ts'
+import { validateMigrationLedgerSync } from '@thyrox/store/migrationLedger.ts'
 import {
-  selectCitationId, TABLERO_DDL, TASK_SESSION_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
+  pythonMigrations, selectCitationId, TASK_STATUSES, UPDATE_STATUSES,
 } from '@thyrox/task/schema.ts'
 import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 
@@ -57,12 +58,40 @@ const FUENTE_TODO = 'todo'
 const ok = (content: string): ToolResult => ({ content, isError: false })
 const err = (content: string): ToolResult => ({ content, isError: true })
 
-/** Abre, opera y cierra: el tablero es de todos, no se retiene el descriptor. */
+/**
+ * El ledger compartido con el lado Python (`agent_store.py::MIGRATIONS_TABLE`).
+ * Bun no ejecuta DDL sobre esta base — DEC-TASK 2026-09-29 (opción 1) hace a
+ * Python el dueño del schema; aquí sólo se VALIDA que ya migró.
+ */
+const MIGRATIONS_TABLE = 'schema_migrations'
+
+/**
+ * Las migraciones declaradas por Python, leídas una sola vez: `pythonMigrations()`
+ * relee y parsea `agent_store.py` en cada llamada, y `conBase` corre por cada
+ * invocación de herramienta — memoizar evita esa lectura de disco repetida
+ * en el camino caliente. `statements` vacío: `validateMigrationLedgerSync`
+ * sólo compara version/name contra el ledger, nunca ejecuta DDL.
+ */
+let migrationsCache: ReturnType<typeof buildTaskMigrations> | null = null
+function buildTaskMigrations() {
+  return pythonMigrations().map((m) => ({ ...m, statements: { sqlite: [] as string[], postgres: [] as string[] } }))
+}
+function taskMigrations() {
+  if (!migrationsCache) migrationsCache = buildTaskMigrations()
+  return migrationsCache
+}
+
+/**
+ * Abre, VALIDA que el schema ya migró y cierra: el tablero es de todos, no
+ * se retiene el descriptor. Sin ledger completo, rehúsa con el mensaje
+ * explícito que `validateMigrationLedgerSync` ya compone — la base la crea y
+ * migra `agent_store.py` (un hook de sesión, o `bin/agent_store migrate-file`
+ * en pruebas), nunca esta herramienta.
+ */
 function conBase<T>(dbPath: string, fn: (db: Database) => T): T {
   const db = openLocal(dbPath)
   try {
-    db.run(TABLERO_DDL)
-    db.run(TASK_SESSION_HIGHWATER_DDL)
+    validateMigrationLedgerSync(db, { table: MIGRATIONS_TABLE, migrations: taskMigrations() })
     return fn(db)
   } finally {
     db.close()

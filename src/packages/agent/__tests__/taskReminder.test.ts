@@ -23,6 +23,7 @@ import {
   isValidAttachment, renderAttachment, TASK_REMINDER_TEXT,
   TURNS_SINCE_WRITE, TURNS_BETWEEN_REMINDERS,
 } from '../loop/context/attachments.ts'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { resumenTablero, taskTools } from '@thyrox/tools/tasks'
 import { runLoop } from '../loop/index.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
@@ -30,7 +31,11 @@ import { CORE_TOOLS } from '@thyrox/tools/registry'
 import type { AssistantTurn, ProviderRequest } from '../loop/types.ts'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'taskrem-'))
-const tablero = () => join(dir(), 'tablero.sqlite3')
+const tablero = () => {
+  const p = join(dir(), 'tablero.sqlite3')
+  createMigratedTaskDb(p)
+  return p
+}
 const uso = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }
 const texto = (t: string): AssistantTurn => ({ id: `m${Math.random()}`, model: 'claude-opus-5', stop_reason: 'end_turn', content: [{ type: 'text', text: t }], usage: uso })
 const usa = (name: string, input: Record<string, unknown> = {}): AssistantTurn => ({
@@ -192,6 +197,7 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
   test('a los 10 turnos sin escritura de tarea, el 10º request trae el recordatorio con el tablero', async () => {
     const d = dir()
     const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     const tc = taskTools({ dbPath: db, sessionId: 'S' }).find((t) => t.name === 'TaskCreate')!
     await tc.run({ subject: 'seguir el porte de TaskUpdate' }, ctx())
     // 9 turnos con herramienta + 1 texto: el bucle llega a la iteración 10
@@ -212,6 +218,7 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
   test('una escritura de tarea reinicia el contador: el recordatorio cae un turno más tarde', async () => {
     const d = dir()
     const db = join(d, 'store.sqlite3')
+    createMigratedTaskDb(db)
     // sin escritura: dónde cae el primer recordatorio
     const sinEscritura = new RecordedProvider([...Array.from({ length: 11 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin')])
     await runLoop({
@@ -224,6 +231,7 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     // con una TaskUpdate en el turno 1: el reset empuja el recordatorio un turno
     const d2 = dir()
     const db2 = join(d2, 'store.sqlite3')
+    createMigratedTaskDb(db2)
     const conEscritura = new RecordedProvider([
       usa('TaskUpdate', { task_id: '999', status: 'in_progress' }),
       ...Array.from({ length: 11 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin'),

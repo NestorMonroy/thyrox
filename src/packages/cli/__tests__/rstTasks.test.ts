@@ -12,6 +12,7 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { parseRstTasks } from '@thyrox/task/rst.ts'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import { runCli } from '../src/entry/run-cli.ts'
 import { docsRoot } from '@thyrox/paths/docs.ts'
@@ -88,7 +89,11 @@ describe('puente RST → tablero (T-062)', () => {
 })
 
 describe('--import-tasks: el puente como comando (T-062)', () => {
-  const tablero = () => join(mkdtempSync(join(tmpdir(), 'import-')), 'tablero.sqlite3')
+  const tablero = () => {
+    const p = join(mkdtempSync(join(tmpdir(), 'import-')), 'tablero.sqlite3')
+    createMigratedTaskDb(p)
+    return p
+  }
 
   async function correr(argv: string[]) {
     const out: string[] = []

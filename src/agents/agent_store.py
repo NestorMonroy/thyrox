@@ -62,6 +62,8 @@ externas, mismo criterio que D-05 de la iniciativa KNN.
 import argparse
 import base64
 import collections
+import collections.abc
+import dataclasses
 import hashlib
 import json
 import os
@@ -1259,6 +1261,336 @@ def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+class MigrationError(RuntimeError):
+    """Fallo del runner de migraciones: version mas nueva que el codigo,
+    nombre de migracion en conflicto (provenance) o migracion que lanza al
+    aplicarse."""
+
+
+@dataclasses.dataclass(frozen=True)
+class Migration:
+    """Una version de esquema, con su nombre estable de provenance.
+
+    Espejo en Python del contrato v2 de ``@thyrox/store``
+    (``src/packages/store/migrationContract.ts``,
+    ``migrationsSync.ts``): version ascendente sin duplicar, ``apply``
+    dispone el estado nuevo sobre la conexion, y ``already_applied``
+    (opcional) adopta una base donde el cambio YA existe por fuera de este
+    runner — una base heredada de antes de que el ledger existiera — sin
+    volver a ejecutar ``apply``. Para las migraciones de este archivo
+    ``already_applied`` reutiliza la MISMA deteccion que cada ``_migrate_*``
+    ya hacia por su cuenta (columna/indice/tabla presente), asi que adoptar
+    o ejecutar llegan al mismo estado.
+    """
+
+    version: int
+    name: str
+    apply: "collections.abc.Callable[[sqlite3.Connection], None]"
+    already_applied: "collections.abc.Callable[[sqlite3.Connection], bool] | None" = None
+
+
+#: El ledger compartido por Python (dueno del schema) y por
+#: ``src/packages/tools/src/tasks.ts`` (que solo VALIDA, via
+#: ``validateMigrationLedgerSync`` sobre esta misma tabla — DEC-TASK
+#: 2026-09-29, "Python es dueno del schema"). El nombre y la forma
+#: (``version``/``name``/``applied_at``) son los que ``migrationContract.ts``
+#: ya fija para los otros stores del arbol (mitm, provider, error store).
+MIGRATIONS_TABLE = "schema_migrations"
+
+
+def _migrations_control_ddl(table: str) -> str:
+    return (
+        f"CREATE TABLE IF NOT EXISTS {table} "
+        "(version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL)"
+    )
+
+
+def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)
+    ).fetchone() is not None
+
+
+def _index_exists(conn: sqlite3.Connection, name: str) -> bool:
+    return conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='index' AND name=?", (name,)
+    ).fetchone() is not None
+
+
+def _columns(conn: sqlite3.Connection, table: str) -> set:
+    return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def _assert_valid_migrations(migrations) -> None:
+    """Enteros positivos, ascendentes, sin version ni nombre repetidos.
+
+    Mismo predicado que ``assertValidVersions`` de ``migrationContract.ts``.
+    """
+    seen_versions: set = set()
+    seen_names: set = set()
+    previous = None
+    for migration in migrations:
+        if not isinstance(migration.version, int) or migration.version <= 0:
+            raise MigrationError(
+                f"invalid migration version {migration.version!r}: expected a positive integer"
+            )
+        if migration.version in seen_versions:
+            raise MigrationError(f"duplicate migration version {migration.version}")
+        seen_versions.add(migration.version)
+
+        if not migration.name or not migration.name.strip():
+            raise MigrationError(
+                f"invalid migration name for version {migration.version}: "
+                "expected a non-empty identifier"
+            )
+        if migration.name in seen_names:
+            raise MigrationError(f"duplicate migration name '{migration.name}'")
+        seen_names.add(migration.name)
+
+        if previous is not None and migration.version < previous:
+            raise MigrationError(
+                f"migrations out of order: version {migration.version} follows "
+                f"version {previous}, expected ascending order"
+            )
+        previous = migration.version
+
+
+def _read_migrations_ledger(conn: sqlite3.Connection, table: str) -> dict:
+    return {row[0]: row[1] for row in conn.execute(f"SELECT version, name FROM {table}")}
+
+
+def _assert_no_newer_database(table: str, applied_versions, migrations) -> None:
+    """Rehusa si el ledger trae una version que la lista ya no declara.
+
+    Mismo predicado que ``assertNoNewerDatabase`` de ``migrationContract.ts``.
+    """
+    declared = {m.version for m in migrations}
+    for version in applied_versions:
+        if version not in declared:
+            raise MigrationError(
+                f"migrations table '{table}' has version {version} applied, which is no "
+                "longer declared in this migration list (database is newer than code)"
+            )
+
+
+def _assert_migration_provenance(table: str, applied: dict, migrations) -> None:
+    """Rehusa si una version quedo registrada con un nombre distinto del que
+    el codigo declara hoy para ella.
+
+    Mismo predicado que ``assertProvenance`` de ``migrationContract.ts``.
+    """
+    code_name_by_version = {m.version: m.name for m in migrations}
+    for version, registered_name in applied.items():
+        code_name = code_name_by_version.get(version)
+        if code_name is not None and code_name != registered_name:
+            raise MigrationError(
+                f"migrations table '{table}' has version {version} registered as "
+                f"'{registered_name}', but the code declares it as '{code_name}' "
+                "(provenance mismatch)"
+            )
+
+
+def run_migrations(conn: sqlite3.Connection, table: str = MIGRATIONS_TABLE,
+                    migrations=None) -> list:
+    """Aplica las versiones de ``migrations`` que falten, en orden ascendente.
+
+    Espejo de ``runMigrationsSync`` (``@thyrox/store/migrationsSync.ts``):
+    cada version pendiente se aplica junto con su fila de control; sin nada
+    pendiente, la unica operacion es la LECTURA del ledger — sin lock de
+    escritura. Devuelve las versiones aplicadas EN ESTA LLAMADA.
+
+    A diferencia del runner de TypeScript, ``apply`` puede llamar a un
+    ``_migrate_*`` que ya hace su propio ``commit()`` (son las mismas
+    funciones que ``connect()`` invocaba sueltas antes de este cambio, con
+    API intacta): la fila de control se inserta y confirma aparte, no dentro
+    de la MISMA transaccion fisica que el DDL. La atomicidad perfecta cede
+    ante mantener esas funciones sin tocar; el riesgo que abre —DDL aplicado
+    sin su fila si el proceso muere entre las dos— es autocurable, porque
+    cada ``apply`` es idempotente por construccion: una segunda pasada no
+    duplica nada.
+    """
+    if migrations is None:
+        migrations = CORE_MIGRATIONS
+    _assert_valid_migrations(migrations)
+
+    if not _table_exists(conn, table):
+        conn.execute(_migrations_control_ddl(table))
+        conn.commit()
+        applied: dict = {}
+    else:
+        applied = _read_migrations_ledger(conn, table)
+        _assert_no_newer_database(table, applied.keys(), migrations)
+        _assert_migration_provenance(table, applied, migrations)
+
+    pending = [m for m in migrations if m.version not in applied]
+    if not pending:
+        return []
+
+    applied_now = []
+    for migration in pending:
+        try:
+            adopted = migration.already_applied(conn) if migration.already_applied else False
+            if not adopted:
+                migration.apply(conn)
+            conn.execute(
+                f"INSERT INTO {table} (version, name, applied_at) VALUES (?, ?, ?)",
+                (migration.version, migration.name, now_iso()),
+            )
+            conn.commit()
+        except Exception as error:
+            conn.rollback()
+            raise MigrationError(
+                f"migration version {migration.version} failed: {error}"
+            ) from error
+        applied_now.append(migration.version)
+    return applied_now
+
+
+#: `TASK_SESSION_HIGHWATER_DDL` — mismo DDL que
+#: ``src/packages/task/schema.ts::TASK_SESSION_HIGHWATER_DDL``: la marca de
+#: agua POR SESION que `TaskCreate` (lado Bun) usa para asignar el proximo
+#: `task_id`. Vive aqui porque DEC-TASK 2026-09-29 (opcion 1) hace a Python
+#: el dueno del schema; Bun ya no la crea (ver `tasks.ts::conBase`), solo
+#: valida contra el ledger que esta migracion escribe.
+TASK_SESSION_HIGHWATER_DDL = """CREATE TABLE IF NOT EXISTS task_session_highwater (
+    session_id   TEXT NOT NULL PRIMARY KEY,
+    next_task_id INTEGER NOT NULL CHECK (next_task_id >= 1)
+)"""
+
+#: Las columnas de la forma legada `task_highwater`
+#: (``src/packages/task/schema.ts::TASK_HIGHWATER_DDL``), solo para
+#: reconocerla si una base la trae — nunca para crearla.
+_TASK_HIGHWATER_LEGACY_COLUMNS = {"clave", "max_id"}
+
+
+def _core_schema_already_applied(conn: sqlite3.Connection) -> bool:
+    return _table_exists(conn, "agent_sessions")
+
+
+def _apply_core_schema(conn: sqlite3.Connection) -> None:
+    conn.executescript(CORE_SCHEMA)
+    conn.commit()
+
+
+def _agent_sessions_usage_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "agent_sessions")
+    return bool(existentes) and set(_SESSION_USAGE_COLUMNS) <= existentes
+
+
+def _tasks_composite_pk_already_applied(conn: sqlite3.Connection) -> bool:
+    cols = list(conn.execute("PRAGMA table_info(tasks)"))
+    if not cols:
+        return False
+    en_pk = {row[1] for row in cols if row[5]}
+    return "session_id" in en_pk
+
+
+def _tasks_layer_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return bool(existentes) and set(_TASK_LAYER_COLUMNS) <= existentes
+
+
+def _tasks_opening_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return bool(existentes) and set(_TASK_OPENING_COLUMNS) <= existentes
+
+
+def _tasks_citation_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return (
+        bool(existentes)
+        and set(_TASK_CITATION_COLUMNS) <= existentes
+        and _index_exists(conn, "idx_tasks_citation")
+        and _index_exists(conn, "idx_tasks_layer_citation")
+    )
+
+
+def _tasks_board_ordinal_column_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "tasks")
+    return (
+        bool(existentes)
+        and set(_TASK_BOARD_ORDINAL_COLUMNS) <= existentes
+        and _index_exists(conn, "idx_tasks_board_ordinal")
+    )
+
+
+def _tasks_status_check_already_applied(conn: sqlite3.Connection) -> bool:
+    ddl = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='tasks'"
+    ).fetchone()
+    if not ddl or not ddl[0]:
+        return False
+    return _TASK_STATUS_CHECK.replace(" ", "") in ddl[0].replace(" ", "")
+
+
+def _documents_series_columns_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "documents")
+    return bool(existentes) and set(_DOCUMENT_SERIES_COLUMNS) <= existentes
+
+
+def _documents_drop_scanned_at_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "documents")
+    return bool(existentes) and "scanned_at" not in existentes
+
+
+def _task_session_highwater_already_applied(conn: sqlite3.Connection) -> bool:
+    return _table_exists(conn, "task_session_highwater")
+
+
+def _apply_task_session_highwater(conn: sqlite3.Connection) -> None:
+    conn.execute(TASK_SESSION_HIGHWATER_DDL)
+    conn.commit()
+
+
+def _task_highwater_legacy_already_applied(conn: sqlite3.Connection) -> bool:
+    existentes = _columns(conn, "task_highwater")
+    return bool(existentes) and _TASK_HIGHWATER_LEGACY_COLUMNS <= existentes
+
+
+def _adopt_task_highwater_legacy(conn: sqlite3.Connection) -> None:
+    """No crea `task_highwater`: es forma LEGADA (DEC-TASK 2026-09-29, opcion
+    a) que el codigo nuevo no crea, no lee y no escribe
+    (`src/packages/task/schema.ts::TASK_HIGHWATER_DDL`). Esta migracion solo
+    acuna su version en el ledger — adoptando la tabla via
+    ``already_applied`` si una base heredada ya la trae, o sin hacer nada si
+    no (el caso de toda base de hoy) — para que quede declarada y ninguna
+    lectura futura del ledger la vea como pendiente.
+    """
+    return None
+
+
+#: El orden es el mismo que ``connect()`` invocaba suelto antes de este
+#: cambio (``_migrate_agent_sessions_usage_columns`` .. ``_migrate_documents_
+#: drop_scanned_at``), mas las dos versiones nuevas de esta tarea:
+#: `task_session_highwater` (TASK-THYROX-0532) y la adopcion de la forma
+#: legada `task_highwater`.
+CORE_MIGRATIONS: tuple = (
+    Migration(1, "create_core_schema", _apply_core_schema, _core_schema_already_applied),
+    Migration(2, "add_agent_sessions_usage_columns", _migrate_agent_sessions_usage_columns,
+              _agent_sessions_usage_columns_already_applied),
+    Migration(3, "migrate_tasks_composite_pk", _migrate_tasks_composite_pk,
+              _tasks_composite_pk_already_applied),
+    Migration(4, "add_tasks_layer_columns", _migrate_tasks_layer_columns,
+              _tasks_layer_columns_already_applied),
+    Migration(5, "add_tasks_opening_columns", _migrate_tasks_opening_columns,
+              _tasks_opening_columns_already_applied),
+    Migration(6, "add_tasks_citation_columns", _migrate_tasks_citation_columns,
+              _tasks_citation_columns_already_applied),
+    Migration(7, "add_tasks_board_ordinal_column", _migrate_tasks_board_ordinal_column,
+              _tasks_board_ordinal_column_already_applied),
+    Migration(8, "add_tasks_status_check", _migrate_tasks_status_check,
+              _tasks_status_check_already_applied),
+    Migration(9, "add_documents_series_columns", _migrate_documents_series_columns,
+              _documents_series_columns_already_applied),
+    Migration(10, "drop_documents_scanned_at", _migrate_documents_drop_scanned_at,
+              _documents_drop_scanned_at_already_applied),
+    Migration(11, "create_task_session_highwater", _apply_task_session_highwater,
+              _task_session_highwater_already_applied),
+    Migration(12, "adopt_task_highwater", _adopt_task_highwater_legacy,
+              _task_highwater_legacy_already_applied),
+)
+
+
 def connect(store_dir: Path) -> sqlite3.Connection:
     """Abre el store, listo para escribir desde procesos concurrentes.
 
@@ -1277,17 +1609,8 @@ def connect(store_dir: Path) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA busy_timeout = 5000")
     conn.execute("PRAGMA journal_mode = WAL")
-    conn.executescript(CORE_SCHEMA)
+    run_migrations(conn)
     _create_fts_schema(conn)
-    _migrate_agent_sessions_usage_columns(conn)
-    _migrate_tasks_composite_pk(conn)
-    _migrate_tasks_layer_columns(conn)
-    _migrate_tasks_opening_columns(conn)
-    _migrate_tasks_citation_columns(conn)
-    _migrate_tasks_board_ordinal_column(conn)
-    _migrate_tasks_status_check(conn)
-    _migrate_documents_series_columns(conn)
-    _migrate_documents_drop_scanned_at(conn)
     _resync_fts(conn)
     return conn
 
@@ -1451,6 +1774,29 @@ def cmd_init(args: argparse.Namespace) -> None:
     with connect(store_dir):
         pass
     print(f"OK: {store_dir / DB_FILENAME} listo (agent_sessions + findings_history)")
+
+
+def cmd_migrate_db(args: argparse.Namespace) -> None:
+    """Aplica las migraciones sobre un archivo SQLite en una ruta ARBITRARIA.
+
+    A diferencia de ``init`` (que resuelve el HOGAR via ``--repo``/``--claude-dir``
+    y fija el nombre ``DB_FILENAME``), aqui el llamador declara el archivo
+    completo. El caso real es un fixture de prueba del lado Bun
+    (``src/packages/task/schema.ts::createMigratedTaskDb``) que necesita un
+    nombre de archivo que el propio test elige (p. ej. ``tablero.sqlite3``),
+    no el que ``connect()`` fija — DEC-TASK 2026-09-29: Python es el dueno del
+    schema, asi que ninguna base de tareas nace sin pasar por este runner.
+    """
+    ruta = Path(args.db_path)
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(ruta)
+    conn.execute("PRAGMA busy_timeout = 5000")
+    conn.execute("PRAGMA journal_mode = WAL")
+    try:
+        run_migrations(conn)
+    finally:
+        conn.close()
+    print(f"OK: {ruta} migrada")
 
 
 def cmd_register_session(args: argparse.Namespace) -> None:
@@ -3615,6 +3961,12 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("init", help="crear el archivo SQLite unico si no existe")
     add_target_args(p)
     p.set_defaults(func=cmd_init)
+
+    p = sub.add_parser("migrate-file",
+                        help="aplicar las migraciones sobre un archivo SQLite en una "
+                        "ruta arbitraria (no usa --repo/--claude-dir)")
+    p.add_argument("db_path", help="ruta al archivo .sqlite3 a migrar; se crea si no existe")
+    p.set_defaults(func=cmd_migrate_db)
 
     p = sub.add_parser("registrar-sesion", help="pieza (a): registrar/actualizar una sesion de agente")
     add_target_args(p)

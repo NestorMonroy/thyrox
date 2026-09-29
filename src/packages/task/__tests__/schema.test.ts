@@ -48,16 +48,18 @@ describe('las dos declaraciones del esquema de tareas', () => {
     ])
   })
 
-  test('la base del Python declara 15 — el piso más las dos de capa', () => {
+  test('la base del Python declara 16 — el piso más las dos de capa y board_ordinal', () => {
     const base = pythonBaseColumns()
-    expect(base.length).toBe(15)
+    expect(base.length).toBe(16)
+    expect(base).toContain('board_ordinal')
     expect(base).toContain('submodule')
     expect(base).toContain('submodule_source')
   })
 
-  test('los tres grupos de ALTER del Python suman cinco columnas', () => {
+  test('los cuatro grupos de ALTER del Python suman siete columnas', () => {
     expect(alterColumns().sort()).toEqual([
-      'citation_id', 'opened_at', 'opened_at_source', 'submodule', 'submodule_source',
+      'board_ordinal', 'citation_id', 'layer_citation_id', 'opened_at', 'opened_at_source',
+      'submodule', 'submodule_source',
     ])
   })
 })
@@ -78,8 +80,8 @@ describe('el invariante: piso ⊂ base, y el delta lo cubre un ALTER', () => {
     expect(d.notNull.length).toBeGreaterThan(0)
   })
 
-  test('el delta medido hoy son exactamente las dos columnas de capa', () => {
-    expect(schemaDrift().onlyInBase.sort()).toEqual(['submodule', 'submodule_source'])
+  test('el delta medido hoy son las dos columnas de capa y board_ordinal', () => {
+    expect(schemaDrift().onlyInBase.sort()).toEqual(['board_ordinal', 'submodule', 'submodule_source'])
   })
 })
 

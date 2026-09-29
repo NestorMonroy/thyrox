@@ -65,6 +65,7 @@ import { Transcript } from '../loop/transcript.ts'
 import { TASK_REMINDER_TEXT } from '../loop/context/attachments.ts'
 import { RecordedProvider } from '@thyrox/provider/recorded'
 import { CORE_TOOLS } from '@thyrox/tools/registry'
+import { createMigratedTaskDb } from '@thyrox/task/schema.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import type { AssistantTurn, HarnessEvent, Message, ProviderRequest } from '../loop/types.ts'
 
@@ -192,7 +193,7 @@ describe('A.4.6 — hay recuperación cuando la compactación misma falla', () =
 describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista', () => {
   test('4. el tablero se reinyecta en el turno siguiente, sin esperar 10+10', async () => {
     const d = dir()
-    const db = join(d, 'tablero.sqlite3')
+    const db = join(d, 'tablero.sqlite3'); createMigratedTaskDb(db)
     const ctx = { cwd: d, sessionId: 'ses-1', abort: new AbortController().signal, messages: [] }
     const crear = taskTools({ dbPath: db, sessionId: 'ses-1' }).find((t) => t.name === 'TaskCreate')!
     await crear.run({ subject: 'la tarea que no se puede perder' }, ctx)
@@ -216,7 +217,7 @@ describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista',
 
   test('5. el control: sin compactación, el turno 2 NO lo trae', async () => {
     const d = dir()
-    const db = join(d, 'tablero.sqlite3')
+    const db = join(d, 'tablero.sqlite3'); createMigratedTaskDb(db)
     const ctx = { cwd: d, sessionId: 'ses-2', abort: new AbortController().signal, messages: [] }
     const crear = taskTools({ dbPath: db, sessionId: 'ses-2' }).find((t) => t.name === 'TaskCreate')!
     await crear.run({ subject: 'la misma tarea, sin presión' }, ctx)
