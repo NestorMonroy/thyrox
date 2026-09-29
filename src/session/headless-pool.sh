@@ -382,6 +382,15 @@ _headless_item() {
     fi
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$workdir" || exit 1
+         # Un item aislado hereda THYROX_ROOT del arbol principal (lo exporta
+         # bin/cli y el runner lo necesita para su node_modules), y con el
+         # los trabajos que lance, su ledger y su archivo caerian en el arbol
+         # principal. Van a la salida del item: ni al arbol ni al parche.
+         if [[ "$HP_ISOLATION" == worktree ]]; then
+             export THYROX_JOBS_DIR="$HP_OUT/$n.jobs" \
+                    THYROX_SESSION_LEDGER_DIR="$HP_OUT/$n.ledger" \
+                    THYROX_JOBS_ARCHIVE_DIR="$HP_OUT/$n.jobs"
+         fi
          # Cada cliente lee el TTL con su propio nombre: `thyrox -p`
          # THYROX_CODE_PROMPT_CACHE_TTL, `claude -p` CLAUDE_CODE_PROMPT_CACHE_TTL.
          # `claude -p` recibe además su propia sesión: sin ella hereda la del
