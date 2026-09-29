@@ -481,6 +481,19 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
         time.sleep(args.poll)
     measure_worktree.export(wt, main_tree, sorted(kept))
     result = {"batches": summary, "files_kept": sorted(kept), "final_log": str(before_log) if before_log else None}
+    # Exportado lo conservado, los worktrees de medición ya no aportan nada y
+    # cada uno ocupa una copia del árbol. Se retiran salvo que se pida
+    # conservarlos; uno con algo sin exportar se deja y se nombra.
+    if not getattr(args, "keep_worktrees", True):
+        result["released"], result["not_released"] = [], {}
+        for worktree in worktrees:
+            pending = measure_worktree.release(main_tree, worktree)
+            if pending:
+                result["not_released"][str(worktree)] = pending
+                print(f"pool_pipeline: no se retira {worktree}, falta exportar: {' '.join(pending)}",
+                      file=sys.stderr)
+            else:
+                result["released"].append(str(worktree))
     (args.bench / "pipeline.json").write_text(json.dumps(result, ensure_ascii=False, indent=1))
     return result
 
@@ -505,6 +518,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--poll", type=float, default=20)
     parser.add_argument("--unit", choices=("file", "module"), default="file",
                         help="unidad de un ítem: un archivo, o un módulo que edita varios")
+    parser.add_argument("--keep-worktrees", action="store_true",
+                        help="conserva los worktrees de medición al terminar; por defecto se retiran")
     parser.add_argument("--net", action="store_true",
                         help="política neta del paso: conserva lo que baja el total aunque destape contratos")
     args = parser.parse_args(argv[:split])

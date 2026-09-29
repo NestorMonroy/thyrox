@@ -98,7 +98,8 @@ with tempfile.TemporaryDirectory() as directory:
     try:
         result = pp.run(argparse.Namespace(
             main=Path("."), worktree=base / "wt", items=Path("items.txt"), outputs=[Path("out")],
-            bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1),
+            bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1,
+            keep_worktrees=False),
             [sys.executable, "fake_tsc.py"])
     except pp.GateBlocked as error:
         result = {"files_kept": [], "blocked": str(error)}
@@ -108,6 +109,9 @@ with tempfile.TemporaryDirectory() as directory:
                  result["files_kept"])
     assert_equal("y lo conservado vuelve al árbol principal", "const a = 1\n", (main / "src/a.ts").read_text())
     assert_equal("sin tocar lo que ningún lote tomó", "const b = BAD2\n", (main / "src/b.ts").read_text())
+    # Exportado lo conservado, el worktree de medición ya no aporta nada.
+    assert_equal("al terminar, el worktree de medición se retira", False, (base / "wt").exists())
+    assert_equal("y el resultado lo dice", [str((base / "wt").resolve())], result.get("released"))
     memory_file = main / "bench/patterns.jsonl"
     memory = [json.loads(l) for l in memory_file.read_text().splitlines()] if memory_file.exists() else []
     assert_equal("gate 3b: lo conservado deja su patrón en la memoria, con los cuatro campos",
