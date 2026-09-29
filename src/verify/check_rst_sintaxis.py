@@ -308,13 +308,58 @@ def revisar(rutas: list[pathlib.Path]) -> list[tuple[pathlib.Path, list[str]]]:
     return fallos
 
 
+KNOWN_FLAGS = ('--quiet', '--strict', '--nuevos')
+
+
+def _usage() -> str:
+    """Mensaje de `--help`: banderas reconocidas y como las rutas acotan."""
+    first_line = (__doc__ or '').strip().splitlines()[0] if __doc__ else ''
+    return (
+        f'{first_line}\n\n'
+        'Uso: check_rst_sintaxis.py [--quiet] [--strict] [--nuevos] '
+        '[archivo.rst ...]\n\n'
+        'Banderas reconocidas:\n'
+        '  --quiet    solo el conteo\n'
+        '  --strict   exit 1 si hay archivo(s) con errores de sintaxis\n'
+        '  --nuevos   solo los .rst modificados frente a origin/develop\n'
+        '  --help,-h  este mensaje; sale sin auditar\n\n'
+        'Sin banderas ni rutas sueltas, audita TODO source/ (miles de\n'
+        'archivos). Una o mas rutas sueltas acotan el alcance a esas rutas.'
+    )
+
+
+def _parse_args(argv: list[str]) -> tuple[bool, bool, bool, list[str]]:
+    """Separa banderas reconocidas de rutas sueltas.
+
+    `--help`/`-h` imprime el uso y sale 0 SIN auditar. Cualquier otra
+    bandera no reconocida rehusa con exit 2 nombrandola: un conteo con una
+    bandera desconocida seria un verde falso (H-THYROX-278).
+    """
+    quiet = strict = nuevos = False
+    sueltos: list[str] = []
+    for a in argv:
+        if a in ('--help', '-h'):
+            print(_usage())
+            sys.exit(0)
+        elif a == '--quiet':
+            quiet = True
+        elif a == '--strict':
+            strict = True
+        elif a == '--nuevos':
+            nuevos = True
+        elif a.startswith('-'):
+            print(f'check-rst-sintaxis: bandera desconocida: {a!r}', file=sys.stderr)
+            print(f'  reconocidas: {", ".join(KNOWN_FLAGS)}, --help',
+                  file=sys.stderr)
+            sys.exit(2)
+        else:
+            sueltos.append(a)
+    return quiet, strict, nuevos, sueltos
+
+
 def main() -> int:
+    quiet, strict, nuevos, sueltos = _parse_args(sys.argv[1:])
     _reexec_en_venv()
-    args = [a for a in sys.argv[1:]]
-    quiet = '--quiet' in args
-    strict = '--strict' in args
-    nuevos = '--nuevos' in args
-    sueltos = [a for a in args if not a.startswith('--')]
 
     if sueltos:
         rutas = [pathlib.Path(a).resolve() for a in sueltos]
