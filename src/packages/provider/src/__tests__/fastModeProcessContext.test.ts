@@ -24,6 +24,7 @@ const VARIABLES = [
   'THYROX_CODE_ENTRYPOINT',
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_MODEL',
+  'THYROX_CODE_SESSION_ACCESS_TOKEN',
 ]
 const home = mkdtempSync(join(tmpdir(), 'fast-mode-context-'))
 let saved: Record<string, string | undefined> = {}
@@ -89,5 +90,24 @@ describe('getFastModeUnavailableReason (D5)', () => {
     delete process.env.THYROX_CODE_USE_BEDROCK
     process.env.THYROX_CODE_DISABLE_FAST_MODE = '1'
     expect(getFastModeUnavailableReason()).toBe('Fast mode is not available')
+  })
+})
+
+describe('remoteManaged junta cowork y claims del token de sesión (`rn` = `uc() && Iz() || eo()`)', () => {
+  const token = (claims: Record<string, unknown>) =>
+    `h.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.f`
+
+  test('sin token de sesión, no gestionado', () => {
+    expect(processFastModeAvailabilityContext().remoteManaged).toBe(false)
+  })
+
+  test('un token de agente de servicio lo marca gestionado', () => {
+    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = token({ org_service_name: 'svc', code_agent_id: 'a1' })
+    expect(processFastModeAvailabilityContext().remoteManaged).toBe(true)
+  })
+
+  test('un token de cuenta de usuario no cuenta como agente', () => {
+    process.env.THYROX_CODE_SESSION_ACCESS_TOKEN = token({ org_service_name: 'svc', code_agent_id: 'a1', sub: 'u' })
+    expect(processFastModeAvailabilityContext().remoteManaged).toBe(false)
   })
 })

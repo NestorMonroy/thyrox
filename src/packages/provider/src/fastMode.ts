@@ -102,7 +102,15 @@ import {
 import { getAPIProvider } from './providers.ts'
 import { modelHasCapability } from '@thyrox/agent/modelCapabilities'
 import { canonicalModelName, MODELS } from '@thyrox/agent/models'
-import { isCoworkEntrypoint, isTruthyFlag } from '@thyrox/config/entrypoint'
+import {
+  isCoworkEntrypoint,
+  isInsideAgentShell,
+  isTopLevelDesktopSession,
+  isTruthyFlag,
+  processEntrypointContext,
+} from '@thyrox/config/entrypoint'
+import { type ExtraUsageCreditsSessionContext, usageCreditsInstruction, usageCreditsLink } from './extraUsageCredits.ts'
+import { hasRemoteSessionWorkerClaims } from './remoteSessionClaims.ts'
 import {
   extraUsageDisabledMessage,
   fastModeUnavailableMessage,
@@ -211,6 +219,12 @@ export function getFastModeModelDisplay(): string {
 /** El contexto de `gL` leído del proceso. */
 export function processFastModeAvailabilityContext(): FastModeAvailabilityContext {
   const policy = getSettingsForSource('policySettings')
+  // `hy`: `Te`, `yu` y `Jx` del proceso.
+  const credits: ExtraUsageCreditsSessionContext = {
+    isNonInteractiveHost: processEntrypointContext.isNonInteractive(),
+    isOwnSessionWithoutChild: isTopLevelDesktopSession(),
+    isHostSession: isInsideAgentShell(),
+  }
   return {
     apiProvider: getAPIProvider(),
     fastModeEnabled: isFastModeEnabled(),
@@ -227,13 +241,12 @@ export function processFastModeAvailabilityContext(): FastModeAvailabilityContex
     orgStatus,
     skipOrgCheckEnv: Boolean(readEnv('THYROX_CODE_SKIP_FAST_MODE_ORG_CHECK')),
     skipNetworkErrorsEnv: Boolean(readEnv('THYROX_CODE_SKIP_FAST_MODE_NETWORK_ERRORS')),
-    // pendiente: `eo` (claims del token de una sesión de trabajo remota), fase R-2b-2c.
-    remoteManaged: isRemoteCoworkSession(),
+    // `rn`: `uc() && Iz() || eo()`.
+    remoteManaged: isRemoteCoworkSession() || hasRemoteSessionWorkerClaims(),
     authType: getClaudeAIOAuthTokens() !== null ? 'oauth' : 'api-key',
     fastModeModelDisplay: getFastModeModelDisplay(),
-    // pendiente: `_6e` y `hy() && Ex() ? Run()` (créditos de uso), fase R-2b-2d.
-    usageCreditsLink: undefined,
-    usageCreditsInstruction: undefined,
+    usageCreditsLink: usageCreditsLink(credits),
+    usageCreditsInstruction: usageCreditsInstruction(credits),
   }
 }
 

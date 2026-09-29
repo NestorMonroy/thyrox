@@ -13,13 +13,10 @@
  * Reusa `getOauthAccountInfo`, `getSubscriptionType` y `hasProfileScope`
  * (`Rn`, `nr`, `pt`) de `./authAlias.ts`, ya portadas en este paquete.
  *
- * NO portado — `Te`, `yu` y `Jx` (host interactivo, tipo de entorno propio
- * sin sub-sesión, bandera `claudecode`), que componen `hy`, viven en
- * `chunk-nvht7ckf.js`/`chunk-jwddn0q9.js` y leen estado del host
- * (`app-host`) que este paquete ya declara bloqueado en `fastMode.ts`
- * (mismo motivo: `State` no trae `isInteractive`/`clientType`). Llegan
- * como los tres campos de `ExtraUsageCreditsSessionContext`, cada uno
- * citando su símbolo de origen.
+ * `Te`, `yu` y `Jx`, que componen `hy`, llegan como los tres campos de
+ * `ExtraUsageCreditsSessionContext`: los resuelve `fastMode.ts` con
+ * `processEntrypointContext.isNonInteractive`, `isTopLevelDesktopSession` e
+ * `isInsideAgentShell` de `@thyrox/config/entrypoint`.
  */
 import { getOauthAccountInfo, getSubscriptionType, hasProfileScope } from './authAlias.ts'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
