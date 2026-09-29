@@ -122,5 +122,84 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("la cita se lee del índice, no del árbol de trabajo", {},
                  gate.untracked_in_benches(base, ["src/x.py"]))
 
+
+# La cita es un TOKEN, no una subcadena: `bench-a` no se toca porque el
+# contenido nombre `bench-ab`. Con la búsqueda por subcadena un banco cuyo
+# nombre es prefijo de otro quedaba citado por la cita del otro.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    bench = fixture(base)
+    (bench / "sonda.txt").write_text("evidencia\n")
+    (base / "src/x.py").write_text('"""Medido en el banco `bench-ab`."""\nx = 4\n')
+    git(base, "add", "src/x.py")
+    assert_equal("un nombre que sólo es prefijo del citado no toca el banco", {},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
+    (base / "src/x.py").write_text('"""Evidencia: .claude/workbench/bench-a/sonda.txt"""\nx = 5\n')
+    git(base, "add", "src/x.py")
+    assert_equal("citado dentro de una ruta, el banco se toca",
+                 {".claude/workbench/bench-a": [".claude/workbench/bench-a/sonda.txt"]},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
+
+# Muchos archivos staged se leen del índice con UNA sola lectura: los
+# bancos citados son los mismos que dan las lecturas una a una.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    bench = fixture(base)
+    (bench / "sonda.txt").write_text("evidencia\n")
+    staged = []
+    for n in range(40):
+        path = base / f"src/m{n}.py"
+        path.write_text(f'"""pieza {n}{" — ver bench-a" if n == 37 else ""}"""\n')
+        staged.append(f"src/m{n}.py")
+    git(base, "add", "src")
+    assert_equal("la cita del archivo 38 de 40 se ve en la lectura por lotes",
+                 {".claude/workbench/bench-a"},
+                 gate.cited_benches(base, staged))
+    assert_equal("un archivo staged que ya no existe en el índice no rompe la lectura",
+                 {".claude/workbench/bench-a"},
+                 gate.cited_benches(base, [*staged, "src/borrado.py"]))
+
+# La cita al final de una oración lleva el punto pegado: `bench-a.` sigue
+# siendo una cita de `bench-a`. Y un banco cuyo nombre lleva puntos (una
+# versión, `2.1.266`) se cita entero, no por sus pedazos.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    bench = fixture(base)
+    (bench / "sonda.txt").write_text("evidencia\n")
+    (base / "src/x.py").write_text('"""Medido en bench-a."""\nx = 6\n')
+    git(base, "add", "src/x.py")
+    assert_equal("una cita seguida de punto toca el banco",
+                 {".claude/workbench/bench-a": [".claude/workbench/bench-a/sonda.txt"]},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
+    dotted = base / ".claude/workbench/barrer-2.1.266-x"
+    dotted.mkdir(parents=True)
+    (dotted / "nota.txt").write_text("evidencia\n")
+    (base / "src/x.py").write_text('"""Ver barrer-2.1.266-x/nota.txt"""\nx = 7\n')
+    git(base, "add", "src/x.py")
+    assert_equal("un banco con puntos en el nombre se ve citado",
+                 {".claude/workbench/barrer-2.1.266-x"},
+                 gate.cited_benches(base, ["src/x.py"]))
+    (base / "src/x.py").write_text('"""Versión 2.1.266 sin más"""\nx = 8\n')
+    git(base, "add", "src/x.py")
+    assert_equal("un pedazo del nombre con puntos no toca el banco", set(),
+                 gate.cited_benches(base, ["src/x.py"]))
+
+# Muchos bancos tocados se consultan con UNA lectura de archivos sin
+# seguimiento y se reparten por banco: cada uno recibe sólo los suyos.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    fixture(base)
+    for name in ("bench-a", "bench-b", "bench-c"):
+        (base / f".claude/workbench/{name}").mkdir(parents=True, exist_ok=True)
+        (base / f".claude/workbench/{name}/nuevo-{name}.txt").write_text("evidencia\n")
+    (base / ".claude/jobs/job-z").mkdir(parents=True)
+    (base / ".claude/jobs/job-z/salida.log").write_text("log\n")
+    (base / "src/x.py").write_text('"""bench-a bench-b job-z"""\nx = 9\n')
+    git(base, "add", "src/x.py")
+    assert_equal("cada banco tocado recibe sólo sus archivos, y el no citado queda fuera",
+                 {".claude/workbench/bench-a": [".claude/workbench/bench-a/nuevo-bench-a.txt"],
+                  ".claude/workbench/bench-b": [".claude/workbench/bench-b/nuevo-bench-b.txt"],
+                  ".claude/jobs/job-z": [".claude/jobs/job-z/salida.log"]},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
 print(f"test_bench_untracked: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

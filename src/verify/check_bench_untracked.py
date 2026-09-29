@@ -31,6 +31,8 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import threading
+from collections.abc import Iterator
 from pathlib import Path
 
 BENCH_ROOTS = (".claude/workbench/", ".claude/jobs/")
@@ -54,30 +56,122 @@ def existing_benches(repo: Path) -> list[str]:
     return benches
 
 
-def staged_text(repo: Path, path: str) -> str:
-    """El contenido de `path` en el ÍNDICE del commit, o vacío si no está.
+#: Los caracteres de un token de nombre de banco. Un nombre se cita como TOKEN
+#: delimitado por cualquier otro carácter (`/`, espacio, comilla invertida,
+#: punto): así la cita de `bench-ab` no toca `bench-a`, que es lo que la búsqueda
+#: por subcadena hacía, y `bench-a.` al final de una oración sí lo toca. El punto
+#: queda fuera del token; un nombre que lo lleva se busca aparte.
+BENCH_NAME_CHARS = frozenset(b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-")
 
-    Se lee con `git show :<ruta>`, que respeta `GIT_INDEX_FILE`: en un commit
-    por pathspec el pre-commit ve el índice temporal, que es lo que viaja.
+#: Tabla de `bytes.translate`: los caracteres de token quedan, el resto pasa a
+#: espacio. Con ella el corte en tokens y el cruce con los nombres corren en C.
+TOKEN_TABLE = bytes(byte if byte in BENCH_NAME_CHARS else 0x20 for byte in range(256))
+
+#: Tamaño del tramo que se parte en tokens de una vez: acota la lista de tokens
+#: viva en memoria sin importar el tamaño del blob.
+TOKEN_CHUNK_BYTES = 4 * 1024 * 1024
+
+
+def tokens_cited(blob: bytes, names: frozenset[bytes]) -> set[bytes]:
+    """Los `names` que aparecen como token completo en `blob`, por tramos."""
+    text = blob.translate(TOKEN_TABLE)
+    found: set[bytes] = set()
+    start, size = 0, len(text)
+    while start < size:
+        end = min(start + TOKEN_CHUNK_BYTES, size)
+        if end < size:
+            # El tramo termina en un espacio: ningún token queda partido.
+            cut = text.find(b" ", end)
+            end = size if cut < 0 else cut
+        found.update(names.intersection(text[start:end].split()))
+        start = end
+    return found
+
+
+def dotted_names_cited(blob: bytes, names: frozenset[bytes]) -> set[bytes]:
+    """Los nombres con punto que aparecen delimitados por caracteres fuera del token.
+
+    Son pocos (una versión en el nombre, `…-2.1.266-…`), así que la búsqueda
+    directa por cada uno cuesta lo mismo que una pasada.
     """
-    result = subprocess.run(["git", "show", f":{path}"], cwd=repo, capture_output=True)
-    return result.stdout.decode("utf-8", "replace") if result.returncode == 0 else ""
+    found: set[bytes] = set()
+    for name in names:
+        position = blob.find(name)
+        while position >= 0:
+            before = blob[position - 1] if position > 0 else 0x20
+            after_index = position + len(name)
+            after = blob[after_index] if after_index < len(blob) else 0x20
+            if before not in BENCH_NAME_CHARS and before != 0x2E \
+                    and after not in BENCH_NAME_CHARS:
+                found.add(name)
+                break
+            position = blob.find(name, position + 1)
+    return found
+
+
+def staged_blobs(repo: Path, staged: list[str]) -> Iterator[bytes]:
+    """El contenido de cada ruta en el ÍNDICE del commit, con UNA sola lectura.
+
+    `git cat-file --batch` con `:<ruta>` respeta `GIT_INDEX_FILE` igual que
+    `git show :<ruta>`: en un commit por pathspec el pre-commit ve el índice
+    temporal, que es lo que viaja. Un solo proceso en vez de uno por archivo;
+    una ruta ausente del índice responde `missing` y se salta.
+    """
+    if not staged:
+        return
+    request = "".join(f":{path}\n" for path in staged).encode()
+    process = subprocess.Popen(["git", "cat-file", "--batch"], cwd=repo,
+                               stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    assert process.stdin is not None and process.stdout is not None
+    # La petición se escribe entera antes de leer: con muchas rutas el
+    # buffer de salida se llenaría y los dos procesos quedarían esperándose.
+    writer = threading.Thread(target=_write_and_close, args=(process.stdin, request))
+    writer.start()
+    try:
+        for _ in staged:
+            header = process.stdout.readline()
+            if not header:
+                break
+            fields = header.split()
+            if len(fields) != 3:          # «<ruta> missing»: no está en el índice
+                continue
+            blob = process.stdout.read(int(fields[2]))
+            process.stdout.read(1)        # el salto de línea que cierra el objeto
+            yield blob
+    finally:
+        writer.join()
+        process.stdout.close()
+        process.wait()
+
+
+def _write_and_close(stream, data: bytes) -> None:
+    try:
+        stream.write(data)
+    finally:
+        stream.close()
 
 
 def cited_benches(repo: Path, staged: list[str]) -> set[str]:
-    """Los bancos cuyo NOMBRE aparece en el contenido staged.
+    """Los bancos cuyo NOMBRE aparece como token en el contenido staged.
 
     Un banco también se toca citándolo: una prueba o un hallazgo que nombra el
     banco como su evidencia. Si todos los archivos nuevos del banco quedan
-    fuera, ninguno está staged, y sólo la cita dice que el commit lo usa. El
-    nombre lleva sello de tiempo, así que es un ancla distintiva.
+    fuera, ninguno está staged, y sólo la cita dice que el commit lo usa.
+
+    Una sola pasada por el contenido: cada blob se parte en tokens y se cruza
+    con los nombres de banco. El coste es el de los bytes staged, no el de
+    bancos × bytes, que con 1845 bancos y 107 MB llevaba ~117 s por llamada.
     """
-    candidates = existing_benches(repo)
-    if not candidates:
+    by_name = {bench.rsplit("/", 1)[-1].encode(): bench for bench in existing_benches(repo)}
+    if not by_name:
         return set()
-    texts = [staged_text(repo, path) for path in staged]
-    return {bench for bench in candidates
-            if any(bench.rsplit("/", 1)[-1] in text for text in texts)}
+    plain = frozenset(name for name in by_name if b"." not in name)
+    dotted = frozenset(name for name in by_name if b"." in name)
+    cited: set[bytes] = set()
+    for blob in staged_blobs(repo, staged):
+        cited |= tokens_cited(blob, plain)
+        cited |= dotted_names_cited(blob, dotted - cited)
+    return {by_name[name] for name in cited}
 
 
 def touched_benches(repo: Path, staged: list[str]) -> set[str]:
@@ -85,16 +179,27 @@ def touched_benches(repo: Path, staged: list[str]) -> set[str]:
     return {b for b in map(bench_of, staged) if b} | cited_benches(repo, staged)
 
 
-def untracked_in_benches(repo: Path, staged: list[str]) -> dict[str, list[str]]:
-    benches = sorted(touched_benches(repo, staged))
+def untracked_in_benches(repo: Path, staged: list[str],
+                         benches: set[str] | None = None) -> dict[str, list[str]]:
+    """Los archivos sin seguimiento de cada banco tocado.
+
+    `benches` evita recalcular los bancos tocados cuando el llamador ya los
+    tiene: `main` los usa también para publicar el alcance medido.
+    """
+    wanted = touched_benches(repo, staged) if benches is None else set(benches)
+    if not wanted:
+        return {}
+    # Una sola consulta con todos los bancos como pathspec: una por banco
+    # lanzaba un proceso por cada uno, y un contenido que cita casi todos los
+    # bancos (un listado de directorios) llevaba a 1836 procesos, ~30 s.
+    result = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "--", *sorted(wanted)],
+                            cwd=repo, capture_output=True, text=True, check=True)
     found: dict[str, list[str]] = {}
-    for bench in benches:
-        result = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "--", bench],
-                                cwd=repo, capture_output=True, text=True, check=True)
-        files = sorted(line for line in result.stdout.splitlines() if line)
-        if files:
-            found[bench] = files
-    return found
+    for line in result.stdout.splitlines():
+        bench = bench_of(line)
+        if bench is not None:
+            found.setdefault(bench, []).append(line)
+    return {bench: sorted(files) for bench, files in sorted(found.items())}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -106,7 +211,8 @@ def main(argv: list[str] | None = None) -> int:
         staged = args.paths or subprocess.run(
             ["git", "diff", "--cached", "--name-only"], cwd=args.repo,
             capture_output=True, text=True, check=True).stdout.splitlines()
-        found = untracked_in_benches(args.repo, staged)
+        benches = touched_benches(args.repo, staged)
+        found = untracked_in_benches(args.repo, staged, benches)
     except (OSError, subprocess.CalledProcessError) as error:
         print(f"check_bench_untracked: SIN MEDIR — {error}", file=sys.stderr)
         return 2
@@ -117,7 +223,6 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {file}", file=sys.stderr)
     if found:
         print("  remedio: git add -N <archivo> antes del commit por pathspec", file=sys.stderr)
-    benches = touched_benches(args.repo, staged)
     print(f"check_bench_untracked: {sum(map(len, found.values()))} archivo(s) fuera "
           f"(alcance medido: {len(benches)} banco(s) tocado(s))", file=sys.stderr)
     return 1 if found else 0
