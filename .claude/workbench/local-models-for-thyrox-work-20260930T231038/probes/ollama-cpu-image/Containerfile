@@ -1,0 +1,5 @@
+# Imagen de Ollama sólo CPU, derivada de la oficial: retira los backends de
+# GPU (CUDA, MLX-CUDA) y conserva el runtime de CPU y Vulkan. Se aplana al
+# construir para que la base no siga pesando.
+FROM docker.io/ollama/ollama:0.35.0
+RUN rm -rf /usr/lib/ollama/cuda_v12 /usr/lib/ollama/cuda_v13 /usr/lib/ollama/mlx_cuda_v13

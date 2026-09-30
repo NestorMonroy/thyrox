@@ -11,12 +11,11 @@
  * es `loopback` o `unspecified`?—; aquí se responden con `net.isIP` y los
  * bytes de `dr`, sobre un hostname que `new URL` ya normalizó.
  *
- * `CLAUDE_GATEWAY_ALLOW_LOOPBACK` es variable del cliente: aquí
- * `THYROX_GATEWAY_ALLOW_LOOPBACK`.
+ * Divergencia declarada: el cliente rehúsa el loopback salvo con
+ * `CLAUDE_GATEWAY_ALLOW_LOOPBACK`; aquí el loopback es un destino válido por
+ * diseño y esa variable no tiene equivalente (ver `isBlockedUpstreamIp`).
  */
 import { isIP, isIPv4, isIPv6 } from 'node:net'
-
-export const ALLOW_LOOPBACK_ENV = 'THYROX_GATEWAY_ALLOW_LOOPBACK'
 
 /** `zc`: nombres que siempre apuntan a la máquina o a sus metadatos. */
 const BLOCKED_NAMES = new Set([
@@ -135,33 +134,47 @@ export function isBlockedHost(host: string): boolean {
   })
 }
 
-/** El rango de `ipaddr.js` que `ph` pregunta, sobre una IP ya validada. */
-function loopbackOrUnspecified(ip: string): boolean {
-  if (isIPv4(ip)) {
-    const first = Number(ip.split('.')[0])
-    return first === 127 || first === 0
-  }
-  const b = parseIPv6Bytes(ip)
-  if (b === undefined) return false
-  if (b.slice(0, 10).every(x => x === 0) && b[10] === 255 && b[11] === 255) {
-    return b[12] === 127 || b[12] === 0
-  }
-  const allZeroButLast = b.slice(0, 15).every(x => x === 0)
-  return allZeroButLast && (b[15] === 0 || b[15] === 1)
+/** Primer octeto de 127/8, el bloque de loopback de IPv4. */
+const IPV4_LOOPBACK_FIRST_OCTET = 127
+
+/** Los 16 bytes de una IPv4 mapeada en IPv6 (`::ffff:a.b.c.d`), o undefined. */
+function mappedIPv4Octets(bytes: number[]): number[] | undefined {
+  const mapped = bytes.slice(0, 10).every(x => x === 0) && bytes[10] === 255 && bytes[11] === 255
+  return mapped ? bytes.slice(12) : undefined
 }
 
-/** `ph`: un host IP que no debe recibir tráfico del proxy; un nombre no es IP y pasa. */
-function isBlockedUpstreamIp(host: string, env: Record<string, string | undefined>): boolean {
-  const ip = host.replace(/^\[|\]$/g, '')
+/**
+ * Loopback: 127/8, `::1` y 127/8 mapeado en IPv6. Sólo alcanza la propia
+ * máquina en el espacio de red de quien conecta, y es donde vive el Ollama
+ * gestionado (ADR-THYROX-007, Regla 5).
+ */
+function isLoopbackIp(ip: string): boolean {
+  if (isIPv4(ip)) return Number(ip.split('.')[0]) === IPV4_LOOPBACK_FIRST_OCTET
+  const bytes = parseIPv6Bytes(ip)
+  if (bytes === undefined) return false
+  const mapped = mappedIPv4Octets(bytes)
+  if (mapped !== undefined) return mapped[0] === IPV4_LOOPBACK_FIRST_OCTET
+  return bytes.slice(0, 15).every(x => x === 0) && bytes[15] === 1
+}
+
+/**
+ * `ph`, con una divergencia declarada: en el cliente el loopback se rehúsa
+ * salvo con una variable de permiso; en thyrox es un destino válido por diseño,
+ * porque sus servicios locales (el Ollama gestionado) se sirven ahí. El resto
+ * de direcciones especiales —no especificada, enlace local, metadatos, NAT64
+ * local— sigue rehusado, y la variable ya no abre ninguna de ellas. Un nombre
+ * que no es IP pasa y se juzga en `isSafeUpstreamUrl`.
+ */
+function isBlockedUpstreamIp(host: string): boolean {
+  const ip = host.replace(/^\[|\]$/g, '').replace(/%.*$/, '')
   if (isIP(ip) === 0) return false
-  if (loopbackOrUnspecified(ip)) return !env[ALLOW_LOOPBACK_ENV]
-  return isBlockedHost(ip.replace(/%.*$/, ''))
+  if (isLoopbackIp(ip)) return false
+  return isBlockedHost(ip)
 }
 
 /** `ir` (función): una `base_url` de upstream aceptable. */
 export function isSafeUpstreamUrl(
   url: string,
-  env: Record<string, string | undefined> = process.env,
 ): boolean {
   let parsed: URL
   try {
@@ -173,7 +186,7 @@ export function isSafeUpstreamUrl(
   const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '')
   if (host.split('.').includes('')) return false
   if (METADATA_NAMES.has(host)) return false
-  return !isBlockedUpstreamIp(host, env)
+  return !isBlockedUpstreamIp(host)
 }
 
 /** `$_`: ¿el host de escucha es loopback? (exige `public_url` si no). */

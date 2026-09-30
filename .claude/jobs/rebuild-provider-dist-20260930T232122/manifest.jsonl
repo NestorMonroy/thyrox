@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bunx tsc -p tsconfig.build.json; echo tsc_exit=$?; grep -c ALLOW_LOOPBACK dist/proxy/netGuards.d.ts", "started_at": "2026-09-30T23:21:22+00:00"}

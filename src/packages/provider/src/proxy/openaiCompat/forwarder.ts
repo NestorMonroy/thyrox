@@ -117,7 +117,7 @@ export function createOpenAICompatForwarder(config: OpenAICompatForwarderConfig)
     if (request.path !== MESSAGES_PATH) {
       return errorResponse(NOT_IMPLEMENTED, 'not_supported', `${describe(target)} no sirve ${request.path}`, request.requestId)
     }
-    if (!isSafeUpstreamUrl(upstream.baseUrl, config.env)) {
+    if (!isSafeUpstreamUrl(upstream.baseUrl)) {
       return errorResponse(BAD_GATEWAY, 'api_error', `baseUrl insegura para el ${describe(target)}`, request.requestId)
     }
     const wantsStream = request.body.stream === true

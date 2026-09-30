@@ -12,7 +12,6 @@ const { createSelector, startProxyServer } = (await import(
 )) as typeof import('../src/proxy/startServer.ts')
 import { FillFirstSelector, type ProxyCredential, WeightedRoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
 import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
-import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
 
 const stops: (() => void)[] = []
 afterEach(() => {
@@ -50,7 +49,7 @@ function config(baseUrl: string, host = '127.0.0.1') {
     credentials: { up: [{ id: 'k1', attributes: { api_key: 'sk-upstream' } }] },
     selector: 'round-robin' as const,
     version: '0.1.0',
-    env: { [ALLOW_LOOPBACK_ENV]: '1' },
+    env: {},
   }
 }
 

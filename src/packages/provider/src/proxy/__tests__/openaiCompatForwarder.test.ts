@@ -5,14 +5,13 @@
  * y la URL, nunca como una respuesta vacía; lo que no es suyo sigue a `next`.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { createOpenAICompatForwarder, type OpenAICompatUpstreamConfig } from '../openaiCompat/forwarder.ts'
 import type { ForwardRequest } from '../server.ts'
 import { startFakeOpenAIUpstream, type FakeFailure } from './fakeOpenAIUpstream.ts'
 
 type JsonRecord = Record<string, unknown>
 
-const ENV = { [ALLOW_LOOPBACK_ENV]: '1' }
+const ENV = {}
 const HELLO = { model: 'm', max_tokens: 8, messages: [{ role: 'user', content: 'hola' }] }
 
 const cleanups: (() => void)[] = []

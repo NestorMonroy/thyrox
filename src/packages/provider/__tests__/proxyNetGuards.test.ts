@@ -5,7 +5,6 @@
  */
 import { describe, expect, test } from 'bun:test'
 import {
-  ALLOW_LOOPBACK_ENV,
   isBlockedHost,
   isLoopbackListenHost,
   isSafeUpstreamUrl,
@@ -50,13 +49,24 @@ describe('isSafeUpstreamUrl (ir + ph)', () => {
     expect(isSafeUpstreamUrl('http://169.254.169.254/')).toBe(false)
     expect(isSafeUpstreamUrl('no es url')).toBe(false)
   })
-  test('loopback: rehusado salvo con la variable de permiso', () => {
-    expect(isSafeUpstreamUrl('http://127.0.0.1:8317', {})).toBe(false)
-    expect(isSafeUpstreamUrl('http://[::1]:8317', { [ALLOW_LOOPBACK_ENV]: '1' })).toBe(true)
-    expect(isSafeUpstreamUrl('http://0.0.0.0/', { [ALLOW_LOOPBACK_ENV]: '1' })).toBe(true)
+  test('loopback es un destino válido sin ninguna variable: el Ollama gestionado vive ahí', () => {
+    expect(isSafeUpstreamUrl('http://127.0.0.1:51434/v1')).toBe(true)
+    expect(isSafeUpstreamUrl('http://127.5.6.7:8317')).toBe(true)
+    expect(isSafeUpstreamUrl('http://[::1]:8317')).toBe(true)
+    expect(isSafeUpstreamUrl('http://[::ffff:127.0.0.1]:8317')).toBe(true)
+  })
+  test('la dirección no especificada sigue rehusada, junto con enlace local y metadatos', () => {
+    expect(isSafeUpstreamUrl('http://0.0.0.0/')).toBe(false)
+    expect(isSafeUpstreamUrl('http://[::]/')).toBe(false)
+    expect(isSafeUpstreamUrl('http://[::ffff:0.0.0.0]/')).toBe(false)
+    expect(isSafeUpstreamUrl('http://169.254.169.254/')).toBe(false)
+  })
+  test('las redes privadas RFC1918 conservan la conducta heredada: su apertura es otra decisión', () => {
+    expect(isSafeUpstreamUrl('http://10.0.0.20:8317')).toBe(true)
+    expect(isSafeUpstreamUrl('http://192.168.1.1:8317')).toBe(true)
   })
   test('un nombre que no es IP sólo se juzga contra la lista de metadatos (ph)', () => {
-    expect(isSafeUpstreamUrl('http://localhost:8317', {})).toBe(true)
+    expect(isSafeUpstreamUrl('http://localhost:8317')).toBe(true)
   })
 })
 

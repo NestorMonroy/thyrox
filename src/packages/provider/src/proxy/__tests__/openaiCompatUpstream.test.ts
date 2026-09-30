@@ -6,7 +6,6 @@
  * (`tool_calls` → `tool_use` → `tool_result` → mensaje `role: tool`).
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { startProxyServer, type ProxyStartConfig, type RunningProxy } from '../startServer.ts'
 import { FAKE_TOOL_ARGUMENTS, FAKE_TOOL_CALL_ID, startFakeOpenAIUpstream, type FakeOpenAIUpstream, type FakeOptions } from './fakeOpenAIUpstream.ts'
 
@@ -29,7 +28,7 @@ function fake(options: FakeOptions = {}): FakeOpenAIUpstream {
 }
 
 function proxyFor(upstream: FakeOpenAIUpstream, apiKey?: string): RunningProxy {
-  const proxy = startProxyServer(configFor(upstream.baseUrl, apiKey, { [ALLOW_LOOPBACK_ENV]: '1' }))
+  const proxy = startProxyServer(configFor(upstream.baseUrl, apiKey, {}))
   cleanups.push(() => proxy.stop())
   return proxy
 }
@@ -99,7 +98,7 @@ describe('texto sin stream', () => {
   })
 
   test('una baseUrl insegura rehúsa arrancar el proxy', () => {
-    expect(() => startProxyServer(configFor('http://127.0.0.1:9/v1', undefined, {}))).toThrow('baseUrl insegura para el upstream "open"')
+    expect(() => startProxyServer(configFor('http://169.254.169.254/v1', undefined, {}))).toThrow('baseUrl insegura para el upstream "open"')
   })
 
   test('un modelo que el upstream no declara no llega al fake', async () => {

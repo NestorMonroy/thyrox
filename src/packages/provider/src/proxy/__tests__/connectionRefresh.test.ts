@@ -20,7 +20,6 @@ import { resolveRedisServerFromToolchain } from '@thyrox/shared-state/__tests__/
 
 import type { ConnectionRow, ConnectionRefreshStore } from '../connectionRefresh.ts'
 import { createConnectionRefresher } from '../connectionRefresh.ts'
-import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { startProxyServer, type ProxyStartConfig } from '../startServer.ts'
 
 const KEY = 'sk-local'
@@ -269,7 +268,7 @@ function proxyConfig(baseUrl: string, connections: ConnectionRefreshStore, env: 
     connections,
     selector: 'round-robin',
     version: '0.1.0',
-    env: { [ALLOW_LOOPBACK_ENV]: '1', ...env },
+    env: { ...env },
   }
 }
 
@@ -305,7 +304,7 @@ describe('startProxyServer: wiring del refresco de conexiones OAuth (R5c)', () =
       connectionRefresher: refresher,
       selector: 'round-robin',
       version: '0.1.0',
-      env: { [ALLOW_LOOPBACK_ENV]: '1' },
+      env: {},
     })
     try {
       const response = await fetch(`${proxy.url}/v1/messages`, {

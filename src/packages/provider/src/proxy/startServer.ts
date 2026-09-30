@@ -239,13 +239,13 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   const claudeCliUpstreams = Object.fromEntries((config.claudeCli?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
   const openaiCompatUpstreams = Object.fromEntries((config.openaiCompat?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
   for (const upstream of config.openaiCompat?.upstreams ?? []) {
-    if (!isSafeUpstreamUrl(upstream.baseUrl, config.env)) throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
+    if (!isSafeUpstreamUrl(upstream.baseUrl)) throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
   }
   for (const upstream of config.routing.upstreams) {
     if (cloud[upstream.name] || claudeCliUpstreams[upstream.name] || openaiCompatUpstreams[upstream.name]) continue
     const endpoint = config.endpoints[upstream.name]
     if (!endpoint) throw new Error(`el upstream "${upstream.name}" no declara endpoint`)
-    if (!isSafeUpstreamUrl(endpoint.baseUrl, config.env)) {
+    if (!isSafeUpstreamUrl(endpoint.baseUrl)) {
       throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
     }
   }

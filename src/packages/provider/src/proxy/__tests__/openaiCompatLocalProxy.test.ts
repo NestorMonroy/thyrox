@@ -8,7 +8,6 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { BASE_URL_ENV, MODEL_ENV } from '../openaiCompat/declaration.ts'
 import { startFakeOpenAIUpstream, type FakeOpenAIUpstream } from './fakeOpenAIUpstream.ts'
 
@@ -37,7 +36,7 @@ function fake(): FakeOpenAIUpstream {
 function launch(env: Record<string, string>) {
   const socket = join(workDir(), 'proxy.sock')
   const child = Bun.spawn([process.execPath, LOCAL_PROXY, '--socket', socket, '--cli', process.execPath], {
-    env: { PATH: process.env.PATH ?? '', [ALLOW_LOOPBACK_ENV]: '1', ...env },
+    env: { PATH: process.env.PATH ?? '', ...env },
     stdin: 'ignore',
     stdout: 'pipe',
     stderr: 'pipe',

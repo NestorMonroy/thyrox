@@ -1,0 +1,12 @@
+thyrox -p: sin credencial propia y sin proxy local: el proxy local salió con código 1 antes de anunciar el socket: 237 |   if (keyProvider === null) throw new Error('el proxy local exige al menos una clave de acceso')
+238 |   const cloud = Object.fromEntries((config.cloud?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
+239 |   const claudeCliUpstreams = Object.fromEntries((config.claudeCli?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
+240 |   const openaiCompatUpstreams = Object.fromEntries((config.openaiCompat?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
+241 |   for (const upstream of config.openaiCompat?.upstreams ?? []) {
+242 |     if (!isSafeUpstreamUrl(upstream.baseUrl, config.env)) throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
+                                                                          ^
+error: baseUrl insegura para el upstream "openai-compat"
+      at startProxyServer (/home/user/thyrox/src/packages/provider/src/proxy/startServer.ts:242:69)
+      at /home/user/thyrox/src/packages/provider/bin/localProxy.ts:86:15
+
+Bun v1.3.11 (Linux x64)

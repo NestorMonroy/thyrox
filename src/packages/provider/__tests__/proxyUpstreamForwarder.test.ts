@@ -9,7 +9,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { createHttpForwarder, credentialAuth, forwardableRequestHeaders, returnableResponseHeaders } from '../src/proxy/upstreamForwarder.ts'
 import type { ForwardRequest } from '../src/proxy/server.ts'
-import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
 import { OAUTH_BETA } from '../src/credentials.ts'
 
 type Seen = { url: string; method: string; headers: Headers; body: string }
@@ -33,7 +32,7 @@ function stub(respond: (seen: Seen) => Response | Promise<Response> = () => Resp
   return { baseUrl: `http://127.0.0.1:${server.port}`, seen }
 }
 
-const loopbackEnv = { [ALLOW_LOOPBACK_ENV]: '1' }
+const loopbackEnv = {}
 
 function headerNames(headers: Headers): string[] {
   const names: string[] = []

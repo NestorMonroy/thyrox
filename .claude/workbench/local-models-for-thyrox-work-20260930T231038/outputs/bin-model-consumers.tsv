@@ -1,0 +1,27 @@
+comando	destino	marcas
+agent_store	src/agents/agent_store.py	embedding×1 
+census_counterparts	src/corpus/census_counterparts.py	MODEL×3 
+check-cross-model-read	src/verify/check-cross-model-read.sh	MODEL×1 
+check_cache_layout	src/verify/check_cache_layout.py	thyrox×1 
+check_env_contract_keys	src/verify/check_env_contract_keys.py	headless-pool×1 
+declarations	src/paths/declarations.py	headless-pool×1 
+docx_to_text	src/corpus/docx_to_text.py	embedding×1 
+find_reference_home	src/corpus/find_reference_home.py	MODEL×2 
+generate_bin	src/session/generate_bin.py	bin/cli×2 
+gpu_monitor	src/session/gpu_monitor.py	headless-pool×1 thyrox×1 
+gpu_trace	src/session/gpu_trace.py	MODEL×1 
+headless-pool	src/session/headless-pool.sh	--model×3 --task-class×7 MODEL×13 agent-recommend×3 bin/cli×3 headless-pool×8 recommend(×1 thyrox×12 
+item_worktree	src/session/item_worktree.sh	headless-pool×2 
+measure_subagent_usage	src/agents/measure_subagent_usage.py	MODEL×1 
+member_port	src/verify/member_port.py	thyrox×1 
+model_catalog	src/agents/model_catalog.py	MODEL×2 thyrox×1 
+pool-calibrate	src/session/pool-calibrate.sh	--task-class×4 headless-pool×2 thyrox×2 
+pool_history	src/session/pool_history.py	headless-pool×3 thyrox×1 
+pool_integrate	src/session/pool_integrate.sh	headless-pool×1 
+pool_lifecycle	src/session/pool_lifecycle.py	headless-pool×1 
+probe_model_switch_cache	src/session/probe_model_switch_cache.py	MODEL×3 
+register_session	src/agents/register_session.py	MODEL×7 
+stdin_probe	src/roster/stdin_probe.py	thyrox×1 
+step_report	src/verify/step_report.py	MODEL×2 headless-pool×1 thyrox×2 
+tsc_cycle	src/verify/tsc_cycle.py	--task-class×7 agent-recommend×2 headless-pool×4 thyrox×5 
+tsc_reflect	src/verify/tsc_reflect.py	thyrox×1 

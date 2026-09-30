@@ -9,7 +9,6 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { startProxyServer, type ProxyStartConfig, type RunningProxy } from '../startServer.ts'
 import { createCliUpstreamForwarder, unexpectedToolUseMessage } from '../claudeCli/forwarder.ts'
 import type { ForwardRequest } from '../server.ts'
@@ -60,7 +59,7 @@ function proxyWith(dir: string, overrides: Partial<ProxyStartConfig> = {}, pendi
     credentials: {},
     selector: 'round-robin',
     version: '0.1.0',
-    env: { [ALLOW_LOOPBACK_ENV]: '1' },
+    env: {},
     claudeCli: {
       upstreams: [{
         name: 'cli',

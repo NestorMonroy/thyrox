@@ -28,7 +28,6 @@ import { ANTHROPIC_PROVIDER_ID } from '../src/accounts/imports/anthropicAuthFile
 import { openConnectionStore } from '../src/accounts/connectionStoreHome.ts'
 import { STORAGE_KEY_VARIABLE } from '../src/accounts/fieldCipher.ts'
 import { startAnthropicMockServer, type AnthropicMockServer } from '../src/anthropicMockServer.ts'
-import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
 
 const ENTRY = join(import.meta.dir, '../bin/storeCredentialProxy.ts')
 const STORAGE_KEY = 'clave-de-prueba'
@@ -69,7 +68,6 @@ function processEnv(storeDir: string, overrides: Record<string, string | undefin
     HOME: storeDir,
     THYROX_PROVIDERS_DATA_DIR: storeDir,
     [STORAGE_KEY_VARIABLE]: STORAGE_KEY,
-    [ALLOW_LOOPBACK_ENV]: '1',
     THYROX_STORE_PROXY_ACCESS_KEY: ACCESS_KEY,
     ...overrides,
   }

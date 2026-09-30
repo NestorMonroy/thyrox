@@ -19,7 +19,6 @@ import { openSharedStateStore, type OpenedSharedState } from '@thyrox/shared-sta
 import type { SharedStateStore } from '@thyrox/shared-state/port.ts'
 import { resolveRedisServerFromToolchain } from '@thyrox/shared-state/__tests__/redisServerFromToolchain.ts'
 import type { ProxyCredential } from '../credentialSelectors.ts'
-import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
 import { proxyBaseUrl, proxyClientKey } from '../proxyEndpoint.ts'
 import { startProxyServer, type ProxyStartConfig } from '../startServer.ts'
 
@@ -40,7 +39,7 @@ function baseConfig(baseUrl: string, env: Record<string, string | undefined> = {
     credentials: { up: [{ id: 'k1', attributes: { api_key: 'sk-upstream' } }] },
     selector: 'round-robin',
     version: '0.1.0',
-    env: { [ALLOW_LOOPBACK_ENV]: '1', ...env },
+    env: { ...env },
   }
 }
 

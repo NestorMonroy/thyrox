@@ -1,0 +1,20 @@
+2854336980	/usr/lib/ollama/mlx_cuda_v13
+1285059696	/usr/lib/ollama/cuda_v12
+850860392	/usr/lib/ollama/cuda_v13
+42658152	/usr/lib/ollama/vulkan
+4466160	/usr/lib/ollama/libllama-common.so.0.4.1
+4009008	/usr/lib/ollama/libllama.so.0.4.1
+2791056	/usr/lib/ollama/libllama-server-impl.so
+1691472	/usr/lib/ollama/libmtmd.so.0.4.1
+1608176	/usr/lib/ollama/libggml-cpu-sapphirerapids.so
+1366200	/usr/lib/ollama/libggml-cpu-skylakex.so
+1366200	/usr/lib/ollama/libggml-cpu-cannonlake.so
+1362104	/usr/lib/ollama/libggml-cpu-zen4.so
+1362104	/usr/lib/ollama/libggml-cpu-icelake.so
+1362104	/usr/lib/ollama/libggml-cpu-cooperlake.so
+1362104	/usr/lib/ollama/libggml-cpu-cascadelake.so
+--
+28644368	/usr/bin/ollama
+5064510821	/usr/lib/ollama
+409672428	/usr
+60891501	/
