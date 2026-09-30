@@ -33,9 +33,11 @@ anfitrión». Parte de lo que entregue la corrección de medida de H-THYROX-294
    `nvidia-smi`) y `NoGpuBackend`. Ninguna otra parte del módulo nombra
    `nvidia-smi`.
 2. **Sonda de capacidad**: elige el backend desde `bin/hardware-inventory` y
-   la respuesta de `nvidia-smi`; da `measured` / `absent` / `unavailable`
-   (`partial`: hay señales de GPU pero no telemetría) / `error`. Nunca `0`
-   sin medida.
+   el backend; da `measured` / `absent` / `unavailable` / `error`. Nunca `0`
+   sin medida. **El inventario da evidencia física; la telemetría la decide el
+   backend**: `unavailable` = evidencia suficiente de GPU **y** ningún backend
+   soportado da memoria. Un `partial` del inventario no se traduce a
+   `unavailable` sin consultar el backend.
 3. **Requisito por trabajo**: `none` | `optional` | `required`.
    `gpu_monitor admit` con requisito `required` y backend no válido sale 2 sin
    cifra; con `none` no toca el ledger; con `optional` sin backend sale con un
@@ -72,3 +74,49 @@ Controles de anulación, con números: `NoGpuBackend` devolviendo 0 en vez de
 `test-gpu-hardware-refusal.sh`, `test_resource_admission.py`,
 `test_pool_history.py`, `test_parallel_map_history.py` y
 `src/packages/config/__tests__/gpuAdmission.test.ts`) siguen verdes.
+
+## Contratos cerrados por el ejecutor (ADR-007 1.6.1, commit `a918649ab`)
+
+Estos gobiernan sobre cualquier lectura anterior de esta spec:
+
+1. `hardware-inventory` → ¿hay evidencia de GPU?; `GpuMemoryBackend` → ¿puedo
+   observar la memoria? Dos observaciones distintas.
+2. La ausencia de backend **no es una implementación medible**: ninguna
+   operación puede devolver una cantidad sin backend; devuelve el estado.
+   `measured(0)`, `absent`, `unavailable` y `error` son disjuntos. Si existe
+   un `NoGpuBackend`, sus operaciones de medida devuelven `absent`, nunca un
+   número; mejor aún, que el tipo no lo permita.
+3. `none` / `optional` / `required` es propiedad **declarada del trabajo**. El
+   planificador no convierte `required` en `optional` ni decide ir a CPU.
+   `none`: la VRAM no entra como dimensión de admisión. `required` sin backend
+   válido: exit 2, no se ejecuta el trabajo, no se publica cifra.
+4. `optional` se decide **antes** de ejecutar: backend y admisión posibles →
+   ruta GPU; si no → ruta CPU declarada por el trabajo. Nunca «intentar GPU,
+   fallar y repetir en CPU» salvo que el trabajo declare ese reintento.
+5. `effective_available_ram()`: con límite efectivo de cgroup, `límite − uso`;
+   sin límite, la del anfitrión. «Sin límite» es un estado, no `0` ni un
+   número enorme. Se prueban las versiones de cgroups medidas (aquí v1); v2
+   con un doble si no hay host v2.
+6. Admisión (¿puede entrar?) y medida (¿cuánto consumió?) son APIs distintas.
+   El pico del cgroup es la autoridad de la medida; GNU Time es secundaria.
+7. Tras este ítem, `rg -n "nvidia-smi" src/session/*.py` sólo aparece en el
+   backend NVIDIA y en la sonda de hardware (el nombre de la variable de
+   configuración aparte). El resto trabaja con estado, memoria libre y uso por
+   proceso, y se prueba con backends falsos sin simular el binario.
+8. Reserva en el ledger sólo en la ruta GPU con backend válido: `none` → no;
+   `optional` con ruta CPU → no; `optional`/`required` + backend + ruta GPU →
+   sí. El ledger es uno por anfitrión.
+9. La VRAM de un contenedor se atribuye por los PIDs de su cgroup vistos
+   desde el anfitrión: prueba explícita a nivel de backend (un backend falso
+   que reporta PIDs del anfitrión y un conjunto de PIDs del espacio del
+   contenedor que no coinciden: la atribución usa los del anfitrión).
+10. El historial conserva la ausencia de dimensión: `absent`, `unavailable` y
+    `error` nunca se guardan como `0` ni entran en las estadísticas.
+11. Nada de esto se cablea en `headless-pool.sh` (ítem B): el shell sólo
+    orquestará APIs con contrato y prueba propios, sin ramas sobre
+    `nvidia-smi` ni rutas de cgroup.
+
+Pruebas añadidas por estos contratos: `partial` con backend NVIDIA usable da
+`measured`; `partial` sin backend da `unavailable`; `optional` sin backend
+elige la ruta CPU antes de ejecutar y no toca el ledger; «sin límite» de
+cgroup no es `0`; el `rg` del punto 7 como prueba.
