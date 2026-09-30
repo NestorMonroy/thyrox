@@ -56,7 +56,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'service',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -70,7 +71,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -83,7 +85,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -96,7 +99,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 30,
+      idleGraceMs: 30,
+      startupIdleGraceMs: 30,
       countActivity: () => activity,
     })
     wd.probe()
@@ -112,7 +116,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -127,7 +132,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 30,
+      idleGraceMs: 30,
+      startupIdleGraceMs: 30,
       countActivity: () => activity,
     })
     wd.probe()
