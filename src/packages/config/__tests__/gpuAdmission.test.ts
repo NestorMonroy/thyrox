@@ -92,6 +92,15 @@ describe('admitVram', () => {
     expect(existsSync(ledger) ? Object.keys(JSON.parse(readFileSync(ledger, 'utf8'))).length : 0).toBe(0)
   })
 
+  test('sin nvidia-smi que medir, exit 2: una excepción al instante, no un plazo vencido', async () => {
+    const { dir, ledger } = fakeGpu()
+    const started = Date.now()
+    await expect(admitVram({ needMib: 100, ledger, ownerPid: process.pid, nvidiaSmi: join(dir, 'no-existe'), timeoutS: 5 }))
+      .rejects.toThrow(/salió 2 .*nvidia-smi no responde/)
+    expect(Date.now() - started).toBeLessThan(1000)
+    expect(existsSync(ledger)).toBe(false)
+  })
+
   test('si la herramienta no corre, es un error y no un «no admitido»', async () => {
     const { smi, ledger } = fakeGpu()
     const empty = mkdtempSync(join(tmpdir(), 'no-thyrox-'))
