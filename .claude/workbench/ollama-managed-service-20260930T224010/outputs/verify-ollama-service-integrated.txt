@@ -1,0 +1,24 @@
+asentado: verify-ollama-service -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     verify-ollama-service exit=0
+       |   ok    inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid
+       | 
+       | 58 casos: 58 ok, 0 fallos
+       |   ok    caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN
+       | 
+       | 46 casos: 46 ok, 0 fallos
+       | shellcheck: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+       | __BG_EXIT__=0
+       memoria pico: 34588 KB (34 MB) · pared 9.52s
+
+[exited with code 0]
+
+## Por qué el veredicto del pool fue `rechazado` y aun así se integró
+`outputs/pool/1.verify.log` tiene una sola línea: `bash: …/probes/verify-item.sh:
+No such file or directory`. El verify del pool apuntaba a un guion de este banco
+que aún no estaba versionado, y el worktree del ítem (preparado desde HEAD) no lo
+tenía: el rechazo mide el verify ausente, no el cambio. Es el defecto de la
+tarea «Refuse a pool whose verify script is missing in the item worktree».
+El patch se aplicó con `git apply` y se verificó arriba en el árbol principal
+(las dos suites y shellcheck); el control de anulación del ítem está en su
+informe (`outputs/pool/1.json`: ramas A 7/58, B1 2/58, B2 2/58, C 1/58).

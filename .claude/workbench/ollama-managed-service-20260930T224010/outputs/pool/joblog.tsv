@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790808086.773	   457.703	0	0	0	0	_headless_item 1 'ollama-service — TASK-THYROX-0662: declarar thyrox-ollama en la infraestructura gestionada (ítem O1). Fuente de verdad: /home/user/thyrox/.claude/workbench/ollama-managed-service-20260930T224010/source.md. Te pertenecen src/lib/infrastructure.sh, src/session/infrastructure_ensure.sh (sólo si hace falta), tests/session/test-infrastructure.sh, tests/session/test-infrastructure-ensure.sh y .env.example. No toques src/packages/ ni headless-pool.sh.'

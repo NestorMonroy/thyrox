@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash tests/lib/test-infrastructure.sh 2>&1 | tail -3; bash tests/session/test-infrastructure-ensure.sh 2>&1 | tail -3; bash bin/check_lint_zero src/lib/infrastructure.sh tests/lib/test-infrastructure.sh tests/session/test-infrastructure-ensure.sh 2>&1 | tail -3", "started_at": "2026-09-30T22:50:05+00:00"}

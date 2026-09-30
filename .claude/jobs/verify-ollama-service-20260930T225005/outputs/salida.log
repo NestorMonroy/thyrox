@@ -1,0 +1,8 @@
+  ok    inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid
+
+58 casos: 58 ok, 0 fallos
+  ok    caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN
+
+46 casos: 46 ok, 0 fallos
+shellcheck: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+__BG_EXIT__=0

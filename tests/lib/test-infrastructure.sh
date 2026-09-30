@@ -51,8 +51,8 @@ done
 
 # --- nombres fijos ---
 names="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_container_names")"
-thyrox_check "container_names lista los dos nombres fijos" \
-  "$(printf 'thyrox-postgres\nthyrox-redis')" "$names"
+thyrox_check "container_names lista los tres nombres fijos, en orden" \
+  "$(printf 'thyrox-postgres\nthyrox-redis\nthyrox-ollama')" "$names"
 
 # --- postgres: rehusa sin THYROX_INFRA_POSTGRES_PASSWORD, sin emitir argv ---
 out="$(THYROX_INFRA_POSTGRES_PASSWORD='' bash -c \
@@ -195,6 +195,100 @@ image_redis="$(THYROX_INFRA_REDIS_IMAGE='docker.io/library/redis:7.5' bash -c \
 thyrox_check "image(redis) respeta la variable" "docker.io/library/redis:7.5" "$image_redis"
 bash -c "source '$SUBJECT'; thyrox_infrastructure_image thyrox-mongo" >/dev/null 2>&1
 thyrox_check "image de un nombre desconocido sale 2" "2" "$?"
+
+# --- TASK-THYROX-0662: thyrox-ollama, red del anfitrion y API en loopback ---
+# `env -u` retira el proxy del entorno de la suite: el argv por defecto no
+# puede depender de que quien corre la prueba tenga un proxy de salida.
+ollama_argv() { env -u HTTPS_PROXY -u https_proxy "$@" bash -c \
+  "source '$SUBJECT'; thyrox_infrastructure_create_argv thyrox-ollama"; }
+expected_ollama="$(printf '%s\n' \
+  create \
+  --name thyrox-ollama \
+  --network host \
+  --label io.thyrox.role=infrastructure \
+  --restart=on-failure \
+  -v thyrox-ollama-models:/root/.ollama \
+  -e OLLAMA_HOST=127.0.0.1:51434 \
+  docker.io/ollama/ollama:0.35.0)"
+actual_ollama="$(ollama_argv)"; rc=$?
+thyrox_check "create_argv(ollama) sale 0 sin credenciales" "0" "$rc"
+thyrox_check "argv exacto de ollama sin proxy (red host, loopback, etiqueta, volumen)" \
+  "$expected_ollama" "$actual_ollama"
+if [[ "$actual_ollama" != *"thyrox-infra"* && "$(grep -cx -- '-p' <<<"$actual_ollama")" == 0 ]]; then
+  ok "ollama no usa la red thyrox-infra ni publica puertos"
+else
+  bad "ollama declara thyrox-infra o -p: [$actual_ollama]"
+fi
+for piece in HTTPS_PROXY https_proxy NO_PROXY SSL_CERT_FILE proxy-ca.crt; do
+  if [[ "$actual_ollama" != *"$piece"* ]]; then
+    ok "sin HTTPS_PROXY, el argv de ollama no lleva $piece"
+  else
+    bad "sin HTTPS_PROXY, el argv de ollama lleva $piece: [$actual_ollama]"
+  fi
+done
+
+CA_DIR="$(mktemp -d)"
+printf 'ca\n' > "$CA_DIR/ca.crt"
+with_proxy="$(ollama_argv HTTPS_PROXY=http://127.0.0.1:3128 THYROX_INFRA_PROXY_CA_BUNDLE="$CA_DIR/ca.crt")"
+for piece in "-e"$'\n'"HTTPS_PROXY=http://127.0.0.1:3128" \
+             "-e"$'\n'"https_proxy=http://127.0.0.1:3128" \
+             "-e"$'\n'"NO_PROXY=localhost,127.0.0.1" \
+             "-v"$'\n'"$CA_DIR/ca.crt:/etc/ssl/certs/proxy-ca.crt:ro" \
+             "-e"$'\n'"SSL_CERT_FILE=/etc/ssl/certs/proxy-ca.crt"; do
+  if [[ "$with_proxy" == *"$piece"* ]]; then
+    ok "con proxy y CA legible, ollama lleva ${piece//$'\n'/ }"
+  else
+    bad "con proxy y CA legible, falta ${piece//$'\n'/ }: [$with_proxy]"
+  fi
+done
+thyrox_check "con proxy, la imagen sigue siendo el ultimo argumento" \
+  "docker.io/ollama/ollama:0.35.0" "$(tail -n 1 <<<"$with_proxy")"
+
+# Como root `-r` es verdadero aun con modo 000, asi que «ilegible» se ejercita
+# con lo que ningun uid puede leer como archivo: una ruta ausente y un directorio.
+for ca in "$CA_DIR/absent.crt" "$CA_DIR"; do
+  proxy_no_ca="$(ollama_argv HTTPS_PROXY=http://127.0.0.1:3128 THYROX_INFRA_PROXY_CA_BUNDLE="$ca")"
+  if [[ "$proxy_no_ca" == *"HTTPS_PROXY=http://127.0.0.1:3128"* \
+     && "$proxy_no_ca" != *"proxy-ca.crt"* && "$proxy_no_ca" != *"SSL_CERT_FILE"* ]]; then
+    ok "con CA no legible ($ca): proxy si, montaje y SSL_CERT_FILE no"
+  else
+    bad "con CA no legible ($ca) el argv no es el esperado: [$proxy_no_ca]"
+  fi
+done
+ca_no_proxy="$(ollama_argv THYROX_INFRA_PROXY_CA_BUNDLE="$CA_DIR/ca.crt")"
+if [[ "$ca_no_proxy" != *"proxy-ca.crt"* && "$ca_no_proxy" != *"SSL_CERT_FILE"* ]]; then
+  ok "con CA legible pero sin HTTPS_PROXY no se monta la CA"
+else
+  bad "sin HTTPS_PROXY se monto la CA: [$ca_no_proxy]"
+fi
+rm -rf "$CA_DIR"
+
+ollama_over="$(ollama_argv THYROX_INFRA_OLLAMA_PORT=41434 THYROX_INFRA_OLLAMA_IMAGE=docker.io/ollama/ollama:0.36.0)"
+if [[ "$ollama_over" == *"OLLAMA_HOST=127.0.0.1:41434"* && "$ollama_over" != *"51434"* ]]; then
+  ok "THYROX_INFRA_OLLAMA_PORT gana al puerto por defecto"
+else
+  bad "el puerto de ollama no se sobreescribio: [$ollama_over]"
+fi
+thyrox_check "THYROX_INFRA_OLLAMA_IMAGE gana a la imagen por defecto" \
+  "docker.io/ollama/ollama:0.36.0" "$(tail -n 1 <<<"$ollama_over")"
+image_ollama="$(THYROX_INFRA_OLLAMA_IMAGE=docker.io/ollama/ollama:0.36.0 bash -c \
+  "source '$SUBJECT'; thyrox_infrastructure_image thyrox-ollama")"
+thyrox_check "image(ollama) respeta la variable" "docker.io/ollama/ollama:0.36.0" "$image_ollama"
+
+health_ollama="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_health_check_argv thyrox-ollama")"
+thyrox_check "health_check_argv(ollama) es ollama list" "$(printf 'ollama\nlist')" "$health_ollama"
+
+need_ollama="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-ollama")"
+thyrox_check "disk_need_bytes(ollama): comprimido + desempaquetado medidos" \
+  "$(( 3750477083 + 5513676936 ))" "$need_ollama"
+
+for key in THYROX_INFRA_OLLAMA_IMAGE THYROX_INFRA_OLLAMA_PORT THYROX_INFRA_PROXY_CA_BUNDLE; do
+  if grep -qx "$key=" "$ROOT/.env.example"; then
+    ok ".env.example declara $key vacia"
+  else
+    bad ".env.example no declara $key="
+  fi
+done
 
 # --- inspeccion contra un podman falso ---
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT

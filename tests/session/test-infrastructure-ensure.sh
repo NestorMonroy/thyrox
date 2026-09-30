@@ -150,6 +150,7 @@ run_ensure() {
 reset_state
 echo ok > "$STATE/thyrox-postgres.health"
 echo ok > "$STATE/thyrox-redis.health"
+echo ok > "$STATE/thyrox-ollama.health"
 out="$(run_ensure)"; rc=$?
 thyrox_check "caso 1: ausente -> exit 0" "0" "$rc"
 if [[ "$out" == *"thyrox-postgres"*"action=created"* ]]; then
@@ -161,6 +162,18 @@ if [[ "$out" == *"thyrox-redis"*"action=created"* ]]; then
   ok "caso 1: redis ausente se reporta con action=created"
 else
   bad "caso 1: no se vio action=created para redis: [$out]"
+fi
+if [[ "$out" == *"thyrox-ollama"*"action=created"* ]]; then
+  ok "caso 1: ollama ausente se reporta con action=created"
+else
+  bad "caso 1: no se vio action=created para ollama: [$out]"
+fi
+thyrox_check "caso 1: el ensure recorre los tres en orden postgres, redis, ollama" \
+  "thyrox-postgres thyrox-redis thyrox-ollama " "$(awk '{printf "%s ", $1}' <<<"$out")"
+if grep -q -- '--network host' "$STATE/calls.log" && grep '^create ' "$STATE/calls.log" | grep -q 'thyrox-ollama'; then
+  ok "caso 1: ollama se crea con la red del anfitrion"
+else
+  bad "caso 1: ollama no se creo con --network host: $(cat "$STATE/calls.log")"
 fi
 if grep -q '^network create thyrox-infra$' "$STATE/calls.log"; then
   ok "caso 1: la red thyrox-infra se crea cuando falta"
@@ -176,7 +189,7 @@ touch "$STATE/network-thyrox-infra"
 ( exec -a "${MARKER}-alive" sleep 999 ) &
 alive_pid=$!
 disown "$alive_pid" 2>/dev/null || true
-for n in thyrox-postgres thyrox-redis; do
+for n in thyrox-postgres thyrox-redis thyrox-ollama; do
   echo running > "$STATE/$n.status"
   echo "$alive_pid" > "$STATE/$n.pid"
   echo ok > "$STATE/$n.health"
@@ -202,7 +215,7 @@ reset_state
 touch "$STATE/network-thyrox-infra"
 ( exit 0 ) & dead_pid=$!
 wait "$dead_pid" 2>/dev/null
-for n in thyrox-postgres thyrox-redis; do
+for n in thyrox-postgres thyrox-redis thyrox-ollama; do
   echo running > "$STATE/$n.status"
   echo "$dead_pid" > "$STATE/$n.pid"
   echo ok > "$STATE/$n.health"
@@ -224,13 +237,33 @@ if grep -E '^rm ' "$STATE/calls.log" | grep -q 'thyrox-postgres-data'; then
 else
   ok "caso 3: ningun rm -f toca el volumen thyrox-postgres-data"
 fi
+if [[ "$out" == *"thyrox-ollama"*"pid_alive=no"*"action=recreated"* ]]; then
+  ok "caso 3: ollama con PID muerto se recrea (recreated)"
+else
+  bad "caso 3: ollama no se recreo: [$out]"
+fi
+if grep -q '^rm -f thyrox-ollama$' "$STATE/calls.log"; then
+  ok "caso 3: se invoco rm -f sobre el ollama stale"
+else
+  bad "caso 3: no se vio 'rm -f thyrox-ollama' en calls.log"
+fi
+if grep -E '^rm ' "$STATE/calls.log" | grep -q 'thyrox-ollama-models'; then
+  bad "caso 3: el volumen thyrox-ollama-models aparece en una linea de rm"
+else
+  ok "caso 3: ningun rm -f toca el volumen thyrox-ollama-models"
+fi
+if grep '^create ' "$STATE/calls.log" | grep 'thyrox-ollama' | grep -q 'thyrox-ollama-models:/root/.ollama'; then
+  ok "caso 3: el ollama recreado vuelve a montar el volumen de modelos"
+else
+  bad "caso 3: el create de ollama no monta thyrox-ollama-models"
+fi
 
 # =====================================================================
 # Caso 4 — exited: se arranca (start), sin create ni rm.
 # =====================================================================
 reset_state
 touch "$STATE/network-thyrox-infra"
-for n in thyrox-postgres thyrox-redis; do
+for n in thyrox-postgres thyrox-redis thyrox-ollama; do
   echo exited > "$STATE/$n.status"
   echo 0 > "$STATE/$n.pid"
   echo ok > "$STATE/$n.health"
@@ -254,6 +287,7 @@ fi
 reset_state
 echo fail > "$STATE/thyrox-postgres.health"
 echo ok > "$STATE/thyrox-redis.health"
+echo ok > "$STATE/thyrox-ollama.health"
 err="$(TEST_HEALTH_TIMEOUT=4 TEST_HEALTH_INTERVAL=2 run_ensure 2>&1 >/dev/null)"; rc=$?
 thyrox_check "caso 5: nunca sano -> exit 1" "1" "$rc"
 if [[ "$err" == *"thyrox-postgres"* ]]; then
@@ -285,6 +319,7 @@ fi
 reset_state
 echo ok > "$STATE/thyrox-postgres.health"
 echo ok > "$STATE/thyrox-redis.health"
+echo ok > "$STATE/thyrox-ollama.health"
 first_out="$(run_ensure)"; first_rc=$?
 calls_after_first="$(wc -l < "$STATE/calls.log")"
 second_out="$(run_ensure)"; second_rc=$?
@@ -297,8 +332,9 @@ else
 fi
 thyrox_check "caso 7: segunda invocacion -> exit 0" "0" "$second_rc"
 if [[ "$second_out" == *"thyrox-postgres"*"action=kept"* && \
-      "$second_out" == *"thyrox-redis"*"action=kept"* ]]; then
-  ok "caso 7: la segunda invocacion conserva los dos contenedores (kept)"
+      "$second_out" == *"thyrox-redis"*"action=kept"* && \
+      "$second_out" == *"thyrox-ollama"*"action=kept"* ]]; then
+  ok "caso 7: la segunda invocacion conserva los tres contenedores (kept)"
 else
   bad "caso 7: la segunda invocacion no conservo: [$second_out]"
 fi
@@ -314,6 +350,7 @@ fi
 reset_state
 echo ok > "$STATE/thyrox-postgres.health"
 echo ok > "$STATE/thyrox-redis.health"
+echo ok > "$STATE/thyrox-ollama.health"
 need_pg="$(bash -c "source '$ROOT/src/lib/infrastructure.sh'; thyrox_infrastructure_disk_need_bytes thyrox-postgres")"
 out="$(run_ensure)"; rc=$?
 thyrox_check "caso 8: cabe -> exit 0" "0" "$rc"
@@ -338,6 +375,7 @@ reset_state
 touch "$STATE/disk-full"
 echo ok > "$STATE/thyrox-postgres.health"
 echo ok > "$STATE/thyrox-redis.health"
+echo ok > "$STATE/thyrox-ollama.health"
 err="$(run_ensure 2>&1 >/dev/null)"; rc=$?
 thyrox_check "caso 9: no cabe -> exit 2" "2" "$rc"
 if grep -qE '^create ' "$STATE/calls.log"; then
@@ -360,6 +398,7 @@ reset_state
 touch "$STATE/disk-full" "$STATE/image-present"
 echo ok > "$STATE/thyrox-postgres.health"
 echo ok > "$STATE/thyrox-redis.health"
+echo ok > "$STATE/thyrox-ollama.health"
 out="$(run_ensure)"; rc=$?
 thyrox_check "caso 10: imagen presente -> exit 0 aunque el disco no admita" "0" "$rc"
 if grep -q '^admission ' "$STATE/calls.log"; then
