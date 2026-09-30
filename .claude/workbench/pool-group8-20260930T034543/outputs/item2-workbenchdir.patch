@@ -1,0 +1,203 @@
+diff --git a/src/packages/paths/__tests__/unprefixedClone.test.ts b/src/packages/paths/__tests__/unprefixedClone.test.ts
+index 8e6ddda0..1dd0ad3b 100644
+--- a/src/packages/paths/__tests__/unprefixedClone.test.ts
++++ b/src/packages/paths/__tests__/unprefixedClone.test.ts
+@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+ import { join, resolve } from 'node:path'
+ import { tmpdir } from 'node:os'
+-import { cloneName, clonePrefix, cloneShortName, cloneSuffixOf } from '../reach.ts'
++import { cloneName, clonePrefix, cloneRootOf, cloneShortName, cloneSuffixOf, perCloneBase } from '../reach.ts'
+ 
+ let base: string
+ const saved: Record<string, string | undefined> = {}
+@@ -63,3 +63,12 @@ describe('a clone without the prefix keeps its whole name', () => {
+     expect(cloneSuffixOf(join(base, 'kaupamex-docs'))).toBe('DOCS')
+   })
+ })
++
++describe('perCloneBase — el ancla de una clave por clon relativa', () => {
++  test('la raíz del clon que contiene start', () => {
++    expect(perCloneBase(join(base, 'kaupamex-docs', 'sub'))).toBe(cloneRootOf(join(base, 'kaupamex-docs', 'sub')))
++  })
++  test('fuera de un clon, start mismo, resuelto', () => {
++    expect(perCloneBase(base)).toBe(base)
++  })
++})
+diff --git a/src/packages/paths/reach.ts b/src/packages/paths/reach.ts
+index f499c177..e4594489 100644
+--- a/src/packages/paths/reach.ts
++++ b/src/packages/paths/reach.ts
+@@ -283,6 +283,17 @@ export function cloneRootOf(start: string): string | null {
+   return existsSync(join(top, '.git')) ? top : null
+ }
+ 
++/**
++ * La base contra la que se resuelve una clave por clon RELATIVA: la raíz del
++ * clon que contiene `start`, o `start` mismo fuera de uno. Gemela de
++ * `per_clone_base` — es lo único que faltaba portar de la familia por clon
++ * para que `workbenchDir` tenga con qué anclar su rama por clon.
++ */
++export function perCloneBase(start?: string): string {
++  const here = start ?? process.cwd()
++  return cloneRootOf(here) ?? resolve(here)
++}
++
+ /** `kaupamex-docs` -> `docs`; `ai-course-notes` -> `ai-course-notes`. */
+ export function cloneShortName(start: string): string | null {
+   const root = cloneRootOf(start)
+diff --git a/src/packages/workbench/__tests__/paths.test.ts b/src/packages/workbench/__tests__/paths.test.ts
+index 7c7b817b..b9ef4b51 100644
+--- a/src/packages/workbench/__tests__/paths.test.ts
++++ b/src/packages/workbench/__tests__/paths.test.ts
+@@ -18,12 +18,14 @@
+  * no estaría midiendo la precedencia.
+  */
+ import { describe, expect, test } from 'bun:test'
+-import { mkdtempSync, writeFileSync } from 'node:fs'
++import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+-import { thyroxRoot } from '@thyrox/paths/reach.ts'
+-import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../paths.ts'
++import { cloneShortName, thyroxRoot } from '@thyrox/paths/reach.ts'
++import {
++  WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir, workbenchHomeName,
++} from '../paths.ts'
+ 
+ /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
+ function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {
+@@ -139,3 +141,78 @@ describe('el hogar del banco se declara, no se cablea', () => {
+     })
+   })
+ })
++
++/**
++ * Construye dos clones sintéticos —cada uno con `.git` y `.claude`— y los
++ * limpia al salir. Sin guion en el nombre: así ningún prefijo de multi-repo
++ * derivado le recorta nada, y `cloneShortName` devuelve el nombre íntegro.
++ */
++function withClones(names: string[], fn: (dirs: Record<string, string>) => void): void {
++  const base = mkdtempSync(join(tmpdir(), 'wb-clones-'))
++  const dirs: Record<string, string> = {}
++  for (const name of names) {
++    const dir = join(base, name)
++    mkdirSync(join(dir, '.git'), { recursive: true })
++    mkdirSync(join(dir, '.claude'), { recursive: true })
++    dirs[name] = dir
++  }
++  try { fn(dirs) } finally { rmSync(base, { recursive: true, force: true }) }
++}
++
++/** El nombre corto de un clon sintético — nunca `null` bajo `withClones`. */
++function repoNameOf(dir: string): string {
++  const name = cloneShortName(dir)
++  if (!name) throw new Error(`sin nombre corto de clon para ${dir}`)
++  return name
++}
++
++describe('la familia POR CLON — precedencia sobre la global (TASK-THYROX-0634)', () => {
++  test('7. la clave por clon gana sobre la global', () => {
++    withClones(['clonealpha', 'clonebeta'], (dirs) => {
++      const repo = repoNameOf(dirs.clonealpha)
++      withEnv({
++        [workbenchHomeName(repo)]: 'hogar-del-clon',
++        THYROX_WORKBENCH_DIR: '/hogar/global',
++        THYROX_ENV_FILE: undefined,
++      }, () => {
++        expect(workbenchDir(dirs.clonealpha)).toBe(join(dirs.clonealpha, 'hogar-del-clon'))
++      })
++    })
++  })
++
++  test('8. sin clave por clon, manda la global', () => {
++    withClones(['clonealpha', 'clonebeta'], (dirs) => {
++      withEnv({ THYROX_WORKBENCH_DIR: '/hogar/global', THYROX_ENV_FILE: undefined }, () => {
++        expect(workbenchDir(dirs.clonealpha)).toBe('/hogar/global')
++      })
++    })
++  })
++
++  test('9. sin ninguna de las dos, cae al default de la cadena declarada', () => {
++    withClones(['clonealpha', 'clonebeta'], (dirs) => {
++      withEnv({ THYROX_WORKBENCH_DIR: undefined, THYROX_ENV_FILE: undefined }, () => {
++        const home = workbenchDir(dirs.clonealpha)
++        expect(home).toBe(
++          join(dirs.clonealpha, stateDir(dirs.clonealpha), evidenceDir(dirs.clonealpha)),
++        )
++      })
++    })
++  })
++
++  test('10. la clave por clon de OTRO clon no se usa', () => {
++    withClones(['clonealpha', 'clonebeta'], (dirs) => {
++      const repoBeta = repoNameOf(dirs.clonebeta)
++      withEnv({
++        [workbenchHomeName(repoBeta)]: '/hogar/de/beta',
++        THYROX_WORKBENCH_DIR: undefined,
++        THYROX_ENV_FILE: undefined,
++      }, () => {
++        const home = workbenchDir(dirs.clonealpha)
++        expect(home).not.toBe('/hogar/de/beta')
++        expect(home).toBe(
++          join(dirs.clonealpha, stateDir(dirs.clonealpha), evidenceDir(dirs.clonealpha)),
++        )
++      })
++    })
++  })
++})
+diff --git a/src/packages/workbench/paths.ts b/src/packages/workbench/paths.ts
+index f7a2d262..f0d9cb3a 100644
+--- a/src/packages/workbench/paths.ts
++++ b/src/packages/workbench/paths.ts
+@@ -50,7 +50,9 @@
+  */
+ import { join } from 'node:path'
+ 
+-import { ConsumerUnknownError, consumerRoot, envValue, resolveHome } from '@thyrox/paths/reach.ts'
++import {
++  ConsumerUnknownError, cloneShortName, consumerRoot, envValue, perCloneBase, resolveHome,
++} from '@thyrox/paths/reach.ts'
+ 
+ /**
+  * Los dos segmentos del par, declarables por separado. La mitad Python los
+@@ -80,6 +82,21 @@ export function evidenceDir(start?: string): string {
+ /** Entrada 1 — el valor: el hogar declarado directamente. */
+ export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'
+ 
++/**
++ * El prefijo de la familia POR CLON: `api` -> `THYROX_WORKBENCH_API`.
++ *
++ * Gemela de `workbench_home_name` de la mitad Python: **un solo proceso
++ * resuelve varios árboles**, y `WORKBENCH_DIR_VAR` no puede decir dos verdades
++ * a la vez. Sin la familia, la variable exportada para UN consumidor mezcla su
++ * segmento con el árbol de otro que corra en el mismo proceso.
++ */
++export const WORKBENCH_CLONE_PREFIX = 'THYROX_WORKBENCH_'
++
++/** La constante por raíz: `api` -> `THYROX_WORKBENCH_API`. */
++export function workbenchHomeName(repo: string): string {
++  return `${WORKBENCH_CLONE_PREFIX}${repo.toUpperCase().replace(/-/g, '_')}`
++}
++
+ /**
+  * Entrada 2 — la ruta del archivo que puede declararlo.
+  *
+@@ -112,6 +129,16 @@ export class WorkbenchHomeError extends Error {}
+  * @param start punto de partida para localizar el `.env`; por defecto el cwd.
+  */
+ export function workbenchDir(start?: string): string {
++  // La familia POR CLON gana sobre la global: la declaracion mas especifica
++  // manda, y es lo unico que impide que una variable exportada para un arbol
++  // se aplique a otro. Ver `workbenchHomeName`. Gemela de la rama que
++  // `workbench_dir` resuelve primero en la mitad Python.
++  const repo = cloneShortName(start ?? process.cwd())
++  if (repo) {
++    const perClone = envValue(workbenchHomeName(repo), start)
++    if (perClone) return resolveHome(perClone, perCloneBase(start))
++  }
++
+   // El valor declarado pasa por `resolveHome`, igual que en la familia
+   // `rules`: como segmento relativo tiene que decir «en cada clon, este
+   // subdirectorio», y devuelto crudo resolveria contra el CWD — el defecto
