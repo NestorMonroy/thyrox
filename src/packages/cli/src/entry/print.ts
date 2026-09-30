@@ -29,6 +29,7 @@ import { streamLoop } from '@thyrox/agent/loop'
 import type { LoopResult } from '@thyrox/agent/loop/types'
 import { loopSetup } from './runLoop.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+import { openExistingConnectionStore, type OpenedConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
 import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
@@ -39,6 +40,8 @@ export type PrintDeps = {
   findExecutable?: (name: string) => string | null
   readFd?: (fd: number) => string
   newSessionId?: () => string
+  /** El store de conexiones, si existe; la decisión de delegar lo consulta. */
+  openStore?: () => OpenedConnectionStore | undefined
 }
 
 export type OutputFormat = 'text' | 'json' | 'stream-json'
@@ -210,7 +213,9 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
   // La línea se valida con el contrato de thyrox antes de delegar: lo que
   // thyrox -p rehúsa no pasa a claude -p.
   const env = deps.env ?? process.env
-  const delegation = decidePrintDelegation(argv, env, deps.findExecutable ?? ((name) => Bun.which(name)), deps.readFd)
+  const opened = (deps.openStore ?? (() => openExistingConnectionStore({ env })))()
+  const delegation = decidePrintDelegation(argv, env, deps.findExecutable ?? ((name) => Bun.which(name)), deps.readFd, opened?.store)
+  opened?.close()
   if (delegation.delegate) {
     return runDelegatedPrint(delegation.claudePath, delegatedArgv(argv, deps.newSessionId), stdin, env)
   }

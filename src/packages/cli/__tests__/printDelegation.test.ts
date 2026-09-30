@@ -5,9 +5,10 @@
  * `.claude/workbench/claude-p-from-shell-20260928T234121/`.
  */
 import { describe, expect, test } from 'bun:test'
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { decidePrintDelegation, delegatedArgv } from '../src/entry/printDelegation.ts'
 import { runPrint } from '../src/entry/print.ts'
 
@@ -22,6 +23,15 @@ describe('decidePrintDelegation — cuándo thyrox -p delega en claude -p', () =
   test('con credencial propia, thyrox atiende la invocación', () => {
     const decision = decidePrintDelegation(['-p', 'hola'], { ANTHROPIC_API_KEY: 'sk-propia' }, found, noFd)
     expect(decision.delegate).toBe(false)
+  })
+  test('con una conexión del store, thyrox atiende la invocación', () => {
+    const home = mkdtempSync(join(tmpdir(), 'thyrox-delegation-store-'))
+    const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: home }, declared: () => 'k' })
+    opened.store.create({ provider: 'claude', authType: 'apikey', name: 'propia', isActive: true, apiKey: 'sk-propia' })
+    const decision = decidePrintDelegation(['-p', 'hola'], {}, found, noFd, opened.store)
+    opened.close()
+    rmSync(home, { recursive: true, force: true })
+    expect(decision).toEqual({ delegate: false, reason: 'thyrox tiene credencial propia' })
   })
   test('sin claude en el PATH, no delega y lo dice', () => {
     const decision = decidePrintDelegation(['-p', 'hola'], {}, absent, noFd)

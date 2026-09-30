@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { authHeaders, OAUTH_BETA, resolveCredential, scrubChildEnv } from '../src/credentials.ts'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { AnthropicHttpProvider } from '../src/anthropicHttp.ts'
+import { openConnectionStore } from '../src/accounts/connectionStoreHome.ts'
 
 const withoutFd = () => {
   throw new Error('no se esperaba leer un fd')
@@ -112,6 +116,25 @@ describe('AnthropicHttpProvider con la cadena de credenciales', () => {
 
   test('sin credencial rehúsa nombrando las fuentes que busca', () => {
     expect(() => new AnthropicHttpProvider({ env: {} })).toThrow(/THYROX_CODE_OAUTH_TOKEN/)
+  })
+
+  test('con una conexión del store, la petición lleva su llave', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'thyrox-http-store-'))
+    const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: home }, declared: () => 'k' })
+    opened.store.create({ provider: 'claude', authType: 'apikey', name: 'propia', isActive: true, apiKey: 'sk-store' })
+    let init: RequestInit | undefined
+    const p = new AnthropicHttpProvider({
+      env: {},
+      store: opened.store,
+      fetchImpl: async (_u, i) => {
+        init = i
+        return response()
+      },
+    })
+    opened.close()
+    rmSync(home, { recursive: true, force: true })
+    await p.send(request as never)
+    expect((init?.headers as Record<string, string>)['x-api-key']).toBe('sk-store')
   })
 
   test('con socket, la petición lleva la opción unix', async () => {

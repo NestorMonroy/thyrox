@@ -12,6 +12,7 @@
  * lanza si no se le da otra.
  */
 import { randomUUID } from 'node:crypto'
+import type { ConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { resolveCredential, type ReadFd } from '@thyrox/provider/credentials'
 
 type Env = Record<string, string | undefined>
@@ -41,12 +42,13 @@ export function decidePrintDelegation(
   env: Env,
   findExecutable: (name: string) => string | null,
   readFd?: ReadFd,
+  store?: ConnectionStore,
 ): PrintDelegationDecision {
   const provider = flagValue(argv, '--provider') ?? 'http'
   if (provider !== 'http') return { delegate: false, reason: `el proveedor ${provider} es de thyrox` }
   const own = THYROX_ONLY_FLAGS.find((flag) => hasFlag(argv, flag))
   if (own) return { delegate: false, reason: `${own} es una bandera de thyrox` }
-  if (resolveCredential(env, readFd).source !== 'none') return { delegate: false, reason: 'thyrox tiene credencial propia' }
+  if (resolveCredential(env, readFd, store).source !== 'none') return { delegate: false, reason: 'thyrox tiene credencial propia' }
   const claudePath = findExecutable('claude')
   if (!claudePath) return { delegate: false, reason: 'sin credencial propia y sin un claude en el PATH al que delegar' }
   return { delegate: true, claudePath }

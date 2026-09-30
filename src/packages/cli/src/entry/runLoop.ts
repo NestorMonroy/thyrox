@@ -37,6 +37,7 @@ import { settingsFor } from './settings.ts'
 import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+import { openExistingConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
 import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
@@ -59,7 +60,14 @@ function providerFor(argv: string[], connection: ConnectionRecord | undefined): 
   const cual = flag(argv, 'provider') ?? 'recorded'
   if (cual === 'http') {
     const apiKey = connection?.auth.type === 'api_key' ? connection.auth.key : undefined
-    return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey })
+    // El proveedor resuelve su credencial al construirse: el store se abre sólo
+    // para esa resolución, y sólo si existe.
+    const opened = openExistingConnectionStore()
+    try {
+      return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey, store: opened?.store })
+    } finally {
+      opened?.close()
+    }
   }
   const ruta = flag(argv, 'grabacion')
   if (!ruta) throw new Error('--provider recorded exige --grabacion <ruta a JSON con los turnos>')

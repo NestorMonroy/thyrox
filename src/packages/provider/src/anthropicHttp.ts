@@ -19,6 +19,7 @@
  */
 import type { AssistantTurn, ContentBlock, Provider, ProviderRequest, StopReason, Usage } from '@thyrox/agent/loop/types'
 import { accumulate, parseSseEvents, type TextDelta } from './sse.ts'
+import type { ConnectionStore } from './accounts/connectionStore.ts'
 import { authHeaders, resolveCredential, type Credential, type ReadFd } from './credentials.ts'
 
 export { parseSseEvents } from './sse.ts'
@@ -33,6 +34,8 @@ export type HttpProviderOptions = {
   /** El entorno del que se resuelve la credencial (por defecto, `process.env`). */
   env?: Record<string, string | undefined>
   readFd?: ReadFd
+  /** El store de conexiones: la última fuente de la cadena (`PROVIDER_CONNECTION`). */
+  store?: ConnectionStore
   baseUrl?: string
   version?: string
   /** Cuántas veces se reintenta antes de rendirse (o de caer al respaldo). */
@@ -65,7 +68,7 @@ export class AnthropicHttpProvider implements Provider {
     const env = opts.env ?? process.env
     const credential: Credential = opts.apiKey
       ? { source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: opts.apiKey, unixSocket: env.ANTHROPIC_UNIX_SOCKET?.trim() || undefined }
-      : resolveCredential(env, opts.readFd)
+      : resolveCredential(env, opts.readFd, opts.store)
     if (credential.source === 'none') {
       throw new Error(
         'AnthropicHttpProvider exige credencial: ninguna de ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, ' +

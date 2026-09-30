@@ -15,6 +15,7 @@
  * Sin credencial rehúsa con exit 2 y no escucha: un proxy sin credencial
  * aceptaría peticiones que el servicio rechazaría una a una.
  */
+import { openExistingConnectionStore } from '../src/accounts/connectionStoreHome.ts'
 import { resolveCredential } from '../src/credentials.ts'
 import { startCredentialProxy } from '../src/credentialProxy.ts'
 
@@ -29,7 +30,11 @@ if (!socketPath) {
   process.exit(2)
 }
 const upstream = argument('--upstream') ?? process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'
-const credential = resolveCredential(process.env)
+// El proxy resuelve la credencial una vez al arrancar; la conexión del store es
+// la última fuente de la cadena, así que se abre sólo para esa lectura.
+const opened = openExistingConnectionStore()
+const credential = resolveCredential(process.env, undefined, opened?.store)
+opened?.close()
 if (credential.source === 'none' || credential.source === 'proxy') {
   process.stderr.write(
     'credentialProxy: sin credencial propia — declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, ' +

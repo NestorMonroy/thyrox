@@ -10,7 +10,14 @@ import os from 'node:os'
 import path from 'node:path'
 
 import { BUSY_TIMEOUT_MS } from '@thyrox/store/db.ts'
-import { CONNECTIONS_DB_FILE, openConnectionStore, resolveProvidersDataDir } from '../../src/accounts/connectionStoreHome.ts'
+import {
+  CONNECTIONS_DB_FILE,
+  declaredStorageKey,
+  openConnectionStore,
+  openExistingConnectionStore,
+  resolveProvidersDataDir,
+} from '../../src/accounts/connectionStoreHome.ts'
+import { looksEncrypted } from '../../src/accounts/fieldCipher.ts'
 
 const dirs: string[] = []
 afterEach(() => {
@@ -65,5 +72,40 @@ describe('opening the connection store', () => {
     const timeout = (opened.db.query('PRAGMA busy_timeout').get() as { timeout: number }).timeout
     opened.close()
     expect(timeout).toBe(BUSY_TIMEOUT_MS)
+  })
+})
+
+describe('the declared storage key', () => {
+  const none = () => null
+  test('the process environment wins over the env file', () => {
+    expect(declaredStorageKey({ THYROX_STORAGE_ENCRYPTION_KEY: 'from-env' }, () => 'from-file')).toBe('from-env')
+  })
+  test('without it in the process, the env file declaration is used', () => {
+    expect(declaredStorageKey({}, (name) => (name === 'THYROX_STORAGE_ENCRYPTION_KEY' ? 'from-file' : null))).toBe('from-file')
+  })
+  test('a blank value counts as undeclared', () => {
+    expect(declaredStorageKey({ THYROX_STORAGE_ENCRYPTION_KEY: '  ' }, none)).toBeUndefined()
+  })
+})
+
+describe('opening an existing connection store', () => {
+  test('without the database it returns nothing and creates nothing', () => {
+    const dir = path.join(tempDir(), 'absent')
+    expect(openExistingConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: dir }, declared: () => null })).toBeUndefined()
+    expect(fs.existsSync(dir)).toBe(false)
+  })
+  test('with the database it opens it and ciphers with the key from the env file', () => {
+    const dir = tempDir()
+    const env = { THYROX_PROVIDERS_DATA_DIR: dir }
+    const declared = (name: string) => (name === 'THYROX_STORAGE_ENCRYPTION_KEY' ? 'file-key' : null)
+    const created = openConnectionStore({ env, declared })
+    created.store.create({ provider: 'claude', authType: 'apikey', name: 'k', isActive: true, apiKey: 'sk-test' })
+    const stored = created.db.query('SELECT api_key FROM provider_connections').get() as { api_key: string }
+    created.close()
+    expect(looksEncrypted(stored.api_key)).toBe(true)
+    const opened = openExistingConnectionStore({ env, declared })
+    expect(opened).toBeDefined()
+    expect(opened?.store.listRaw({ provider: 'claude', isActive: true })).toHaveLength(1)
+    opened?.close()
   })
 })
