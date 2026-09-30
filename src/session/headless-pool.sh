@@ -641,6 +641,10 @@ _headless_item_run() {
              # rehusado es el que `item_worktree.sh finalize` lee para dar el
              # veredicto `con-stash`.
              export THYROX_POOL_STASH_ATTEMPTS_FILE="$HP_LIVE/$n.stash-attempts"
+             # El repositorio cuyo `refs/stash` se guarda: el del ítem. Un stash
+             # en otro repositorio pasa (`item_git_guard/git`).
+             THYROX_POOL_GUARDED_GIT_COMMON_DIR="$(git -C "$workdir" rev-parse --path-format=absolute --git-common-dir)"
+             export THYROX_POOL_GUARDED_GIT_COMMON_DIR
              export PATH="$HP_ITEM_GIT_GUARD_DIR:$PATH"
          fi
          # Cada cliente lee el TTL con su propio nombre: `thyrox -p`

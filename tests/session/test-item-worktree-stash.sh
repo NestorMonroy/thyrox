@@ -112,5 +112,25 @@ check "item1 (con-stash) no se aplica" "$(gawk -F'\t' '$1 == 1 {print $2}' "$F/o
 check "item2 (anomalía) no se aplica" \
     "$(gawk -F'\t' '$1 == 2 {print $2}' "$F/outg/integration.tsv")" "anomalia-stash-compartido: deadbeef"
 
+echo "caso h — con el repositorio guardado declarado, un stash en OTRO repositorio pasa"
+# El pool declara el directorio común del repositorio del ítem: sólo un stash
+# que comparte ese `refs/stash` le afecta. Una suite que stashea en su propio
+# repositorio temporal —la de este archivo, caso e— no es un stash del ítem
+# (TASK-THYROX-0647: el pool D dio con-stash a 0645 por eso).
+OTHER="$F/other"
+git init -q "$OTHER" && git -C "$OTHER" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base
+echo otro > "$OTHER/cambio.txt"
+GUARDED="$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)"
+THYROX_POOL_GUARDED_GIT_COMMON_DIR="$GUARDED" THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-h1" \
+    "$GIT_GUARD" -C "$OTHER" stash push -u -m ajeno > /dev/null 2>&1; rc_h1=$?
+check "stash en otro repositorio: sale 0" "$rc_h1" "0"
+check "y no cuenta como intento" "$([[ -s "$F/attempts-h1" ]] && echo si || echo no)" "no"
+check "y llegó al git real" "$(git -C "$OTHER" stash list | wc -l)" "1"
+wth="$F/wt-h"; git -C "$REPO" worktree add -q --detach "$wth" 2>/dev/null
+THYROX_POOL_GUARDED_GIT_COMMON_DIR="$GUARDED" THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-h2" \
+    "$GIT_GUARD" -C "$wth" stash push > /dev/null 2>&1; rc_h2=$?
+check "stash en un worktree del repositorio guardado: rehúsa" "$rc_h2" "2"
+check "y cuenta como intento" "$(wc -l < "$F/attempts-h2")" "1"
+
 echo "item_worktree stash guard: $((total - fallos))/$total"
 [[ "$fallos" -eq 0 ]]
