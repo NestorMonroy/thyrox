@@ -76,12 +76,17 @@ if (feature('ABLATION_BASELINE') && process.env.THYROX_CODE_ABLATION_BASELINE) {
 /**
  * Bootstrap entrypoint - checks for special flags before loading the full CLI.
  * All imports are dynamic to minimize module evaluation for fast paths.
- * Fast-path for --version has zero imports beyond this file.
+ * El perfilador de arranque es la única excepción a eso: se carga antes que
+ * cualquier camino, `--version` incluido, porque su sola carga registra el
+ * cierre del informe al terminar el proceso (`startupProfiler.ts`), y ese
+ * cierre tiene que alcanzar a todo camino, no sólo al REPL (#130-7).
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
 
-  // Fast-path for --version/-v: zero module loading needed
+  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
+
+  // Fast-path for --version/-v: no further module loading beyond the profiler above
   if (
     args.length === 1 &&
     (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')
@@ -104,8 +109,6 @@ async function main(): Promise<void> {
     return
   }
 
-  // For all other paths, load the startup profiler
-  const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
   profileCheckpoint('cli_entry')
 
   // Fast-path for --dump-system-prompt: output the rendered system prompt and exit.
