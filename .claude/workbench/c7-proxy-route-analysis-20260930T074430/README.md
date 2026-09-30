@@ -43,3 +43,12 @@ retira cuando C5a–C5c estén en verde, como dice la tarea.
 literal, y el cuerpo de cada símbolo por `bin/binary symbol`.
 *Ciega a:* el lado servidor del túnel (quien escucha y pone la credencial): en la
 referencia es la sesión SSH remota, fuera de este ejecutable.
+
+## Decisión del ejecutor: el socket conserva su nombre
+
+`ANTHROPIC_UNIX_SOCKET` NO se renombra a `THYROX_UNIX_SOCKET`. Las variables
+`ANTHROPIC_*` (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`,
+`ANTHROPIC_UNIX_SOCKET`) son del contrato del proveedor, no del cliente: quien
+sirve o consume el túnel desde fuera usa ese nombre. Sólo se renombra lo que es
+del cliente propio (`CLAUDE_CODE_OAUTH_TOKEN` → `THYROX_CODE_OAUTH_TOKEN`). Un
+renombre de 36 apariciones en 17 archivos se probó y se revirtió sin commitear.
