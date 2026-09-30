@@ -32,7 +32,7 @@ observabilidad. `agent_store.sqlite3` es SQLite en Python.
    no cumple. Ni el anfitrión ni el Podman local lo son.
 3. **Puerto/adaptador para `agent_sessions` y `tasks`** (los primeros en
    migrar según D4-B): no existe.
-4. **Stores síncronos (D3, TASK-THYROX-0444, opción A)**: el runner síncrono
+4. **Stores síncronos (D3, tarjeta [201], opción A; su cita durable no resolvió con `task_ids lookup`)**: el runner síncrono
    es SQLite; llevarlos a PostgreSQL no está planeado.
-5. **Búsqueda semántica**: D5 (qué vectorizar y modelo, TASK-THYROX-0446),
-   `SemanticSearchStore` [319], consumidores [204] y worker [315]: pendientes.
+5. **Búsqueda semántica**: D5 (qué vectorizar y modelo, tarjeta [203], sin cita resuelta),
+   `SemanticSearchStore` (TASK-THYROX-0562), consumidores [204] y worker [315]: pendientes.
