@@ -64,8 +64,10 @@ cifrada en el store de conexiones, y `resolveCredential` la lee
 sólo nombra las cuatro variables de entorno. El rechazo debe nombrar también
 la vía del store: `bash bin/cli providers add anthropic --credential-env
 <VAR>`, o sin `--credential-env` para el prompt oculto. El mensaje no cambia
-de forma: sigue saliendo con 2, sin escuchar. Y el `README.md` de la raíz, en
-su checklist de un clon nuevo, nombra esa vía como la forma de dar al pool
+de forma: sigue saliendo con 2, sin escuchar. Y como un pool corre sin
+credencial propia en `inherit`, a través del proxy local (C7), el rechazo lo
+dice también: `--credential-proxy` es opcional. El `README.md` de la raíz, en
+su checklist de un clon nuevo, nombra las dos vías como la forma de dar al pool
 una credencial propia. Te pertenecen `src/packages/provider/bin/credentialProxy.ts`,
 `src/packages/provider/__tests__/credentialProxyProcess.test.ts` y
 `README.md`.

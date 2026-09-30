@@ -32,10 +32,13 @@ analisis` y la fuente `proxy-store` de `--credential-proxy`, porque el entorno
 no declara ninguna variable de credencial. El proxy no arrancó: el store de
 conexiones tampoco tiene credencial propia. Log: `.claude/jobs/podman-manager-pool-20260930T172008/`.
 
-Es la conducta correcta: la credencial del anfitrión no se usa, y el pool
-no cae a ella en silencio. La vía de thyrox es el store: `bash bin/cli
-providers add anthropic --credential-env <VAR>` guarda la clave cifrada y el
-pool la resuelve por `proxy-store` (`credential-store-import-20260930T172522`).
+El rechazo era correcto para lo que se pidió, y lo pedido era el error:
+`--credential-proxy` exige una credencial propia, en el entorno o en el store,
+y no la había. Este pool no la necesita. Sin la opción rige `inherit`: cada
+ítem hereda el entorno y `thyrox -p` entra al proxy local (C7). Medido en
+`task-census-20260930T064202/impl-pool-a/outputs-2`, que corrió así: sus
+ítems 1, 2 y 3 terminaron en `success`, con 54, 69 y 79 turnos. Por eso el
+relanzamiento va sin `--credential-proxy`.
 
 **Ampliado tras el rechazo:** el pool lleva ahora cuatro ítems. Se añaden
 TASK-THYROX-0657 (el rechazo del proxy nombra la vía del store) y

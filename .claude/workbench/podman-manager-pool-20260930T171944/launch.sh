@@ -7,4 +7,4 @@ export THYROX_ITEM_WORKTREE_DISK_RESERVE_MB=512
 export THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS=600
 bash bin/headless-pool --prompt "$B/template.md" --out "$B/outputs-2" \
   --task-class analisis --isolation worktree --width 4 --timeout 7200 \
-  --credential-proxy --verify "bash $B/probes/verify-item.sh" < "$B/items.txt"
+  --verify "bash $B/probes/verify-item.sh" < "$B/items.txt"
