@@ -28,13 +28,15 @@
  * // (`launchAgent.ts`, `daemonClient.ts`, `bgDaemon.ts`) que este item no
  * // toca. Lo que se porta de `wa` es su resolucion de `hub`→`status` y su
  * // clasificacion de gating (`resolveDaemonBgDispatch`).
- * // pendiente: `resolveDaemonBgDispatch` esta portado y probado, pero
- * // `main.ts` no lo usa para bloquear `list`/`status`: en el binario real
- * // `pV()` es un stub que siempre devuelve `false` (`chunk-4x2jc802.js`,
- * // resuelto con `bin/binary symbol`), asi que aplicar su gate tal cual
- * // apagaria permanentemente un comando de solo lectura que hoy funciona
- * // en thyrox. Cablearlo a la ejecucion real queda pendiente de que
- * // exista un mecanismo de feature flags equivalente al de la referencia.
+ * `main.ts` aplica `resolveDaemonBgDispatch` antes de ejecutar un
+ * subcomando de `daemon bg`, con la conducta observable del binario: alli
+ * `pV()` es un stub que siempre devuelve `false` (`chunk-4x2jc802.js`), asi
+ * que `list`/`scheduled` se rehusan siempre, `hub` se degrada a `status`
+ * (que no esta gateado) y `remote-control` sigue su propio gate.
+ * // pendiente: `rDe` antepone al texto por defecto dos motivos propios de
+ * // la vista de agentes (`CLAUDE_CODE_DISABLE_AGENT_VIEW` y el setting
+ * // `disableAgentView`); thyrox no tiene esa vista, se porta solo el texto
+ * // por defecto (`formatCommandUnavailableMessage`).
  * // pendiente: `Bt` combina fragmentos de texto REALES del CLI de la
  * // referencia (`Xr`/`qr`/`Jr`/`Qr`/`Zr`/`en`/`tn`); esos literales no son
  * // simbolos de esta fila (viven en la fila
@@ -419,3 +421,14 @@ export function resolveDaemonBgDispatch(
  * "service" — porte exacto de `Yr`.
  */
 export const EXIT_CODE_SERVICE_STARTUP_FAILURE = 70
+
+const COMMAND_UNAVAILABLE_REASON = 'is not available in this environment'
+
+/**
+ * Mensaje con que se rehusa un comando cuyo gate esta cerrado — porte del
+ * texto por defecto de `rDe` (`chunk-4x2jc802.js`):
+ * `` `'${e}' ${o}.` `` con `o = "is not available in this environment"`.
+ */
+export function formatCommandUnavailableMessage(command: string): string {
+  return `'${command}' ${COMMAND_UNAVAILABLE_REASON}.`
+}

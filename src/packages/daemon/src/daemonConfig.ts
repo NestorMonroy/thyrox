@@ -19,17 +19,12 @@
  *   - `Cr`=1000/`Tr`=5000 → `DAEMON_CONFIG_STOP_DRAIN_MS`/
  *     `DAEMON_STATUS_WRITE_RETRY_MS`
  *
- * `runSupervisor` (`main.ts`) hoy usa una lista fija de un único worker
- * `remoteControl`, sin noción de `daemon.json`. Su cableado a este
- * módulo —leer la config, aplicar el feature gate, vigilar el archivo y
- * aplicar el plan de recarga a los workers vivos— queda declarado
- * `// pendiente` en `main.ts` para otra ola: ese archivo no se toca aquí.
+ * El resto de `Tt` —lanzar una instancia por entrada, recargar en
+ * caliente, `busyWorkerCount`/`hasOAuthConsumer`/`stop`— es
+ * `startDaemonWorkerSet`, que recibe el lanzador de instancias vivas
+ * (`Ue`) por parámetro; `runSupervisor` (`main.ts`) lo cablea.
  *
  * // pendiente: lo que NO se porta, y por qué:
- * // - El resto de `Tt` (spawnear `Ue` por entrada, `busyWorkerCount`,
- * //   `hasOAuthConsumer`, `stop`) agrega estado de procesos hijos VIVOS
- * //   —eso es `Ue`, territorio de D9— y no tiene equivalente puro que
- * //   portar en un módulo de sólo configuración.
  * // - La persistencia de estado a disco (`b7n`/`S7n`,
  * //   `chunk-egkwesgj.js`) no se porta: el daemon no abre archivos de
  * //   estado propios fuera de lo que ya cubre `local-observability`
@@ -51,8 +46,9 @@ import { readFile, stat } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getFeatureValue_CACHED_MAY_BE_STALE, onGrowthBookRefresh } from '@thyrox/config/feature-flags'
 import { logEvent } from '@thyrox/local-observability'
+import { logError } from '@thyrox/local-observability/logging'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 // ── Tipos de worker (`L7`, `chunk-aywxqprf.js:14463-14602`) ────────────────
@@ -88,7 +84,7 @@ const REMOTE_CONTROL_GATE = 'tengu_radiant_heron'
  * está activa habilita CUALQUIER tipo de worker, no sólo `remoteControl` —
  * hoy, en la referencia, nunca lo está.
  */
-function isDaemonWorkerRolloutOverrideEnabled(): boolean {
+export function isDaemonWorkerRolloutOverrideEnabled(): boolean {
   return false
 }
 
@@ -525,3 +521,245 @@ export const DAEMON_CONFIG_STOP_DRAIN_MS = 1000
  * (`E=setTimeout(C,Tr)` dentro del reactor de `Tt`).
  */
 export const DAEMON_STATUS_WRITE_RETRY_MS = 5000
+
+// ── Conjunto de workers de `daemon.json` (resto de `Tt`) ────────────────────
+
+/**
+ * `He`=2000 (`chunk-92tvramn.js`, `,He=2000,Rr=300000`): separación entre
+ * arranques sucesivos de una misma pasada (`V.start(W++*He)`), para no
+ * lanzar todos los workers en el mismo instante.
+ */
+export const DAEMON_WORKER_START_STAGGER_MS = 2000
+
+/** Causa con que `Tt` para un worker cuyo directorio sigue servido tras recargar. */
+const RELOAD_STOP_CAUSE = 'reload'
+
+/** Instancia viva de un worker — lo que `Tt` usa de `Ue`. */
+export interface DaemonWorkerHandle {
+  readonly kind: DaemonWorkerKind
+  isBusy(): boolean
+  stop(cause?: string): Promise<void>
+}
+
+export type LaunchDaemonWorker = (
+  id: string,
+  kind: DaemonWorkerKind,
+  entry: DaemonWorkerEntryConfig,
+  delayMs: number,
+) => DaemonWorkerHandle
+
+export interface DaemonWorkerSetOptions {
+  readonly configPath: string
+  /** Crea y arranca (tras `delayMs`) una instancia — el `new Ue(...)`+`start` de `Tt`. */
+  readonly launchWorker: LaunchDaemonWorker
+  /** Línea de log del supervisor — el `n.write("supervisor", …)` de `Tt`. */
+  readonly log: (line: string) => void
+  /** Config que rige mientras `daemon.json` no declara ningún worker. */
+  readonly fallbackConfig?: DaemonJsonConfig
+  readonly isKindEnabled?: (kind: DaemonWorkerKind) => boolean
+  readonly watch?: (path: string, onChange: () => void) => DaemonConfigWatcher
+  readonly onFlagsRefreshed?: (listener: () => void) => () => void
+  readonly logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
+  readonly logErrorFn?: (error: unknown) => void
+}
+
+/** Superficie que devuelve `Tt`. */
+export interface DaemonWorkerSet {
+  workerCount(): number
+  busyWorkerCount(): number
+  hasOAuthConsumer(): boolean
+  disposeWatcher(): void
+  drainReloads(): Promise<void>
+  stop(cause?: string): Promise<void>
+}
+
+function withFallback(config: DaemonJsonConfig, fallback: DaemonJsonConfig | undefined): DaemonJsonConfig {
+  const declaresNoWorker = countConfiguredWorkers(config) === 0
+  return declaresNoWorker && fallback !== undefined ? fallback : config
+}
+
+function logUnknownKeys(unknownKeys: readonly string[], log: (line: string) => void): void {
+  for (const key of unknownKeys) log(`unknown config key '${key}' — upgrade claude?`)
+}
+
+/** Porte de `Oe` sobre una entrada ya tipada: sólo las de `remoteControl` sirven un directorio. */
+function servedDirOf(entry: DaemonWorkerEntryConfig): string | undefined {
+  return 'dir' in entry ? entry.dir : undefined
+}
+
+function isDirStillServed(entry: DaemonWorkerEntryConfig, servedDirs: ReadonlySet<string>): boolean {
+  const dir = servedDirOf(entry)
+  return dir !== undefined && servedDirs.has(dir)
+}
+
+/** Causa al parar una entrada que desaparece: `we==="remoteControl"&&…&&ee.has(be)`. */
+function stopCauseForRemoved(
+  kind: DaemonWorkerKind,
+  previous: DaemonWorkerEntryConfig,
+  servedDirs: ReadonlySet<string>,
+): string | undefined {
+  return kind === 'remoteControl' && isDirStillServed(previous, servedDirs) ? RELOAD_STOP_CAUSE : undefined
+}
+
+/** Causa al parar una entrada que se reinicia: `we!=="remoteControl"||…&&ee.has(be)`. */
+function stopCauseForRestart(
+  kind: DaemonWorkerKind,
+  previous: DaemonWorkerEntryConfig,
+  servedDirs: ReadonlySet<string>,
+): string | undefined {
+  return kind !== 'remoteControl' || isDirStillServed(previous, servedDirs) ? RELOAD_STOP_CAUSE : undefined
+}
+
+/**
+ * Arranca y supervisa el conjunto de workers declarado en `daemon.json` —
+ * porte de `Tt`: carga la config (si falla, queda en idle con config
+ * vacía), lanza una instancia por entrada de cada tipo habilitado (`Ct`),
+ * avisa una vez por tipo deshabilitado, recarga en caliente al cambiar el
+ * archivo (`l6r` + parar/reiniciar/arrancar) y vuelve a lanzar lo que un
+ * refresco de flags habilita. Las recargas se serializan en una cola.
+ *
+ * Clasificación de fallos, fiel a la referencia: un fallo de carga o de
+ * recarga es manejo esperado (línea de log, sin `logError`); lo que lanza
+ * dentro de la cola va a `logError` (`.catch((W)=>d(W))`) y la cola sigue.
+ *
+ * // pendiente: lo que `Tt` hace y aquí no, y por qué:
+ * // - `await a.ready` (esperar al `authManager`): este supervisor no
+ * //   gestiona tokens por worker (ver `spawnWorker` en `main.ts`).
+ * // - El escritor de estado de workers (`b7n`/`S7n`, reintento `Tr`,
+ * //   drenaje `Cr`): no hay archivo de estado propio del daemon (cabecera).
+ * // - `Ue.updateConfig`+`start` en el reinicio: aquí se relanza una
+ * //   instancia nueva con el mismo id — misma conducta observable.
+ * // - `fallbackConfig` no existe en la referencia: conserva el contrato de
+ * //   las flags de `daemon start` (`--dir`, `--capacity`, …) mientras
+ * //   `daemon.json` no declare workers. Divergencia declarada.
+ */
+export async function startDaemonWorkerSet(options: DaemonWorkerSetOptions): Promise<DaemonWorkerSet> {
+  const {
+    configPath,
+    launchWorker,
+    log,
+    fallbackConfig,
+    isKindEnabled = isWorkerKindEnabled,
+    watch = watchDaemonConfigFile,
+    onFlagsRefreshed = onGrowthBookRefresh,
+    logEventFn = logEvent,
+    logErrorFn = logError,
+  } = options
+  const workers = new Map<string, DaemonWorkerHandle>()
+  const notifiedDisabledKinds = new Set<DaemonWorkerKind>()
+  let config = emptyDaemonConfig()
+
+  const initial = await loadDaemonConfig(configPath)
+  if (initial.ok) {
+    config = withFallback(initial.config, fallbackConfig)
+    logUnknownKeys(initial.unknownKeys, log)
+  } else {
+    log(`config load failed: ${initial.error} — idling`)
+  }
+
+  function launch(id: string, kind: DaemonWorkerKind, entry: DaemonWorkerEntryConfig, order: number): void {
+    workers.set(id, launchWorker(id, kind, entry, order * DAEMON_WORKER_START_STAGGER_MS))
+  }
+
+  function noticeDisabledKind(kind: DaemonWorkerKind, configuredCount: number): void {
+    if (configuredCount === 0 || notifiedDisabledKinds.has(kind)) return
+    notifiedDisabledKinds.add(kind)
+    log(`not starting ${configuredCount} ${kind} worker(s): not available for this account`)
+  }
+
+  /** Porte de `ce()`: lanza lo configurado y habilitado que aún no corre. */
+  function spawnEnabledWorkers(): void {
+    let order = 0
+    for (const kind of DAEMON_WORKER_KINDS) {
+      const entries: DaemonWorkerEntryConfig[] = config[kind]
+      if (!isKindEnabled(kind)) {
+        noticeDisabledKind(kind, entries.length)
+        continue
+      }
+      notifiedDisabledKinds.delete(kind)
+      entries.forEach((entry, index) => {
+        const id = `${kind}:${index}`
+        if (workers.has(id)) return
+        launch(id, kind, entry, order++)
+        log(`spawned ${id}`)
+      })
+    }
+  }
+
+  async function applyReloadPlan(plan: DaemonConfigReloadPlan, servedDirs: ReadonlySet<string>): Promise<void> {
+    for (const { id, kind, previousConfig } of plan.stop) {
+      const handle = workers.get(id)
+      if (!handle) continue
+      await handle.stop(stopCauseForRemoved(kind, previousConfig, servedDirs))
+      workers.delete(id)
+      log(`stopped ${id}`)
+    }
+    for (const { id, kind, previousConfig } of plan.restart) {
+      await workers.get(id)?.stop(stopCauseForRestart(kind, previousConfig, servedDirs))
+    }
+    let restartOrder = 0
+    for (const { id, kind, config: entry } of plan.restart) {
+      if (!workers.has(id)) continue
+      launch(id, kind, entry, restartOrder++)
+      log(`restarted ${id}`)
+    }
+    let startOrder = 0
+    for (const { id, kind, config: entry } of plan.start) {
+      if (!isKindEnabled(kind)) continue
+      launch(id, kind, entry, startOrder++)
+      log(`spawned ${id}`)
+    }
+  }
+
+  /** Porte de `ne`: recarga `daemon.json` y aplica el diff a los workers vivos. */
+  async function reload(): Promise<void> {
+    const next = await loadDaemonConfig(configPath)
+    if (!next.ok) {
+      log(`config reload failed: ${next.error} — keeping last-good config`)
+      return
+    }
+    logUnknownKeys(next.unknownKeys, log)
+    const nextConfig = withFallback(next.config, fallbackConfig)
+    const plan = diffDaemonConfigForReload(config, nextConfig)
+    config = nextConfig
+    await applyReloadPlan(plan, new Set(nextConfig.remoteControl.map(entry => entry.dir)))
+    if (daemonConfigReloadPlanIsEmpty(plan)) return
+    log(`reload: stopped=${plan.stop.length} started=${plan.start.length} restarted=${plan.restart.length}`)
+    emitDaemonConfigReloadEvent(plan, { logEventFn })
+  }
+
+  let queue: Promise<void> = Promise.resolve()
+  const enqueue = (task: () => void | Promise<void>): void => {
+    queue = queue.then(task).catch(error => logErrorFn(error))
+  }
+
+  spawnEnabledWorkers()
+
+  const watcher = watch(configPath, () => enqueue(reload))
+  let disposed = false
+  const unsubscribeFlags = onFlagsRefreshed(() =>
+    enqueue(() => {
+      if (!disposed) spawnEnabledWorkers()
+    }),
+  )
+
+  function disposeWatcher(): void {
+    if (disposed) return
+    disposed = true
+    watcher.close()
+    unsubscribeFlags()
+  }
+
+  return {
+    workerCount: () => countConfiguredWorkers(config),
+    busyWorkerCount: () => [...workers.values()].filter(handle => handle.isBusy()).length,
+    hasOAuthConsumer: () => [...workers.values()].some(handle => workerKindNeedsOAuth(handle.kind)),
+    disposeWatcher,
+    drainReloads: () => queue,
+    stop: async cause => {
+      disposeWatcher()
+      await queue
+      await Promise.all([...workers.values()].map(handle => handle.stop(cause)))
+    },
+  }
+}

@@ -7,12 +7,27 @@ import { PRODUCT_NAME } from '@thyrox/config/product'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import {
   buildDaemonHelpBanner,
+  formatCommandUnavailableMessage,
+  resolveDaemonBgDispatch,
   resolveDaemonBgInvocation,
   writeStderrLine,
   writeStdoutLine,
+  type DaemonBgDispatchDecision,
+  type DaemonBgDispatchFlags,
   type DaemonHelpFlags,
   type DaemonHelpSections,
 } from './daemonCli.js'
+import {
+  emptyDaemonConfig,
+  getDaemonConfigPath,
+  isDaemonWorkerRolloutOverrideEnabled,
+  isWorkerKindEnabled,
+  startDaemonWorkerSet,
+  type DaemonJsonConfig,
+  type DaemonWorkerEntryConfig,
+  type DaemonWorkerHandle,
+  type DaemonWorkerKind,
+} from './daemonConfig.js'
 import {
   WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
   parseWorkerToSupervisorMessage,
@@ -122,8 +137,8 @@ const DAEMON_BG_HELP_FLAGS: DaemonHelpFlags = {
  * Daemon supervisor entry point. Called from `cli.tsx` via:
  *   `claude daemon [subcommand]`
  *
- * Starts and supervises long-running workers. Currently spawns one
- * `remoteControl` worker that runs the headless bridge server.
+ * Arranca y supervisa los workers declarados en `daemon.json`; sin
+ * entradas, un único `remoteControl` con las flags de `daemon start`.
  *
  * Subcommands:
  *   (none)  — start the supervisor with default workers
@@ -159,11 +174,14 @@ export async function daemonMain(args: string[]): Promise<void> {
       // (`args.slice(2)`) preserva el contrato previo: ningun llamador
       // real antepone flags al subcomando (`daemonAdapter.ts` siempre
       // invoca `daemon bg run` sin flags).
-      const sub = resolveDaemonBgInvocation(bgArgs, {
-        jsonPath: '',
-        logPath: '',
-        isStdinTty: Boolean(process.stdin.isTTY),
-      }).sub
+      const decision = resolveDaemonBgExecution(bgArgs, Boolean(process.stdin.isTTY))
+      if (decision.action === 'refuse') {
+        // Porte de `rDe("daemon "+k)`: mensaje y salida 1, sin ejecutar.
+        writeStderrLine(formatCommandUnavailableMessage(`daemon ${decision.sub}`))
+        process.exitCode = 1
+        break
+      }
+      const sub = decision.sub
       if (sub === 'run') {
         const { bgDaemonMain } = await import('./bgDaemon.js')
         let code = 1
@@ -219,6 +237,27 @@ export async function daemonMain(args: string[]): Promise<void> {
       printHelp()
       process.exitCode = 1
   }
+}
+
+/**
+ * Flags que gatean los subcomandos de `daemon bg`: `pV()` (stub siempre
+ * falso en la referencia, `isDaemonWorkerRolloutOverrideEnabled`) y
+ * `s7e("remoteControl")` (`isWorkerKindEnabled`).
+ */
+export function getDaemonBgDispatchFlags(): DaemonBgDispatchFlags {
+  return {
+    remoteControlAvailable: isDaemonWorkerRolloutOverrideEnabled(),
+    remoteControlFeatureEnabled: isWorkerKindEnabled('remoteControl'),
+  }
+}
+
+/**
+ * Resuelve el subcomando de `daemon bg` que se ejecuta y si su gate está
+ * abierto — porte de `on` + las dos líneas de gating de `wa`.
+ */
+export function resolveDaemonBgExecution(bgArgs: readonly string[], isStdinTty: boolean): DaemonBgDispatchDecision {
+  const invocation = resolveDaemonBgInvocation(bgArgs, { jsonPath: '', logPath: '', isStdinTty })
+  return resolveDaemonBgDispatch(invocation, getDaemonBgDispatchFlags())
 }
 
 async function bgDaemonTailLog(): Promise<void> {
@@ -383,53 +422,151 @@ function parseSupervisorArgs(args: string[]): Record<string, string> {
   return result
 }
 
+/** Capacidad por worker cuando `daemon start` no la declara (contrato previo de las flags). */
+const LEGACY_WORKER_CAPACITY = 4
+
+function parseCapacity(raw: string | undefined): number {
+  const capacity = Number(raw)
+  return Number.isInteger(capacity) && capacity > 0 ? capacity : LEGACY_WORKER_CAPACITY
+}
+
 /**
- * Run the daemon supervisor loop. Spawns workers and restarts them
- * on crash with exponential backoff.
+ * Config de respaldo con las flags de `daemon start` (`--dir`,
+ * `--capacity`, …): un único `remoteControl`, la lista fija que el
+ * supervisor lanzaba antes de leer `daemon.json`. Rige sólo mientras ese
+ * archivo no declare ningún worker (`startDaemonWorkerSet`).
+ */
+export function buildLegacyDaemonConfig(flags: Record<string, string>, dir: string): DaemonJsonConfig {
+  return {
+    ...emptyDaemonConfig(),
+    remoteControl: [
+      {
+        dir,
+        name: flags.name,
+        spawnMode: flags.spawnMode === 'worktree' ? 'worktree' : 'same-dir',
+        capacity: parseCapacity(flags.capacity),
+        permissionMode: flags.permissionMode,
+        sandbox: flags.sandbox === '1',
+        createSessionOnStart: true,
+      },
+    ],
+  }
+}
+
+/** Directorio y ajustes (`DAEMON_WORKER_*`) con que `spawnWorker` lanza una entrada. */
+export interface WorkerSpawnSettings {
+  readonly dir: string
+  readonly settings: Record<string, string>
+}
+
+function toFlag(value: boolean): string {
+  return value ? '1' : '0'
+}
+
+/**
+ * Traduce una entrada de `daemon.json` a lo que `spawnWorker` pone en el
+ * entorno del worker. Sólo `remoteControl` sirve un directorio (`Oe`); el
+ * resto corre en el del supervisor y sin ajustes propios.
+ */
+export function buildWorkerSpawnSettings(entry: DaemonWorkerEntryConfig, supervisorDir: string): WorkerSpawnSettings {
+  if (!('dir' in entry)) return { dir: supervisorDir, settings: {} }
+  const settings: Record<string, string> = {
+    spawnMode: entry.spawnMode,
+    capacity: String(entry.capacity),
+    sandbox: toFlag(entry.sandbox),
+    createSession: toFlag(entry.createSessionOnStart),
+  }
+  if (entry.name !== undefined) settings.name = entry.name
+  if (entry.permissionMode !== undefined) settings.permissionMode = entry.permissionMode
+  if (entry.sessionTimeoutMs !== undefined) settings.timeoutMs = String(entry.sessionTimeoutMs)
+  return { dir: entry.dir, settings }
+}
+
+function newWorkerState(kind: DaemonWorkerKind): WorkerState {
+  return {
+    kind,
+    process: null,
+    consecutiveCrashes: 0,
+    parked: false,
+    lastStartTime: 0,
+    lastBusy: false,
+    lastBusyAt: 0,
+    servedToolsCount: 0,
+    forceKillTimer: null,
+  }
+}
+
+function waitForWorkerExit(worker: WorkerState): Promise<void> {
+  const child = worker.process
+  if (!child || child.exitCode !== null || child.signalCode !== null) return Promise.resolve()
+  return new Promise<void>(resolve => child.once('exit', () => resolve()))
+}
+
+/**
+ * Crea la instancia de una entrada y la arranca tras `delayMs` — el
+ * `new Ue(...)`+`start(delay)` de `Tt`. Cada instancia tiene su propio
+ * `AbortController`, encadenado al del supervisor, para que una recarga
+ * pueda pararla sin apagar a las demás.
+ */
+function launchSupervisedWorker(
+  kind: DaemonWorkerKind,
+  entry: DaemonWorkerEntryConfig,
+  delayMs: number,
+  supervisorDir: string,
+  supervisorSignal: AbortSignal,
+): DaemonWorkerHandle {
+  const worker = newWorkerState(kind)
+  const workerController = new AbortController()
+  const abortWorker = (): void => workerController.abort()
+  supervisorSignal.addEventListener('abort', abortWorker, { once: true })
+  const { dir, settings } = buildWorkerSpawnSettings(entry, supervisorDir)
+  const startTimer = setTimeout(() => spawnWorker(worker, dir, settings, workerController.signal), delayMs)
+  return {
+    kind,
+    isBusy: () => isWorkerBusyNow(worker),
+    stop: async cause => {
+      clearTimeout(startTimer)
+      supervisorSignal.removeEventListener('abort', abortWorker)
+      workerController.abort()
+      stopWorkerProcess(worker, cause)
+      await waitForWorkerExit(worker)
+    },
+  }
+}
+
+/**
+ * Bucle del supervisor: arranca el conjunto de workers de `daemon.json`
+ * (`startDaemonWorkerSet`, porte de `Tt`) con su feature gate por tipo, su
+ * recarga en caliente y el refresco de flags, y lo para al recibir
+ * SIGTERM/SIGINT. Cada worker se reintenta con backoff (`spawnWorker`).
+ *
+ * // pendiente: `workerRegistry.ts` sólo implementa `remoteControl`; una
+ * // entrada `heartbeat` arranca y sale con `EXIT_CODE_PERMANENT`, que el
+ * // supervisor aparca. Queda así hasta que se porte ese worker (fuera de
+ * // los archivos de esta tarea).
  */
 async function runSupervisor(args: string[]): Promise<void> {
-  const config = parseSupervisorArgs(args)
-  const dir = config.dir || resolve('.')
+  const flags = parseSupervisorArgs(args)
+  const dir = flags.dir || resolve('.')
 
   console.log(`[daemon] supervisor starting in ${dir}`)
 
-  const workers: WorkerState[] = [
-    {
-      kind: 'remoteControl',
-      process: null,
-      consecutiveCrashes: 0,
-      parked: false,
-      lastStartTime: 0,
-      lastBusy: false,
-      lastBusyAt: 0,
-      servedToolsCount: 0,
-      forceKillTimer: null,
-    },
-  ]
-
   const controller = new AbortController()
+  const workerSet = await startDaemonWorkerSet({
+    configPath: getDaemonConfigPath(),
+    fallbackConfig: buildLegacyDaemonConfig(flags, dir),
+    launchWorker: (_id, kind, entry, delayMs) =>
+      launchSupervisedWorker(kind, entry, delayMs, dir, controller.signal),
+    log: line => console.log(`[daemon] ${line}`),
+  })
 
-  // Graceful shutdown
-  const shutdown = () => {
+  const shutdown = (): void => {
     console.log('[daemon] supervisor shutting down...')
     controller.abort()
-    for (const w of workers) {
-      if (w.process && !w.process.killed) {
-        stopWorkerProcess(w)
-      }
-    }
   }
   process.on('SIGTERM', shutdown)
   process.on('SIGINT', shutdown)
 
-  // Spawn and supervise workers
-  for (const worker of workers) {
-    if (!controller.signal.aborted) {
-      spawnWorker(worker, dir, config, controller.signal)
-    }
-  }
-
-  // Wait for abort signal
   await new Promise<void>(resolve => {
     if (controller.signal.aborted) {
       resolve()
@@ -438,24 +575,9 @@ async function runSupervisor(args: string[]): Promise<void> {
     controller.signal.addEventListener('abort', () => resolve(), { once: true })
   })
 
-  // Wait for all workers to exit. `stopWorkerProcess` (invocado por
-  // `shutdown`) ya programó su propio SIGKILL de gracia
-  // (`WORKER_SHUTDOWN_SIGKILL_GRACE_MS`) — porte de `if(o) await o` en
-  // `Ue.stop`, sin un segundo kill independiente.
-  await Promise.all(
-    workers
-      .filter(w => w.process && !w.process.killed)
-      .map(
-        w =>
-          new Promise<void>(resolve => {
-            if (!w.process) {
-              resolve()
-              return
-            }
-            w.process.on('exit', () => resolve())
-          }),
-      ),
-  )
+  // `stop` cierra el watcher, drena las recargas y para cada worker;
+  // `stopWorkerProcess` programa su SIGKILL de gracia — porte de `Tt.stop`.
+  await workerSet.stop()
 
   console.log('[daemon] supervisor stopped')
 }
@@ -589,7 +711,8 @@ function spawnWorker(
     DAEMON_WORKER_CAPACITY: config.capacity || '4',
     DAEMON_WORKER_PERMISSION: config.permissionMode,
     DAEMON_WORKER_SANDBOX: config.sandbox || '0',
-    DAEMON_WORKER_CREATE_SESSION: '1',
+    DAEMON_WORKER_TIMEOUT_MS: config.timeoutMs,
+    DAEMON_WORKER_CREATE_SESSION: config.createSession || '1',
     THYROX_CODE_SESSION_KIND: 'daemon-worker',
   }
 
