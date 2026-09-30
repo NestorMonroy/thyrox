@@ -120,3 +120,80 @@ lo que sigue no es «salió mal»: es lo que el texto afirmó sin haberlo medido
    pero no en un registro de decisión ni en un hallazgo buscable.
 5. **Modelo escrito a mano, dos veces más** (`--model claude-sonnet-5`). Queda
    cerrado por el cambio de este banco: hoy esa línea rehúsa con exit 2.
+
+## Cuarto flujo analizado: el ciclo de vida (`pool_lifecycle`) — retención de fotos e I3
+
+Ésta es la versión vigente del pool: publicación por `pool_lifecycle`,
+fotos del worktree (`refs/thyrox/snapshots/…`) y su recuperación con
+`recovery_controller`. Los tres flujos de arriba son anteriores. Todo medido
+el 2026-09-30.
+
+### Retención de fotos — `f0ab9911` (TASK-THYROX-0619)
+
+Qué es correcto: la regla del ciclo de vida dice que las fotos no se eliminan
+ni se sustituyen por las salidas, y el pool retiraba la ref de todo ítem
+publicado con exit 0. La mitad roja (35/37, las dos aserciones de retención)
+y el verde (37/37) están en el banco.
+
+Lo que afirmó sin medir, o dejó abierto:
+
+1. **Se commiteó con una de cinco suites del pool.** El cambio toca
+   `headless-pool.sh` y antes del commit sólo corrió
+   `test-headless-pool-worktree.sh`. Las otras cuatro (lifecycle, pool,
+   item-drain, thyrox-p) corrieron después, dentro de la regresión de I3.
+   Salieron verdes, así que no hubo daño, pero el commit se publicó sin esa
+   medición.
+2. **«recovery_controller can reopen any of them» es cierto, y lo medí.** El
+   manifiesto de cada foto vive en `runtime_root()/snapshots/<run>/<item>/
+   <gen>.json` (`snapshot_store.py:127`), no en el runtime de la ejecución, y
+   `recovery_controller.prune` sólo borra `pool/<run>`. Una foto sobrevive al
+   prune.
+3. **La retención no tiene fin.** Hoy hay 53 refs y 53 manifiestos de 7
+   ejecuciones, y ningún camino de `src/session` expira ninguno. Las refs
+   mantienen vivos sus objetos frente a `git gc`. Qué puede expirar lo decide
+   el ejecutor, porque la regla prohíbe borrar fotos por defecto:
+   TASK-THYROX-0650.
+
+### I3 en la publicación — `ea4097bf5` (TASK-THYROX-0618)
+
+Qué es correcto: `publish` rehúsa mientras otro proceso tenga abierto en
+escritura un artefacto del ítem, y `reconcile` lo deja sin completar. La
+mitad roja (45/47) y el verde (47/47) están en el banco. La exclusión del
+propio pid funciona porque `bin/pool_lifecycle` hace `exec` del intérprete:
+quien tiene abierto `<n>.lifecycle.err` es el mismo pid que publica.
+
+Lo que no se vio:
+
+1. **I3 cambió cómo se importa el módulo, y eso dejó ciega una aserción
+   escrita después.** `ea4097bf5` (20:10) añadió `from session.writer_inspector
+   import …` a `pool_lifecycle.py`. Medido en un worktree de cada revisión:
+   importado suelto (`sys.path` en `src/session`), el módulo resuelve
+   `runtime_root()` en el padre y muere con `ModuleNotFoundError: No module
+   named 'session'` en `ea4097bf5`. `c07396310` (22:02) escribió en
+   `test-headless-pool.sh` la aserción «el runtime real no recibe ejecuciones
+   de la suite» con esa importación suelta, así que **nació ciega**: la ruta
+   salía vacía y el `grep` buscaba bajo `/pool`. Esperaba 0 y el 0 salía
+   siempre. Le faltó su mitad roja, que habría fallado a la primera. La
+   corrige `9a8079b33`, con una aserción que exige que la ruta se resuelva.
+2. **La regresión de I3 tuvo un rojo y su trabajo salió con exit 0.**
+   `i3-regress` terminó con `test-headless-pool-item-drain.sh :: 15 of 16`, y
+   aun así `__BG_EXIT__=0`: cada suite iba por `| tail -1`. El rojo se vio
+   porque se leyó el conteo, no por el veredicto de la barrera
+   (TASK-THYROX-0649).
+3. **El control de la suite de drenaje se reancló, y está bien, pero ya no
+   aísla una sola defensa.** Antes medía que, sin drenaje, el hijo escribía
+   en la salida publicada. Con I3 esa salida no se publica, así que se
+   reancló al stream del runtime y ganó la aserción «el ítem no se cierra»
+   (17/17). Ahora, sin drenaje, lo que el control ve es la suma de dos
+   defensas. Retirar sólo I3 con el drenaje puesto no se mide en ninguna
+   suite.
+4. **I3 comprueba y después mueve: hay una ventana.** `assert_no_foreign_writers`
+   escanea `/proc` y luego empieza el plan de publicación. Un proceso que abra
+   un artefacto entre las dos cosas no se ve. En el pool esa ventana sólo
+   puede usarla un huérfano, porque el drenaje va antes. En `reconcile`, que
+   no drena, queda abierta. No está medido si ocurre.
+5. **La caché `.claude/cache/test-headless-pool-worktree/` que apareció a
+   mitad de la regresión es de la propia suite.** Es su directorio de trabajo
+   (`F=`, línea 20) y su `trap` lo retira al salir. Hoy no existe. Era
+   inocuo, pero el flujo lo dejó como «lo reviso cuando termine» y no consta
+   que se revisara.
