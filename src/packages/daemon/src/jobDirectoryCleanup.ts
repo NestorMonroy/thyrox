@@ -16,6 +16,7 @@ import { join, resolve } from 'node:path'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 import { getDaemonHomeDir, getPtyPidsDir, getPtySocketPath } from './socketPaths.js'
+import { sanitizeCliVersion } from './upgradeProbe.js'
 
 /**
  * `<daemon-home>/host-managed` — directorio donde la referencia deja las
@@ -142,9 +143,6 @@ export interface RetireOutcome {
   cause: string
 }
 
-/** Ref `kr` (chunk-92tvramn.js): formato válido de versión de CLI. */
-const CLI_VERSION_PATTERN = /^[0-9A-Za-z.+_-]{1,100}$/
-
 /**
  * Compone la línea humana "bg retire <short>: <causa>, idle <Nm/h>" para un
  * worker retirado, agregando una advertencia si el CLI del worker quedó
@@ -166,10 +164,7 @@ export function formatRetireMessage(
   if (!outcome.retired) return null
   const idleMinutes = Math.round(outcome.idleMs / 60000)
   const idle = idleMinutes >= 120 ? `${Math.round(idleMinutes / 60)}h` : `${idleMinutes}m`
-  const cliVersion =
-    worker.cliVersion && CLI_VERSION_PATTERN.test(worker.cliVersion)
-      ? worker.cliVersion
-      : 'unrecognized'
+  const cliVersion = sanitizeCliVersion(worker.cliVersion ?? '')
   const daemonVersion = process.env.THYROX_CODE_VERSION ?? 'dev'
   const staleWarning = worker.isVersionStale
     ? `, worker ${cliVersion} (daemon ${daemonVersion})`

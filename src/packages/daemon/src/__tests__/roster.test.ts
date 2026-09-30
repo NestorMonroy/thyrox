@@ -32,6 +32,7 @@ afterAll(() => {
 import {
   emptyRoster,
   getRosterPath,
+  isCliVersionStale,
   readRoster,
   recordToRosterEntry,
   updateRoster,
@@ -237,5 +238,51 @@ describe('recordToRosterEntry', () => {
       status: 'running',
     })
     expect(e.attempt).toBe(0)
+  })
+})
+
+describe('cliVersion saneado — ref kr (chunk-92tvramn.js)', () => {
+  const record = {
+    short: 'ver',
+    pid: 3,
+    cmd: [],
+    cwd: '/v',
+    startedAt: 0,
+    status: 'running' as const,
+  }
+
+  test('recordToRosterEntry persiste "unrecognized" para una cliVersion con forma inválida', () => {
+    const e = recordToRosterEntry({ ...record, cliVersion: '2.1.283\x1b[31m; rm -rf /' })
+    expect(e.cliVersion).toBe('unrecognized')
+  })
+
+  test('recordToRosterEntry conserva una cliVersion válida y deja ausente la ausente', () => {
+    expect(recordToRosterEntry({ ...record, cliVersion: '2.1.283' }).cliVersion).toBe('2.1.283')
+    expect(recordToRosterEntry(record).cliVersion).toBeUndefined()
+  })
+
+  test('readRoster expone "unrecognized" para una cliVersion inválida escrita por otro proceso', async () => {
+    const roster = emptyRoster()
+    roster.workers['bad'] = { pid: 1, startedAt: 0, attempt: 0, cwd: '/', cliVersion: 'a b c' }
+    roster.workers['good'] = { pid: 2, startedAt: 0, attempt: 0, cwd: '/', cliVersion: '2.1.283' }
+    await writeRoster(roster)
+    const loaded = await readRoster()
+    expect(loaded.workers['bad']?.cliVersion).toBe('unrecognized')
+    expect(loaded.workers['good']?.cliVersion).toBe('2.1.283')
+  })
+})
+
+describe('isCliVersionStale — getter isVersionStale (chunk-ygx717jg.js)', () => {
+  test('sin cliVersion del worker no hay desfase', () => {
+    expect(isCliVersionStale(undefined, '2.1.283')).toBe(false)
+    expect(isCliVersionStale('', '2.1.283')).toBe(false)
+  })
+
+  test('misma versión que el daemon no es desfase', () => {
+    expect(isCliVersionStale('2.1.283', '2.1.283')).toBe(false)
+  })
+
+  test('versión distinta a la del daemon es desfase', () => {
+    expect(isCliVersionStale('2.1.282', '2.1.283')).toBe(true)
   })
 })
