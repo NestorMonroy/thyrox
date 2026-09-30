@@ -60,6 +60,29 @@ casos deterministas por `/v1/chat/completions`, RAM del cgroup, carga,
 primer token, tokens/s y 1/2/4 peticiones concurrentes. Corre con contención:
 los tiempos no son la cifra de la máquina en reposo; los aciertos sí se comparan.
 
+| Modelo | Tool calling | Tokens/s | RAM cargada |
+|---|---|---|---|
+| `qwen2.5-coder:1.5b` | 1/6 | 11,5 | 2,86 GB |
+| `qwen2.5-coder:3b` | 1/6 | 0,3 (contención) | 6,78 GB |
+| **`qwen2.5:3b`** | **6/6** | 8,0 | 7,87 GB |
+| `llama3.2:3b` | 5/6 | 8,2 | 12,34 GB |
+| `qwen3:4b` | **no medido** | — | — |
+
+`qwen3:4b` no se midió: el benchmark se detuvo cuando la RAM disponible cayó
+a 2,28 GB con el ítem de TASK-THYROX-0691 corriendo al lado. El laboratorio
+no pasa por la admisión de recursos, así que ya había provocado un OOM sobre
+un ítem del pool; se prefirió declarar el hueco a repetirlo.
+
+Los `coder` fallan el tool calling (1/6) aunque declaran la capacidad
+`tools`: emiten la llamada como texto en vez de `tool_calls`. El candidato
+para el trabajo de thyrox es `qwen2.5:3b`. La RAM cargada incluye la del
+servidor y crece con el contexto que cada candidato reserva, así que compara
+el perfil de despliegue, no el tamaño del modelo.
+
+*Métrica:* casos deterministas acertados y tokens/s por `/v1/chat/completions`.
+*Ciega a:* la calidad de implementación o traducción más allá del formato de
+la llamada, y al reposo de la máquina (carga media ~22 durante la medición).
+
 ## La política de loopback, corregida, y el criterio de aceptación
 
 Directiva del ejecutor: no compensar en el wrapper una política incorrecta de
