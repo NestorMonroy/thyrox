@@ -122,6 +122,16 @@ describe('la fila y el archivo', () => {
     expect(text).toContain('- **Descripcion:** usa workspace:\\* y **todo** en @thyrox/\\*')
   })
 
+  // Una fila puede nombrar una iniciativa que el árbol no tiene. Crear su
+  // carpeta deja una iniciativa sin index.rst que bloquea el pre-push
+  // (DEC-AM-01) y que nada de este comando repara.
+  test('14. una iniciativa inexistente se rehúsa sin crear nada', () => {
+    const base = readFindingRecord(storeFile, 'H-THYROX-9')!
+    const initiatives = join(folder, '..', '..')
+    expect(() => writeFinding({ ...base, initiative: 'no-existe' }, {})).toThrow(/no-existe/)
+    expect(existsSync(join(initiatives, 'no-existe'))).toBe(false)
+  })
+
   test('3. un identificador que el store no tiene no es una fila', () => {
     expect(readFindingRecord(storeFile, 'H-THYROX-404')).toBeNull()
   })

@@ -151,6 +151,10 @@ export function findingFile(record: FindingRecord): string {
 export function writeFinding(record: FindingRecord, options: RenderOptions): string | null {
   const target = findingFile(record)
   if (existsSync(target)) return null
+  const initiative = dirname(dirname(target))
+  if (!existsSync(initiative)) {
+    throw new Error(`la iniciativa ${record.initiative} no existe en el árbol: ${initiative}`)
+  }
   mkdirSync(dirname(target), { recursive: true })
   writeFileSync(target, renderFinding(record, options))
   return target
