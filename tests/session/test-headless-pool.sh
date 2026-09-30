@@ -53,7 +53,7 @@ case "$entrada" in *RAMPA*)
   echo "end $(date +%s.%N)" >> "$RAMPA_LOG" ;;
 esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|sid=$sid"
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|base=${ANTHROPIC_BASE_URL:-sin}|skey=${THYROX_STORAGE_ENCRYPTION_KEY:-sin}|sid=$sid"
 if [[ "$formato" == stream-json ]]; then
   # Como el ejecutable: stream-json en -p exige --verbose.
   [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
@@ -221,6 +221,39 @@ rm -rf "$F/out"; EXTRA="--credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_P
 check "proxy que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy de credencial/{p++} END{print n+0, (p>0)}')" "2 0 1"
 rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user corre alfa
 check "sin --credential-proxy el item conserva su entorno" "$(cred_de)" "sock=sin|key=sk-user|auth=sin"
+
+# --- el proxy con credenciales del store: los ítems ven una URL y una clave de acceso local, nunca la del store ---
+# El proxy falso anuncia una URL, anota la clave de acceso y el modelo que
+# recibió y su pid, y espera a que lo maten. Los ítems ven ANTHROPIC_BASE_URL
+# apuntando a esa URL, la clave de acceso como ANTHROPIC_API_KEY y ninguna
+# clave de cifrado del store.
+cat > "$F/store-proxy" <<'SH'
+#!/usr/bin/env bash
+model=sin
+while [[ $# -gt 0 ]]; do case "$1" in --model) model="$2"; shift 2 ;; *) shift ;; esac; done
+printf '%s|%s|%s\n' "${THYROX_STORE_PROXY_ACCESS_KEY:-sin}" "$$" "$model" > "$STORE_PROXY_SAW"
+echo "url=http://127.0.0.1:4242"
+exec sleep 300
+SH
+chmod +x "$F/store-proxy"
+export STORE_PROXY_SAW="$F/store-proxy-saw"
+store_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $8"|"$9"|"$11"|"$12}' | sort -u | paste -sd,; }
+rm -rf "$F/out" "$STORE_PROXY_SAW"
+EXTRA="--store-credential-proxy" ANTHROPIC_API_KEY=sk-user THYROX_STORAGE_ENCRYPTION_KEY=clave-secreta ANTHROPIC_BASE_URL=http://heredada.invalid HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/store-proxy" corre alfa beta
+check "proxy del store: exit 0" "$CODE" "0"
+saw_key="$(cut -d'|' -f1 "$STORE_PROXY_SAW" 2>/dev/null)"
+check "proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado" "$(store_de)" "key=$saw_key|auth=sin|base=http://127.0.0.1:4242|skey=sin"
+check "proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno" "$([[ -n "$saw_key" && "$saw_key" != sk-user && "$saw_key" != sin ]] && echo propia || echo "no:$saw_key")" "propia"
+check "proxy del store: recibe el modelo del pool" "$(cut -d'|' -f3 "$STORE_PROXY_SAW" 2>/dev/null)" "claude-sonnet-5"
+check "proxy del store: el pool declara la fuente de credencial" "$(printf '%s' "$SALIDA" | gawk '/^credencial: proxy con credenciales del store \(url=http:\/\/127\.0\.0\.1:4242\)$/{n++} END{print n+0}')" "1"
+check "proxy del store: al terminar el pool el proxy ya no vive" "$(kill -0 "$(cut -d'|' -f2 "$STORE_PROXY_SAW" 2>/dev/null)" 2>/dev/null && echo vive || echo muerto)" "muerto"
+rm -rf "$F/out"; EXTRA="--store-credential-proxy" HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/credential-proxy-refuses" corre alfa
+check "proxy del store que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy con credenciales del store/{p++} END{print n+0, (p>0)}')" "2 0 1"
+rm -rf "$F/out" "$STORE_PROXY_SAW" "$F/proxy-saw"
+EXTRA="--store-credential-proxy --credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/store-proxy" HEADLESS_POOL_CREDENTIAL_PROXY="$F/credential-proxy" corre alfa
+check "los dos proxies a la vez: exit 2 sin lanzar ninguno" "$CODE $(ls "$STORE_PROXY_SAW" "$F/proxy-saw" 2>/dev/null | wc -l)" "2 0"
+rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user THYROX_STORAGE_ENCRYPTION_KEY=clave-secreta ANTHROPIC_BASE_URL=http://heredada.invalid corre alfa
+check "sin --store-credential-proxy el ítem conserva su URL y su clave de cifrado" "$(store_de)" "key=sk-user|auth=sin|base=http://heredada.invalid|skey=clave-secreta"
 
 # --- la memoria de cada item, con GNU Time --------------------------------------
 # Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y

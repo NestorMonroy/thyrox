@@ -1,0 +1,1 @@
+cd src/packages/cli && timeout 600 bun test __tests__/providers > ../../../.claude/build-logs/pool-b-integrate/cli.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/pool-b-integrate/cli.log

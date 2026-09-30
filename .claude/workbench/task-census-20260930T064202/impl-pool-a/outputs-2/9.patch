@@ -1,0 +1,959 @@
+diff --git a/.claude/workbench/task-thyrox-0261-consumer-resolution-20260930T085950/README.md b/.claude/workbench/task-thyrox-0261-consumer-resolution-20260930T085950/README.md
+new file mode 100644
+index 000000000..4bd121215
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0261-consumer-resolution-20260930T085950/README.md
+@@ -0,0 +1,121 @@
++# TASK-THYROX-0261 — el consumidor de `user_wiring` se resuelve, no se escribe a mano
++
++Banco del ítem, abierto en su worktree del pool. Fuente de la tarea:
++`.claude/workbench/task-census-20260930T064202/impl/TASK-THYROX-0261/prompt.md`;
++decisión que gobierna: `.claude/workbench/decisiones-ejecutor-siete-tareas-20260930T044345/README.md`
++(«explícito → por reach/contexto si es único → REHÚSA; ningún consumidor
++hardcodeado; ninguna variable nueva que pueda divergir de `reach`»).
++
++## Cómo lo hace la referencia (2.1.283, sólo lectura)
++
++Corpus: `/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/`.
++Cada fila salió de un `rg -n -o` sobre ese directorio; el número tras el
++chunk es la línea del archivo minificado.
++
++| Símbolo / literal | Dónde | Qué hace | Decisión |
++|---|---|---|---|
++| `function Ho(){return n().host.launchOptions.projectConfigRoot()}` | `chunk-nvht7ckf.js:11` | la raíz de proyecto DECLARADA por el lanzador (`replaceProjectConfigRoot` la fija); `null` si nadie la declaró | portado como peldaño 1 (`consumer=`/`--consumer`) y 2 (`THYROX_CONSUMER`, que ya es la declaración de `reach`) |
++| `function Er(){return p()?.projectRoot??vs(n()).projectRoot}` | `chunk-nvht7ckf.js:11` | la raíz de la SESIÓN: la del contexto de ejecución, y si no la del proyecto de la sesión | portado como peldaño 3, el contexto |
++| `function vs(e){let{project:t}=e;if(t===null)throw new IA;return t}` · `class IA extends Error{name="NoProjectDirectoryError";constructor(){super("This session has no working directory.")}}` | `chunk-nvht7ckf.js:11` | sin proyecto en la sesión NO se inventa uno: se lanza | portado como peldaño 4, `WiringRefused` con `REHUSA — …` y exit 2 en las dos ramas de `main` |
++| `function F(e,t){…if(o===void 0&&r===void 0&&i===void 0)return null;if(o===void 0\|\|r===void 0\|\|i===void 0)throw new IA;…}` | `chunk-nvht7ckf.js:11` | un proyecto a MEDIAS (alguna de `originalCwd`/`projectRoot`/`cwd` sin valor) también lanza | mismo criterio: un roster ambiguo es un contexto a medias y rehúsa |
++| `project:{originalCwd:n,projectRoot:n,cwd:n}` | `chunk-37t0cm26.js:25` | el proyecto de una sesión ES su cwd de arranque | **divergencia declarada**: aquí el cwd del lanzador remoto es `/home/user`, el PADRE de los clones, que lleva `.claude/` y no es consumidor. Por eso el contexto no toma el cwd verbatim: toma el clon del roster de `reach` que CONTIENE el cwd, y si ninguno, el único clon declarado |
++| `CLAUDE_PROJECT_DIR:Ho()??Er()` | `chunk-csayct82.js:184` (entorno de un hook) · `chunk-cfm9hr15.js:12`, `chunk-s31bcshf.js:15`, `chunk-cnp2ghvr.js:11` | la cadena declarado→sesión, aplicada donde el hook la consume | es la misma cadena que `resolve_consumer` |
++| `Bt=Et??h.projectRoot` con `Et=Oe===void 0?Ho():null` | `chunk-csayct82.js:1907` | al ejecutar un hook, la raíz declarada gana a la de la sesión | igual: el explícito gana a la variable, y la variable al contexto |
++| `loaded without ${Zn} allowed-tools … naming CLAUDE_PROJECT_DIR, because this session has no working directory` | `chunk-csayct82.js:2546` | sin directorio de trabajo, los permisos que lo nombran se DESCARTAN y se avisa; no se resuelven contra otra cosa | misma doctrina que el rehúso: no componer rutas sobre un consumidor adivinado |
++
++*Métrica:* ocurrencias del símbolo o literal en el volcado, con su chunk y
++línea, leídas con `rg -n -o` y ventanas de 100–400 caracteres.
++*Ciega a:* el flujo completo de `launchOptions` (quién llama a
++`replaceProjectConfigRoot` y cuándo); a si `p()` en `Er()` es el contexto de
++un subagente o de un fork; y a cualquier resolución que ocurra en el servidor
++y no en el ejecutable. Se midió la FORMA de la cadena, no todos sus
++invocadores.
++
++## Lo que se portó, y lo que se declaró divergente
++
++```text
++consumer= / --consumer          -> se usa tal cual                       (Ho: declarado)
++THYROX_CONSUMER (reach)         -> reach.consumer_root(), con sus clausulas estrictas
++contexto: clon que CONTIENE cwd -> se usa                                (Er: la sesion)
++contexto: UNICO clon declarado  -> se usa                                (sin par en la referencia)
++ambiguo / sin roster            -> WiringRefused, nombra THYROX_CONSUMER y --consumer  (IA)
++```
++
++El peldaño «único clon declarado» no tiene par en la referencia porque allí
++la unicidad es estructural (una sesión, un proyecto). Aquí el roster de
++`reach` puede tener uno o cinco clones; con uno, no hay nada que adivinar.
++
++**Qué significa «invocador» cuando el cwd es `/home/user`.** Medido en este
++contenedor: `reach.tree_root()` = `/home/user`, `reach.reach()` =
++`{'docs': /home/user/kaupamex-docs}`, y `/home/user/.claude/` existe. El
++ascenso por marcador de `reach.consumer_root()` desde `/home/user` devolvería
++`/home/user`. En `resolve_consumer` ese directorio no es candidato porque el
++roster no lo lista: con un solo clon se resuelve a ese clon (misma conducta
++que el literal retirado en este despliegue), y con varios rehúsa.
++
++## Mitad roja medida antes de escribir (2026-09-30)
++
++- `grep -n kaupamex-docs src/session/user_wiring.py` → la línea 100 componía
++  `base.parent / "kaupamex-docs"`.
++- `sed -n '/^def main/,$p' src/session/user_wiring.py | grep -c consumer` → 0.
++- `git grep -n THYROX_CONSUMER -- src/session/user_wiring.py` → 0.
++- `instalar-hooks-sesion-multirepo.sh` caía a `reach.root("docs")`: un clon
++  escrito a mano, y su heredoc importaba `user_wiring` sin `PYTHONPATH`
++  (corría aquí sólo porque el pool lo exporta).
++- La primera ejecución de la sección 19 murió en
++  `AttributeError: module 'user_wiring' has no attribute 'CONSUMER_ROOT_VAR'`.
++
++## Suite y controles de anulación
++
++`PYTHONDONTWRITEBYTECODE=1 timeout 300 python3 tests/session/test_user_wiring.py`
++
++| Corrida | Resultado |
++|---|---|
++| baseline, antes de tocar nada | 93 ok, 2 fallos (caso 1b «sin PYTHONPATH»: `bin/tool_use_preflight` y `bin/compact_context` rehúsan sin `.venv` en el worktree) |
++| con la sección 19 (19, 19-bis, 19-ter, 19-quater) | 122 ok, los mismos 2 fallos de entorno |
++
++Suites vecinas que consumen `declared_wiring`: `tests/session/test_session_restart.py`
++85 ok / 0 fallos antes y después; `tests/session/test_installed_hooks_resolve.py`
++1 rojo previo (su tabla `INTERPRETERS` no conoce `bash`, y los comandos ya
++eran `bash bin/…` en el baseline del caso 18); `tests/hooks/test_task_lifecycle.py`
++16/17, rojo previo (busca `task_lifecycle.py` en comandos que son
++`bash bin/task_lifecycle`). Ninguno de los dos rojos nombra el consumidor.
++
++Anulación en la suite (19-bis): `is_sole_candidate` → `bool(candidates)`
++hace caer 19.5 y sólo 19.5; 19.3, 19.4 y 19.6 sobreviven. Las anulaciones a
++nivel de fuente de las otras tres ramas se registran abajo al medirlas.
++
++*Métrica:* aserciones `ok`/`FALLO` impresas por la suite.
++*Ciega a:* el caso 1b, que no puede medir sin `uv sync` en el worktree; y a
++un despliegue con cinco clones reales, donde el rehúso por ambigüedad se
++midió sólo con un roster fabricado por `THYROX_REACH_ROOTS`.
++
++## Linters (pre-commit)
++
++`THYROX_LINT_BIN_DIR=/home/user/thyrox/.venv/bin bash bin/check_lint_zero <4 archivos>`
++→ shellcheck 0, ruff 0, pyright 0. `check_identifier_language.py` con el
++intérprete del árbol principal → OK en los tres `.py` (los locales en
++español que quedan en `user_wiring.py`/`test_user_wiring.py` están en la
++deuda heredada del baseline; se tradujeron los de las funciones tocadas).
++
++## Anulaciones a nivel de fuente (medidas, archivo restaurado byte a byte tras cada una)
++
++Cada una borra las dos líneas de una rama de `resolve_consumer`/`contextual_consumer`
++con `sed`, corre la suite entera y restaura desde una copia (`cmp` limpio).
++El rehúso es una excepción, así que la primera aserción que depende de la
++rama retirada no marca `FALLO`: la suite aborta ahí con `WiringRefused`.
++
++| Rama retirada | Primera aserción que cae | Aserciones `ok` antes del corte | Verde de referencia |
++|---|---|---|---|
++| `if declared: return Path(declared)` | 19.1 (`FALLO`: devuelve el clon de `THYROX_CONSUMER`), y aborta en 19.8 (línea 903) | 101 | 122 ok |
++| `if env_value(CONSUMER_ROOT_VAR): return consumer_root()` | aborta en 19.2 (línea 870) | 94 | 122 ok |
++| `if containing is not None: return containing` | aborta en 19.3 (línea 874) | 95 | 122 ok |
++| `is_sole_candidate` → `bool(candidates)` (19-bis, en la suite) | 19.5 y sólo 19.5; 19.3, 19.4 y 19.6 sobreviven | — | — |
++
++En las tres corridas los únicos `FALLO` anteriores al corte son los dos del
++caso 1b, los mismos del baseline: ninguna aserción ajena a la rama cambia.
++
++*Métrica:* líneas `ok`/`FALLO`/`Traceback` de cada corrida, y la línea de la
++prueba en el traceback.
++*Ciega a:* lo que hay después del corte en cada corrida (19-ter y 19-quater
++no llegan a ejecutarse con la rama retirada).
+diff --git a/src/session/instalar-hooks-sesion-multirepo.sh b/src/session/instalar-hooks-sesion-multirepo.sh
+index ffdd6e2ff..549320208 100755
+--- a/src/session/instalar-hooks-sesion-multirepo.sh
++++ b/src/session/instalar-hooks-sesion-multirepo.sh
+@@ -6,8 +6,10 @@
+ # .claude/settings.json de este repo no dispara ahí (H-DOCS-198).
+ #
+ # Idempotente: fusiona la sección hooks preservando lo demás (permissions).
+-# Uso: bash .claude/scripts/session/instalar-hooks-sesion-multirepo.sh [raiz] [--advisor <modelo>]
+-#      (raiz por defecto: la que derive el localizador, no una codificada)
++# Uso: bash bin/instalar-hooks-sesion-multirepo [raiz] [--advisor <modelo>] [--consumer <ruta>]
++#      (raiz por defecto: la que derive el localizador, no una codificada;
++#       consumidor: --consumer, si no THYROX_CONSUMER, si no el contexto que
++#       `user_wiring.resolve_consumer` fija — y REHUSA si es ambiguo)
+ #
+ # `--advisor <id>` escribe además `advisorModel`: la herramienta del servidor
+ # que consulta a un modelo más capaz SIN cambiar el modelo del hilo — la vía
+@@ -19,18 +21,20 @@ set -euo pipefail
+ # El padre de los clones NO se codifica: depende de quien clono y donde. Lo
+ # decide el localizador, con su precedencia (THYROX_REACH_ROOT, .env, ascenso
+ # buscando un clon conocido), y rehusa si no lo puede derivar.
+-_thyrox_desde="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+-while [[ "$_thyrox_desde" != "/" && ! -f "$_thyrox_desde/src/paths/reach.py" ]]; do
+-    _thyrox_desde="$(dirname "$_thyrox_desde")"
++_thyrox_from="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++while [[ "$_thyrox_from" != "/" && ! -f "$_thyrox_from/src/paths/reach.py" ]]; do
++    _thyrox_from="$(dirname "$_thyrox_from")"
+ done
+-source "$_thyrox_desde/src/lib/reach.sh"
++source "$_thyrox_from/src/lib/reach.sh"
+ ROOT="$(thyrox_tree_root)" || exit 2
+-ADVISOR=""; CONSUMIDOR="${CONSUMIDOR:-}"
++ADVISOR=""; CONSUMER="${CONSUMER:-}"
+ while [[ $# -gt 0 ]]; do
+     case "$1" in
+         --advisor) ADVISOR="${2:?--advisor exige el identificador completo del modelo}"; shift 2 ;;
+-        --consumidor) CONSUMIDOR="${2:?--consumidor exige la ruta del clon}"; shift 2 ;;
+-        -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
++        # `--consumidor` es la grafia anterior de la misma opcion; se conserva
++        # porque tiene invocadores (tests/session/test_installed_hooks_resolve.py).
++        --consumer|--consumidor) CONSUMER="${2:?--consumer exige la ruta del clon}"; shift 2 ;;
++        -h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+         # Una opcion desconocida NO se toma por la raiz: el catch-all anterior
+         # convertia `--help` en un directorio y el error salia de `dirname`,
+         # tres pasos mas abajo y hablando de otra cosa.
+@@ -43,7 +47,13 @@ case "$ADVISOR" in
+     *) echo "ERROR: --advisor va por identificador completo (claude-…), no alias: $ADVISOR" >&2; exit 2 ;;
+ esac
+ DEST="$ROOT/.claude/settings.local.json"
+-THYROX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++
++# El modulo se importa como lo importan los envoltorios de `bin/`: con la
++# raiz del proveedor declarada y `src/` en PYTHONPATH. Sin eso, `user_wiring`
++# muere al importar `paths.reach` (H-THYROX-268).
++THYROX_ROOT="${THYROX_ROOT:-$_thyrox_from}"
++export THYROX_ROOT
++export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+ 
+ # El cableado NO se compone aqui: lo emite `declared_wiring()` del proveedor.
+ # Este guion aporta lo que es PARAMETRO del consumidor (DEC-04) —contra que
+@@ -53,47 +63,53 @@ THYROX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ # del proveedor, y ningun control los separaria: si los archivos de los dos
+ # existen, la alcanzabilidad da 0 para ambos.
+ #
+-# El consumidor es un parametro: `--consumidor <ruta>` gana, si no la raiz
+-# que `reach` declare para el clon de docs.
+-if [ -z "${CONSUMIDOR:-}" ]; then
+-    CONSUMIDOR="$(python3 -c 'import sys; sys.path.insert(0, "'"$THYROX_DIR"'/paths"); import reach; print(reach.root("docs"))')"
+-fi
+-
+-mkdir -p "$(dirname "$DEST")"
+-[ -f "$DEST" ] || printf '{}\n' > "$DEST"
++# El consumidor es un parametro: `--consumer <ruta>` gana; sin el, lo
++# resuelve `declared_wiring` —THYROX_CONSUMER, y si no el contexto— y REHUSA
++# si es ambiguo. Aqui no se nombra ningun clon (TASK-THYROX-0261): el
++# `reach.root("docs")` que hacia de default era un consumidor escrito a mano
++# en el proveedor.
++DEST="$DEST" CONSUMER="$CONSUMER" ADVISOR="$ADVISOR" python3 - <<'PY'
++import json
++import os
++import sys
+ 
+-DEST="$DEST" CONSUMIDOR="$CONSUMIDOR" THYROX_DIR="$THYROX_DIR" ADVISOR="$ADVISOR" python3 - <<'PY'
+-import json, os, sys
+-
+-sys.path.insert(0, os.path.join(os.environ["THYROX_DIR"], "session"))
+-from user_wiring import declared_wiring  # noqa: E402
++from session.user_wiring import WiringRefused, declared_wiring
+ 
+ dest = os.environ["DEST"]
+ advisor = os.environ.get("ADVISOR", "")
+-with open(dest, encoding="utf-8") as fh:
+-    datos = json.load(fh)
+ 
+ # La FUENTE del cableado es el productor. Aqui solo se le pasan los dos
+ # parametros del consumidor y se fusiona sobre lo que ya haya: `permissions` lo
+ # escribe el cliente y `env`/`effortLevel` quien opera — sobreescribir el
+-# archivo entero destruye su trabajo en silencio.
+-cableado = declared_wiring(
+-    root=os.path.dirname(os.environ["THYROX_DIR"]),
+-    consumer=os.environ["CONSUMIDOR"],
+-    advisor=advisor or None,
+-)
+-datos["hooks"] = cableado["hooks"]
++# archivo entero destruye su trabajo en silencio. Y se resuelve ANTES de tocar
++# el destino: un rehuso no deja ni un `{}` vacio detras.
++try:
++    wiring = declared_wiring(
++        root=os.environ["THYROX_ROOT"],
++        consumer=os.environ.get("CONSUMER") or None,
++        advisor=advisor or None,
++    )
++except WiringRefused as error:
++    print(f"REHUSA — {error}", file=sys.stderr)
++    sys.exit(2)
++
++settings = {}
++if os.path.exists(dest):
++    with open(dest, encoding="utf-8") as handle:
++        settings = json.load(handle)
++settings["hooks"] = wiring["hooks"]
+ 
+ # `advisorModel` compone la CLAVE de la cache de prompt (`createCacheSafeParams`,
+ # 2.1.266). Escribirlo sin que nadie lo pidiera reescribe el contexto entero al
+ # precio de escritura del destino (H-DOCS-1012), asi que solo se toca con
+ # `--advisor` explicito.
+ if advisor:
+-    datos["advisorModel"] = cableado["advisorModel"]
++    settings["advisorModel"] = wiring["advisorModel"]
+ 
+-with open(dest, "w", encoding="utf-8") as fh:
+-    json.dump(datos, fh, indent=2, ensure_ascii=False)
+-    fh.write("\n")
++os.makedirs(os.path.dirname(dest), exist_ok=True)
++with open(dest, "w", encoding="utf-8") as handle:
++    json.dump(settings, handle, indent=2, ensure_ascii=False)
++    handle.write("\n")
+ 
+-print(f"OK: hooks instalados en {dest} (claves: {sorted(datos)})")
++print(f"OK: hooks instalados en {dest} (claves: {sorted(settings)})")
+ PY
+diff --git a/src/session/session_restart.py b/src/session/session_restart.py
+index 5f74ca573..a75cbcc66 100644
+--- a/src/session/session_restart.py
++++ b/src/session/session_restart.py
+@@ -42,8 +42,9 @@ import os
+ import pathlib
+ import re
+ import subprocess
++import sys
+ 
+-from session import transcripts
++from session import transcripts, user_wiring
+ 
+ #: La forma DECLARADA del entorno: la clave, su separador —que el transcript
+ #: escapa (``\"environment_id\":\"env_…\"``) o no, segun quien la escribio— y
+@@ -316,6 +317,11 @@ DEFAULT_PROMPT = "Continua el trabajo de la sesion anterior en esta rama."
+ #: sincronizar dependencias, instalar el cableado declarado, y por ultimo
+ #: MEDIR que dispara — no basta con instalarlo, `wiring_drift` compara contra
+ #: lo declarado, no contra lo que de verdad se ejecuta en un turno.
++#:
++#: `bin/user_wiring --write` va sin consumidor a proposito: la sesion nueva lo
++#: resuelve por su contexto (`user_wiring.resolve_consumer`) y, si es ambiguo,
++#: rehusa nombrando THYROX_CONSUMER. Un clon fijo aqui seria el default que
++#: TASK-THYROX-0261 retiro del proveedor.
+ SETUP_STEPS = (
+     "uv sync",
+     "bin/user_wiring --write",
+@@ -434,6 +440,11 @@ def main(argv=None) -> int:
+                              "deriva de CLAUDE_CODE_SESSION_ID")
+     parser.add_argument("--root", default=".",
+                         help="el arbol del que derivar repo y rama")
++    parser.add_argument("--consumer", default=None,
++                        help="la raiz del clon consumidor con que se compone "
++                             "el cableado declarado; sin ella, THYROX_CONSUMER "
++                             "y el contexto (`user_wiring.resolve_consumer`), "
++                             "que rehusa si es ambiguo")
+     parser.add_argument("--session-json", default=None,
+                         help="la salida de get_session (ccr.environment_id y "
+                              "session_context.sources[]); con esto, MEMBRESIA "
+@@ -460,12 +471,18 @@ def main(argv=None) -> int:
+     print(f"hooks del arbol que dispararon: {hooks['matched']} "
+           f"de {hooks['seen']} resumen(es) de hook")
+ 
+-    from session import user_wiring  # noqa: PLC0415
+     live_settings_path = user_wiring.live_settings(pathlib.Path(args.root))
+     live_wiring = (json.loads(live_settings_path.read_text(encoding="utf-8"))
+                   if live_settings_path.exists() else {})
+-    drift = user_wiring.wiring_drift(
+-        live_wiring, user_wiring.declared_wiring(pathlib.Path(args.root)))
++    try:
++        declared_wiring = user_wiring.declared_wiring(
++            pathlib.Path(args.root), consumer=args.consumer)
++    except user_wiring.WiringRefused as error:
++        # Sin consumidor no hay cableado declarado que comparar, y un relevo
++        # que lo adivinara instalaria las rutas de otro clon (TASK-THYROX-0261).
++        print(f"REHUSA — {error}", file=sys.stderr)
++        return 2
++    drift = user_wiring.wiring_drift(live_wiring, declared_wiring)
+     verdict = wiring_verdict(hooks, drift)
+     if verdict == "instalar primero":
+         pending = sorted({command for sides in drift.values()
+diff --git a/src/session/user_wiring.py b/src/session/user_wiring.py
+index c90a34647..42ed7826f 100644
+--- a/src/session/user_wiring.py
++++ b/src/session/user_wiring.py
+@@ -48,7 +48,8 @@ from typing import Any, Protocol
+ # `tests/run.sh`, asi que este modulo NO se abre el camino solo. El
+ # `sys.path.insert(0, ... parents[1])` que vivia aqui es la deuda de
+ # TASK-THYROX-0018, y se paga al tocar el archivo.
+-from paths.reach import reach, thyrox_root
++from paths.reach import (CONSUMER_ROOT_VAR, ReachRootError, consumer_root,
++                         env_value, reach, thyrox_root)
+ 
+ #: El archivo que el lanzador remoto carga. El cwd de la sesion es
+ #: `/home/user`, no un clon, asi que este es el unico settings de proyecto que
+@@ -79,6 +80,109 @@ def live_settings(root: Path | None = None) -> Path:
+ DEFAULT_ADVISOR = "claude-fable-5-1"
+ 
+ 
++def _how_to_declare_consumer() -> str:
++    """La frase que todo rehuso del consumidor termina nombrando."""
++    return (f"Declaralo con {CONSUMER_ROOT_VAR}=<raiz del clon> o con "
++            f"--consumer <raiz>.")
++
++
++def _starting_point(start: Path | None) -> Path:
++    """Desde donde se mira el contexto: lo declarado, o el cwd del proceso."""
++    return Path.cwd() if start is None else Path(start)
++
++
++def declared_consumer_candidates() -> tuple[Path, ...]:
++    """Los clones que el localizador declara, resueltos.
++
++    De ahi sale el consumidor cuando nadie lo declara. Sin roster no hay de
++    donde derivarlo y se rehusa diciendo como declararlo: un cero de candidatos
++    que cayera a «ninguno» se leeria igual que «no pude medir».
++    """
++    try:
++        clones = reach()
++    except ReachRootError as error:
++        raise WiringRefused(
++            f"no hay roster del que derivar el consumidor ({error}). "
++            + _how_to_declare_consumer()) from error
++    return tuple(Path(path).resolve() for _, path in sorted(clones.items()))
++
++
++def clone_containing(start: Path, candidates: tuple[Path, ...]) -> Path | None:
++    """El clon dentro del cual esta `start`, o None.
++
++    Es el consumidor que INVOCA: un hook del cliente corre con el cwd en el
++    clon, y un gate se invoca desde cualquier subdirectorio suyo.
++    """
++    here = Path(start).resolve()
++    return next((clone for clone in candidates
++                 if here == clone or clone in here.parents), None)
++
++
++def is_sole_candidate(candidates: tuple[Path, ...]) -> bool:
++    """Un solo clon declarado no es ambiguo: es el consumidor."""
++    return len(candidates) == 1
++
++
++def contextual_consumer(candidates: tuple[Path, ...],
++                        start: Path | None = None) -> Path | None:
++    """El consumidor que el contexto fija SIN ambiguedad, o None.
++
++    Dos formas, en este orden: el clon que contiene el punto de partida, y el
++    unico clon declarado. `/home/user` —el cwd del lanzador remoto— no esta
++    dentro de ningun clon y lleva `.claude/`, asi que el ascenso por marcador
++    de `reach.consumer_root` lo tomaria por consumidor; aqui no es candidato
++    porque el roster no lo lista.
++    """
++    containing = clone_containing(_starting_point(start), candidates)
++    if containing is not None:
++        return containing
++    if is_sole_candidate(candidates):
++        return candidates[0]
++    return None
++
++
++def _consumer_refusal(candidates: tuple[Path, ...], start: Path | None) -> str:
++    listed = ", ".join(str(candidate) for candidate in candidates) or "ninguno"
++    return (f"no se pudo resolver el consumidor: {_starting_point(start)} no "
++            f"esta dentro de ningun clon declarado y el localizador declara "
++            f"{len(candidates)} ({listed}), asi que no hay uno solo que tomar. "
++            + _how_to_declare_consumer()
++            + " NO se adivina: el hogar del lanzador tambien lleva .claude/ "
++              "y no es un consumidor.")
++
++
++def resolve_consumer(declared: str | Path | None = None,
++                     start: Path | None = None) -> Path:
++    """El clon consumidor: explicito, declarado, del contexto, o rehuso.
++
++    Decision del ejecutor 2026-09-30 (TASK-THYROX-0261): ningun consumidor
++    escrito a mano en el proveedor. La cadena, y por que cada peldano:
++
++    1. **explicito** (`consumer=`, `--consumer`): se usa tal cual.
++    2. **`THYROX_CONSUMER`** —la variable de `reach`, no una segunda que
++       pueda divergir—, resuelta por `reach.consumer_root`, que aplica sus
++       clausulas estrictas si estan encendidas.
++    3. **el contexto**, si es unico (`contextual_consumer`).
++    4. **rehuso** que nombra la variable y la opcion. Antes se caia a
++       `<padre>/kaupamex-docs`: dominio del producto dentro del proveedor, y
++       un cableado que apuntaba a un clon que podia no existir.
++
++    Es la cadena que el ejecutable de referencia aplica a su directorio de
++    proyecto (2.1.283, `CLAUDE_PROJECT_DIR: Ho() ?? Er()`): el declarado, si
++    no el de la sesion, y sin sesion `NoProjectDirectoryError` — nunca un
++    hermano fijo.
++    """
++    if declared:
++        return Path(declared)
++    if env_value(CONSUMER_ROOT_VAR):
++        return consumer_root()
++    candidates = declared_consumer_candidates()
++    contextual = contextual_consumer(candidates, start)
++    if contextual is None:
++        raise WiringRefused(_consumer_refusal(candidates, start))
++    return contextual
++
++
+ def declared_wiring(root: Path | None = None,
+                     consumer: str | Path | None = None,
+                     advisor: str | None = None) -> dict:
+@@ -92,18 +196,16 @@ def declared_wiring(root: Path | None = None,
+     cuenta. Eso es lo que dejo DOS cableados contradictorios en el arbol.
+     """
+     base = Path(root) if root else Path(thyrox_root())
+-    # El literal `kaupamex-docs` sortea al localizador, que existe justamente
+-    # para derivar el prefijo del clon (`reach.derive_clone_prefix`). Es dominio
+-    # del producto dentro del proveedor y su barrido es TASK-THYROX-0261; aqui
+-    # queda como DEFAULT porque `install()` corre sin argumentos, y lo gana
+-    # cualquier `consumer=` que el consumidor declare.
+-    consumer = Path(consumer) if consumer else base.parent / "kaupamex-docs"
++    # Sin default en el proveedor: `resolve_consumer` lo toma explicito, de
++    # `THYROX_CONSUMER` o del contexto, y rehusa ANTES de componer una sola
++    # ruta si no puede (TASK-THYROX-0261).
++    consumer_dir = resolve_consumer(consumer)
+ 
+     def cmd(command: str, timeout: int | None = None) -> dict:
+-        entrada: dict[str, Any] = {"type": "command", "command": command}
++        entry: dict[str, Any] = {"type": "command", "command": command}
+         if timeout is not None:
+-            entrada["timeout"] = timeout
+-        return entrada
++            entry["timeout"] = timeout
++        return entry
+ 
+     # EL CABLEADO APUNTA AL PRODUCTOR. Antes nombraba los tres envoltorios de
+     # `kaupamex-docs/.claude/hooks/`, que era verdad cuando el mecanismo vivia
+@@ -130,18 +232,18 @@ def declared_wiring(root: Path | None = None,
+     # interprete del proveedor y `PYTHONPATH` por si mismo
+     # (`src/session/generate_bin.py`), asi que invocarlo por su nombre corto
+     # es correcto pase lo que pase con las importaciones internas del modulo.
+-    agentes = f"{base}/src/agents"
++    agents_dir = f"{base}/src/agents"
+     binroot = f"{base}/bin"
+-    resultados = f"{consumer}/.claude/agent-results"
+-    repos = " ".join(f"--repo {nombre}={ruta}"
+-                     for nombre, ruta in sorted(reach().items()))
++    results_dir = f"{consumer_dir}/.claude/agent-results"
++    repo_flags = " ".join(f"--repo {name}={path}"
++                     for name, path in sorted(reach().items()))
+     delta = f"bash {binroot}/measure_delta"
+-    registro = f"bash {binroot}/register_session"
++    registration = f"bash {binroot}/register_session"
+     return {
+         "hooks": {
+             "SubagentStart": [{"hooks": [
+-                cmd(f"{delta} --start {repos} --results-dir {resultados}"),
+-                cmd(f"{registro} --start"),
++                cmd(f"{delta} --start {repo_flags} --results-dir {results_dir}"),
++                cmd(f"{registration} --start"),
+             ]}],
+             # Tras compactar, el estado de trabajo (clones sin publicar,
+             # trabajos del ledger sin recoger) vuelve al modelo por aqui y no
+@@ -156,7 +258,7 @@ def declared_wiring(root: Path | None = None,
+                 # `.py` muere por `ModuleNotFoundError` bajo el entorno del
+                 # cliente, que no lo declara.
+                 "hooks": [cmd(f"bash {binroot}/compact_context "
+-                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
++                              + " ".join(f"--root {path}" for _, path in sorted(reach().items())),
+                               timeout=20)],
+             }, {
+                 # Un pool que muere no llega a su `sweep`: sus worktrees —cada
+@@ -166,7 +268,7 @@ def declared_wiring(root: Path | None = None,
+                 "matcher": "startup",
+                 "hooks": [cmd(f"bash {base}/bin/item_worktree sweep-orphans {repo}",
+                               timeout=120)
+-                          for repo in dict.fromkeys([str(base), *(str(ruta) for _, ruta in sorted(reach().items()))])],
++                          for repo in dict.fromkeys([str(base), *(str(path) for _, path in sorted(reach().items()))])],
+             }],
+             "PreModelSwitch": [{"hooks": [
+                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
+@@ -189,9 +291,9 @@ def declared_wiring(root: Path | None = None,
+                               timeout=10)],
+             }],
+             "SubagentStop": [{"hooks": [
+-                cmd(f"node {agentes}/save_result.mjs --log-dir {resultados}"),
+-                cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
+-                cmd(f"{registro} --stop"),
++                cmd(f"node {agents_dir}/save_result.mjs --log-dir {results_dir}"),
++                cmd(f"{delta} --stop {repo_flags} --results-dir {results_dir}"),
++                cmd(f"{registration} --stop"),
+             ]}],
+             # El ciclo de vida de una tarjeta. Son eventos DEDICADOS del
+             # cliente —no un `PostToolUse` con matcher— y su payload trae
+@@ -671,6 +773,108 @@ def wiring_drift(live: dict, declared: dict) -> dict:
+     return deriva
+ 
+ 
++def _print_refusal(error: Exception) -> int:
++    """El rehuso, por stderr y con el codigo que las dos ramas comparten."""
++    print(f"REHUSA — {error}", file=sys.stderr)
++    return 2
++
++
++def _live_command_count(live_wiring: dict) -> int:
++    return sum(len(group.get("hooks", []))
++               for groups in (live_wiring.get("hooks") or {}).values()
++               for group in groups)
++
++
++def _print_drift(drift: dict) -> None:
++    """La deriva se publica AQUI y no en un host de surfacing, porque ese host
++    no existe: `session-start.sh` tiene cero invocadores ejecutables y el
++    settings vivo no declara `SessionStart`. Inventarle uno seria afirmar una
++    superficie sin medirla; publicarla en el comando que ya se corre no.
++    """
++    if not drift:
++        print("  sin deriva: los dos cableados coinciden literalmente por evento")
++    for event, sides in drift.items():
++        print(f"  deriva en {event}")
++        for command in sides["only_live"]:
++            print(f"    solo vivo      {command}")
++        for command in sides["only_declared"]:
++            print(f"    solo declarado {command}")
++
++
++def _install_command(args, live: Path) -> int:
++    """La rama `--write`: instala lo declarado, o rehusa sin tocar nada."""
++    import datetime  # noqa: PLC0415 - sello del respaldo
++
++    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S")
++    try:
++        declared = declared_wiring(consumer=args.consumer)
++        owned = OWNED_KEYS
++        if args.hooks_only:
++            # Solo lo que no enfria la cache: quien opera decide el advisor, y
++            # cambiarlo a mitad de sesion reescribe el contexto entero
++            # (H-DOCS-1012).
++            declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
++        record = install(
++            live, declared, BackgroundBackup(), stamp, owned=owned,
++            backups=args.backups,
++            allow_cache_key_change=args.allow_cache_key_change)
++    except WiringRefused as error:
++        return _print_refusal(error)
++    if record["unchanged"]:
++        # Se distingue de «instalado» a proposito: son estados distintos del
++        # mundo, y colapsarlos deja sin saber si hubo evento de settings.
++        print(f"sin cambio en {record['live']}")
++        print("  lo declarado ya estaba vivo; no se escribio, no se "
++              "respaldo, y no hubo evento de recarga de settings")
++        return 0
++    print(f"instalado en {record['live']}")
++    print(f"  respaldo   {record['backup'] or '(no existia; nada que respaldar)'}")
++    print(f"  escritas   {', '.join(record['written']) or '(ninguna)'}")
++    print(f"  conservadas {', '.join(record['preserved']) or '(ninguna)'}")
++    if record["cache_key_delta"]:
++        print("  AVISO: cambio de valor en "
++              f"{', '.join(record['cache_key_delta'])} — es campo de la "
++              "clave de la cache. Con contexto caliente se reescribe entero.")
++    else:
++        print("  cache-safe: ningun campo de la clave cambio de valor")
++    return 0
++
++
++def _measure_command(args, live: Path) -> int:
++    """La rama de medicion: rotos en lo vivo y en lo declarado, y su deriva."""
++    if not live.exists():
++        # REHUSA en vez de publicar un cero. Un «0 rotos» sobre un archivo que
++        # no se encontro no se distingue de un «0 rotos» sobre uno sano, y esa
++        # confusion es el defecto que este modulo existe para no repetir.
++        print(f"ERROR — no se encuentra el cableado vivo en {live}. "
++              f"Declaralo con {LIVE_SETTINGS_VAR}. NO se emite conteo: un 0 "
++              f"aqui seria un verde falso.", file=sys.stderr)
++        return 2
++    try:
++        declared = declared_wiring(consumer=args.consumer)
++    except WiringRefused as error:
++        return _print_refusal(error)
++    live_wiring = json.loads(live.read_text())
++    broken_live = broken_targets(live_wiring)
++    broken_declared = broken_targets(declared)
++
++    for broken in broken_live:
++        print(f"  roto en la copia viva  {broken['event']:16} {broken['path']}", file=sys.stderr)
++    for broken in broken_declared:
++        print(f"  roto en lo declarado   {broken['event']:16} {broken['path']}", file=sys.stderr)
++    print(f"{len(broken_live)} roto(s) en la copia viva sobre "
++          f"{_live_command_count(live_wiring)} comandos ({live}) · "
++          f"{len(broken_declared)} en lo que thyrox declara")
++
++    # La deriva NO entra al codigo de salida a proposito. El codigo lo gobierna
++    # `broken_targets` de lo declarado, que mide ALCANZABILIDAD; la deriva mide
++    # COINCIDENCIA LITERAL, y su propio docstring declara que un rojo suyo
++    # autoriza a decir «no son la misma cadena» y nunca «la instalacion esta
++    # atrasada» — un stub que delega en el mismo mecanismo deriva sin estar mal.
++    _print_drift(wiring_drift(live_wiring, declared))
++    return 1 if broken_declared else 0
++
++
+ def main() -> int:
+     import argparse  # noqa: PLC0415 - superficie de linea de comandos
+ 
+@@ -678,6 +882,11 @@ def main() -> int:
+         description="Mide el cableado vivo, o instala el que thyrox declara.")
+     parser.add_argument("--write", action="store_true",
+                         help="instala: respalda en segundo plano y fusiona")
++    parser.add_argument("--consumer", default=None,
++                        help="la raiz del clon consumidor contra el que se "
++                             f"resuelven las rutas; sin ella, {CONSUMER_ROOT_VAR}, "
++                             "y si no el contexto (el clon que contiene el cwd, "
++                             "o el unico declarado). Ambiguo o ausente: rehusa")
+     parser.add_argument("--backups", default=None,
+                         help="donde dejar el respaldo (por defecto, el estado)")
+     parser.add_argument("--allow-cache-key-change", action="store_true",
+@@ -689,88 +898,10 @@ def main() -> int:
+                              "de la cache: deja `advisorModel` como este")
+     args = parser.parse_args()
+ 
+-    ruta = live_settings()
+-
++    live = live_settings()
+     if args.write:
+-        import datetime  # noqa: PLC0415 - sello del respaldo
+-
+-        stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
+-            "%Y%m%dT%H%M%S")
+-        try:
+-            declared = declared_wiring()
+-            owned = OWNED_KEYS
+-            if args.hooks_only:
+-                # Solo lo que no enfria la cache: quien opera decide el
+-                # advisor, y cambiarlo a mitad de sesion reescribe el
+-                # contexto entero (H-DOCS-1012).
+-                declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
+-            record = install(
+-                ruta, declared, BackgroundBackup(), stamp, owned=owned,
+-                backups=args.backups,
+-                allow_cache_key_change=args.allow_cache_key_change)
+-        except WiringRefused as e:
+-            print(f"REHUSA — {e}", file=sys.stderr)
+-            return 2
+-        if record["unchanged"]:
+-            # Se distingue de «instalado» a proposito: son estados distintos del
+-            # mundo, y colapsarlos deja sin saber si hubo evento de settings.
+-            print(f"sin cambio en {record['live']}")
+-            print("  lo declarado ya estaba vivo; no se escribio, no se "
+-                  "respaldo, y no hubo evento de recarga de settings")
+-            return 0
+-        print(f"instalado en {record['live']}")
+-        print(f"  respaldo   {record['backup'] or '(no existia; nada que respaldar)'}")
+-        print(f"  escritas   {', '.join(record['written']) or '(ninguna)'}")
+-        print(f"  conservadas {', '.join(record['preserved']) or '(ninguna)'}")
+-        if record["cache_key_delta"]:
+-            print("  AVISO: cambio de valor en "
+-                  f"{', '.join(record['cache_key_delta'])} — es campo de la "
+-                  "clave de la cache. Con contexto caliente se reescribe entero.")
+-        else:
+-            print("  cache-safe: ningun campo de la clave cambio de valor")
+-        return 0
+-
+-    if not ruta.exists():
+-        # REHUSA en vez de publicar un cero. Un «0 rotos» sobre un archivo que
+-        # no se encontro no se distingue de un «0 rotos» sobre uno sano, y esa
+-        # confusion es el defecto que este modulo existe para no repetir.
+-        print(f"ERROR — no se encuentra el cableado vivo en {ruta}. "
+-              f"Declaralo con {LIVE_SETTINGS_VAR}. NO se emite conteo: un 0 "
+-              f"aqui seria un verde falso.", file=sys.stderr)
+-        return 2
+-    viva = json.loads(ruta.read_text())
+-    rotos_vivos = broken_targets(viva)
+-    rotos_declarados = broken_targets(declared_wiring())
+-    n_viva = sum(len(g.get("hooks", [])) for gs in (viva.get("hooks") or {}).values() for g in gs)
+-
+-    for r in rotos_vivos:
+-        print(f"  roto en la copia viva  {r['event']:16} {r['path']}", file=sys.stderr)
+-    for r in rotos_declarados:
+-        print(f"  roto en lo declarado   {r['event']:16} {r['path']}", file=sys.stderr)
+-    print(f"{len(rotos_vivos)} roto(s) en la copia viva sobre {n_viva} comandos "
+-          f"({ruta}) · {len(rotos_declarados)} en lo que thyrox declara")
+-
+-    # La deriva se publica AQUI y no en un host de surfacing, porque ese host
+-    # no existe: `session-start.sh` tiene cero invocadores ejecutables y el
+-    # settings vivo no declara `SessionStart`. Inventarle uno seria afirmar una
+-    # superficie sin medirla; publicarla en el comando que ya se corre no.
+-    #
+-    # Y NO entra al codigo de salida a proposito. El codigo lo gobierna
+-    # `broken_targets` de lo declarado, que mide ALCANZABILIDAD; la deriva mide
+-    # COINCIDENCIA LITERAL, y su propio docstring declara que un rojo suyo
+-    # autoriza a decir «no son la misma cadena» y nunca «la instalacion esta
+-    # atrasada» — un stub que delega en el mismo mecanismo deriva sin estar mal.
+-    deriva = wiring_drift(viva, declared_wiring())
+-    if not deriva:
+-        print("  sin deriva: los dos cableados coinciden literalmente por evento")
+-    for evento, lados in deriva.items():
+-        print(f"  deriva en {evento}")
+-        for c in lados["only_live"]:
+-            print(f"    solo vivo      {c}")
+-        for c in lados["only_declared"]:
+-            print(f"    solo declarado {c}")
+-
+-    return 1 if rotos_declarados else 0
++        return _install_command(args, live)
++    return _measure_command(args, live)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/session/test_user_wiring.py b/tests/session/test_user_wiring.py
+index 553037380..d368f848a 100644
+--- a/tests/session/test_user_wiring.py
++++ b/tests/session/test_user_wiring.py
+@@ -814,5 +814,205 @@ check("18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas",
+ 
+ import shutil as _sh18  # noqa: E402
+ _sh18.rmtree(_sandbox18, ignore_errors=True)
++
++print("\n== 19. el consumidor se RESUELVE: explicito > THYROX_CONSUMER > contexto > rehuso ==")
++# MITAD ROJA medida 2026-09-30 (TASK-THYROX-0261): `declared_wiring` caia a
++# `base.parent / "kaupamex-docs"` —un consumidor escrito a mano dentro del
++# proveedor— y `main()` no ofrecia `--consumer`. La decision del ejecutor
++# (`.claude/workbench/decisiones-ejecutor-siete-tareas-20260930T044345/`):
++# explicito -> por reach/contexto si es unico -> REHUSA. El contexto tiene dos
++# formas, las dos derivadas del roster de `reach`: el clon que CONTIENE el
++# punto de partida, o el unico clon declarado. `/home/user` —el cwd del
++# lanzador remoto— no esta dentro de ningun clon y lleva `.claude/`: con dos
++# clones declarados se rehusa en vez de tomar ese hogar por consumidor.
++import tempfile as _tf19  # noqa: E402
++
++_sandbox19 = Path(_tf19.mkdtemp())
++_clone_a19 = _sandbox19 / "kx-a"
++_clone_b19 = _sandbox19 / "kx-b"
++(_clone_a19 / "sub").mkdir(parents=True)
++_clone_b19.mkdir()
++# El hogar del lanzador: lleva `.claude/` y NO es un consumidor.
++_launcher_home19 = _sandbox19 / "home"
++(_launcher_home19 / ".claude").mkdir(parents=True)
++_explicit19 = _sandbox19 / "declared"
++_explicit19.mkdir()
++
++_original_reach19 = w.reach
++_original_consumer_env19 = _os0.environ.get(w.CONSUMER_ROOT_VAR)
++
++
++def _with_roster19(clones: dict) -> None:
++    setattr(w, "reach", lambda: dict(clones))
++
++
++def _without_roster19() -> None:
++    def _no_roster():
++        raise reach.ReachRootError("sin roster (simulado por la suite)")
++    setattr(w, "reach", _no_roster)
++
++
++def _refusal19(*args, **kwargs):
++    """El texto del rehuso, o None si resolvio."""
++    try:
++        w.resolve_consumer(*args, **kwargs)
++    except w.WiringRefused as error:
++        return str(error)
++    return None
++
++
++try:
++    _os0.environ[w.CONSUMER_ROOT_VAR] = str(_clone_b19)
++    _with_roster19({"a": _clone_a19, "b": _clone_b19})
++    check("19.1 el parametro explicito gana a THYROX_CONSUMER",
++          Path(_explicit19), w.resolve_consumer(_explicit19, start=_launcher_home19))
++    check("19.2 THYROX_CONSUMER sola resuelve, aunque el punto de partida este fuera",
++          _clone_b19.resolve(), w.resolve_consumer(start=_launcher_home19))
++
++    _os0.environ.pop(w.CONSUMER_ROOT_VAR, None)
++    check("19.3 sin variable, el clon que CONTIENE el punto de partida es el consumidor",
++          _clone_a19.resolve(), w.resolve_consumer(start=_clone_a19 / "sub"))
++    _with_roster19({"a": _clone_a19})
++    check("19.4 fuera de todo clon, el UNICO clon declarado es el consumidor",
++          _clone_a19.resolve(), w.resolve_consumer(start=_launcher_home19))
++
++    _with_roster19({"a": _clone_a19, "b": _clone_b19})
++    _ambiguous19 = _refusal19(start=_launcher_home19) or ""
++    check("19.5 fuera de todo clon y con dos declarados, REHUSA", True, bool(_ambiguous19))
++    check("19.5b y el rehuso nombra la variable y la opcion", True,
++          w.CONSUMER_ROOT_VAR in _ambiguous19 and "--consumer" in _ambiguous19)
++    check("19.5c y enumera los candidatos entre los que no elige", True,
++          str(_clone_a19.resolve()) in _ambiguous19 and str(_clone_b19.resolve()) in _ambiguous19)
++
++    _without_roster19()
++    _empty19 = _refusal19(start=_launcher_home19) or ""
++    check("19.6 sin roster que derivar, REHUSA nombrando la variable", True,
++          bool(_empty19) and w.CONSUMER_ROOT_VAR in _empty19)
++
++    # `declared_wiring` propaga el rehuso: sin consumidor no se componen rutas.
++    # El cwd de la suite es el proveedor, que no esta dentro de ningun clon.
++    _with_roster19({"a": _clone_a19, "b": _clone_b19})
++    try:
++        w.declared_wiring(root=HERE)
++        _propagated19 = False
++    except w.WiringRefused:
++        _propagated19 = True
++    check("19.7 declared_wiring sin consumidor resoluble REHUSA", True, _propagated19)
++    check("19.8 y con consumidor explicito compone las rutas con el", True,
++          f"{_explicit19}/.claude/agent-results"
++          in _json.dumps(w.declared_wiring(root=HERE, consumer=_explicit19)))
++
++    print("== 19-bis. CONTROL DE ANULACION: la ambiguedad deja de rehusar ==")
++    # Si con varios clones se tomara el primero —la forma del default que esta
++    # tarea retira—, cae 19.5 y SOLO 19.5: 19.3 y 19.4 no pasan por esa rama, y
++    # 19.6 rehusa por otra (sin roster no hay primero que tomar).
++    _original_sole19 = w.is_sole_candidate
++    setattr(w, "is_sole_candidate", lambda candidates: bool(candidates))
++    try:
++        _with_roster19({"a": _clone_a19, "b": _clone_b19})
++        _annulled_ambiguous19 = _refusal19(start=_launcher_home19)
++        _annulled_inside19 = w.resolve_consumer(start=_clone_a19 / "sub")
++        _with_roster19({"a": _clone_a19})
++        _annulled_sole19 = w.resolve_consumer(start=_launcher_home19)
++        _without_roster19()
++        _annulled_empty19 = _refusal19(start=_launcher_home19)
++    finally:
++        setattr(w, "is_sole_candidate", _original_sole19)
++    check("19-bis.1 anulado, la ambiguedad ya NO rehusa (19.5 cae)", None, _annulled_ambiguous19)
++    check("19-bis.2 el clon que contiene el punto de partida SOBREVIVE (19.3)",
++          _clone_a19.resolve(), _annulled_inside19)
++    check("19-bis.3 el unico clon SOBREVIVE (19.4)", _clone_a19.resolve(), _annulled_sole19)
++    check("19-bis.4 y sin roster SIGUE rehusando (19.6)", True, _annulled_empty19 is not None)
++    check("19-bis.5 restaurado, la ambiguedad vuelve a rehusar", False,
++          w.is_sole_candidate((_clone_a19, _clone_b19)))
++finally:
++    setattr(w, "reach", _original_reach19)
++    if _original_consumer_env19 is None:
++        _os0.environ.pop(w.CONSUMER_ROOT_VAR, None)
++    else:
++        _os0.environ[w.CONSUMER_ROOT_VAR] = _original_consumer_env19
++
++print("== 19-ter. main(): --consumer llega a las dos ramas, y el rehuso sale como REHUSA con exit 2 ==")
++# Un roster de dos clones fabricado por variables del localizador, un cwd
++# fuera de ambos y sin THYROX_CONSUMER: las dos ramas de `main` tienen que
++# rehusar igual, y con `--consumer` las dos tienen que trabajar.
++_env19 = {k: v for k, v in _os0.environ.items()
++          if k != w.CONSUMER_ROOT_VAR and not k.startswith("THYROX_REACH")}
++_env19.update({"THYROX_REACH_ROOTS": "a,b", "THYROX_CLONE_PREFIX": "kx-",
++               "THYROX_REACH_ROOT": str(_sandbox19),
++               "THYROX_REACH_A": str(_clone_a19), "THYROX_REACH_B": str(_clone_b19),
++               "PYTHONPATH": str(HERE / "src")})
++
++
++def _main19(*flags, live: dict, consumer=None):
++    live_path = _sandbox19 / "settings.local.json"
++    live_path.write_text(_json.dumps(live))
++    argv = [sys.executable, _MODULO, *flags]
++    if consumer is not None:
++        argv += ["--consumer", str(consumer)]
++    completed = _sp0.run(argv, cwd=str(_launcher_home19), capture_output=True, text=True,
++                         env={**_env19, w.LIVE_SETTINGS_VAR: str(live_path)})
++    return completed.returncode, completed.stdout, completed.stderr
++
++
++_rc_measure19, _, _err_measure19 = _main19(live={"hooks": {}})
++check("19-ter.1 la rama de medicion rehusa con exit 2", 2, _rc_measure19)
++check("19-ter.2 y lo dice como REHUSA nombrando la variable", True,
++      _err_measure19.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _err_measure19)
++_rc_write19, _, _err_write19 = _main19("--write", "--backups", str(_sandbox19), live={"hooks": {}})
++check("19-ter.3 la rama --write rehusa con exit 2", 2, _rc_write19)
++check("19-ter.4 y lo dice como REHUSA", True, _err_write19.startswith("REHUSA"))
++
++# Lo esperado se compone con el MISMO roster que ve el subproceso: con el
++# real, el `--repo` y el barrido de arranque difieren y la deriva seria de
++# la prueba, no del consumidor.
++_with_roster19({"a": _clone_a19, "b": _clone_b19})
++try:
++    _declared_explicit19 = w.declared_wiring(root=HERE, consumer=_explicit19)
++finally:
++    setattr(w, "reach", _original_reach19)
++_rc_ok19, _out_ok19, _err_ok19 = _main19(live=_declared_explicit19, consumer=_explicit19)
++check("19-ter.5 con --consumer la medicion trabaja", True, "roto(s) en la copia viva" in _out_ok19)
++check("19-ter.6 y el consumidor pasado es el que se compara: sin deriva", True,
++      "sin deriva" in _out_ok19)
++
++print("== 19-quater. los dos invocadores propagan el rehuso: el instalador shell y session_restart ==")
++# Los dos llamaban a `declared_wiring` poniendo ellos el consumidor: el
++# instalador shell con `reach.root("docs")` —un clon escrito a mano— y
++# `session_restart` sin ninguno. Con el roster ambiguo de 19-ter los dos
++# tienen que rehusar con exit 2 sin escribir nada; con el consumidor
++# declarado, trabajar.
++_installer19 = HERE / "src" / "session" / "instalar-hooks-sesion-multirepo.sh"
++_target19 = _sandbox19 / "installer-target"
++_installed19 = _target19 / ".claude" / "settings.local.json"
++_r_sh19 = _sp0.run(["bash", str(_installer19), str(_target19)], cwd=str(_launcher_home19),
++                   capture_output=True, text=True, env=_env19)
++check("19-quater.1 el instalador shell rehusa con exit 2", 2, _r_sh19.returncode)
++check("19-quater.2 y lo dice como REHUSA nombrando la variable", True,
++      _r_sh19.stderr.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _r_sh19.stderr)
++check("19-quater.3 y no deja ni un settings vacio detras", False, _installed19.exists())
++_r_sh_ok19 = _sp0.run(["bash", str(_installer19), str(_target19), "--consumer", str(_explicit19)],
++                      cwd=str(_launcher_home19), capture_output=True, text=True, env=_env19)
++check("19-quater.4 con --consumer instala", 0, _r_sh_ok19.returncode)
++check("19-quater.5 y el store apunta al consumidor pasado", True,
++      _installed19.exists() and f"{_explicit19}/.claude/agent-results" in _installed19.read_text())
++
++_restart19 = HERE / "src" / "session" / "session_restart.py"
++_transcript19 = _sandbox19 / "t.jsonl"
++_transcript19.write_text("")
++_restart_argv19 = [sys.executable, str(_restart19), "--transcript", str(_transcript19),
++                   "--root", str(HERE)]
++_r_restart19 = _sp0.run(_restart_argv19, cwd=str(_launcher_home19),
++                        capture_output=True, text=True, env=_env19)
++check("19-quater.6 session_restart rehusa con exit 2", 2, _r_restart19.returncode)
++check("19-quater.7 y lo dice como REHUSA nombrando la variable", True,
++      _r_restart19.stderr.startswith("REHUSA") and w.CONSUMER_ROOT_VAR in _r_restart19.stderr)
++_r_restart_ok19 = _sp0.run(_restart_argv19 + ["--consumer", str(_explicit19)],
++                           cwd=str(_launcher_home19), capture_output=True, text=True, env=_env19)
++check("19-quater.8 con --consumer session_restart pasa la resolucion del consumidor",
++      False, "REHUSA" in _r_restart_ok19.stderr)
++
++import shutil as _sh19  # noqa: E402
++_sh19.rmtree(_sandbox19, ignore_errors=True)
+ print(f"\n{OK} ok, {FALLOS} fallos")
+ raise SystemExit(1 if FALLOS else 0)

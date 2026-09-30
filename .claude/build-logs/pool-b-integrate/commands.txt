@@ -1,0 +1,5 @@
+cd src/packages/cli && timeout 600 bun test __tests__/providers > ../../../.claude/build-logs/pool-b-integrate/cli.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/pool-b-integrate/cli.log
+cd src/packages/storage && timeout 600 bun test src/secureStorage > ../../../.claude/build-logs/pool-b-integrate/storage.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/pool-b-integrate/storage.log
+cd src/packages/provider && timeout 600 bun test __tests__/storeCredentialProxyProcess.test.ts __tests__/credentialProxy __tests__/credentials.test.ts > ../../../.claude/build-logs/pool-b-integrate/provider.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/pool-b-integrate/provider.log
+timeout 900 bash tests/session/test-headless-pool.sh > .claude/build-logs/pool-b-integrate/headless-pool.log 2>&1; echo "rc=$?" >> .claude/build-logs/pool-b-integrate/headless-pool.log
+timeout 900 bash bin/check_package_typecheck --strict cli storage provider > .claude/build-logs/pool-b-integrate/typecheck.log 2>&1; echo "rc=$?" >> .claude/build-logs/pool-b-integrate/typecheck.log

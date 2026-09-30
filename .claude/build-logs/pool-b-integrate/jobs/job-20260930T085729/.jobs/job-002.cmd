@@ -1,0 +1,1 @@
+cd src/packages/storage && timeout 600 bun test src/secureStorage > ../../../.claude/build-logs/pool-b-integrate/storage.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/pool-b-integrate/storage.log

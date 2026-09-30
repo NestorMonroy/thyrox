@@ -1,0 +1,6 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-fable-5-1: nada que derivar
+cache-ttl: 1h (constant)
+items=4 ok=4 fallidos=0
+verificados=4 rechazados=0 sin-cambios=0 fallidos=0
+__BG_EXIT__=0

@@ -1,0 +1,1 @@
+cd src/packages/provider && timeout 600 bun test __tests__/storeCredentialProxyProcess.test.ts __tests__/credentialProxy __tests__/credentials.test.ts > ../../../.claude/build-logs/pool-b-integrate/provider.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/pool-b-integrate/provider.log

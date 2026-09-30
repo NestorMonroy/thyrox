@@ -26,7 +26,8 @@
 #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
 #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
-#                    [--credential-proxy] [--isolation worktree [--verify CMD]]
+#                    [--credential-proxy | --store-credential-proxy]
+#                    [--isolation worktree [--verify CMD]]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -48,6 +49,18 @@
 # ANTHROPIC_UNIX_SOCKET y el marcador `ssh-placeholder` como
 # ANTHROPIC_API_KEY: ningún item ve el secreto. Es el túnel por socket del
 # ejecutable (`i1` de 2.1.283). Si el proxy no arranca, el pool rehúsa con
+# exit 2 sin lanzar items; al terminar, el pool lo detiene.
+#
+# `--store-credential-proxy` lanza el proxy con las credenciales del store de
+# conexiones (`bin/provider-store-credential-proxy`, o
+# HEADLESS_POOL_STORE_CREDENTIAL_PROXY) para un pool SIN credencial en su
+# entorno: el proxy sirve el `--model` del pool por HTTP en loopback, y cada
+# item recibe ANTHROPIC_BASE_URL con su URL y, como ANTHROPIC_API_KEY, una
+# clave de acceso propia de esta ejecución; la clave de cifrado del store y
+# toda credencial se retiran de su entorno. El pool declara la fuente con
+# `credencial: proxy con credenciales del store (url=…)`. No va junto con
+# `--credential-proxy`: son dos fuentes para el mismo item, y el pool rehúsa
+# con exit 2 en vez de elegir en silencio. Si el proxy no arranca, rehúsa con
 # exit 2 sin lanzar items; al terminar, el pool lo detiene.
 #
 # Con GNU Time (/usr/bin/time, o HEADLESS_POOL_TIME) cada item deja <n>.time
@@ -156,7 +169,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
-TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
+TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -175,6 +188,7 @@ while [[ $# -gt 0 ]]; do
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
         --credential-proxy) CREDENTIAL_PROXY=1; shift ;;
+        --store-credential-proxy) STORE_CREDENTIAL_PROXY=1; shift ;;
         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
@@ -197,6 +211,8 @@ case "$MODEL" in
     *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
 esac
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
+[[ -z "$CREDENTIAL_PROXY" || -z "$STORE_CREDENTIAL_PROXY" ]] \
+    || rehusa "--credential-proxy y --store-credential-proxy no van juntos: son dos fuentes de credencial para el mismo item"
 # Con --isolation worktree cada ítem implementa en su propio worktree, y el
 # árbol principal no cambia hasta que `pool_integrate` aplique lo verificado.
 # Por defecto recibe sólo Bash: lee, busca y escribe con cat, rg, gawk y
@@ -353,28 +369,57 @@ export HP_VRAM_NEED
 
 mkdir -p "$OUT"
 
+# Los proxies que el pool lanza mueren con él. Cada uno anuncia en su log
+# cuando ya escucha, y se espera ese anuncio antes de lanzar ningún item; si
+# el proceso sale antes de anunciarlo, no hay proxy y no se lanza nada.
+launched_proxies=()
+stop_launched_proxies() {
+    local pid
+    for pid in "${launched_proxies[@]}"; do kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null; done
+}
+trap 'stop_launched_proxies' EXIT
+# Espera el anuncio `<patrón>` en `<log>` mientras `<pid>` viva; 0 si llegó.
+wait_for_announcement() {
+    local log="$1" pattern="$2" pid="$3"
+    for _ in $(seq 1 100); do
+        grep -q "$pattern" "$log" 2>/dev/null && return 0
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 0.1
+    done
+    grep -q "$pattern" "$log" 2>/dev/null
+}
 # El proxy de credencial: lo lanza el pool con SU entorno, y los items sólo
-# reciben la ruta del socket. Se espera su anuncio (`socket=<ruta>`) antes de
-# lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no se lanza
-# nada.
+# reciben la ruta del socket.
 HP_PROXY_SOCKET=""
 if [[ -n "$CREDENTIAL_PROXY" ]]; then
     proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-credential-proxy}"
     proxy_socket="$OUT/.credential-proxy.sock"
     proxy_log="$OUT/.credential-proxy.log"
     "$proxy_bin" --socket "$proxy_socket" > "$proxy_log" 2>&1 &
-    proxy_pid=$!
-    trap 'kill "$proxy_pid" 2>/dev/null; wait "$proxy_pid" 2>/dev/null' EXIT
-    for _ in $(seq 1 100); do
-        grep -q '^socket=' "$proxy_log" 2>/dev/null && break
-        kill -0 "$proxy_pid" 2>/dev/null || break
-        sleep 0.1
-    done
-    grep -q '^socket=' "$proxy_log" 2>/dev/null \
+    launched_proxies+=($!)
+    wait_for_announcement "$proxy_log" '^socket=' "${launched_proxies[-1]}" \
         || rehusa "el proxy de credencial no arrancó ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
     HP_PROXY_SOCKET="$proxy_socket"
 fi
 export HP_PROXY_SOCKET
+# El proxy con credenciales del store: el pool no tiene credencial en su
+# entorno; el proxy lee la del store (`openExistingConnectionStore`) y los
+# items reciben su URL y una clave de acceso propia de esta ejecución. La
+# clave va al proxy por entorno, no por argumento: la línea de comando se lee
+# en /proc desde cualquier usuario, el entorno sólo desde el mismo.
+HP_STORE_PROXY_URL=""; HP_STORE_PROXY_ACCESS_KEY=""
+if [[ -n "$STORE_CREDENTIAL_PROXY" ]]; then
+    store_proxy_bin="${HEADLESS_POOL_STORE_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-store-credential-proxy}"
+    store_proxy_log="$OUT/.store-credential-proxy.log"
+    HP_STORE_PROXY_ACCESS_KEY="$(cat /proc/sys/kernel/random/uuid)"
+    THYROX_STORE_PROXY_ACCESS_KEY="$HP_STORE_PROXY_ACCESS_KEY" "$store_proxy_bin" --model "$MODEL" > "$store_proxy_log" 2>&1 &
+    launched_proxies+=($!)
+    wait_for_announcement "$store_proxy_log" '^url=' "${launched_proxies[-1]}" \
+        || rehusa "el proxy con credenciales del store no arrancó ($store_proxy_bin): $(tr '\n' ' ' < "$store_proxy_log")"
+    HP_STORE_PROXY_URL="$(gawk -F= '/^url=/{print $2; exit}' "$store_proxy_log")"
+    echo "credencial: proxy con credenciales del store (url=$HP_STORE_PROXY_URL)"
+fi
+export HP_STORE_PROXY_URL HP_STORE_PROXY_ACCESS_KEY
 # La ejecución vive en su runtime hasta cerrarse: el índice, el joblog y los
 # artefactos de cada ítem se escriben ahí, y a la salida sólo llega lo publicado
 # (`pool_lifecycle`). Un pool que muere deja su runtime para `reconcile`.
@@ -419,6 +464,13 @@ _headless_item() {
     return "$rc"
 }
 export -f _headless_item
+
+# Las vías por las que un item heredaría la credencial del pool.
+_headless_item_drop_credentials() {
+    unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
+          CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+}
+export -f _headless_item_drop_credentials
 
 _headless_item_run() {
     local n="$1" item="$2"
@@ -499,12 +551,17 @@ _headless_item_run() {
          else
              [[ -z "$HP_CACHE_TTL" ]] || export THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
          fi
-         # Con proxy, el item recibe el socket y el marcador; la credencial
-         # real se retira de su entorno por todas sus vías.
+         # Con un proxy, la credencial real se retira del entorno del item por
+         # todas sus vías, y el item recibe sólo lo que el proxy le da: el
+         # socket y el marcador, o la URL y la clave de acceso de esta
+         # ejecución, con la clave de cifrado del store también retirada.
          if [[ -n "$HP_PROXY_SOCKET" ]]; then
-             unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
-                   CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+             _headless_item_drop_credentials
              export ANTHROPIC_UNIX_SOCKET="$HP_PROXY_SOCKET" ANTHROPIC_API_KEY=ssh-placeholder
+         elif [[ -n "$HP_STORE_PROXY_URL" ]]; then
+             _headless_item_drop_credentials
+             unset ANTHROPIC_UNIX_SOCKET THYROX_STORAGE_ENCRYPTION_KEY
+             export ANTHROPIC_BASE_URL="$HP_STORE_PROXY_URL" ANTHROPIC_API_KEY="$HP_STORE_PROXY_ACCESS_KEY"
          fi
          # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
          # <n>.time; el codigo de salida es el del item, que time conserva.
