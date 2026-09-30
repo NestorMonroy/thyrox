@@ -35,6 +35,9 @@
       "@thyrox/config/settings": [
         "./settings/settings.ts"
       ],
+      "@thyrox/config/gpuAdmission": [
+        "./gpuAdmission.ts"
+      ],
       "@thyrox/config/settings/settings.js": [
         "./settings/settings.ts"
       ],
@@ -433,6 +436,7 @@
     "frontmatterParser.ts",
     "generators.ts",
     "gitFilesystem.ts",
+    "gpuAdmission.ts",
     "hash.ts",
     "host.ts",
     "index.ts",
