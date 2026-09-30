@@ -1,0 +1,290 @@
+OK   en curso, git status del banco no cambia
+OK   en curso, la salida no tiene artefactos del ítem
+OK   en curso, el stream vive en el runtime
+OK   en curso, ningún consumidor ve el ítem
+OK   en curso, reconcile no toca al ítem vivo
+OK   el pool termina bien
+OK   el ítem quedó cerrado
+OK   su manifiesto coincide con la salida
+OK   la ejecución dejó run.closed
+OK   el runtime de la ejecución se retiró
+OK   el resultado es el del ítem
+OK   control: con el runtime en el banco, git status cambia en curso
+OK   pool_integrate no aplica un ítem sin cerrar
+OK   el árbol destino no cambió
+OK   pool_integrate no aplica un ítem incoherente
+OK   control: la guarda se retiró
+OK   control: sin la guarda, el ítem sin cerrar se aplica
+OK   cancelado: la salida no tiene artefactos del ítem
+OK   cancelado: el runtime conserva el stream parcial
+OK   reconcile declara el ítem recuperable
+OK   reconcile no borró el runtime
+OK   la salida sigue sin el ítem
+OK   tomar el ítem en curso le da la generación 2
+OK   el pool no termina bien
+OK   el pool no publicó el ítem que ya no es suyo
+OK   el rechazo nombra la generación
+OK   el ítem sigue a nombre del nuevo dueño
+OK   tomar el ítem con worktree le da la generación 2
+OK   el registro de foto del nuevo dueño sigue intacto
+OK   el pool desplazado no creó la ref de su generación
+OK   el pool declara que no toma la foto
+OK   en curso, el ítem ya tiene foto
+OK   la foto en curso trae el trabajo a mitad
+OK   la foto final existe
+OK   la foto final conserva el trabajo
+OK   el manifiesto de la foto describe la final
+OK   sin disco declarado, el ítem se rehúsa sin esperar
+OK   el rechazo nombra la admisión por disco
+OK   el ítem rehusado quedó publicado
+OK   control: con espera de 6 s, el rechazo tarda al menos 6 s
+OK   la cabecera publica el buzón de la ejecución
+OK   con un mensaje, el pool termina bien
+OK   el ítem recibe el buzón y su dirección
+OK   el mensaje enviado antes de que el ítem leyera le aparece pendiente
+OK   el prompt empieza por el párrafo del buzón
+OK   el párrafo dice cómo leer, acusar y escribir al orquestador
+OK   la plantilla del usuario va después del párrafo y antes del ítem
+OK   el orquestador recibió begin, publish y close-run
+result: 48 of 48 assertions green
+OK   tres items: exit 0
+OK   tres items: resumen
+OK   una salida json por item
+OK   el item llega al final del prompt
+OK   sin sesion persistida y en stream-json
+OK   el .json es la linea result del stream, sola
+OK   un stream por item, una linea por peticion
+OK   el indice empareja numero e item
+OK   sin mensajes: una sola línea buzón, con un directorio real
+OK   un fallo: exit 1
+OK   un fallo: lo nombra
+OK   un fallo: resumen
+OK   timeout: exit 1
+OK   timeout: nombra al lento
+OK   --model: exit 2
+OK   --model: sin resumen
+OK   --model: nombra --task-class
+OK   clase desconocida: exit 2
+OK   selector roto: exit 2
+OK   selector roto: sin resumen
+OK   selector real: exit 0
+OK   selector real: declara el modelo derivado
+OK   selector real: el ítem recibe ese modelo
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin ejecutor: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude
+OK   HEADLESS_POOL_CLAUDE retirada: sin resumen
+OK   sin plantilla: exit 2
+OK   sin ejecutor declarado: thyrox -p (bin/cli)
+OK   memfree: exit 0
+OK   memfree: la cota llega a parallel
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
+OK   cache-ttl 5m: exit 0
+OK   cache-ttl 5m: llega a cada item
+OK   sin cache-ttl: rige la constante de 1h
+OK   sin cache-ttl: el pool nombra la constante
+OK   cache-ttl ilegible: exit 2
+OK   cache-ttl ilegible: sin resumen
+OK   variable sin --cache-ttl: llega sólo como THYROX_*
+OK   variable: el pool nombra la razón
+OK   la variable gana a --cache-ttl
+OK   forzar 5m gana a la variable y a la opción
+OK   sólo --cache-ttl: su razón es la opción
+OK   activar 1h sin opción ni variable: 1h
+OK   activar 1h: el pool nombra la razón
+OK   la opción gana a activar 1h
+OK   forzar 5m gana a activar 1h
+OK   activar 1h en Bedrock, con Bedrock: 1h
+OK   activar 1h en Bedrock: la razón es la misma regla
+OK   activar 1h en Bedrock sin Bedrock: no decide, rige la constante
+OK   variable ilegible: exit 2
+OK   variable ilegible: la nombra, sin resumen
+OK   con proxy: el item ve el socket y el marcador, sin credencial
+OK   con proxy: la credencial la recibe el proxy
+OK   con proxy: al terminar el pool el proxy ya no vive
+OK   proxy que no arranca: exit 2, sin resumen, y lo nombra
+OK   sin --credential-proxy el item conserva su entorno
+OK   proxy del store: exit 0
+OK   proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado
+OK   proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno
+OK   proxy del store: recibe el modelo del pool
+OK   proxy del store: el pool declara la fuente de credencial
+OK   proxy del store: al terminar el pool el proxy ya no vive
+OK   proxy del store que no arranca: exit 2, sin resumen, y lo nombra
+OK   los dos proxies a la vez: exit 2 sin lanzar ninguno
+OK   sin --store-credential-proxy el ítem conserva su URL y su clave de cifrado
+OK   con GNU time: un .time por item
+OK   con GNU time: memoria pico, pared, usuario y sistema
+OK   con GNU time: el .time del item fallido es solo la medida
+OK   con GNU time: el fallo del item sigue siendo fallo
+OK   GNU time real: el .time trae cuatro cifras
+OK   GNU time real: no declara que falte
+OK   sin GNU time: ningun .time
+OK   sin GNU time: lo declara en vez de callar
+OK   con nvidia-smi: el item deja su .gpu
+OK   con nvidia-smi: VRAM pico y uso pico del item
+OK   con nvidia-smi: lo declara
+OK   sin nvidia-smi: ningun .gpu
+OK   sin nvidia-smi: lo declara en vez de callar
+OK   admision: sin VRAM para su pico el item no arranca
+OK   admision: la causa queda en su .err
+OK   admision: lo reservado por otro pool vivo no se vuelve a dar
+OK   admision: la reserva ajena sigue en el registro
+OK   admisión con error: el ítem falla
+OK   admisión con error: el .err dice que falló, no que venció
+OK   VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4
+OK   VRAM: Parallel se lanza con -j 1
+OK   reserva: los items admitidos arrancan
+OK   reserva: el registro queda vacio al terminar
+OK   reserva: registro ilegible no cuenta como vacio
+OK   calibrado exige tantos ítems medidos como van a la vez
+OK   la edad máxima declarada deja fuera la fila
+OK   edad máxima ilegible: exit 2
+OK   dos pools: la ejecución de medida deja el pico del ítem
+OK   dos pools: los dos items terminan
+OK   dos pools: nunca corren juntos (máximo simultáneo 1)
+OK   dos pools: el registro queda vacío
+OK   dos pools: la ejecución concurrente también se mide (una fila por pool)
+OK   pico 0 sin calibrar: los dos terminan
+OK   pico 0 sin calibrar: nunca corren juntos
+OK   pico 0 sin calibrar: lo dice
+OK   RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1
+OK   RAM: Parallel se lanza con -j 1
+OK   historial vacío: lo declara
+OK   historial vacío: rige la constante de 1h
+OK   la ejecución deja una fila
+OK   la fila nombra el binario que corrió los ítems
+OK   la fila nombra el modelo que corrió los ítems
+OK   la fila lleva la huella del CONTENIDO de la plantilla
+OK   con historial: el TTL sigue siendo la constante
+OK   con historial: el TTL no sale del historial
+OK   con historial: --memfree sale de la memoria medida
+OK   lo declarado gana al historial: TTL
+OK   lo declarado gana al historial: memfree
+OK   el entorno gana al historial
+OK   la reserva del vecino se suma a lo medido
+OK   una plantilla, un solo historial
+OK   otro binario: no deriva memfree de su fila
+OK   otro binario: lo dice
+OK   otro modelo: no deriva memfree de su fila
+OK   otro modelo: lo dice
+OK   sin historial, la reserva sola es la cota
+OK   reserva ilegible: exit 2
+OK   runner claude: exit 0
+OK   runner claude: resumen
+OK   runner claude: sin sesión persistida y en stream-json
+OK   runner claude: cada ítem trae un --session-id con forma de uuid
+OK   runner claude: los --session-id son distintos
+OK   runner thyrox por defecto: sin --session-id
+OK   sin --max-turns: el ítem corre sin tope de turnos
+OK   --max-turns declarado llega al ítem
+OK   runner claude sin --max-turns: sin tope
+OK   runner claude sin claude en el PATH: exit 2
+OK   runner claude sin claude en el PATH: lo nombra
+OK   runner desconocido: exit 2
+OK   runner claude con --cache-ttl: exit 0
+OK   runner claude con --cache-ttl: la variable de claude, no la de thyrox
+OK   runner claude con proxy: exit 0
+OK   runner claude con proxy: el ítem ve el socket y el marcador, sin credencial
+OK   runner claude con proxy: la credencial la recibe el proxy
+OK   sin filas en el joblog: no sale 0
+OK   sin filas en el joblog: el total es el del índice
+FALLA el runtime real se resuelve — esperado 'si', obtenido 'no'
+OK   el runtime real no recibe ejecuciones de la suite
+
+aserciones: 147 de 148 · fallos: 1
+caso 1: la máquina de estados rehúsa lo que su tabla no admite
+  ok    begin deja el ítem en RUNNING
+  ok    RUNNING → CLOSED no se admite
+  ok    RUNNING ⇄ SNAPSHOTTING se admite
+  ok    un segundo begin sobre un ítem vivo se rehúsa
+caso 2: mientras corre, la salida no tiene nada del ítem (I1)
+  ok    la salida sigue vacía
+  ok    closed_items no ve el ítem
+caso 3: publicar mueve, verifica y deja <n>.closed al final (I2)
+  ok    el ítem queda CLOSED
+  ok    closed_items lo ve
+  ok    verify_closed no encuentra discrepancias
+  ok    el manifiesto lleva la generación 1
+  ok    el manifiesto enumera los tres artefactos
+  ok    el runtime ya no tiene artefactos del ítem
+  ok    no queda plan en el runtime
+caso 4: publicar dos veces es idempotente (prueba 10)
+  ok    la segunda publicación devuelve el mismo manifiesto
+  ok    la salida sigue coherente
+caso 5: un artefacto alterado después de publicar se detecta
+  ok    verify_closed nombra el artefacto
+caso 6: una generación nueva sucede a la cerrada; una rancia se rehúsa (prueba 7, I4)
+  ok    la ejecución que arranca sobre gen 1 recibe gen 2
+  ok    la salida queda en la generación 3
+  ok    publicar la generación 2 después de la 3 se rehúsa
+  ok    la salida sigue siendo la de la generación 3
+  ok    el runtime rancio se conserva
+caso 6c: control — sin la comprobación de generación, la rancia pisa a la nueva
+  ok    control: la salida quedó con el contenido rancio
+caso 7: una caída a mitad de la publicación se retoma (prueba 8, I5)
+  ok    el publicador murió a mitad (exit 9)
+  ok    la generación 1 sigue cerrada y coherente
+  ok    el ítem quedó en PUBLISHING
+  ok    reconcile lo publica
+  ok    tras reconcile, la generación 2 está cerrada y coherente
+  ok    y su contenido es el de la generación 2
+  ok    no quedan artefactos preparados en la salida
+caso 7c: control — sin plan persistido, la caída no se puede retomar
+  ok    control: el ítem no se cierra sin plan
+  ok    control: el estado queda sin cerrar
+caso 7d: control — sin la etapa oculta, la caída deja incoherente la generación cerrada
+  ok    control: la generación 1 sigue cerrada pero ya no coincide con su manifiesto
+caso 8: reconcile declara huérfano al ítem cuyo dueño murió y no borra nada
+  ok    el ítem sin dueño vivo queda ABANDONED_RECOVERABLE
+  ok    su runtime se conserva
+  ok    el ítem con dueño vivo no cambia
+  ok    close-run rehúsa con ítems sin cerrar y conserva el runtime
+  ok    sin run.closed en la salida
+caso 9: close-run publica index/joblog y run.closed al final
+  ok    close-run no deja pendientes
+  ok    index y joblog llegan a la salida
+  ok    run.closed nombra los ítems cerrados
+  ok    el runtime de la ejecución se retira salvo su buzón
+caso 7f: I5 — una caída en cualquier punto de la publicación se retoma
+  ok    la inyección recorre las ocho operaciones de la publicación
+  ok    ninguna caída deja un cierre incoherente ni impide completar la generación 2
+caso 7g: I3 — un escritor vivo impide publicar
+  ok    publicar con un escritor vivo se rehúsa
+  ok    ... y el ítem no queda publicado
+  ok    ... ni con un plan de publicación a medias
+  ok    sin el escritor, se publica
+caso 7h: tomar el ítem sube la generación y anula al dueño anterior
+  ok    tomar un ítem con dueño se rehúsa
+  ok    tomar el ítem abandonado sube la generación
+  ok    ... y lo deja a nombre del nuevo dueño en su estado persistido
+  ok    el dueño anterior no puede cambiar el estado
+  ok    ... ni publicar
+  ok    ... y por la línea de órdenes rehúsa con exit 5
+  ok    el rechazo no publica nada
+  ok    el nuevo dueño publica su generación
+caso 10: cada cambio del ciclo de vida deja un sobre al orquestador
+  ok    open-run crea el buzón de la ejecución
+  ok    la dirección de un ítem es item-<n>
+  ok    begin deja exactamente un sobre
+  ok    el cuerpo lleva ítem, dirección, estado, generación y hora
+  ok    el remitente es el ciclo de vida
+  ok    transition deja su sobre
+  ok    repetir la misma transición en la misma generación no duplica
+  ok    claim deja un sobre con la generación nueva
+  ok    un claim con otra generación nueva deja otro
+  ok    publish deja un sobre, y ninguno por sus transiciones internas
+  ok    publicar de nuevo no duplica
+  ok    close-run deja su sobre
+  ok    ... que nombra los ítems cerrados
+  ok    el buzón sobrevive al cierre de la ejecución
+caso 10b: un runtime sin buzón —anterior al buzón— sigue funcionando
+  ok    sin buzón no se crea uno ni se rehúsa
+resultado: 70 de 70 aserciones en verde
+shellcheck: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))
