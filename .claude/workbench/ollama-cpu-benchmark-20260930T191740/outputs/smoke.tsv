@@ -1,0 +1,1 @@
+model	tools_capability	size_bytes	pull_seconds	load_seconds	ram_idle_bytes	ram_loaded_bytes	ram_peak_bytes	ttft_seconds	tokens_per_second	tool_cases_passed	tool_cases_total	concurrency_seconds
