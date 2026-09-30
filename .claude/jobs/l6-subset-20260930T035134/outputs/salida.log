@@ -1,0 +1,16 @@
+0 bun test src/packages/agent/__tests__/models.test.ts
+0 bun test src/packages/app-host/src/startup/__tests__/startupProfilerReport.test.ts
+0 bun test src/packages/binary/__tests__/declaration.test.ts
+1 bun test src/packages/binary/__tests__/symbol.test.ts
+0 bun test src/packages/config/__tests__/policyRescue.test.ts
+0 bun test src/packages/config/__tests__/policySources.test.ts
+0 bun test src/packages/config/__tests__/remoteLoadState.test.ts
+0 bun test src/packages/daemon/src/__tests__/daemonCli.test.ts
+0 bun test src/packages/daemon/src/__tests__/specializedWorkerProfile.test.ts
+0 bun test src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
+0 PATH=$PWD/.venv/bin:$PATH PYTHONPATH=src python3 tests/corpus/test_archive_build_corpus.py
+0 PATH=$PWD/.venv/bin:$PATH bash tests/lib/test-toolchain-index-refresh.sh
+0 PATH=$PWD/.venv/bin:$PATH bash tests/session/test-headless-pool-worktree.sh
+0 PATH=$PWD/.venv/bin:$PATH bash tests/session/test-item-worktree-sparse.sh
+0 PATH=$PWD/.venv/bin:$PATH bash tests/session/test-item-worktree-stash.sh
+__BG_EXIT__=0
