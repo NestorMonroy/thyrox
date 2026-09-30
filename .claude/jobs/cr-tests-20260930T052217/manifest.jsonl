@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/command-runtime && bun test 2>&1 | grep -E '\\(fail\\)|^ *[0-9]+ (pass|fail)|^Ran '", "started_at": "2026-09-30T05:22:17+00:00"}

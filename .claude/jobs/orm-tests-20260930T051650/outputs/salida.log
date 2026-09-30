@@ -1,0 +1,61 @@
+== agent
+ 2714 pass
+ 0 fail
+Ran 2714 tests across 205 files. [33.39s]
+== cli
+ 543 pass
+ 0 fail
+Ran 544 tests across 59 files. [85.54s]
+== command-runtime
+ 327 pass
+ 1 fail
+Ran 328 tests across 27 files. [53.44s]
+== config
+ 993 pass
+ 0 fail
+Ran 993 tests across 67 files. [8.82s]
+== ink
+ 82 pass
+ 0 fail
+Ran 82 tests across 8 files. [361.00ms]
+== local-observability
+ 1095 pass
+ 0 fail
+Ran 1096 tests across 76 files. [2.63s]
+== paths
+ 86 pass
+ 0 fail
+Ran 86 tests across 6 files. [281.00ms]
+== provider
+ 4850 pass
+ 0 fail
+Ran 4850 tests across 289 files. [17.72s]
+== repl
+ 555 pass
+ 0 fail
+Ran 555 tests across 34 files. [1.76s]
+== shell
+ 292 pass
+ 0 fail
+Ran 292 tests across 18 files. [1.60s]
+== swarm
+ 640 pass
+ 0 fail
+Ran 640 tests across 39 files. [2.33s]
+== tool-registry
+ 1458 pass
+ 0 fail
+Ran 1458 tests across 91 files. [7.93s]
+== updater
+ 58 pass
+ 0 fail
+Ran 58 tests across 6 files. [477.00ms]
+== workbench
+ 56 pass
+ 0 fail
+Ran 56 tests across 2 files. [249.00ms]
+== test_write_env
+  ok   sin duplicar la clave regenerada
+
+28 aprobada(s) · 0 fallida(s) (alcance medido: write-env.sh)
+__BG_EXIT__=0
