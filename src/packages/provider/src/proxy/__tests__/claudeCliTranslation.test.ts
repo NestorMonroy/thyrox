@@ -86,7 +86,7 @@ describe('los tool_result del último mensaje', () => {
 })
 
 describe('la línea de comando de claude -p', () => {
-  const base = { model: 'claude-real', bridgeUrl: 'http://127.0.0.1:1/claude-cli/bridge/tok' }
+  const base = { model: 'claude-real', bridgeUrl: 'http://127.0.0.1:1/claude-cli/bridge/tok', bridgeTimeoutMs: 1_800_000 }
   test('una conversación nueva sin tools: -p, sesión propia, stream-json en las dos direcciones, sin tools nativas, sin MCP y sin --bare', () => {
     const argv = claudeArgv({ ...base, session: { kind: 'new', sessionId: 'uuid-1' }, toolNames: [] })
     expect(argv.slice(0, 2)).toEqual(['-p', '--verbose'])
@@ -101,10 +101,19 @@ describe('la línea de comando de claude -p', () => {
     expect(argv).not.toContain('--allowedTools')
     expect(argv).not.toContain('--system-prompt')
   })
+  test('el puente declara su plazo: sin él, claude corta cada tools/call a los 60 s', () => {
+    // 2.1.283, `Ur`: el plazo de una petición a un MCP http es el `timeout` del
+    // servidor (>= 1000), o MCP_TOOL_TIMEOUT, con piso `mr` = 60000; sin ninguno,
+    // 60000. Una tool de thyrox más larga (un typecheck, una suite) volvía como
+    // «timed out after 60s» y la conversación se desincronizaba.
+    const argv = claudeArgv({ ...base, session: { kind: 'new', sessionId: 'uuid-1' }, toolNames: ['Bash'], bridgeTimeoutMs: 900_000 })
+    const mcp = JSON.parse(argv[argv.indexOf('--mcp-config') + 1] as string)
+    expect(mcp.mcpServers[BRIDGE_SERVER_NAME].timeout).toBe(900_000)
+  })
   test('con tools: el puente como MCP http en --mcp-config, estricto, y cada tool permitida por su nombre MCP', () => {
     const argv = claudeArgv({ ...base, session: { kind: 'new', sessionId: 'uuid-1' }, toolNames: ['ls', 'cat'], systemPrompt: 'eres breve' })
     const mcp = JSON.parse(argv[argv.indexOf('--mcp-config') + 1] as string)
-    expect(mcp).toEqual({ mcpServers: { [BRIDGE_SERVER_NAME]: { type: 'http', url: base.bridgeUrl } } })
+    expect(mcp).toEqual({ mcpServers: { [BRIDGE_SERVER_NAME]: { type: 'http', url: base.bridgeUrl, timeout: base.bridgeTimeoutMs } } })
     expect(argv).toContain('--strict-mcp-config')
     const allowed = argv.slice(argv.indexOf('--allowedTools') + 1, argv.indexOf('--allowedTools') + 3)
     expect(allowed).toEqual([`mcp__${BRIDGE_SERVER_NAME}__ls`, `mcp__${BRIDGE_SERVER_NAME}__cat`])

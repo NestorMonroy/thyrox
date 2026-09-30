@@ -43,6 +43,14 @@ export type CliArgvOptions = {
   model: string
   toolNames: readonly string[]
   bridgeUrl: string
+  /**
+   * Plazo de cada petición al puente, en ms. 2.1.283 (`Ur`) corta una petición
+   * a un MCP http a los 60 s salvo que el servidor declare `timeout`: sin él,
+   * una tool de thyrox más larga vuelve como «timed out after 60s» y la
+   * conversación se desincroniza. Se declara el plazo con que el proxy retiene
+   * un turno suspendido, que es el que gobierna.
+   */
+  bridgeTimeoutMs: number
   systemPrompt?: string
 }
 
@@ -143,9 +151,9 @@ function sessionArgs(session: CliSession): string[] {
   return session.kind === 'resume' ? ['--resume', session.sessionId] : ['--session-id', session.sessionId]
 }
 
-function bridgeArgs(toolNames: readonly string[], bridgeUrl: string): string[] {
+function bridgeArgs(toolNames: readonly string[], bridgeUrl: string, timeoutMs: number): string[] {
   if (toolNames.length === 0) return []
-  const mcpConfig = { mcpServers: { [BRIDGE_SERVER_NAME]: { type: 'http', url: bridgeUrl } } }
+  const mcpConfig = { mcpServers: { [BRIDGE_SERVER_NAME]: { type: 'http', url: bridgeUrl, timeout: timeoutMs } } }
   return ['--mcp-config', JSON.stringify(mcpConfig), '--strict-mcp-config', '--allowedTools', ...toolNames.map(bridgeToolName)]
 }
 
@@ -160,6 +168,6 @@ export function claudeArgv(options: CliArgvOptions): string[] {
     '--model', options.model,
     '--tools', '',
     ...(options.systemPrompt !== undefined ? ['--system-prompt', options.systemPrompt] : []),
-    ...bridgeArgs(options.toolNames, options.bridgeUrl),
+    ...bridgeArgs(options.toolNames, options.bridgeUrl, options.bridgeTimeoutMs),
   ]
 }

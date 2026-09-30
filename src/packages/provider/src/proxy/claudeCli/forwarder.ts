@@ -177,6 +177,7 @@ export function createCliUpstreamForwarder(config: CliUpstreamForwarderConfig): 
       model: request.upstreamModel,
       toolNames: tools.map(tool => tool.name),
       bridgeUrl: config.bridgeUrlOf(token),
+      bridgeTimeoutMs: upstream.pendingResultTtlMs ?? DEFAULT_PENDING_RESULT_TTL_MS,
       systemPrompt: systemPromptOf(body.system),
     })
     try {
