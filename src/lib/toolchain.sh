@@ -245,6 +245,20 @@ function thyrox_toolchain_parallel_home() {
 }
 export -f thyrox_toolchain_parallel_home
 
+# @description El comando que refresca el indice de paquetes. Declarado para
+# que un control inyecte uno falso sin tocar la red.
+THYROX_TOOLCHAIN_INDEX_REFRESH_CMD="${THYROX_TOOLCHAIN_INDEX_REFRESH_CMD:-$(thyrox_toolchain_sudo_prefix)apt-get update -q}"
+export THYROX_TOOLCHAIN_INDEX_REFRESH_CMD
+
+# @description ¿Instala con apt? Sólo entonces un fallo puede deberse a un
+# indice viejo; el fallo de otro instalador no se arregla con `apt-get update`.
+# @arg $1 string El comando de instalacion.
+# @exitcode 0 Es `apt-get install`. @exitcode 1 No lo es.
+function thyrox_toolchain_is_apt_install() {
+  [[ "$1" =~ (^|/|[[:space:]])apt-get[[:space:]]+install([[:space:]]|$) ]]
+}
+export -f thyrox_toolchain_is_apt_install
+
 # @description Adquiere un binario externo: el contrato comun de todo
 # `require_*` de esta cadena, en un solo sitio. Tres desenlaces:
 #
@@ -274,6 +288,13 @@ function thyrox_toolchain_acquire_binary() {
     return 2
   fi
   $install_cmd >&2 2>&1 || true
+  if ! command -v "$bin" >/dev/null 2>&1 && thyrox_toolchain_is_apt_install "$install_cmd"; then
+    # Un contenedor recien creado trae un indice de apt viejo: el mirror ya no
+    # sirve esas versiones y `install` sale con 404. Se refresca una sola vez
+    # y se reintenta; si tampoco basta, el rechazo de abajo lo dice.
+    $THYROX_TOOLCHAIN_INDEX_REFRESH_CMD >&2 2>&1 || true
+    $install_cmd >&2 2>&1 || true
+  fi
   if ! command -v "$bin" >/dev/null 2>&1; then
     echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
     echo "                  Se re-comprueba el binario, no se lee su exit." >&2
