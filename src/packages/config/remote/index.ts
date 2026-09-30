@@ -62,13 +62,21 @@
  * ya usan `local-observability/{telemetry/attributes,logging/error-log-sink}.ts`: `typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'`.
  *
  * `./loadState.ts` — el estado de carga remota (`Ma`/`em`/`le()` de
- * 2.1.283) que este módulo alimenta en cada fetch, para que un futuro
- * consumidor (`readRemotePolicy`) lo lea. Este porte simplificado no tiene
- * el flujo de consentimiento de 2.1.283 (`ot()`), así que el mapeo es
- * best-effort: cada desenlace de `fetchAndLoadRemoteManagedSettings()` se
- * traduce al estado más cercano (`ineligible`/`ok`/`stale_cache`/`failed`),
- * y `errorKind` se colapsa a `'fetch_failed'` porque este fetch no
- * distingue `ruled_empty` de un fallo de red o de auth como sí hace 2.1.283.
+ * 2.1.283) que este módulo alimenta en cada fetch por los mismos accesores
+ * que `ot()`/`B()` usan en la fuente (`f8e`, `P5n`, `ign`, `$v`), y que
+ * `readRemotePolicy` lee. Este porte simplificado no tiene el flujo de
+ * consentimiento de 2.1.283 (`ot()`): el chequeo de seguridad aprobado hace
+ * de consentimiento (`markRemotePayloadConsented`), no hay consentimiento
+ * diferido, y cada desenlace se traduce al estado más cercano
+ * (`ineligible`/`ok`/`stale_cache`/`failed`).
+ *
+ * DIVERGENCIA — `he()`/`ruled_empty`: la fuente valida el payload al
+ * recibirlo y, si ninguna clave se aplica tal como llegó, deja el fallo
+ * `ruled_empty` con sus `rulings`; este fetch valida con `SettingsSchema` y
+ * colapsa todo fallo a `'fetch_failed'`, así que `lastLoadStatus` nunca
+ * lleva `rulings` aquí. El lector (`readRemotePolicy`) ya los consume.
+ * Condición de cierre: portar `he()` (validar con `readPolicyDocument` al
+ * recibir, y declarar `ruled_empty` cuando no queda ninguna clave).
  */
 
 import { createHash } from 'crypto'
@@ -84,7 +92,14 @@ import {
   type RemoteManagedSettingsFetchResult,
   RemoteManagedSettingsResponseSchema,
 } from './types.js'
-import { getRemoteLoadState, type RemoteSettingsFailure } from './loadState.js'
+import {
+  getRemoteIneligibleReason,
+  isRemoteSessionCacheVerified,
+  markRemotePayloadConsented,
+  replaceRemoteSessionCache,
+  type RemoteSettingsFailure,
+  setRemoteLoadStatus,
+} from './loadState.js'
 
 // --- envoltorios de dependencias bloqueadas — ver docstring del módulo ---
 
@@ -116,7 +131,7 @@ function requireRemoteSyncCache(): {
 function requireRemoteSyncCacheState(): {
   getRemoteManagedSettingsSyncFromCache: () => SettingsJson | null
   getSettingsPath: () => string
-  setSessionCache: (value: SettingsJson | null) => void
+  INELIGIBLE_REASON: string
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require('./syncCacheState.js')
@@ -579,11 +594,8 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
   // Detiene el polling en segundo plano.
   stopBackgroundPolling()
 
-  // Limpia la caché de sesión.
+  // Limpia la caché de sesión y el estado de carga remota (`W1r`).
   requireRemoteSyncCache().resetSyncCache()
-
-  // Limpia el estado de carga remota (`Ma.reset()`).
-  getRemoteLoadState().reset()
 
   // Limpia el estado de la promesa de carga.
   loadingCompletePromise = null
@@ -597,25 +609,29 @@ export async function clearRemoteManagedSettingsCache(): Promise<void> {
   }
 }
 
-/** `ign()`+`f8e()` con un fallo: deja constancia de la caché usada (si la hay) y del fallo. */
+/**
+ * `f8e(r)` + `ign()` con un fallo: la caché obsoleta se sirve sin verificar y
+ * el transporte queda retenido mientras la sesión no la verifique (`!$v()`).
+ */
 function recordFetchFailure(cachedSettings: SettingsJson | null, message: string): void {
   const failure: RemoteSettingsFailure = { errorKind: 'fetch_failed', message }
-  const loadState = getRemoteLoadState()
   if (cachedSettings) {
-    loadState.recordSessionCache(cachedSettings, false)
-    loadState.recordProjectedView(cachedSettings)
-    loadState.setLastLoadStatus({ state: 'stale_cache', failure, transportEnvWithheld: false })
+    replaceRemoteSessionCache(cachedSettings)
+    setRemoteLoadStatus({ state: 'stale_cache', failure, transportEnvWithheld: !isRemoteSessionCacheVerified() })
     return
   }
-  loadState.setLastLoadStatus({ state: 'failed', failure })
+  setRemoteLoadStatus({ state: 'failed', failure })
 }
 
-/** `ign()`+`f8e()` con éxito: deja constancia de los settings servidos y de que la carga fue `'ok'`. */
+/**
+ * `f8e(E, {verified})` + `P5n(E)` + `ign()` con éxito: lo servido queda como
+ * caché de sesión; verificado, además consentido (el chequeo de seguridad
+ * aprobado es el consentimiento de este árbol).
+ */
 function recordFetchSuccess(settings: SettingsJson, verified: boolean): void {
-  const loadState = getRemoteLoadState()
-  loadState.recordSessionCache(settings, verified)
-  loadState.recordProjectedView(settings)
-  loadState.setLastLoadStatus({ state: 'ok', hasSettings: Object.keys(settings).length > 0 })
+  replaceRemoteSessionCache(settings, { verified })
+  if (verified) markRemotePayloadConsented(settings)
+  setRemoteLoadStatus({ state: 'ok', hasSettings: Object.keys(settings).length > 0 })
 }
 
 /**
@@ -625,9 +641,9 @@ function recordFetchSuccess(settings: SettingsJson, verified: boolean): void {
  */
 async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null> {
   if (!requireRemoteSyncCache().isRemoteManagedSettingsEligible()) {
-    getRemoteLoadState().setLastLoadStatus({
+    setRemoteLoadStatus({
       state: 'ineligible',
-      reason: 'user is not eligible for remote managed settings',
+      reason: getRemoteIneligibleReason() ?? requireRemoteSyncCacheState().INELIGIBLE_REASON,
     })
     return null
   }
@@ -651,7 +667,6 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
         getConfigHostBindings().logDebug?.(
           'Remote settings: Using stale cache after fetch failure',
         )
-        requireRemoteSyncCacheState().setSessionCache(cachedSettings)
         recordFetchFailure(cachedSettings, result.error ?? 'unknown error')
         return cachedSettings
       }
@@ -663,7 +678,6 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
     // 304 Not Modified — los settings cacheados siguen siendo válidos.
     if (result.settings === null && cachedSettings) {
       getConfigHostBindings().logDebug?.('Remote settings: Cache still valid (304 Not Modified)')
-      requireRemoteSyncCacheState().setSessionCache(cachedSettings)
       recordFetchSuccess(cachedSettings, true)
       return cachedSettings
     }
@@ -687,7 +701,6 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
         return cachedSettings
       }
 
-      requireRemoteSyncCacheState().setSessionCache(newSettings)
       await saveSettings(newSettings)
       getConfigHostBindings().logDebug?.('Remote settings: Applied new settings successfully')
       recordFetchSuccess(newSettings, true)
@@ -697,7 +710,6 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
     // Settings vacíos (respuesta 404) — borra el archivo cacheado si existe.
     // Evita que persistan settings obsoletos cuando se eliminan los
     // settings remotos del usuario.
-    requireRemoteSyncCacheState().setSessionCache(newSettings)
     try {
       const path = requireRemoteSyncCacheState().getSettingsPath()
       await unlink(path)
@@ -716,7 +728,6 @@ async function fetchAndLoadRemoteManagedSettings(): Promise<SettingsJson | null>
     // Ante cualquier error, usa el archivo obsoleto si existe (degradación elegante).
     if (cachedSettings) {
       getConfigHostBindings().logDebug?.('Remote settings: Using stale cache after error')
-      requireRemoteSyncCacheState().setSessionCache(cachedSettings)
       recordFetchFailure(cachedSettings, 'unexpected error while loading remote settings')
       return cachedSettings
     }
@@ -754,9 +765,8 @@ export async function loadRemoteManagedSettings(): Promise<void> {
   // desbloquea a quien espera de inmediato. El fetch igual corre abajo;
   // notifyChange dispara una sola vez, después del fetch, como antes.
   // Ahorra la espera del fetch (~77ms) en el arranque del modo print.
-  // getRemoteManagedSettingsSyncFromCache ya trae la guarda de elegibilidad
-  // y puebla la caché de sesión internamente — no hace falta llamar a
-  // setSessionCache aquí.
+  // getRemoteManagedSettingsSyncFromCache (`lgn`) ya trae la guarda de
+  // elegibilidad y siembra la caché de sesión del estado de carga remota.
   if (
     requireRemoteSyncCacheState().getRemoteManagedSettingsSyncFromCache() &&
     loadingCompleteResolve

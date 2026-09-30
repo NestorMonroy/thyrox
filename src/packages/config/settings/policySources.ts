@@ -45,15 +45,19 @@
  * - `isPolicyNoOp` no recorre rutas anidadas (`Sn`/`kd`/`gn`, no extraído) ni
  *   reconoce los alias de mercados de plugins (`dt`), hoy *diferidos* en
  *   `inventory.ts`.
- * - La capa remota no emite el aviso de servidores MCP retenidos (`MRe`,
- *   `agn`) ni los fallos `ruled_empty` del último intento (`jx`), y
- *   `servedSnapshot` es siempre falso: esos tres leen el estado de la sesión
- *   remota, que este paquete aún no modela.
+ *
+ * La capa remota lee el estado de la sesión remota (`remote/loadState.ts`,
+ * `remote/view.ts`): el aviso de servidores MCP retenidos (`agn`, silenciado
+ * por `MRe`), los fallos `ruled_empty` del último intento (`jx`) y
+ * `servedSnapshot` (`S$o`). Lo que la fuente proyecta en modo instantánea
+ * (`om`) sigue declarado como divergencia en `remote/view.ts`.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
 import { type Dirent, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { getRemoteManagedSettingsSyncFromCache } from '../remote/syncCacheState.ts'
+import { getRemoteLoadStatus, isServedSnapshot } from '../remote/loadState.ts'
+import { getProjectedRemoteSettings, hasWithheldManagedMcpServers, platformChain } from '../remote/view.ts'
+import type { Platform } from '../platform.ts'
 import {
   combineLoadState,
   documentHasPolicyContent,
@@ -62,6 +66,7 @@ import {
   hasPolicyValues,
   loadStateOf,
   NON_POLICY_KEYS,
+  normalizePolicyErrors,
   type PolicyError,
   type PolicyLoadState,
   type PolicyRead,
@@ -81,10 +86,16 @@ type PolicyDocument = Record<string, unknown>
  */
 export type PolicySourceRead = PolicyRead & { errors: PolicyError[]; removed?: string[] }
 
-/** Lo que la composición inyecta: las fuentes que no son archivos. */
+/**
+ * Lo que la composición inyecta: las fuentes que no son archivos, la
+ * plataforma (para la cadena de `agn`) y si el anfitrión aporta los
+ * servidores MCP (`MRe`, que silencia el aviso de retención).
+ */
 export type PolicySourceContext = {
   remote?: () => PolicyDocument | null
   mdm?: () => PolicySourceRead | null
+  platform?: Platform
+  honorsHostMcpServers?: () => boolean
 }
 
 /** El sistema de archivos que lee `managed-settings.json` y sus fragmentos. */
@@ -165,14 +176,48 @@ export function readPolicyDocument(document: PolicyDocument, file: string): Docu
   return copyOf(read)
 }
 
-/** `Qq`: la capa remota, desde la caché de ajustes gestionados. */
+/** El aviso de `Qq` cuando el crudo retenido traía servidores MCP que la sesión aún no sirve. */
+const WITHHELD_MCP_SERVERS: PolicyError = {
+  file: REMOTE_SOURCE,
+  path: 'managedMcpServers',
+  message: "The organization's MCP servers in the cached remote settings are withheld until the server confirms them this session; they connect as soon as it does.",
+  severity: 'warning',
+  statusOnly: true,
+}
+
+/** Los fallos de un último intento `ruled_empty`, del estado de la sesión remota (`jx`). */
+function ruledEmptyErrors(): PolicyError[] {
+  const status = getRemoteLoadStatus()
+  if (status?.state !== 'stale_cache' && status?.state !== 'failed') return []
+  if (status.failure.errorKind !== 'ruled_empty') return []
+  return normalizePolicyErrors(status.failure.rulings ?? [])
+}
+
+/**
+ * `Qq`: la capa remota. Con la remota inyectada (`context.remote`) se lee
+ * sólo el documento; con la de la sesión (`Xk`) se leen además el aviso de
+ * servidores MCP retenidos (`agn`, salvo que el anfitrión los aporte —
+ * `MRe`), los fallos `ruled_empty` del último intento (`jx`) y si lo servido
+ * es la instantánea proyectada (`S$o`).
+ */
 export function readRemotePolicy(context: PolicySourceContext): PolicySourceRead & { servedSnapshot: boolean } {
-  const document = context.remote ? context.remote() : (getRemoteManagedSettingsSyncFromCache() as PolicyDocument | null)
+  const fromSession = !context.remote
+  const document = context.remote ? context.remote() : (getProjectedRemoteSettings() as PolicyDocument | null)
+  const withheld = fromSession && !context.honorsHostMcpServers?.() && hasWithheldManagedMcpServers(context.platform && platformChain(context.platform))
+    ? [WITHHELD_MCP_SERVERS]
+    : []
+  const rulings = fromSession ? ruledEmptyErrors() : []
   if (!document || Object.keys(document).length === 0) {
-    return { settings: null, errors: [], servedSnapshot: false, documentHasPolicyContent: false }
+    return { settings: null, errors: [...withheld, ...rulings], servedSnapshot: false, documentHasPolicyContent: false }
   }
-  const { settings, errors, documentHasPolicyContent } = readPolicyDocument(document, REMOTE_SOURCE)
-  return { settings, errors, servedSnapshot: false, documentHasPolicyContent }
+  const { settings, errors, documentHasPolicyContent, onlySubstitutes } = readPolicyDocument(document, REMOTE_SOURCE)
+  return {
+    settings,
+    errors: [...withheld, ...rulings, ...normalizePolicyErrors(errors)],
+    servedSnapshot: isServedSnapshot(document),
+    documentHasPolicyContent,
+    ...(onlySubstitutes && { onlySubstitutes }),
+  }
 }
 
 /** `Os`: la capa MDM (plist en macOS, HKLM en Windows). */

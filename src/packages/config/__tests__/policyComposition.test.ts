@@ -190,3 +190,20 @@ describe('los pares AWS suprimidos (Pd)', () => {
     expect(P.suppressedAwsPairs([{ sessionTokenVar: 'AWS_SESSION_TOKEN' }], [{ sessionTokenVar: 'AWS_SESSION_TOKEN' }])).toEqual([])
   })
 })
+
+describe('la normalización de un error de política (Qh, Bt, pUe)', () => {
+  test('colapsa espacios, sustituye lo no imprimible y conserva sólo los campos conocidos', () => {
+    const error = { file: 'f', path: ' a \n b ', message: 'xéy', severity: 'warning' as const, statusOnly: true, extra: 1 }
+    expect(P.normalizePolicyError(error as never)).toEqual({ file: 'f', path: ' a b ', message: 'x?y', severity: 'warning', statusOnly: true })
+  })
+  test('recorta a 512 caracteres con puntos suspensivos', () => {
+    const long = 'm'.repeat(600)
+    const { message } = P.normalizePolicyError({ file: 'f', path: 'p', message: long })
+    expect(message.length).toBe(512)
+    expect(message.endsWith('…')).toBe(true)
+    expect(P.normalizePolicyError({ file: 'f', path: 'p', message: 'm'.repeat(512) }).message.length).toBe(512)
+  })
+  test('pUe normaliza cada error de una lista', () => {
+    expect(P.normalizePolicyErrors([{ file: 'f', path: 'p', message: ' a  b ' }])).toEqual([{ file: 'f', path: 'p', message: ' a b ' }])
+  })
+})

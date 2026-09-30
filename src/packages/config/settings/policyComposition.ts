@@ -272,3 +272,45 @@ export function suppressedAwsPairs(lower: readonly unknown[], upper: readonly un
     .filter(name => AWS_CREDENTIAL_VARIABLES.includes(name) && !named.has(name))
     .map((name, index) => ({ accessKeyIdVar: name, secretAccessKeyVar: `${PARENT_PAIR_SUPPRESSOR}${index + 1}_` }))
 }
+
+/** `nd`: el largo máximo de un texto de error tal como se muestra. */
+const MAX_POLICY_ERROR_TEXT = 512
+
+/** `p8e`: todo lo que no sea ASCII imprimible se muestra como `?`. */
+function printable(text: string): string {
+  return text.replace(/[^\x20-\x7e]/gu, '?')
+}
+
+/** `Bt`: colapsa espacios, deja sólo lo imprimible y recorta con puntos suspensivos. */
+export function truncatePolicyText(text: string): string {
+  const collapsed = printable(text.replace(/\s+/gu, ' '))
+  return collapsed.length > MAX_POLICY_ERROR_TEXT ? `${collapsed.slice(0, MAX_POLICY_ERROR_TEXT - 1)}…` : collapsed
+}
+
+/**
+ * `Qh`: un error de política listo para mostrarse — sólo los campos que este
+ * tipo declara, con `path` y `message` acotados. La fuente copia además
+ * `docLink`, `preserveOnWrite`, `mcpErrorMetadata`, `userWritable`,
+ * `wslIgnored`, `onlySubstitutes`, `removal`, `expected`, `suggestion` e
+ * `invalidValue`, que `PolicyError` no modela; lo que no se modela se
+ * descarta igual que la fuente descarta el resto (`...W` no viaja).
+ */
+export function normalizePolicyError(error: PolicyError): PolicyError {
+  const { file, path, message, severity, statusOnly, startupFatal, errorClass, substituted, removed } = error
+  return {
+    file,
+    path: truncatePolicyText(path),
+    message: truncatePolicyText(message),
+    ...(severity !== undefined && { severity }),
+    ...(statusOnly !== undefined && { statusOnly }),
+    ...(startupFatal !== undefined && { startupFatal }),
+    ...(errorClass !== undefined && { errorClass }),
+    ...(substituted !== undefined && { substituted }),
+    ...(removed !== undefined && { removed }),
+  }
+}
+
+/** `pUe`. */
+export function normalizePolicyErrors(errors: readonly PolicyError[]): PolicyError[] {
+  return errors.map(normalizePolicyError)
+}

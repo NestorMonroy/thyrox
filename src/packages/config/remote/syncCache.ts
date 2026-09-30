@@ -1,45 +1,42 @@
 /**
- * Eligibility check for remote managed settings.
+ * La elegibilidad para los ajustes remotos — porte de `_x` de 2.1.283
+ * (`chunk-95c18fpr.js`) sobre el estado de carga remota (`./loadState.ts`):
  *
- * The cache state itself lives in syncCacheState.ts (a leaf, no auth import).
- * This file keeps isRemoteManagedSettingsEligible — the one function that
- * needs auth/provider state — plus resetSyncCache wrapped to clear the local
- * eligibility mirror alongside the leaf's state.
+ * 1. si el estado ya memoizó una respuesta (`Ine`), ésa;
+ * 2. si no, el host la decide (`checkRemoteSettingsEligibility`, instalado
+ *    por el app-host en la composición: OAuth, API key, proveedor, URL base,
+ *    punto de entrada — config no importa de provider/auth, V7 §8.6);
+ * 3. un hijo de evaluación confinado (`THYROX_CODE_EVAL_CONFINED`) que no es
+ *    elegible pasa a servir sólo la instantánea de política
+ *    (`evalPolicySnapshotOnly`, `q1r`) y cuenta como elegible;
+ * 4. se registra y memoiza (`V1r`), con su razón cuando es negativa.
  *
- * V7 §8.6: config cannot import from provider/auth (Wave 3 domain core).
- * The full eligibility logic is injected via ConfigHostBindings.
- * checkRemoteSettingsEligibility, installed by the app-host at composition
- * time. Config only calls it and caches the result.
+ * La memoización vive en el estado y no en este módulo: `W1r` (el reset de
+ * un login/logout) la vacía junto con lo demás. La razón de inelegibilidad es
+ * la fija de `syncCacheState.ts`: `f()` en la fuente devuelve
+ * `{eligible, ineligibleReason}`, y el binding de este árbol devuelve sólo el
+ * booleano — su razón se declara aquí en vez de inventarse por rama.
+ *
+ * `resetSyncCache` se reexporta de la hoja para quien lo importaba de aquí.
  */
 
+import { isEnvTruthy, readEnv } from '../env/utils.js'
 import { getConfigHostBindings } from '../host.js'
-import {
-  resetSyncCache as resetLeafCache,
-  setEligibility,
-} from './syncCacheState.js'
+import { getRemoteEligibilityMemo, setEvalPolicySnapshotOnly } from './loadState.js'
+import { setEligibility } from './syncCacheState.js'
 
-let cached: boolean | undefined
+export { resetSyncCache } from './syncCacheState.js'
 
-export function resetSyncCache(): void {
-  cached = undefined
-  resetLeafCache()
-}
-
-/**
- * Check if the current user is eligible for remote managed settings.
- *
- * Delegates to the host binding (which checks OAuth tokens, API key,
- * provider type, base URL, entrypoint) and caches the result.
- */
+/** `_x`. */
 export function isRemoteManagedSettingsEligible(): boolean {
-  if (cached !== undefined) return cached
+  const memo = getRemoteEligibilityMemo()
+  if (memo !== undefined) return memo
 
   const check = getConfigHostBindings().checkRemoteSettingsEligibility
-  if (!check) {
-    // Host binding not installed (early bootstrap, tests, or headless runs
-    // that skip remote settings). Conservative: not eligible.
-    return (cached = setEligibility(false))
-  }
-
-  return (cached = setEligibility(check()))
+  // Sin binding (arranque temprano, pruebas, ejecuciones headless que saltan
+  // los ajustes remotos) se responde de forma conservadora: no elegible.
+  const eligible = check ? check() : false
+  const snapshotOnly = !eligible && isEnvTruthy(readEnv('THYROX_CODE_EVAL_CONFINED'))
+  setEvalPolicySnapshotOnly(snapshotOnly)
+  return setEligibility(eligible || snapshotOnly)
 }
