@@ -1,0 +1,6 @@
+==== Q3o: 1 definicion(es) de nivel superior
+---- chunk-bfkwjer3.js function Q3o [5918,6890)
+function Q3o(){if(!_K())return"";let e=(o)=>o?"set":"unset";try{let o=un(),n=Object.values(XFt).filter((r)=>Le(process.env[r]));return["","[debug] Remote Control auth state:",`  isBareMode=${Xr()}`,`  hasOAuthAccessToken=${!!o?.accessToken}`,`  oauthScopes=${o?.scopes?.join(",")??"none"}`,`  hasClaudeAIInferenceScope=${_()}`,`  isClaudeAISubscriber=${c()}`,`  hasProfileScope=${g()}`,`  oauthAccount.organizationUuid=${b()?.organizationUuid?"set":"unset"}`,`  ANTHROPIC_API_KEY=${e(process.env.ANTHROPIC_API_KEY)}`,`  ANTHROPIC_AUTH_TOKEN=${e(process.env.ANTHROPIC_AUTH_TOKEN)}`,`  apiKeyHelper=${by()?"set":"unset"}`,`  CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR=${e(process.env.CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR)}`,`  CLAUDE_CODE_OAUTH_TOKEN=${e(process.env.CLAUDE_CODE_OAUTH_TOKEN)}`,`  ANTHROPIC_UNIX_SOCKET=${e(process.env.ANTHROPIC_UNIX_SOCKET)}`,`  3P env=${n.length?n.join(","):"none"}`,...U()].join(`
+`)}catch(o){return`
+[debug] failed to collect auth state: ${o}`}}
+symbol: 1 de 1 nombre(s) resueltos
