@@ -1,0 +1,17 @@
+== menciones de mensajería en el pool (0 = sin conexión)
+src/session/pool_lifecycle.py	0
+src/session/headless-pool.sh	0
+src/session/pool_integrate.sh	0
+== consumidores TypeScript de pool_lifecycle
+0
+== herramientas del registro de thyrox -p que nombran mensajería
+0
+== UDS_INBOX en bin/cli (0 = apagada por defecto)
+0
+== variables que el pool exporta a cada ítem
+THYROX_POOL_DOCUMENT_INTENT=
+THYROX_POOL_GUARDED_GIT_COMMON_DIR=
+THYROX_POOL_ITEM=
+THYROX_POOL_ITEM_GENERATION=
+THYROX_POOL_RUN_ID=
+THYROX_POOL_STASH_ATTEMPTS_FILE=
