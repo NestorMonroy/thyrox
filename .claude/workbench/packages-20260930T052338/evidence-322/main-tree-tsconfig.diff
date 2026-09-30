@@ -1,0 +1,45 @@
+diff --git a/src/packages/audio-capture-napi/tsconfig.build.json b/src/packages/audio-capture-napi/tsconfig.build.json
+index 66605c99a..92560a554 100644
+--- a/src/packages/audio-capture-napi/tsconfig.build.json
++++ b/src/packages/audio-capture-napi/tsconfig.build.json
+@@ -30,7 +30,9 @@
+     "**/*.test.ts",
+     "**/*.test.tsx",
+     "**/*.spec.ts",
+-    "**/*.spec.tsx"
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
+   ],
+   "files": [
+     "../../types/build-globals.d.ts"
+diff --git a/src/packages/bridge/tsconfig.build.json b/src/packages/bridge/tsconfig.build.json
+index c3487d881..1b6fb5b96 100644
+--- a/src/packages/bridge/tsconfig.build.json
++++ b/src/packages/bridge/tsconfig.build.json
+@@ -107,7 +107,9 @@
+     "**/*.test.ts",
+     "**/*.test.tsx",
+     "**/*.spec.ts",
+-    "**/*.spec.tsx"
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
+   ],
+   "files": [
+     "../../types/build-globals.d.ts"
+diff --git a/src/packages/claude-for-chrome-mcp/tsconfig.build.json b/src/packages/claude-for-chrome-mcp/tsconfig.build.json
+index 7aeeec193..39557678b 100644
+--- a/src/packages/claude-for-chrome-mcp/tsconfig.build.json
++++ b/src/packages/claude-for-chrome-mcp/tsconfig.build.json
+@@ -30,7 +30,9 @@
+     "**/*.test.ts",
+     "**/*.test.tsx",
+     "**/*.spec.ts",
+-    "**/*.spec.tsx"
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
+   ],
+   "files": [
+     "../../types/build-globals.d.ts"
