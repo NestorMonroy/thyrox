@@ -188,3 +188,8 @@ agent-results/mutantes-en-vuelo.jsonl
 # directorio no se vuelva un cajón invisible para Git.
 /.thyrox/runtime/
 /.thyrox/pool-worktrees/
+
+# Worktrees que el cliente crea para un subagente con `isolation: worktree`.
+# Son checkouts de git, no contenido: su trabajo se integra o se archiva
+# como rama `archive/worktree-agent-*`, nunca se commitea el directorio.
+/.claude/worktrees/
