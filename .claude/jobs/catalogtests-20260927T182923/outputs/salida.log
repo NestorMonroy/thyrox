@@ -1,0 +1,45 @@
+run-task-pool: 5 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T182924
+  job-20260927T182924/job-001 pid 31989   cd /home/user/thyrox/src/packages/provider && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/catalog-pkg-provider.log 2>&1
+  job-20260927T182924/job-002 pid 32034   cd /home/user/thyrox/src/packages/agent && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/catalog-pkg-agent.log 2>&1
+  job-20260927T182924/job-003 pid 32081   cd /home/user/thyrox/src/packages/cli && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/catalog-pkg-cli.log 2>&1
+  job-20260927T182924/job-004 pid 1806    cd /home/user/thyrox/src/packages/repl && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/catalog-pkg-repl.log 2>&1
+  job-20260927T182924/job-005 pid 2506    cd /home/user/thyrox && timeout 900 bunx tsc --noEmit -p tsconfig.json > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/catalog-tsc.log 2>&1
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1000s)
+asentado: job-20260927T182924_job-001 -> OK (2 de 6)
+asentado: job-20260927T182924_job-004 -> OK (3 de 6)
+asentado: job-20260927T182924_job-002 -> OK (3 de 6)
+esperando: 4 de 6 asentados, 30s; vivos: job-20260927T182924_job-003 job-20260927T182924_job-005
+sonda job-20260927T182924_job-003: 32081 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-003: 32086 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-003: 32087 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-003: 32088 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-003: 32091 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.44s
+sonda job-20260927T182924_job-003: 8381 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.53s
+sonda job-20260927T182924_job-005: 2506 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-005: 2518 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-005: 2519 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-005: 2522 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-005: 2524 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T182924_job-005: 2525 node stdin=devnull(/dev/null) escritores=- estado=R cpu=42.40s
+asentado: job-20260927T182924_job-005 -> OK (5 de 6)
+asentado: job-20260927T182924_job-003 -> OK (4 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T182924
+       | (vacío — no emitió nada)
+OK     job-20260927T182924_job-001 exit=0
+       | EXIT=0
+       memoria pico: 270124 KB (264 MB) · pared 5.46s
+OK     job-20260927T182924_job-002 exit=0
+       | EXIT=0
+       memoria pico: 266072 KB (260 MB) · pared 19.52s
+OK     job-20260927T182924_job-003 exit=0
+       | EXIT=0
+       memoria pico: 247636 KB (242 MB) · pared 62.03s
+OK     job-20260927T182924_job-004 exit=0
+       | EXIT=0
+       memoria pico: 217072 KB (212 MB) · pared 1.52s
+OK     job-20260927T182924_job-005 exit=2
+       | EXIT=2
+       memoria pico: 2395504 KB (2339 MB) · pared 49.47s
+salida distinta de 0: 1 (job-20260927T182924_job-005)
+__BG_EXIT__=0

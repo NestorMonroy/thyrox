@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2371, "total_final": 2370, "tsc_runs": 1, "accepted": ["copy-symbols:src/packages/storage/src/sessionRestore.ts:net"], "files_kept": ["src/packages/storage/src/sessionRestore.ts"], "outcomes": {"copy-symbols:src/packages/storage/src/sessionRestore.ts:net": "accepted-net"}}

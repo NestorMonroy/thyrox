@@ -1,0 +1,6 @@
+== gate de la CLI (2 proyectos)
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+gate_exit=0
+== tsc raíz
+tsc_root_exit=0 errores=0
+__BG_EXIT__=0

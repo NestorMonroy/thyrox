@@ -1,0 +1,34 @@
+caso 1 — cada ítem escribe en su worktree; el árbol principal no cambia
+  ok    el árbol principal sigue limpio
+  ok    sin worktrees de ítem al terminar
+  ok    veredictos en orden
+  ok    el parche nombra su archivo
+  ok    la línea de resumen cuenta los veredictos
+  ok    las herramientas por defecto escriben
+caso 2 — la integración aplica lo verificado y disjunto, y declara el conflicto
+  ok    aplica a.txt con el texto del primero
+  ok    aplica b.txt
+  ok    no aplica lo rechazado
+  ok    el sexto es conflicto con el primero
+  ok    sale 1 si algo con cambios no se integró
+  ok    resume la integración
+caso 3 — sin --verify el cambio queda sin verificar y no se aplica por defecto
+  ok    veredicto sin-verificar
+  ok    no se aplica sin --unverified
+  ok    con --unverified se aplica
+caso 4 — rehúsa fuera de un árbol de git
+  ok    sale 2
+  ok    un modo desconocido sale 2
+caso 5 — un worktree que quedó de la ejecución se retira al terminar el pool
+  ok    el pool deja sólo el árbol principal
+caso 6 — finalize retira el worktree del ítem en cuanto termina
+  ok    sin barrido, el worktree ya no está
+  ok    su parche nombra el archivo
+caso 7 — si el worktree no se prepara, el .err del ítem trae el motivo
+  ok    el ítem sale sin json de resultado
+  ok    el .err nombra el motivo de git
+caso 8 — los trabajos que lanza un ítem aislado quedan en su salida, no en el árbol principal
+  ok    el trabajo aparece bajo la salida del ítem
+  ok    el árbol principal no recibe el trabajo
+test-headless-pool-worktree: 24 aserciones — 24 ok, 0 falla(s)
+EXIT=0

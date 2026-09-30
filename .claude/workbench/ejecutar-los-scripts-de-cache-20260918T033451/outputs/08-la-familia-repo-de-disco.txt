@@ -1,0 +1,75 @@
+# La familia repo/ de disco, corrida — 2026-09-18T03:43:32
+
+## disk-headroom.sh — ¿es Avail el techo real?
+ERROR — opcion desconocida: /
+  exit=2
+
+## disk-usage.sh — ¿quien se comio el disco?
+raices            /root /home/user
+poda              .git node_modules .venv __pycache__ .mypy_cache .pytest_cache .next .nuxt dist build target .gradle 
+profundidad       2   · plazo 240s   · mostrando los 14 mayores
+---
+   17791.2 MiB  /home/user/odoo-tools
+    9397.6 MiB  /home/user/odoo-tools/18.x
+    6541.6 MiB  /home/user/odoo-tools/19.x
+    2626.6 MiB  /root/.claude
+    2619.6 MiB  /root/.claude/projects
+    1697.0 MiB  /home/user/odoo-tools/16.x
+     694.1 MiB  /home/user/kaupamex-docs
+     430.5 MiB  /home/user/kaupamex-docs/.claude
+     418.9 MiB  /home/user/nestormonroy
+     404.1 MiB  /home/user/thyrox
+     329.0 MiB  /home/user/thyrox/_references
+     236.7 MiB  /root/.local
+     226.7 MiB  /home/user/claude-code-nestor-monroy-tools
+     198.5 MiB  /home/user/nestormonroy/litellm
+---
+232 entradas medidas, 22976.0 MiB en total
+VEREDICTO         COMPLETO
+  exit=0
+
+## disk-headroom.sh --path / (la invocacion correcta: toma --path, no posicional)
+target              /   (montaje /, /dev/vda)
+capacidad         251.97 GiB
+disponible        2646.01 MiB   ← lo que «df» llama Avail
+reserved           214.92 GiB   (85.3% de la capacidad)
+options          rw,relatime,resv_strict,resuid=65534,resgid=65534
+CAP_SYS_RESOURCE  AUSENTE
+borrado y abierto 367.97 MiB   (espacio que no vuelve hasta cerrar el descriptor)
+VEREDICTO         RESERVA_INALCANZABLE
+  el montaje declara resv_strict, que cierra la reserva incluso a root.
+  exit=3
+
+## pack_headroom.py — ¿cabe hoy un git gc? (lo que bajó el disco en TASK-THYROX-0372)
+objetos sueltos   2163   (165.62 MiB)
+empaquetados      38310   (171.10 MiB)
+disco libre       2642.72 MiB   (crudo, sin margen)
+pico completo     336.73 MiB × 1.15 = 387.23 MiB   → cabe
+pico incremental  165.62 MiB × 1.15 = 190.46 MiB   → cabe
+VEREDICTO         repack completo
+  lanzar: git gc  (= git repack -a -d)
+  exit=0
+
+## El repack, que es lo que bajo el disco en TASK-THYROX-0372
+pack_headroom.py decide si CABE antes de lanzarlo, y nombra el comando.
+
+| repo           | .git antes | .git despues | ganado |
+|----------------|-----------|--------------|--------|
+| thyrox         | 341 M     | 295 M        | 46 M   |
+| kaupamex-docs  | 602 M     | 589 M        | 13 M   |
+
+Disco raiz: 2.6 G -> 2.7 G libres; uso 94 % -> 93 %.
+Los dos gc corrieron en segundo plano con bin/thyrox-bg y se recogieron
+con la barrera: OK / __BG_EXIT__=0 en los dos.
+
+## El guion que el ejecutor recordaba: son DOS familias, no una
+
+  src/hooks/maintenance_chain.py  — la cadena de SessionStart/Stop. Es lo
+    que se siente como «reiniciar la sesion»: recorre pasos con su plazo
+    y nunca bloquea. NO libera disco por si misma — sus pasos son
+    parametro del consumidor (DEC-04).
+
+  src/repo/{disk-headroom,disk-usage}.sh + pack_headroom.py — la familia
+    que SI baja el disco, nacida de TASK-THYROX-0372 («git gc muere out
+    of disk en los dos repos»). disk-usage dice quien lo ocupa,
+    disk-headroom cual es el techo real, pack_headroom si cabe el repack.

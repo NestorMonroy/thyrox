@@ -1,0 +1,29 @@
+== 1: sin id pasa
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > no id, a skipped provider, a disabled interval, or an inactive connection [1.77ms]
+ 20 pass
+ 1 fail
+== 2: sin exclusión por proveedor
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) connections that are not checked > no id, a skipped provider, a disabled interval, or an inactive connection [1.51ms]
+ 20 pass
+ 1 fail
+== 22: agotada no se desactiva
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) expired connections with retries left > wait five minutes doubled per retry, then retry; exhausted ones are deactivated once [0.71ms]
+ 20 pass
+ 1 fail
+== 33: sin causa
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) network errors > aborts, timeouts and socket codes are transient, also when wrapped [1.04ms]
+ 20 pass
+ 1 fail
+== 40: circuito no se limpia
+   (src/accounts/refresh/health/checkPlan.ts)
+(fail) a successful refresh > stores the new tokens, clears errors and the circuit, and derives the expiry [0.79ms]
+ 20 pass
+ 1 fail
+== restaurado
+ 21 pass
+ 0 fail
+__BG_EXIT__=0

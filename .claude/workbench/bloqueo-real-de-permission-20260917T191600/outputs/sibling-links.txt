@@ -1,0 +1,28 @@
+paquete              importa  sin enlazar
+app-host                  20  bridge cli headless-sdk ide mcp-runtime provider repl swarm tool-registry updater voice
+bridge                    15  app-host cli config daemon output permission provider swarm teleport tools voice
+daemon                     9  agent bridge cli headless-sdk local-observability provider shell storage tool-registry
+config                    12  bridge harness mcp-runtime permission tool-registry updater
+ide                       12  headless-sdk memory permission repl
+local-observability        9  app-host permission provider shell
+memory                     6  output permission repl storage
+headless-sdk               3  agent local-observability storage
+provider                  10  app-host context-compression tools
+swarm                      6  config local-observability tools
+agent                     15  repl skills
+command-runtime           10  ide voice
+output                     2  app-host storage
+shell                      7  ide tools
+storage                   10  cli command-runtime
+voice                      6  repl teleport
+cli                       13  context-compression
+context-compression        1  agent
+observability              2  cli
+permission                 7  bridge
+server                     8  ide
+tool-registry             16  repl
+tools                      5  cli
+updater                    6  repl
+
+paquetes con hermanos sin enlazar: 24 de 28
+aristas de enlace ausentes: 78

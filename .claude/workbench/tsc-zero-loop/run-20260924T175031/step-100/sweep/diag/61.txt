@@ -1,0 +1,7 @@
+patron: local-context-with-unknown-tools
+senal_del_verificador: '(updatedToolUseContext|toolUseContext)\.options\.\w+' is of type 'unknown'
+fix_generico: El contexto local declara options.tools como unknown: se lee con el tipo canónico Tools de @thyrox/tool-registry.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/query.ts(661,23): error TS18046: 'toolUseContext.options.agentDefinitions' is of type 'unknown'.
+src/packages/agent/query.ts(663,17): error TS18046: 'toolUseContext.options.agentDefinitions' is of type 'unknown'.

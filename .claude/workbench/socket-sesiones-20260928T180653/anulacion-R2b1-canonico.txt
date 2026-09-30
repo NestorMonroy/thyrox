@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeModelSupport.test.ts:
+72 | 
+73 |   test('la consulta servida ve el modelo pedido y su forma resuelta', () => {
+74 |     const asked: unknown[] = []
+75 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+76 |     expect(isFastModeSupportedByModel('proxy/claude-sonnet-5-x')).toBe(true)
+77 |     expect(asked).toEqual([['fast_mode', [parseUserSpecifiedModel('proxy/claude-sonnet-5-x'), 'claude-sonnet-5']]])
+                       ^
+error: expect(received).toEqual(expected)
+
+@@ -5,3 +5,3 @@
+        "proxy/claude-sonnet-5-x",
+-       "claude-sonnet-5",
++       "proxy/claude-sonnet-5-x",
+      ],
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeModelSupport.test.ts:77:19)
+(fail) isFastModeSupportedByModel (qy) > la consulta servida ve el modelo pedido y su forma resuelta [0.41ms]
+
+ 7 pass
+ 1 fail
+ 17 expect() calls
+Ran 8 tests across 1 file. [268.00ms]

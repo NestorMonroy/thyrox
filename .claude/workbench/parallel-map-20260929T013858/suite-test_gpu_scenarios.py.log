@@ -1,0 +1,27 @@
+== 1. la reserva se vuelve uso paso a paso: pendiente baja, lo usado sube, el margen no cambia ==
+  ok    A admitido
+  ok    tabla (usado, pendiente, libre, margen) por paso
+  ok    B de 3200 no cabe
+  ok    B de 2800 sí cabe
+== 2. un dueño que usa MÁS de lo reservado: su exceso ya está en lo libre ==
+  ok    A admitido con 3200
+  ok    (usado, pendiente, libre, margen)
+== 3. SIGKILL a mitad de la asignación, sin release: su reserva deja de contar ==
+  ok    A admitido
+  ok    B de 3200 no cabe mientras A vive
+  ok    B de 3200 entra tras el SIGKILL de A
+  ok    el registro guarda sólo a B
+== 4. un dueño zombi (terminó y nadie lo cosechó) no retiene su reserva ==
+  ok    A admitido mientras vive
+  ok    B de 3200 no cabe mientras A vive
+  ok    A es zombi (sigue en /proc)
+  ok    B de 3200 entra
+== 5. un proceso AJENO al registro: su VRAM ya resta de lo libre ==
+  ok    margen = 1000
+  ok    GPU casi llena: 3200 no entra
+  ok    800 sí entra
+== 6. sin lectura de la GPU no hay margen: None, no cero ==
+  ok    headroom sin medida es None
+== 7. dos admisiones SIMULTÁNEAS tras una barrera, 4000 + 4000 sobre 6000, 5 rondas ==
+  ok    en cada ronda entra exactamente uno
+test_gpu_scenarios: 19 ok, 0 falla(s)

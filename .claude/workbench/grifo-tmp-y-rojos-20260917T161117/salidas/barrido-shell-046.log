@@ -1,0 +1,2 @@
+VERDE tests/session/test-medir-disparo-de-hooks.sh
+EXIT=0

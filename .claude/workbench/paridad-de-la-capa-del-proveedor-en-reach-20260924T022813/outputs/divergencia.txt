@@ -1,0 +1,6 @@
+py: /home/user/kaupamex-docs/.claude/eventos
+ts: /home/user/kaupamex-docs/.claude/eventos
+cwd=kaupamex-docs
+py: /home/user/kaupamex-docs/.claude/eventos
+ts: null
+ts sin dotenv de bun: null

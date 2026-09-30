@@ -1,0 +1,46 @@
+src/packages/mcp-runtime/src/auth.ts(2053,18): error TS2551: Property 'resourceMetadata' does not exist on type '{ authorizationServerUrl?: string | undefined; resourceMetadataUrl?: string | undefined; }'. Did you mean 'resourceMetadataUrl'?
+  --- código src/packages/mcp-runtime/src/auth.ts:2043-2063 ---
+   2043      if (cached?.authorizationServerUrl) {
+   2044        logMCPDebug(
+   2045          this.serverName,
+   2046          `Returning cached discovery state (authServer: ${cached.authorizationServerUrl})`,
+   2047        )
+   2048  
+   2049        return {
+   2050          authorizationServerUrl: cached.authorizationServerUrl,
+   2051          resourceMetadataUrl: cached.resourceMetadataUrl,
+   2052          resourceMetadata:
+   2053>           cached.resourceMetadata as OAuthDiscoveryState['resourceMetadata'],
+   2054          authorizationServerMetadata:
+   2055            cached.authorizationServerMetadata as OAuthDiscoveryState['authorizationServerMetadata'],
+   2056        }
+   2057      }
+   2058  
+   2059      // Check config hint for direct metadata URL
+   2060      const metadataUrl = this.serverConfig.oauth?.authServerMetadataUrl
+   2061      if (metadataUrl) {
+   2062        logMCPDebug(
+   2063          this.serverName,
+src/packages/mcp-runtime/src/auth.ts(2055,18): error TS2339: Property 'authorizationServerMetadata' does not exist on type '{ authorizationServerUrl?: string | undefined; resourceMetadataUrl?: string | undefined; }'.
+  --- código src/packages/mcp-runtime/src/auth.ts:2045-2065 ---
+   2045          this.serverName,
+   2046          `Returning cached discovery state (authServer: ${cached.authorizationServerUrl})`,
+   2047        )
+   2048  
+   2049        return {
+   2050          authorizationServerUrl: cached.authorizationServerUrl,
+   2051          resourceMetadataUrl: cached.resourceMetadataUrl,
+   2052          resourceMetadata:
+   2053            cached.resourceMetadata as OAuthDiscoveryState['resourceMetadata'],
+   2054          authorizationServerMetadata:
+   2055>           cached.authorizationServerMetadata as OAuthDiscoveryState['authorizationServerMetadata'],
+   2056        }
+   2057      }
+   2058  
+   2059      // Check config hint for direct metadata URL
+   2060      const metadataUrl = this.serverConfig.oauth?.authServerMetadataUrl
+   2061      if (metadataUrl) {
+   2062        logMCPDebug(
+   2063          this.serverName,
+   2064          `Fetching metadata from configured URL: ${metadataUrl}`,
+   2065        )

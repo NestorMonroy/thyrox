@@ -1,0 +1,32 @@
+src/packages/storage/src/toolResultStorage.ts(725,3): error TS2322: Type '(UserMessage | AssistantMessage | AttachmentMessage<unknown> | ProgressMessage<unknown> | SystemLocalCommandMessage | ... 16 more ... | { ...; })[]' is not assignable to type 'Message[]'.
+  --- código src/packages/storage/src/toolResultStorage.ts:715-735 ---
+    715  
+    716  /**
+    717   * Devuelve un `Message[]` nuevo donde cada bloque cuyo id esté en el mapa
+    718   * lleva su contenido reemplazado. Los mensajes y bloques sin reemplazo se
+    719   * pasan por referencia.
+    720   */
+    721  function replaceToolResultContents(
+    722    messages: Message[],
+    723    replacementMap: Map<string, string>,
+    724  ): Message[] {
+    725>   return messages.map(message => {
+    726      if (message.type !== 'user' || !Array.isArray(message.message?.content)) {
+    727        return message
+    728      }
+    729      const content = message.message.content as Array<{
+    730        type: string
+    731        tool_use_id?: string
+    732        [key: string]: unknown
+    733      }>
+    734      const needsReplace = content.some(
+    735        b =>
+  Type 'UserMessage | AssistantMessage | AttachmentMessage<unknown> | ProgressMessage<unknown> | SystemLocalCommandMessage | ... 16 more ... | { ...; }' is not assignable to type 'Message'.
+    Type '{ message: { content: { [key: string]: unknown; type: string; tool_use_id?: string; }[]; role?: string; id?: string; usage?: BetaUsage | Record<string, unknown>; }; type: "user"; uuid: UUID; ... 4 more ...; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; }' is not assignable to type 'Message'.
+      Type '{ message: { content: { [key: string]: unknown; type: string; tool_use_id?: string; }[]; role?: string; id?: string; usage?: BetaUsage | Record<string, unknown>; }; type: "user"; uuid: UUID; ... 4 more ...; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; }' is not assignable to type 'UserMessage'.
+        Type '{ message: { content: { [key: string]: unknown; type: string; tool_use_id?: string; }[]; role?: string; id?: string; usage?: BetaUsage | Record<string, unknown>; }; type: "user"; uuid: UUID; ... 4 more ...; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; }' is not assignable to type 'MessageBase'.
+          The types of 'message.content' are incompatible between these types.
+            Type '{ [key: string]: unknown; type: string; tool_use_id?: string | undefined; }[]' is not assignable to type 'MessageContent | undefined'.
+              Type '{ [key: string]: unknown; type: string; tool_use_id?: string | undefined; }[]' is not assignable to type 'ContentBlockParam[]'.
+                Type '{ [key: string]: unknown; type: string; tool_use_id?: string | undefined; }' is not assignable to type 'ContentBlockParam'.
+                  Type '{ [key: string]: unknown; type: string; tool_use_id?: string | undefined; }' is missing the following properties from type 'ToolUseBlockParam': id, input, name

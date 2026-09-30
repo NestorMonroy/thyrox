@@ -1,0 +1,18 @@
+=== EL GUION SOBRE EL DISCO REAL — 2026-09-19T06:02:00
+
+--- despues del arreglo:
+target              .   (montaje /, /dev/vda)
+capacidad         251.97 GiB
+disponible        63.27 MiB   ← lo que «df» llama Avail
+reserved           214.92 GiB   (85.3% de la capacidad)
+options          rw,relatime,resv_strict,resuid=65534,resgid=65534
+CAP_SYS_RESOURCE  AUSENTE
+borrado y abierto 0.00 MiB   (espacio que no vuelve hasta cerrar el descriptor)
+VEREDICTO         RESERVA_INALCANZABLE
+  el montaje declara resv_strict, que cierra la reserva incluso a root.
+(exit=3)
+
+--- lo que la columna medía ANTES, con el mismo lsof de ahora:
+  regla vieja: 391.81 MiB (sobre 231 filas)
+awk: cmd. line:1: END{printf "  con -a, el universo real es de %d fila(s)\n", NR>1?NR-1:0}
+awk: cmd. line:1:                                                                 ^ syntax error

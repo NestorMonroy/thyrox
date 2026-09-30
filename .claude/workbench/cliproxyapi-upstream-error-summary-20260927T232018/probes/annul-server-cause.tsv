@@ -1,0 +1,3 @@
+no-capture	s/^      if (error instanceof ModelCooldownError) cooling = /      if (false) cooling = /
+no-response	s/^  if (cooling) return cooldownResponse(config, cooling.error, cooling.credentials)$/  void cooling/
+no-latest	s/^  const cause = config.cooldown?.latestError(credentials)$/  const cause = undefined/

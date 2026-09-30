@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerAddress.test.ts:
+127 |     expect(isReplyableSocket('/run/a/2.sock', '/run/a/1.sock')).toBe(true)
+128 |     expect(isReplyableSocket('/run/a/2.sockx', '/run/a/1.sock')).toBe(false)
+129 |     expect(isReplyableSocket('/run/a/../a/2.sock', '/run/a/1.sock')).toBe(false)
+130 |     expect(isReplyableSocket('/tmp/cc-socks-7/2.sock', '/run/a/1.sock')).toBe(false)
+131 |     expect(isReplyableSocket('/tmp/cc-socks-7/2.sock', '/run/a/1.sock', { verifiedPeerPid: 9, ownerUids: [7] })).toBe(true)
+132 |     expect(isReplyableSocket('/tmp/cc-socks-7/2.sock', '/run/a/1.sock', { ownerUids: [7] })).toBe(false)
+                                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerAddress.test.ts:132:94)
+(fail) a quién se puede responder > isReplyableSocket (eUr): mismo directorio y .sock, o directorio por defecto con par verificado [0.59ms]
+
+ 15 pass
+ 1 fail
+ 68 expect() calls
+Ran 16 tests across 1 file. [42.00ms]

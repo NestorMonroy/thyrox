@@ -1,0 +1,37 @@
+src/packages/permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx(87,42): error TS2769: No overload matches this call.
+  --- código src/packages/permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx:77-97 ---
+     77        return ''
+     78      }
+     79      const cellIndex = parseCellId(cell_id)
+     80      if (cellIndex !== undefined) {
+     81        if (notebookData.cells[cellIndex]) {
+     82          const source = notebookData.cells[cellIndex].source
+     83          return Array.isArray(source) ? source.join('') : source
+     84        }
+     85        return ''
+     86      }
+     87>     const cell = notebookData.cells.find((cell: { id: string }) => cell.id === cell_id)
+     88      if (!cell) {
+     89        return ''
+     90      }
+     91      return Array.isArray(cell.source) ? cell.source.join('') : cell.source
+     92    }, [notebookData, cell_id])
+     93  
+     94    const hunks = useMemo(() => {
+     95      if (!notebookData || edit_mode === 'insert' || edit_mode === 'delete') {
+     96        return null
+     97      }
+  Overload 1 of 2, '(predicate: (value: NotebookCell, index: number, obj: NotebookCell[]) => value is NotebookCell, thisArg?: any): NotebookCell | undefined', gave the following error.
+    Argument of type '(cell: { id: string; }) => boolean' is not assignable to parameter of type '(value: NotebookCell, index: number, obj: NotebookCell[]) => value is NotebookCell'.
+      Types of parameters 'cell' and 'value' are incompatible.
+        Type 'NotebookCell' is not assignable to type '{ id: string; }'.
+          Types of property 'id' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.
+  Overload 2 of 2, '(predicate: (value: NotebookCell, index: number, obj: NotebookCell[]) => unknown, thisArg?: any): NotebookCell | undefined', gave the following error.
+    Argument of type '(cell: { id: string; }) => boolean' is not assignable to parameter of type '(value: NotebookCell, index: number, obj: NotebookCell[]) => unknown'.
+      Types of parameters 'cell' and 'value' are incompatible.
+        Type 'NotebookCell' is not assignable to type '{ id: string; }'.
+          Types of property 'id' are incompatible.
+            Type 'string | undefined' is not assignable to type 'string'.
+              Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,111 @@
+== 1: sin créditos agotados
+   (src/accounts/proxyCredentials.ts)
+(fail) the terminal connection states > are exhausted credits, a ban and expiry, in any case and spacing [0.37ms]
+ 7 pass
+ 1 fail
+== 2: sin baneada
+   (src/accounts/proxyCredentials.ts)
+(fail) the terminal connection states > are exhausted credits, a ban and expiry, in any case and spacing [0.31ms]
+(fail) one connection as a proxy credential > an inactive or terminal connection is disabled [0.08ms]
+ 6 pass
+ 2 fail
+== 3: sin caducada
+   (src/accounts/proxyCredentials.ts)
+(fail) the terminal connection states > are exhausted credits, a ban and expiry, in any case and spacing [0.41ms]
+ 7 pass
+ 1 fail
+== 4: sin recorte
+   (src/accounts/proxyCredentials.ts)
+(fail) the terminal connection states > are exhausted credits, a ban and expiry, in any case and spacing [0.39ms]
+ 7 pass
+ 1 fail
+== 5: sin minúsculas
+   (src/accounts/proxyCredentials.ts)
+(fail) the terminal connection states > are exhausted credits, a ban and expiry, in any case and spacing [0.55ms]
+ 7 pass
+ 1 fail
+== 6: prioridad sin invertir
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an api-key connection carries its key as an attribute and its priority reversed [0.42ms]
+(fail) one connection as a proxy credential > the lower stored priority wins, as the higher proxy priority [0.16ms]
+ 6 pass
+ 2 fail
+== 7: prioridad por defecto
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > the lower stored priority wins, as the higher proxy priority [0.31ms]
+ 7 pass
+ 1 fail
+== 8: clave en blanco
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > blank secrets are not carried [0.27ms]
+ 7 pass
+ 1 fail
+== 9: sin api_key
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an api-key connection carries its key as an attribute and its priority reversed [0.44ms]
+ 7 pass
+ 1 fail
+== 10: sin access_token
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an oauth connection carries its token, project and token expiry [0.37ms]
+ 7 pass
+ 1 fail
+== 11: sin proyecto
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an oauth connection carries its token, project and token expiry [0.31ms]
+ 7 pass
+ 1 fail
+== 12: inactiva habilitada
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an inactive or terminal connection is disabled [0.25ms]
+ 7 pass
+ 1 fail
+== 13: terminal habilitada
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an inactive or terminal connection is disabled [0.20ms]
+ 7 pass
+ 1 fail
+== 14: sin tokenExpiresAt
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an oauth connection carries its token, project and token expiry [0.34ms]
+ 7 pass
+ 1 fail
+== 15: sin expiresAt
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an oauth connection carries its token, project and token expiry [0.32ms]
+ 7 pass
+ 1 fail
+== 16: fecha inválida
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an oauth connection carries its token, project and token expiry [0.37ms]
+ 7 pass
+ 1 fail
+== 17: enfriamiento vencido cuenta
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > a future cooldown makes it unavailable until then; a past one does not [0.24ms]
+ 7 pass
+ 1 fail
+== 18: sin nextRetryAfter
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > a future cooldown makes it unavailable until then; a past one does not [0.39ms]
+ 7 pass
+ 1 fail
+== 19: fila sin id
+   (src/accounts/proxyCredentials.ts)
+(fail) the credentials of the proxy, by provider > group every connection under its provider, in the given order, skipping rows without id or provider [0.54ms]
+ 7 pass
+ 1 fail
+== 20: fila sin proveedor
+   (src/accounts/proxyCredentials.ts)
+(fail) the credentials of the proxy, by provider > group every connection under its provider, in the given order, skipping rows without id or provider [0.39ms]
+ 7 pass
+ 1 fail
+== 21: sin proveedor en atributos
+   (src/accounts/proxyCredentials.ts)
+(fail) one connection as a proxy credential > an api-key connection carries its key as an attribute and its priority reversed [0.37ms]
+ 7 pass
+ 1 fail
+== restaurado
+ 8 pass
+ 0 fail
+__BG_EXIT__=0

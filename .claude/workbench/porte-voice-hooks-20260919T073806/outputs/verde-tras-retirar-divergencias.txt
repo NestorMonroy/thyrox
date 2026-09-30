@@ -1,0 +1,8 @@
+== suite del paquete
+ 27 pass
+ 0 fail
+== sonda de conducta
+stubs restantes: 0 de 4
+== los modulos restaurados cargan de verdad
+OK   carga voiceModeEnabled.ts
+OK   carga voiceKeyterms.ts

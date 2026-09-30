@@ -1,0 +1,34 @@
+La entrega es un eje de subagente, no de bash
+
+Las 2 rojas que `48167a58` dejo declaradas como preexistentes no eran
+expectativas rancias: apuntaban a un defecto. El roster publicaba
+«terminado 0» con un «entrego 1» debajo —la cabecera negando a su
+propio detalle— y mandaba a `indecidible` dos tareas de Bash que SI
+traian su marcador terminal (`[exited with code 0]`, `EXIT=0`).
+
+Dos causas independientes:
+
+1. `delivery_verdict` delega en `roster/delivery.classify`, que lee
+   los bloques del ultimo mensaje `assistant`. El `.output` de un Bash
+   es un log plano y no tiene ninguno, asi que devuelve `undecidable`
+   y borra lo unico que se sabia de esa entrada: que termino. El eje
+   de produccion, un tramo mas abajo en el mismo guion, ya tenia
+   escrito el guard correcto — `[[ ! -L ]]` -> «no aplica» — y al de
+   entrega le faltaba.
+2. La cabecera `terminado` se publicaba como cubo hermano. Ningun
+   veredicto de subagente devuelve ya ese literal: se parte en
+   `entrego`/`cortado`, asi que su cifra era un 0 estructural. Ahora
+   es la suma de sus tres desenlaces, con `no aplica` para el cubo de
+   Bash.
+
+Lo que no se veia en el conteo: con el veredicto en `indecidible`,
+`--confirmar-muerte` sobre un Bash terminado hacia BAIL con el motivo
+equivocado, teniendo el marcador delante.
+
+Dos anulaciones por separado, porque una sola no separa las causas:
+sin el guard caen exactamente 2 aserciones (terminado=1,
+indecidible=3); sin la suma cae exactamente 1 (terminado=2). Guion
+restaurado y verificado con `cmp` byte a byte antes de la verde.
+
+16 ok / 2 fallas -> 18 ok / 0 fallas. Las cinco suites Python de
+`tests/roster/` siguen verdes por su punto de entrada.

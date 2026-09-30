@@ -1,0 +1,11 @@
+--- a/src/hooks/detect_parallel_opportunity.py
++++ b/src/hooks/detect_parallel_opportunity.py
+@@ -69,7 +69,7 @@
+ _BODY_SEGMENTS = re.compile(r"&&|\|\||;|\||\n")
+ _TRUNCATING_REDIRECT = re.compile(r"(?<![>&0-9])>(?!>|&)\s*(?P<target>[^\s;|&]+)")
+ _XARGS = re.compile(r"(?<![\w-])xargs\b(?P<args>[^|;&\n]*)")
+-_ALREADY_PARALLEL = re.compile(r"(?<![\w-])parallel(?:_map)?\b|(?<![\w-])xargs\b[^|;&\n]*\s-P\s*\d|--max-procs")
++_ALREADY_PARALLEL = re.compile(r"(?<![\w-])parallel\b|(?<![\w-])xargs\b[^|;&\n]*\s-P\s*\d|--max-procs")
+ _GIT_INDEX = re.compile(r"\bgit\s+(?:-C\s+\S+\s+)?(?:mv|add|rm|commit|stash|reset|checkout|merge)\b")
+ _BUILTINS = frozenset({
+     "echo", "printf", "test", "[", "[[", "true", "false", ":", "read", "local", "export", "set",

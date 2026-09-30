@@ -1,0 +1,38 @@
+== 1. acunar: el ISO basico, y el rehuse del doble sufijo ==
+  ok    el identificador lleva el ISO basico
+  ok    un slug ya fechado REHUSA
+== 2. la fecha se DERIVA del identificador, no del reloj ==
+  ok    del sufijo sale la fecha extendida
+  ok    sin sufijo NO se fabrica una fecha
+== 3. resolver: del mas reciente al mas antiguo ==
+  ok    tres runs, en orden descendente
+  ok    el mas reciente
+== 4. CONTROL de frontera: el prefijo se ancla por los dos extremos ==
+  ok    `probe-extra-<ISO>` NO entra bajo `probe`
+  ok    y si entra bajo SU slug
+== 5. CONTROL de anulacion: mtime INVERTIDO ==
+  ok    los dos criterios DISCREPAN (si no, el caso no mide nada)
+  ok    y gana el ISO del identificador
+== 6. sin runs: None y lista vacia, nunca una ruta inventada ==
+  ok    un slug desconocido no tiene ultimo
+  ok    ni runs
+  ok    un hogar inexistente devuelve lista vacia
+== 7. andamiar: las cinco claves se OMITEN, no se rellenan ==
+  ok    el run lleva el identificador acunado
+  ok    crea `tests/`
+  ok    crea `outputs/`
+  ok    crea `probes/`
+  ok    el manifiesto existe
+  ok    `question` NO se rellena con placeholder
+  ok    `instrument` NO se rellena con placeholder
+  ok    `metric` NO se rellena con placeholder
+  ok    `blind_to` NO se rellena con placeholder
+  ok    `destination` NO se rellena con placeholder
+== 8. el contrato que el gemelo TypeScript declara ==
+  ok    las cinco claves, en el orden del reporte
+  ok    las tres formas, en ingles
+  ok    el nombre del manifiesto
+  ok    y el heredado, que el lector sigue aceptando
+
+27 ok, 0 fallos
+exit=0

@@ -1,0 +1,2 @@
+VERDE tests/session/test-tmpdir-faucet.sh
+EXIT=0

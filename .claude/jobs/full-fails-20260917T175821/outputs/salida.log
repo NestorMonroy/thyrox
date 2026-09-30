@@ -1,0 +1,42 @@
+full_fails: 239
+
+=== por primer segmento
+   src               155
+   tests              53
+   bin                11
+   scripts             8
+   source              4
+   __tests__           4
+   addons              2
+   config              2
+
+=== por prefijo declarado
+   (sin prefijo)           204
+   thyrox                   19
+   odoo19c                   2
+   Suite                     2
+   docs                      1
+   LATENT                    1
+   pase                      1
+   harness                   1
+   TDD                       1
+   updater                   1
+   Verificado                1
+   permission                1
+
+=== muestra SIN prefijo (las que S2 juzga sin saber de que arbol son)
+   src/verify/check-harness-typecheck.sh
+   src/packages/context-compression/package.js
+   src/packages/agent/package.js
+   src/lib/toolchain.sh
+   source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/analisis-puertas-de-invocacion-faltantes.rst
+   src/models.js
+   src/verify/check_identifier_language.py
+   src/paths/reach.py
+   src/core/It2SetupPrompt.ts
+   src/tasks/InProcessTeammateTask.ts
+   src/gates/staleSubstitutes.ts
+   src/gates/premise_drift_baseline.js
+   src/gates/doctor.py
+   src/tools/skill.ts
+__BG_EXIT__=0

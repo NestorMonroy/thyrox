@@ -1,0 +1,77 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRenameNotice.test.ts:
+43 | 
+44 | describe('notifyCorrespondentsOfRename (zkr)', () => {
+45 |   test('avisa a cada correspondiente cuyo socket sigue siendo el de su pid en el registro', async () => {
+46 |     await notifyCorrespondentsOfRename('foo', 'foo-brave-otter', 'foo', 'scope', deps)
+47 |     expect(queries).toEqual(['scope'])
+48 |     expect(sent).toEqual([
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -28,3 +28,15 @@
+    ],
++   [
++     "/tmp/c.sock",
++     "This session was renamed from "foo" to "foo-brave-otter" ("foo" is held by another live session on this machine). Address this one as "foo-brave-otter" from now on.",
++     "scope",
++     "foo-brave-otter",
++     undefined,
++     undefined,
++     "bypass",
++     {
++       "expectPeerPid": 13,
++       "trackReceipts": false,
++     },
++   ],
+  ]
+
+- Expected  - 0
++ Received  + 13
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:48:18)
+(fail) notifyCorrespondentsOfRename (zkr) > avisa a cada correspondiente cuyo socket sigue siendo el de su pid en el registro [12.59ms]
+64 |     expect(sent).toEqual([])
+65 |   })
+66 | 
+67 |   test('sin socket propio no descarta ninguna dirección por ser la suya', async () => {
+68 |     await notifyCorrespondentsOfRename('foo', 'foo-brave-otter', 'foo', 'scope', { ...deps, ownSocket: () => undefined })
+69 |     expect(sent.map(call => call[0])).toEqual(['/tmp/a.sock', '/tmp/b.sock', '/tmp/self.sock'])
+                                           ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "/tmp/b.sock",
++   "/tmp/c.sock",
+    "/tmp/self.sock",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:69:39)
+(fail) notifyCorrespondentsOfRename (zkr) > sin socket propio no descarta ninguna dirección por ser la suya [0.21ms]
+90 |   })
+91 | 
+92 |   test('una dirección que no es uds no recibe aviso', async () => {
+93 |     deps.state.correspondents.set('bridge:session_x', { pid: 11, procStart: undefined })
+94 |     await notifyCorrespondentsOfRename('foo', 'b', 'foo', 's', deps)
+95 |     expect(sent.map(call => call[0])).toEqual(['/tmp/a.sock', '/tmp/b.sock'])
+                                           ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "/tmp/b.sock",
++   "/tmp/c.sock",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRenameNotice.test.ts:95:39)
+(fail) notifyCorrespondentsOfRename (zkr) > una dirección que no es uds no recibe aviso [0.37ms]
+
+ 4 pass
+ 3 fail
+ 10 expect() calls
+Ran 7 tests across 1 file. [102.00ms]

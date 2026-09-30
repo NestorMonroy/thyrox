@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+79 |   test('stripIgnorables (Cy) quita formato e ignorables y colapsa', () => {
+80 |     expect(stripIgnorables('a\u200b\u034fb  c\u115f')).toBe('ab c')
+81 |   })
+82 | 
+83 |   test('sanitizeUnicodeToFixedPoint (Njr) normaliza en NFKC y quita formato hasta que el texto no cambie', () => {
+84 |     expect(sanitizeUnicodeToFixedPoint('ﬁ\u200bx\ud800')).toBe('fix')
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "fix"
+Received: "ﬁx"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:84:58)
+(fail) el resto de chunk-pbnxt79v.js > sanitizeUnicodeToFixedPoint (Njr) normaliza en NFKC y quita formato hasta que el texto no cambie [0.35ms]
+83 |   test('sanitizeUnicodeToFixedPoint (Njr) normaliza en NFKC y quita formato hasta que el texto no cambie', () => {
+84 |     expect(sanitizeUnicodeToFixedPoint('ﬁ\u200bx\ud800')).toBe('fix')
+85 |   })
+86 | 
+87 |   test('sanitizeUnicodeDeep (H_) recorre cadenas, listas y claves', () => {
+88 |     expect(sanitizeUnicodeDeep({ 'k\u200b': ['a\u200b', 1, null, { x: 'ﬁ' }] })).toEqual({ k: ['a', 1, null, { x: 'fi' }] })
+                                                                                     ^
+error: expect(received).toEqual(expected)
+
+@@ -6,3 +6,3 @@
+      {
+-       "x": "fi",
++       "x": "ﬁ",
+      },
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:88:81)
+(fail) el resto de chunk-pbnxt79v.js > sanitizeUnicodeDeep (H_) recorre cadenas, listas y claves [0.45ms]
+
+ 16 pass
+ 2 fail
+ 35 expect() calls
+Ran 18 tests across 1 file. [45.00ms]

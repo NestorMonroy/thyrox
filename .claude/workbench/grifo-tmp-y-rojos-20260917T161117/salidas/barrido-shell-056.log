@@ -1,0 +1,2 @@
+VERDE tests/skills/test-check-skill-artifacts.sh
+EXIT=0

@@ -1,0 +1,7 @@
+  ok    test_the_path_real_of_executable_NOT_discriminates
+  FALLA test_the_precondition_of_extensions_discriminates_the_two_venv: AssertionError: el venv del consumidor no resuelve lo que su propio conf.py declara; corre `make sync` en /home/user/kaupamex-docs: ['sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.autosectionlabel', 'sphinx_design', 'sphinx_copybutton', 'sphinx_tabs.tabs', 'sphinxcontrib.plantuml']
+  ok    test_the_subject_and_the_interpreters_exist
+  ok    test_the_venv_of_provider_not_publishes_a_count_that_not_measured
+  FALLA test_the_via_of_pre_commit_WHETHER_publishes_su_count: AssertionError: la via que hoy mide dejo de medir: exit=2 stdout='' stderr='user/kaupamex-docs/.venv) no resuelve 7 extension(es) que su conf.py declara: sphinx.ext.intersphinx, sphinx.ext.todo, sphinx.ext.autosectionlabel, sphinx_design, sphinx_copybutton, sphinx_tabs.tabs, sphinxcontrib.plantuml. Corre `make sync` en /home/user/kaupamex-docs. NO se emite un conteo: un 0 aqui seria un verde falso, y un 1 diria «hay errores de sintaxis» sobre una medicion que no ocurrio.\n'
+3/5 aserciones verdes
+EXIT=1

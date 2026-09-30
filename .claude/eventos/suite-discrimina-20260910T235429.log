@@ -1,0 +1,40 @@
+== 1. sintaxis ==
+  ok    check_suite_discrimina.py parsea
+== 2. CONTROL POSITIVO del detector — _verdict, la funcion de H-DOCS-224 ==
+  ok    _verdict: el literal sale de 3 sitios de retorno
+== 3. la mutacion va DESPUES del docstring, y el archivo sigue parseando ==
+  ok    la mutacion no pisa el docstring y el archivo parsea
+== 4. suites_naming es cota SUPERIOR: nombrar no es ejecutar ==
+  ok    una suite que solo MENCIONA el archivo entra en la cota superior
+== 5. el juez NO reporta lo que ya se cerro (register_agent_session) ==
+  ok    register_agent_session: 0 sin discriminar
+== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo ==
+  FALLO classify_agents se reporta SIN COBERTURA (el juez puede fallar)
+        esperado=[3] obtenido=[0]
+  FALLO el titular concuerda con las filas que imprime
+        esperado=[1] obtenido=[0]
+== 7. el barrido no deja mutantes: el arbol queda como estaba ==
+  ok    el barrido no cambia el estado del arbol
+  FALLO ningun MUTANTE insertado sobrevive al barrido
+        esperado=[0] obtenido=[1]
+== 8. CONTROL ANULADO — se simula el proceso muerto de H-DOCS-307 ==
+  ok    un mutante vivo hace fallar a --verificar
+  ok    y lo nombra VIVO, con su fecha de insercion
+== 9. el barrido de la marca ve lo que el ledger no anoto ==
+  ok    sin entrada en el ledger, el barrido lo sigue viendo
+  ok    y declara que su anotacion falta
+== 10. una entrada sobre archivo limpio es residual, no un mutante vivo ==
+  ok    una entrada huerfana no hace fallar el gate
+  ok    y se reporta como residual
+== 11. la marca INSERTADA no es la DEFINICION del marcador ==
+  ok    declarar el marcador no cuenta como mutante
+== 12. la entrada de un archivo AUSENTE se poda; la de uno limpio no ==
+  ok    queda exactamente la entrada del archivo presente
+  ok    y la que sobrevive es la del archivo limpio
+== 13. el arbol real esta limpio y publica su denominador ==
+  FALLO --verificar sobre el arbol real sale 0
+        esperado=[0] obtenido=[1]
+  ok    el titular publica su alcance medido
+
+16 ok, 4 fallos
+EXIT=1

@@ -1,0 +1,1 @@
+uv run --quiet python tests/hooks/test_task_lifecycle.py

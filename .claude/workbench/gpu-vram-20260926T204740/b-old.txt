@@ -1,0 +1,10 @@
+MEMFREE_WHY=option
+if [[ -z "$CACHE_TTL" || -z "$MEMFREE_SPEC" ]]; then
+    if IFS=$'\t' read -r H_TTL H_MEMFREE H_WHY < <(pool_history derive "$HISTORY" "$MODEL" --reserve-kb "$RESERVE_KB"); then
+        [[ -n "$CACHE_TTL" || "$H_TTL" == - ]] || { CACHE_TTL="$H_TTL"; CACHE_TTL_WHY=history; }
+        [[ -n "$MEMFREE_SPEC" || "$H_MEMFREE" == - ]] || { MEMFREE_SPEC="$H_MEMFREE"; MEMFREE_WHY=history; }
+        echo "historial: $H_WHY"
+    else
+        echo "historial: no se pudo derivar (sin catálogo de modelos); corre con lo declarado"
+    fi
+fi

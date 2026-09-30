@@ -1,0 +1,11 @@
+src/packages/agent/__tests__/contentTextHelpers.test.ts(16,48): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(22,25): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(23,25): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(32,27): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(33,27): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(43,25): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(44,26): error TS2353: Object literal may only specify known properties, and 'source' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(45,29): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(46,25): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(65,25): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.
+src/packages/agent/__tests__/contentTextHelpers.test.ts(67,25): error TS2353: Object literal may only specify known properties, and 'text' does not exist in type '{ readonly type: string; }'.

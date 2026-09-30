@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+278 |     try {
+279 |       stopSpareClaimPoll(state)
+280 |       const poll = setInterval(() => {}, 1_000_000)
+281 |       state.spareClaimPoll = poll
+282 |       stopSpareClaimPoll(state)
+283 |       expect(cleared).toEqual([poll])
+                            ^
+error: expect(received).toEqual(expected)
+
+- [
+-   Timeout (#3, repeats),
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:283:23)
+(fail) los demás campos del registro > stopSpareClaimPoll (Wy) cancela el intervalo, y sin sondeo no hace nada [0.45ms]
+
+ 22 pass
+ 1 fail
+ 76 expect() calls
+Ran 23 tests across 1 file. [138.00ms]

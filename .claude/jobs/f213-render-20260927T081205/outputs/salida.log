@@ -1,0 +1,42 @@
+run-task-pool: 6 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260927T081205
+  job-20260927T081205/job-001 pid 24080   bash bin/finding rst H-THYROX-213 --resolved-in thyrox@82417e3d
+  job-20260927T081205/job-002 pid 24124   bash bin/finding rst H-THYROX-214 --resolved-in thyrox@8b3a95ea
+  job-20260927T081205/job-003 pid 24161   bash bin/finding rst H-THYROX-215 --resolved-in thyrox@f7318d69
+  job-20260927T081205/job-004 pid 24208   bash bin/finding rst H-THYROX-216 --resolved-in thyrox@fd067d08
+  job-20260927T081205/job-005 pid 24249   bash bin/finding rst H-THYROX-217 --resolved-in thyrox@7e10ae0d
+  job-20260927T081205/job-006 pid 24302   bash bin/finding rst H-THYROX-218 --resolved-in thyrox@b4c74a09
+run-task-pool: lanzados 6 de 6; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T081205_job-001 -> OK (2 de 7)
+asentado: job-20260927T081205_job-002 -> OK (3 de 7)
+asentado: job-20260927T081205_job-003 -> OK (4 de 7)
+asentado: job-20260927T081205_job-004 -> OK (5 de 7)
+asentado: job-20260927T081205_job-005 -> OK (6 de 7)
+asentado: job-20260927T081205_job-006 -> OK (7 de 7)
+== 7 trabajos asentados ==
+OLVIDADO job-20260927T081205
+       | (vacío — no emitió nada)
+OK     job-20260927T081205_job-001 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-213-la-politica-de-apps-centinela-del-porte-tenia-9-de-17-terminales-de-macos-y-ninguna-de-windows.rst
+       | EXIT=0
+       memoria pico: 53940 KB (53 MB) · pared 0.10s
+OK     job-20260927T081205_job-002 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-214-el-gate-de-combinaciones-de-teclas-no-reconocia-lalt-ni-ralt-y-dejaba-pasar-lalt-f4.rst
+       | EXIT=0
+       memoria pico: 53792 KB (53 MB) · pared 0.09s
+OK     job-20260927T081205_job-003 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-215-las-capturas-de-linux-usaban-rutas-fijas-en-tmp-y-la-heredada-escapaba-su-propio-catch.rst
+       | EXIT=0
+       memoria pico: 53704 KB (52 MB) · pared 0.13s
+OK     job-20260927T081205_job-004 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-216-mock-restore-no-deshace-un-mock-module-y-la-fuga-tumbaba-pruebas-de-otro-archivo-del-paquete.rst
+       | EXIT=0
+       memoria pico: 54120 KB (53 MB) · pared 0.11s
+OK     job-20260927T081205_job-005 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-217-check-bench-untracked-no-veia-un-banco-del-que-todos-los-archivos-nuevos-quedaban-fuera.rst
+       | EXIT=0
+       memoria pico: 54344 KB (53 MB) · pared 0.15s
+OK     job-20260927T081205_job-006 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-218-el-renderizado-de-hallazgos-duplicaba-el-alias-de-la-ruta.rst
+       | EXIT=0
+       memoria pico: 53876 KB (53 MB) · pared 0.10s
+__BG_EXIT__=0

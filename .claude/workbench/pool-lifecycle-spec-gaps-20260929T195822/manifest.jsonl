@@ -1,0 +1,1 @@
+{"kind": "declaration", "question": "¿Cumple lo integrado la especificación aprobada?", "instrument": "suites del ciclo de vida con una prueba roja por divergencia y su anulación", "metric": "aserciones que caen al retirar cada cierre", "blind_to": "divergencias que la especificación no enumera", "destination": ".claude/workbench/pool-lifecycle-spec-gaps-20260929T195822/outputs"}

@@ -1,0 +1,2 @@
+      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err"
+    local rc=$?

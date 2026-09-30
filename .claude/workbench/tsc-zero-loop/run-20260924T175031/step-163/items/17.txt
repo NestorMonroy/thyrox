@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3292,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3282-3302 ---
+   3282                // onStateChange('failed', detail) before returning null.
+   3283                // Capture so the control-response error is actionable
+   3284                // ("/login", "disabled by your organization's policy", etc.)
+   3285                // instead of a generic "initialization failed".
+   3286                let bridgeFailureDetail: string | undefined
+   3287                try {
+   3288                  const handle = await initReplBridge({
+   3289                    onInboundMessage(msg) {
+   3290                      const fields = extractInboundMessageFields(msg)
+   3291                      if (!fields) return
+   3292>                     const { content, uuid } = fields
+   3293                      enqueue({
+   3294                        value: content,
+   3295                        mode: 'prompt' as const,
+   3296                        uuid,
+   3297                        skipSlashCommands: true,
+   3298                      })
+   3299                      void run()
+   3300                    },
+   3301                    onPermissionResponse(response) {
+   3302                      // Forward bridge permission responses into the
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3305,56): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: "control_response"; response: { subtype: "success"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: "error"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3295-3315 ---
+   3295                        mode: 'prompt' as const,
+   3296                        uuid,
+   3297                        skipSlashCommands: true,
+   3298                      })
+   3299                      void run()
+   3300                    },
+   3301                    onPermissionResponse(response) {
+   3302                      // Forward bridge permission responses into the
+   3303                      // stdin processing loop so they resolve pending
+   3304                      // permission requests from the SDK consumer.
+   3305>                     structuredIO.injectControlResponse(response)
+   3306                    },
+   3307                    onInterrupt() {
+   3308                      abortController?.abort()
+   3309                    },
+   3310                    onSetModel(model) {
+   3311                      const resolved =
+   3312                        model === 'default' ? getDefaultMainLoopModel() : model
+   3313                      activeUserSpecifiedModel = resolved
+   3314                      setMainLoopModelOverride(resolved)
+   3315                    },

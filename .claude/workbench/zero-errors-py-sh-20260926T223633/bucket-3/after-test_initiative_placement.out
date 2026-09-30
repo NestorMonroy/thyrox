@@ -1,0 +1,34 @@
+=== 1. survey_initiative — el árbol no la tiene ===
+  ok    cero hallazgos
+  ok    recorrido completo
+=== 2. survey_initiative — está en su lugar canónico ===
+  ok    un hallazgo
+  ok    raíz derivada de la ruta
+=== 3. survey_initiative — FUERA de pm/<raiz>/iniciativas/ ===
+  ok    la encuentra fuera del lugar canónico
+  ok    declara que no pudo derivar raíz
+=== 4. decide_placement — los tres desenlaces ===
+  ok    sin hallazgos -> ABSENT
+  ok    en la raíz pedida -> IN_PLACE
+  ok    en OTRA raíz -> ELSEWHERE
+  ok    nombra la raíz de origen
+=== 5. un recorrido TRUNCADO no es ABSENT ===
+  ok    el recorrido se declara truncado
+  ok    truncado -> SurveyTruncatedError
+=== 6. extension_note — cita la raíz de origen con :doc: ===
+  ok    nombra la raíz de origen
+  ok    lleva una cita :doc: verificable
+  ok    nombra el slug
+=== 7. ANULACIÓN — acotado al lugar del dominio, ELSEWHERE deja de verse ===
+  ok    anulación: el lugar del dominio NO la ve (y por eso duplicaría)
+  ok    anulación: el recorrido completo SÍ la ve
+=== 8. INTEGRACIÓN — scaffold_initiative escribe la mención en ELSEWHERE ===
+  ok    crea en la raíz pedida
+  ok    el index lleva la mención de extensión
+  ok    la mención nombra la raíz de origen
+  ok    la mención es una cita :doc: verificable
+  ok    la de origen queda intacta
+=== 9. INTEGRACIÓN — IN_PLACE sigue rehusando (no pisa trabajo ajeno) ===
+  ok    IN_PLACE -> FileExistsError
+
+OK=23 FAILED=0

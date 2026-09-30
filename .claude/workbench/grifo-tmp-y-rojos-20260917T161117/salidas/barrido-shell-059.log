@@ -1,0 +1,2 @@
+VERDE tests/task/test-refresh-board.sh
+EXIT=0

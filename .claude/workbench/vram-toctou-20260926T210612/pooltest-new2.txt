@@ -1,0 +1,7 @@
+check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' "$F/parallel.args")" "1"
+# Cada ítem admitido reserva y, al terminar, suelta: tras la ejecución el
+# registro no guarda nada suyo. Sin el `release` quedaría una fila por ítem.
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "reserva: los items admitidos arrancan" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
+check "reserva: el registro queda vacio al terminar" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
+unset HIST

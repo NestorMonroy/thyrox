@@ -1,0 +1,31 @@
+    print("== 8. TRES estados: medido 0, ausente, y error al medir ==")
+    # nvidia-smi que responde las primeras N llamadas y luego falla: se intentó
+    # medir y no se pudo. Eso NO es cero ni ausencia, y no se publica parcial.
+    flaky = tmp / "nvidia-smi-flaky"
+    flaky.write_text('#!/usr/bin/env bash\nn=$(cat "$FAKE_CALLS" 2>/dev/null || echo 0); echo $((n+1)) > "$FAKE_CALLS"\n'
+                     '[ "$n" -ge 4 ] && { echo "NVML: Driver/library version mismatch" >&2; exit 18; }\n'
+                     f'exec {smi} "$@"\n')
+    flaky.chmod(0o755)
+    os.environ["FAKE_CALLS"] = str(tmp / "calls")
+    parent, child = spawn_tree(1.5)
+    apps.write_text(f"{child}, 300\n")
+    out = tmp / "4.gpu"
+    summary = gm.watch(parent.pid, out, nvidia_smi=str(flaky), interval_s=0.2)
+    parent.wait()
+    check("error al medir: sin resumen publicado", None, summary)
+    check("el archivo declara el error y su causa", True,
+          out.read_text().startswith("error ") and "mismatch" in out.read_text())
+    check("read_gpu_file lo clasifica como error", "error", gm.read_gpu_file(out).state)
+    check("un .gpu con ceros es una medida", "measured", gm.read_gpu_file(tmp / "2.gpu").state)
+    check("sin archivo es ausente", "absent", gm.read_gpu_file(tmp / "3.gpu").state)
+
+    print("== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==")
+    free.write_text("0, 1000\n")
+    check("sin sitio y sin plazo: no admite", False, gm.wait_free(2000, str(smi), timeout_s=0.5, interval_s=0.1))
+    free.write_text("0, 5000\n")
+    check("con sitio: admite enseguida", True, gm.wait_free(2000, str(smi), timeout_s=0.5, interval_s=0.1))
+    free.write_text("0, 1000\n")
+    subprocess.Popen(["bash", "-c", f"sleep 0.4; echo '0, 5000' > {free}"])
+    check("se libera mientras espera: admite", True, gm.wait_free(2000, str(smi), timeout_s=3, interval_s=0.1))
+
+    print("== 6. disponible() distingue las dos situaciones ==")

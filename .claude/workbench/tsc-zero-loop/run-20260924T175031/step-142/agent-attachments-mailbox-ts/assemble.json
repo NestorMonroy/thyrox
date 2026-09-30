@@ -1,0 +1,8 @@
+{
+ "applied": [
+  "getTeamContextAttachment",
+  "getTeammateMailboxAttachments"
+ ],
+ "rejected": {},
+ "missing": []
+}

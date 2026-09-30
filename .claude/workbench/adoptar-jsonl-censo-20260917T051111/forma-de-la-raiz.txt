@@ -1,0 +1,13 @@
+forma de la raiz de cada archivo del bucket C
+(un ejemplar por nombre; los 87 manifest.json comparten forma)
+
+manifest.json                    raiz=dict  claves=2 ['instrument', 'started_at']
+    .claude/jobs/anulacion330-20260911T092027/manifest.json
+models.json                      raiz=dict  claves=9 ['fuente', 'models', 'pricing_tiers', 'schema_version', 'aliases']
+    src/packages/agent/models.json
+premise_drift_baseline.json      raiz=dict  claves=84 ['101', '103', '106', '108', '109']
+    src/verify/premise_drift_baseline.json
+agent_dispatch_orm.json          raiz=dict  claves=2 ['tool_name', 'tool_input']
+    tests/hooks/fixtures/agent_dispatch_orm.json
+store_row_369.json               raiz=dict  claves=18 ['task_id', 'subject', 'description', 'status', 'active_form']
+    tests/task/fixtures/board_store_drift/store_row_369.json

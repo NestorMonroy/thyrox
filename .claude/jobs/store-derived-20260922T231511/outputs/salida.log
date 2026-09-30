@@ -1,0 +1,621 @@
+run-task-pool: 54 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/storederived-20260922T231511
+  storederived-20260922T231511/test-agent-store-auto-recall-limit pid 29804   bash tests/agents/test-agent-store-auto-recall-limit.sh
+  storederived-20260922T231511/test-agent-store-buscar-tareas pid 29830   bash tests/agents/test-agent-store-buscar-tareas.sh
+  storederived-20260922T231511/test-agent-store-clasificar-documentos pid 29857   bash tests/agents/test-agent-store-clasificar-documentos.sh
+  storederived-20260922T231511/test-agent-store-compara-antes-de-escribir pid 29880   bash tests/agents/test-agent-store-compara-antes-de-escribir.sh
+  storederived-20260922T231511/test-agent-store-fecha-apertura pid 30068   bash tests/agents/test-agent-store-fecha-apertura.sh
+  storederived-20260922T231511/test-agent-store-fecha-documento pid 30093   bash tests/agents/test-agent-store-fecha-documento.sh
+  storederived-20260922T231511/test-agent-store-fts-degradation pid 30311   bash tests/agents/test-agent-store-fts-degradation.sh
+  storederived-20260922T231511/test-agent-store-reassignment-guard pid 30408   bash tests/agents/test-agent-store-reassignment-guard.sh
+  storederived-20260922T231511/test-agent-store-render-tablero pid 30430   bash tests/agents/test-agent-store-render-tablero.sh
+  storederived-20260922T231511/test-agent-store-sessions pid 30461   bash tests/agents/test-agent-store-sessions.sh
+  storederived-20260922T231511/test-agent-store-tareas pid 30635   bash tests/agents/test-agent-store-tareas.sh
+  storederived-20260922T231511/test-agent-store-transcript-path pid 30659   bash tests/agents/test-agent-store-transcript-path.sh
+  storederived-20260922T231511/test-agent-store-type-source pid 30684   bash tests/agents/test-agent-store-type-source.sh
+  storederived-20260922T231511/test-agent-store-usage-columns pid 30714   bash tests/agents/test-agent-store-usage-columns.sh
+  storederived-20260922T231511/test-agent-store-usage-source pid 30901   bash tests/agents/test-agent-store-usage-source.sh
+  storederived-20260922T231511/test-carrete-store pid 31040   bash tests/agents/test-carrete-store.sh
+  storederived-20260922T231511/test-merge-sqlite-union pid 31068   bash tests/agents/test-merge-sqlite-union.sh
+  storederived-20260922T231511/test-model-catalog pid 31098   bash tests/agents/test-model-catalog.sh
+  storederived-20260922T231511/test-reconciliar-store-journal pid 31131   bash tests/agents/test-reconciliar-store-journal.sh
+  storederived-20260922T231511/test-reconciliar-store-status pid 31439   bash tests/agents/test-reconciliar-store-status.sh
+  storederived-20260922T231511/test-register-agent-session pid 31467   bash tests/agents/test-register-agent-session.sh
+  storederived-20260922T231511/test_derive_submodule pid 31625   PYTHONPATH=src .venv/bin/python tests/agents/test_derive_submodule.py
+  storederived-20260922T231511/test_document_root_default pid 31642   PYTHONPATH=src .venv/bin/python tests/agents/test_document_root_default.py
+  storederived-20260922T231511/test_readonly_connection pid 31661   PYTHONPATH=src .venv/bin/python tests/agents/test_readonly_connection.py
+  storederived-20260922T231511/test_register_session pid 31682   PYTHONPATH=src .venv/bin/python tests/agents/test_register_session.py
+  storederived-20260922T231511/test_retention_backfill pid 31700   PYTHONPATH=src .venv/bin/python tests/agents/test_retention_backfill.py
+  storederived-20260922T231511/test_stop_reason_provenance pid 31716   PYTHONPATH=src .venv/bin/python tests/agents/test_stop_reason_provenance.py
+  storederived-20260922T231511/test_store_dir_default pid 31733   PYTHONPATH=src .venv/bin/python tests/agents/test_store_dir_default.py
+  storederived-20260922T231511/test_store_home pid 31754   PYTHONPATH=src .venv/bin/python tests/agents/test_store_home.py
+  storederived-20260922T231511/test_store_import_without_roster pid 31769   PYTHONPATH=src .venv/bin/python tests/agents/test_store_import_without_roster.py
+  storederived-20260922T231511/test_table_census pid 31785   PYTHONPATH=src .venv/bin/python tests/agents/test_table_census.py
+  storederived-20260922T231511/test_task_status_vocabulary pid 31811   PYTHONPATH=src .venv/bin/python tests/agents/test_task_status_vocabulary.py
+  storederived-20260922T231511/test_usage_census_deviation pid 31839   PYTHONPATH=src .venv/bin/python tests/agents/test_usage_census_deviation.py
+  storederived-20260922T231511/test_finding_id_collision pid 31857   PYTHONPATH=src .venv/bin/python tests/hallazgo/test_finding_id_collision.py
+  storederived-20260922T231511/test-hook-error-log pid 31882   bash tests/hooks/test-hook-error-log.sh
+  storederived-20260922T231511/test_detect_dedicated_tool_usage pid 31907   PYTHONPATH=src .venv/bin/python tests/hooks/test_detect_dedicated_tool_usage.py
+  storederived-20260922T231511/test_task_lifecycle pid 31924   PYTHONPATH=src .venv/bin/python tests/hooks/test_task_lifecycle.py
+  storederived-20260922T231511/test-reach-pythonpath pid 31942   bash tests/lib/test-reach-pythonpath.sh
+  storederived-20260922T231511/test_residual_structure pid 32044   PYTHONPATH=src .venv/bin/python tests/measurement/test_residual_structure.py
+  storederived-20260922T231511/test_series pid 32060   PYTHONPATH=src .venv/bin/python tests/measurement/test_series.py
+  storederived-20260922T231511/test_trend pid 32077   PYTHONPATH=src .venv/bin/python tests/measurement/test_trend.py
+  storederived-20260922T231511/test_child_env pid 32093   PYTHONPATH=src .venv/bin/python tests/paths/test_child_env.py
+  storederived-20260922T231511/test_pending_work_telemetry pid 32288   PYTHONPATH=src .venv/bin/python tests/repo/test_pending_work_telemetry.py
+  storederived-20260922T231511/test_generate_bin pid 32303   PYTHONPATH=src .venv/bin/python tests/session/test_generate_bin.py
+  storederived-20260922T231511/test_agent_sessions pid 32319   PYTHONPATH=src .venv/bin/python tests/store/test_agent_sessions.py
+  storederived-20260922T231511/test-closure-graph pid 32347   bash tests/task/test-closure-graph.sh
+  storederived-20260922T231511/test-refresh-board pid 32501   bash tests/task/test-refresh-board.sh
+  storederived-20260922T231511/test_layer_axis pid 32526   PYTHONPATH=src .venv/bin/python tests/task/test_layer_axis.py
+  storederived-20260922T231511/test_layer_signals pid 32548   PYTHONPATH=src .venv/bin/python tests/task/test_layer_signals.py
+  storederived-20260922T231511/test_task_ids pid 32673   PYTHONPATH=src .venv/bin/python tests/task/test_task_ids.py
+  storederived-20260922T231511/test_task_source_citas pid 32690   PYTHONPATH=src .venv/bin/python tests/task/test_task_source_citas.py
+  storederived-20260922T231511/test-gitattributes pid 32707   bash tests/verify/test-gitattributes.sh
+  storederived-20260922T231511/test-post-commit-store-index pid 402     bash tests/verify/test-post-commit-store-index.sh
+  storederived-20260922T231511/test_pre_commit_hook pid 428     PYTHONPATH=src .venv/bin/python tests/verify/test_pre_commit_hook.py
+run-task-pool: lanzados 54 de 54; esperando en PRIMER PLANO (timeout 1200s)
+== 55 trabajos asentados ==
+OLVIDADO storederived-20260922T231511
+       | (vacío — no emitió nada)
+OK     storederived-20260922T231511_test-agent-store-auto-recall-limit
+       | == 1. poblar 25 hallazgos con el mismo término buscable ==
+       | == 2. --limit negativo (bug de invocación) NO vuelca el índice completo ==
+       |   ok    limit=-5 acotado (filas=1, <=20)
+       | == 3. --limit sobre 20 se acota a 20, no a 25 (todos los indexados) ==
+       |   ok    limit=500 acotado a 20
+       | == 4. --limit sano (3, el default del hook) sigue devolviendo 3 ==
+       |   ok    limit=3 sin cambios
+       | 
+       | 4 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-buscar-tareas
+       |   ok    total 0
+       |   ok    publica alcance medido
+       | == 10. --detalle imprime description, sesion y origen ==
+       |   ok    trae la description
+       |   ok    trae la sesion
+       |   ok    trae el origen
+       |   ok    sin --detalle no la trae
+       | 
+       | 22 ok · 0 fallas
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-clasificar-documentos
+       |   ok    7b sin filas duplicadas
+       |   ok    8 clasificar no borra la fecha
+       |   ok    9a publica denominador
+       |   ok    9b publica cuantas series salieron
+       |   ok    10 el plazo queda NULO (bloqueado por #760)
+       |   ok    11a reclasificar un arbol intacto no escribe
+       |   ok    11b un documento nuevo SI se escribe
+       | 
+       |   19 ok · 0 fallas
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-compara-antes-de-escribir
+       | == 5. CONTROL ANULADO — sin el guard cae el caso 2, y SÓLO él ==
+       |   ok    la copia anulada se pudo construir
+       |   ok    SIN guard, el pase idéntico SÍ mueve updated_at (el defecto)
+       |   ok    SIN guard, la fila ausente sigue saliendo 1 (no depende del guard)
+       | == 6. el resumen del reconciliador separa completar de retocar ==
+       |   ok    el primer pase sí completa
+       |   ok    el segundo pase reporta sin cambios, no completados
+       | 
+       | 13 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-fecha-apertura
+       | == 12. el conteo no cuenta dos veces la misma fila ==
+       |   ok    lo reportado == lo escrito
+       | == 13. el hook sella la fecha EXACTA, no una cota ==
+       |   ok    #700 sellada por hook
+       |   ok    #700 trae instante
+       | == 14. una ingestión masiva NO sella: su instante no es la apertura ==
+       |   ok    #800 NO sellada
+       | 
+       | 25 ok · 0 fallas
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-fecha-documento
+       |   ok    11b --dry-run nombra los sin cota
+       |   ok    12 --dry-run no escribe filas
+       |   ok    13a un barrido sobre arbol intacto no escribe
+       |   ok    13b un documento nuevo SI se escribe
+       |   ok    14 scanned_at ya no es columna de documents
+       |   ok    15a la migracion retira la columna de un store previo
+       |   ok    15b la fila previa sobrevive a la migracion
+       | 
+       |   26 ok · 0 fallas
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-fts-degradation
+       | ERROR: FTS5 no disponible en este SQLite — buscar-hallazgos requiere fts5 (ver _create_fts_schema)
+       | AVISO: FTS5 no disponible en este SQLite (no such module: modulo_inexistente_fts5) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+       |   ok    fts_available() es False cuando fts5 falla al crearse
+       |   ok    agent_sessions sigue aceptando escrituras sin fts5
+       |   ok    findings_history sigue aceptando escrituras sin fts5
+       |   ok    buscar-hallazgos sale con error controlado (exit 1), no traceback
+       |   ok    auto-recall (hook) queda en silencio, no revienta el turno
+       | 
+       | 9 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-reassignment-guard
+       |   ok    y la cita viajó CON su sujeto
+       |   ok    al ordinal nuevo (2), no al 1 que reciclaron
+       |   ok    y la segunda cita también, al ordinal 3
+       |   ok    ninguna cita quedó duplicada
+       |   ok    5d: el mutante SÍ anuló la línea (si no, el control no mide nada)
+       |   ok    5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)
+       |   ok    5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto
+       | 
+       | 18 ok · 0 falla(s)
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-render-tablero
+       |   ok    render sin sesión activa sale 0
+       |   ok    y sigue describiendo las dos sesiones
+       | == 7. store vacío: no revienta, deja constancia ==
+       |   ok    un store sin tareas sale 0
+       | == 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+       |   ok    cambiar el subject mueve la firma
+       |   ok    sin tocar nada la firma es estable
+       | 
+       | 14 ok, 4 fallos
+       | EXIT=1
+OK     storederived-20260922T231511_test-agent-store-sessions
+       | == 4. lo mismo para failed ==
+       |   ok    status sigue failed tras re-registro
+       | == 5. lo que SÍ debe seguir mutando: campos de registro (no de estado terminal) ==
+       |   ok    subagent_type se actualiza aun con status terminal
+       |   ok    session_id se actualiza aun con status terminal
+       | == 6. caso normal (sin terminal previo): running -> running SÍ actualiza status/output_key ==
+       |   ok    sin terminal previo, session_id sí se actualiza
+       | 
+       | 9 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-tareas
+       | == 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) ==
+       |   ok    la fila nueva trae submodule, no NULL
+       |   ok    y su procedencia dice que es el respaldo, no una clasificacion
+       | == 16. una capa ya clasificada SOBREVIVE al siguiente volcado ==
+       |   ok    la capa clasificada no se pisa
+       |   ok    ni su procedencia
+       |   ok    y el contenido SI se actualiza — el volcado sigue haciendo su trabajo
+       | 
+       | 33 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-transcript-path
+       |   ok    censa las clases presentes
+       | == Caso 5 (EL QUE DISCRIMINA): el agente NO figura entre las tareas de fondo
+       |   ok    declara que no figura
+       |   ok    y aun así censa las clases
+       | == Caso 6 (CONTROL ANULADO): sin el registro las dos colapsan
+       |   ok    anulado: con transcript deja de verse
+       |   ok    anulado: las 4 quedan indistinguibles
+       | 
+       | 13 ok · 0 falla(s)  (alcance medido: 13 aserciones)
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-type-source
+       | == Caso 7 (la otra mitad): sobre una fila SIN tipo, la procedencia si se rellena
+       |   ok    el tipo se rellena
+       |   ok    la procedencia se rellena
+       | == Caso 8 (CONTROL ANULADO): con la expresion vieja, el 6 CAE y el 7 SOBREVIVE
+       |   ok    anulado: el 6 CAE (la procedencia se pisa)
+       |   ok    anulado: el 7 SOBREVIVE (no dependia del arrastre)
+       |   ok    el fuente queda restaurado
+       | 
+       | 19 ok · 0 falla(s)  (alcance medido: 19 aserciones)
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-usage-columns
+       |   ok    rate_limit_type queda NULO: el real no trae quotaLimits
+       |   ok    client_version sale del nivel superior de la línea
+       |   ok    equiv_cost del transcript real
+       |   ok    turnos del transcript real
+       | == 10. denominador: la suma declara sobre cuántos mensajes se computó (#899) ==
+       |   ok    el alcance separa las dos causas del hueco
+       |   ok    transcript real: 10 de 16, todo el hueco es dedup
+       | 
+       | 31 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-agent-store-usage-source
+       |   ok    'viva' (running) sigue en NULL
+       | == Caso 6: control anulable — sin discriminador, el censo deja de separar
+       |   ok    con discriminador, el censo declara el n del agregado
+       |   ok    con discriminador, el censo nombra la fila irrecuperable
+       |   ok    anulado, el relleno reconstruye 'transcript' desde los tokens
+       |   ok    anulado, 'no_medido' NO vuelve: no es deducible de la tabla
+       |   ok    anulado, la fila perdida cae al cubo 'sin clasificar'
+       | 
+       | usage_source: 12 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-carrete-store
+       | == caso 3: CONTROL ANULADO — sin carrete, el dato se pierde ==
+       | == caso 4: un evento irreenviable se abandona al agotar los intentos ==
+       | == caso 5: el carrete no crece sin fin ==
+       | == caso 6: una escritura que funciona NO encola nada ==
+       | == caso 7: CONTROL ANULADO — el hook real encola su propio fallo ==
+       | == caso 8: una linea corrupta no tumba el drenado ==
+       | == caso 9: CONTROL ANULADO — el hook de CIERRE DE TURNO tambien drena ==
+       | 
+       | OK: 10 de 10 casos en verde
+       | EXIT=0
+OK     storederived-20260922T231511_test-closure-graph
+       |   FALLA: el nodo de rango alto y alcance cero gano al que desbloquea a cuatro
+       | caso 12: publica la ambiguedad del id de tarea, y sin store dice que no pudo
+       |   FALLA: el reporte no dice nada sobre la resolucion del id de tarea
+       |   FALLA: sin store devolvio '' en vez de None: un 0 seria verde falso
+       | caso 13: el default del store es absoluto y no depende del cwd
+       |   FALLA: TASK_STORE no es absoluta (): su resolucion depende del cwd
+       |   FALLA: desde otro cwd el default devolvio '': mide por cwd
+       | 
+       | FAIL: 13 casos, 19 fallo(s)
+       | EXIT=1
+OK     storederived-20260922T231511_test-gitattributes
+       |   esperado: si
+       |   obtenido: no
+       | FALLO: 6b. el repo ausente se nombra
+       |   esperado: si
+       |   obtenido: no
+       | FALLO: 6c. un repo ausente no hace fallar al gate
+       |   esperado: 0
+       |   obtenido: 1
+       | test-gitattributes: 14 de 21 aserciones en verde
+       | EXIT=1
+OK     storederived-20260922T231511_test-hook-error-log
+       |   ok    el éxito NO crea el log
+       | == 8. puente CLI: el comando ni siquiera se lanza — 127, como un shell ==
+       |   ok    binario ausente devuelve 127
+       |   ok    y aun así deja rastro
+       | == 9. puente CLI: uso incorrecto (sin --) devuelve 2 y no ejecuta nada ==
+       |   ok    sin separador -- devuelve 2
+       |   ok    y no registra nada (no llegó a ejecutar un comando)
+       | 
+       | 22 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-merge-sqlite-union
+       | test-merge-sqlite-union: 14 de 14 aserciones en verde
+       | EXIT=0
+OK     storederived-20260922T231511_test-model-catalog
+       | OK   por-modelo sin --store rehusa en vez de componer un default
+       | OK   por-modelo publica alcance medido con universo
+       | OK   sesion deduplica por message.id (2 turnos)
+       | OK   sesion valora la escritura al TTL real (1h) y la lectura a 0.25
+       | OK   sesion estima el coste de reescribir el contexto en el destino
+       | OK   sesion sin transcript: exit 2 y stdout vacío
+       | OK   el espejo NO lleva model_catalog.py, que es el sujeto del caso
+       | OK   agent_store sin model_catalog al lado: censo corre (exit 0) y declara SIN MEDIR
+       | test-model-catalog: 17 ok, 0 fallos (alcance medido: 17 aserciones)
+       | EXIT=0
+OK     storederived-20260922T231511_test-post-commit-store-index
+       | 
+       | == 5. un commit cuyo HEAD NO nombra el store: el hook se abstiene ==
+       |   ok    HEAD no registra el store
+       |   ok    el cambio preparado sigue preparado
+       | 
+       | == 6. el FILTRO por arbol de HEAD: preparado que el disco ya no tiene ==
+       |   ok    el contenido preparado sigue en el indice
+       | 
+       | resultado: 12 de 12 aserciones en verde
+       | EXIT=0
+OK     storederived-20260922T231511_test-reach-pythonpath
+       | === Caso 4: el prepend NO pisa lo que el llamador ya traia ===
+       |   ok    src va delante y lo del llamador sobrevive
+       | === Caso 5: dos source no duplican la entrada ===
+       |   ok    el guard de doble inclusion lo cubre
+       | === Caso 6: 0 guiones de PRODUCCION invocan un modulo que no podran importar ===
+       |   FALLO 1 guion(es) de produccion invocan un modulo que no podran importar:
+       |         .githooks/commit-msg -> src/verify/commit_identity.py
+       | 
+       | 6 casos: 5 ok, 1 fallos
+       | EXIT=1
+OK     storederived-20260922T231511_test-reconciliar-store-journal
+       | == caso 1: el journal declara result -> completed/journal ==
+       | == caso 2: el journal declara solo started -> failed/journal ==
+       | == caso 3: con sidecar manda la firma del transcript, no el journal ==
+       | == caso 4: CONTROL ANULADO — sin lector de journal caen 1 y 2, no el 3 ==
+       | == caso 5: el arbol REAL — ninguna fila ALCANZABLE queda sin procedencia ==
+       |   (store ausente en este arbol — caso omitido, no da verde falso)
+       | 
+       | OK: 4 de 4 casos en verde
+       | EXIT=0
+OK     storederived-20260922T231511_test-reconciliar-store-status
+       |   ok    el mismo transcript, ya en silencio, sí se cierra
+       | == 7. el discriminador es el sidecar, y se mide como tal ==
+       |   ok    _tiene_sidecar ve el .meta.json
+       |   ok    _tiene_sidecar es False cuando no está
+       | == 8. el ancla del store, que la mudanza a agents/ rompio ==
+       |   ok    store_db() sin --claude-dir resuelve a un archivo que existe
+       |   ok    el ancla es la raiz del proveedor, y sin scripts/ intermedio
+       | 
+       | 12 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test-refresh-board
+       | StopIteration
+       |   FALLA — el store conserva el sujeto acuñado: no se escribió nada
+       | caso 3 — --strict convierte la degradación en fallo para el llamador
+       |   FALLA — sale 5 con --strict
+       | caso 4 — estado REHUSADO: sin directorio vivo
+       |   ok   — sale 2 sin directorio vivo
+       |   ok   — sale 2 con un team que no existe
+       | 
+       | test-refresh-board: 3 ok, 7 falla(s)
+       | EXIT=1
+OK     storederived-20260922T231511_test-register-agent-session
+       |   ok    el prompt es el encargo, no el eco del tool_result
+       |   ok    el nivel de retención sigue saliendo del payload
+       |   ok    sin timestamps, duration_s queda NULL
+       |   ok    sin tool_use, tool_uses_total queda NULL
+       |   ok    sin mensaje de usuario, prompt queda NULL
+       |   ok    el hook guarda el conjunto de claves del payload
+       |   ok    un payload de otra forma da otro conjunto de claves
+       | 
+       | 25 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test_agent_sessions
+       | == 13. usage_census — rehúsa measure_columns vacío ==
+       |   ok    rehúsa measure_columns vacío
+       | == 14. usage_census — agregado es None (no cero fabricado) sin medidos ==
+       |   ok    sin filas medidas, aggregate es None
+       | == 15. usage_census — el agregado suma correctamente sobre los medidos ==
+       |   ok    n medidos
+       |   ok    suma de m1
+       | 
+       | 28 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test_child_env
+       |   ok    2.2 con composicion, el hijo alcanza
+       |   ok    2.3 y lo dice
+       | == 3. un PYTHONPATH previo se CONSERVA, no se pisa ==
+       |   ok    3.1 el arbol va primero
+       |   ok    3.2 y el previo sigue ahi
+       | == 4. es idempotente: componer dos veces no duplica ==
+       |   ok    4.1 una sola vez el arbol
+       | 
+       | 7 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test_derive_submodule
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     storederived-20260922T231511_test_detect_dedicated_tool_usage
+       | ok   test_stays_silent_on_sqlite_store
+       | ok   test_stays_silent_without_file_path
+       | ok   test_the_binary_exception_carries_its_own_weight
+       | ok   test_the_eof_exception_carries_its_own_weight
+       | ok   test_warns_on_edit_of_plain_text
+       | ok   test_warns_on_read_of_plain_text
+       | ok   test_warns_on_write_of_plain_text
+       | 
+       | 13 caso(s); 0 fallo(s)
+       | EXIT=0
+OK     storederived-20260922T231511_test_document_root_default
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     storederived-20260922T231511_test_finding_id_collision
+       |   ok   y el contenido converge
+       |   ok   el siguiente id no colisiona con la fila del store
+       |   ok   sin el store, el verificador lo ve libre (la mitad ciega)
+       |   ok   con el store, el verificador lo ve OCUPADO
+       |   ok   el .rst del consumidor sigue contando
+       |   FAIL no aparecen archivos nuevos en el árbol — ['/home/user/thyrox/.claude/build-logs/storederived-20260922T231511/test_child_env.log', '/home/user/thyrox/.claude/build-logs/storederived-20260922T231511/test_residual_structure.log', '/home/user/thyrox/.claude/build-logs/storederived-20260922T231511/test_series.log']
+       |   FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/jobs/store-derived-20260922T231511/outputs/salida.log']
+       | 
+       | 10 aprobada(s) · 2 fallida(s) (alcance medido: hallazgo_ids.next_id + agent_store agregar-hallazgo)
+       | EXIT=1
+OK     storederived-20260922T231511_test_generate_bin
+       |   ok   0 envoltorios .py fallan al cargar en el arbol real
+       |   ok   el envoltorio ejecuta el interprete del proveedor
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       | 
+       | 106 aprobada(s) · 4 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=1
+OK     storederived-20260922T231511_test_layer_axis
+       | test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+       | Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+       | test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+       | CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 0.045s
+       | 
+       | OK
+       | EXIT=0
+OK     storederived-20260922T231511_test_layer_signals
+       | .....
+       | ----------------------------------------------------------------------
+       | Ran 5 tests in 0.020s
+       | 
+       | OK
+       | EXIT=0
+OK     storederived-20260922T231511_test_pending_work_telemetry
+       | == C. Sólo telemetría NO es trabajo sin publicar ==
+       |   ok    el repo no entra en la lista
+       | == D. Un repo limpio sigue sin entrar ==
+       |   ok    nada que publicar
+       | == E. La línea NOMBRA la telemetría del repo que sí entra ==
+       |   ok    nombra el código
+       |   ok    y nombra la telemetría, no la esconde
+       | 
+       | RESULTADO: 8 ok, 0 fallo(s)
+       | EXIT=0
+OK     storederived-20260922T231511_test_pre_commit_hook
+       | ..........
+       | ----------------------------------------------------------------------
+       | Ran 10 tests in 3.393s
+       | 
+       | OK
+       | EXIT=0
+OK     storederived-20260922T231511_test_readonly_connection
+       | == 3. la conexion RECHAZA escribir ==
+       |   ok    SQLite rechaza el INSERT
+       | == 4. el censo enrutado: rehusa sobre un store ausente ==
+       |   ok    exit 2 — no midio, no publica conteo
+       |   ok    el mensaje nombra el store ausente
+       |   ok    el censo no fabrico el store
+       |   ok    el censo no fabrico ni el hogar
+       | 
+       | 9 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test_register_session
+       |   ok    lleva el destino inyectado
+       |   ok    y el agent-id del payload
+       |   ok    sin agent_id NO compone comando
+       | == D. La procedencia del tipo se distingue de su valor ==
+       |   ok    con valor, la procedencia es el payload
+       |   ok    con la clave vacía, el vacío viene del origen
+       |   ok    sin la clave, está ausente
+       | 
+       | 13 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test_residual_structure
+       |   ok   rehusa con mas rezagos que puntos
+       |   ok   rehusa una serie de residuos demasiado corta
+       |   ok   el ajuste lineal sobre el sujeto real deja estructura
+       |   ok   aun con un R2 mediocre, el Q lo supera con holgura
+       |   ok   dos series con R2 casi igual dan veredictos OPUESTOS
+       |   ok   la de residuos en rampa es la estructurada
+       |   ok   y la de residuos sin memoria no lo es
+       | 
+       | 17 aprobada(s) · 0 fallida(s) (alcance medido: residual_structure.py)
+       | EXIT=0
+OK     storederived-20260922T231511_test_retention_backfill
+       | == C. El conteo publica su alcance ==
+       |   ok    cuatro filas tocadas, no seis
+       | == D. Lo que NO se toca — el control que puede fallar ==
+       |   ok    usage_source NULL sigue NULL: «nadie ha pasado todavía»
+       |   ok    un agente vivo no recibe nivel
+       | == E. Idempotencia: un segundo pase no reescribe nada ==
+       |   ok    segunda pasada toca 0
+       | 
+       | RESULTADO: 10 ok, 0 fallo(s)
+       | EXIT=0
+OK     storederived-20260922T231511_test_series
+       |   ok   rehusa una serie un solo punto
+       |   ok   la ventana tiene que ser positiva
+       |   ok   los residuos son observado menos ajustado
+       |   ok   residuos con largo distinto rehusan
+       |   ok   el proceso de llegada real se agrega a nivel
+       |   ok   la suma de los conteos es el total de llegadas
+       |   ok   y aparecen dias en cero (el arbol no trabaja todos los dias)
+       | 
+       | 16 aprobada(s) · 0 fallida(s) (alcance medido: series.py)
+       | EXIT=0
+OK     storederived-20260922T231511_test_stop_reason_provenance
+       |   ok    total 0
+       |   ok    y los cubos suman 0
+       | 
+       | == 6. el barrido NO reclama una fila cuyo stop_reason ya se leyo ==
+       |   ok    la fila sana no se reclama
+       |   ok    stop_reason NULL leido por el extractor actual NO se reclama
+       |   ok    la que nunca se leyo si se reclama
+       | 
+       | resultado: 19 de 19 aserciones en verde
+       | EXIT=0
+OK     storederived-20260922T231511_test_store_dir_default
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 9 tests in 0.014s
+       | 
+       | FAILED (errors=3)
+       | EXIT=1
+OK     storederived-20260922T231511_test_store_home
+       | test_7_toda_tarea_del_hogar_tiene_cita_durable (__main__.TestHogarUnico.test_7_toda_tarea_del_hogar_tiene_cita_durable)
+       | Falla si una fila de `tasks` nace sin `citation_id`. ... ok
+       | test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar (__main__.TestHogarUnico.test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar)
+       | SONDA DE CONDUCTA: invoca el hook real y mira donde aterriza la fila. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 8 tests in 0.716s
+       | 
+       | OK
+       | EXIT=0
+OK     storederived-20260922T231511_test_store_import_without_roster
+       | test_store_import_without_roster:
+       |   ok    importar el store sin roster no falla
+       |   ok    --repo sin roster rehusa
+       |   ok    y el rechazo nombra THYROX_REACH_ROOTS
+       |   ok    con el roster declarado, --repo docs se acepta
+       | test_store_import_without_roster: 4 aserciones — 4 ok, 0 falla(s)
+       | EXIT=0
+OK     storederived-20260922T231511_test_table_census
+       | == 3. varias columnas: se devuelven TODAS, no la primera ==
+       |   ok    created_at y updated_at
+       | == 4. una tabla sin fecha lo dice, no falla ==
+       |   ok    lista vacia
+       | == 5. la ultima escritura sale del MAXIMO de todas ==
+       |   ok    gana el mayor entre las dos columnas
+       |   ok    sin columna de fecha devuelve None
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+OK     storederived-20260922T231511_test_task_ids
+       | El store del mapa se declara, no se deriva por aritmetica
+       | 68 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+OK     storederived-20260922T231511_test_task_lifecycle
+       |   File "/home/user/thyrox/src/paths/reach.py", line 892, in reach
+       |     return {**roots(start), **extra_roots()}
+       |               ^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+       |     return {r: root(r, start) for r in reach_roots(start)}
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     storederived-20260922T231511_test_task_source_citas
+       | 13 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+OK     storederived-20260922T231511_test_task_status_vocabulary
+       |   ok    y conserva sus tres filas
+       |   ok    y ahora rechaza lo de fuera
+       |   ok    y la clave compuesta sobrevive a la reconstruccion
+       | 
+       | == 5. la migracion es idempotente ==
+       |   ok    segunda pasada: las filas siguen
+       |   ok    y no quedo ninguna tabla de trabajo
+       | 
+       | resultado: 18 de 18 aserciones en verde
+       | EXIT=0
+OK     storederived-20260922T231511_test_trend
+       |   ok   con el punto mayor desviado elige la RECTA, no el exponencial
+       |   ok   y el R2 que publica es el de la escala original
+       |   ok   el exponencial ajusta PEOR en escala original aunque el log diga 0.98
+       |   ok   sobre una lineal ruidosa elige la recta
+       |   ok   y si el exponencial no se puede ajustar, elige la recta sin romper
+       |   ok   el sujeto real crece: pendiente positiva
+       |   ok   y su R2 esta en [0,1]
+       | 
+       | 20 aprobada(s) · 0 fallida(s) (alcance medido: trend.py)
+       | EXIT=0
+OK     storederived-20260922T231511_test_usage_census_deviation
+       | == 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==
+       |   ok    el bloque nombra su unidad
+       |   ok    y NO mezcla dinero en el mismo bloque
+       | == 5. publica equiv_cost, que es la unidad de coste que SE CITA ==
+       |   ok    el estable publica la desviacion de su equiv_cost
+       |   ok    el erratico publica la suya, un orden mayor
+       |   ok    misma media de equiv_cost: tampoco ahi discrimina
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+__BG_EXIT__=0

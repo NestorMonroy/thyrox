@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'countTokensWithAPI' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1258.00ms]
+exit=1

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerEnvelope.test.ts:
+69 |     )
+70 |   })
+71 | 
+72 |   test('omite la sesión y la cadena de saltos que no tienen forma válida', () => {
+73 |     expect(formatEnvelope({ body: 'b', fromSession: 'con espacio', hopChain: ['zz'] })).toBe(`<${ENVELOPE_TAG}>\nb\n</${ENVELOPE_TAG}>`)
+74 |     expect(formatEnvelope({ body: 'b', hopChain: [] })).toBe(`<${ENVELOPE_TAG}>\nb\n</${ENVELOPE_TAG}>`)
+                                                                                             ^
+error: expect(received).toBe(expected)
+
+@@ -1,2 +1,2 @@
+- "<cross-session-message>
++ "<cross-session-message from-session="con espacio">
+  b
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerEnvelope.test.ts:74:89)
+(fail) formatEnvelope (mYe/V) > omite la sesión y la cadena de saltos que no tienen forma válida [0.36ms]
+
+ 15 pass
+ 1 fail
+ 39 expect() calls
+Ran 16 tests across 1 file. [49.00ms]

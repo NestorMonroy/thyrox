@@ -1,0 +1,4 @@
+plan: emitio pese a 3 errores (3 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 3 error(es) que siguen vivos en su propio paquete
+EXIT=0

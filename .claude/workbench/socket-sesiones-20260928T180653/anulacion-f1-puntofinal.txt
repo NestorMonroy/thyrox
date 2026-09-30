@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketPath.test.ts:
+68 |   })
+69 | 
+70 |   test('un pipe con un solo segmento sí lo es; con segmentos de más o punto final, no', () => {
+71 |     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\inbox')).toBe(true)
+72 |     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\a\\b')).toBe(false)
+73 |     expect(isUsableLocalSocketAddress('\\\\.\\pipe\\inbox.')).toBe(false)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketPath.test.ts:73:63)
+(fail) isUsableLocalSocketAddress (IL) > un pipe con un solo segmento sí lo es; con segmentos de más o punto final, no [0.20ms]
+
+ 11 pass
+ 1 fail
+ 21 expect() calls
+Ran 12 tests across 1 file. [32.00ms]

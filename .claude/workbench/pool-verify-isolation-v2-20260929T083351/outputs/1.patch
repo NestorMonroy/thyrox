@@ -1,0 +1,69 @@
+diff --git a/src/session/item_worktree.sh b/src/session/item_worktree.sh
+index 07c3e9fa..8c8e1ea7 100755
+--- a/src/session/item_worktree.sh
++++ b/src/session/item_worktree.sh
+@@ -228,7 +228,12 @@ finalize() {
+         verdict=sin-cambios
+     elif [[ -z "$verify" ]]; then
+         verdict=sin-verificar
+-    elif (cd "$dir" && bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
++    # THYROX_ROOT y PYTHONPATH se REEMPLAZAN, no se anteponen: heredados del
++    # arbol principal (los exporta bin/headless-pool), un verify que resuelve
++    # codigo por ellos —p. ej. src/task/task_ids.py via paths/reach.py—
++    # mediria una mezcla de worktree y arbol principal en vez del worktree
++    # solo.
++    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
+         verdict=verificado
+     else
+         verdict=rechazado
+diff --git a/tests/session/test-headless-pool-worktree.sh b/tests/session/test-headless-pool-worktree.sh
+index c3e9cd60..8e5abe5d 100644
+--- a/tests/session/test-headless-pool-worktree.sh
++++ b/tests/session/test-headless-pool-worktree.sh
+@@ -142,5 +142,46 @@ run="$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out10" | sha1sum | cut -c1-12)
+ check "sin directorio de la ejecución al terminar" "$(test -e "$run" && echo si || echo no)" "no"
+ check "sin candado de la ejecución al terminar" "$(test -e "$run.lock" && echo si || echo no)" "no"
+ 
++echo "caso 10 — el verify corre aislado: cwd, THYROX_ROOT y PYTHONPATH del worktree del item, ciego a un arbol principal divergente"
++# Simula lo que `bin/headless-pool` exporta antes de invocar al pool:
++# THYROX_ROOT y PYTHONPATH del arbol PRINCIPAL. `FAKE_MAIN/src` es un enlace
++# al `src/` real —lo que necesita `pool_history.py` para que el propio pool
++# arranque— y `watched.txt` es un archivo PROPIO de ese arbol principal, con
++# un valor distinto del que lleva el repositorio que se aisla.
++FAKE_MAIN="$F/fakemain"
++mkdir -p "$FAKE_MAIN"
++ln -s "$RAIZ/src" "$FAKE_MAIN/src"
++printf 'main-value\n' > "$FAKE_MAIN/watched.txt"
++
++mkdir -p "$F/repo-iso"
++git init -q "$F/repo-iso"
++printf 'worktree-value\n' > "$F/repo-iso/watched.txt"
++git -C "$F/repo-iso" add -A
++git -C "$F/repo-iso" -c user.email=t@t -c user.name=t commit -q -m base
++
++OBS="$F/case10-observed"
++# El verify vive fuera del worktree —como uno real que invoca una herramienta
++# del arbol de thyrox— y deja sus observaciones en $OBS, lo unico que
++# sobrevive a que `finalize` retire el worktree.
++cat > "$F/verify-iso.sh" <<VERIFY
++#!/usr/bin/env bash
++printf '%s\n' "\$PWD" > "$OBS.cwd"
++printf '%s\n' "\$THYROX_ROOT" > "$OBS.root"
++printf '%s\n' "\$PYTHONPATH" > "$OBS.pythonpath"
++grep -qx worktree-value "\$THYROX_ROOT/watched.txt"
++VERIFY
++
++run_iso() { (cd "$F/repo-iso" && bash "$POOL" --prompt "$F/prompt.md" --model claude-sonnet-5 --isolation worktree "$@" 2>&1); }
++printf '%s\n' 'write extra.txt marker' | THYROX_ROOT="$FAKE_MAIN" PYTHONPATH="$FAKE_MAIN/src" \
++    run_iso --out "$F/out-iso" --verify "bash $F/verify-iso.sh" >/dev/null
++
++expected_dir="$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out-iso" | sha1sum | cut -c1-12)/1"
++check "el cwd del verify es el worktree del item" "$(cat "$OBS.cwd" 2>/dev/null)" "$expected_dir"
++check "THYROX_ROOT del verify es el worktree, no el arbol principal" "$(cat "$OBS.root" 2>/dev/null)" "$expected_dir"
++check "PYTHONPATH del verify es el src del worktree, sin ruta del arbol principal" \
++    "$(cat "$OBS.pythonpath" 2>/dev/null)" "$expected_dir/src"
++check "el veredicto lee el worktree y es ciego a un arbol principal con otro contenido" \
++    "$(cat "$F/out-iso/1.verdict" 2>/dev/null)" "verificado"
++
+ echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
+ [[ $failures -eq 0 ]]

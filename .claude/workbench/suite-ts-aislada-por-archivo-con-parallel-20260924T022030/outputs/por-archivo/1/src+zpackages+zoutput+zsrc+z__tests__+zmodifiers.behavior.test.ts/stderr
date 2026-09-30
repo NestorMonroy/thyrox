@@ -1,0 +1,35 @@
+
+src/packages/output/src/__tests__/modifiers.behavior.test.ts:
+85 | 
+86 |   test('isModifierPressed uses dynamic require, NOT top-level import', () => {
+87 |     // Pin: dynamic require defers loading until first call.
+88 |     // A top-level `import { isModifierPressed as ... } from '@thyrox/modifiers-napi'`
+89 |     // would load native ffi on every startup.
+90 |     expect(source).toMatch(
+                        ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('modifiers-napi'\)/
+Received: "export type ModifierKey = 'shift' | 'command' | 'control' | 'option'\n\nlet prewarmed = false\n\n/**\n * Pre-warm the native module by loading it in advance.\n * Call this early to avoid delay on first use.\n */\nexport function prewarmModifiers(): void {\n  if (prewarmed || process.platform !== 'darwin') {\n    return\n  }\n  prewarmed = true\n  // Load module in background\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    const { prewarm } = require('@thyrox/modifiers-napi') as { prewarm: () => void }\n    prewarm()\n  } catch {\n    // Ignore errors during prewarm\n  }\n}\n\n/**\n * Check if a specific modifier key is currently pressed (synchronous).\n */\nexport function isModifierPressed(modifier: ModifierKey): boolean {\n  if (process.platform !== 'darwin') {\n    return false\n  }\n  // Dynamic import to avoid loading native module at top level\n  const { isModifierPressed: nativeIsModifierPressed } =\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    require('@thyrox/modifiers-napi') as { isModifierPressed: (m: string) => boolean }\n  return nativeIsModifierPressed(modifier)\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/output/src/__tests__/modifiers.behavior.test.ts:90:20)
+(fail) modifiers — source pins > isModifierPressed uses dynamic require, NOT top-level import [0.27ms]
+113 |       /^import [\s\S]+? from ['"]modifiers-napi['"]/m,
+114 |     )
+115 |   })
+116 | 
+117 |   test('prewarm calls .prewarm() from the native module (NOT a noop wrapper)', () => {
+118 |     expect(source).toMatch(
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /const \{ prewarm \} = require\('modifiers-napi'\)[\s\S]+?prewarm\(\)/
+Received: "export type ModifierKey = 'shift' | 'command' | 'control' | 'option'\n\nlet prewarmed = false\n\n/**\n * Pre-warm the native module by loading it in advance.\n * Call this early to avoid delay on first use.\n */\nexport function prewarmModifiers(): void {\n  if (prewarmed || process.platform !== 'darwin') {\n    return\n  }\n  prewarmed = true\n  // Load module in background\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    const { prewarm } = require('@thyrox/modifiers-napi') as { prewarm: () => void }\n    prewarm()\n  } catch {\n    // Ignore errors during prewarm\n  }\n}\n\n/**\n * Check if a specific modifier key is currently pressed (synchronous).\n */\nexport function isModifierPressed(modifier: ModifierKey): boolean {\n  if (process.platform !== 'darwin') {\n    return false\n  }\n  // Dynamic import to avoid loading native module at top level\n  const { isModifierPressed: nativeIsModifierPressed } =\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    require('@thyrox/modifiers-napi') as { isModifierPressed: (m: string) => boolean }\n  return nativeIsModifierPressed(modifier)\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/output/src/__tests__/modifiers.behavior.test.ts:118:20)
+(fail) modifiers — source pins > prewarm calls .prewarm() from the native module (NOT a noop wrapper) [0.10ms]
+
+ 10 pass
+ 2 fail
+ 15 expect() calls
+Ran 12 tests across 1 file. [104.00ms]

@@ -1,0 +1,1 @@
+function bee(n){return yne().get(n??V())}

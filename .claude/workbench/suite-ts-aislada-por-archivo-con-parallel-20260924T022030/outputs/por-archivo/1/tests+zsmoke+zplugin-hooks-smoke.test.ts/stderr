@@ -1,0 +1,45 @@
+
+tests/smoke/plugin-hooks-smoke.test.ts:
+23 |       'UserPromptSubmit',
+24 |       'PreCompact',
+25 |       'Notification',
+26 |     ]
+27 |     for (const e of queried) {
+28 |       expect(r.dispatch[e]).toBeDefined()
+                                 ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:28:29)
+(fail) smoke:plugin dispatch path > dispatch probe ran for every queried event [1694.48ms]
+ 99 |   test('no dispatch query throws (every event handler reachable)', async () => {
+100 |     const r = await probeRuntime()
+101 |     const threwEvents = Object.entries(r.dispatch)
+102 |       .filter(([_, v]) => v.matched === -1)
+103 |       .map(([k]) => k)
+104 |     expect(threwEvents).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "Stop",
++   "SubagentStop",
++   "SessionStart",
++   "PreToolUse",
++   "UserPromptSubmit",
++   "PreCompact",
++   "Notification",
++ ]
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:104:25)
+(fail) smoke:plugin dispatch path > no dispatch query throws (every event handler reachable) [0.91ms]
+
+ 3 pass
+ 2 fail
+ 2 expect() calls
+Ran 5 tests across 1 file. [1.80s]

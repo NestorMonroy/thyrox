@@ -1,0 +1,21 @@
+Give the tool spans the session contract callers use
+
+Step 096 of the tsc-zero loop: 1779 -> 1767, accepted net, 9
+targets -> 0, nothing new.
+
+local-observability/spans.ts ported a handle API, endToolSpan(span,
+output), while toolExecution.ts, like the binary's session tracing,
+opens and closes tool spans without holding them:
+startToolBlockedOnUserSpan(), endToolSpan(result). Every caller used
+the ambient contract, so the module now keeps the open span per kind
+and closes it on end. One slot per kind; concurrent tools would share
+it, which the binary solves with async context and tracing here is
+off. toolSpans.test.ts measures the closes through a recording
+tracer; annulling the slot reset brings down exactly its case.
+
+The same step applies step 095's facade pattern to two more plugin
+facades: parseShellFrontmatter(value, source) and
+hasShownHintThisSession() now match what the binder injects.
+
+Memory (gate 3b): caller-contract-differs-from-module-api and
+facade-signature-diverges-from-injected-impl.

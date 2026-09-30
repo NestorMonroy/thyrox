@@ -1,0 +1,20 @@
+src/packages/config/settings/allErrors.ts(37,5): error TS2322: Type '(SettingsError | { file?: string | undefined; path: string; message: string; source?: string | undefined; })[]' is not assignable to type 'SettingsError[]'.
+  --- código src/packages/config/settings/allErrors.ts:27-39 ---
+     27    if (!getMcpErrors) {
+     28      // Host binding not installed yet (early bootstrap or headless runs
+     29      // that skip MCP). Return settings errors only.
+     30      return result
+     31    }
+     32    // 'dynamic' scope does not have errors returned; it throws and is set on cli startup
+     33    const scopes = ['user', 'project', 'local'] as const
+     34    const mcpErrors = scopes.flatMap(scope => getMcpErrors(scope))
+     35    return {
+     36      settings: result.settings,
+     37>     errors: [...result.errors, ...mcpErrors],
+     38    }
+     39  }
+  Type 'SettingsError | { file?: string | undefined; path: string; message: string; source?: string | undefined; }' is not assignable to type 'SettingsError'.
+    Type '{ file?: string | undefined; path: string; message: string; source?: string | undefined; }' is not assignable to type 'SettingsError'.
+      Types of property 'file' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,8 @@
+{
+  "id": "137",
+  "subject": "P3a coordination: clasificar producto/estado y declarar el hogar del ledger",
+  "description": "Primer tramo de P3 (analisis-orden-interno-de-p3). Mide 1 archivo, 1 cita ejecutable. Sirve de control del procedimiento de mudanza entero: comprueba si «portar + stub + reapuntar» aplica tal cual, o le falta un paso cero de clasificacion producto-vs-estado (DEC-01).",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

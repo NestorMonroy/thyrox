@@ -1,0 +1,13 @@
+asentado: rename-suites -> OK (1 de 3)
+asentado: root-tsc-ns -> OK (2 de 3)
+asentado: root-tsc-source -> OK (3 de 3)
+== 3 trabajos asentados ==
+OK     rename-suites
+       | __BG_EXIT__=0
+       memoria pico: 905664 KB (884 MB) · pared 144.53s
+OK     root-tsc-ns
+       | __BG_EXIT__=0
+       memoria pico: 2407020 KB (2351 MB) · pared 40.86s
+OK     root-tsc-source
+       | __BG_EXIT__=0
+       memoria pico: 2333884 KB (2279 MB) · pared 44.77s

@@ -1,0 +1,113 @@
+test_tsc_cycle:
+  ok    classify sale 0
+  ok    cada diagnóstico cae en una ruta y sólo en una
+  ok    la cola nombra definiciones y consumidores
+  ok    la línea de resumen lleva las tres rutas
+  ok    un log sin diagnósticos rehúsa con exit 2
+  ok    y nombra por qué, sin publicar un cero
+  ok    status sale 0
+  ok    cuenta las salidas contra los ítems
+  ok    separa cómo terminó cada agente
+  ok    una línea por lote con su antes y después
+  ok    el trabajo vivo según su archivo pid
+  ok    el trabajo terminado según su archivo pid
+  ok    sin archivo pid el estado es desconocido, no «terminado»
+  ok    reject sale 0
+  ok    revierte el archivo a HEAD
+  ok    el ledger registra el rechazo en revisión
+  ok    el «antes» del segundo lote es el final.log del primero
+  ok    sale de kept.txt
+  ok    un archivo que ningún lote aceptó rehúsa con exit 2
+  ok    y lo nombra
+  ok    las unidades son los módulos que no exportan lo que se les pide
+  ok    cada unidad lleva sus consumidores
+  ok    y los miembros que le faltan
+  ok    un especificador relativo se resuelve contra su consumidor: mismo módulo, una unidad
+  ok    y reúne a los consumidores de las dos formas de escribirlo
+  ok    un import de paquete y uno relativo al mismo archivo son una unidad
+modules plan: 2 módulo(s), 3 consumidor(es) -> /tmp/tmp8rekzb4a/step/items.txt
+  ok    plan escribe una línea por módulo
+  ok    la línea es unidad, ítem y consumidores
+  ok    el ítem lleva los diagnósticos del módulo, y sólo los suyos
+  ok    sin ningún módulo que portar, plan rehúsa en vez de escribir un lote vacío
+  ok    launch corre dos trabajos con thyrox-bg
+  ok    el pool es headless-pool con la plantilla de módulos, sobre items.txt
+  ok    el pool no fija --memfree: deriva el ítem y recibe la reserva del tsc vecino
+  ok    el pipeline mide en modo módulo las salidas de ese pool
+shared plan: 2 definición(es), 3 diagnóstico(s) -> /tmp/tmpnotatydb/step/items.txt
+  ok    una unidad por definición, de la más citada a la menos
+  ok    sus objetivos son los consumidores y las copias
+  ok    el ítem nombra las copias y sólo los diagnósticos que la citan
+shared plan: 1 definición(es), 2 diagnóstico(s) -> /tmp/tmpnotatydb/top/items.txt
+  ok    --top toma sólo la cabeza de la cola
+  ok    sin causas compartidas, rehúsa
+  ok    la ruta 2 usa su plantilla y mide de a una con la política neta
+  ok    la ruta de módulos no hereda la política neta
+  ok    la ruta 2 pasa los dos worktrees y un lote de su tamaño
+  ok    la de módulos no especula: sólo el primero
+  ok    lo mecánico va antes que todo
+  ok    después, los módulos sin portar
+  ok    después, la cola compartida
+  ok    al final, el pool por archivo
+  ok    sin diagnósticos no hay ruta
+  ok    una ruta agotada cede a la siguiente con trabajo
+  ok    y salta las que no tienen trabajo
+  ok    todas agotadas no es cero: lo dice
+  ok    la CLI acepta --exhausted
+  ok    todas agotadas rehúsa con exit 2 y lo nombra
+  ok    compare publica total, desaparecidos y nuevos
+  ok    un error que sólo cambió de línea no cuenta como nuevo
+  ok    un log que no existe rehúsa, no publica ceros
+  ok    la ruta determinista nombra la identidad, el proponente y tsc
+local plan: 2 ítem(s) sobre 1 archivo(s) -> /tmp/tmp9p41a9dx/step/items.txt
+  ok    un ítem por trozo de a lo sumo --size diagnósticos, sin excluidos ni ajenos a src/
+  ok    el ítem trae la línea encadenada y el código marcado con '>'
+  ok    sin diagnósticos locales, rehúsa sin items.txt
+  ok    la ruta 3 usa su plantilla versionada, mide por archivo y sin política neta
+  ok    la plantilla de la ruta 3 existe
+  ok    gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa
+local plan: 1 ítem(s) sobre 1 archivo(s) -> /tmp/tmpb8xdmukb/overlap/items.txt
+  ok    gate 4 descuenta las instancias en vuelo en otro paso, y no las planea
+sweep plan: 1 patrón(es) sobre 2 archivo(s) -> /tmp/tmpb8xdmukb/sweep/items.txt
+  ok    un ítem por patrón con sus archivos vivos
+  ok    el ítem trae señal, arreglo, dónde ya se aplicó y el código marcado
+  ok    sweep plan deja gate4.json con los patrones revisados
+  ok    la ruta sweep usa su plantilla y la unidad de varios archivos
+  ok    la plantilla del barrido existe
+  ok    next manda al barrido antes que a la ruta local
+local plan: 3 ítem(s) sobre 3 archivo(s) -> /tmp/tmpb8xdmukb/local2/items.txt
+  ok    excluidas con razón, la ruta local queda libre
+  ok    la confianza por archivo sale del ledger de la ruta por archivo, no de los barridos
+local plan: 3 ítem(s) sobre 3 archivo(s) -> /tmp/tmpb1pshkb8/step/items.txt
+  ok    sin salida posible (0 de 3) el archivo sale de la ruta local
+  ok    y queda en deferred.txt con sus cifras y la ruta alternativa
+  ok    con pocos intentos se sigue proponiendo, aunque su media esté en el umbral
+  ok    el resto va de mayor a menor probabilidad: el fácil primero, el sin historia después
+  ok    todo diferido: rehúsa, nombra el diferido y no crea el banco
+  ok    in_flight_files lee la primera columna de items.txt
+  ok    el paso siguiente no planea un archivo que el anterior tiene en vuelo
+  ok    el pool arranca ya, con thyrox-bg start, y queda en el ledger
+  ok    el pipeline NO arranca: se declara la arista --after-ok al pipeline anterior
+  ok    overlap fija el TTL del pool como launch, con el entorno por delante
+  ok    overlap también encadena su cierre a su propio pipeline
+  ok    el comando de la arista es el pipeline de la ruta 3, con su marcador
+  ok    sin items.txt del anterior no se sabe qué está en vuelo: rehúsa sin planear
+  ok    todo en vuelo: nada disjunto que adelantar, rehúsa
+  ok    launch pasa al pipeline el setup_id de su configuración (L02)
+  ok    con --dry-run no se registra nada en la corrida
+  ok    launch registra el pool y el pipeline: sin eso una arista no tiene predecesor
+  ok    launch encadena el cierre al pipeline: informe, commit, trinquete y push sin manos
+  ok    la cota es el ítem más largo del paso anterior, en minutos
+  ok    ítems de menos de 5 min: 5m, y el porqué
+  ok    un ítem de 12 min en el paso anterior: 1h
+  ok    activar 1h gana a la cota de 4.91 min, y lo dice
+  ok    la variable del origen gana a activar 1h
+  ok    forzar 5m gana a todo
+  ok    un valor ilegible rehúsa nombrando la variable
+  ok    sin entorno, la cota decide como antes
+  ok    sin paso anterior medido no se decide: lo decide el cliente
+  ok    el TTL decidido llega al pool
+  ok    sin TTL decidido el pool no lo fija
+  ok    el TTL es parte de la configuración del paso (setup_id)
+test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+EXIT=0

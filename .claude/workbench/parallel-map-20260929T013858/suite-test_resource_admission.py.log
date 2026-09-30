@@ -1,0 +1,20 @@
+caso 1 — el registro es el mismo que usaba la GPU
+  ok    gpu_monitor reutiliza el registro común
+  ok    y la decisión pura
+caso 2 — la reserva de un dueño muerto no compromete nada
+  ok    sólo queda la del vivo
+caso 3 — lo libre de RAM descuenta lo reservado que aún no reside
+  ok    10000 − (3000 − 1000)
+  ok    sin MemAvailable no hay margen
+caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 5 — soltar la reserva deja entrar al siguiente
+  ok    release sale 0
+  ok    el otro entra ahora
+caso 6 — muerto el dueño, su reserva deja de contar
+  ok    el vivo entra sin que nadie haya soltado
+caso 7 — el RSS de un árbol vivo se mide de /proc
+  ok    un proceso vivo reside algo
+  ok    un pid inexistente no suma
+test_resource_admission: 12 ok, 0 fallos

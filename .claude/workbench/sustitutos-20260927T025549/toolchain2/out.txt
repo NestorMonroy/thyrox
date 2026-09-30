@@ -1,0 +1,25 @@
+-- ROJO tests/lib/test-toolchain-parallel.sh
+  ok    la adquisicion existe
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    el rechazo nombra la variable de opt-in
+  ok    el rechazo no emite ningun conteo
+  ok    un binario presente pasa sin opt-in
+  ok    un instalador que miente NO se acepta: se re-comprueba el binario
+  ok    rehusa un parallel que no implementa GNU parallel
+  ok    la adquisicion deja la cita reconocida
+  FALLO el hogar deberia ser /home/user/thyrox-toolchain-wt/.parallel, dio '/home/user/thyrox/.parallel'
+  ok    ningun subdirectorio ignorado dentro de .claude/
+  ok    el hogar no es /tmp ni el del contenedor
+
+11 casos: 10 ok, 1 fallos
+-- ROJO tests/lib/test-toolchain-sh.sh
+  ok    el selector existe
+  FALLO el proveedor deberia usar /home/user/thyrox-toolchain-wt/.venv/bin/python, dio '/home/user/thyrox/.venv/bin/python'
+  ok    sin entorno rehusa y nombra uv sync
+  ok    el consumidor se invoca por su propio proyecto (api)
+  ok    proveedor y consumidor son entornos distintos
+  ok    un consumidor desconocido se rehusa
+
+6 casos: 5 ok, 1 fallos
+archivos=15 en_rojo=2 sin_medir=0 timeout=0
+EXIT=1

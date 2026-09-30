@@ -1,0 +1,46 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+sin cambios  agentic-reasoning
+sin cambios  agentic-validator
+sin cambios  ba-coordinator
+sin cambios  bpa-coordinator
+sin cambios  cp-coordinator
+sin cambios  deep-dive
+sin cambios  deep-review
+sin cambios  diagrama-ishikawa
+sin cambios  dmaic-coordinator
+sin cambios  gate-consistency-evaluator
+sin cambios  increment-acceptor
+sin cambios  lean-coordinator
+sin cambios  migration-porter
+sin cambios  packaging-porter-high
+sin cambios  packaging-porter-low
+sin cambios  pattern-harvester
+sin cambios  pdca-coordinator
+sin cambios  pm-coordinator
+sin cambios  pps-coordinator
+sin cambios  prueba-palancas
+sin cambios  retro-facilitator
+sin cambios  rm-coordinator
+sin cambios  rup-coordinator
+sin cambios  skill-generator
+sin cambios  sp-coordinator
+sin cambios  task-executor
+sin cambios  task-planner
+sin cambios  task-synthesizer
+sin cambios  tech-detector
+sin cambios  thyrox-coordinator
+sin cambios  workbench-instrumenter
+emit: 31 definición(es); 0 con diferencia (alcance medido: /home/user/thyrox/src/agents/definitions)
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 19 archivo(s) pedido(s))
+rutas: 342 pares de modelo, 1026 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
+cross-model-read: 0 lecturas cruzadas (superficie real auditada)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+[feature/thyrox-l6 9770e5d6] Port the effort display from the binary, schemas lazy
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 19 files changed, 674 insertions(+), 99 deletions(-)
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/subconjunto-pins-resultado.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/subconjunto-pins.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/probes/msg-config-effort.txt
+ create mode 100644 src/packages/agent/__tests__/effortDisplay.test.ts
+__BG_EXIT__=0

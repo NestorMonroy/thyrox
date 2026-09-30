@@ -1,0 +1,29 @@
+src/packages/agent/query.ts(1127,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:1117-1137 ---
+   1117                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1118                  preCompactContext,
+   1119              )
+   1120            }
+   1121  
+   1122            const postCompactMessages = buildPostCompactMessages(compacted)
+   1123            for (const msg of postCompactMessages) {
+   1124              yield msg
+   1125            }
+   1126            const next: State = {
+   1127>             messages: postCompactMessages,
+   1128              toolUseContext,
+   1129              autoCompactTracking: undefined,
+   1130              maxOutputTokensRecoveryCount,
+   1131              hasAttemptedReactiveCompact: true,
+   1132              maxOutputTokensOverride: undefined,
+   1133              pendingToolUseSummary: undefined,
+   1134              stopHookActive: undefined,
+   1135              stopHookBlockingCount: 0,
+   1136              turnCount,
+   1137              transition: { reason: 'reactive_compact_retry' },
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.

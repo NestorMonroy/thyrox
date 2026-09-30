@@ -1,0 +1,13 @@
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/plans-gXCJUN/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/plans-9blPNd/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/plans-9GbGyp/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+
+ 1192 pass
+ 0 fail
+ 2647 expect() calls
+Ran 1192 tests across 71 files. [5.67s]
+EXIT=0

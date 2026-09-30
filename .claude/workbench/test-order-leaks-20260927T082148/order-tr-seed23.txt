@@ -1,0 +1,4 @@
+src/packages/tool-registry/src/__tests__/ripgrep.test.ts
+src/packages/tool-registry/src/hooks/__tests__/appState.test.ts
+src/packages/tool-registry/src/suggestions/__tests__/skillUsageTracking.test.ts
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts

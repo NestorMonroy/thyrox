@@ -1,0 +1,1 @@
+SIB=app-host=@thyrox/voice,config=@thyrox/tool-registry,ide=@thyrox/repl,storage=@thyrox/permission,updater=@thyrox/repl,app-host=@thyrox/stdin-napi,cli=@thyrox/stdin-napi,output=@thyrox/modifiers-napi,tool-registry=@thyrox/image-processor-napi

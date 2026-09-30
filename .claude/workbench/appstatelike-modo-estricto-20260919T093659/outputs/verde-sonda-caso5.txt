@@ -1,0 +1,6 @@
+$ npx tsc -p probes/tsconfig.json --noEmit
+EXIT=0
+
+Los cinco casos compilan. Los @ts-expect-error de los casos 4 y 5 se
+RETIRARON tras medir que ambos pasan: dejarlos produce TS2578 y, peor,
+deja escrita una premisa que la medicion contradijo.

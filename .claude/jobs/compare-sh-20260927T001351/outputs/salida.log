@@ -1,0 +1,49 @@
+run-task-pool: 6 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T001351
+  job-20260927T001351/job-001 pid 15125   cd /home/user/thyrox/.claude/cache/worktree-head-baseline && PYTHONPATH=src timeout 600 bash tests/lib/test-toolchain-parallel.sh > /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/head-test-toolchain-parallel.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/head-test-toolchain-parallel.out
+  job-20260927T001351/job-002 pid 15172   cd /home/user/thyrox && PYTHONPATH=src timeout 600 bash tests/lib/test-toolchain-parallel.sh > /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/tree-test-toolchain-parallel.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/tree-test-toolchain-parallel.out
+  job-20260927T001351/job-003 pid 15242   cd /home/user/thyrox/.claude/cache/worktree-head-baseline && PYTHONPATH=src timeout 600 bash tests/verify/test-hallazgo-submodulo-baseline.sh > /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/head-test-hallazgo-submodulo-baseline.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/head-test-hallazgo-submodulo-baseline.out
+  job-20260927T001351/job-004 pid 15378   cd /home/user/thyrox && PYTHONPATH=src timeout 600 bash tests/verify/test-hallazgo-submodulo-baseline.sh > /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/tree-test-hallazgo-submodulo-baseline.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/tree-test-hallazgo-submodulo-baseline.out
+  job-20260927T001351/job-005 pid 15406   cd /home/user/thyrox/.claude/cache/worktree-head-baseline && PYTHONPATH=src timeout 600 bash tests/verify/test-script-naming.sh > /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/head-test-script-naming.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/head-test-script-naming.out
+  job-20260927T001351/job-006 pid 15442   cd /home/user/thyrox && PYTHONPATH=src timeout 600 bash tests/verify/test-script-naming.sh > /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/tree-test-script-naming.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/zero-errors-py-sh-20260926T223633/tree-test-script-naming.out
+run-task-pool: lanzados 6 de 6; esperando en PRIMER PLANO (timeout 700s)
+asentado: job-20260927T001351_job-001 -> OK (2 de 7)
+asentado: job-20260927T001351_job-002 -> OK (3 de 7)
+asentado: job-20260927T001351_job-003 -> OK (4 de 7)
+asentado: job-20260927T001351_job-004 -> OK (5 de 7)
+esperando: 5 de 7 asentados, 31s; vivos: job-20260927T001351_job-005 job-20260927T001351_job-006
+sonda job-20260927T001351_job-005: 15406 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-005: 15410 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-005: 15412 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-005: 15413 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-005: 15414 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260927T001351_job-005: 17960 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=1.01s
+sonda job-20260927T001351_job-006: 15442 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-006: 15446 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-006: 15447 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-006: 15449 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T001351_job-006: 15450 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260927T001351_job-006: 17970 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=0.83s
+asentado: job-20260927T001351_job-005 -> OK (6 de 7)
+asentado: job-20260927T001351_job-006 -> OK (7 de 7)
+== 7 trabajos asentados ==
+OLVIDADO job-20260927T001351
+       | (vacío — no emitió nada)
+OK     job-20260927T001351_job-001
+       | EXIT=0
+       memoria pico: 21232 KB (21 MB) · pared 0.37s
+OK     job-20260927T001351_job-002
+       | EXIT=0
+       memoria pico: 21080 KB (21 MB) · pared 0.44s
+OK     job-20260927T001351_job-003
+       | EXIT=0
+       memoria pico: 10500 KB (10 MB) · pared 0.20s
+OK     job-20260927T001351_job-004
+       | EXIT=0
+       memoria pico: 10484 KB (10 MB) · pared 0.14s
+OK     job-20260927T001351_job-005
+       | EXIT=0
+       memoria pico: 359452 KB (351 MB) · pared 37.36s
+OK     job-20260927T001351_job-006
+       | EXIT=0
+       memoria pico: 359608 KB (351 MB) · pared 38.26s
+__BG_EXIT__=0

@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+tests/typescript/buildJavascript.test.ts:
+pkg: repunte INERTE — 3 .js no emitido(s):
+  ./dist/index.js
+  ./dist/sub/reader.js
+  ./dist/index.js
+  Corre antes: typescript-build-javascript <paquete>
+
+ 10 pass
+ 0 fail
+ 25 expect() calls
+Ran 10 tests across 1 file. [229.00ms]
+buildJavascript: 0 paquete(s) con fallo (alcance medido: 51 paquete(s))
+buildJavascript: 0 paquete(s) con fallo (alcance medido: 51 paquete(s))
+carga: @thyrox/audio-capture-napi ok
+carga: @thyrox/color-diff-napi ok
+carga: @thyrox/image-processor-napi ok
+carga: @thyrox/modifiers-napi ok
+carga: @thyrox/ripgrep-napi ok
+carga: @thyrox/stdin-napi ok
+carga: @thyrox/transparent-napi ok
+carga: @thyrox/url-handler-napi ok
+dist: 0 archivo(s) .node copiado(s)
+__BG_EXIT__=0

@@ -1,0 +1,8 @@
+
+tests/smoke/live-fire-smoke.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) (unnamed) [1611.10ms]
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [1.72s]

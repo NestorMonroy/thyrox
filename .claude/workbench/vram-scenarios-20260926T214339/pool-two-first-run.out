@@ -1,0 +1,13 @@
+## verde
+OK   dos pools: los dos items terminan
+FALLA dos pools: nunca corren juntos (máximo simultáneo 1) — esperado '1', obtenido '2'
+OK   dos pools: el registro queda vacío
+aserciones: 76 de 77 · fallos: 1
+## anulación: un registro por pool
+FALLA admision: lo reservado por otro pool vivo no se vuelve a dar — esperado 'items=1 ok=0 fallidos=1', obtenido 'items=1 ok=1 fallidos=0'
+FALLA reserva: el registro queda vacio al terminar — esperado '0', obtenido ''
+FALLA dos pools: nunca corren juntos (máximo simultáneo 1) — esperado '1', obtenido '2'
+FALLA dos pools: el registro queda vacío — esperado '0', obtenido ''
+aserciones: 73 de 77 · fallos: 4
+restaurado
+__BG_EXIT__=0

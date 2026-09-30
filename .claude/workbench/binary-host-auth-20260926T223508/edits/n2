@@ -1,0 +1,6 @@
+  /** Llave explícita: gana a cualquier fuente del entorno. */
+  apiKey?: string
+  /** El entorno del que se resuelve la credencial (por defecto, `process.env`). */
+  env?: Record<string, string | undefined>
+  readFd?: ReadFd
+  baseUrl?: string

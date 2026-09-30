@@ -1,0 +1,18 @@
+Give the unzipFile facade its injected contract
+
+Step 095 of the tsc-zero loop: 1787 -> 1779, accepted net.
+
+The plugin _deps.ts facade declared unzipFile(zipPath, destDir):
+Promise<void>, as the source does, while the binder injects
+config/dxt/zip.ts's unzipFile(zipData: Buffer):
+Promise<Record<string, Uint8Array>>, which is what its three callers
+use. At run time it worked, since the binder forwards the buffer as
+the first argument, but every caller was TS2554. The default, the
+facade and the binder now declare the injected contract; the call is
+the same.
+
+Two callers' diagnostics show through now (a Uint8Array passed where
+a Buffer is expected, an unknown mode map). They are in other files
+and stay as the next work.
+
+Memory (gate 3b): facade-signature-diverges-from-injected-impl.

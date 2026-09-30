@@ -1,0 +1,18 @@
+=== LINEA BASE (sin anular) ===
+  (vacia = verde)
+
+=== ANULACION 1: SOURCE_DIRS vuelve a las cinco carpetas ===
+  FAIL bin/hallazgo_ids esta en el plan
+  FAIL bin/hallazgo_ids existe en el arbol
+  FAIL bin/reach resuelve a la mitad Python, no a la de shell
+  FAIL bin/task_ids esta en el plan
+  FAIL bin/task_ids existe en el arbol
+  FAIL ningun entrypoint de src/ queda fuera del universo de SOURCE_DIRS
+
+=== ANULACION 2: is_shell_entrypoint sin el bit ejecutable ===
+  FAIL avisa cuando el destino no esta en PATH
+  FAIL un .sh SIN bit ejecutable es biblioteca, no entrypoint
+  FAIL y da la linea export para arreglarlo
+
+restaurado:  1 file changed, 66 insertions(+), 7 deletions(-)
+  fuente identica al intacto

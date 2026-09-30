@@ -1,0 +1,15 @@
+=== ANULADO (retirado el sys.path.insert) ===
+  File "/home/user/thyrox/src/agents/register_session.py", line 44, in <module>
+    from hooks.error_log import run_and_log  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'hooks'
+
+=== censo CON la anulacion (el control positivo real) ===
+cargan por ruta: 38 | SIN poner src/ en sys.path: 3
+   tests/agents/test_balanced_block.py
+   tests/agents/test_final_message_closing.py
+   tests/verify/test_commit_message.py
+
+=== RESTAURADO ===
+
+14 ok, 0 fallos

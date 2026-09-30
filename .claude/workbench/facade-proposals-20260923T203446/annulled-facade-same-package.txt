@@ -1,0 +1,52 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/facadeProposals.test.ts:
+69 |       '/p/use.ts': "import { helper } from './barrel.js'\nexport const n = helper()\n",
+70 |       '/q/package.json': '{"name": "q"}\n',
+71 |       '/q/impl.ts': 'export function helper(): number { return 1 }\n',
+72 |     }
+73 |     const rows = proposeInMemory(other, Object.keys(other).filter(f => f.endsWith('.ts')), '/p', OPTIONS)
+74 |     expect(rows.filter(row => row.proposer === 'ts2305-facade')).toEqual([])
+                                                                      ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   {
++     "bases": {
++       "barrel.ts": "ba69e0e69e1a168631af89a0a584d0fe278e77ec2f44490334e7c552a6038db9",
++     },
++     "edits": [
++       {
++         "file": "barrel.ts",
++         "length": 0,
++         "newText": 
++ "export { helper } from '../q/impl.js'
++ "
++ ,
++         "start": 23,
++       },
++     ],
++     "files": [
++       "barrel.ts",
++     ],
++     "proposal_id": "ts2305-facade:barrel.ts",
++     "proposer": "ts2305-facade",
++     "targets": [
++       "use.ts: TS2305: Module '"./barrel.js"' has no exported member 'helper'.",
++     ],
++   },
++ ]
+
+- Expected  - 1
++ Received  + 26
+
+      at <anonymous> (/home/user/thyrox/tests/verify/facadeProposals.test.ts:74:66)
+(fail) ts2305 facades > a declaration in another package is not re-exported [631.17ms]
+
+ 12 pass
+ 1 fail
+ 36 expect() calls
+Ran 13 tests across 2 files. [12.83s]
+
+[exit=1]

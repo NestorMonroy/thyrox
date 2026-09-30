@@ -1,0 +1,39 @@
+== 1: el servidor ignora credentialsOf
+   (src/proxy/server.ts)
+(fail) startProxyServer: credenciales del store de conexiones > un upstream sin credenciales declaradas usa las de su proveedor en el store [5.84ms]
+(fail) startProxyServer: credenciales del store de conexiones > el store se relee en cada petición: una conexión nueva sirve sin reiniciar [8.19ms]
+(fail) startProxyServer: credenciales del store de conexiones > rateLimit protege también las credenciales de clave de API del store [5.54ms]
+ 66 pass
+ 3 fail
+== 2: sin store
+   (src/proxy/startServer.ts)
+(fail) startProxyServer: credenciales del store de conexiones > un upstream sin credenciales declaradas usa las de su proveedor en el store [6.97ms]
+(fail) startProxyServer: credenciales del store de conexiones > el store se relee en cada petición: una conexión nueva sirve sin reiniciar [8.43ms]
+(fail) startProxyServer: credenciales del store de conexiones > rateLimit protege también las credenciales de clave de API del store [6.75ms]
+ 66 pass
+ 3 fail
+== 3: declaradas no ganan
+   (src/proxy/startServer.ts)
+(fail) startProxyServer: credenciales del store de conexiones > las credenciales declaradas ganan sobre el store [6.96ms]
+ 68 pass
+ 1 fail
+== 4: filtro por proveedor
+   (src/proxy/startServer.ts)
+(fail) startProxyServer: credenciales del store de conexiones > un upstream sin credenciales declaradas usa las de su proveedor en el store [6.87ms]
+(fail) startProxyServer: credenciales del store de conexiones > el store se relee en cada petición: una conexión nueva sirve sin reiniciar [6.70ms]
+(fail) startProxyServer: credenciales del store de conexiones > rateLimit protege también las credenciales de clave de API del store [5.49ms]
+ 66 pass
+ 3 fail
+== 5: store leído una vez
+   (src/proxy/startServer.ts)
+ 69 pass
+ 0 fail
+== 6: sin límites del store
+   (src/proxy/startServer.ts)
+(fail) startProxyServer: credenciales del store de conexiones > rateLimit protege también las credenciales de clave de API del store [48.82ms]
+ 68 pass
+ 1 fail
+== restaurado
+ 69 pass
+ 0 fail
+__BG_EXIT__=0

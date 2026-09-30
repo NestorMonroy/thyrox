@@ -1,0 +1,59 @@
+18 — cronTasksCore: el bloqueo declarado es falso, igual que el de su hermano
+==============================================================================
+2026-09-18T18:14:04   (la mitad ROJA, antes de tocar nada)
+
+EL SUJETO
+  src/packages/agent/internal/cronTasksCore.ts       235 lineas
+  ccnmt: packages/agent/internal/cronTasksCore.ts    464 lineas
+
+LO QUE EL PUERTO DECLARA, VERBATIM
+  «Recorte declarado: la fuente trae ademas ocho funciones de E/S de archivo
+   — getCronFilePath, readCronTasks, hasCronTasksSync, writeCronTasks,
+   addCronTask, removeCronTasks, markCronTasksFired, listAllCronTasks — que
+   dependen de getAgentHostBindings() (ccnmt: packages/agent/host.ts),
+   INEXISTENTE EN ESTE ARBOL.»
+
+LA PREMISA, MEDIDA
+  src/packages/agent/host.ts:266   export function getAgentHostBindings()
+  -> el simbolo EXISTE. La premisa es falsa.
+
+  Y la pregunta correcta no es si el simbolo existe sino si da los miembros
+  que las ocho funciones consultan — significante contra significado. Los
+  cinco, y donde los declara cada arbol:
+
+    miembro                   nuestro          fuente
+    getProjectRoot            contracts.ts:56  contracts.ts:56
+    getSessionCronTasks       contracts.ts:68  contracts.ts:68
+    addSessionCronTask        contracts.ts:69  contracts.ts:69
+    removeSessionCronTasks    contracts.ts:70  contracts.ts:70
+    logDebug                  host.ts:58       (idem)
+
+  Los cuatro de cron viven en contracts.ts, NO en host.ts — que es donde el
+  docstring dice que viven. Un grep sobre host.ts devuelve 0 para los cuatro
+  EN LOS DOS ARBOLES: el instrumento equivocado habria CONFIRMADO el bloqueo
+  en vez de refutarlo.
+
+  Los cinco son OPCIONALES y las ocho funciones los consultan con encadenado
+  opcional mas respaldo (process.cwd(), 0, lista vacia), asi que el porte no
+  depende de que el anfitrion los instale.
+
+LOS TRES RELATIVOS QUE LA FUENTE IMPORTA — los tres presentes
+  ./cronCore.js        -> src/packages/agent/internal/cronCore.ts
+  ../host.js           -> src/packages/agent/host.ts
+  ../internalUtils.js  -> src/packages/agent/internalUtils.ts
+                          (isFsInaccessible, jsonStringify, safeParseJSON: 1 c/u)
+
+LOS OCHO EXPORTS AUSENTES, medidos con comm sobre los export de cada archivo
+  addCronTask · getCronFilePath · hasCronTasksSync · listAllCronTasks
+  markCronTasksFired · readCronTasks · removeCronTasks · writeCronTasks
+
+Y ALGO QUE loopSentinelCore NO TENIA
+  Aquel declaraba su recorte con la cadena «PORTE PARCIAL declarado», que era
+  greppeable. Este dice «Porte PARCIAL» y «Recorte declarado», asi que el grep
+  de la tarea hermana —que busca «no existe en este arbol»— NO lo encuentra:
+  por eso quedo abierto mientras aquel se cerraba.
+
+Metrica: exports de nivel superior por archivo (comm), presencia de cada
+  simbolo por grep anclado, y el archivo donde cada miembro se declara.
+Ciega a: si las ocho funciones, una vez portadas, se COMPORTAN como las de la
+  fuente — eso lo mide su suite, no este censo.

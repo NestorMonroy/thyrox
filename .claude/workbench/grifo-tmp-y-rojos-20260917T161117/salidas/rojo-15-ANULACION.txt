@@ -1,0 +1,21 @@
+=== Caso 1: el guion existe y parsea ===
+  OK   parsea
+=== Caso 2 (H-DOCS-469a): --list declara la lista y NO escribe ===
+  OK   lista por clase, destino intacto
+=== Caso 3: --dry-run no escribe ===
+  OK   destino intacto tras --dry-run
+=== Caso 4: precedencia --path > CLAUDE_CONFIG_DIR > ~/.claude ===
+  OK   --path gana a CLAUDE_CONFIG_DIR
+  OK   CLAUDE_CONFIG_DIR gana al default
+=== Caso 5: por omision COPIA, no enlaza ===
+  OK   archivo real, no enlace
+=== Caso 6: --link enlaza ===
+  OK   enlace simbolico
+=== Caso 7 (EL QUE DISCRIMINA, H-DOCS-469b): colision con contenido distinto ===
+  FAIL rc=0 · contenido intacto
+=== Caso 8: colision con contenido IDENTICO no rehusa (idempotente) ===
+  OK   segunda pasada limpia (rc=0)
+=== Caso 9: el resumen declara su denominador ===
+  OK   publica el conteo copiado
+
+9 ok, 1 fallos (alcance medido: 10 aserciones sobre /home/user/thyrox/src/session/instalar-config-usuario.sh)

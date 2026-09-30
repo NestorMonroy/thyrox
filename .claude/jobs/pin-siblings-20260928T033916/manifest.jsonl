@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 --timeout 1200 .claude/cache/pin-cmds.txt", "started_at": "2026-09-28T03:39:16+00:00"}

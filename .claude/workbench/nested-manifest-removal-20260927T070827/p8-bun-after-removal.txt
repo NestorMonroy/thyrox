@@ -1,0 +1,7 @@
+## cwd=src/packages/cli, bun install --dry-run (despues de retirar)
+ @thyrox/paths@workspace:src/packages/paths
+ @thyrox/store@workspace:src/packages/store
+[16.00ms] done
+## raiz: bun install --frozen-lockfile
+
+Checked 674 installs across 613 packages (no changes) [20.00ms]

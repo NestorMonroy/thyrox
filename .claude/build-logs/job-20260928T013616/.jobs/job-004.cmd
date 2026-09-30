@@ -1,0 +1,1 @@
+python3 tests/task/test_census_open_tasks.py

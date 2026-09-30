@@ -1,0 +1,17 @@
+caso 1 — estado PLENO: sin citas acuñadas, el volcado no mueve nada
+  ok   — sale 0
+  ok   — el .rst NO lleva el aviso de degradación (control positivo)
+  ok   — el .rst incorporó la tarea viva
+caso 2 — estado DECLARADO: una cita acuñada cuyo sujeto cambia debajo
+  ok   — sale 0: el tablero SÍ se produce, degradado y declarado
+  ok   — el .rst lleva el aviso de degradación
+  ok   — el aviso NOMBRA la cita que habría cambiado de sujeto
+  ok   — el store conserva el sujeto acuñado: no se escribió nada
+caso 3 — --strict convierte la degradación en fallo para el llamador
+  ok   — sale 5 con --strict
+caso 4 — estado REHUSADO: sin directorio vivo
+  ok   — sale 2 sin directorio vivo
+  ok   — sale 2 con un team que no existe
+
+test-refresh-board: 10 ok, 0 falla(s)
+EXIT=0

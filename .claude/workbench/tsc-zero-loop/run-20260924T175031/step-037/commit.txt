@@ -1,0 +1,10 @@
+Make Message the union of its variants
+
+Thirty-seventh step of the agent-compiler loop, accepted-net
+2878 -> 2774, targets 114 -> 23. Message was one object type with an
+optional message field, so checking type === "assistant" never
+narrowed it and every read of .message after the check was "possibly
+undefined". As in the source, Message is now the union of UserMessage,
+AssistantMessage, AttachmentMessage, ProgressMessage, SystemMessage and
+the two grouping kinds, each built on MessageBase; the user and
+assistant variants keep message required.

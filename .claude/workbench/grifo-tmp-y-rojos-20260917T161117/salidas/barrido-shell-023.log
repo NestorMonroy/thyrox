@@ -1,0 +1,2 @@
+VERDE tests/agents/test-reconciliar-store-status.sh
+EXIT=0

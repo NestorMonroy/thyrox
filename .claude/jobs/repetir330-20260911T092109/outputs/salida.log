@@ -1,0 +1,5 @@
+rep1  test-process-group: 12 aserciones — 10 ok, 2 falla(s)  CAEN:; cmd_kill lee el cadaver como muerto, no lo señala; el ledger se suelta: el turno no queda bloqueado por un cadaver
+rep2  test-process-group: 12 aserciones — 10 ok, 2 falla(s)  CAEN:; cmd_kill lee el cadaver como muerto, no lo señala; el ledger se suelta: el turno no queda bloqueado por un cadaver
+rep3  test-process-group: 12 aserciones — 10 ok, 2 falla(s)  CAEN:; cmd_kill lee el cadaver como muerto, no lo señala; el ledger se suelta: el turno no queda bloqueado por un cadaver
+restaurado: identico
+__BG_EXIT__=0

@@ -1,0 +1,19 @@
+Align provider pins with the binary; widen tsc scope
+
+The seven pin suites compared our source against literal shapes of
+the 2.1.275 binary: the scoped package names, the one-line header
+quote, the feature-emitter call sites of the OAuth exchange, and the
+apiKeyHelper run with a ten-minute timeout and no throw. Scope
+omission on refresh now follows the locked subscription type and
+client id, as the binary does. The seven suites pass: 95 pass, 0 fail.
+
+The typecheck gate only woke for files under cli/, but its project
+compiles every sibling package through the links. Two commits that
+touched config/ and agent/ went through exempt while the same count
+rose from 2375 to 2428. The scope is now the whole package tree; the
+suite adds the sibling case, and reverting the fix fails exactly it.
+
+The 53 new errors are all in agent/QueryEngine.ts, which became
+reachable when the ./query-engine export was added: debt that existed
+and was not measured, not debt created. The baseline records it;
+bringing it down is open work.

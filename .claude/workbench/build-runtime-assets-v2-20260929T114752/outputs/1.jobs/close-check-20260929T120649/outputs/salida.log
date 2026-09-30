@@ -1,0 +1,7 @@
+5 ok: el segundo build no hereda salidas del anterior
+1 ok: 31 de 31 prompt(s) leídos desde dist sin src/, mismo conjunto por nombre
+2a ok: models.jsonl junto a sus 1 lector(es)
+2b ok: models.js carga desde dist sin el fuente de agent (20 modelos)
+3 ok: sin rutas del fuente horneadas; bridge.py junto a sus 1 lector(es)
+3b ok: 2771 archivo(s) de dist idénticos construyendo en /w y en /v
+__BG_EXIT__=0

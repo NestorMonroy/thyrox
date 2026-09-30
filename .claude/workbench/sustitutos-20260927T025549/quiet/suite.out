@@ -1,0 +1,44 @@
+== TypeScript (bun) ==
+pass=15660 fail=0 errors=0 crashes=0 files=1057 failed=0
+
+== Python (stdlib) ==
+-- UNMEASURED (exit 2) tests/session/hardware/test_gpu_admission_real.py
+  (269 suite(s) de Python, 0 en rojo, 1 sin medir)
+
+== shell (bash) ==
+-- UNMEASURED (exit 2) tests/session/hardware/test-gpu-pools-real.sh
+-- FAIL tests/session/test-arranque-de-clon.sh
+test-arranque-de-clon: 20 de 21 aserciones en verde
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+BrokenPipeError: [Errno 32] Broken pipe
+FALLO: 1b-ii. --repo cita al consumidor
+  esperado: si
+  obtenido: no
+-- FAIL tests/task/test-closure-graph.sh
+caso 1: el guion existe y responde --help
+caso 2: extrae la arista en las seis formas de declarar sucesor
+caso 3: no confunde una cita de tarea con una declaracion de sucesor
+caso 4: el ranking publica cuantos nodos midio
+caso 5: un ciclo termina, y da el mismo resultado dos veces
+caso 6: sin arista de vuelta, el reporte declara que el cero no es evidencia
+  FALLA: publico ciclos: 0 sin declarar que el grafo no puede tenerlos
+caso 7: con arista de vuelta, el reporte publica su cobertura
+caso 8: ordena por lo que desbloquea, no por el numero de la tarea
+caso 9: un DESCONOCIDO va antes que un pendiente comun del mismo peso
+caso 10: un nodo aislado recibe masa, que es lo que hace el reparto del sumidero
+caso 11: ordena por alcanzabilidad cuando el rango dice lo contrario
+caso 12: publica la ambiguedad del id de tarea, y sin store dice que no pudo
+  FALLA: el reporte no dice nada sobre la resolucion del id de tarea
+caso 13: el default del store es absoluto y no depende del cwd
+
+FAIL: 13 casos, 2 fallo(s)
+  (130 suite(s) de shell, 2 en rojo, 1 sin medir)
+
+== alcance ==
+  TypeScript: 1057 archivo(s), en verde
+  Python: 269 suite(s), 0 en rojo, 1 sin medir
+  shell: 130 suite(s), 2 en rojo, 1 sin medir
+
+FALLA: 1 lengua(s) en rojo
+EXIT=1

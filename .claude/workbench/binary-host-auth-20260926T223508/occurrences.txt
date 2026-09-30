@@ -1,0 +1,28 @@
+## CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+./chunk-wbbthbh9.js:5
+./chunk-vhbjswa3.js:1
+./chunk-t6d3nxvc.js:1
+./chunk-qd0gs1zk.js:1
+./chunk-nqzjyz06.js:1
+./chunk-hypaqazg.js:1
+## CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST
+./chunk-wbbthbh9.js:4
+./chunk-t6d3nxvc.js:2
+./chunk-d8x04jes.js:2
+./chunk-c9jscxk0.js:2
+./chunk-a0qaj00r.js:2
+./chunk-3qgqp8m1.js:2
+## CLAUDE_CODE_HOST_CREDS_FILE
+./chunk-t6d3nxvc.js:2
+./chunk-c9jscxk0.js:2
+./chunk-vt4nyj5v.js:1
+./chunk-n8qypqam.js:1
+./chunk-h56wjcte.js:1
+./chunk-h2b8jz8j.js:1
+## ANTHROPIC_UNIX_SOCKET
+./chunk-wbbthbh9.js:5
+./chunk-c9jscxk0.js:4
+./chunk-t6d3nxvc.js:2
+./chunk-cspjdhfb.js:2
+./chunk-8aspyxzh.js:2
+./chunk-79j763ea.js:2

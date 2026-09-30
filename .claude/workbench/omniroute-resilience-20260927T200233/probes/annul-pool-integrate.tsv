@@ -1,0 +1,4 @@
+noclash	s/\[\[ -n "\$file" \&\& -n "\${touched\[\$file\]:-}" \]\] \&\& { clash=/false \&\& { clash=/
+unverifiedalways	s/sin-verificar) \[\[ -n "\$unverified" \]\] ||/sin-verificar) true ||/
+noverified	s/^        verificado) ;;/        verificado) continue ;;/
+exitcode	s/^\[\[ \$((conflicts + unapplicable)) -eq 0 \]\]/true/

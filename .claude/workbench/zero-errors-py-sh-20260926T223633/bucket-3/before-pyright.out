@@ -1,0 +1,233 @@
+/home/user/thyrox/src/hooks/bridge_hooks.py
+  /home/user/thyrox/src/hooks/bridge_hooks.py:156:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/hooks/compact_context.py
+  /home/user/thyrox/src/hooks/compact_context.py:119:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/hooks/detect_literal_replacement.py
+  /home/user/thyrox/src/hooks/detect_literal_replacement.py:83:86 - error: "end" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/hooks/flow_selection.py
+  /home/user/thyrox/src/hooks/flow_selection.py:178:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/hooks/maintenance_chain.py
+  /home/user/thyrox/src/hooks/maintenance_chain.py:122:29 - error: Argument of type "object | TextIO | Any" cannot be assigned to parameter "file" of type "SupportsWrite[str] | None" in function "print"
+    Type "object | TextIO | Any" is not assignable to type "SupportsWrite[str] | None"
+      Type "object" is not assignable to type "SupportsWrite[str] | None"
+        "object" is incompatible with protocol "SupportsWrite[str]"
+          "write" is not present
+        "object" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/src/hooks/maintenance_chain.py:213:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/hooks/stop_gate.py
+  /home/user/thyrox/src/hooks/stop_gate.py:205:45 - error: Argument of type "object | TextIO | Any" cannot be assigned to parameter "file" of type "SupportsWrite[str] | None" in function "print"
+    Type "object | TextIO | Any" is not assignable to type "SupportsWrite[str] | None"
+      Type "object" is not assignable to type "SupportsWrite[str] | None"
+        "object" is incompatible with protocol "SupportsWrite[str]"
+          "write" is not present
+        "object" is not assignable to "None" (reportArgumentType)
+/home/user/thyrox/src/hooks/task_lifecycle.py
+  /home/user/thyrox/src/hooks/task_lifecycle.py:110:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/repo/gitlink_bump.py
+  /home/user/thyrox/src/repo/gitlink_bump.py:179:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/repo/object_footprint.py
+  /home/user/thyrox/src/repo/object_footprint.py:75:25 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/repo/object_footprint.py:109:15 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/src/repo/object_footprint.py:122:56 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/repo/object_footprint.py:175:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/repo/pack_headroom.py
+  /home/user/thyrox/src/repo/pack_headroom.py:169:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/repo/pending_work.py
+  /home/user/thyrox/src/repo/pending_work.py:143:25 - error: Argument of type "Literal['telemetry']" cannot be assigned to parameter "object" of type "Literal['dirty', 'staged', 'untracked', 'ahead']" in function "append"
+    Type "Literal['telemetry']" is not assignable to type "Literal['dirty', 'staged', 'untracked', 'ahead']"
+      "Literal['telemetry']" is not assignable to type "Literal['dirty']"
+      "Literal['telemetry']" is not assignable to type "Literal['staged']"
+      "Literal['telemetry']" is not assignable to type "Literal['untracked']"
+      "Literal['telemetry']" is not assignable to type "Literal['ahead']" (reportArgumentType)
+/home/user/thyrox/tests/verify/test_batch_verification.py
+  /home/user/thyrox/tests/verify/test_batch_verification.py:68:18 - error: Cannot access attribute "provider" for class "ProposalVerdict"
+    Attribute "provider" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/verify/test_batch_verification.py:74:44 - error: Cannot access attribute "edges_before" for class "ProposalVerdict"
+    Attribute "edges_before" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/verify/test_batch_verification.py:74:87 - error: Cannot access attribute "edges_after" for class "ProposalVerdict"
+    Attribute "edges_after" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/verify/test_batch_verification.py:120:36 - error: Cannot access attribute "new_diagnostics" for class "Verdict"
+    Attribute "new_diagnostics" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/verify/test_check_rst_toctree.py
+  /home/user/thyrox/tests/verify/test_check_rst_toctree.py:107:16 - error: Object of type "Pattern[str]" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+/home/user/thyrox/tests/verify/test_class_header.py
+  /home/user/thyrox/tests/verify/test_class_header.py:42:42 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_class_header.py:43:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_class_header.py:43:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_commit_message.py
+  /home/user/thyrox/tests/verify/test_commit_message.py:27:39 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_commit_message.py:28:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_commit_message.py:28:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_counterpart_body.py
+  /home/user/thyrox/tests/verify/test_counterpart_body.py:47:42 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_counterpart_body.py:48:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_counterpart_body.py:48:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_doc_citations.py
+  /home/user/thyrox/tests/verify/test_doc_citations.py:37:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_doc_citations.py:39:7 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_doc_citations.py:39:14 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_error_catalog.py
+  /home/user/thyrox/tests/verify/test_error_catalog.py:75:46 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_error_catalog.py:76:10 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_error_catalog.py:76:17 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_finding_id_unique.py
+  /home/user/thyrox/tests/verify/test_finding_id_unique.py:202:28 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/tests/verify/test_finding_id_unique.py:226:31 - error: Argument of type "Path | None" cannot be assigned to parameter "root" of type "Path" in function "tree_fingerprint"
+    Type "Path | None" is not assignable to type "Path"
+      "None" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_finding_id_unique.py:232:30 - error: Argument of type "Path | None" cannot be assigned to parameter "root" of type "Path" in function "tree_fingerprint"
+    Type "Path | None" is not assignable to type "Path"
+      "None" is not assignable to "Path" (reportArgumentType)
+/home/user/thyrox/tests/verify/test_identifier_language.py
+  /home/user/thyrox/tests/verify/test_identifier_language.py:66:45 - error: Argument of type "set[Unknown]" cannot be assigned to parameter "code_families" of type "frozenset[Unknown]" in function "spanish_words_in"
+    "set[Unknown]" is not assignable to "frozenset[Unknown]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_identifier_language.py:75:41 - error: Argument of type "set[Unknown]" cannot be assigned to parameter "code_families" of type "frozenset[Unknown]" in function "spanish_words_in"
+    "set[Unknown]" is not assignable to "frozenset[Unknown]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_identifier_language.py:80:41 - error: Argument of type "set[Unknown]" cannot be assigned to parameter "code_families" of type "frozenset[Unknown]" in function "spanish_words_in"
+    "set[Unknown]" is not assignable to "frozenset[Unknown]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_identifier_language.py:93:64 - error: Argument of type "set[Unknown]" cannot be assigned to parameter "code_families" of type "frozenset[Unknown]" in function "spanish_words_in"
+    "set[Unknown]" is not assignable to "frozenset[Unknown]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_identifier_language.py:124:76 - error: Argument of type "set[Unknown]" cannot be assigned to parameter "code_families" of type "frozenset[Unknown]" in function "spanish_words_in"
+    "set[Unknown]" is not assignable to "frozenset[Unknown]" (reportArgumentType)
+/home/user/thyrox/tests/verify/test_manifest_language.py
+  /home/user/thyrox/tests/verify/test_manifest_language.py:139:42 - error: "name" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_manifest_language.py:140:25 - error: Argument of type "Path | None" cannot be assigned to parameter "src" of type "StrPath" in function "copytree"
+    Type "Path | None" is not assignable to type "StrPath"
+      Type "None" is not assignable to type "StrPath"
+        "None" is not assignable to "str"
+        "None" is incompatible with protocol "PathLike[str]"
+          "__fspath__" is not present (reportArgumentType)
+/home/user/thyrox/tests/verify/test_pool_pipeline.py
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:61:56 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:63:14 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:64:83 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:286:48 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:289:67 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:291:62 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:292:50 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:402:84 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "ledger" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:402:84 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "bench_dir" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:402:84 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "before_log" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:402:84 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "seed" of type "int" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "int"
+      "Path" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:402:84 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "tsc" of type "list[str]" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "list[str]"
+      "Path" is not assignable to "list[str]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:402:84 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "setup_id" of type "str | None" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "str | None"
+      Type "Path" is not assignable to type "str | None"
+        "Path" is not assignable to "str"
+        "Path" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:404:85 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "ledger" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:404:85 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "bench_dir" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:404:85 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "before_log" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:404:85 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "seed" of type "int" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "int"
+      "Path" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:404:85 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "tsc" of type "list[str]" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "list[str]"
+      "Path" is not assignable to "list[str]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:404:85 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "setup_id" of type "str | None" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "str | None"
+      Type "Path" is not assignable to type "str | None"
+        "Path" is not assignable to "str"
+        "Path" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:405:76 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "ledger" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:405:76 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "bench_dir" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:405:76 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "before_log" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:405:76 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "seed" of type "int" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "int"
+      "Path" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:405:76 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "tsc" of type "list[str]" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "list[str]"
+      "Path" is not assignable to "list[str]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:405:76 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "net" of type "bool" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "bool"
+      "Path" is not assignable to "bool" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "ledger" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "bench_dir" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "before_log" of type "Path" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "Path"
+      "int" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "seed" of type "int" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "int"
+      "Path" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "tsc" of type "list[str]" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "list[str]"
+      "Path" is not assignable to "list[str]" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "net" of type "bool" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "bool"
+      "Path" is not assignable to "bool" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_pool_pipeline.py:410:79 - error: Argument of type "Path | int | list[str]" cannot be assigned to parameter "setup_id" of type "str | None" in function "step_command"
+    Type "Path | int | list[str]" is not assignable to type "str | None"
+      Type "Path" is not assignable to type "str | None"
+        "Path" is not assignable to "str"
+        "Path" is not assignable to "None" (reportArgumentType)
+/home/user/thyrox/tests/verify/test_step_close.py
+  /home/user/thyrox/tests/verify/test_step_close.py:150:19 - error: "readline" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_symbol_home.py
+  /home/user/thyrox/tests/verify/test_symbol_home.py:43:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_symbol_home.py:44:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_symbol_home.py:44:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_symbol_presence.py
+  /home/user/thyrox/tests/verify/test_symbol_presence.py:36:42 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_symbol_presence.py:37:6 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/verify/test_symbol_presence.py:37:13 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/verify/test_tsc_cycle.py
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:421:11 - error: Type "Path" is not assignable to declared type "(argv: list[str]) -> tuple[int, str, str]"
+    Type "Path" is not assignable to type "(argv: list[str]) -> tuple[int, str, str]" (reportAssignmentType)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:422:9 - error: Cannot access attribute "mkdir" for class "FunctionType"
+    Attribute "mkdir" is unknown (reportFunctionMemberAccess)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:423:5 - error: Operator "/" not supported for types "(argv: list[str]) -> tuple[int, str, str]" and "Literal['patterns.jsonl']" (reportOperatorIssue)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:459:48 - error: Operator "/" not supported for types "(argv: list[str]) -> tuple[int, str, str]" and "Literal['ledger.jsonl']" (reportOperatorIssue)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:464:90 - error: Argument of type "(argv: list[str]) -> tuple[int, str, str]" cannot be assigned to parameter "run" of type "Path | None" in function "next_route"
+    Type "(argv: list[str]) -> tuple[int, str, str]" is not assignable to type "Path | None"
+      "FunctionType" is not assignable to "Path"
+      "FunctionType" is not assignable to "None" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:465:32 - error: Argument of type "(argv: list[str]) -> tuple[int, str, str]" cannot be assigned to parameter "run" of type "Path" in function "exclude_files"
+    "FunctionType" is not assignable to "Path" (reportArgumentType)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:621:11 - error: Type "Path" is not assignable to declared type "(argv: list[str]) -> tuple[int, str, str]"
+    Type "Path" is not assignable to type "(argv: list[str]) -> tuple[int, str, str]" (reportAssignmentType)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:622:16 - error: Operator "/" not supported for types "(argv: list[str]) -> tuple[int, str, str]" and "Literal['step-154']" (reportOperatorIssue)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:627:15 - error: Operator "/" not supported for types "(argv: list[str]) -> tuple[int, str, str]" and "Literal['step-155']" (reportOperatorIssue)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:663:41 - error: Operator "/" not supported for types "(argv: list[str]) -> tuple[int, str, str]" and "Literal['ledger.jsonl']" (reportOperatorIssue)
+  /home/user/thyrox/tests/verify/test_tsc_cycle.py:666:41 - error: Operator "/" not supported for types "(argv: list[str]) -> tuple[int, str, str]" and "Literal['ledger.jsonl']" (reportOperatorIssue)
+95 errors, 0 warnings, 0 informations

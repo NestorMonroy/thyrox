@@ -1,0 +1,6 @@
+# Universo medido por raiz. 2026-09-10T20:48:15
+# crudo = sin baseline (la deuda real) | vivo = con el baseline del consumidor
+raiz              manifiestos  hogares   crudo   vivo
+kaupamex-docs              28        1     100      0
+kaupamex-api               33        2      48      0
+thyrox                     18        2       0      0

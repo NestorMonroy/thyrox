@@ -1,0 +1,51 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/openai/convertMessages.ts(124,19): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/openai/convertMessages.ts:114-134 ---
+    114  
+    115  function systemPromptToText(systemPrompt: ProviderSystemPrompt): string {
+    116    if (!systemPrompt || systemPrompt.length === 0) return ''
+    117    return systemPrompt.filter(Boolean).join('\n\n')
+    118  }
+    119  
+    120  function convertInternalUserMessage(
+    121    msg: ProviderUserMessage,
+    122  ): ChatCompletionMessageParam[] {
+    123    const result: ChatCompletionMessageParam[] = []
+    124>   const content = msg.message.content
+    125  
+    126    if (typeof content === 'string') {
+    127      result.push({ role: 'user', content })
+    128    } else if (Array.isArray(content)) {
+    129      const textParts: string[] = []
+    130      const toolResults: BetaToolResultBlockParam[] = []
+    131      const imageParts: OpenAIImagePart[] = []
+    132  
+    133      for (const block of content) {
+    134        if (typeof block === 'string') {
+src/packages/provider/src/openai/convertMessages.ts(200,19): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/openai/convertMessages.ts:190-210 ---
+    190    } else {
+    191      content = ''
+    192    }
+    193  
+    194    return { role: 'tool', tool_call_id: block.tool_use_id, content }
+    195  }
+    196  
+    197  function convertInternalAssistantMessage(
+    198    msg: ProviderAssistantMessage,
+    199  ): ChatCompletionMessageParam[] {
+    200>   const content = msg.message.content
+    201  
+    202    if (typeof content === 'string') {
+    203      return [{ role: 'assistant', content }]
+    204    }
+    205  
+    206    if (!Array.isArray(content)) {
+    207      return [{ role: 'assistant', content: '' }]
+    208    }
+    209  
+    210    const textParts: string[] = []

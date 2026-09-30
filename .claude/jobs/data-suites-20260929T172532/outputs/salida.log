@@ -1,0 +1,13 @@
+mitm:  810 pass
+mitm:  0 fail
+mitm:  726 expect() calls
+mitm: Ran 810 tests across 107 files. [19.79s]
+provider:  4819 pass
+provider:  6 fail
+provider:  9017 expect() calls
+provider: Ran 4825 tests across 285 files. [13.64s]
+local-observability:  1097 pass
+local-observability:  0 fail
+local-observability:  2514 expect() calls
+local-observability: Ran 1097 tests across 74 files. [2.50s]
+__BG_EXIT__=0

@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+106 |     live.push(holder('foo'))
+107 |     expect(await resolveUniqueName('foo', 'startup', context)).toEqual({ name: 'foo-calm-heron', yielded: true })
+108 |     live[0] = { pid: SELF, startedAt: 20, name: 'foo-brave-otter' }
+109 |     live.push(holder('foo-brave-otter', 5))
+110 |     const result = await resolveUniqueName('foo-brave-otter', 'recheck', { ...context, slug: () => 'quick-fox' }, 'foo-brave-otter')
+111 |     expect(result).toEqual({ name: 'foo-quick-fox', yielded: true })
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
+-   "name": "foo-quick-fox",
++   "name": "foo-brave-otter-quick-fox",
+    "yielded": true,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:111:20)
+(fail) resolveUniqueName (tPt) > conserva el sufijo que ya lleva y usa la base del sufijo [0.73ms]
+
+ 21 pass
+ 1 fail
+ 56 expect() calls
+Ran 22 tests across 1 file. [47.00ms]

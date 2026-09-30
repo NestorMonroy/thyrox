@@ -1,0 +1,14 @@
+asentado: claude-p-rename -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     claude-p-rename exit=0
+       |        |   ok   revisado y sin instancias vivas: pasa
+       |        |   ok   revisado pero con una instancia viva sin salida: bloquea
+       |        |   ok   con el log vigente de un paso posterior: pasa
+       |        | audit
+       |        |   ok   aceptados, cubiertos por memoria, aplicaciones masivas
+       |        | 
+       |        | todas pasan
+       |        | EXIT=0
+       |        memoria pico: 14636 KB (14 MB) · pared 0.06s
+       | __BG_EXIT__=0
+       memoria pico: 107484 KB (105 MB) · pared 65.36s

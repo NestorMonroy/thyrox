@@ -1,0 +1,67 @@
+# primera medición
+== 1: el formulario con vacíos -> 1
+== 2: sin invalid_token -> 1
+== 3: server_error es irrecuperable -> 2
+== 4: sin límite izquierdo -> 1
+== 5: sin límite derecho -> 1
+== 6: sin mayúsculas en la frase -> 1
+== 7: sin profundidad máxima -> 1
+== 8: profundidad corta -> 1
+== 9: sin recortar -> 0
+== 10: sin JSON anidado -> 0
+== 11: sin el campo en texto -> 0
+== 12: el campo con cualquier código -> 2
+== 13: sin código en la frase -> 2
+== 14: la frase sin minúsculas -> 1
+== 15: sin code -> 1
+== 16: sin error_code -> 1
+== 17: el cuerpo sin leer como texto -> 0
+== 18: sin analizar el cuerpo -> 0
+== 19: sin invalid_request irrecuperable -> 1
+== 20: un texto es un resultado -> 0
+== 21: rotación con el viejo vacío -> 1
+== 22: rotación con el nuevo vacío -> 1
+== 23: rotación sin comparar -> 2
+== 24: CAS sin contexto -> 3
+== 25: CAS sin token presentado -> 1
+== 26: CAS con relectura fallida bloquea -> 1
+== 27: CAS sin omitir -> 1
+== 28: CAS sin contar guardados -> 2
+== 29: CAS sin aviso -> 1
+== 30: reset sin omitidos -> 1
+== 31: umbral cuatro -> 1
+== 32: pausa corta -> 1
+== 33: dos intentos -> 2
+== 34: espera fija -> 2
+== 35: espera también antes del primero -> 4
+== 36: sin plazo por intento -> 1
+== 37: irrecuperable se reintenta -> 0
+== 38: el éxito no limpia -> 1
+== 39: el disyuntor no corta -> 1
+== 40: el bloqueo no vence -> 1
+== 41: el bloqueo vence un instante antes -> 1
+== 42: sin aviso al saltar -> 1
+== 43: estado sin restante -> 1
+== 44: proveedor por defecto otro -> 1
+== 45: rotación sin proveedor en la clave -> 2
+== 46: rotación en claro -> 1
+== 47: rotación sin caducidad -> 2
+== 48: rotación de un minuto y algo -> 2
+== 49: rotación con el viejo vacío -> 1
+== 50: rotación sin rotar -> 1
+== 51: rotación con el nuevo vacío -> 1
+== 52: rotación de dos minutos -> 2
+== 53: Google — cualquier cliente propio -> 1
+== 54: Google — sin secreto -> 1
+== 55: Google — agy sin familia -> 1
+== 56: Google — cualquier proveedor -> 2
+== 57: Google — sin la marca de prefijo -> 0
+== restaurado -> 0
+# re-medición tras afinar (18 y 20 retiradas: código muerto; 17 sustituida por 17b)
+== 9: sin recortar -> 1
+== 10: sin JSON anidado -> 1
+== 11: sin el campo en texto -> 1
+== 37: irrecuperable se reintenta -> 1
+== 57: Google — sin la marca de prefijo -> 1
+== 17b: el cuerpo sin clasificar -> 1
+== restaurado -> 0

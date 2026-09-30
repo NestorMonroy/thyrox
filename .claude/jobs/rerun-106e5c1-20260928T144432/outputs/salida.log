@@ -1,0 +1,31 @@
+== 3: subtoken vacío vale
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a missing or blank sub-token is renewed even with a far expiry [0.65ms]
+ 11 pass
+ 1 fail
+== 4: sin subtoken no renueva
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a missing or blank sub-token is renewed even with a far expiry [0.56ms]
+ 11 pass
+ 1 fail
+== 15: sin access token nuevo
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > is renewed with the new access token when about to expire, over the latest row [0.76ms]
+ 11 pass
+ 1 fail
+== 16: sin respaldo de caducidad
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > the expiry falls back to the connection given, and accepts milliseconds and dates [0.44ms]
+ 11 pass
+ 1 fail
+== restaurado
+ 12 pass
+ 0 fail
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+ 0 fail
+ 1734 expect() calls
+Ran 506 tests across 30 files. [4.92s]
+__BG_EXIT__=0

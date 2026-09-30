@@ -1,0 +1,14 @@
+    # El que arranca primero no es el de Seq menor: el joblog manda.
+    late = Path(tmp) / "late"
+    (late / "outputs").mkdir(parents=True)
+    (late / "outputs/joblog.tsv").write_text(
+        "Seq\tHost\tStarttime\tJobRuntime\tSend\tReceive\tExitval\tSignal\tCommand\n"
+        "1\t:\t1050\t5\t0\t0\t0\t0\tx\n2\t:\t1000\t5\t0\t0\t0\t0\tx\n")
+    for n, request in ((1, (4000, 10)), (2, (0, 4000))):
+        (late / f"outputs/{n}.stream.jsonl").write_text(json.dumps(
+            {"type": "assistant", "message": {"usage": {"cache_read_input_tokens": request[0],
+                                                        "cache_creation_input_tokens": request[1]}}}) + "\n")
+    assert_equal("el primer ítem es el primero en arrancar, no el de Seq menor",
+                 {"item": 2, "read": 0, "write": 4000}, sr._cache_prefix(late)["first_item"])
+
+    empty = Path(tmp) / "empty"

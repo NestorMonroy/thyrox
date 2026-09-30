@@ -1,0 +1,26 @@
+
+tests/smoke/repl-smoke.test.ts:
+13 | import { probeRuntime } from './lib/runtime-probe.js'
+14 | 
+15 | describe('smoke:repl boot path', () => {
+16 |   test('bootstrap completes without errors', async () => {
+17 |     const r = await probeRuntime()
+18 |     expect(r.errors).toEqual([])
+                          ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "bootstrap import failed: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/repl-smoke.test.ts:18:22)
+(fail) smoke:repl boot path > bootstrap completes without errors [2005.72ms]
+
+ 4 pass
+ 1 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [2.17s]

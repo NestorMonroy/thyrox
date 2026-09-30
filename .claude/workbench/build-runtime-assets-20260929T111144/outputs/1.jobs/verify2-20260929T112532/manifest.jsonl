@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env -u THYROX_ROOT bash .claude/workbench/build-runtime-assets-20260929T111144/verify.sh", "started_at": "2026-09-29T11:25:32+00:00"}

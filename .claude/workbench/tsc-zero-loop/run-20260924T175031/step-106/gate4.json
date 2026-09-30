@@ -1,0 +1,154 @@
+{
+ "reviewed": [
+  {
+   "pattern": "indexed-access-inside-length-bounded-loop",
+   "files": [
+    "src/coordination/claims.ts"
+   ]
+  },
+  {
+   "pattern": "regex-capture-group-possibly-undefined",
+   "files": [
+    "src/coordination/claims.ts"
+   ]
+  },
+  {
+   "pattern": "returntype-bun-spawn-widens-stdio",
+   "files": [
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+   "files": [
+    "src/packages/@ant/computer-use-swift/src/backends/darwin.ts"
+   ]
+  },
+  {
+   "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+   "files": [
+    "src/packages/agent/__tests__/contentTextHelpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+   "files": [
+    "src/packages/agent/__tests__/directMemberMessage.test.ts"
+   ]
+  },
+  {
+   "pattern": "string-literal-field-without-as-const-widened-by-spread",
+   "files": [
+    "src/packages/agent/__tests__/preModelSwitch.test.ts"
+   ]
+  },
+  {
+   "pattern": "stray-discriminant-property-on-sdk-schema-object",
+   "files": [
+    "src/packages/agent/messages/mappers.ts"
+   ]
+  },
+  {
+   "pattern": "map-callback-annotated-with-beta-response-type-on-param-content",
+   "files": [
+    "src/packages/agent/messages/mappers.ts"
+   ]
+  },
+  {
+   "pattern": "callback-narrows-default-param-to-required",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "callback-mas-amplio-forzado-a-firma-mas-estrecha",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "funcion-sobrecargada-pasada-directa-a-slot-de-tipo-union",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "spread-de-any-en-vez-de-array-ya-tipado",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "fs-readfilesync-options-object-vs-utf8-literal",
+   "files": [
+    "src/packages/config/plugin/installedPluginsManager.ts"
+   ]
+  },
+  {
+   "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+   "files": [
+    "src/packages/config/plugin/installedPluginsManager.ts"
+   ]
+  },
+  {
+   "pattern": "length-on-possibly-undefined-getter-stub",
+   "files": [
+    "src/packages/config/plugin/loadPluginCommands.ts"
+   ]
+  },
+  {
+   "pattern": "union-return-cast-to-index-signature-record",
+   "files": [
+    "src/packages/provider/__tests__/runtimeHelpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "spread-of-never-typed-test-double",
+   "files": [
+    "src/packages/provider/__tests__/runtimeHelpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "sync-external-store-snapshot-inferred-unknown-from-untyped-require",
+   "files": [
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "pattern": "uuid-branded-template-literal-compared-to-plain-string-literal",
+   "files": [
+    "src/packages/storage/src/__tests__/conversationChain.test.ts"
+   ]
+  },
+  {
+   "pattern": "never-typed-state-updater-double",
+   "files": [
+    "src/packages/swarm/__tests__/spawnInProcess.test.ts"
+   ]
+  },
+  {
+   "pattern": "optional-field-narrower-than-always-assigned-value",
+   "files": [
+    "src/packages/tool-registry/src/tools/BashTool/BashTool.tsx"
+   ]
+  },
+  {
+   "pattern": "wrong-command-type-across-duplicate-packages",
+   "files": [
+    "src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts"
+   ]
+  },
+  {
+   "pattern": "tool-provider-discover-not-awaited",
+   "files": [
+    "src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts"
+   ]
+  },
+  {
+   "pattern": "unguarded-regex-match-group",
+   "files": [
+    "src/verify/namedImports.ts"
+   ]
+  }
+ ]
+}

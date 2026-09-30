@@ -1,0 +1,11 @@
+estado: head | specifiers: 121 | entradas exports: 12 | sin resolver: 8
+  applySettingsChange -> ./applySettingsChange.ts
+  applySettingsChange.js -> ./applySettingsChange.ts
+  changeDetector -> ./changeDetector.ts
+  lazySchema.js -> ./lazySchema.ts
+  managedPath -> ./managedPath.ts
+  pluginOnlyPolicy -> ./pluginOnlyPolicy.ts
+  sync -> ./sync.ts
+  testing -> ./testing.ts
+
+estado: work | specifiers: 120 | entradas exports: 20 | sin resolver: 0

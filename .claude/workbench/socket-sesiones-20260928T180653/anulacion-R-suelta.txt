@@ -1,0 +1,44 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+124 |       overrideValue: 'claude-fable-5-1',
+125 |       restoredToExplicitOverride: true,
+126 |       fallbackModel: 'claude-opus-5',
+127 |     })
+128 |     expect(getMainLoopModelOverride()).toBe('claude-fable-5-1')
+129 |     expect(getRefusalFallbackModelLatch()).toBeUndefined()
+                                                 ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  fallbackModel: "claude-opus-5",
+  previousOverride: "claude-fable-5-1",
+  previousAppStateModel: "claude-fable-5-1",
+  previousModelForSession: null,
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:129:44)
+(fail) restoreRefusalFallbackModel (mn) > con el modelo de respaldo vigente devuelve el previo y lo fija [0.33ms]
+139 |   test('si el usuario cambió de modelo, suelta sin restaurar', () => {
+140 |     latchRefusalFallbackModel(latch())
+141 |     setMainLoopModelOverride('claude-haiku-4-5')
+142 |     expect(restoreRefusalFallbackModel()).toBeUndefined()
+143 |     expect(getMainLoopModelOverride()).toBe('claude-haiku-4-5')
+144 |     expect(getRefusalFallbackModelLatch()).toBeUndefined()
+                                                 ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  fallbackModel: "claude-opus-5",
+  previousOverride: "claude-fable-5-1",
+  previousAppStateModel: "claude-fable-5-1",
+  previousModelForSession: null,
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:144:44)
+(fail) restoreRefusalFallbackModel (mn) > si el usuario cambió de modelo, suelta sin restaurar [0.10ms]
+
+ 24 pass
+ 2 fail
+ 54 expect() calls
+Ran 26 tests across 2 files. [65.00ms]

@@ -1,0 +1,55 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(292,7): error TS2322: Type 'BuiltInAgentDefinition | CustomAgentDefinition | PluginAgentDefinition | { effort: {} | null; agentType: string; ... 22 more ...; getSystemPrompt: (params: { ...; }) => string; } | { ...; } | { ...; }' is not assignable to type 'AgentDefinition'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:282-302 ---
+    282        showSpinner: true,
+    283      })
+    284    }
+    285  
+    286    // Show initial "Initializing…" state
+    287    updateProgress()
+    288  
+    289    // Run the sub-agent
+    290    try {
+    291      for await (const message of runAgent({
+    292>       agentDefinition,
+    293        promptMessages,
+    294        toolUseContext: {
+    295          ...context,
+    296          getAppState: modifiedGetAppState,
+    297        },
+    298        canUseTool,
+    299        isAsync: false,
+    300        querySource: 'agent:custom',
+    301        model: command.model as ModelAlias | undefined,
+    302        availableTools: context.options.tools,
+  Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BuiltInAgentDefinition'.
+      Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BaseAgentDefinition'.
+        Types of property 'effort' are incompatible.
+          Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+            Type 'null' is not assignable to type 'EffortValue | undefined'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(543,43): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:533-553 ---
+    533        ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    534        eventData.plugin_name = (
+    535          isOfficial ? pluginManifest.name : 'third-party'
+    536        ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    537        if (isOfficial && pluginManifest.version) {
+    538          eventData.plugin_version =
+    539            pluginManifest.version as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    540        }
+    541        Object.assign(
+    542          eventData,
+    543>         buildPluginCommandTelemetryFields(returnedCommand.pluginInfo),
+    544        )
+    545      }
+    546  
+    547      logEvent('tengu_input_command', {
+    548        ...eventData,
+    549        invocation_trigger:
+    550          'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    551        ...(process.env.USER_TYPE === 'ant' && {
+    552          skill_name:
+    553            commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.

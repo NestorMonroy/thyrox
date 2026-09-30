@@ -1,0 +1,17 @@
+Checked 674 installs across 613 packages (no changes) [25.00ms]
+ 5 fail
+ 943 expect() calls
+Ran 330 tests across 9 files. [7.77s]
+test_single_workspace_root: 8 ok, 0 falla(s)
+test_package_typecheck: 16 ok, 0 falla
+test_provider_refresh: 18 ok, 0 falla(s)
+test_emit_declarations: 67 ok, 0 falla
+test_declaration_freshness: 8 ok, 0 falla(s)
+test_check_exports_types: 14 ok, 0 falla(s)
+resultado: 27 de 27 aserciones en verde
+test_pyproject_declares_imports: 4 import(s) de terceros, 0 sin declarar (alcance medido: src/**/*.py fuera de src/packages/computer-use-mcp/src/legacy/win32)
+check_exports_types: 0 destino(s) o proyecto(s) ausente(s) (alcance medido: 1541 entrada(s) types en 48 paquete(s))
+  workbench: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 48 de 48 paquete(s))
+__BG_EXIT__=0

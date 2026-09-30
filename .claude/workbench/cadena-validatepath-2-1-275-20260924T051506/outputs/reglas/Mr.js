@@ -1,0 +1,1 @@
+function Mr(e,n,r,s="treating it as matching nothing"){if(!ns.firstWarning(e,n))return;t(`[${e}] gitignore-style pattern is unusable (${r}); ${s}: ${n}`,{level:"warn"}),i("tengu_uncompilable_ignore_pattern",{site:Ic[e]})}

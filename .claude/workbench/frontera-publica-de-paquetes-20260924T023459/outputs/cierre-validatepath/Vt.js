@@ -1,0 +1,1 @@
+function Vt(e,n){let r;for(;;){let i=e.next(r);if(i.done)return i.value;try{r=n(i.value)}catch(o){r={errno:E(o)}}}}

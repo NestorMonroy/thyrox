@@ -1,0 +1,4 @@
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(20,29): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(21,32): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(70,44): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(81,32): error TS18046: 'metadata' is of type 'unknown'.

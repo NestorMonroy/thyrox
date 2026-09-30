@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+205 |     write('4.json', record(4, { pidDomain: 'otro' }))
+206 |     write('5.json', 'roto')
+207 |     write('otro.txt', 'x')
+208 |     const d = deps({}, [3, 4], [2])
+209 |     expect(await sweepRegistry(undefined, d)).toBe(2)
+210 |     expect(d.recorded.slept).toEqual([])
+                                   ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   25,
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:210:30)
+(fail) sweepRegistry (xut) > cuenta las vivas y la propia; borra los registros muertos del dominio [2.95ms]
+
+ 28 pass
+ 1 fail
+ 81 expect() calls
+Ran 29 tests across 1 file. [232.00ms]

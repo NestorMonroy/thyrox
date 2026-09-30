@@ -1,0 +1,81 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 15,
+   "total_before": 422,
+   "total_final": 413,
+   "tsc_runs": 3,
+   "kept": 5
+  },
+  {
+   "batch": 2,
+   "files": 15,
+   "total_before": 413,
+   "total_final": 407,
+   "tsc_runs": 2,
+   "kept": 4
+  },
+  {
+   "batch": 3,
+   "files": 23,
+   "total_before": 407,
+   "total_final": 401,
+   "tsc_runs": 13,
+   "kept": 4
+  },
+  {
+   "batch": 4,
+   "files": 67,
+   "total_before": 401,
+   "total_final": 364,
+   "tsc_runs": 2,
+   "kept": 21
+  },
+  {
+   "batch": 5,
+   "files": 1,
+   "total_before": 364,
+   "total_final": 364,
+   "tsc_runs": 0,
+   "kept": 0
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/__tests__/productionWiring.test.ts",
+  "src/packages/agent/compaction/sessionMemoryCompact.ts",
+  "src/packages/agent/hooks/AsyncHookRegistry.ts",
+  "src/packages/agent/internal/stopHooksCore.ts",
+  "src/packages/app-host/src/main/startup/telemetry.ts",
+  "src/packages/app-host/src/providerHostSetup.ts",
+  "src/packages/app-host/src/runtime/commandRegistryRuntime.ts",
+  "src/packages/app-host/src/runtime/installPluginBindings.ts",
+  "src/packages/cli/src/headless/sdk/session/run.ts",
+  "src/packages/cli/src/setup/setup.ts",
+  "src/packages/cli/src/structuredIO.ts",
+  "src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts",
+  "src/packages/config/manager.ts",
+  "src/packages/mcp-runtime/src/config.ts",
+  "src/packages/provider/__tests__/providerStreaming.test.ts",
+  "src/packages/provider/src/gemini/streamAdapter.ts",
+  "src/packages/provider/src/model/modelStrings.ts",
+  "src/packages/repl/src/commands/plan/plan.tsx",
+  "src/packages/repl/src/components/MessageRow.tsx",
+  "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+  "src/packages/repl/src/components/VirtualMessageList.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStepWrapper.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx",
+  "src/packages/repl/src/components/messages/AttachmentMessage.tsx",
+  "src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx",
+  "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+  "src/packages/repl/src/screens/REPLView.tsx",
+  "src/packages/repl/src/screens/agentFleet/FleetView.tsx",
+  "src/packages/shell/src/testing/index.ts",
+  "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-116/pipeline/batch-05/final.log"
+}

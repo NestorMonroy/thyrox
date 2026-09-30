@@ -1,0 +1,23 @@
+src/packages/permission/src/toolPermission/permissionLogging.ts(99,5): error TS2322: Type 'string' is not assignable to type 'number | boolean | undefined'.
+  --- código src/packages/permission/src/toolPermission/permissionLogging.ts:89-109 ---
+     89  }
+     90  
+     91  function baseMetadata(
+     92    messageId: string,
+     93    toolName: string,
+     94    waitMs: number | undefined,
+     95  ): { [key: string]: boolean | number | undefined } {
+     96    return {
+     97      messageID:
+     98        messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     99>     toolName: sanitizeToolNameForAnalytics(toolName),
+    100      sandboxEnabled: SandboxManager.isSandboxingEnabled(),
+    101      // Only include wait time when the user was actually prompted (not auto-approved)
+    102      ...(waitMs !== undefined && { waiting_for_user_permission_ms: waitMs }),
+    103    }
+    104  }
+    105  
+    106  // Emits a distinct analytics event name per approval source for funnel analysis
+    107  function logApprovalEvent(
+    108    tool: ToolType,
+    109    messageId: string,

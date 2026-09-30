@@ -1,0 +1,8 @@
+## cwd=src/packages/cli, bun install --dry-run (antes de retirar)
+error: @ant/computer-use-mcp@workspace:* failed to resolve
+error: @anthropic/ink@workspace:* failed to resolve
+error: @ant/claude-for-chrome-mcp@workspace:* failed to resolve
+error: @anthropic/ink@workspace:* failed to resolve
+error: @ant/computer-use-mcp@workspace:* failed to resolve
+error: @anthropic/ink@workspace:* failed to resolve
+exit=0

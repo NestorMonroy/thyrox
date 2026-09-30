@@ -1,0 +1,28 @@
+src/packages/agent/createDeps.ts(199,3): error TS2416: Property 'find' in type 'ToolDepImpl' is not assignable to the same property in base type 'ToolDep'.
+  Type '(name: string) => { name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; } | undefined' is not assignable to type '(name: string) => CoreTool | undefined'.
+    Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; } | undefined' is not assignable to type 'CoreTool | undefined'.
+      Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }' is not assignable to type 'CoreTool'.
+        Types of property 'inputSchema' are incompatible.
+          Property 'type' is missing in type 'Record<string, unknown>' but required in type 'ToolInputJSONSchema'.
+src/packages/agent/createDeps.ts(206,3): error TS2416: Property 'list' in type 'ToolDepImpl' is not assignable to the same property in base type 'ToolDep'.
+  Type '() => { name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }[]' is not assignable to type '() => CoreTool[]'.
+    Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }[]' is not assignable to type 'CoreTool[]'.
+      Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }' is not assignable to type 'CoreTool'.
+        Types of property 'inputSchema' are incompatible.
+          Property 'type' is missing in type 'Record<string, unknown>' but required in type 'ToolInputJSONSchema'.
+src/packages/agent/createDeps.ts(268,9): error TS2416: Property 'canUseTool' in type 'PermissionDepImpl' is not assignable to the same property in base type 'PermissionDep'.
+  Type '(tool: { name: string; }, input: unknown) => Promise<{ allowed: boolean; reason: string; } | { allowed: boolean; reason?: undefined; }>' is not assignable to type '(tool: CoreTool, input: unknown, context: PermissionContext) => Promise<PermissionResult>'.
+    Type 'Promise<{ allowed: boolean; reason: string; } | { allowed: boolean; reason?: undefined; }>' is not assignable to type 'Promise<PermissionResult>'.
+      Type '{ allowed: boolean; reason: string; } | { allowed: boolean; reason?: undefined; }' is not assignable to type 'PermissionResult'.
+        Type '{ allowed: boolean; reason?: undefined; }' is not assignable to type 'PermissionResult'.
+          Type '{ allowed: boolean; reason?: undefined; }' is not assignable to type '{ allowed: false; reason: string; }'.
+            Types of property 'allowed' are incompatible.
+              Type 'boolean' is not assignable to type 'false'.
+src/packages/agent/createDeps.ts(399,9): error TS2416: Property 'getUserContext' in type 'ContextDepImpl' is not assignable to the same property in base type 'ContextDep'.
+  Type '() => Promise<Record<string, string>>' is not assignable to type '() => Record<string, string>'.
+    Type 'Promise<Record<string, string>>' is not assignable to type 'Record<string, string>'.
+      Index signature for type 'string' is missing in type 'Promise<Record<string, string>>'.
+src/packages/agent/createDeps.ts(412,9): error TS2416: Property 'getSystemContext' in type 'ContextDepImpl' is not assignable to the same property in base type 'ContextDep'.
+  Type '() => Promise<Record<string, string>>' is not assignable to type '() => Record<string, string>'.
+    Type 'Promise<Record<string, string>>' is not assignable to type 'Record<string, string>'.
+      Index signature for type 'string' is missing in type 'Promise<Record<string, string>>'.

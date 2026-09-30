@@ -1,0 +1,28 @@
+run-task-pool: 4 trabajo(s), anchura 1 (en serie), logs en /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-fixed-1/relee/rel-20260927T191844
+  rel-20260927T191844/rel-001 sleep 2
+  rel-20260927T191844/rel-002 sleep 2
+  rel-20260927T191844/rel-003 sleep 2
+  rel-20260927T191844/rel-004 sleep 2
+run-task-pool: anchura ahora 3 (releida de /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/reread-fixed-1/vivo.conf)
+run-task-pool: lanzados 4 de 4; esperando en PRIMER PLANO (timeout 25s)
+asentado: rel-20260927T191844_rel-001 -> OK (2 de 5)
+asentado: rel-20260927T191844_rel-002 -> OK (3 de 5)
+asentado: rel-20260927T191844_rel-003 -> OK (4 de 5)
+asentado: rel-20260927T191844_rel-004 -> OK (5 de 5)
+== 5 trabajos asentados ==
+OLVIDADO rel-20260927T191844
+       | (vacío — no emitió nada)
+OK     rel-20260927T191844_rel-001 exit=0
+       | EXIT=0
+       memoria pico: 3196 KB (3 MB) · pared 2.00s
+OK     rel-20260927T191844_rel-002 exit=0
+       | EXIT=0
+       memoria pico: 3204 KB (3 MB) · pared 2.00s
+OK     rel-20260927T191844_rel-003 exit=0
+       | EXIT=0
+       memoria pico: 3196 KB (3 MB) · pared 2.00s
+OK     rel-20260927T191844_rel-004 exit=0
+       | EXIT=0
+       memoria pico: 3208 KB (3 MB) · pared 2.00s
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0

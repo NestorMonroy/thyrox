@@ -1,0 +1,23 @@
+src/packages/agent/background/fleet/generateJobName.ts(205,12): error TS2531: Object is possibly 'null'.
+  --- código src/packages/agent/background/fleet/generateJobName.ts:195-215 ---
+    195          toolChoice: undefined,
+    196          isNonInteractiveSession: true,
+    197          hasAppendSystemPrompt: false,
+    198          agents: [],
+    199          querySource: 'agent_namer',
+    200          mcpTools: [],
+    201          skipCacheWrite: true,
+    202        },
+    203      })
+    204      if (response.isApiErrorMessage) return null
+    205>     return messages.getAssistantMessageText(response).trim() || null
+    206    } catch (e) {
+    207      if (e instanceof APIUserAbortError) return null
+    208      return null
+    209    }
+    210  }
+    211  
+    212  async function runNamer(
+    213    short: string,
+    214    userMsg: string,
+    215    agentTail: string,

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/session/test-item-worktree-*.sh tests/session/test-headless-pool-worktree.sh; do echo \"== $t\"; bash \"$t\" 2>&1 | tail -2; done; shellcheck -x src/session/item_worktree.sh tests/session/test-item-worktree-sparse.sh && echo SHELLCHECK_OK", "started_at": "2026-09-30T02:38:36+00:00"}

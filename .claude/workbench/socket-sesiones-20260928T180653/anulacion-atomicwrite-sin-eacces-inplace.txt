@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+EACCES: permission denied, open '/sys/uds-atomic-probe.tmp.00000000'
+    path: "/sys/uds-atomic-probe.tmp.00000000",
+ syscall: "open",
+   errno: -13,
+    code: "EACCES"
+
+(fail) opciones completas de Jne > inPlaceOnTempCreateRefused: un EACCES al crear el temporal escribe in situ sobre un destino existente [0.94ms]
+
+ 26 pass
+ 1 fail
+ 70 expect() calls
+Ran 27 tests across 1 file. [185.00ms]

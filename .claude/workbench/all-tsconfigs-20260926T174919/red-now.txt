@@ -1,0 +1,22 @@
+-- ROJO src/packages/binary/__tests__/bunfs.test.ts
+-- ROJO src/packages/provider/__tests__/geminiMessageParts.test.ts
+-- ROJO src/packages/provider/src/__tests__/firstPartyClient.behavior.test.ts
+-- ROJO src/packages/provider/src/__tests__/vertexClient.behavior.test.ts
+-- ROJO src/packages/storage/src/__tests__/sessionStorageHelpers.test.ts
+-- ROJO tests/package/exports.test.ts
+-- ROJO tests/package/sibling_exports.test.ts
+-- ROJO tests/smoke/bg-cycle-smoke.test.ts
+-- ROJO tests/smoke/headless-smoke.test.ts
+-- ROJO tests/smoke/live-fire-smoke.test.ts
+-- ROJO tests/smoke/swarm-smoke.test.ts
+-- ROJO tests/unit/gemini/convertMessages.test.ts
+-- ROJO tests/verify/test-pre-commit-docs.sh
+-- ROJO tests/verify/test-script-naming.sh
+-- ROJO tests/verify/test_env_contract_keys.py
+-- ROJO tests/verify/test_package_root_resolution.sh
+-- ROJO tests/verify/test_path_arithmetic.py
+-- ROJO tests/verify/test_pre_commit_hook.py
+-- SIN MEDIR (exit 2) tests/corpus/test_censo_contraparte.py
+-- SIN MEDIR (exit 2) tests/verify/test-commit-msg-citation.sh
+-- SIN MEDIR (exit 2) tests/verify/test-premise-drift.sh
+-- SIN MEDIR (exit 2) tests/verify/test-verificar-premisa.sh

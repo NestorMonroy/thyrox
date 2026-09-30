@@ -1,0 +1,23 @@
+src/packages/config/plugin/refresh.ts(188,5): error TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents
+  --- código src/packages/config/plugin/refresh.ts:178-198 ---
+    178  
+    179    return {
+    180      enabled_count: enabled.length,
+    181      disabled_count: disabled.length,
+    182      command_count: pluginCommands.length,
+    183      agent_count: agentDefinitions.allAgents.length,
+    184      hook_count,
+    185      mcp_count,
+    186      lsp_count,
+    187      error_count: errors.length + (hook_load_failed ? 1 : 0),
+    188>     agentDefinitions,
+    189      pluginCommands,
+    190    }
+    191  }
+    192  
+    193  /**
+    194   * Merge fresh plugin-load errors with existing errors, preserving LSP and
+    195   * plugin-component errors that were recorded by other systems and
+    196   * deduplicating. Same logic as refreshPlugins()/updatePluginState(), extracted
+    197   * so refresh.ts doesn't leave those errors stranded.
+    198   */

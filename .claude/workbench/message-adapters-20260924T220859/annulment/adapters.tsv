@@ -1,0 +1,3 @@
+sin WeakMap	s/  if (original) return original/  if (original \&\& false) return original/
+sin cuerpo arrastrado	s/  const carried: Carried = body ? { \[ORIGINAL_BODY\]: body } : {}/  const carried: Carried = {}/
+sin tipo arrastrado	s/      ...(foreign ? { \[ORIGINAL_TYPE\]: message.type } : {}),//

@@ -1,0 +1,9 @@
+cd /home/user/thyrox && bun test src/packages/agent/__tests__/models.test.ts
+cd /home/user/thyrox && bun test src/packages/agent/__tests__/registry.test.ts
+cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/agents/test_balanced_block.py
+cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/repo/test_citations.py
+cd /home/user/thyrox && bash tests/verify/test_audit_delegates.sh
+cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_class_header.py
+cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_counterpart_body.py
+cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_runner.py
+cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_symbol_presence.py

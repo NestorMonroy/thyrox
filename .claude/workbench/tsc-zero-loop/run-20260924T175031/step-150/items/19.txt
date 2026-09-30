@@ -1,0 +1,57 @@
+Patrón: object-literal-cast-to-required-interface-with-incompatible-shared-property
+Señal del verificador: TS2352:.*Conversion of type '\{[^']*\}' to type '[A-Za-z_]+' may be a mistake because neither type sufficiently overlaps with the other
+Arreglo genérico: Cuando un literal de prueba deliberadamente asigna un valor incompatible (p. ej. `undefined`) a una propiedad cuyo tipo real es más estricto (`string`), el `as T` directo falla porque esa propiedad compartida ya no es comparable. Se resuelve encadenando el cast por `Partial<T>` — `{...} as Partial<T> as Tool` —, que relaja la propiedad a opcional/`| undefined` en el paso intermedio y sigue siendo comparable con `T` en la dirección inversa (T es asignable a Partial<T>), sin recurrir a `any`/`unknown`.
+Ya aplicado en: src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts
+Archivos donde la señal sigue viva: src/packages/app-host/src/runtime/runtimeHandles.ts, src/packages/provider/src/openai/streamAdapter.ts
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(68,14): error TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:58-78 ---
+     58        params?: HeadlessStoreParams,
+     59      ) => HostSessionStore<AppState>
+     60    }
+     61  }
+     62  
+     63  export function createRuntimeHandles(
+     64    initialState: AppState = (() => {
+     65      try {
+     66        return getDefaultAppState()
+     67      } catch {
+     68>       return {
+     69          toolPermissionContext: getEmptyToolPermissionContext(),
+     70          mcp: {
+     71            clients: [],
+     72            tools: [],
+     73            commands: [],
+     74            resources: {},
+     75            pluginReconnectKey: 0,
+     76          },
+     77          plugins: {
+     78            enabled: [],
+  Type '{ toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+
+src/packages/provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/openai/streamAdapter.ts:67-87 ---
+     67        const details = (chunk.usage as any).prompt_tokens_details
+     68        if (details?.cached_tokens) {
+     69          cachedTokens = details.cached_tokens
+     70        }
+     71      }
+     72  
+     73      // Emit message_start on first chunk
+     74      if (!started) {
+     75        started = true
+     76  
+     77>       yield {
+     78          type: 'message_start',
+     79          message: {
+     80            id: messageId,
+     81            type: 'message',
+     82            role: 'assistant',
+     83            content: [],
+     84            model,
+     85            stop_reason: null,
+     86            stop_sequence: null,
+     87            usage: {
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details

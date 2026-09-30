@@ -1,0 +1,26 @@
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/internalPaths.test.ts:138:87)
+(fail) checkReadableInternalPath (hee) > con la cerca de lectura, el CLAUDE.md del usuario se lee [2.97ms]
+
+src/__tests__/createPermissionRequestMessage.test.ts:
+ 6 | import { createPermissionRequestMessage } from '../permissions.js'
+ 7 | import type { PermissionRule } from '../PermissionRule.js'
+ 8 | 
+ 9 | describe('createPermissionRequestMessage (su)', () => {
+10 |   test('sin razón: el aviso genérico', () => {
+11 |     expect(createPermissionRequestMessage('Bash')).toBe("Claude requested permissions to use Bash, but you haven't granted it yet.")
+                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "Claude requested permissions to use Bash, but you haven't granted it yet."
+Received: "thyrox requested permissions to use Bash, but you haven't granted it yet."
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts:11:52)
+(fail) createPermissionRequestMessage (su) > sin razón: el aviso genérico [0.18ms]
+
+ 1071 pass
+ 4 fail
+ 1821 expect() calls
+Ran 1075 tests across 69 files. [12.01s]
+EXIT=1

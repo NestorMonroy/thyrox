@@ -1,0 +1,27 @@
+test_tsc_routes:
+  ok    las continuaciones no son diagnósticos
+  ok    archivo y código del primero
+  ok    el tipo citado dentro de un genérico se ve
+  ok    el nombre de una propiedad entre comillas no es un tipo citado
+  ok    los nombres dentro de un literal de objeto no se citan
+  ok    los de una unión y un arreglo, sí
+  ok    ni los de un tipo función
+  ok    ruta 1: códigos deterministas, aunque citen un tipo duplicado
+  ok    ruta 2: los que citan un tipo duplicado
+  ok    ruta 3: el resto
+  ok    la cola va por frecuencia, no por nombre
+  ok    cada entrada nombra sus definiciones y sus consumidores
+  ok    un nombre exportado desde dos archivos es duplicado
+  ok    una copia local de un tipo exportado cuenta como duplicado
+  ok    un nombre local que nadie exporta no cuenta
+  ok    dos discriminantes distintos no son el mismo tipo
+  ok    de tres SystemPrompt, sólo las dos de la misma forma son duplicado
+  ok    un alias a import(...) no es una copia
+  ok    dos Props de componentes distintos no son el mismo tipo
+  ok    un marcador Record<string, unknown> es copia reducida del contrato
+  ok    un marcador = unknown es copia reducida, y el = de un genérico no es el de la declaración
+  ok    un solo campo común (children) no encadena props distintas
+  ok    un nombre con más de 10 formas distintas es convención, no contrato
+  ok    el = del valor por defecto de un genérico no hace iguales dos cuerpos distintos
+  ok    mismos campos con discriminante distinto no son el mismo tipo
+test_tsc_routes: 25 aserciones — 25 ok, 0 falla(s)

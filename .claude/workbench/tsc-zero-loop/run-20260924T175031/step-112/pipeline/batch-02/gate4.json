@@ -1,0 +1,58 @@
+{
+ "reviewed": [
+  {
+   "pattern": "graceful-shutdown-contract-promise-never",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "storage-readFileSync-espera-options-object",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "rest-args-spread-into-fixed-arity-slot",
+   "files": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "pattern": "profile-report-requires-session-id-option",
+   "files": [
+    "src/packages/cli/src/entry/run-program.ts"
+   ]
+  },
+  {
+   "pattern": "hook-event-importado-del-stub-unknown",
+   "files": [
+    "src/packages/cli/src/headless/sdk/control/handlers.ts"
+   ]
+  },
+  {
+   "pattern": "mcp-compat-schema-erases-shape",
+   "files": [
+    "src/packages/cli/src/headless/sdk/control/handlers.ts"
+   ]
+  },
+  {
+   "pattern": "union-command-property-only-on-local-variant",
+   "files": [
+    "src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts"
+   ]
+  },
+  {
+   "pattern": "fabricated-cast-instead-of-discriminant-narrowing",
+   "files": [
+    "src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts"
+   ]
+  },
+  {
+   "pattern": "local-jsx-context-escape-hatch-property-untyped",
+   "files": [
+    "src/packages/command-runtime/src/commands/fast/fast.tsx"
+   ]
+  }
+ ]
+}

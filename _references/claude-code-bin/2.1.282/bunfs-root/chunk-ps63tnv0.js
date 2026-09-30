@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.282
+import{Wt,V8,YS}from"/$bunfs/root/chunk-1g1dfcph.js";import{a}from"/$bunfs/root/chunk-h56wjcte.js";import{ze}from"/$bunfs/root/chunk-tsex6vh0.js";import{Yu}from"/$bunfs/root/chunk-nbmjse29.js";import{u_}from"/$bunfs/root/chunk-9fz4qzzd.js";import{c_}from"/$bunfs/root/chunk-d96a7vyk.js";import{vbo}from"/$bunfs/root/chunk-n8qypqam.js";import{ml,fve}from"/$bunfs/root/chunk-ga02wneq.js";import{pWe}from"/$bunfs/root/chunk-k35fhg2k.js";import{Xh,Etn,dIt}from"/$bunfs/root/chunk-14nshg03.js";import{Gtn,Lot}from"/$bunfs/root/chunk-vj5k1dgt.js";import{Kgn}from"/$bunfs/root/chunk-xv8jse57.js";import{lI}from"/$bunfs/root/chunk-mqm19a7h.js";import{_i,Jc}from"/$bunfs/root/chunk-ewsr9rhf.js";var c=new Set([u_,c_]),f=["subscribe_pr_activity","unsubscribe_pr_activity"];function T(o){return f.some((e)=>o.endsWith(e))}var u=new Set([Yu,"github"]);function N3n(o,e){if(e.length===0)return o;let t=e.map((r)=>[r,_i(r)]),n=o.filter((r)=>!t.some(([s,i])=>Jc(r,s,i)));return n.length===o.length?o:n}function O(o){return o.mcpInfo?.cliOwned===!0&&o.mcpInfo.serverName===Yu}var m=import.meta.require("/$bunfs/root/chunk-fd0h0dfs.js");function GBt(){return(process.env.CLAUDE_CODE_COORDINATOR_EXTRA_TOOLS??"").split(",").map((o)=>o.trim()).filter(Boolean)}function $3n(o,e=GBt()){if(Gtn(o)||u.has(o.name))return!0;let t=_i(o.name);return e.some((n)=>n.startsWith(t))}function MOo(o){let e=a.CLAUDE_CODE_BRIEF,t=new Set(GBt()),n=dIt();return o.filter((r)=>Etn.has(r.name)||n&&Wt(r,ze)&&!Xh(r)||T(r.name)||O(r)||Lot(r)||e&&c.has(r.name)||YS(r,t))}function oft(o,e,t,n){let[r,s]=lI(Kgn(ml(pWe([...o,...e]),"name"),n),(l)=>Xh(l)||fve(l)),i=[...s.sort(V8),...r.sort(V8)];if(m){if(m.isCoordinatorMode())return MOo(i)}return i}function sft(o,e){let t=o.length===1?o[0]:void 0;if(t&&vbo(e,t))return[];return o}
+export{N3n,GBt,$3n,MOo,oft,sft};

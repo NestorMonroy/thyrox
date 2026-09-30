@@ -1,0 +1,9 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/tool-registry/src/__tests__/publicSurface.test.ts:
+(pass) @thyrox/tool-registry public surface > publishes canonical runtime and host entry points [0.12ms]
+
+ 1 pass
+ 0 fail
+ 4 expect() calls
+Ran 1 test across 1 file. [74.00ms]

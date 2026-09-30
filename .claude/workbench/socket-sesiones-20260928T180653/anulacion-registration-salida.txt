@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+192 |   })
+193 | 
+194 |   test('al salir retira el archivo, y la limpieza lo borra', async () => {
+195 |     await registerSession(undefined, deps())
+196 |     exitListeners[0]!()
+197 |     expect(existsSync(pidFile())).toBe(false)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:197:35)
+(fail) registerSession (nD) > al salir retira el archivo, y la limpieza lo borra [1.28ms]
+
+ 22 pass
+ 1 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [210.00ms]

@@ -1,0 +1,5 @@
+    check("media", 300, summary.avg_mib)
+    check("uso pico de GPU", 91, summary.peak_util_pct)
+    check("varias muestras", True, summary.samples >= 3)
+    check("para al terminar el árbol, no después", True, elapsed < 3.0)
+    check("<n>.gpu con las cuatro cifras", f"300 300 91 {summary.samples}", out.read_text().strip())

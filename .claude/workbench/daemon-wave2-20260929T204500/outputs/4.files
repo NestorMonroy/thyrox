@@ -1,0 +1,6 @@
+src/packages/cli/src/bg/__tests__/ptyAdopter.test.ts
+src/packages/cli/src/bg/ptyAdopter.ts
+src/packages/daemon/src/__tests__/rvChannel.test.ts
+src/packages/daemon/src/__tests__/workerSocketClient.test.ts
+src/packages/daemon/src/rvClient.ts
+src/packages/daemon/src/workerSocketClient.ts

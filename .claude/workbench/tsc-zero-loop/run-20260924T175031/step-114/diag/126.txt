@@ -1,0 +1,23 @@
+src/packages/repl/src/screens/repl/bgDetachSignal.ts(53,40): error TS2322: Type '"detach"' is not assignable to type '"claim" | "exit" | "resize" | "kill" | "reply" | "heartbeat" | "hello" | "live"'.
+  --- código src/packages/repl/src/screens/repl/bgDetachSignal.ts:43-63 ---
+     43        const settle = (): void => {
+     44          try {
+     45            sock.destroy()
+     46          } catch {
+     47            /* best-effort */
+     48          }
+     49        }
+     50        sock.once('error', settle)
+     51        sock.once('connect', () => {
+     52          try {
+     53>           sock.write(encodeCtrlFrame({ t: 'detach' }))
+     54            setTimeout(settle, 50)
+     55          } catch {
+     56            settle()
+     57          }
+     58        })
+     59      } catch {
+     60        // best-effort — stdout APC is the primary path
+     61      }
+     62    })()
+     63  }

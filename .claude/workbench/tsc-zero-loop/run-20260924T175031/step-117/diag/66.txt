@@ -1,0 +1,23 @@
+src/packages/config/plugin/parseMarketplaceInput.ts(126,15): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+  --- código src/packages/config/plugin/parseMarketplaceInput.ts:116-136 ---
+    116      } catch (e: unknown) {
+    117        const code = getErrnoCode(e)
+    118        return {
+    119          error:
+    120            code === 'ENOENT'
+    121              ? `Path does not exist: ${resolvedPath}`
+    122              : `Cannot access path: ${resolvedPath} (${code ?? e})`,
+    123        }
+    124      }
+    125  
+    126>     if (stats.isFile()) {
+    127        if (resolvedPath.endsWith('.json')) {
+    128          return { source: 'file', path: resolvedPath }
+    129        } else {
+    130          return {
+    131            error: `File path must point to a .json file (marketplace.json), but got: ${resolvedPath}`,
+    132          }
+    133        }
+    134      } else if (stats.isDirectory()) {
+    135        return { source: 'directory', path: resolvedPath }
+    136      } else {

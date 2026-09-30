@@ -1,0 +1,11 @@
+--- a/src/session/bg.sh
++++ b/src/session/bg.sh
+@@ -272,7 +272,7 @@
+         avail="$(mem_available_bytes)" || continue
+         (( avail < cota / 2 )) || continue
+         live="$(_memfree_live)"
+-        (( $(grep -c . <<<"$live") > 1 )) || continue
++        :
+         youngest="$(sort -n <<<"$live" | tail -1 | cut -d' ' -f2)"
+         [[ "$youngest" == "$pid" ]] || continue
+         printf '\n[bg.sh] --memfree: memoria disponible %s < mitad de la cota %s con %s trabajos vivos; se mata el más joven (este).\n' \

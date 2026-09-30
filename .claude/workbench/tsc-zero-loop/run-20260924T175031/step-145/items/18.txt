@@ -1,0 +1,80 @@
+src/packages/agent/messages.ts(4467,19): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  --- código src/packages/agent/messages.ts:4457-4477 ---
+   4457   * indice de `AttachmentMessage['attachment']` en ambos casos.
+   4458   */
+   4459  function getResolvedHookCount(
+   4460    messages: NormalizedMessage[],
+   4461    toolUseID: string,
+   4462    hookEvent: HookEvent,
+   4463  ): number {
+   4464    const uniqueHookNames = new Set(
+   4465      messages
+   4466        .filter(
+   4467>         (_): _ is AttachmentMessage =>
+   4468            isHookAttachmentMessage(_) &&
+   4469            _.attachment.toolUseID === toolUseID &&
+   4470            _.attachment.hookEvent === hookEvent,
+   4471        )
+   4472        .map(_ => _.attachment.hookName),
+   4473    )
+   4474    return uniqueHookNames.size
+   4475  }
+   4476  
+   4477  export function hasUnresolvedHooks(
+  Type 'AttachmentMessage<_T>' is not assignable to type 'NormalizedMessage'.
+    Type 'AttachmentMessage<_T>' is not assignable to type 'MessageBase & { type: "attachment"; attachment: { [key: string]: unknown; type: string; }; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...'.
+      Type 'AttachmentMessage<_T>' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.
+src/packages/agent/messages.ts(4472,17): error TS18048: '_.attachment' is possibly 'undefined'.
+  --- código src/packages/agent/messages.ts:4462-4482 ---
+   4462    hookEvent: HookEvent,
+   4463  ): number {
+   4464    const uniqueHookNames = new Set(
+   4465      messages
+   4466        .filter(
+   4467          (_): _ is AttachmentMessage =>
+   4468            isHookAttachmentMessage(_) &&
+   4469            _.attachment.toolUseID === toolUseID &&
+   4470            _.attachment.hookEvent === hookEvent,
+   4471        )
+   4472>       .map(_ => _.attachment.hookName),
+   4473    )
+   4474    return uniqueHookNames.size
+   4475  }
+   4476  
+   4477  export function hasUnresolvedHooks(
+   4478    messages: NormalizedMessage[],
+   4479    toolUseID: string,
+   4480    hookEvent: HookEvent,
+   4481  ) {
+   4482    const inProgressHookCount = getInProgressHookCount(
+src/packages/agent/messages.ts(4495,10): error TS6133: 'getPlanModeInstructions' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:4485-4505 ---
+   4485      hookEvent,
+   4486    )
+   4487    const resolvedHookCount = getResolvedHookCount(messages, toolUseID, hookEvent)
+   4488  
+   4489    if (inProgressHookCount > resolvedHookCount) {
+   4490      return true
+   4491    }
+   4492  
+   4493    return false
+   4494  }
+   4495> function getPlanModeInstructions(attachment: {
+   4496    reminderType: 'full' | 'sparse'
+   4497    isSubAgent?: boolean
+   4498    planFilePath: string
+   4499    planExists: boolean
+   4500  }): UserMessage[] {
+   4501    if (attachment.isSubAgent) {
+   4502      return getPlanModeV2SubAgentInstructions(attachment)
+   4503    }
+   4504    if (attachment.reminderType === 'sparse') {
+   4505      return getPlanModeV2SparseInstructions(attachment)

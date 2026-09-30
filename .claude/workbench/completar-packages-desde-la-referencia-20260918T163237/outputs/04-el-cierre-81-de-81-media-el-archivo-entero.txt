@@ -1,0 +1,93 @@
+EL CIERRE «81 DE 81» MEDÍA EL ARCHIVO ENTERO, NO EL TRAMO
+==========================================================
+fecha: 2026-09-18T16:43:28
+
+LA PREMISA QUE SE CAYÓ
+----------------------
+La fase 2 de permission cerró con `traducidos=81  pendientes=0`. El criterio
+de `translation_progress.mjs` está escrito en su propia cabecera:
+
+    «Un archivo está traducido cuando su texto de comentario difiere del de la
+     referencia; sigue pendiente cuando es idéntico.»
+
+Es exacto para lo que mide y declara su ceguera a la FIDELIDAD. Lo que NO
+declara —y es otra ceguera— es la traducción PARCIAL: un archivo con su
+docstring en español y diez comentarios en línea intactos tiene un texto de
+comentario que difiere, así que cuenta como traducido.
+
+Medido al construir el medidor del paquete siguiente:
+
+    134 archivos · 30 con inglés · 53 tramos en inglés
+
+    de los 30:  18 son de los 100 COPIADOS y traducidos en esta ventana
+                12 son preexistentes (TASK-THYROX-0167)
+
+La frontera de la copia es `edec04b1^..edec04b1` («Copiar los 101 archivos
+ausentes de permission»); 101 = 100 .ts/.tsx + README.md.
+
+DE LOS 18, CUÁNTOS ERAN DEFECTO Y CUÁNTOS RUIDO DEL INSTRUMENTO
+---------------------------------------------------------------
+CUATRO archivos llevaban prosa inglesa de verdad, 16 tramos:
+
+    src/classifierDecision.ts                        12  (enumeración en línea
+                                                          dentro del arreglo)
+    src/components/…/QuestionNavigationBar.tsx        2  (comentarios de cola)
+    src/components/PermissionDecisionDebugInfo.tsx    1  (comentario de cola)
+    src/components/rules/AddWorkspaceDirectory.tsx    1  (comentario de cola)
+
+El resto son comentarios en ESPAÑOL que citan un ancla inglesa —
+«Chat about this», «and N more», «reading from», «Yes, and apply suggestions»,
+`yes-apply-suggestions`, `'both'`, `Session Context`, `err on the side of
+blocking`, `/some/path/`, `debug-only`, `suggestions as any`,
+`<other-user>/…` — que la convención manda conservar verbatim.
+
+La forma que se repite: el comentario de COLA (`campo // texto`) y la
+enumeración en línea dentro de un literal de arreglo. Las dos sobreviven a una
+traducción que ataca el bloque de cabecera.
+
+DOS DEFECTOS DEL PROPIO INSTRUMENTO, MEDIDOS AL USARLO
+-------------------------------------------------------
+1. COLISIÓN DEL LÉXICO CON EL ESPAÑOL. El léxico inglés traía `no`, `use`,
+   `has` y `via`, que son palabras del español (`no escribe`, `que use`,
+   `has`, `via`). Sobre la REFERENCIA sólo infla una cota superior; sobre el
+   PUERTO, como medidor de avance, dispara sobre el propio español y la cifra
+   nunca llega a 0. Es la forma inversa de la colisión que ya se retiró de la
+   tabla INEQUÍVOCA del censo de tilde (`version`, `decision`, `revision`,
+   `division`, `multiple`).
+
+2. EL `\b` DE JAVASCRIPT ES ASCII. Una letra acentuada cuenta como frontera
+   de palabra, así que `mayúsculas` dispara `may` y `allá` dispara `all`.
+   Control que discrimina, con las dos formas sobre las mismas cuatro cadenas:
+
+       mayúsculas   ASCII-\b=true    Unicode=false
+       más allá     ASCII-\b=true    Unicode=false
+       may be       ASCII-\b=true    Unicode=true
+       all of       ASCII-\b=true    Unicode=true
+
+   Las dos coinciden en los verdaderos positivos y discrepan sólo en los
+   falsos: eso es lo que hace al control un control. Corregido a
+   `(?<!\p{L})(…)(?!\p{L})` con la bandera `u`.
+
+   Un tercer defecto menor: el medidor no descontaba la DIRECTIVA de linter,
+   que sus dos hermanos (`accent_census`, `translation_progress`) sí
+   descuentan. Un `eslint-disable-next-line … -- 'r' is a view-specific key`
+   se contaba como prosa inglesa.
+
+DESPUÉS DE LOS TRES ARREGLOS
+-----------------------------
+    134 archivos · 22 con inglés · 35 tramos     (de 30 y 53)
+
+y de los 18 copiados NINGUNO conserva prosa inglesa: los 23 tramos que quedan
+en ellos son anclas citadas dentro de comentario español.
+
+Control de que la corrección no tocó código: `only_comments_changed.mjs`
+sobre los cuatro archivos editados — `archivos comparados=4  divergentes=0`.
+
+*Métrica:* tramos de comentario que devuelve el AST
+(`getLeadingCommentRanges`/`getTrailingCommentRanges`), descontada la
+directiva de linter, contra un léxico cerrado de palabras funcionales inglesas
+con frontera Unicode.
+*Ciega a:* el comentario español que cita un ancla inglesa —el ruido que
+queda, y que ningún léxico puede separar de la prosa inglesa sin leerlo—; la
+palabra inglesa fuera del léxico; y la FIDELIDAD de la traducción, que sigue
+sin instrumento.

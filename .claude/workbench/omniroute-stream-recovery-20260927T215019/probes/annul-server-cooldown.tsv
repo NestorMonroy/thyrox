@@ -1,0 +1,3 @@
+no-clear	s/      if (response.status < 400) config.cooldown?.clear(credential)/      if (response.status < 400) void 0/
+no-mark	s/      else config.cooldown?.markUnavailable(/      else void (/
+no-error-text	s/model: resolved.model, status: response.status, errorText, headers/model: resolved.model, status: response.status, errorText: null, headers/

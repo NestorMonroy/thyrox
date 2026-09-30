@@ -1,0 +1,2 @@
+VERDE tests/session/test-sincronizar-settings-local.sh
+EXIT=0

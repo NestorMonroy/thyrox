@@ -1,0 +1,64 @@
+src/packages/config/plugin/lspPluginIntegration.ts(6,3): error TS2724: '"./_deps.js"' has no exported member named 'ScopedLspServerConfig'. Did you mean 'ScopedMcpServerConfig'?
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:1-16 ---
+      1  import { readFile } from 'fs/promises'
+      2  import { join, relative, resolve } from 'path'
+      3  import { z } from 'zod/v4'
+      4  import type {
+      5    LspServerConfig,
+      6>   ScopedLspServerConfig,
+      7  } from './_deps.js'
+      8  import { expandEnvVarsInString } from './_deps.js'
+      9  import type { LoadedPlugin, PluginError } from './types.js'
+     10  import { logForDebugging } from './_deps.js'
+     11  import { isENOENT, toError } from './_deps.js'
+     12  import { logError } from './_deps.js'
+     13  import { jsonParse } from './_deps.js'
+     14  import { getPluginDataDir } from './pluginDirectories.js'
+     15  import {
+     16    getPluginStorageId,
+src/packages/config/plugin/lspPluginIntegration.ts(243,22): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:233-253 ---
+    233        resolved = substituteUserConfigVariables(resolved, userConfig)
+    234      }
+    235  
+    236      // Finally expand general environment variables
+    237      const { expanded, missingVars } = expandEnvVarsInString(resolved)
+    238      allMissingVars.push(...missingVars)
+    239  
+    240      return expanded
+    241    }
+    242  
+    243>   const resolved = { ...config }
+    244  
+    245    // Resolve command path
+    246    if (resolved.command) {
+    247      resolved.command = resolveValue(resolved.command)
+    248    }
+    249  
+    250    // Resolve args
+    251    if (resolved.args) {
+    252      resolved.args = resolved.args.map((arg: string): string => resolveValue(arg))
+    253    }
+src/packages/config/plugin/lspPluginIntegration.ts(298,7): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:288-308 ---
+    288  export function addPluginScopeToLspServers(
+    289    servers: Record<string, LspServerConfig>,
+    290    pluginName: string,
+    291  ): Record<string, ScopedLspServerConfig> {
+    292    const scopedServers: Record<string, ScopedLspServerConfig> = {}
+    293  
+    294    for (const [name, config] of Object.entries(servers)) {
+    295      // Add plugin prefix to server name to avoid conflicts
+    296      const scopedName = `plugin:${pluginName}:${name}`
+    297      scopedServers[scopedName] = {
+    298>       ...config,
+    299        scope: 'dynamic', // Use dynamic scope for plugin servers
+    300        source: pluginName,
+    301      }
+    302    }
+    303  
+    304    return scopedServers
+    305  }
+    306  
+    307  /**
+    308   * Get LSP servers from a specific plugin with environment variable resolution and scoping

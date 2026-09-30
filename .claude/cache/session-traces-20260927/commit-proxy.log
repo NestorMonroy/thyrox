@@ -1,0 +1,51 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 38 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 38 archivo(s) pedido(s))
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 22895 especificador(es) en 4010 archivo(s) de 48 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 2 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 165 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 56475 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1556 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1798 lectura(s) en 3506 archivo(s) de producción — propias 768, proveedor 93, cliente ajeno 17, sin prefijo 920)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 142 congelada(s), 0 obsoleta(s) (alcance medido: 305 variable(s) propia(s), 1636 archivo(s) de prueba)
+[feature/thyrox-l6 58df194c] Add the local proxy: selectors, server, forwarder, chat
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 38 files changed, 4928 insertions(+), 3 deletions(-)
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/README.md
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-agent.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-bridge.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-cli.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-commands.txt
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-mcp-runtime.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-memory.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-provider.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-repl.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-tool-registry.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/tsc-2.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/tsc-3.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/tsc-4.log
+ create mode 100644 .claude/workbench/proxy-selectors-server-20260927T175646/outputs/tsc.log
+ create mode 100644 src/packages/provider/__tests__/proxyChatCompletions.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyCredentialSelectors.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyServer.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyStartServer.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyTranslatorsRequestMessagesToOpenAI.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyTranslatorsRequestOpenAIToMessages.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyTranslatorsResponseMessagesToOpenAI.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyTranslatorsResponseOpenAIToMessages.test.ts
+ create mode 100644 src/packages/provider/__tests__/proxyUpstreamForwarder.test.ts
+ create mode 100644 src/packages/provider/src/proxy/chatCompletions.ts
+ create mode 100644 src/packages/provider/src/proxy/credentialSelectors.ts
+ create mode 100644 src/packages/provider/src/proxy/server.ts
+ create mode 100644 src/packages/provider/src/proxy/startServer.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/index.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/messagesImageBlocks.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/requestMessagesToOpenAI.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/requestOpenAIToMessages.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/responseMessagesToOpenAI.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/responseOpenAIToMessages.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/schemaUtils.ts
+ create mode 100644 src/packages/provider/src/proxy/translators/toolResultAdjacency.ts
+ create mode 100644 src/packages/provider/src/proxy/upstreamForwarder.ts

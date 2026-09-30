@@ -1,0 +1,1 @@
+src/packages/shell	src/packages/shell/bin/__tests__,src/packages/shell/src/__tests__,src/packages/shell/src/bash/__tests__,src/packages/shell/src/legacy/__tests__	bun test src/packages/shell/bin/__tests__ src/packages/shell/src/__tests__ src/packages/shell/src/bash/__tests__ src/packages/shell/src/legacy/__tests__	0	186	PASS

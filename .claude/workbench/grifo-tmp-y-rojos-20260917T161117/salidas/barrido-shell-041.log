@@ -1,0 +1,2 @@
+VERDE tests/session/test-arranque-de-clon.sh
+EXIT=0

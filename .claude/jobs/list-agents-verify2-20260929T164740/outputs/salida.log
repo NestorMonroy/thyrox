@@ -1,0 +1,38 @@
+__tests__/udsControlIdleNotification.test.ts(44,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(53,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(61,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(69,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(77,35): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(96,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(108,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(115,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(124,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsControlIdleNotification.test.ts(126,19): error TS2349: This expression is not callable.
+  Not all constituents of type 'ControlActionHandler' are callable.
+    Type '{ accepts: (message: Message) => boolean; handle: (message: Message, peer: PeerIdentity) => void | Promise<void>; }' has no call signatures.
+__tests__/udsInboundPolicy.test.ts(31,143): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: "accept" | "refuse" | "hold" | undefined): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"accept" | "refuse" | "hold" | undefined'.
+  Overload 2 of 2, '(expected: "accept" | "refuse" | "hold" | undefined): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"accept" | "refuse" | "hold" | undefined'.
+errores tsc en módulos nuevos: 0
+EXIT=0
+__BG_EXIT__=0

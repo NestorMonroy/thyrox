@@ -1,0 +1,78 @@
+== 1: sin token no se refresca
+ 1 fail
+== 2: el margen es estricto
+ 1 fail
+== 3: sin caducidad se refresca
+ 1 fail
+== 4: sin etiqueta por defecto
+ 1 fail
+== 5: los guiones de los bordes se quedan
+ 1 fail
+== 6: los alcances sin filtrar
+ 1 fail
+== 7: el nivel en blanco se escribe
+ 1 fail
+== 8: cualquier proveedor exporta
+ 1 fail
+== 9: una clave de API exporta
+ 1 fail
+== 10: siempre se refresca
+ 2 fail
+== 11: el refresco irrecuperable es un fallo genérico
+ 1 fail
+== 12: el refresco no se persiste
+ 1 fail
+== 13: el refresh token viejo se pierde
+ 1 fail
+== 14: los datos del proveedor se reemplazan
+ 1 fail
+== 15: la caducidad no se recalcula
+ 1 fail
+== 16: el archivo por la etiqueta
+ 1 fail
+== 17: sin copia al lado
+ 1 fail
+== 18: lo demás del archivo se pierde
+ 1 fail
+== 19: legible por todos
+ 1 fail
+== 20: sin informar lo conservado
+ 1 fail
+== 21: se importa sin access token
+ 1 fail
+== 22: se importa sin refresh token
+ 1 fail
+== 23: la caducidad numérica queda en milisegundos
+ 1 fail
+== 24: la caducidad en texto sin recortar
+ 1 fail
+== 25: los alcances importados sin filtrar
+ 1 fail
+== 26: un bootstrap caído rompe la importación
+ 0 fail
+== 27: el nivel del archivo se pierde
+ 1 fail
+== 28: sin correo del bootstrap
+ 1 fail
+== 29: la cuenta distingue mayúsculas
+ 1 fail
+== 30: el duplicado se sobrescribe solo
+ 1 fail
+== 31: la identidad de dispositivo se renueva
+ 1 fail
+== 32: el nombre existente se pierde
+ 1 fail
+== 33: sin identidad se importa
+ 1 fail
+== 34: sin nombre por defecto
+ 1 fail
+== 35: un fetch que lanza rompe la importación
+ 1 fail
+== restaurado
+ 0 fail
+
+== re-medición (annul-106d6b-rerun-20260928T103005)
+== 26: un bootstrap caído rompe la importación
+ 1 fail
+== restaurado
+ 0 fail

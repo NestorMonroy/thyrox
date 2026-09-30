@@ -1,0 +1,8 @@
+check-package-typecheck: 17 provider(s) reconstruido(s) por viejos: agent, app-host, bridge, cli, command-runtime, config, ide, local-observability, mcp-runtime, mitm, permission, provider, repl, shell, storage, swarm, tool-registry
+  agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  app-host: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 4 de 4 paquete(s))
+__BG_EXIT__=0

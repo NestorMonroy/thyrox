@@ -1,0 +1,13 @@
+  ok    item2 (anomalía) no se aplica
+item_worktree stash guard: 18/18
+  ok    el veredicto lee el worktree, no lo que cambió el árbol principal
+test-headless-pool-worktree: 32 aserciones — 32 ok, 0 falla(s)
+  ok    plazo inválido: exit 2
+item_worktree disk: 8/8
+  ok    lo dice
+item_worktree location: 10/10
+  ok    THYROX_ITEM_WORKTREE_RETRY_SECONDS inválida se rechaza
+item_worktree lock: 7/7
+  ok    no salva nada
+item_worktree orphans: 9/9
+VERIFY OK

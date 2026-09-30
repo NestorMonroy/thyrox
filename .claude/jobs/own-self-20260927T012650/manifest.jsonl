@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --timeout 900 .claude/workbench/ts-own-errors-20260926T225629/after-self.cmds", "started_at": "2026-09-27T01:26:50+00:00"}

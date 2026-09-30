@@ -1,0 +1,2 @@
+VERDE tests/agents/test-agent-store-sessions.sh
+EXIT=0

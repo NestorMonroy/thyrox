@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(445,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AttributionState'.
+  --- código src/packages/agent/QueryEngine.ts:435-455 ---
+    435          setAppState(prev => {
+    436            const updated = updater(prev.fileHistory)
+    437            if (updated === prev.fileHistory) return prev
+    438            return { ...prev, fileHistory: updated }
+    439          })
+    440        },
+    441        updateAttributionState: (
+    442          updater: (prev: AttributionState) => AttributionState,
+    443        ) => {
+    444          setAppState(prev => {
+    445>           const updated = updater(prev.attribution)
+    446            if (updated === prev.attribution) return prev
+    447            return { ...prev, attribution: updated }
+    448          })
+    449        },
+    450        setSDKStatus,
+    451      }
+    452  
+    453      // Handle orphaned permission (only once per engine lifetime)
+    454      if (orphanedPermission && !this.hasHandledOrphanedPermission) {
+    455        this.hasHandledOrphanedPermission = true
+src/packages/agent/QueryEngine.ts(462,15): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+  --- código src/packages/agent/QueryEngine.ts:452-472 ---
+    452  
+    453      // Handle orphaned permission (only once per engine lifetime)
+    454      if (orphanedPermission && !this.hasHandledOrphanedPermission) {
+    455        this.hasHandledOrphanedPermission = true
+    456        for await (const message of handleOrphanedPermission(
+    457          orphanedPermission,
+    458          tools,
+    459          this.mutableMessages,
+    460          processUserInputContext,
+    461        )) {
+    462>         yield message
+    463        }
+    464      }
+    465  
+    466      const {
+    467        messages: messagesFromUserInput,
+    468        shouldQuery,
+    469        allowedTools,
+    470        model: modelFromUserInput,
+    471        resultText,
+    472      } = await processUserInput({

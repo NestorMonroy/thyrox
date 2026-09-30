@@ -1,0 +1,11 @@
+prefijo: 927 archivos
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/bisecar.sh: line 19: 13994 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/ultima.txt" 2>&1
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/bisecar.sh: line 19: 25863 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/ultima.txt" 2>&1
+B reproduce: 464
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/bisecar.sh: line 19: 27859 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/ultima.txt" 2>&1
+B reproduce: 232
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/bisecar.sh: line 19: 31754 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/ultima.txt" 2>&1
+B reproduce: 116
+ninguna mitad sola reproduce con 116: interaccion entre mitades
+EXIT=0
+__BG_EXIT__=0

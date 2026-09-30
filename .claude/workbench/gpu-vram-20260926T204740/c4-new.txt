@@ -1,0 +1,9 @@
+    readings = [gpu_monitor.read_gpu_file(path) for path in (bench / "outputs").glob("*.gpu")]
+    measured = [r.summary for r in readings if r.state == "measured"]
+    errors = sum(1 for r in readings if r.state == "error")
+    if not measured:
+        return {"measured": 0, **({"errors": errors} if errors else {})}
+    peaks = [s.peak_mib for s in measured]
+    return {"measured": len(measured), "errors": errors, "vram_max_mib": max(peaks),
+            "vram_median_mib": int(statistics.median(peaks)),
+            "util_max_pct": max(s.peak_util_pct for s in measured)}

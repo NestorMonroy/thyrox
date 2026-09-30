@@ -1,0 +1,6 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO Marca de agua por sesión en tabla propia (task_session_highwater) y asignación atómica de TaskCreate: src/packages/tools/src/tasks.ts, src/packages/task/schema.ts, src/packages/tools/__tests__/taskSessionHighwater.test.ts (nuevo), src/packages/tools/__tests__/taskCreateWorker.ts (nuevo, sólo si la concurrencia lo necesita), src/packages/agent/__tests__/resetTaskList.test.ts
+items=1 ok=0 fallidos=1
+verificados=0 rechazados=0 sin-cambios=0 fallidos=1
+__BG_EXIT__=1

@@ -1,0 +1,22 @@
+  ok    cuatro capas separadas
+  ok    sistema: pared del pool y fracción a ancho completo, del joblog
+  ok    sistema: el ítem lento frente a la mediana, y los ítems fallidos
+  ok    sistema: pasadas de tsc del pipeline
+  ok    datos: propuestas, aceptadas y tasa
+  ok    capacidad: del primer total al último
+  ok    costo en tokens equivalentes ponderados, y por aceptada
+  ok    el USD de lista no se publica como costo
+  ok    sin archivos .time la memoria se declara no medida, no cero
+  ok    la memoria pico de los items: máxima, mediana y cuántos se midieron
+  ok    sin archivos .gpu la VRAM se declara no medida, no cero
+  ok    la VRAM de los items: pico máximo, mediana, uso pico, medidos y errores
+  ok    sin modelUsage la base es la fórmula fija, declarada
+  ok    costo con los cocientes del tier del modelo de cada salida
+  ok    la base de cada modelo se publica
+  ok    sin streams el prefijo se declara no medido, no cero
+  ok    un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa)
+  ok    el prefijo: primer ítem frío, su tamaño por la lectura de los demás
+  ok    el primer ítem es el primero en arrancar, no el de Seq menor
+  ok    sin lotes medidos rehúsa en vez de publicar ceros
+test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+EXIT=0

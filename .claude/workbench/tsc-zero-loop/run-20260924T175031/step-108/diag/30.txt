@@ -1,0 +1,138 @@
+src/packages/agent/createDeps.ts(199,3): error TS2416: Property 'find' in type 'ToolDepImpl' is not assignable to the same property in base type 'ToolDep'.
+  --- código src/packages/agent/createDeps.ts:189-209 ---
+    189      return this.toolUseContext.options.mainLoopModel
+    190    }
+    191  }
+    192  
+    193  class ToolDepImpl implements ToolDep {
+    194    constructor(
+    195      private readonly tools: RuntimeTool[],
+    196      private readonly toolUseContext: RuntimeToolUseContext,
+    197    ) {}
+    198  
+    199>   find(name: string) {
+    200      const tool = findToolByName(this.tools as never, name) as
+    201        | RuntimeTool
+    202        | undefined
+    203      return tool ? this.toCoreTool(tool) : undefined
+    204    }
+    205  
+    206    list() {
+    207      return this.tools.map(tool => this.toCoreTool(tool))
+    208    }
+    209  
+  Type '(name: string) => { name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; } | undefined' is not assignable to type '(name: string) => CoreTool | undefined'.
+    Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; } | undefined' is not assignable to type 'CoreTool | undefined'.
+      Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }' is not assignable to type 'CoreTool'.
+        Types of property 'inputSchema' are incompatible.
+          Property 'type' is missing in type 'Record<string, unknown>' but required in type 'ToolInputJSONSchema'.
+src/packages/agent/createDeps.ts(206,3): error TS2416: Property 'list' in type 'ToolDepImpl' is not assignable to the same property in base type 'ToolDep'.
+  --- código src/packages/agent/createDeps.ts:196-216 ---
+    196      private readonly toolUseContext: RuntimeToolUseContext,
+    197    ) {}
+    198  
+    199    find(name: string) {
+    200      const tool = findToolByName(this.tools as never, name) as
+    201        | RuntimeTool
+    202        | undefined
+    203      return tool ? this.toCoreTool(tool) : undefined
+    204    }
+    205  
+    206>   list() {
+    207      return this.tools.map(tool => this.toCoreTool(tool))
+    208    }
+    209  
+    210    async execute(
+    211      tool: { name: string },
+    212      input: unknown,
+    213      context: { toolUseId: string },
+    214    ) {
+    215      const realTool = findToolByName(this.tools as never, tool.name) as
+    216        | RuntimeTool
+  Type '() => { name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }[]' is not assignable to type '() => CoreTool[]'.
+    Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }[]' is not assignable to type 'CoreTool[]'.
+      Type '{ name: string; description: string; inputSchema: Record<string, unknown>; userFacingName: string; isLocal: boolean; isMcp: boolean; }' is not assignable to type 'CoreTool'.
+        Types of property 'inputSchema' are incompatible.
+          Property 'type' is missing in type 'Record<string, unknown>' but required in type 'ToolInputJSONSchema'.
+src/packages/agent/createDeps.ts(268,9): error TS2416: Property 'canUseTool' in type 'PermissionDepImpl' is not assignable to the same property in base type 'PermissionDep'.
+  --- código src/packages/agent/createDeps.ts:258-278 ---
+    258    }
+    259  }
+    260  
+    261  class PermissionDepImpl implements PermissionDep {
+    262    constructor(
+    263      private readonly canUseToolFn: CanUseToolFn,
+    264      private readonly toolUseContext: RuntimeToolUseContext,
+    265      private readonly tools: RuntimeTool[],
+    266    ) {}
+    267  
+    268>   async canUseTool(tool: { name: string }, input: unknown) {
+    269      const realTool = findToolByName(this.tools as never, tool.name) as
+    270        | RuntimeTool
+    271        | undefined
+    272      if (!realTool) {
+    273        return { allowed: false, reason: `Unknown tool: ${tool.name}` }
+    274      }
+    275  
+    276      try {
+    277        const decision = await this.canUseToolFn(
+    278          realTool,
+  Type '(tool: { name: string; }, input: unknown) => Promise<{ allowed: boolean; reason: string; } | { allowed: boolean; reason?: undefined; }>' is not assignable to type '(tool: CoreTool, input: unknown, context: PermissionContext) => Promise<PermissionResult>'.
+    Type 'Promise<{ allowed: boolean; reason: string; } | { allowed: boolean; reason?: undefined; }>' is not assignable to type 'Promise<PermissionResult>'.
+      Type '{ allowed: boolean; reason: string; } | { allowed: boolean; reason?: undefined; }' is not assignable to type 'PermissionResult'.
+        Type '{ allowed: boolean; reason?: undefined; }' is not assignable to type 'PermissionResult'.
+          Type '{ allowed: boolean; reason?: undefined; }' is not assignable to type '{ allowed: false; reason: string; }'.
+            Types of property 'allowed' are incompatible.
+              Type 'boolean' is not assignable to type 'false'.
+src/packages/agent/createDeps.ts(399,9): error TS2416: Property 'getUserContext' in type 'ContextDepImpl' is not assignable to the same property in base type 'ContextDep'.
+  --- código src/packages/agent/createDeps.ts:389-409 ---
+    389    }
+    390  
+    391    getSystemPrompt(): SystemPrompt[] {
+    392      if (this.overrides?.systemPrompt) return this.overrides.systemPrompt
+    393      if (this.toolUseContext.renderedSystemPrompt) {
+    394        return [this.toolUseContext.renderedSystemPrompt as SystemPrompt]
+    395      }
+    396      return []
+    397    }
+    398  
+    399>   async getUserContext(): Promise<Record<string, string>> {
+    400      if (this.overrides?.userContext) return this.overrides.userContext
+    401      try {
+    402        return await this.pipeline().getUserContext()
+    403      } catch (e) {
+    404        // Un fallo al construir el contexto no debe tumbar el bucle, pero
+    405        // tampoco puede ser invisible: un CLAUDE.md ausente o un git que falla
+    406        // cambian la conducta del prompt en silencio.
+    407        logError(e)
+    408        return {}
+    409      }
+  Type '() => Promise<Record<string, string>>' is not assignable to type '() => Record<string, string>'.
+    Type 'Promise<Record<string, string>>' is not assignable to type 'Record<string, string>'.
+      Index signature for type 'string' is missing in type 'Promise<Record<string, string>>'.
+src/packages/agent/createDeps.ts(412,9): error TS2416: Property 'getSystemContext' in type 'ContextDepImpl' is not assignable to the same property in base type 'ContextDep'.
+  --- código src/packages/agent/createDeps.ts:402-422 ---
+    402        return await this.pipeline().getUserContext()
+    403      } catch (e) {
+    404        // Un fallo al construir el contexto no debe tumbar el bucle, pero
+    405        // tampoco puede ser invisible: un CLAUDE.md ausente o un git que falla
+    406        // cambian la conducta del prompt en silencio.
+    407        logError(e)
+    408        return {}
+    409      }
+    410    }
+    411  
+    412>   async getSystemContext(): Promise<Record<string, string>> {
+    413      if (this.overrides?.systemContext) return this.overrides.systemContext
+    414      try {
+    415        return await this.pipeline().getSystemContext()
+    416      } catch (e) {
+    417        logError(e)
+    418        return {}
+    419      }
+    420    }
+    421  }
+    422  
+  Type '() => Promise<Record<string, string>>' is not assignable to type '() => Record<string, string>'.
+    Type 'Promise<Record<string, string>>' is not assignable to type 'Record<string, string>'.
+      Index signature for type 'string' is missing in type 'Promise<Record<string, string>>'.

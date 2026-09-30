@@ -1,0 +1,21 @@
+=== CONTROL DE ANULACION
+La suite (27 pass) es VERDE antes y despues: no discrimina — sus 2 archivos
+de test cubren solo los helpers puros, que ya estaban portados. El
+instrumento que discrimina es la sonda por CONTENIDO del mensaje.
+
+--- anulo SOLO src/packages/voice/src/hooks/useVoice.ts (git checkout HEAD --)
+    useVoice: STUB -> useVoice() no está portado: depende de react, de useSetVoice
+    useVoiceIntegration: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+    useVoiceKeybindingHandler: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+    VoiceKeybindingHandler: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+    stubs restantes: 1 de 4
+
+--- anulo SOLO src/packages/voice/src/voiceContext.tsx (git checkout HEAD --)
+    useVoice: PORTADO -> null is not an object (evaluating 'resolveDispatcher().useSt
+    useVoiceIntegration: PORTADO -> null is not an object (evaluating 'dispatcher.useContext')
+    useVoiceKeybindingHandler: STUB -> useGetVoiceState() no está portado: depende de react (create
+    VoiceKeybindingHandler: STUB -> useGetVoiceState() no está portado: depende de react (create
+    stubs restantes: 2 de 4
+
+--- restaurado; sonda de nuevo
+    stubs restantes: 0 de 4

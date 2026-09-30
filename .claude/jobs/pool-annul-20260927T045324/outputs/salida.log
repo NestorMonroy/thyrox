@@ -1,0 +1,6 @@
+0
+FALLA la fila nombra el modelo que corrió los ítems — esperado 'claude-sonnet-5', obtenido 'null'
+FALLA otro modelo: no deriva memfree de su fila — esperado '0', obtenido '1'
+FALLA otro modelo: lo dice — esperado '1', obtenido '0'
+aserciones: 89 de 92 · fallos: 3
+__BG_EXIT__=0

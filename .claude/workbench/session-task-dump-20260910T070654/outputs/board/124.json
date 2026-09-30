@@ -1,0 +1,10 @@
+{
+  "id": "124",
+  "subject": "Rechazar el ordinal de board como cita de sucesor en el gate",
+  "description": "BLOQUEADA POR #113 — no implementar antes. El gate rechazaría la única forma de cita HOY disponible: el volcado del board está bloqueado por reasignación de cita (estado 2 de refresh-board.sh, 878 ordinales con sujeto muerto), así que `TASK-DOCS-NNNN` no se puede acuñar para una tarea nueva. Medido 2026-09-05 al escribir H-DOCS-1088: su sucesor tuvo que citarse como `#154` porque el store no contiene ninguna fila para esa tarea. Un gate que rechace el ordinal antes de que #113 desbloquee el volcado obliga a inventar un TASK-DOCS-NNNN que ningún registro contiene — exactamente el defecto que la regla existe para impedir. Orden: #113 primero, luego #124.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "113"
+  ]
+}

@@ -1,0 +1,17 @@
+== ANULACION 1: se revierte UN import (linea 1 de src/packages/@ant/computer-use-mcp/src/legacy/common.ts)
+import { normalizeNameForMCP } from '@claude-code-how-works/mcp-runtime/normalization.js'
++   "@ant/computer-use-mcp/src/legacy/common.ts:1",
+(fail) identidad del paquete > caso 2: ninguna línea de import de un miembro del workspace trae el alcance de la fuente [245.74ms]
+ 2 pass
+ 1 fail
+-- restaurado:
+identico
+
+== ANULACION 2: vuelve el conjunto CIEGO (package.json interior) + el mismo import revertido
+-- con el conjunto ciego, el MISMO infractor:
+ 3 pass
+ 0 fail
+-- restaurados:
+identicos
+ 3 pass
+ 0 fail

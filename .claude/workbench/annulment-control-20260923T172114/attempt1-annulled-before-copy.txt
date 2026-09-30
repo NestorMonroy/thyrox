@@ -1,0 +1,24 @@
+== 1. sujeto commiteado: anula, mide, restaura, y lo prueba ==
+  ok    la suite anulada sale distinto de cero
+  ok    la suite restaurada sale cero
+  ok    el blob restaurado es el de partida
+  ok    el árbol seguido queda sin cambios
+  ok    el parche queda en el banco
+  ok    la salida anulada queda en el banco
+  ok    la salida restaurada queda en el banco
+  ok    el manifiesto nombra el commit de partida
+  ok    sujeto commiteado: no se copia su estado de partida
+== 2. sujeto SIN commitear: su estado de partida va al banco ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_annulment_control.py", line 114, in <module>
+    (bench / "subject-before-guard2.py").read_text())
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpfda3zmoa/bench/subject-before-guard2.py'
+
+[exit=1]

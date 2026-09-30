@@ -1,0 +1,38 @@
+src/packages/agent/attachments.ts(3389,11): error TS2304: Cannot find name 'isThinkingMessage'.
+  --- código src/packages/agent/attachments.ts:3379-3399 ---
+   3379    let lastTodoWriteIndex = -1
+   3380    let lastReminderIndex = -1
+   3381    let assistantTurnsSinceWrite = 0
+   3382    let assistantTurnsSinceReminder = 0
+   3383  
+   3384    // Iterate backwards to find most recent events
+   3385    for (let i = messages.length - 1; i >= 0; i--) {
+   3386      const message = messages[i]
+   3387  
+   3388      if (message?.type === 'assistant') {
+   3389>       if (isThinkingMessage(message)) {
+   3390          // Skip thinking messages
+   3391          continue
+   3392        }
+   3393  
+   3394        // Check for TodoWrite usage BEFORE incrementing counter
+   3395        // (we don't want to count the TodoWrite message itself as "1 turn since write")
+   3396        if (
+   3397          lastTodoWriteIndex === -1 &&
+   3398          'message' in message &&
+   3399          Array.isArray(message.message?.content) &&
+src/packages/agent/attachments.ts(3434,7): error TS6133: 'sessionTranscriptModule' is declared but its value is never read.
+  --- código src/packages/agent/attachments.ts:3424-3436 ---
+   3424      turnsSinceLastTodoWrite: assistantTurnsSinceWrite,
+   3425      turnsSinceLastReminder: assistantTurnsSinceReminder,
+   3426    }
+   3427  }
+   3428  // PARCIAL, declarado en la cabecera: `isInstructionsMemoryType` y
+   3429  // `memoryFilesToAttachments` no se portan en este pase. Dependen de
+   3430  // `InstructionsMemoryType`, `hasInstructionsLoadedHook` y
+   3431  // `executeInstructionsLoadedHooks` (`ccnmt: packages/agent/hooks.ts:4704-4780`),
+   3432  // que ese archivo aún no publica en este árbol (cero coincidencias en `src/`).
+   3433  // Se traen cuando `hooks.ts` porte esos tres símbolos.
+   3434> const sessionTranscriptModule = feature('KAIROS')
+   3435    ? (require('./sessionTranscript/sessionTranscript.js') as typeof import('./sessionTranscript/sessionTranscript.js'))
+   3436    : null

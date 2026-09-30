@@ -1,0 +1,6 @@
+fatal: not a git repository (or any of the parent directories): .git
+
+ 29 pass
+ 0 fail
+ 39 expect() calls
+Ran 29 tests across 1 file. [455.00ms]

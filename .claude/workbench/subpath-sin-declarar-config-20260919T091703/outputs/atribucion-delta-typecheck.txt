@@ -1,0 +1,28 @@
+antes (tscfg2): 5704 unicos
+ahora (tsmp):   5684 unicos
+
+== DESAPARECIERON ==
+src/packages/agent/hooks/hookHelpers.ts(8,28): error TS2307: Cannot find module '@thyrox/config/lazySchema.js' or its corresponding type declarations.
+src/packages/cli/src/entry/run-program.ts(145,19): error TS2307: Cannot find module '@thyrox/config/sync' or its corresponding type declarations.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(22,8): error TS2307: Cannot find module '@thyrox/config/sync' or its corresponding type declarations.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(4,37): error TS2307: Cannot find module '@thyrox/config/applySettingsChange' or its corresponding type declarations.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(5,40): error TS2307: Cannot find module '@thyrox/config/changeDetector' or its corresponding type declarations.
+src/packages/cli/src/headless/sdk/session/run.ts(179,36): error TS7006: Parameter 'source' implicitly has an 'any' type.
+src/packages/cli/src/headless/sdk/session/run.ts(22,37): error TS2307: Cannot find module '@thyrox/config/applySettingsChange' or its corresponding type declarations.
+src/packages/cli/src/headless/sdk/session/run.ts(23,40): error TS2307: Cannot find module '@thyrox/config/changeDetector' or its corresponding type declarations.
+src/packages/cli/src/headless/sdk/session/run.ts(33,8): error TS2307: Cannot find module '@thyrox/config/sync' or its corresponding type declarations.
+src/packages/command-runtime/src/commands/voice/voice.ts(7,40): error TS2307: Cannot find module '@thyrox/config/changeDetector' or its corresponding type declarations.
+src/packages/mcp-runtime/src/config.ts(25,36): error TS2307: Cannot find module '@thyrox/config/managedPath' or its corresponding type declarations.
+src/packages/mcp-runtime/src/config.ts(26,42): error TS2307: Cannot find module '@thyrox/config/pluginOnlyPolicy' or its corresponding type declarations.
+src/packages/repl/src/components/agents/agentFileUtils.ts(4,36): error TS2307: Cannot find module '@thyrox/config/managedPath' or its corresponding type declarations.
+src/packages/repl/src/doctorDiagnostic.ts(40,36): error TS2307: Cannot find module '@thyrox/config/managedPath' or its corresponding type declarations.
+src/packages/repl/src/hooks/useSettingsChange.ts(2,40): error TS2307: Cannot find module '@thyrox/config/changeDetector' or its corresponding type declarations.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(86,8): error TS2307: Cannot find module '@thyrox/config/pluginOnlyPolicy' or its corresponding type declarations.
+src/packages/shell/src/sandbox/sandbox-adapter.ts(35,40): error TS2307: Cannot find module '@thyrox/config/changeDetector' or its corresponding type declarations.
+src/packages/shell/src/sandbox/sandbox-adapter.ts(37,45): error TS2307: Cannot find module '@thyrox/config/managedPath' or its corresponding type declarations.
+src/packages/tool-registry/src/markdownConfigLoader.ts(25,36): error TS2307: Cannot find module '@thyrox/config/managedPath' or its corresponding type declarations.
+src/packages/tool-registry/src/markdownConfigLoader.ts(26,42): error TS2307: Cannot find module '@thyrox/config/pluginOnlyPolicy' or its corresponding type declarations.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(71,8): error TS2307: Cannot find module '@thyrox/config/pluginOnlyPolicy' or its corresponding type declarations.
+
+== APARECIERON ==
+src/packages/cli/src/headless/sdk/session/run.ts(180,33): error TS2345: Argument of type '(f: (prev: AppStateLike) => AppStateLike) => void' is not assignable to parameter of type '(f: (prev: SettingsChangeTarget) => SettingsChangeTarget) => void'.

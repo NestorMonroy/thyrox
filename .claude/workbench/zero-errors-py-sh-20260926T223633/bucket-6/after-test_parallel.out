@@ -1,0 +1,26 @@
+== 1. la formula del cap, CON su piso ==
+  ok    width_cap(1)
+  ok    width_cap(3)
+  ok    width_cap(4)
+  ok    width_cap(12)
+  ok    width_cap(64)
+== 2. CONTROL que discrimina: la concurrencia esta REALMENTE limitada ==
+  ok    20 items con cap=3 nunca superan 3 a la vez
+== 3. TODOS completan aunque N >> cap (regla 3) ==
+  ok    50 items con cap=2 completan
+== 4. el orden es el de ENTRADA, no el de terminacion ==
+  ok    orden de entrada preservado
+== 5. exceder la cota es error EXPLICITO, no truncamiento (regla 4) ==
+  ok    51 items con cota 50 rehusa
+  ok    y el rechazo NOMBRA el truncamiento que no hace
+  ok    y nombra la cota real
+== 6. CONTROL DE ANULACION del bloque 5: por debajo de la cota SI corre ==
+  ok    50 items con cota 50 no rehusa
+  ok    lista vacia devuelve lista vacia, no error
+== 7. pipeline encadena dos etapas sin barrera entre ellas ==
+  ok    pipeline dos etapas
+== 8. las dos cotas declaradas son las del ejecutable ==
+  ok    cota de vida del ejecutable
+  ok    cota de items por llamada, declarada como nuestra
+
+16 ok, 0 fallos

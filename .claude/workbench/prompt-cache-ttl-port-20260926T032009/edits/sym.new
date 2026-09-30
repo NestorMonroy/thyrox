@@ -1,0 +1,9 @@
+      const imported = (element.propertyName ?? element.name).text
+      const specifier = statement.moduleSpecifier.text
+      // Un módulo fuera del corpus (`fs/promises`, `node:path`) no tiene
+      // chunk que leer: la definición es suya y se declara, no se busca.
+      if (!isCorpusSpecifier(specifier)) {
+        return [{ name: imported, kind: 'external', scope: 'top', start: statement.getStart(file),
+                  end: statement.end, text: statement.getText(file), file: specifier }]
+      }
+      const target = corpusPath(specifier)

@@ -1,0 +1,17 @@
+: bun build salió 1
+30 | export { fsPremiseIo, readPremises } from './io.ts';
+                                               ^
+error: Could not resolve: "./io.ts"
+    at /home/user/thyrox/src/packages/task/dist/index.d.ts:30:43
+
+31 | export { assessAll, assessPremise, type PremiseIo, type TaskPremise } from './premises.ts';
+                                                                                ^
+error: Could not resolve: "./premises.ts"
+    at /home/user/thyrox/src/packages/task/dist/index.d.ts:31:76
+
+32 | export { parseRstTasks } from './rst.ts';
+                                   ^
+error: Could not resolve: "./rst.ts"
+    at /home/user/thyrox/src/packages/task/dist/index.d.ts:32:31
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

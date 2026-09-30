@@ -1,0 +1,11 @@
+--- a/src/verify/check-cli-typecheck.sh
++++ b/src/verify/check-cli-typecheck.sh
+@@ -163,7 +163,7 @@
+ # Ciego a: un commit que arregla N errores y crea N distintos — el conteo no
+ # cambia. Por eso bajar el baseline es una edicion explicita, no automatica.
+ BASELINE="${CHECK_CLI_TYPECHECK_BASELINE:-$ROOT/.claude/baselines/cli_typecheck_baseline.txt}"
+-if [[ -f "$BASELINE" ]]; then
++if false; then
+     GROWN=0
+     for project in tsconfig.json tsconfig.tests.json; do
+         count="${COUNTS[$project]:-0}"

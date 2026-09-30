@@ -1,0 +1,33 @@
+sites
+  ok   sólo los sitios pendientes bajo include
+propose (grupo)
+  ok   una sola propuesta
+  ok   id y proponente del patrón
+  ok   archivos del grupo
+  ok   objetivos globales de la señal
+  ok   la edición reproduce la sustitución
+  ok   la base es el texto actual
+  ok   no escribe en el árbol
+propose --split
+  ok   una propuesta por archivo
+lanzamiento gradual (L09)
+  ok   sin ejecución juzgada, el canario: un solo archivo
+  ok   una aceptada duplica el ancho
+  ok   un rechazo lo devuelve al canario
+rehúsa
+  ok   sin objetivos rehúsa
+applied
+  ok   los aplicados salen del barrido
+  ok   sin sitios rehúsa
+patrón no mecánico
+  ok   se guarda sin site ni replace
+  ok   propose rehúsa lo no mecánico
+  ok   site sin replace rehúsa
+exclude / close
+  ok   excluye con su razón
+  ok   cierra con su razón
+  ok   excluir sin razón rehúsa
+  ok   cerrar sin razón rehúsa
+  ok   cerrar un patrón ausente rehúsa
+
+todas pasan

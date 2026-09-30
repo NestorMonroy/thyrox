@@ -1,0 +1,6 @@
+test_roster_declared_prefix:
+  ok    un clon con el prefijo declarado forma el roster
+  ok    el prefijo declarado gana a una mayoria ajena
+  ok    sin declaracion, un clon sigue rehusando
+  FALLA el roster se deriva bajo la raiz declarada — esperado ('api', 'docs'), obtenido 'ReachRootError'
+test_roster_declared_prefix: 4 aserciones — 3 ok, 1 falla(s)

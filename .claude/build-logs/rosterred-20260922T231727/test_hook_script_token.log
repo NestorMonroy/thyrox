@@ -1,0 +1,32 @@
+
+== classify ==
+  ok    la forma dominante es simple
+  ok    y devuelve el script como detalle
+  ok    sin ningún token de ruta: sin_ruta
+  ok    dos segmentos con ruta: varios_scripts
+  ok    una tubería también parte segmentos
+  ok    con -c la ruta viaja en una cadena: ruta_en_cadena
+  ok    la ruta tras una bandera es su valor, no el script
+  ok    un comando que shlex no separa: no_parseable
+
+== controles de anulación ==
+  ok    añadir un segundo script cambia la forma
+  ok    envolver en -c cambia la forma
+  ok    quitarle la ruta cambia la forma
+  ok    anteponerle una bandera cambia la forma
+
+== declared_commands ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_hook_script_token.py", line 122, in <module>
+    declared = list(gate.declared_commands(root))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/verify/hook_script_token.py", line 131, in declared_commands
+    for repo in reach.REACH_ROOTS:
+                ^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 408, in __getattr__
+    return reach_roots()
+           ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+EXIT=1

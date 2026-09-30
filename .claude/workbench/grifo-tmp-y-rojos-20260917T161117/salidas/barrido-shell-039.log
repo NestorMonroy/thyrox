@@ -1,0 +1,2 @@
+VERDE tests/repo/test-disk-usage.sh
+EXIT=0

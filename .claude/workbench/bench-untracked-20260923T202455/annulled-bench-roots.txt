@@ -1,0 +1,15 @@
+test_bench_untracked:
+  ok    el banco del commit con archivos sin seguimiento se nombra
+  ok    con `add -N` no queda nada fuera
+  ok    un banco que el commit no toca no se mira
+  FALLA una ruta fuera de las raíces de banco no es banco — esperado {}, obtenido {'src': ['src/nuevo.py']}
+  ok    el CLI sale 1 si algo queda fuera
+  ok    el CLI sale 0 si nada queda fuera
+test_bench_untracked: 6 aserciones — 5 ok, 1 falla(s)
+check_bench_untracked: .claude/workbench/bench-a deja fuera 1 archivo(s) nuevo(s):
+  .claude/workbench/bench-a/nuevo.txt
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 1 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+
+[exit=1]

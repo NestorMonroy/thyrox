@@ -1,0 +1,40 @@
+{
+ "reviewed": [
+  {
+   "pattern": "external-sdk-type-cast-missing-index-signature",
+   "files": [
+    "src/packages/agent/messages/mappers.ts"
+   ]
+  },
+  {
+   "pattern": "fixture-missing-required-task-state-base-fields",
+   "files": [
+    "src/packages/app-host/src/state/__tests__/selectors.test.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-string-access-possibly-undefined",
+   "files": [
+    "src/packages/binary/src/reflow.ts"
+   ]
+  },
+  {
+   "pattern": "duplicated-slimmer-meta-interface-passed-as-callback-param",
+   "files": [
+    "src/packages/cli/src/bg.ts"
+   ]
+  },
+  {
+   "pattern": "import-de-simbolo-no-portado-a-modulo-fuente",
+   "files": [
+    "src/packages/cli/src/entry/cli.tsx"
+   ]
+  },
+  {
+   "pattern": "spread-any-array-into-fixed-arity-target",
+   "files": [
+    "src/packages/cli/src/transports.ts"
+   ]
+  }
+ ]
+}

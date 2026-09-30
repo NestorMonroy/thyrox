@@ -1,0 +1,11 @@
+--- a/src/verify/tsLanguageService.ts
++++ b/src/verify/tsLanguageService.ts
+@@ -21,7 +21,7 @@
+ export function applyEdits(text: string, edits: readonly ts.TextChange[]): string {
+   return edits
+     .map((edit, index) => ({ edit, index }))
+-    .sort((a, b) => b.edit.span.start - a.edit.span.start || b.index - a.index)
++    .sort((a, b) => b.edit.span.start - a.edit.span.start)
+     .map(({ edit }) => edit)
+     .reduce(
+       (acc, edit) =>

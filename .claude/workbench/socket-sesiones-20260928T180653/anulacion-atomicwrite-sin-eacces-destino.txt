@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+287 |     await expect(writeFileAtomicWithMode(target, 'nuevo', { tempName: refused })).rejects.toMatchObject({ code: 'EACCES' })
+288 |     await writeFileAtomicWithMode(target, 'nuevo', { tempName: refused, inPlaceOnTempCreateRefused: true })
+289 |     expect(readFileSync(target, 'utf8')).toBe('nuevo')
+290 |     await expect(
+291 |       writeFileAtomicWithMode(join(dir, 'ausente'), 'x', { tempName: refused, inPlaceOnTempCreateRefused: true }),
+292 |     ).rejects.toMatchObject({ code: 'EACCES' })
+                    ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:292:15)
+(fail) opciones completas de Jne > inPlaceOnTempCreateRefused: un EACCES al crear el temporal escribe in situ sobre un destino existente [2.69ms]
+
+ 26 pass
+ 1 fail
+ 72 expect() calls
+Ran 27 tests across 1 file. [184.00ms]

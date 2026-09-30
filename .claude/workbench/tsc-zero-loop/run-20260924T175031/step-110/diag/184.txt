@@ -1,0 +1,14 @@
+src/packages/repl/src/commands/mobile/mobile.tsx(1,40): error TS7016: Could not find a declaration file for module 'qrcode'. '/home/user/thyrox/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/mobile/mobile.tsx:1-11 ---
+      1> import { toString as qrToString } from 'qrcode'
+      2  import * as React from 'react'
+      3  import { useCallback, useEffect, useState } from 'react'
+      4  import { Pane } from '@anthropic/ink'
+      5  import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+      6  import { useKeybinding } from '@anthropic/ink/keybindings'
+      7  import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+      8  
+      9  type Platform = 'ios' | 'android'
+     10  
+     11  type Props = {
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`

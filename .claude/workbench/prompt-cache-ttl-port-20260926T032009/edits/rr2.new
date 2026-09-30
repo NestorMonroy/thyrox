@@ -1,0 +1,11 @@
+/** La variable que decidió, para que la razón la nombre. */
+function explicitVariable(source: RequestSource, decision: PromptCacheTtlDecision): string {
+  switch (decision.reason) {
+    case 'force_5m_env': return 'THYROX_FORCE_PROMPT_CACHING_5M'
+    case 'enable_1h_env': return 'THYROX_ENABLE_PROMPT_CACHING_1H'
+    case 'env': return isMainThreadSource(source) ? 'THYROX_CODE_PROMPT_CACHE_TTL' : 'THYROX_CODE_SUBAGENT_PROMPT_CACHE_TTL'
+    default: return decision.reason
+  }
+}
+
+/** Los dos primeros pasos, compartidos: lo declarado y lo que el hueco justifica. */

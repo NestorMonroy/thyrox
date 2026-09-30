@@ -1,0 +1,14 @@
+test_tsc_zero_loop:
+  ok    el lazo llega a tsc cero
+  ok    a.ts necesitó dos vueltas, con bases nuevas en la segunda
+  ok    un commit por paso con progreso
+  ok    el árbol queda limpio: todo lo conservado se commiteó
+  ok    el total baja por pasos hasta cero
+  ok    sin ninguna aceptada el lazo se detiene en la primera vuelta
+  ok    y no commitea nada
+  ok    ni deja el árbol tocado
+  ok    el tope de iteraciones detiene el lazo
+  FALLA el commit del lazo lleva el run entero y el gate del banco no lo bloquea — esperado 'done', obtenido 'commit bloqueado'
+test_tsc_zero_loop: 10 aserciones — 9 ok, 1 falla(s)
+
+[exit=1]

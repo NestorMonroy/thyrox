@@ -1,0 +1,32 @@
+sesion: /root/.claude/tasks/168b0fdf-bfe4-590b-b6c0-b6be124c124a
+citas con forma de archivo: 587
+  not_captured        235  (40.0 %)
+  full_resolves        38  (6.5 %)
+  full_fails          239  (40.7 %)
+  suffix_resolves       3  (0.5 %)
+  suffix_fails         72  (12.3 %)
+
+=== el cubo que decide: capturada como SUFIJO, con su prefijo
+
+suffix_resolves:
+   (sin prefijo)             2
+   api                       1
+
+suffix_fails:
+   (sin prefijo)            53
+   ccnmt                     4
+   odoo19c                   2
+   ccb                       2
+   Suite                     2
+   Sujeto                    1
+   escritor                  1
+   TypeScript                1
+   docs                      1
+   main                      1
+   renderiza                 1
+   incomodo                  1
+
+=== muestra de FALSOS: cita de referencia que resuelve en NUESTRO arbol
+   api: .claude/scripts/lint_agents.py
+      -> capturado 'scripts/lint_agents.py' -> /home/user/kaupamex-api/.claude/scripts/lint_agents.py
+__BG_EXIT__=0

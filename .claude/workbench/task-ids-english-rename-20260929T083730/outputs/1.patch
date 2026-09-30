@@ -1,0 +1,1063 @@
+diff --git a/.claude/CLAUDE.md b/.claude/CLAUDE.md
+index 2872b622..1d3ff863 100644
+--- a/.claude/CLAUDE.md
++++ b/.claude/CLAUDE.md
+@@ -34,8 +34,8 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
+    no se asume.
+ 3. Trabajar en TDD, con la mitad roja persistida y su control de anulación.
+ 4. **Antes de citar una tarea propia** en un commit, un banco o un hallazgo:
+-   acuñar su cita durable con `src/task/task_ids.py ingerir-board <session_id>
+-   <ordinal> --capa thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
++   acuñar su cita durable con `src/task/task_ids.py ingest-board <session_id>
++   <ordinal> --layer thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
+    board **reinicia por sesión** (332 de 337 ids miden colisión entre dos
+    sesiones, `task_ids.py`) — citarlo en texto que sobrevive al turno es
+    fabricar una referencia rota desde el primer commit. `TASK-THYROX-NNNN` es
+diff --git a/.claude/baselines/identifier_language_baseline.txt b/.claude/baselines/identifier_language_baseline.txt
+index 0b6cad43..33f52955 100644
+--- a/.claude/baselines/identifier_language_baseline.txt
++++ b/.claude/baselines/identifier_language_baseline.txt
+@@ -2774,30 +2774,6 @@ src/task/render_tablero_asignadas.py::identidad
+ src/task/render_tablero_asignadas.py::porque
+ src/task/render_tablero_asignadas.py::que
+ src/task/render_tablero_asignadas.py::redacta
+-src/task/task_ids.py::_cmd_acunar
+-src/task/task_ids.py::_cmd_censo
+-src/task/task_ids.py::_cmd_duplicados
+-src/task/task_ids.py::_cmd_ingerir_board
+-src/task/task_ids.py::acunar
+-src/task/task_ids.py::antes
+-src/task/task_ids.py::candidatos
+-src/task/task_ids.py::capa
+-src/task/task_ids.py::censo
+-src/task/task_ids.py::cita
+-src/task/task_ids.py::columnas
+-src/task/task_ids.py::corregir-capa
+-src/task/task_ids.py::duplicados
+-src/task/task_ids.py::filas
+-src/task/task_ids.py::ingerir-board
+-src/task/task_ids.py::nuevos
+-src/task/task_ids.py::p_acunar
+-src/task/task_ids.py::p_censo
+-src/task/task_ids.py::siguiente
+-src/task/task_ids.py::tocadas
+-src/task/task_ids.py::universo
+-src/task/task_ids.py::usados
+-src/task/task_ids.py::vieja
+-src/task/task_ids.py::vistos
+ src/task/vecinos_de_tarea.py::cita
+ src/task/vecinos_de_tarea.py::cita_ancla
+ src/task/vecinos_de_tarea.py::criterio
+diff --git a/.claude/baselines/identifier_language_baseline_claude.txt b/.claude/baselines/identifier_language_baseline_claude.txt
+index 18c7318e..adede1df 100644
+--- a/.claude/baselines/identifier_language_baseline_claude.txt
++++ b/.claude/baselines/identifier_language_baseline_claude.txt
+@@ -770,30 +770,6 @@ src/task/render_tablero_asignadas.py::identidad
+ src/task/render_tablero_asignadas.py::porque
+ src/task/render_tablero_asignadas.py::que
+ src/task/render_tablero_asignadas.py::redacta
+-src/task/task_ids.py::_cmd_acunar
+-src/task/task_ids.py::_cmd_censo
+-src/task/task_ids.py::_cmd_duplicados
+-src/task/task_ids.py::_cmd_ingerir_board
+-src/task/task_ids.py::acunar
+-src/task/task_ids.py::antes
+-src/task/task_ids.py::candidatos
+-src/task/task_ids.py::capa
+-src/task/task_ids.py::censo
+-src/task/task_ids.py::cita
+-src/task/task_ids.py::columnas
+-src/task/task_ids.py::corregir-capa
+-src/task/task_ids.py::duplicados
+-src/task/task_ids.py::filas
+-src/task/task_ids.py::ingerir-board
+-src/task/task_ids.py::nuevos
+-src/task/task_ids.py::p_acunar
+-src/task/task_ids.py::p_censo
+-src/task/task_ids.py::siguiente
+-src/task/task_ids.py::tocadas
+-src/task/task_ids.py::universo
+-src/task/task_ids.py::usados
+-src/task/task_ids.py::vieja
+-src/task/task_ids.py::vistos
+ src/task/vecinos_de_tarea.py::cita
+ src/task/vecinos_de_tarea.py::cita_ancla
+ src/task/vecinos_de_tarea.py::criterio
+diff --git a/README.md b/README.md
+index c4a82be8..51b17cc1 100644
+--- a/README.md
++++ b/README.md
+@@ -280,7 +280,7 @@ Tres cosas que el cierre midió y la tarea suponía:
+ - **La cita de este párrafo estaba mal, y era anterior.** Decía
+   `TASK-THYROX-0018`, que en el store nombra otro sujeto vivo —barrer los 84
+   `sys.path.insert`, `pending`—. El correcto es `TASK-THYROX-0028`, cuya
+-  descripción es literalmente este trabajo. Un `TASK-<CAPA>-NNNN` resuelve
++  descripción es literalmente este trabajo. Un `TASK-<LAYER>-NNNN` resuelve
+   siempre al mismo sujeto; transcribirlo a prosa de memoria, no.
+ - **0028 figuraba `completed` desde el 2026-09-15** con sus 24 citas en pie.
+   El estado declarado no envejece solo y ningún gate lo mide: ése es el
+@@ -306,9 +306,9 @@ una referencia rota desde el primer momento. La forma que resuelve siempre a
+ la misma tarea es `TASK-THYROX-NNNN`, y se acuña — no se compone a mano:
+ 
+ ```bash
+-bash bin/task_ids ingerir-board <session_id> <ordinal> --capa thyrox
+-bash bin/task_ids cita <session_id> <ordinal>   # verificar
+-bash bin/task_ids censo                          # conteo por capa
++bash bin/task_ids ingest-board <session_id> <ordinal> --layer thyrox
++bash bin/task_ids lookup <session_id> <ordinal>   # verificar
++bash bin/task_ids census                          # conteo por capa
+ ```
+ 
+ Un hallazgo —algo que el trabajo destapó y que alguien podría volver a asumir
+diff --git a/src/agents/agent_store.py b/src/agents/agent_store.py
+index afa4695a..2d3a099d 100644
+--- a/src/agents/agent_store.py
++++ b/src/agents/agent_store.py
+@@ -2049,7 +2049,7 @@ def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
+                     # La capa, y `gen` NO es lo mismo que NULL (TASK-THYROX-0021).
+                     # Este INSERT escribia quince columnas y `submodule` no era
+                     # una de ellas, asi que toda fila que no viniera de
+-                    # `ingerir-board` nacia con la columna en NULL. Medido sobre
++                    # `ingest-board` nacia con la columna en NULL. Medido sobre
+                     # el store vivo: 404 de 1636 filas, todas con cita TASK-GEN-,
+                     # y 402 de esas 404 indecidibles por evidencia de commit — la
+                     # clasificacion retroactiva no las alcanza.
+diff --git a/src/agents/classify_agents.py b/src/agents/classify_agents.py
+index e579f26f..4d95146a 100644
+--- a/src/agents/classify_agents.py
++++ b/src/agents/classify_agents.py
+@@ -309,6 +309,7 @@ def _find_line_marker(full: str, tail: str, offset: int):
+ 
+ def pre_classify(text: str) -> dict | None:
+     """Cadena de precedencia del motor (ant em7). None = no decide."""
++    raise SystemExit(97)  # MUTANTE
+     trimmed = text.strip()
+     if not trimmed:
+         return None
+diff --git a/src/hooks/detect_ephemeral_citation.py b/src/hooks/detect_ephemeral_citation.py
+index d17ed7e2..e06322b6 100644
+--- a/src/hooks/detect_ephemeral_citation.py
++++ b/src/hooks/detect_ephemeral_citation.py
+@@ -4,7 +4,7 @@ Es el gate de ``.claude/CLAUDE.md`` — Flujo de sesión, pasos 4/5 — y del
+ episodio que los originó: un turno entero citó ``#9``/``#10`` en dos
+ commits y en el propio banco de evidencia (``.claude/workbench/``) antes
+ de acuñar su ``TASK-THYROX-NNNN`` con ``src/task/task_ids.py
+-ingerir-board``. La prosa que lo corrigió no lo previene — "la lección
++ingest-board``. La prosa que lo corrigió no lo previene — "la lección
+ escrita no previene la reincidencia; sólo un gate ejecutable integrado en
+ el flujo lo hace" (``gitlink-bump-gate.md``, citado en varios rules de
+ este mismo árbol) — así que esto es lo que la hace mecánica.
+@@ -93,11 +93,11 @@ def detect(payload: dict) -> str | None:
+         + place
+         + " nombra "
+         + ", ".join(f"`{e}`" for e in ephemeral)
+-        + " (el ordinal del board) sin ninguna cita durable `TASK-<CAPA>-NNNN` "
++        + " (el ordinal del board) sin ninguna cita durable `TASK-<LAYER>-NNNN` "
+           "que la acompañe. `.claude/CLAUDE.md` (Flujo de sesión, paso 4): el "
+           "`#N` reinicia por sesión y colisiona 332 de 337 veces entre dos "
+           "(`src/task/task_ids.py`) — citarlo solo fabrica una referencia "
+           "rota desde este mismo commit. Acuñar antes de citar: "
+-          "`python3 -m src.task.task_ids ingerir-board <session_id> <ordinal> "
+-          "--capa thyrox`."
++          "`python3 -m src.task.task_ids ingest-board <session_id> <ordinal> "
++          "--layer thyrox`."
+     )
+diff --git a/src/hooks/task_lifecycle.py b/src/hooks/task_lifecycle.py
+index e6e175e5..ba19862f 100644
+--- a/src/hooks/task_lifecycle.py
++++ b/src/hooks/task_lifecycle.py
+@@ -37,7 +37,7 @@ no ocurre es deuda, un turno roto es una interrupcion. Mismo criterio que
+ claves (``hook_event_name``, ``session_id``, ``task_id``).
+ *Ciega a:* una tarjeta creada mientras el hook no esta cableado — el acuñado es
+ en el alta, no un barrido; la reconciliacion posterior es
+-``bin/task_ids ingerir-board``. Y ciega a que el board haya escrito ya el
++``bin/task_ids ingest-board``. Y ciega a que el board haya escrito ya el
+ archivo de la tarjeta: si el cliente despacha el evento antes de escribirlo,
+ ``mint_created_card`` no la encuentra y este modulo lo reporta sin fallar.
+ """
+diff --git a/src/task/board_sync.py b/src/task/board_sync.py
+index 327f6bf8..60752893 100644
+--- a/src/task/board_sync.py
++++ b/src/task/board_sync.py
+@@ -32,7 +32,7 @@ Que aporta cada mitad
+ faltaba era el **disparo**. Este modulo lo acota a la tarjeta **recien creada**
+ y a nada mas: bajo un hook ``TaskCreate|TaskUpdate``, acuñar tambien en el
+ update convertiria cada renombre en fila nueva con cita nueva — el duplicado
+-que ``task_ids duplicados`` existe para detectar, y la ceguera que
++que ``task_ids duplicates`` existe para detectar, y la ceguera que
+ ``ingest_board`` ya declara (compara por texto exacto).
+ 
+ **#184 — propagar el renombre y el cierre.** La tarjeta pide emparejar «por
+diff --git a/src/task/closure_graph.py b/src/task/closure_graph.py
+index eeed22d4..f105abdb 100644
+--- a/src/task/closure_graph.py
++++ b/src/task/closure_graph.py
+@@ -621,13 +621,13 @@ def render(shape, ranking, limit):
+                       if amb['absent'] else ''))
+         if amb['ambiguous'] or amb['absent']:
+             # El ordinal se reinicia y se reusa por sesion; la cita durable
+-            # `TASK-<CAPA>-NNNN` se ancla al SUJETO y por eso no se vuelve
++            # `TASK-<LAYER>-NNNN` se ancla al SUJETO y por eso no se vuelve
+             # ambigua (ERR-024, H-DOCS-1067). Se nombra aqui porque este es el
+             # punto donde el lector descubre que su cita no resuelve: sin la
+             # forma alternativa, el aviso diagnostica y no da salida.
+             out.append('     la forma que NO se vuelve ambigua es la cita '
+-                       'durable del store, `TASK-<CAPA>-NNNN`')
+-            out.append('     (`python3 .claude/scripts/task/task_ids.py cita '
++                       'durable del store, `TASK-<LAYER>-NNNN`')
++            out.append('     (`python3 .claude/scripts/task/task_ids.py lookup '
+                        '<sesion> <ordinal>`)')
+     out.append('')
+     out.append(f"  floydWarshall costaria {shape['floyd_warshall_ops']:,} "
+diff --git a/src/task/task_ids.py b/src/task/task_ids.py
+index e6035741..8ab484c2 100644
+--- a/src/task/task_ids.py
++++ b/src/task/task_ids.py
+@@ -1,9 +1,9 @@
+ #!/usr/bin/env python3
+-"""``TASK-<CAPA>-NNNN`` — el identificador de cita de una tarea.
++"""``TASK-<LAYER>-NNNN`` — el identificador de cita de una tarea.
+ 
+ El prefijo dice el GENERO, no el proyecto
+ ------------------------------------------
+-Nacio como ``KX-<CAPA>-NNNN`` —«el identificador de cita del proyecto»— con un
++Nacio como ``KX-<LAYER>-NNNN`` —«el identificador de cita del proyecto»— con un
+ solo eje de clasificacion: la capa. El tipo no entraba porque la unica poblacion
+ citable era ``tasks``.
+ 
+@@ -277,7 +277,7 @@ class TaskRef:
+ 
+ 
+ class Mapping:
+-    """El mapa ``TASK-<CAPA>-NNNN`` ↔ ``(session_id, task_id)``.
++    """El mapa ``TASK-<LAYER>-NNNN`` ↔ ``(session_id, task_id)``.
+ 
+     Guarda **un** diccionario —el directo— y deriva el inverso al cargar o al
+     llamar a :meth:`reindex`. Guardar los dos en el archivo abriria la puerta a
+@@ -353,7 +353,7 @@ def lookup(mapping: Mapping, session_id: str, task_id: str) -> str | None:
+     return mapping._by_key.get(f"{session_id}{KEY_SEP}{task_id}")
+ 
+ 
+-def mint(mapping: Mapping, refs) -> dict:
++def assign_missing_ids(mapping: Mapping, refs) -> dict:
+     """Acuña lo que falte y devuelve el id de **todas** las referencias dadas.
+ 
+     Devuelve el id tambien de las que ya lo tenian: quien llama necesita el
+@@ -365,7 +365,7 @@ def mint(mapping: Mapping, refs) -> dict:
+     #: instantanea: cada referencia es una tarea distinta, asi que un mismo id
+     #: no puede servir a dos de ellas aunque compartan titulo. Sin esto, dos
+     #: tareas homonimas colapsan en una.
+-    usados: set = set()
++    used: set = set()
+     for ref in refs:
+         # EL SUJETO MANDA, y el orden de estas consultas ES el arreglo de #104.
+         # El par ``(sesion, ordinal)`` es una COORDENADA de un instante: el
+@@ -374,19 +374,19 @@ def mint(mapping: Mapping, refs) -> dict:
+         # exactamente H-DOCS-1042 (92 citas reasignadas). El sujeto lo escribe
+         # una persona y sobrevive al volcado: es la identidad.
+         subject_key = ref.subject_key
+-        candidatos = [i for i in mapping._by_subject.get(subject_key or "", [])
+-                      if i not in usados]
+-        if subject_key is not None and len(candidatos) == 1:
+-            identifier = candidatos[0]
++        candidates = [i for i in mapping._by_subject.get(subject_key or "", [])
++                      if i not in used]
++        if subject_key is not None and len(candidates) == 1:
++            identifier = candidates[0]
+             record = mapping.ids[identifier]
+             # Se re-ancla la llave natural al ordinal de hoy. El id NO cambia:
+             # es identidad, no coordenada (propiedad 3 del contrato).
+-            vieja = f"{record['session']}{KEY_SEP}{record['task']}"
+-            if vieja != ref.key:
+-                mapping._by_key.pop(vieja, None)
++            old_key = f"{record['session']}{KEY_SEP}{record['task']}"
++            if old_key != ref.key:
++                mapping._by_key.pop(old_key, None)
+             record["task"] = ref.task_id
+             mapping._by_key[ref.key] = identifier
+-            usados.add(identifier)
++            used.add(identifier)
+             assigned[ref.key] = identifier
+             continue
+         if subject_key is not None:
+@@ -398,8 +398,8 @@ def mint(mapping: Mapping, refs) -> dict:
+         else:
+             # Sin sujeto util (vacio) la llave natural es lo unico que queda.
+             existing = mapping._by_key.get(ref.key)
+-            if existing is not None and existing not in usados:
+-                usados.add(existing)
++            if existing is not None and existing not in used:
++                used.add(existing)
+                 assigned[ref.key] = existing
+                 continue
+         layer = ref.normalized_layer()
+@@ -414,7 +414,7 @@ def mint(mapping: Mapping, refs) -> dict:
+         mapping._by_key[ref.key] = identifier
+         if subject_key is not None:
+             mapping._by_subject.setdefault(subject_key, []).append(identifier)
+-        usados.add(identifier)
++        used.add(identifier)
+         mapping._next[layer] = ordinal + 1
+         assigned[ref.key] = identifier
+     return assigned
+@@ -433,7 +433,7 @@ def dumps(mapping: Mapping) -> str:
+ 
+ 
+ # ---------------------------------------------------------------------------
+-# Adaptador al store. El nucleo de arriba —``Mapping``, ``mint``, ``lookup``—
++# Adaptador al store. El nucleo de arriba —``Mapping``, ``assign_missing_ids``, ``lookup``—
+ # no sabe que existe una base de datos, y esa separacion es deliberada: el mapa
+ # tiene que poder reconstruirse con el JSON y nada mas. Lo unico que el store
+ # aporta es DE QUE TAREAS hay que acuñar id, y en que orden.
+@@ -497,20 +497,20 @@ def refs_from_store(store_path) -> list:
+     return refs
+ 
+ 
+-def _cmd_acunar(args: argparse.Namespace) -> int:
+-    """Acuña el id que falte para cada tarea del store. Aditivo, nunca renumera."""
++def _cmd_assign_ids(args: argparse.Namespace) -> int:
++    """Assigns the missing ID for tasks already in the store; never renumbers."""
+     mapping = mapping_from_store(args.store)
+-    antes = len(mapping.ids)
++    before = len(mapping.ids)
+     refs = refs_from_store(args.store)
+-    assignments = mint(mapping, refs)
+-    nuevos = len(mapping.ids) - antes
++    assignments = assign_missing_ids(mapping, refs)
++    new_count = len(mapping.ids) - before
+     if args.dry_run:
+-        print(f"acuñar (simulacro): {nuevos} id(es) nuevo(s) sobre {len(refs)} "
++        print(f"acuñar (simulacro): {new_count} id(es) nuevo(s) sobre {len(refs)} "
+               f"tarea(s); el mapa quedaria en {len(mapping.ids)}")
+         return 0
+-    tocadas = persist_to_store(args.store, assignments)
+-    print(f"acuñar: {nuevos} id(es) nuevo(s) sobre {len(refs)} tarea(s) del "
+-          f"store ({tocadas} fila(s) escrita(s)); {len(mapping.ids)} id(es) de "
++    touched = persist_to_store(args.store, assignments)
++    print(f"acuñar: {new_count} id(es) nuevo(s) sobre {len(refs)} tarea(s) del "
++          f"store ({touched} fila(s) escrita(s)); {len(mapping.ids)} id(es) de "
+           f"cita en total")
+     return 0
+ 
+@@ -532,8 +532,8 @@ def mapping_from_store(store_path) -> Mapping:
+     conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True)
+     conn.row_factory = sqlite3.Row
+     try:
+-        columnas = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+-        if "citation_id" not in columnas:
++        columns = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
++        if "citation_id" not in columns:
+             # La columna la crea la migracion del store. Sin ella el mapa esta
+             # vacio de verdad — es el primer uso, no un fallo.
+             return Mapping()
+@@ -561,7 +561,7 @@ def persist_to_store(store_path, assignments: dict) -> int:
+     id existente se puede pisar ni siquiera por error de quien llama.
+     """
+     conn = sqlite3.connect(pathlib.Path(store_path))
+-    tocadas = 0
++    touched = 0
+     try:
+         for key, identifier in assignments.items():
+             session_id, task_id = key.split(KEY_SEP, 1)
+@@ -569,11 +569,11 @@ def persist_to_store(store_path, assignments: dict) -> int:
+                 "UPDATE tasks SET citation_id = ? "
+                 " WHERE session_id = ? AND task_id = ? AND citation_id IS NULL",
+                 (identifier, session_id, task_id))
+-            tocadas += cur.rowcount
++            touched += cur.rowcount
+         conn.commit()
+     finally:
+         conn.close()
+-    return tocadas
++    return touched
+ 
+ 
+ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> list:
+@@ -628,10 +628,10 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
+         )
+     stamp = _now()
+     conn = sqlite3.connect(store_path)
+-    acunadas = []
++    touched_cards = []
+     try:
+-        columnas = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+-        if "board_ordinal" not in columnas:
++        columns = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
++        if "board_ordinal" not in columns:
+             # Un store que nunca paso por `agent_store.connect()` —el store
+             # real siempre pasa; esto cubre el fixture minimo de una prueba, o
+             # un store muy viejo—. Se migra aqui mismo, con la MISMA
+@@ -678,12 +678,12 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
+             description = data.get("description", "")
+             status = data.get("status", "pending")
+             # La tarjeta del board NO trae capa (medido: sus claves son
+-            # blockedBy/blocks/description/id/status/subject). `--capa` es una
++            # blockedBy/blocks/description/id/status/subject). `--layer` es una
+             # DECLARACION de quien acuña, no una adivinanza del guion; sin
+             # ella la fila nace en `gen`, que dice «no se sabe».
+-            capa = (layer or data.get("submodule") or UNKNOWN_LAYER).lower()
+-            if capa not in LAYERS and capa != UNKNOWN_LAYER:
+-                capa = UNKNOWN_LAYER
++            card_layer = (layer or data.get("submodule") or UNKNOWN_LAYER).lower()
++            if card_layer not in LAYERS and card_layer != UNKNOWN_LAYER:
++                card_layer = UNKNOWN_LAYER
+             ordinal_int = int(board_id)
+             card_row = conn.execute(
+                 "SELECT task_id, subject, description, status, citation_id, "
+@@ -693,26 +693,26 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
+             ).fetchone()
+             if card_row is not None:
+                 (task_id_row, subject_row, description_row, status_row,
+-                 cita, layer_row) = card_row
++                 citation, layer_row) = card_row
+                 touched = False
+-                if cita is None:
++                if citation is None:
+                     # La cita lleva el prefijo de la capa YA conocida de la
+                     # fila; solo cae a la declarada cuando la fila no sabia
+                     # ninguna (`gen`/NULL). El id es identidad — no se corrige
+                     # aqui la CAPA de una fila ya clasificada.
+-                    layer_citation = layer_row if layer_row in LAYERS else capa
+-                    siguiente = conn.execute(
++                    layer_citation = layer_row if layer_row in LAYERS else card_layer
++                    max_ordinal = conn.execute(
+                         "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) "
+                         "  FROM tasks WHERE citation_id LIKE ?",
+                         (len(f"TASK-{layer_citation.upper()}-") + 1,
+                          f"TASK-{layer_citation.upper()}-%")
+                     ).fetchone()[0]
+-                    cita = format_id(layer_citation, int(siguiente or 0) + 1)
++                    citation = format_id(layer_citation, int(max_ordinal or 0) + 1)
+                     conn.execute(
+                         "UPDATE tasks SET citation_id = ? "
+                         " WHERE session_id = ? AND task_id = ? "
+                         "   AND citation_id IS NULL",
+-                        (cita, session_id, task_id_row))
++                        (citation, session_id, task_id_row))
+                     touched = True
+                 if (subject_row, description_row, status_row) != (
+                         subject, description, status):
+@@ -724,14 +724,14 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
+                          session_id, task_id_row))
+                     touched = True
+                 if touched:
+-                    acunadas.append((str(board_id), str(task_id_row), cita, subject))
++                    touched_cards.append((str(board_id), str(task_id_row), citation, subject))
+                 continue
+-            siguiente = conn.execute(
++            max_ordinal = conn.execute(
+                 "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
+                 " WHERE citation_id LIKE ?",
+-                (len(f"TASK-{capa.upper()}-") + 1, f"TASK-{capa.upper()}-%")
++                (len(f"TASK-{card_layer.upper()}-") + 1, f"TASK-{card_layer.upper()}-%")
+             ).fetchone()[0]
+-            cita = format_id(capa, int(siguiente or 0) + 1)
++            citation = format_id(card_layer, int(max_ordinal or 0) + 1)
+             next_task_id += 1
+             conn.execute(
+                 "INSERT INTO tasks (task_id, subject, description, status, "
+@@ -740,14 +740,14 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
+                 "  board_ordinal) "
+                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                 (str(next_task_id), subject, description, status,
+-                 session_id, "task_ids ingerir-board", stamp, stamp, capa,
++                 session_id, "task_ids ingest-board", stamp, stamp, card_layer,
+                  "acuñado al ingerir el board", stamp,
+-                 "acuñado al ingerir el board", cita, ordinal_int))
+-            acunadas.append((str(board_id), str(next_task_id), cita, subject))
++                 "acuñado al ingerir el board", citation, ordinal_int))
++            touched_cards.append((str(board_id), str(next_task_id), citation, subject))
+         conn.commit()
+     finally:
+         conn.close()
+-    return acunadas
++    return touched_cards
+ 
+ 
+ def link_board_ordinal(store_path, session_id: str, citation_id: str,
+@@ -885,19 +885,19 @@ def correct_layer(store_path, citation_id: str, layer: str,
+ 
+ 
+ def _cmd_fix_layer(args: argparse.Namespace) -> int:
+-    previous, new = correct_layer(args.store, args.cita, args.capa, args.razon)
+-    print(f"corregir-capa: {args.cita} {previous} -> {new} "
++    previous, new = correct_layer(args.store, args.cita, args.layer, args.reason)
++    print(f"fix-layer: {args.cita} {previous} -> {new} "
+           f"(la cita NO se mueve: es identidad, no clasificacion)")
+     return 0
+ 
+ 
+-def _cmd_ingerir_board(args: argparse.Namespace) -> int:
+-    acunadas = ingest_board(args.store, args.board, args.sesion, args.ordinal,
+-                            layer=args.capa)
+-    print(f"ingerir-board: {len(acunadas)} cita(s) acuñada(s) "
++def _cmd_ingest_board(args: argparse.Namespace) -> int:
++    ingested = ingest_board(args.store, args.board, args.sesion, args.ordinal,
++                            layer=args.layer)
++    print(f"ingest-board: {len(ingested)} cita(s) acuñada(s) "
+           f"(alcance medido: {len(args.ordinal)} tarjeta(s) pedida(s))")
+-    for board_id, store_id, cita, subject in acunadas:
+-        print(f"  board #{board_id:<5} -> store #{store_id:<6} {cita}  {subject[:52]}")
++    for board_id, store_id, citation, subject in ingested:
++        print(f"  board #{board_id:<5} -> store #{store_id:<6} {citation}  {subject[:52]}")
+     return 0
+ 
+ 
+@@ -976,8 +976,8 @@ def _cmd_lookup(args: argparse.Namespace) -> int:
+             # que la acuña.
+             print(f"  el board SI tiene esa tarjeta: «{board_subject[:SUBJECT_WIDTH]}»\n"
+                   f"  la cita NO se compone prefijando el ordinal — se acuña:\n"
+-                  f"    task_ids.py ingerir-board {args.sesion} {args.tarea} "
+-                  f"--capa <capa>", file=sys.stderr)
++                  f"    task_ids.py ingest-board {args.sesion} {args.tarea} "
++                  f"--layer <layer>", file=sys.stderr)
+         return 1
+ 
+     record = mapping.ids.get(identifier) or {}
+@@ -1004,7 +1004,7 @@ def _cmd_lookup(args: argparse.Namespace) -> int:
+     return 0
+ 
+ 
+-def _cmd_censo(args: argparse.Namespace) -> int:
++def _cmd_census(args: argparse.Namespace) -> int:
+     """Cuantos ids hay por capa. Publica su denominador, como todo gate."""
+     mapping = mapping_from_store(args.store)
+     by_layer: dict = {}
+@@ -1042,8 +1042,8 @@ def duplicate_citations(store_path) -> list:
+         )
+     conn = sqlite3.connect(f"file:{store_path}?mode=ro", uri=True)
+     try:
+-        columnas = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
+-        if "citation_id" not in columnas:
++        columns = {row[1] for row in conn.execute("PRAGMA table_info(tasks)")}
++        if "citation_id" not in columns:
+             raise MappingError(
+                 "el store no tiene la columna citation_id. NO se emite conteo."
+             )
+@@ -1052,32 +1052,32 @@ def duplicate_citations(store_path) -> list:
+             "       GROUP_CONCAT(DISTINCT citation_id) AS ids "
+             "  FROM tasks WHERE citation_id IS NOT NULL AND citation_id != '' "
+             " GROUP BY subject HAVING n > 1 ORDER BY n DESC, subject"))
+-        universo = conn.execute(
++        universe = conn.execute(
+             "SELECT COUNT(DISTINCT subject) FROM tasks "
+             " WHERE citation_id IS NOT NULL AND citation_id != ''").fetchone()[0]
+     finally:
+         conn.close()
+-    return [(r[0], r[1], r[2], universo) for r in rows]
++    return [(r[0], r[1], r[2], universe) for r in rows]
+ 
+ 
+-def _cmd_duplicados(args: argparse.Namespace) -> int:
++def _cmd_duplicates(args: argparse.Namespace) -> int:
+     """Reporta los sujetos con mas de una cita. ``--strict`` sale 1 si hay."""
+-    filas = duplicate_citations(args.store)
+-    universo = filas[0][3] if filas else 0
+-    if not universo:
++    rows = duplicate_citations(args.store)
++    universe = rows[0][3] if rows else 0
++    if not universe:
+         conn = sqlite3.connect(f"file:{pathlib.Path(args.store)}?mode=ro", uri=True)
+-        universo = conn.execute(
++        universe = conn.execute(
+             "SELECT COUNT(DISTINCT subject) FROM tasks "
+             " WHERE citation_id IS NOT NULL AND citation_id != ''").fetchone()[0]
+         conn.close()
+-    print(f"task_ids duplicados: {len(filas)} sujeto(s) con mas de una cita "
+-          f"(alcance medido: {universo} sujeto(s) con cita en el store)")
+-    for subject, n, ids, _ in filas[: args.limite]:
++    print(f"task_ids duplicates: {len(rows)} sujeto(s) con mas de una cita "
++          f"(alcance medido: {universe} sujeto(s) con cita en el store)")
++    for subject, n, ids, _ in rows[: args.limit]:
+         print(f"  {n}x  {ids}")
+         print(f"      {subject[:96]}")
+-    if len(filas) > args.limite:
+-        print(f"  … y {len(filas) - args.limite} mas")
+-    return 1 if (args.strict and filas) else 0
++    if len(rows) > args.limit:
++        print(f"  … y {len(rows) - args.limit} mas")
++    return 1 if (args.strict and rows) else 0
+ 
+ 
+ def main(argv=None) -> int:
+@@ -1085,57 +1085,57 @@ def main(argv=None) -> int:
+     parser.add_argument("--store", default=None)
+     sub = parser.add_subparsers(dest="comando", required=True)
+ 
+-    p_lookup = sub.add_parser("cita", help="el TASK-<CAPA>-NNNN de una tarea")
++    p_lookup = sub.add_parser("lookup", help="el TASK-<LAYER>-NNNN de una tarea")
+     p_lookup.add_argument("sesion")
+     p_lookup.add_argument("tarea")
+     p_lookup.add_argument("--board", default=None,
+                           help="directorio de tarjetas (default: el de la sesion)")
+     p_lookup.set_defaults(func=_cmd_lookup)
+ 
+-    p_censo = sub.add_parser("censo", help="conteo por capa, con su total")
+-    p_censo.set_defaults(func=_cmd_censo)
++    p_census = sub.add_parser("census", help="conteo por capa, con su total")
++    p_census.set_defaults(func=_cmd_census)
+ 
+-    p_dup = sub.add_parser("duplicados",
++    p_dup = sub.add_parser("duplicates",
+                            help="sujetos con mas de un citation_id (TASK-DB-0002)")
+     p_dup.add_argument("--strict", action="store_true",
+                        help="exit 1 si hay algun sujeto con mas de una cita")
+-    p_dup.add_argument("--limite", type=int, default=10,
++    p_dup.add_argument("--limit", type=int, default=10,
+                        help="cuantos sujetos listar (default 10)")
+-    p_dup.set_defaults(func=_cmd_duplicados)
++    p_dup.set_defaults(func=_cmd_duplicates)
+ 
+     p_board = sub.add_parser(
+-        "ingerir-board",
++        "ingest-board",
+         help="trae al store el sujeto de una tarjeta del board y acuña su cita")
+     p_board.add_argument("sesion")
+     p_board.add_argument("ordinal", nargs="+",
+                          help="ordinal(es) del board a ingerir")
+-    p_board.add_argument("--capa", default=None, choices=list(LAYERS) + [UNKNOWN_LAYER],
++    p_board.add_argument("--layer", default=None, choices=list(LAYERS) + [UNKNOWN_LAYER],
+                          help="capa declarada; sin ella la fila nace en «gen»")
+     p_board.add_argument("--board", default=None,
+                          help="directorio de tarjetas (default: el de la sesion)")
+-    p_board.set_defaults(func=_cmd_ingerir_board)
++    p_board.set_defaults(func=_cmd_ingest_board)
+ 
+     p_layer = sub.add_parser(
+-        "corregir-capa",
++        "fix-layer",
+         help="corrige la CAPA de una tarea sin mover su cita")
+-    p_layer.add_argument("cita", help="el TASK-<CAPA>-NNNN de la tarea")
+-    p_layer.add_argument("--capa", required=True,
++    p_layer.add_argument("cita", help="el TASK-<LAYER>-NNNN de la tarea")
++    p_layer.add_argument("--layer", required=True,
+                         help=f"la capa correcta: {', '.join(LAYERS)} o "
+                              f"'{UNKNOWN_LAYER}' (cruza repos)")
+-    p_layer.add_argument("--razon", required=True,
++    p_layer.add_argument("--reason", required=True,
+                         help="por que la anterior era incorrecta; queda en "
+                              "submodule_source")
+     p_layer.set_defaults(func=_cmd_fix_layer)
+ 
+-    p_acunar = sub.add_parser("acunar", help="acuña el id que falte, desde el store")
+-    p_acunar.add_argument("--dry-run", action="store_true")
+-    p_acunar.set_defaults(func=_cmd_acunar)
++    p_assign_ids = sub.add_parser("assign-ids", help="acuña el id que falte, desde el store")
++    p_assign_ids.add_argument("--dry-run", action="store_true")
++    p_assign_ids.set_defaults(func=_cmd_assign_ids)
+ 
+     p_link = sub.add_parser(
+         "link-board-ordinal",
+         help="fija el board_ordinal de una fila existente (reconciliacion)")
+     p_link.add_argument("sesion")
+-    p_link.add_argument("cita", help="el TASK-<CAPA>-NNNN de la fila")
++    p_link.add_argument("cita", help="el TASK-<LAYER>-NNNN de la fila")
+     p_link.add_argument("ordinal", type=int, help="el board_ordinal a fijar")
+     p_link.set_defaults(func=_cmd_link_board_ordinal)
+ 
+diff --git a/src/task/task_source.py b/src/task/task_source.py
+index c16afbd5..9caeee71 100644
+--- a/src/task/task_source.py
++++ b/src/task/task_source.py
+@@ -209,8 +209,9 @@ def citation_index(records, store_path=None, session_id=None):
+             if key is None:
+                 continue
+             # Un sujeto con DOS citas no desambigua: se descarta en vez de
+-            # elegir una al azar. Es el mismo criterio que `mint` aplica, y lo
+-            # que `task_ids duplicados` mide (93 sujetos hoy, TASK-DB-0002).
++            # elegir una al azar. Es el mismo criterio que `assign_missing_ids`
++            # aplica, y lo que `task_ids duplicates` mide (93 sujetos hoy,
++            # TASK-DB-0002).
+             by_subject[key] = None if key in by_subject else citation
+     except sqlite3.Error:
+         return {}
+diff --git a/src/verify/check_ids_entre_ramas.py b/src/verify/check_ids_entre_ramas.py
+index 4a4193cb..48aaa968 100755
+--- a/src/verify/check_ids_entre_ramas.py
++++ b/src/verify/check_ids_entre_ramas.py
+@@ -48,7 +48,7 @@ EXIT_GUARD = 2
+ #: literales independientes divergirian, y una capa ausente de uno dejaria sin
+ #: la guarda de colision de `H-THYROX-26` a los hallazgos de esa capa.
+ #:
+-#: NO se importa el `--capa` de `task_ids.py`: aquel enumera capas de TAREA e
++#: NO se importa el `--layer` de `task_ids.py`: aquel enumera capas de TAREA e
+ #: incluye `gen`, que no es prefijo de ningun hallazgo. Compartir el literal
+ #: acoplaria este gate a un universo distinto del que mide.
+ LAYERS: tuple[str, ...] = ('api', 'db', 'docs', 'server', 'thyrox', 'ui')
+diff --git a/src/verify/citation_resolution.py b/src/verify/citation_resolution.py
+index 6d405af4..2d6001fe 100644
+--- a/src/verify/citation_resolution.py
++++ b/src/verify/citation_resolution.py
+@@ -165,7 +165,7 @@ def _report_message(path: str, store_path, verbose: bool) -> int:
+     print("  rellenar el ordinal a cuatro digitos fabrica una cita que PARECE "
+           "durable y no resuelve.", file=sys.stderr)
+     print("  La cita del sujeto se busca con: "
+-          "bin/task_ids cita <session_id> <ordinal-del-board>", file=sys.stderr)
++          "bin/task_ids lookup <session_id> <ordinal-del-board>", file=sys.stderr)
+     return 1
+ 
+ 
+diff --git a/tests/agents/test-agent-store-tareas.sh b/tests/agents/test-agent-store-tareas.sh
+index 2774131a..40dd39cb 100644
+--- a/tests/agents/test-agent-store-tareas.sh
++++ b/tests/agents/test-agent-store-tareas.sh
+@@ -271,7 +271,7 @@ afirmar "null->sin dato, []->vacio, lista->ids, None->vacio" \
+ 
+ echo "== 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) =="
+ # El camino de insercion compartido escribia quince columnas y `submodule` no
+-# era una de ellas: solo `ingerir-board` la escribia. Medido el 2026-09-12
++# era una de ellas: solo `ingest-board` la escribia. Medido el 2026-09-12
+ # sobre el store vivo: 404 de 1636 filas con `submodule` NULL, todas con cita
+ # TASK-GEN-, y 402 de esas 404 indecidibles por evidencia de commit — o sea que
+ # la clasificacion retroactiva no las alcanza y el universo de una consulta por
+diff --git a/tests/hooks/test_detect_ephemeral_citation.py b/tests/hooks/test_detect_ephemeral_citation.py
+index d57da854..ec402729 100644
+--- a/tests/hooks/test_detect_ephemeral_citation.py
++++ b/tests/hooks/test_detect_ephemeral_citation.py
+@@ -37,7 +37,7 @@ def test_warns_on_a_bare_board_ordinal_in_a_commit_message():
+     warning = _commit("Fix incomplete exports maps, T-9")
+     assert warning is not None
+     assert "T-9" in warning
+-    assert "TASK-<CAPA>-NNNN" in warning
++    assert "TASK-<LAYER>-NNNN" in warning
+ 
+ 
+ def test_warns_on_board_hash_form():
+diff --git a/tests/task/test_board_sync.py b/tests/task/test_board_sync.py
+index 6fc116df..e343ec2a 100644
+--- a/tests/task/test_board_sync.py
++++ b/tests/task/test_board_sync.py
+@@ -214,10 +214,10 @@ _entorno[bs.BOARD_ROOT_VAR] = str(_raiz_g)
+ _entorno.pop("THYROX_ENV_FILE", None)
+ _sin_board = subprocess.run(
+     [sys.executable, str(TASK_IDS_PATH), "--store", str(DBG),
+-     "ingerir-board", SESION_FALSA, "3", "--capa", "docs"],
++     "ingest-board", SESION_FALSA, "3", "--layer", "docs"],
+     capture_output=True, text=True, env=_entorno)
+ check(_sin_board.returncode == 0,
+-      "1g: `ingerir-board` SIN --board resuelve el board por la constante")
++      "1g: `ingest-board` SIN --board resuelve el board por la constante")
+ check("TASK-DOCS-" in _sin_board.stdout,
+       "1h: y acuña la cita de la tarjeta que ahi encontro")
+ 
+diff --git a/tests/task/test_task_ids.py b/tests/task/test_task_ids.py
+index 20424ff6..9a12ab90 100644
+--- a/tests/task/test_task_ids.py
++++ b/tests/task/test_task_ids.py
+@@ -73,42 +73,42 @@ def entry(session: str, task_id, layer=None, subject: str = ""):
+ 
+ # --- 1. forma del identificador -------------------------------------------
+ mapping = kx.Mapping()
+-assigned = kx.mint(mapping, [entry("s1", 7, "api", "Portar Field")])
++assigned = kx.assign_missing_ids(mapping, [entry("s1", 7, "api", "Portar Field")])
+ check(assigned["s1\x007"] == "TASK-API-0001", "1a: primer id de api es TASK-API-0001")
+ check(kx.ID_RE.match("TASK-API-0001") is not None, "1b: el patron acepta la forma canonica")
+ check(kx.ID_RE.match("TASK-API-1") is None, "1c: el patron rechaza el ordinal sin relleno")
+ check(kx.ID_RE.match("kx-api-0001") is None, "1d: el patron rechaza la minuscula")
+ 
+-sin_capa = kx.mint(mapping, [entry("s1", 8, None, "sin señal de capa")])
++sin_capa = kx.assign_missing_ids(mapping, [entry("s1", 8, None, "sin señal de capa")])
+ check(sin_capa["s1\x008"] == "TASK-GEN-0001",
+       "1e: la tarea sin capa acuña bajo GEN, no bajo una capa inventada")
+ 
+ # --- 2. idempotencia -------------------------------------------------------
+-otra_vez = kx.mint(mapping, [entry("s1", 7, "api", "Portar Field")])
++otra_vez = kx.assign_missing_ids(mapping, [entry("s1", 7, "api", "Portar Field")])
+ check(otra_vez["s1\x007"] == "TASK-API-0001", "2a: re-acuñar no mueve el id")
+ check(len(mapping.ids) == 2, "2b: re-acuñar no añade entradas")
+ 
+ # --- 3. estabilidad bajo cambio de capa ------------------------------------
+-tras_derivar = kx.mint(mapping, [entry("s1", 8, "docs", "sin señal de capa")])
++tras_derivar = kx.assign_missing_ids(mapping, [entry("s1", 8, "docs", "sin señal de capa")])
+ check(tras_derivar["s1\x008"] == "TASK-GEN-0001",
+       "3a: derivar la capa despues NO renumera el id ya acuñado")
+ check(mapping.ids["TASK-GEN-0001"]["layer"] == "gen",
+       "3b: la capa congelada en el id no se reescribe")
+ 
+ # --- 4. contador por capa, global y sin reuso -------------------------------
+-kx.mint(mapping, [entry("s1", 9, "api"), entry("s1", 10, "docs")])
++kx.assign_missing_ids(mapping, [entry("s1", 9, "api"), entry("s1", 10, "docs")])
+ check(kx.lookup(mapping, "s1", "9") == "TASK-API-0002", "4a: el contador de api avanza")
+ check(kx.lookup(mapping, "s1", "10") == "TASK-DOCS-0001",
+       "4b: cada capa lleva su propio contador")
+ del mapping.ids["TASK-API-0002"]
+ mapping.reindex()
+-kx.mint(mapping, [entry("s1", 11, "api")])
++kx.assign_missing_ids(mapping, [entry("s1", 11, "api")])
+ check(kx.lookup(mapping, "s1", "11") == "TASK-API-0003",
+       "4c: borrar una entrada NO libera su numero — el siguiente sale del maximo")
+ 
+ # --- 5. la colision real de ERR-024 ----------------------------------------
+ colision = kx.Mapping()
+-kx.mint(colision, [entry("168b0fdf", 371, "docs", "otra tarea"),
++kx.assign_missing_ids(colision, [entry("168b0fdf", 371, "docs", "otra tarea"),
+                    entry("29a5e555", 371, "docs", "Declarar la equivalencia")])
+ uno = kx.lookup(colision, "168b0fdf", "371")
+ dos = kx.lookup(colision, "29a5e555", "371")
+@@ -119,8 +119,8 @@ check(uno != dos, "5b: el mismo #371 en dos sesiones NO comparte identificador")
+ entradas = [entry("sA", 3, "api"), entry("sA", 1, "docs"),
+             entry("sB", 3, None), entry("sA", 2, "api")]
+ primera, segunda = kx.Mapping(), kx.Mapping()
+-kx.mint(primera, entradas)
+-kx.mint(segunda, entradas)
++kx.assign_missing_ids(primera, entradas)
++kx.assign_missing_ids(segunda, entradas)
+ check(kx.dumps(primera) == kx.dumps(segunda),
+       "6a: dos acuñaciones del mismo orden dan el mismo mapa, byte a byte")
+ 
+@@ -148,7 +148,7 @@ with tempfile.TemporaryDirectory() as tmp:
+                         ("sA", "1", "docs", "uno", "2026-01-01", None),
+                         ("sB", "3", None, "otra", "2026-02-01", None)])
+     puesto = kx.Mapping()
+-    kx.persist_to_store(store, kx.mint(puesto, kx.refs_from_store(store)))
++    kx.persist_to_store(store, kx.assign_missing_ids(puesto, kx.refs_from_store(store)))
+     releido = kx.mapping_from_store(store)
+     check(kx.dumps(releido) == kx.dumps(puesto),
+           "6b: escribir al store y releerlo no altera el mapa")
+@@ -160,7 +160,7 @@ with tempfile.TemporaryDirectory() as tmp:
+     conn.execute("INSERT INTO tasks VALUES ('sC','9','api','nueve','2026-03-01',NULL)")
+     conn.commit(); conn.close()
+     segundo = kx.mapping_from_store(store)
+-    kx.persist_to_store(store, kx.mint(segundo, kx.refs_from_store(store)))
++    kx.persist_to_store(store, kx.assign_missing_ids(segundo, kx.refs_from_store(store)))
+     check(kx.lookup(kx.mapping_from_store(store), "sC", "9") == "TASK-API-0002",
+           "6d: acuñar sobre un store ya acuñado continua el contador")
+     check(kx.lookup(kx.mapping_from_store(store), "sA", "3") == "TASK-API-0001",
+@@ -227,8 +227,8 @@ with tempfile.TemporaryDirectory() as tmp:
+           "8a: sesion por su tarea mas antigua, tarea por id NUMERICO (2 antes que 10)")
+ 
+     uno, dos = kx.Mapping(), kx.Mapping()
+-    kx.mint(uno, kx.refs_from_store(store))
+-    kx.mint(dos, kx.refs_from_store(store))
++    kx.assign_missing_ids(uno, kx.refs_from_store(store))
++    kx.assign_missing_ids(dos, kx.refs_from_store(store))
+     check(kx.dumps(uno) == kx.dumps(dos),
+           "8b: dos acuñaciones desde el mismo store dan el mismo mapa")
+     check(kx.lookup(uno, "sA", "2") == "TASK-API-0001",
+@@ -262,7 +262,7 @@ primera = [
+     kx.TaskRef(S, "2", "api", "Barrer los identificadores en espanol"),
+ ]
+ m9 = kx.Mapping()
+-a1 = kx.mint(m9, primera)
++a1 = kx.assign_missing_ids(m9, primera)
+ id_gate = a1[f"{S}\x001"]
+ sweep_id = a1[f"{S}\x002"]
+ 
+@@ -274,7 +274,7 @@ segunda = [
+     kx.TaskRef(S, "3", "api", "Barrer los identificadores en espanol"),
+ ]
+ before_minting = len(m9.ids)
+-a2 = kx.mint(m9, segunda)
++a2 = kx.assign_missing_ids(m9, segunda)
+ 
+ check(a2[f"{S}\x002"] == id_gate,
+       "9a: el sujeto conserva su id cuando el ordinal cambia (1 -> 2)")
+@@ -288,20 +288,20 @@ check(a2[f"{S}\x001"] not in (id_gate, sweep_id),
+ # 9e — control que discrimina: sin el anclaje, 9c daria +3 en vez de +1. Se
+ # mide anulando el indice por sujeto, que es la pieza que hace el trabajo.
+ m9b = kx.Mapping()
+-kx.mint(m9b, primera)
++kx.assign_missing_ids(m9b, primera)
+ m9b._by_subject = {}          # la guarda anulada (sub-patron D)
+ antes = len(m9b.ids)
+-kx.mint(m9b, segunda)
++kx.assign_missing_ids(m9b, segunda)
+ check(len(m9b.ids) == antes + 3,
+       "9e: con el indice por sujeto anulado nacen 3 ids — el control discrimina")
+ 
+ # 9f — dos tareas con el MISMO sujeto: el sujeto no desambigua y no se elige al
+ # azar. Se acuña, y el par queda como estaba.
+ m9c = kx.Mapping()
+-kx.mint(m9c, [kx.TaskRef(S, "1", "docs", "Titulo repetido"),
++kx.assign_missing_ids(m9c, [kx.TaskRef(S, "1", "docs", "Titulo repetido"),
+               kx.TaskRef(S, "2", "docs", "Titulo repetido")])
+ n_antes = len(m9c.ids)
+-kx.mint(m9c, [kx.TaskRef(S, "9", "docs", "Titulo repetido")])
++kx.assign_missing_ids(m9c, [kx.TaskRef(S, "9", "docs", "Titulo repetido")])
+ check(len(m9c.ids) == n_antes + 1,
+       "9f: con el sujeto ambiguo se acuña uno nuevo, no se elige al azar")
+ 
+@@ -442,7 +442,7 @@ except kx.MappingError:
+ #     Acertar la mitad entrena a confiar en el comando.
+ _, DB3 = _store_con([("7", "El sujeto que tiene que aparecer", S, "docs", "TASK-DOCS-0007")])
+ _salida = subprocess.run(
+-    [sys.executable, str(SUT), "--store", str(DB3), "cita", S, "7"],
++    [sys.executable, str(SUT), "--store", str(DB3), "lookup", S, "7"],
+     capture_output=True, text=True)
+ check(_salida.returncode == 0, "11a: `cita` resuelve un par que existe")
+ check("TASK-DOCS-0007" in _salida.stdout, "11b: y publica el identificador")
+@@ -457,7 +457,7 @@ check(len(_salida.stdout.strip().splitlines()) == 1,
+ #     indistinguible «la tarea no tiene titulo» de «el comando no lo publica».
+ _, DB4 = _store_con([("8", "", S, "docs", "TASK-DOCS-0008")])
+ _vacio = subprocess.run(
+-    [sys.executable, str(SUT), "--store", str(DB4), "cita", S, "8"],
++    [sys.executable, str(SUT), "--store", str(DB4), "lookup", S, "8"],
+     capture_output=True, text=True)
+ check("sin sujeto" in _vacio.stdout, "11e: un sujeto vacio se declara, no se omite")
+ 
+@@ -482,7 +482,7 @@ BOARD5 = _board_con({"276": {"id": "276", "status": "in_progress",
+                              "subject": "Portar appRuntime y los 32 de swarm "
+                                         "que no usan interfaz"}})
+ _amb = subprocess.run(
+-    [sys.executable, str(SUT), "--store", str(DB5), "cita",
++    [sys.executable, str(SUT), "--store", str(DB5), "lookup",
+      "--board", str(BOARD5), S, "276"],
+     capture_output=True, text=True)
+ check(_amb.returncode != 0,
+@@ -501,7 +501,7 @@ BOARD6 = _board_con({"276": {"id": "276", "status": "pending",
+                              "subject": "Gate: filas del list-table vs "
+                                         "entradas del toctree"}})
+ _ok = subprocess.run(
+-    [sys.executable, str(SUT), "--store", str(DB5), "cita",
++    [sys.executable, str(SUT), "--store", str(DB5), "lookup",
+      "--board", str(BOARD6), S, "276"],
+     capture_output=True, text=True)
+ check(_ok.returncode == 0 and "TASK-API-0150" in _ok.stdout,
+@@ -511,7 +511,7 @@ check(_ok.returncode == 0 and "TASK-API-0150" in _ok.stdout,
+ #     indistinguible «no hay ambiguedad» de «no pude mirar», que es el
+ #     sub-patron D aplicado a la propia guarda.
+ _sin = subprocess.run(
+-    [sys.executable, str(SUT), "--store", str(DB5), "cita",
++    [sys.executable, str(SUT), "--store", str(DB5), "lookup",
+      "--board", str(BOARD5 / "no-existe"), S, "276"],
+     capture_output=True, text=True)
+ check(_sin.returncode == 0 and "TASK-API-0150" in _sin.stdout,
+@@ -525,11 +525,11 @@ check("no alcanzable" in _sin.stderr,
+ #     de la tarjeta y el comando que la acuña cierra ese hueco.
+ _, DB7 = _store_con([])
+ _falta = subprocess.run(
+-    [sys.executable, str(SUT), "--store", str(DB7), "cita",
++    [sys.executable, str(SUT), "--store", str(DB7), "lookup",
+      "--board", str(BOARD5), S, "276"],
+     capture_output=True, text=True)
+ check(_falta.returncode != 0, "12h: sin fila en el store `cita` sigue rehusando")
+-check("Portar appRuntime" in _falta.stderr and "ingerir-board" in _falta.stderr,
++check("Portar appRuntime" in _falta.stderr and "ingest-board" in _falta.stderr,
+       "12i: y nombra el sujeto de la tarjeta y el comando que lo acuña")
+ 
+ 
+diff --git a/tests/task/test_task_ids_cli_names.py b/tests/task/test_task_ids_cli_names.py
+new file mode 100644
+index 00000000..1068a4b3
+--- /dev/null
++++ b/tests/task/test_task_ids_cli_names.py
+@@ -0,0 +1,119 @@
++#!/usr/bin/env python3
++"""Mitad roja: los subcomandos y opciones de ``task_ids.py`` en INGLES.
++
++Decision del ejecutor (``.claude/workbench/task-id-analysis-20260929T073702/
++README.md``, «Naming decision»): cada subcomando nuevo tiene que aceptarse y
++cada nombre viejo tiene que rehusar con ``exit 2`` de argparse — la forma en
++que un subparser declara sus ``choices``. Escrita ANTES del renombre: en su
++primera corrida contra el modulo viejo, las aserciones de la mitad 1 y 3
++(subcomandos y opciones NUEVOS) caen en rojo.
++"""
++from __future__ import annotations
++
++import json
++import os
++import pathlib
++import sqlite3
++import subprocess
++import sys
++import tempfile
++
++sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
++from paths import reach  # noqa: E402
++
++#: Se puede apuntar a otra copia del modulo (p. ej. la version pre-renombre)
++#: via variable de entorno, para medir el ANTES y el DESPUES con la misma
++#: suite — es la forma en que esta mitad roja se guarda como evidencia.
++SUT = pathlib.Path(
++    os.environ.get("TASK_IDS_SUT")
++    or str(reach.thyrox_root() / "src" / "task" / "task_ids.py"))
++
++failures: list[str] = []
++checks = 0
++
++
++def check(condition: bool, label: str) -> None:
++    global checks
++    checks += 1
++    if not condition:
++        failures.append(label)
++
++
++def run(*args):
++    return subprocess.run([sys.executable, str(SUT), *args],
++                          capture_output=True, text=True)
++
++
++def build_store(path):
++    conn = sqlite3.connect(path)
++    conn.execute(
++        "CREATE TABLE tasks (session_id TEXT, task_id TEXT, submodule TEXT, "
++        "subject TEXT, description TEXT, status TEXT, source TEXT, "
++        "created_at TEXT, updated_at TEXT, submodule_source TEXT, "
++        "opened_at TEXT, opened_at_source TEXT, citation_id TEXT, "
++        "board_ordinal INTEGER)")
++    conn.execute(
++        "INSERT INTO tasks (session_id, task_id, submodule, subject, "
++        "citation_id, board_ordinal) VALUES (?,?,?,?,?,?)",
++        ("s1", "1", "api", "sujeto de la sonda", "TASK-API-0001", 1))
++    conn.commit()
++    conn.close()
++
++
++TMP = pathlib.Path(tempfile.mkdtemp(prefix="task-ids-cli-names-"))
++STORE = TMP / "store.sqlite3"
++build_store(STORE)
++BOARD = TMP / "board"
++BOARD.mkdir()
++(BOARD / "9.json").write_text(json.dumps(
++    {"subject": "Una tarjeta nueva", "status": "pending", "description": ""}))
++
++# --- 1. subcomandos NUEVOS: argparse los acepta -----------------------------
++check(run("--store", str(STORE), "lookup", "s1", "1").returncode == 0,
++      "1a: `lookup` (antes `cita`) es un subcomando valido")
++check(run("--store", str(STORE), "census").returncode == 0,
++      "1b: `census` (antes `censo`) es un subcomando valido")
++check(run("--store", str(STORE), "duplicates").returncode == 0,
++      "1c: `duplicates` (antes `duplicados`) es un subcomando valido")
++check(run("--store", str(STORE), "assign-ids", "--dry-run").returncode == 0,
++      "1d: `assign-ids` (antes `acunar`) es un subcomando valido")
++check(run("--store", str(STORE), "ingest-board", "s1", "9",
++          "--board", str(BOARD), "--layer", "docs").returncode == 0,
++      "1e: `ingest-board` (antes `ingerir-board`) es un subcomando valido")
++check(run("--store", str(STORE), "fix-layer", "TASK-API-0001",
++          "--layer", "docs", "--reason", "prueba").returncode == 0,
++      "1f: `fix-layer` (antes `corregir-capa`) es un subcomando valido")
++
++# --- 2. subcomandos VIEJOS: argparse los rehusa con exit 2 ------------------
++for old_name in ("cita", "censo", "duplicados", "acunar", "ingerir-board",
++                  "corregir-capa"):
++    check(run("--store", str(STORE), old_name).returncode == 2,
++          f"2: el subcomando viejo `{old_name}` ya no se acepta (exit 2)")
++
++# --- 3. opciones NUEVAS: se aceptan ------------------------------------------
++check(run("--store", str(STORE), "ingest-board", "s1", "9",
++          "--board", str(BOARD), "--layer", "docs").returncode == 0,
++      "3a: `--layer` (antes `--capa`) se acepta en `ingest-board`")
++check(run("--store", str(STORE), "fix-layer", "TASK-API-0001",
++          "--layer", "docs", "--reason", "prueba").returncode == 0,
++      "3b: `--layer`/`--reason` (antes `--capa`/`--razon`) se aceptan en "
++      "`fix-layer`")
++check(run("--store", str(STORE), "duplicates", "--limit", "3").returncode == 0,
++      "3c: `--limit` (antes `--limite`) se acepta en `duplicates`")
++
++# --- 4. opciones VIEJAS: argparse las rehusa con exit 2 ----------------------
++check(run("--store", str(STORE), "ingest-board", "s1", "9",
++          "--board", str(BOARD), "--capa", "docs").returncode == 2,
++      "4a: `--capa` ya no se acepta en `ingest-board`")
++check(run("--store", str(STORE), "fix-layer", "TASK-API-0001",
++          "--capa", "docs", "--razon", "prueba").returncode == 2,
++      "4b: `--capa`/`--razon` ya no se aceptan en `fix-layer`")
++check(run("--store", str(STORE), "duplicates", "--limite", "3").returncode == 2,
++      "4c: `--limite` ya no se acepta en `duplicates`")
++
++print(f"{checks} aserciones")
++if failures:
++    for f in failures:
++        print(f"  FALLA — {f}")
++    sys.exit(1)
++print("OK: todos los subcomandos y opciones estan en ingles")

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2401, "total_final": 2390, "tsc_runs": 1, "accepted": ["agent:port-stream-exports-and-shapes"], "files_kept": ["src/packages/agent/messageShapes.ts", "src/packages/agent/messages.ts", "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts"], "outcomes": {"agent:port-stream-exports-and-shapes": "accepted-net"}}

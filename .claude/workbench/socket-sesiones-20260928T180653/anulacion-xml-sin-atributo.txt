@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsXmlText.test.ts:
+10 |   expect(escapeXmlAttribute(`"x"'y'<`)).toBe('&quot;x&quot;&apos;y&apos;&lt;')
+11 | })
+12 | 
+13 | test('unescapeXmlText ($w) y unescapeXmlAttribute (ine) deshacen sólo sus entidades', () => {
+14 |   expect(unescapeXmlText('&lt;&gt;&amp;&quot;')).toBe('<>&&quot;')
+15 |   expect(unescapeXmlAttribute('&lt;&quot;&apos;&amp;amp;')).toBe(`<"'&amp;`)
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "<"'&amp;"
+Received: "<&quot;&apos;&amp;"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsXmlText.test.ts:15:61)
+(fail) unescapeXmlText ($w) y unescapeXmlAttribute (ine) deshacen sólo sus entidades [0.37ms]
+
+ 2 pass
+ 1 fail
+ 8 expect() calls
+Ran 3 tests across 1 file. [41.00ms]

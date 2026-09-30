@@ -1,0 +1,16 @@
+# p34-regress
+
+## Qué se lanzó
+
+```
+bash -c S=/tmp/claude-0/-home-user/efec8688-6a45-5d65-b899-cd988aa8816f/scratchpad; for t in tests/session/test-headless-pool.sh tests/session/test-headless-pool-worktree.sh tests/session/test-headless-pool-frozen-launcher.sh tests/session/test-headless-pool-item-drain.sh tests/session/test-headless-pool-lifecycle.sh tests/session/test-item-worktree-stash.sh; do timeout 900 bash $t > $S/$(basename $t).log 2>&1; echo "$t exit=$? :: $(tail -1 $S/$(basename $t).log)"; done; for t in tests/session/test_pool_lifecycle.py tests/session/test_snapshot_recovery.py tests/session/test_pool_history.py tests/session/test_writer_inspector.py tests/session/test_process_ownership.py tests/verify/test_step_report.py tests/verify/test_tsc_cycle.py tests/verify/test_step_close.py; do PYTHONPATH=src timeout 600 python3 $t > $S/$(basename $t).log 2>&1; echo "$t exit=$? :: $(tail -1 $S/$(basename $t).log)"; done
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

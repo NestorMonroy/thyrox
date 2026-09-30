@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bash bin/run-task-pool --width 3 --timeout 700 .claude/workbench/zero-errors-py-sh-20260926T223633/b26.cmds > .claude/workbench/zero-errors-py-sh-20260926T223633/b26.out 2>&1", "started_at": "2026-09-27T00:26:00+00:00"}

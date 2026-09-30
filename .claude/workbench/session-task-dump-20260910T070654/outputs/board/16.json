@@ -1,0 +1,9 @@
+{
+  "id": "16",
+  "subject": "Declarar la fuente del porte en los 29 archivos de test del harness",
+  "description": "Medido 2026-09-02 sobre los 29 `__tests__/*.test.ts`: **0** declaran en cabecera la fuente del porte, **0** citan una versión de build, **0** nombran un símbolo de la referencia en un `describe()`, y **28** citan sólo la tarea propia (`T-NNN`). Sólo 2 citan la referencia en algún comentario suelto.\n\nEl defecto no es de estilo: una aserción que cita `T-067` fija lo que decidimos y **no puede fallar** cuando la referencia cambia, así que no mide la fidelidad del porte (sub-patrón D de `metrica-decide-la-conclusion.md`). El corpus lo resuelve en cuatro niveles — cabecera con build y chunks, `describe` que nombra el símbolo, aserción que fija la constante, y comentario que cita el archivo en la regresión.\n\nYa cerrado en este pase (no forma parte de la tarea): las 4 constantes numéricas portadas quedan citadas en el código —`qZt=20000`, `BZt=13000` (chunk-czaspe53.js), `DEFAULT_TIMEOUT=60000`, y `MAX_POR_DEFECTO` declarada sin fuente localizada— y `autocompact.test.ts` gana el bloque «fidelidad del porte contra 2.1.258» que fija las dos constantes y las dos fórmulas (`MF` y `MF-BZt`). Control corrido: mover el colchón a 12 000 tira exactamente 3 casos, 2 de ellos nombrando el símbolo en su mensaje.\n\nAlcance de esta tarea: los 28 archivos restantes. Prospectivo, se paga al tocar cada archivo — un test nuevo o modificado declara en su cabecera la build y el símbolo que porta, o declara que no porta nada (hay lógica propia del harness, y decirlo también es información). No es un barrido en bloque.",
+  "activeForm": "Declarando la fuente del porte en los tests",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

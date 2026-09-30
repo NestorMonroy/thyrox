@@ -1,0 +1,2 @@
+    if row is None:
+        return False, "sin ejecución previa de esta plantilla"

@@ -1,0 +1,12 @@
+0 src/packages/agent/__tests__/directMemberMessage.test.ts
+0 src/packages/agent/__tests__/contentTextHelpers.test.ts
+0 src/packages/agent/__tests__/preModelSwitch.test.ts
+0 src/packages/provider/__tests__/runtimeHelpers.test.ts
+0 src/packages/storage/src/__tests__/conversationChain.test.ts
+0 tests/coordination/claims.test.ts
+0 src/packages/swarm/__tests__/spawnInProcess.test.ts
+0 tests/coordination/collapse.test.ts
+0 tests/verify/namedImports.test.ts
+0 src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts
+0 src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+1 tests/integration/slash-commands.test.ts

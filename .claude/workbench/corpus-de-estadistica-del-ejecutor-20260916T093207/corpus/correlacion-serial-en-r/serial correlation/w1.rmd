@@ -1,0 +1,369 @@
+---
+title: "CAPM"
+author: "Menghan Yuan"
+date: "March 21, 2024"
+output: 
+    bookdown::html_document2:
+        toc: true
+        toc_float: true
+        toc_depth: 4
+        number_sections: false
+        css: "style.css"
+bibliography: bibli.bib
+link-citations: yes
+biblio-style: apalike
+---
+
+```{r load-packages, include=F}
+library(knitr) # load packages
+library(kableExtra)
+library(tidyverse)
+library(latex2exp)
+library(stargazer)
+library(xts)
+```
+
+```{r, child="_chunk-opt.Rmd", include=FALSE}
+```
+
+
+
+<br/> This script estimates CAPM for individual stocks and shows an example of 2-pass CAPM.
+
+## Time Series CAPM
+
+CAPM states the expected risk premiums on individual assets are the product of $\beta$ and the equity risk premium (ERP).
+
+ERP here refers to the risk premium of the market portfolio, also called *market risk premium*.
+
+$\beta$ measures the sensitivity to market risk.
+
+The model is formulated by
+
+$$
+E[r_i-r_f] = \beta_i E[r_m-r_f]
+$$
+
+-   where $r_i$ is the return of asset $i$;
+-   $r_f$ is the riskless rate of interest;
+-   $r_m$ is the return of the market portfolio.
+
+CAPM as a regression can be expressed as
+
+$$
+r_{i,\color{red}{t}} - r_{f,\color{red}{t}} = \alpha_i + \beta_i (r_{m,\color{red}{t}}-r_{f,\color{red}{t}}) + \varepsilon_{i,\color{red}{t}}
+$$ where $\alpha_i$ (intercept) and $\beta_i$ (slope) are the parameters to estimate.
+
+$\alpha_i$ is a *nonmarket* premium.
+
+-   $\alpha_i>0$ means positive abnormal return, this could be caused, for example, by positive estimate of the security's prospect, or you think the security is underpriced based on private information you are aware of, and given time, the price will converge to its "fair value" and therefore offers an attractive expected return.
+
+If CAPM holds, then when security prices are **in equilibrium**, $\alpha_i=0$, i.e., any positive/negative alpha's will be driven to zero in the end.
+
+```{r block1}
+## read in .csv data
+# put the data in a folder called "data"
+# the code below works on macos, if using Windows, need to 
+# replace the forward slash ("/") with backslash ("\")
+f_name <- "data/NO_capm_2015-2022_monthly.csv"
+data_return <- read_csv(f_name)
+data_group <- data_return %>% 
+    group_by(ISIN) 
+data_group %>% group_keys()
+```
+
+```{r}
+groups <- data_group %>% group_split()
+the_group <- groups[[1]] 
+# inspect data structure
+the_group %>% str()
+```
+
+We use monthly data of *Archer* over the period 2015-01 to 2022-12.
+
+```{r}
+# glimpse of data for one equity
+the_group %>%
+    select(-rf_annualized) %>% 
+    knitr::kable(floating.environment="sidewaystable", digits = 5, escape=F) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, latex_options="scale_down") %>% 
+    scroll_box(width = "100%", height = "500px")
+```
+
+Conduct the linear regression for one equity
+
+```{r block2}
+reg_data <- the_group %>%
+    select(Return_monthly, mkt_return_monthly, rf_1month) %>%
+    rename(r_i = Return_monthly,
+           r_m = mkt_return_monthly,
+           r_f = rf_1month) %>%
+    mutate(rmrf = r_m-r_f,
+           eRi = r_i-r_f)
+```
+
+Visualize excess returns of Archer and the market index
+
+```{r fig.keep=2}
+plot_data <- reg_data %>% 
+    select(eRi, rmrf) %>% 
+    xts(order.by = the_group$Date)
+col_vec <- c("black", "red")
+plot.xts(plot_data, col = col_vec, main = "Excess Returns on Asset and Market")
+addLegend("topright", 
+          legend.names = c("Archer", "Equity Risk Premium"), 
+          lty = c(1, 1), 
+          lwd = c(2, 2),
+          col = col_vec,
+          bg = "white",
+          box.col = "white")
+
+```
+
+```{r}
+capm_ml <- lm(eRi~rmrf, data=reg_data)
+summary(capm_ml)
+```
+
+`stargazer` tabulates regression results neatly.
+
+```{r, results='asis'}
+stargazer(capm_ml, type="html", 
+          title="Regression Results for Archer",
+          notes = "<span>&#42;</span>: p<0.1; <span>&#42;&#42;</span>: <strong>p<0.05</strong>; <span>&#42;&#42;&#42;</span>: p<0.01 <br> Standard errors in parentheses.",
+          notes.append = F)
+```
+
+<br/>
+
+Several things worth looking at:
+
+-   Explanatory power: the $R^2$ ($.178$) tells us that variation in the excess returns of the market index explains about 17.8% of the variation in Archer’s returns. The adjusted $R^2$ (which is slightly smaller) imposes a penalty for extra number of predictors.
+
+-   The intercept ($-.021$) is the estimate of Archer's alpha. The number in parentheses is the standard error (SE). *T*-statistic is about $1$, lower than the conventional cutoff for statistical significance is a probability of less than $5\%$, which requires a *t*-statistic of about $2.0$.
+
+    -   We fail to reject $H_0: \alpha=0$.
+    
+    -   Here, we approximate the t-distribution to a standard normal distribution when the degrees of freedom are high. In our case, with $94$ ($n-K=96-2$) degrees of freedom, we use the critical value of the standard normal distribution for simplification. This applies to the hypothesis tests in what follows too.
+
+-   The slope ($2.234$) is the estimate of beta, meaning that its share price tended to move 2.234% for every 1% move in the market index.
+
+    -   $\beta>1$ means above-average sensitivity to economy, high exposure to the state of macroeconomy, high-risk equities.
+
+    -   The SE is $.495$. P-value in the table provides the significance level for $H_0: \beta=0$.
+
+    -   An alternative t-test would be $H_0: \beta=1$.
+
+        $$
+        t = \frac{\hat{\beta}-\beta}{se_{\hat{\beta}}} = \frac{2.234-1}{0.495} = 2.493
+        $$
+
+        The p-value ($1.27\%$) can be obtained by
+
+        ```{r}
+        pnorm(q = -2.493) * 2.
+        ```
+
+        Therefore, we reject $H_0: \hat{\beta}=1$ at 5% significance level.
+
+    -   Sometimes we are interested in the $95\%$ *Confidence Interval* (CI) that includes the true but unobserved value of beta with 95% probability.
+
+        We would take the estimated value as the center of the interval, and then add and subtract about two standard errors.
+
+        More precisely, the $95\%$ CI is given as $[\hat{\beta}-1.96 \cdot se_{\hat{\beta}}, \hat{\beta}+1.96 \cdot se_{\hat{\beta}}]$.
+
+        ```{r}
+        qnorm(p = 0.025) # critical value of 1.96
+        c("lower bound"=2.234-1.96*0.495, "upper bound"=2.234+1.96*0.495) # 95% CI
+        ```
+
+    -   The standard deviation of the residual is $20.4\%$ per month, or $20.4\% \times \sqrt{12}=70.67\%$. This stands for firm-specific risk.
+
+        The standard deviation of systematic risk is $\beta\times \sigma(r_m-r_f)$
+
+        ```{r}
+        capm_ml$coefficients[2] * sd(reg_data$rmrf)
+        ```
+
+        which is $9.45\%$, much smaller than the firm-specific risk.
+
+        In other words, more of the fluctuation in Archer’s monthly return derives from firm-specific factors than from marketwide systematic factors.
+
+**Industry version of CAPM**
+
+-   They often use total return than excess return in the regressions. This makes sense when $r_f$ is low, but could make a difference if $r_f$ is high and volatile.
+
+-   Notice that when $r_f$ is constant, the$$
+    \hat{\beta}_i=\frac{\text{Cov}(R^e_i, R^e_m)}{\text{Var}(R^e_m)}
+    $$where
+
+            $R^e_i=r_i-r_f$ stands for the excess return on asset $i$, and
+
+            $R^e_m=r_m-r_f$ stands for the excess return on the market index.
+
+    is not affected by the value of $r_f$.
+
+------------------------------------------------------------------------
+
+## 2-pass CAPM
+
+Early tests of CAPM focused on the cross-section of stock returns. $\rightarrow$ Test Security Market Line.
+
+$$
+E_T[R^e_i] = \gamma_0 + \gamma_1 \hat{\beta}_i + u_i \;\;\;\; (SML)
+$$
+
+Regressing the mean excess return over a time interval, $E_T[R^e_i]=\frac{1}{T}\sum_{t=1}^TR^e_{i,t}$, on estimates of the systematic risk, $\hat{\beta}_i$.
+
+$\gamma_0$ and $\gamma_1$ are parameters of interest here.
+
+If CAPM holds,
+
+-    $\gamma_0$ should be equal to zero, and
+
+-    $\gamma_1$ should be equal to the mean excess return on the market.
+
+We call the time series estimation using individual assets the *First Pass* CAPM. We use the beta estimates from the first pass as the independent variable in the *Second Pass* and the average excess return for a set of securities as the dependent variable.
+
+-   Main problem:
+
+    $\hat{\beta}_i$ has measurement error from the first pass, which causes the *Errors-in-Variable* (EIV) problem in the second pass.
+
+    The main consequence of EIV is attenuation bias. In short, $\gamma_1$ will be biased towards zero, assuming $\gamma_1>0$.
+
+-   Solution:
+
+    $\beta_p$ estimates based on portfolios will be less affected by the measurement error than individual $\beta_i$ due to aggregation.
+
+Here we demonstrate an example using individual $\beta_i$'s.
+
+Get the matrix of excess returns
+
+```{r block3}
+## matrix of excess returns
+library(quantmod)
+f_name <- "data/NO_Rf-OSEBX_2015-2023_monthly.csv"
+mkt_idx_rets <- read_csv(f_name)
+mkt_idx_rets <- mkt_idx_rets %>% mutate(yrmon=as.yearmon(Date))
+
+## convert to wide table, each row stands for time points; 
+#    each col stands for equities.
+data_wide <- data_return %>% 
+    mutate(excess_return=Return_monthly-rf_1month) %>% 
+    select(ISIN, Date, excess_return) %>% 
+    spread(ISIN, excess_return) 
+
+# merge with market index and risk-free
+data_wide <- data_wide %>% 
+    mutate(yrmon=as.yearmon(Date)) %>% 
+    left_join(mkt_idx_rets %>% select(-Date), by="yrmon") %>% 
+    select(-yrmon)
+
+data_wide <- data_wide %>% 
+    mutate(rmrf=mkt_return_monthly-rf_1month)
+```
+
+Inspect the data structure
+
+```{r max.lines = 10}
+data_wide %>% str()
+```
+
+Have a preview of *Excess Return*
+
+```{r block5}
+No_equity <- 142
+ER <- data_wide[,(1:No_equity)+1] %>% as.matrix()
+data_wide %>%
+    knitr::kable(floating.environment="sidewaystable", digits = 5, escape=F) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, latex_options="scale_down") %>% 
+    scroll_box(width = "100%", height = "500px")
+```
+
+Get *Equity Risk Premium* (ERM)
+
+```{r}
+ERM <- data_wide %>% pull(rmrf)
+head(ERM)
+```
+
+Get pass 2 (cross section) regression coefficients, and test if the market supports the CAPM.
+
+```{r block6}
+n <- length(ERM) 
+B <- NULL
+for (n2 in 61:n) {
+    n1 <- n2-60
+    y <- ER[n1:(n2-1),]
+    x <- ERM[n1:(n2-1)]
+    regr <- lm(y ~ x) # pass 1 uses 5-yr preceeding data
+    regr$coefficients
+    betai <- regr$coefficients[2,]
+    eRi <- ER[n2,]
+    regr <- lm(eRi ~ betai) # pass 2 SML use all cross section obs
+    b <- regr$coefficients
+    B <- rbind(B,b)
+}
+B %>% str()
+head(B)
+colMeans(B)
+```
+
+$T$-test for $H_0: \gamma_0=0$
+
+```{r block7}
+t.test(B[,1]) 
+
+```
+
+$T$-test for $H_0: \gamma_1=0$
+
+```{r}
+t.test(B[,2], alternative=c("two.sided")) 
+```
+
+$T$-test for $H_0: \gamma_1<0$
+
+```{r}
+t.test(B[,2], alternative=c("greater"))
+p1 <- t.test(B[,1])$p.value
+p2 <- t.test(B[,2], alternative=c("greater"))$p.value 
+test <- colMeans(B)
+test <- rbind(test, c(p1,p2))
+colnames(test)<- c("constant", "beta");
+rownames(test)<- c("average", "p.value");
+test
+```
+
+------------------------------------------------------------------------
+
+## Plot Security Market Line (SML)
+
+Get $E[r_i-r_f]$ against $\beta_i$ data for one cross section.
+
+```{r}
+sml_data <- cbind(eRi, betai) %>% data.frame()
+sml_data <- sml_data %>% filter(betai<5) # remove outliers
+sml_data %>% str()
+head(sml_data)
+```
+
+Draw scatter plot
+
+```{r}
+p_sml <- ggplot(data.frame(sml_data), aes(x=betai, y=eRi)) +
+    geom_point() + 
+    geom_smooth(method = "lm", se=FALSE) +
+    labs(x=TeX("$\\beta_i$"), y=TeX("$E[r_i-r_f]$"))
+p_sml
+```
+
+**Home practice**:
+
+-   Construct equal-weighted decile portfolios based on the ranking of $\beta_i$, do the same analysis based on portfolio $\beta_p$ and see if there exists an SML.
+
+-   Refer to @Jensen1972.
+
+------------------------------------------------------------------------
+
+### References

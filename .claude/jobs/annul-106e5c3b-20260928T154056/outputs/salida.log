@@ -1,0 +1,124 @@
+== 1: sin openai.com
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > a first-party state is accepted as a copy [0.62ms]
+ 36 pass
+ 1 fail
+== 2: sin minúsculas
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > a cookie of another site is foreign, even one that only ends like chatgpt.com [0.29ms]
+ 36 pass
+ 1 fail
+== 3: punto inicial
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+ 37 pass
+ 0 fail
+== 4: subdominio sin punto
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > a cookie of another site is foreign, even one that only ends like chatgpt.com [0.64ms]
+ 36 pass
+ 1 fail
+== 5: sin subdominios
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > a first-party state is accepted as a copy [0.64ms]
+ 36 pass
+ 1 fail
+== 6: nombre vacío
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.33ms]
+ 36 pass
+ 1 fail
+== 7: valor
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.39ms]
+ 36 pass
+ 1 fail
+== 8: dominio
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.65ms]
+ 36 pass
+ 1 fail
+== 9: ruta con barra
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.46ms]
+ 36 pass
+ 1 fail
+== 10: expira finito
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.38ms]
+ 36 pass
+ 1 fail
+== 11: httpOnly
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.60ms]
+ 36 pass
+ 1 fail
+== 12: secure
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.68ms]
+ 36 pass
+ 1 fail
+== 13: sameSite
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > every cookie field is checked [0.45ms]
+ 36 pass
+ 1 fail
+== 14: cookie ajena
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > a cookie of another site is foreign, even one that only ends like chatgpt.com [0.33ms]
+(fail) validating a ChatGPT web credential > an empty credential, a state without cookies, or an invalid one is rejected without echoing it [0.26ms]
+ 35 pass
+ 2 fail
+== 15: localStorage arreglo
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > an origin must be an https URL of the first party with valid local storage [0.37ms]
+ 36 pass
+ 1 fail
+== 16: URL inválida
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > an origin must be an https URL of the first party with valid local storage [0.50ms]
+ 36 pass
+ 1 fail
+== 17: sin https
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > an origin must be an https URL of the first party with valid local storage [0.42ms]
+ 36 pass
+ 1 fail
+== 18: origen ajeno
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > an origin must be an https URL of the first party with valid local storage [0.56ms]
+ 36 pass
+ 1 fail
+== 19: entrada de storage
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > an origin must be an https URL of the first party with valid local storage [0.77ms]
+ 36 pass
+ 1 fail
+== 20: forma superior
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > the top level must carry cookie and origin arrays [0.31ms]
+ 36 pass
+ 1 fail
+== 21: sin copia
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) the ChatGPT web storage state > a first-party state is accepted as a copy [0.99ms]
+ 36 pass
+ 1 fail
+== 22: clave en blanco
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) validating a ChatGPT web credential > an empty credential, a state without cookies, or an invalid one is rejected without echoing it [0.29ms]
+ 36 pass
+ 1 fail
+== 23: sin cookies aceptado
+   (src/accounts/webCookie/chatgptWebStorageState.ts)
+(fail) validating a ChatGPT web credential > an empty credential, a state without cookies, or an invalid one is rejected without echoing it [0.29ms]
+ 36 pass
+ 1 fail
+== 24: sin validador por defecto
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a ChatGPT web credential > is the validator the web-cookie probe uses for chatgpt-web by default [0.44ms]
+ 36 pass
+ 1 fail
+== restaurado
+ 37 pass
+ 0 fail
+__BG_EXIT__=0

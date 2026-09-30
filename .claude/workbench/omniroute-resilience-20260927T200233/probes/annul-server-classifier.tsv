@@ -1,0 +1,5 @@
+noclassify	s/^      const blamed = response.status >= 400 \&\& response.status < 500$/      const blamed = false/
+no5xxguard	s/^      const blamed = response.status >= 400 \&\& response.status < 500$/      const blamed = response.status >= 400/
+notraits	s/{ traitsOf: config.providerTraits }/{}/
+noclone	s/await response.clone().text()/await response.text()/
+noprovider	s/await response.clone().text(), upstream.provider,/await response.clone().text(), undefined,/

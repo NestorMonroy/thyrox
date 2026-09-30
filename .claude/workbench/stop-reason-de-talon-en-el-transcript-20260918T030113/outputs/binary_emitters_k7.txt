@@ -1,0 +1,22 @@
+  bytes del registro: 463
+  campos           : 14
+  apiBlockIndex    : 0
+  recompone usage  : usage:K7(Ef,Im.usage)
+
+== el guard que NOMBRA la emision por bloque ==
+  partial_message_not_found: 2 ocurrencia(s)
+  content_block_not_found_stop: 2 ocurrencia(s)
+
+== K7: la fusion de la contabilidad ==
+  el objeto que devuelve: delimitado, 1093 bytes
+  {isLowPriority:ys,model:_c[0]?.message.model??am?.model??p.model,preNormalizedModel:p.model,usage:$l,start:Og,startIncludingRetries:bd,attempt:mp,messageCount:tn,messageTokens:Qe,requestId:Ar??null,clientRequestId:gb?void 0:Hi,firstAttemptRequestId:Ts??null,stopReason:qf,ttftMs:Ad,didFallBackToNonStreaming:gb,querySource:p.querySource,promptCacheTtl:Qi?ol:void 0,messageClientPlatform:p.messageClientPlatform,headers:kk,extraEventFields:{...{},...oPn(Ae)},costUSD:rS,isDefaultModel:Pn?p.isDefaultModel:void 0,defaultModel:Pn?p.defaultModel:void 0,...Bn(Ns),queryTracking:p.queryTracking,permissionMode:rn.mode,proactivityLevel:p.proactivityLevel,newMessages:_c,requestContentTelemetry:Tt,requestPrefixTelemetry:fr&&{...fr,systemPromptSource:ve(p.systemPromptSource),snapshotHash:p.systemPromptSnapshotHash},llmSpan:yh,globalCacheStrategy:Tn,requestSetupMs:Og-bd,attemptStartTimes:op,fastMode:Cw,previousRequestId:P,betas:cm,thinkingPrefixMismatchBehavior:Py,effort:Ns,agentContext:p.agentContext,attribution:jT(p.querySource,p.spawnedBySkill,p.activeSkill,p.activeMcpServer,p.activeMcpTool)}
+  Lee el campo del DELTA cuando llego y no es nulo; si no, el de la
+  base. Por eso un mensaje que nunca recibio su delta conserva el
+  `output_tokens` del `message_start`.
+
+CONCLUSION: una linea `assistant` sin `stop_reason` y con un
+`output_tokens` de un digito es la emision POR BLOQUE — el mensaje
+parcial que el cliente persiste al cerrar cada bloque de contenido. No
+es un transcript corrupto ni un agente que paro en una herramienta: es
+la linea que se escribe ANTES de que llegue el evento que trae el
+cierre y el conteo.

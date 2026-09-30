@@ -1,0 +1,6 @@
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+check-cli-typecheck: tsconfig.json no crece: 459, igual al baseline.
+check-cli-typecheck: tsconfig.tests.json no crece: 459, igual al baseline.
+check-cli-typecheck: proyectos medidos: 2 de 2
+exit=0
+__BG_EXIT__=0

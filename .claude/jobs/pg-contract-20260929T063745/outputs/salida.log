@@ -1,0 +1,35 @@
+Removed stale pid file.
+/var/run/postgresql:5432 - accepting connections
+NOTICE:  database "thyrox_store_test" does not exist, skipping
+NOTICE:  role "thyrox_store_test" does not exist, skipping
+bun test v1.3.11 (af24e281)
+
+__tests__/contract.test.ts:
+PostgresError: relation "contract_probe" does not exist
+    errno: "42P01",
+ severity: "ERROR",
+ position: "15",
+     file: "parse_relation.c",
+  routine: "parserOpenTable",
+     code: "ERR_POSTGRES_SERVER_ERROR"
+
+      at wrapPostgresError (internal:sql/postgres:171:27)
+      at onRejectPostgresQuery (internal:sql/postgres:205:33)
+(fail) contrato de sql.ts — postgres > una transacción que lanza no deja fila — rollback [36.06ms]
+PostgresError: relation "contract_probe" does not exist
+    errno: "42P01",
+ severity: "ERROR",
+ position: "15",
+     file: "parse_relation.c",
+  routine: "parserOpenTable",
+     code: "ERR_POSTGRES_SERVER_ERROR"
+
+      at wrapPostgresError (internal:sql/postgres:171:27)
+      at onRejectPostgresQuery (internal:sql/postgres:205:33)
+(fail) contrato de sql.ts — postgres > una transacción que no lanza persiste — commit [33.29ms]
+
+ 45 pass
+ 2 fail
+ 93 expect() calls
+Ran 47 tests across 5 files. [289.00ms]
+__BG_EXIT__=1

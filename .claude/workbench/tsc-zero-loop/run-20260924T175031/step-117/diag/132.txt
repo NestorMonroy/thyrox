@@ -1,0 +1,46 @@
+src/packages/repl/src/hooksConfigManager.ts(27,42): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/hooksConfigManager.ts:17-37 ---
+     17    summary: string
+     18    description: string
+     19    matcherMetadata?: MatcherMetadata
+     20  }
+     21  
+     22  // Hook event metadata configuration.
+     23  // Resolver uses sorted-joined string key so that callers passing a fresh
+     24  // toolNames array each render (e.g. HooksConfigMenu) hit the cache instead
+     25  // of leaking a new entry per call.
+     26  export const getHookEventMetadata = memoize(
+     27>   function (toolNames: string[]): Record<HookEvent, HookEventMetadata> {
+     28      return {
+     29        PreToolUse: {
+     30          summary: 'Before tool execution',
+     31          description:
+     32            'Input to command is JSON of tool call arguments.\nExit code 0 - stdout/stderr not shown\nExit code 2 - show stderr to model and block tool call\nOther exit codes - show stderr to user only but continue with tool call',
+     33          matcherMetadata: {
+     34            fieldToMatch: 'tool_name',
+     35            values: toolNames,
+     36          },
+     37        },
+src/packages/repl/src/hooksConfigManager.ts(273,11): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/hooksConfigManager.ts:263-283 ---
+    263        },
+    264      }
+    265    },
+    266    toolNames => toolNames.slice().sort().join(','),
+    267  )
+    268  
+    269  // Group hooks by event and matcher
+    270  export function groupHooksByEventAndMatcher(
+    271    appState: AppState,
+    272    toolNames: string[],
+    273> ): Record<HookEvent, Record<string, IndividualHookConfig[]>> {
+    274    const grouped: Record<HookEvent, Record<string, IndividualHookConfig[]>> = {
+    275      PreToolUse: {},
+    276      PostToolUse: {},
+    277      PostToolUseFailure: {},
+    278      PermissionDenied: {},
+    279      Notification: {},
+    280      UserPromptSubmit: {},
+    281      SessionStart: {},
+    282      SessionEnd: {},
+    283      Stop: {},

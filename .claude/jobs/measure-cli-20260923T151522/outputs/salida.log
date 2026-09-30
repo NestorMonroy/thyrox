@@ -1,0 +1,11 @@
+== HEAD
+tsconfig.json 2622
+tsconfig.tests.json 2622
+== lote
+tsconfig.json 2617
+tsconfig.tests.json 2617
+ M src/packages/cli/__tests__/workbench.test.ts
+ M src/packages/cli/src/handlers/mcp.tsx
+ M src/packages/cli/src/headless.ts
+ M src/packages/cli/src/headless/sdk/session/run-streaming.ts
+__BG_EXIT__=0

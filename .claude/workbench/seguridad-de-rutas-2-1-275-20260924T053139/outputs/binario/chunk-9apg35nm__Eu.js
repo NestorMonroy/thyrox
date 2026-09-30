@@ -1,0 +1,1 @@
+Eu=[".config/git"]

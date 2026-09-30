@@ -1,0 +1,22 @@
+src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts(9,20): error TS2345: Argument of type '{ name: string; aliases: string[] | undefined; isEnabled: () => boolean; call: () => Promise<{ data: string; }>; description: () => Promise<string>; inputSchema: any; isReadOnly: () => false; prompt: () => Promise<...>; userFacingName: () => string; mapToolResultToToolResultBlockParam: (content: any, id: string) => ...' is not assignable to parameter of type 'AnyToolDef'.
+  --- código src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts:1-19 ---
+      1  import { describe, expect, test, beforeEach } from 'bun:test'
+      2  import type { Tool, Tools } from '../../../Tool.js'
+      3  import { buildTool } from '../../../Tool.js'
+      4  import { ToolRegistry } from '../ToolRegistry.js'
+      5  import type { ToolProvider } from '../types.js'
+      6  
+      7  // Helper: create a minimal tool for testing
+      8  function makeTool(name: string, opts?: { aliases?: string[]; isEnabled?: () => boolean }): Tool {
+      9>   return buildTool({
+     10      name,
+     11      aliases: opts?.aliases,
+     12      isEnabled: opts?.isEnabled ?? (() => true),
+     13      call: async () => ({ data: `${name}-result` }),
+     14      description: async () => `${name} description`,
+     15      inputSchema: {} as any,
+     16      isReadOnly: () => false,
+     17      prompt: async () => '',
+     18      userFacingName: () => name,
+     19      mapToolResultToToolResultBlockParam: (content, id) => ({
+  Type '{ name: string; aliases: string[] | undefined; isEnabled: () => boolean; call: () => Promise<{ data: string; }>; description: () => Promise<string>; inputSchema: any; isReadOnly: () => false; prompt: () => Promise<...>; userFacingName: () => string; mapToolResultToToolResultBlockParam: (content: any, id: string) => ...' is missing the following properties from type 'Omit<Tool<any, any, any>, DefaultableToolKeys>': maxResultSizeChars, renderToolUseMessage

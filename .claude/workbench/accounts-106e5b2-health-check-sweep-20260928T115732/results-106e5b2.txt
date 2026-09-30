@@ -1,0 +1,49 @@
+# primera medición (total de fallos por anulación)
+== 1: sin releer la fila -> 1
+== 2: sin exclusiones del entorno -> 1
+== 3: marca no se escribe -> 1
+== 4: sin sello -> 1
+== 5: sin desactivar -> 1
+== 6: cursor ignorado -> 1
+== 7: cookie sin intervalo -> 1
+== 8: copilot ignorado -> 1
+== 9: kimi ignorado -> 1
+== 10: guardado fuera de la ventana -> 3
+== 11: guardado fallido cuenta como hecho -> 1
+== 12: error tras guardar deshace -> 1
+== 13: red abre el circuito -> 1
+== 14: sin muerto -> 2
+== 15: muerto sin releer -> 1
+== 16: guardado reescrito entero -> 1
+== 17: sin subtoken -> 1
+== 18: subtoken para todos -> 0
+== 19: vacío no abre circuito -> 1
+== 20: sin ocultar registro -> 1
+== 21: credenciales sin datos -> 1
+== 22: sin id se lee -> 0
+== 23: lote de 10 -> 2
+== 24: tamaño cero vale -> 0
+== 25: sin cookies -> 2
+== 26: barridos solapados -> 1
+== 27: fallo de una corta el lote -> 1
+== 28: sin pausa -> 2
+== 29: sin jitter -> 2
+== 30: sin ceder -> 3
+== 31: pausa tras el último -> 3
+== 32: listado lanza -> 1
+== 33: arranque inmediato -> 1
+== 34: arranca dos veces -> 1
+== 35: desactivado arranca -> 1
+== 36: parar no limpia -> 1
+== 37: sigue corriendo al parar -> 1
+== 38: sin primer barrido -> 1
+== 39: exclusión sin minúsculas -> 2
+== 40: bandera sin recortar -> 2
+== restaurado -> 0
+
+# re-medición tras afinar
+== 18: subtoken para todos -> 1
+== 22: sin id se lee -> 1
+# la 24, re-medida con la prueba que cede temporizadores reales
+== 24: tamaño cero vale -> 1
+== restaurado -> 0

@@ -1,0 +1,10 @@
+# La memoria de cada item se mide con GNU Time si esta. Se resuelve por el
+# toolchain, como en `bg.sh` y `run-task-pool.sh` —una sola definición de
+# «es GNU Time» y su instalador opt-in (THYROX_INSTALL_GNU_TIME=1)—, con
+# HEADLESS_POOL_TIME como anulación. La consulta va en una SUBSHELL: el
+# toolchain exporta sus defaults y los heredarían los ítems. Sin GNU Time el
+# pool corre igual y lo declara: una medida ausente no es un cero.
+HP_TIME="$(THYROX_TOOLCHAIN_TIME_BIN="${HEADLESS_POOL_TIME:-${THYROX_TOOLCHAIN_TIME_BIN:-}}"
+           source "$HP_HERE/../lib/toolchain.sh"
+           thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || HP_TIME=""
+export HP_TIME

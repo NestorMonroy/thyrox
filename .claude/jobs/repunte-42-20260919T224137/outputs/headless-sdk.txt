@@ -1,0 +1,3 @@
+headless-sdk: emitio pese a 27 errores (27 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 27 error(es) que siguen vivos en su propio paquete

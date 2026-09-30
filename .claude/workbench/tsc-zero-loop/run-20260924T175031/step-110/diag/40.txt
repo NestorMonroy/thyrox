@@ -1,0 +1,24 @@
+src/packages/agent/sideQuestion.ts(140,30): error TS2352: Conversion of type '{ [key: string]: unknown; type: string; }' to type '{ name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/sideQuestion.ts:130-150 ---
+    130  
+    131    if (assistantBlocks.length > 0) {
+    132      // Concatenate all text blocks (there's normally at most one, but be safe).
+    133      const text = extractTextContent(assistantBlocks, '\n\n').trim()
+    134      if (text) return text
+    135  
+    136      // No text — check if the model tried to call a tool despite instructions.
+    137      const toolUse = assistantBlocks.find(b => b.type === 'tool_use')
+    138      if (toolUse) {
+    139        const toolName =
+    140>         'name' in toolUse ? (toolUse as { name: string }).name : 'a tool'
+    141        return `(The model tried to call ${toolName} instead of answering directly. Try rephrasing or ask in the main conversation.)`
+    142      }
+    143    }
+    144  
+    145    // No assistant content — likely API error exhausted retries. Surface the
+    146    // first system api_error message so the user sees what happened.
+    147    const apiErr = messages.find(
+    148      (m): m is SystemAPIErrorMessage =>
+    149        m.type === 'system' && 'subtype' in m && m.subtype === 'api_error',
+    150    )
+  Property 'name' is missing in type '{ [key: string]: unknown; type: string; }' but required in type '{ name: string; }'.

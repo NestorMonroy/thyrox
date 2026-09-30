@@ -1,0 +1,43 @@
+imports reescritos en 29 archivo(s)
+   src/commands/paths.ts ['paths']
+   src/conformance/maintenance.ts ['workbench']
+   src/packages/agent/__tests__/compat.test.ts ['paths']
+   src/packages/agent/__tests__/emit.test.ts ['paths']
+   src/packages/agent/__tests__/taskCitation.test.ts ['task']
+   src/packages/agent/bin/emit.ts ['paths']
+   src/packages/agent/flowHomes.ts ['paths']
+   src/packages/agent/loop/index.ts ['store']
+   src/packages/cli/__tests__/rstTasks.test.ts ['paths', 'task']
+   src/packages/cli/__tests__/workbench.test.ts ['workbench']
+   src/packages/cli/src/commands/checkPremises.ts ['task']
+   src/packages/cli/src/commands/claims.ts ['coordination']
+   src/packages/cli/src/commands/importTasks.ts ['task']
+   src/packages/cli/src/commands/workbench.ts ['workbench']
+   src/packages/observability/__tests__/observability.test.ts ['paths']
+   src/packages/observability/src/clearedResults.ts ['store']
+   src/packages/observability/src/store.ts ['paths', 'store']
+   src/packages/skills/__tests__/bundledSkills.test.ts ['paths']
+   src/packages/skills/__tests__/skillsFromDir.test.ts ['paths']
+   src/packages/skills/src/bundled.ts ['paths']
+   src/packages/storage/bin/storage.ts ['paths']
+   src/packages/tools/__tests__/subagent.test.ts ['task']
+   src/packages/tools/src/tasks.ts ['store', 'task']
+   src/reference/triple.ts ['paths']
+   src/rules/emit/markdown.ts ['paths']
+   src/rules/paths.ts ['paths', 'workbench']
+   src/skills/paths.ts ['paths', 'workbench']
+   src/task/schema.ts ['paths']
+   src/workbench/paths.ts ['paths']
+manifiestos con dependencia nueva: 12
+   src/packages/agent/package.json
+   src/packages/agent/package.json
+   src/packages/agent/package.json
+   src/packages/cli/package.json
+   src/packages/cli/package.json
+   src/packages/cli/package.json
+   src/packages/observability/package.json
+   src/packages/observability/package.json
+   src/packages/skills/package.json
+   src/packages/storage/package.json
+   src/packages/tools/package.json
+   src/packages/tools/package.json

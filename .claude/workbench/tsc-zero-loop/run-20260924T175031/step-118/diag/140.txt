@@ -1,0 +1,23 @@
+src/packages/repl/src/commands/color/color.ts(53,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:43-63 ---
+     43  
+     44    // Handle reset to default (gray)
+     45    if (RESET_ALIASES.includes(colorArg as (typeof RESET_ALIASES)[number])) {
+     46      const sessionId = getSessionId() as UUID
+     47      const fullPath = getTranscriptPath()
+     48  
+     49      // Use "default" sentinel (not empty string) so truthiness guards
+     50      // in sessionStorage.ts persist the reset across session restarts
+     51      await saveAgentColor(sessionId, 'default', fullPath)
+     52  
+     53>     context.setAppState(prev => ({
+     54        ...prev,
+     55        standaloneAgentContext: {
+     56          ...prev.standaloneAgentContext,
+     57          name: prev.standaloneAgentContext?.name ?? '',
+     58          color: undefined,
+     59        },
+     60      }))
+     61  
+     62      onDone('Session color reset to default', { display: 'system' })
+     63      return null

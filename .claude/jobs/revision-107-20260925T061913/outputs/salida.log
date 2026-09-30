@@ -1,0 +1,41 @@
+sin llamadas perdidas src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts
+sin llamadas perdidas src/packages/@ant/ink/src/vim/transitions.ts
+sin llamadas perdidas src/packages/agent/QueryEngine.ts
+idéntico src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts
+idéntico src/packages/agent/commands/commit-push-pr.ts
+idéntico src/packages/agent/core/AgentLoop.ts
+sin llamadas perdidas src/packages/agent/fileChangedWatcher.ts
+sin llamadas perdidas src/packages/agent/internal/abort.ts
+idéntico src/packages/agent/standalone/standaloneAgent.ts
+idéntico src/packages/agent/tee.ts
+sin llamadas perdidas src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts
+idéntico src/packages/command-runtime/src/commands/context/context.tsx
+LLAMADAS PERDIDAS src/packages/command-runtime/src/commands/memory/memory.tsx: readEnv×2
+sin llamadas perdidas src/packages/config/plugin/PluginInstallationManager.ts
+idéntico src/packages/config/plugin/mcpPluginIntegration.ts
+idéntico src/packages/config/plugin/officialMarketplaceGcs.ts
+idéntico src/packages/config/plugin/pluginAutoupdate.ts
+idéntico src/packages/config/plugin/zipCache.ts
+sin llamadas perdidas src/packages/context-compression/src/lite.ts
+sin llamadas perdidas src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts
+idéntico src/packages/provider/src/authAlias.ts
+LLAMADAS PERDIDAS src/packages/provider/src/gemini/modelMapping.ts: readEnv×1
+sin llamadas perdidas src/packages/provider/src/referral.ts
+sin llamadas perdidas src/packages/provider/src/vcr.ts
+idéntico src/packages/repl/src/components/CompactSummary.tsx
+sin llamadas perdidas src/packages/repl/src/components/MessageSelector.tsx
+idéntico src/packages/repl/src/components/Passes/Passes.tsx
+sin llamadas perdidas src/packages/repl/src/components/StatusLine.tsx
+idéntico src/packages/repl/src/components/messageActions.tsx
+sin llamadas perdidas src/packages/repl/src/components/messages/AssistantToolUseMessage.tsx
+LLAMADAS PERDIDAS src/packages/repl/src/hooks/useCanUseTool.tsx: logPermissionDecision×1
+sin llamadas perdidas src/packages/shell/src/exec.ts
+sin llamadas perdidas src/packages/skills/src/fromDir.ts
+idéntico src/packages/tool-registry/src/teleport.tsx
+idéntico src/packages/tool-registry/src/tools/AgentTool/runAgent.ts
+sin llamadas perdidas src/packages/tool-registry/src/tools/WebFetchTool/utils.ts
+idéntico src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx
+sin llamadas perdidas src/packages/tools/src/agent.ts
+idéntico src/packages/updater/src/nativeInstaller/platform.ts
+3 de 39 archivos pierden llamadas al transpilar
+__BG_EXIT__=0

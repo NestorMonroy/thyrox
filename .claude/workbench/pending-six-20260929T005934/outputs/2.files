@@ -1,0 +1,2 @@
+src/packages/provider/src/__tests__/credentialsConnectionStore.test.ts
+src/packages/provider/src/credentials.ts

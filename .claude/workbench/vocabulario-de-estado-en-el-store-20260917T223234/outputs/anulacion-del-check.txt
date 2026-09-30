@@ -1,0 +1,41 @@
+test_task_status_vocabulary:
+
+== 1. el vocabulario se declara una vez y la tabla lo consume ==
+  ok    TASK_STATUSES son los tres canonicos
+  ok    `deleted` NO esta en el vocabulario persistible
+  FALLA una base nueva nace con el CHECK
+        esperado=[True] obtenido=[False]
+
+== 2. LA MITAD: los tres canonicos siguen entrando ==
+  ok    `pending` entra
+  ok    `in_progress` entra
+  ok    `completed` entra
+
+== 3. LA OTRA MITAD: lo de fuera se rechaza ==
+  FALLA `borrador` se rechaza
+        esperado=[True] obtenido=[False]
+  FALLA `DONE` se rechaza
+        esperado=[True] obtenido=[False]
+  FALLA `(cadena vacia)` se rechaza
+        esperado=[True] obtenido=[False]
+  FALLA `in-progress` se rechaza
+        esperado=[True] obtenido=[False]
+  FALLA `deleted` se rechaza
+        esperado=[True] obtenido=[False]
+
+== 4. la migracion alcanza a una base VIEJA, sin perder filas ==
+  ok    la base vieja admitia lo de fuera
+  FALLA tras migrar, la tabla lleva el CHECK
+        esperado=[True] obtenido=[False]
+  ok    y conserva sus tres filas
+  FALLA y ahora rechaza lo de fuera
+        esperado=[True] obtenido=[False]
+  ok    y la clave compuesta sobrevive a la reconstruccion
+
+== 5. la migracion es idempotente ==
+  FALLA segunda pasada: las filas siguen
+        esperado=[3] obtenido=[4]
+  ok    y no quedo ninguna tabla de trabajo
+
+resultado: 9 de 18 aserciones en verde
+exit=1

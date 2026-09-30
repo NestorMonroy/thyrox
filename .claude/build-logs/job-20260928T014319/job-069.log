@@ -1,0 +1,7 @@
+  ok    contextPressure.test.ts no cambia el store versionado
+  ok    desde el paquete, contextPressure.test.ts no cambia el store versionado
+  ok    todo paquete con pruebas declara los preloads de la raíz
+  ok    observability.test.ts sigue leyendo el esquema del store
+
+4 casos: 4 ok, 0 fallos
+EXIT=0

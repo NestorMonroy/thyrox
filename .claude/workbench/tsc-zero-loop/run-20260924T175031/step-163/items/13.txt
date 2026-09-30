@@ -1,0 +1,47 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(463,5): error TS2352: Conversion of type 'string[]' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:453-473 ---
+    453      // apagado ya está en curso — mismo patrón ya documentado para este
+    454      // binding en permission/src/permissionSetup.ts.
+    455      return gracefulShutdown(code) as Promise<never>
+    456    })
+    457  
+    458    // --- sesión / cwd
+    459    setGetSessionIdFn(() => getSessionId())
+    460    setGetOriginalCwdFn(() => getOriginalCwd())
+    461    setGetCwdFn(() => getCwd())
+    462    setGetInlinePluginsFn(() =>
+    463>     getInlinePlugins() as Record<string, unknown> | undefined,
+    464    )
+    465  
+    466    // --- settings
+    467    setGetSettingsFn(() => getSettings() as any)
+    468    setGetSettingsForSourceFn(source => getSettingsForSource(source as any) as any)
+    469    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    470  
+    471    // --- fs / path (métodos sync + async)
+    472    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    473    const nodeFs = require('node:fs') as typeof import('node:fs')
+  Index signature for type 'string' is missing in type 'string[]'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(479,52): error TS2551: Property 'writeFileSync' does not exist on type 'FsOperations'. Did you mean 'readFileSync'?
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:469-489 ---
+    469    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    470  
+    471    // --- fs / path (métodos sync + async)
+    472    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    473    const nodeFs = require('node:fs') as typeof import('node:fs')
+    474    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    475    const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
+    476    setFsImplementationFn({
+    477      existsSync: p => getFsImplementation().existsSync(p),
+    478      mkdirSync: p => getFsImplementation().mkdirSync(p),
+    479>     writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
+    480      readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
+    481      readdirSync: p =>
+    482        nodeFs.readdirSync(p, { withFileTypes: true }),
+    483      statSync: p => getFsImplementation().statSync(p) as any,
+    484      rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
+    485      rmdirSync: p => nodeFs.rmdirSync(p),
+    486      renameSync: (o, n) => getFsImplementation().renameSync(o, n),
+    487      appendFileSync: (p, d) => getFsImplementation().appendFileSync(p, d),
+    488      cwd: () => getFsImplementation().cwd(),
+    489      realpathSync: p => getFsImplementation().realpathSync(p) as string,

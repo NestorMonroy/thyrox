@@ -1,0 +1,2 @@
+secuencias=3000 discrepancias=99
+run 48 step 16: ours={"registeredName":{"name":"d","source":"derived","since":141000,"sessionId":"s1"},"formerNames":[{"name":"c","until":141000,"sessionId":"s1"},{"name":"a","until":131000,"sessionId

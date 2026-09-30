@@ -1,0 +1,20 @@
+== A. El destino es PARÁMETRO, no una constante del mecanismo ==
+  ok    un repo nombrado se compone como --repo
+  ok    un directorio explícito gana sobre el repo
+  ok    sin ninguno, rehúsa en vez de inventar un default
+== B. La normalización del modelo viaja intacta ==
+  ok    un identificador completo se conserva
+  ok    un alias NO es un identificador
+  ok    y el alias se normaliza por su propia vía
+== C. La invocación del store se COMPONE, no se ejecuta ==
+  ok    nombra el subcomando del store
+  ok    lleva el destino inyectado
+  ok    y el agent-id del payload
+  ok    sin agent_id NO compone comando
+== D. La procedencia del tipo se distingue de su valor ==
+  ok    con valor, la procedencia es el payload
+  ok    con la clave vacía, el vacío viene del origen
+  ok    sin la clave, está ausente
+
+13 ok, 0 fallos
+EXIT=0

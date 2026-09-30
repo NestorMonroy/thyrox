@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bun .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/removed_calls.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/kept.txt", "started_at": "2026-09-25T06:19:13+00:00"}

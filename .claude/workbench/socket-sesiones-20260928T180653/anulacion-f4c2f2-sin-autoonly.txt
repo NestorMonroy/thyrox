@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRename.test.ts:
+210 |     expect(registration.restores).toBe(1)
+211 |   })
+212 | 
+213 |   test('autoOnly escribe el nombre como automático', async () => {
+214 |     await restoreSessionName('bar', 'sess', { autoOnly: true }, context)
+215 |     expect(writes).toEqual([['bar', 'sess', 'auto']])
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -6,3 +6,7 @@
+    ],
++   [
++     "bar",
++     "sess",
++     undefined,
++   ],
+  ]
+
+- Expected  - 0
++ Received  + 5
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRename.test.ts:215:20)
+(fail) restoreSessionName (sae) > autoOnly escribe el nombre como automático [0.48ms]
+
+ 21 pass
+ 1 fail
+ 57 expect() calls
+Ran 22 tests across 1 file. [51.00ms]

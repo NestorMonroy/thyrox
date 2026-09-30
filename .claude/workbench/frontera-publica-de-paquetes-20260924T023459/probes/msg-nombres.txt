@@ -1,0 +1,16 @@
+Measure named imports from any root, skip bun:bundle
+
+Run over the real tree, the checker reported 13 798 unresolved
+specifiers where the same resolver failed on 11 of 5 305 package
+specifiers: it resolved relative specifiers from relative directories
+when the root was relative. It also counted bun:bundle, a build-time
+module the runtime resolver does not answer, and its clause pattern
+crossed the body of an earlier export up to a later from, turning
+"event: HookEvent" into a requested name (24 such artifacts).
+
+Roots are made absolute, bun: and node: specifiers are not measured,
+and a clause is restricted to its three forms: a default, a brace
+list, or both. Each fix has its red persisted in the bench.
+
+Over src/packages and tests the checker now reports 354 missing names
+and 0 artifacts across 25 493 checked names in 3 913 files.

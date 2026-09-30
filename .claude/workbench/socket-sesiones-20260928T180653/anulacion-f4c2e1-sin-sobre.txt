@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerFiles.test.ts:
+84 |   })
+85 | 
+86 |   test('injectPeerFilePrefix (vxn): tras la apertura del sobre, o al principio', () => {
+87 |     expect(injectPeerFilePrefix('hola', '')).toBe('hola')
+88 |     expect(injectPeerFilePrefix('hola', 'P ')).toBe('P hola')
+89 |     expect(injectPeerFilePrefix('<cross-session-message from="x">\nhola', 'P ')).toBe('<cross-session-message from="x">\nP hola')
+                                                                                      ^
+error: expect(received).toBe(expected)
+
+- "<cross-session-message from="x">
+- P hola"
++ "P <cross-session-message from="x">
++ hola"
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:89:82)
+(fail) nombres y notas > injectPeerFilePrefix (vxn): tras la apertura del sobre, o al principio [0.39ms]
+
+ 16 pass
+ 1 fail
+ 58 expect() calls
+Ran 17 tests across 1 file. [134.00ms]

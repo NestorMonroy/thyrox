@@ -1,0 +1,69 @@
+src/packages/repl/src/commands/color/color.ts(11,8): error TS2307: Cannot find module '../../types/command.js' or its corresponding type declarations.
+  --- código src/packages/repl/src/commands/color/color.ts:1-21 ---
+      1  import type { UUID } from 'crypto'
+      2  import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+      3  import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+      4  import {
+      5    AGENT_COLORS,
+      6    type AgentColorName,
+      7  } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+      8  import type {
+      9    LocalJSXCommandContext,
+     10    LocalJSXCommandOnDone,
+     11> } from '../../types/command.js'
+     12  import {
+     13    getTranscriptPath,
+     14    saveAgentColor,
+     15  } from '@thyrox/storage/sessionStorage.js'
+     16  import { isTeammate } from '@thyrox/swarm/teammateState.js'
+     17  
+     18  const RESET_ALIASES = ['default', 'reset', 'none', 'gray', 'grey'] as const
+     19  
+     20  export async function call(
+     21    onDone: LocalJSXCommandOnDone,
+src/packages/repl/src/commands/color/color.ts(53,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:43-63 ---
+     43  
+     44    // Handle reset to default (gray)
+     45    if (RESET_ALIASES.includes(colorArg as (typeof RESET_ALIASES)[number])) {
+     46      const sessionId = getSessionId() as UUID
+     47      const fullPath = getTranscriptPath()
+     48  
+     49      // Use "default" sentinel (not empty string) so truthiness guards
+     50      // in sessionStorage.ts persist the reset across session restarts
+     51      await saveAgentColor(sessionId, 'default', fullPath)
+     52  
+     53>     context.setAppState(prev => ({
+     54        ...prev,
+     55        standaloneAgentContext: {
+     56          ...prev.standaloneAgentContext,
+     57          name: prev.standaloneAgentContext?.name ?? '',
+     58          color: undefined,
+     59        },
+     60      }))
+     61  
+     62      onDone('Session color reset to default', { display: 'system' })
+     63      return null
+src/packages/repl/src/commands/color/color.ts(82,23): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:72-92 ---
+     72      return null
+     73    }
+     74  
+     75    const sessionId = getSessionId() as UUID
+     76    const fullPath = getTranscriptPath()
+     77  
+     78    // Save to transcript for persistence across sessions
+     79    await saveAgentColor(sessionId, colorArg, fullPath)
+     80  
+     81    // Update AppState for immediate effect
+     82>   context.setAppState(prev => ({
+     83      ...prev,
+     84      standaloneAgentContext: {
+     85        ...prev.standaloneAgentContext,
+     86        name: prev.standaloneAgentContext?.name ?? '',
+     87        color: colorArg as AgentColorName,
+     88      },
+     89    }))
+     90  
+     91    onDone(`Session color set to: ${colorArg}`, { display: 'system' })
+     92    return null

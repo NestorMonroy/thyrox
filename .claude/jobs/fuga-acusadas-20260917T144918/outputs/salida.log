@@ -1,0 +1,34 @@
+base              .claude/workbench/total-de-disk-usage-20260917T144211/sondas
+compartido        /tmp   · plazo 90s por suite
+desvio de TMPDIR  activo
+---
+LIMPIA   tests/agents/test-agent-store-fts-degradation.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/agents/test-model-catalog.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/agents/test-agent-store-auto-recall-limit.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/agents/test-agent-store-sessions.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/hooks/test-hook-error-log.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/task/test-implementation-order.sh  confined=0 shared=0  (exit 0)
+FUGA     tests/session/test-wait-jobs-dependencia.sh  confined=11 shared=0  (exit 0)
+         evidencia: .claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-wait-jobs-dependencia-X47dm0
+LIMPIA   tests/session/test-record-environment.sh  confined=0 shared=0  (exit 0)
+FUGA     tests/session/test-run-task-pool-alcance.sh  confined=8 shared=0  (exit 0)
+         evidencia: .claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-run-task-pool-alcance-l3BsAl
+LIMPIA   tests/session/test-write-env-repara-clon-desplazado.sh  confined=0 shared=0  (exit 0)
+FUGA     tests/session/test-wait-jobs.sh  confined=25 shared=0  (exit 1)
+         evidencia: .claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-wait-jobs-1aTeHX
+LIMPIA   tests/session/test-contrato-de-escotilla.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/session/test-evidencia-varada.sh  confined=0 shared=0  (exit 0)
+FUGA     tests/session/test-process-group.sh  confined=1 shared=0  (exit 1)
+         evidencia: .claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-process-group-2PP8k8
+LIMPIA   tests/session/test-tmpdir-faucet.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/lib/test-toolchain-parallel.sh  confined=0 shared=0  (exit 0)
+LIMPIA   tests/lib/test-workbench-sh.sh  confined=0 shared=0  (exit 0)
+FUGA     tests/lib/test-toolchain-sh.sh  confined=1 shared=0  (exit 0)
+         evidencia: .claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-toolchain-sh-llxWFe
+LIMPIA   tests/verify/test-evidence-tracked.sh  confined=0 shared=0  (exit 1)
+LIMPIA   tests/verify/test-generator-determinism.sh  confined=0 shared=0  (exit 1)
+FUGA     tests/verify/test-verificar-premisa.sh  confined=1 shared=0  (exit 1)
+         evidencia: .claude/workbench/total-de-disk-usage-20260917T144211/sondas/test-verificar-premisa-17iGhy
+---
+VEREDICTO         FUGA — la evidencia queda en la sonda, sin borrar.
+__BG_EXIT__=1

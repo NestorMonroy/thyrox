@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistryState.test.ts:
+86 |     expect(state.formerNames).toEqual([])
+87 |     stable = true
+88 |     state.setRegisteredName('d2', 'derived')
+89 |     clock += 20000
+90 |     state.setRegisteredName('y', 'user')
+91 |     expect(state.formerNames.map(former => former.name)).toEqual(['d2'])
+                                                              ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "d2",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts:91:58)
+(fail) setRegisteredName > un nombre derivado sólo se recuerda con la dirección estable activa [0.45ms]
+
+ 13 pass
+ 1 fail
+ 36 expect() calls
+Ran 14 tests across 1 file. [74.00ms]

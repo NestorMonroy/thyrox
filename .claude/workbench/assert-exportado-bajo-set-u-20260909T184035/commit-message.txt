@@ -1,0 +1,31 @@
+Dar default al estado que assert.sh exporta
+
+`export -f` de cinco funciones cuyos cuerpos leen estado que NO se
+exporta: las tres variables de color (9 referencias) y los dos
+contadores (5). El hijo hereda las funciones y no el estado.
+
+Mientras el hijo no lleve `set -u` la variable ausente expande a vacio
+y no pasa nada — que es justo el caso que el control 4 de
+test-assert-sh.sh ejercita, con un `bash -c` pelado. Pero toda suite de
+este arbol arranca con `set -uo pipefail`, asi que el contrato «la
+funcion sobrevive a un subshell» se cumplia solo donde no se usa. Es el
+sub-patron D dentro del propio control: un verde que no distingue «el
+export funciona» de «el hijo no pregunta».
+
+Se descubrio tropezando: una suite lanzada desde una sesion que habia
+sourceado la biblioteca para usar `thyrox_safe_sed` murio antes de su
+primera linea con `environment: line 2: _THYROX_VERDE: unbound
+variable`.
+
+El default y no exportar el estado, por dos razones medidas: exportar
+los colores meteria en el hijo la decision de `[[ -t 1 ]]` del padre, y
+exportar los contadores publicaria una cifra falsa —un incremento en el
+hijo no vuelve al padre—.
+
+Dos anulaciones por separado, y ademas ordenan: sin el default de color
+se cae en la primera llamada (linea 2 del entorno); sin el de contador,
+una linea mas tarde (linea 3). Ninguna mitad sobra.
+
+test-workbench-sh.sh 8/8 y test-assert-sh.sh 13/13 con el cambio.
+test-reach-sh.sh 8/8 con y sin. test-script-deprecated.sh sigue en
+25 ok / 2 fallas con y sin: preexistentes, medidas contra la copia.

@@ -1,0 +1,2 @@
+           reserve_kb: int = 0, free_vram_mib: int | None = None, vram_reserve_mib: int = 0,
+           available_ram_kb: int | None = None) -> Decision:

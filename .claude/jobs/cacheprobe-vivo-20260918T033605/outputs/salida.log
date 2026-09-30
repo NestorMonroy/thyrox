@@ -1,0 +1,30 @@
+  ok     2026-09-18T03:28:47.785Z read=432916 esperado=432916 delta=+0
+  ok     2026-09-18T03:29:00.885Z read=452805 esperado=452805 delta=+0
+  ok     2026-09-18T03:29:11.212Z read=453743 esperado=453743 delta=+0
+  ok     2026-09-18T03:29:29.305Z read=454426 esperado=454426 delta=+0
+  ok     2026-09-18T03:29:37.487Z read=454992 esperado=454992 delta=+0
+  ok     2026-09-18T03:29:45.705Z read=455446 esperado=455446 delta=+0
+  ok     2026-09-18T03:29:53.089Z read=455806 esperado=455806 delta=+0
+  ok     2026-09-18T03:30:03.422Z read=456758 esperado=456758 delta=+0
+  ok     2026-09-18T03:30:12.524Z read=457325 esperado=457325 delta=+0
+  ok     2026-09-18T03:30:24.914Z read=475662 esperado=475662 delta=+0
+  ok     2026-09-18T03:30:32.158Z read=478121 esperado=478121 delta=+0
+  ok     2026-09-18T03:30:37.466Z read=479525 esperado=479525 delta=+0
+  ok     2026-09-18T03:30:45.849Z read=482886 esperado=482886 delta=+0
+  ok     2026-09-18T03:30:54.181Z read=483201 esperado=483201 delta=+0
+  ok     2026-09-18T03:31:04.012Z read=483994 esperado=483994 delta=+0
+  ok     2026-09-18T03:31:41.188Z read=485080 esperado=485080 delta=+0
+  ok     2026-09-18T03:32:09.881Z read=486047 esperado=486047 delta=+0
+  ok     2026-09-18T03:32:20.300Z read=486793 esperado=486793 delta=+0
+  ROTO   2026-09-18T03:32:24.065Z read=993660 esperado=487320 delta=+506340
+  ROTO   2026-09-18T03:34:37.737Z read=506340 esperado=1014505 delta=-508165
+  ok     2026-09-18T03:34:46.165Z read=508993 esperado=508993 delta=+0
+  ok     2026-09-18T03:34:55.992Z read=509667 esperado=509667 delta=+0
+  ok     2026-09-18T03:35:20.475Z read=510203 esperado=510203 delta=+0
+  ok     2026-09-18T03:35:40.246Z read=511166 esperado=511166 delta=+0
+  ok     2026-09-18T03:35:57.603Z read=515188 esperado=515188 delta=+0
+  ok     2026-09-18T03:36:07.658Z read=534852 esperado=534852 delta=+0
+  ok     2026-09-18T03:36:19.576Z read=535667 esperado=535667 delta=+0
+
+25 de 27 enlaces con el prefijo reconocido
+__BG_EXIT__=1

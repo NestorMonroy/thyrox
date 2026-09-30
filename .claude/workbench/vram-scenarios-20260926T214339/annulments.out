@@ -1,0 +1,18 @@
+## anulación no-lock
+  FALLA en cada ronda entra exactamente uno — esperado [1, 1, 1, 1, 1], obtenido [2, 2, 2, 2, 2]
+test_gpu_scenarios: 18 ok, 1 falla(s)
+## anulación full-reservation
+  FALLA tabla (usado, pendiente, libre, margen) por paso — esperado [(0, 3200, 6000, 2800), (800, 2400, 5200, 2800), (1600, 1600, 4400, 2800), (2400, 800, 3600, 2800), (3200, 0, 2800, 2800)], obtenido [(0, 3200, 6000, 2800), (800, 3200, 5200, 2000), (1600, 3200, 4400, 1200), (2400, 3200, 3600, 400), (3200, 3200, 2800, -400)]
+  FALLA B de 2800 sí cabe — esperado True, obtenido False
+  FALLA (usado, pendiente, libre, margen) — esperado (4000, 0, 2000, 2000), obtenido (4000, 3200, 2000, -1200)
+test_gpu_scenarios: 16 ok, 3 falla(s)
+## anulación no-descendants
+  FALLA tabla (usado, pendiente, libre, margen) por paso — esperado [(0, 3200, 6000, 2800), (800, 2400, 5200, 2800), (1600, 1600, 4400, 2800), (2400, 800, 3600, 2800), (3200, 0, 2800, 2800)], obtenido [(0, 3200, 6000, 2800), (0, 3200, 5200, 2000), (0, 3200, 4400, 1200), (0, 3200, 3600, 400), (0, 3200, 2800, -400)]
+  FALLA B de 2800 sí cabe — esperado True, obtenido False
+  FALLA (usado, pendiente, libre, margen) — esperado (4000, 0, 2000, 2000), obtenido (0, 3200, 2000, -1200)
+test_gpu_scenarios: 16 ok, 3 falla(s)
+## anulación zombie-alive
+  FALLA B de 3200 entra — esperado True, obtenido False
+test_gpu_scenarios: 18 ok, 1 falla(s)
+restaurado
+__BG_EXIT__=0

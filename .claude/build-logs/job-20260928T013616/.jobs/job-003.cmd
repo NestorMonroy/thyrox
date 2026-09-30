@@ -1,0 +1,1 @@
+python3 tests/hallazgo/test_hallazgo_ids.py

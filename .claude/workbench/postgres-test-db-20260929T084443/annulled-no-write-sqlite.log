@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/migrations.test.ts:
+182 |         let changes = db.run.@apply(db, [sql].concat(values)), sqlResult = new SQLResultArray;
+183 |         sqlResult.command = commandToString(command, parsedInfo.lastToken), sqlResult.count = changes.changes, sqlResult.lastInsertRowid = changes.lastInsertRowid, query.resolve(sqlResult);
+184 |       }
+185 |     } catch (err) {
+186 |       if (err && typeof err === "object" && "name" in err && err.name === "SQLiteError") {
+187 |         throw new SQLiteError(message, { code, errno, byteOffset });
+                    ^
+SQLiteError: database is locked
+      errno: 5,
+ byteOffset: -1,
+       code: "SQLITE_BUSY"
+
+      at run (internal:sql/sqlite:187:15)
+      at onQueryConnected (bun:sql:34:137)
+      at connect (internal:sql/sqlite:393:18)
+      at queryFromPoolHandler (bun:sql:46:17)
+      at #runAsync (internal:sql/query:80:21)
+(fail) contrato del runner de migraciones — async — sqlite vía Bun.SQL (runMigrations) > sin nada pendiente, no abre transacción de escritura: otra conexión con un lock de escritura abierto no la bloquea [8.15ms]
+
+ 73 pass
+ 2 todo
+ 1 fail
+ 155 expect() calls
+Ran 76 tests across 5 files. [172.00ms]

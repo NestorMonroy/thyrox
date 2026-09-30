@@ -1,0 +1,11 @@
+== 0. SIN anular — la linea base ==
+resultado: 15 de 15 aserciones en verde
+
+== 1. la resolucion contra el store, anulada: todo resuelve ==
+resultado: 13 de 15 aserciones en verde
+
+== 2. el descuento de lineas de comentario, anulado ==
+resultado: 14 de 15 aserciones en verde
+
+== 3. la refusal sin store, anulada: devuelve mapa vacio ==
+resultado: 13 de 15 aserciones en verde

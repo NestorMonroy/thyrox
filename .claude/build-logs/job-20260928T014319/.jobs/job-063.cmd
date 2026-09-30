@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/session/hardware/test-gpu-pools-real.sh

@@ -1,0 +1,8 @@
+error: Cannot find module '../../../src/accounts/cursor/cursorAgent.ts' from '/home/user/thyrox/src/packages/provider/__tests__/accounts/cursor/cursorAgent.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 3 fail
+ 3 errors
+Ran 3 tests across 3 files. [61.00ms]

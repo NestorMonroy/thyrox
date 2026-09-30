@@ -1,0 +1,9 @@
+seven_day_overage_included     ->  9 decl  (tabla de ventanas)
+anthropic-ratelimit-unified-   ->  1 decl  (lectura de las tres cabeceras)
+31536000                       ->  1 decl  (predicado de frescura)
+surpassedThreshold             ->  5 decl  (umbral rebasado)
+resets_at                      -> 15 decl  (reposicion)
+used_percentage                ->  3 decl  (composicion del payload publicado)
+---
+declaraciones unicas: 26
+bindings: j$o Yde FD WLt ZGo JGo ezo L2n x0 szo dPn V8 W7 izo lzo czo dzo fzo _Pn $2n bPn Wot cqo dqo vIn z0e

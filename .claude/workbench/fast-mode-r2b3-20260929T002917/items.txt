@@ -1,0 +1,1 @@
+R-2b-3 — Yl, Ndn y oA de chunk-t6pwageh.js como funciones puras en src/packages/provider/src/fastModeSelection.ts (nuevo). La prueba es .claude/workbench/fast-mode-pool-unbounded-20260929T000919/specs/fastModeSelection.test.ts: cópiala a src/packages/provider/src/__tests__/fastModeSelection.test.ts y hazla pasar. Archivos tuyos: esos dos.

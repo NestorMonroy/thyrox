@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+260 | 
+261 |   test('un cambio que adopta renombra el nombre derivado con la sesión nueva', async () => {
+262 |     await registerSession(undefined, deps())
+263 |     switchListeners[0]!('s2', 'resume')
+264 |     await flush()
+265 |     expect(state.adoptions).toBe(1)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:265:29)
+(fail) los cambios de sesión y de directorio > un cambio que adopta renombra el nombre derivado con la sesión nueva [7.60ms]
+
+ 22 pass
+ 1 fail
+ 83 expect() calls
+Ran 23 tests across 1 file. [188.00ms]

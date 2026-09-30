@@ -1,0 +1,19 @@
+CONTROL DE CONTRASTE — el universo entero, no solo el cubo acusado.
+Si los end_turn tambien declararan last=None, la columna no diria nada del
+cierre y el hallazgo seria otro. Discrimina:
+
+fila dice         medidos  last=None  last==declarado  bloques finales
+----------------------------------------------------------------------
+tool_use              109        109                0  text=109
+end_turn               29          0               29  text=29
+stop_sequence           0          -                -  (ninguno en disco)
+(NULL)                  1          1                1  text=1
+
+Los DOS grupos cierran igual: bloque final `text`, el reporte del agente.
+Lo que cambia no es como cerro el agente sino si el CLIENTE escribio el
+campo en ese ultimo mensaje.
+
+client_version NO los separa: tool_use sale en 2.1.234=61 · 2.1.261=56 ·
+2.1.224=52 · 2.1.263=33 · 2.1.258=30, y end_turn en 2.1.263=11 · 2.1.261=10 ·
+2.1.267=6 · 2.1.234=3. Mismas builds, mismo rango de fechas
+(2026-07-31 a 2026-09-10 los dos).

@@ -1,0 +1,267 @@
+run-task-pool: 20 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T092020
+  job-20260927T092020/job-001 pid 11487   bash bin/check_package_typecheck --strict --jobs 2 agent app-host bridge cli command-runtime computer-use-mcp config ide local-observability mcp-runtime memory output permission provider repl shell storage tool-registry updater
+  job-20260927T092020/job-002 pid 11536   cd src/packages/agent && bun test 2>&1 | tail -15
+  job-20260927T092020/job-003 pid 11564   cd src/packages/app-host && bun test 2>&1 | tail -15
+  job-20260927T092020/job-004 pid 11770   cd src/packages/bridge && bun test 2>&1 | tail -15
+  job-20260927T092020/job-005 pid 12132   cd src/packages/cli && bun test 2>&1 | tail -15
+  job-20260927T092020/job-006 pid 18803   cd src/packages/command-runtime && bun test 2>&1 | tail -15
+  job-20260927T092020/job-007 pid 22196   cd src/packages/computer-use-mcp && bun test 2>&1 | tail -15
+  job-20260927T092020/job-008 pid 22362   cd src/packages/config && bun test 2>&1 | tail -15
+  job-20260927T092020/job-009 pid 23018   cd src/packages/ide && bun test 2>&1 | tail -15
+  job-20260927T092020/job-010 pid 23062   cd src/packages/local-observability && bun test 2>&1 | tail -15
+  job-20260927T092020/job-011 pid 23160   cd src/packages/mcp-runtime && bun test 2>&1 | tail -15
+  job-20260927T092020/job-012 pid 23264   cd src/packages/memory && bun test 2>&1 | tail -15
+  job-20260927T092020/job-013 pid 23308   cd src/packages/output && bun test 2>&1 | tail -15
+  job-20260927T092020/job-014 pid 23494   cd src/packages/permission && bun test 2>&1 | tail -15
+  job-20260927T092020/job-015 pid 23538   cd src/packages/provider && bun test 2>&1 | tail -15
+  job-20260927T092020/job-016 pid 24030   cd src/packages/repl && bun test 2>&1 | tail -15
+  job-20260927T092020/job-017 pid 24145   cd src/packages/shell && bun test 2>&1 | tail -15
+  job-20260927T092020/job-018 pid 24278   cd src/packages/storage && bun test 2>&1 | tail -15
+  job-20260927T092020/job-019 pid 24434   cd src/packages/tool-registry && bun test 2>&1 | tail -15
+  job-20260927T092020/job-020 pid 25089   cd src/packages/updater && bun test 2>&1 | tail -15
+run-task-pool: lanzados 20 de 20; esperando en PRIMER PLANO (timeout 1500s)
+asentado: job-20260927T092020_job-002 -> OK (2 de 21)
+asentado: job-20260927T092020_job-003 -> OK (3 de 21)
+asentado: job-20260927T092020_job-004 -> OK (4 de 21)
+asentado: job-20260927T092020_job-005 -> OK (5 de 21)
+asentado: job-20260927T092020_job-006 -> OK (6 de 21)
+asentado: job-20260927T092020_job-007 -> OK (7 de 21)
+asentado: job-20260927T092020_job-008 -> OK (8 de 21)
+asentado: job-20260927T092020_job-009 -> OK (9 de 21)
+asentado: job-20260927T092020_job-010 -> OK (10 de 21)
+asentado: job-20260927T092020_job-011 -> OK (11 de 21)
+asentado: job-20260927T092020_job-012 -> OK (12 de 21)
+asentado: job-20260927T092020_job-013 -> OK (13 de 21)
+asentado: job-20260927T092020_job-014 -> OK (14 de 21)
+asentado: job-20260927T092020_job-015 -> OK (15 de 21)
+asentado: job-20260927T092020_job-016 -> OK (16 de 21)
+asentado: job-20260927T092020_job-017 -> OK (17 de 21)
+asentado: job-20260927T092020_job-018 -> OK (18 de 21)
+asentado: job-20260927T092020_job-020 -> OK (19 de 21)
+asentado: job-20260927T092020_job-019 -> OK (19 de 21)
+esperando: 20 de 21 asentados, 30s; vivos: job-20260927T092020_job-001
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.48s
+sonda job-20260927T092020_job-001: 26785 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 26787 node stdin=devnull(/dev/null) escritores=- estado=R cpu=14.23s
+sonda job-20260927T092020_job-001: 27089 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 27090 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.14s
+esperando: 20 de 21 asentados, 61s; vivos: job-20260927T092020_job-001
+sonda job-20260927T092020_job-001: 11487 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11493 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 11497 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.50s
+sonda job-20260927T092020_job-001: 29129 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 29133 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.85s
+sonda job-20260927T092020_job-001: 29395 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T092020_job-001: 29396 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.38s
+asentado: job-20260927T092020_job-001 -> OK (2 de 21)
+== 21 trabajos asentados ==
+OLVIDADO job-20260927T092020
+       | (vacío — no emitió nada)
+OK     job-20260927T092020_job-001 exit=1
+       |   repl: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   updater: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       | 
+       | check-package-typecheck: 1 error(es) propio(s) (alcance medido: 19 de 19 paquete(s))
+       |   1 paquete(s) suben sobre su baseline:
+       |     bridge: 0 -> 1
+       | EXIT=1
+       memoria pico: 851556 KB (832 MB) · pared 196.15s
+OK     job-20260927T092020_job-002 exit=0
+       | fatal: not a git repository (or any of the parent directories): .git
+       | 
+       | __tests__/portFidelity.test.ts:
+       | [portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+       | 
+       |  2654 pass
+       |  0 fail
+       |  4855 expect() calls
+       | Ran 2654 tests across 196 files. [23.67s]
+       | EXIT=0
+       memoria pico: 267772 KB (261 MB) · pared 23.69s
+OK     job-20260927T092020_job-003 exit=0
+       |  - teleport
+       |  - tool-registry
+       |  - voice
+       | size: 21
+       | 
+       |  241 pass
+       |  0 fail
+       |  393 expect() calls
+       | Ran 241 tests across 26 files. [1.70s]
+       | EXIT=0
+       memoria pico: 214164 KB (209 MB) · pared 1.72s
+OK     job-20260927T092020_job-004 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  146 pass
+       |  0 fail
+       |  200 expect() calls
+       | Ran 146 tests across 9 files. [706.00ms]
+       | EXIT=0
+       memoria pico: 123896 KB (121 MB) · pared 0.71s
+OK     job-20260927T092020_job-005 exit=0
+       | listo, integré lo del hijo
+       | segui el procedimiento del skill
+       | (was r0000001, now newshort)
+       | 
+       |  368 pass
+       |  1 todo
+       |  0 fail
+       |  712 expect() calls
+       | Ran 369 tests across 34 files. [73.19s]
+       | EXIT=0
+       memoria pico: 240476 KB (235 MB) · pared 73.22s
+OK     job-20260927T092020_job-006 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  327 pass
+       |  0 fail
+       |  602 expect() calls
+       | Ran 327 tests across 26 files. [71.19s]
+       | EXIT=0
+       memoria pico: 216476 KB (211 MB) · pared 71.22s
+OK     job-20260927T092020_job-007 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  25 pass
+       |  0 fail
+       |  94 expect() calls
+       | Ran 25 tests across 4 files. [561.00ms]
+       | EXIT=0
+       memoria pico: 56340 KB (55 MB) · pared 0.57s
+OK     job-20260927T092020_job-008 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  737 pass
+       |  0 fail
+       |  1418 expect() calls
+       | Ran 737 tests across 51 files. [9.12s]
+       | EXIT=0
+       memoria pico: 155256 KB (152 MB) · pared 9.15s
+OK     job-20260927T092020_job-009 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  21 pass
+       |  0 fail
+       |  40 expect() calls
+       | Ran 21 tests across 2 files. [232.00ms]
+       | EXIT=0
+       memoria pico: 79980 KB (78 MB) · pared 0.26s
+OK     job-20260927T092020_job-010 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  235 pass
+       |  0 fail
+       |  386 expect() calls
+       | Ran 235 tests across 14 files. [774.00ms]
+       | EXIT=0
+       memoria pico: 135848 KB (133 MB) · pared 0.79s
+OK     job-20260927T092020_job-011 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  424 pass
+       |  0 fail
+       |  563 expect() calls
+       | Ran 424 tests across 21 files. [1.52s]
+       | EXIT=0
+       memoria pico: 223092 KB (218 MB) · pared 1.55s
+OK     job-20260927T092020_job-012 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  87 pass
+       |  0 fail
+       |  123 expect() calls
+       | Ran 87 tests across 5 files. [259.00ms]
+       | EXIT=0
+       memoria pico: 88852 KB (87 MB) · pared 0.28s
+OK     job-20260927T092020_job-013 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  474 pass
+       |  0 fail
+       |  658 expect() calls
+       | Ran 474 tests across 26 files. [2.75s]
+       | EXIT=0
+       memoria pico: 220732 KB (216 MB) · pared 2.79s
+OK     job-20260927T092020_job-014 exit=0
+       | 1. You might have mismatching versions of React and the renderer (such as React DOM)
+       | 2. You might be breaking the Rules of Hooks
+       | 3. You might have more than one copy of React in the same app
+       | See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+       | 
+       |  1074 pass
+       |  0 fail
+       |  1820 expect() calls
+       | Ran 1074 tests across 69 files. [11.79s]
+       | EXIT=0
+       memoria pico: 227668 KB (222 MB) · pared 11.81s
+OK     job-20260927T092020_job-015 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  1824 pass
+       |  0 fail
+       |  3187 expect() calls
+       | Ran 1824 tests across 146 files. [5.71s]
+       | EXIT=0
+       memoria pico: 264708 KB (259 MB) · pared 5.73s
+OK     job-20260927T092020_job-016 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  537 pass
+       |  0 fail
+       |  1255 expect() calls
+       | Ran 537 tests across 30 files. [1.62s]
+       | EXIT=0
+       memoria pico: 217524 KB (212 MB) · pared 1.64s
+OK     job-20260927T092020_job-017 exit=0
+       |   stdin-peek [--timeout-ms N]
+       |   env [--gha] [--json]
+       | 
+       | Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+       | 
+       |  288 pass
+       |  0 fail
+       |  432 expect() calls
+       | Ran 288 tests across 17 files. [1.75s]
+       | EXIT=0
+       memoria pico: 215548 KB (210 MB) · pared 1.77s
+OK     job-20260927T092020_job-018 exit=0
+       | Plan file missing during resume: /tmp/plans-Y0KOBM/plans/slug-recuperado-attachment.md. Attempting recovery.
+       | Plan recovered from message history, 18 chars
+       | Plan file missing during resume: /tmp/plans-kdfHLu/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+       | Plan file recovery failed: no file snapshot or plan content found in message history
+       | 
+       |  1191 pass
+       |  0 fail
+       |  2646 expect() calls
+       | Ran 1191 tests across 71 files. [7.17s]
+       | EXIT=0
+       memoria pico: 255808 KB (250 MB) · pared 7.19s
+OK     job-20260927T092020_job-019 exit=0
+       | 
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:65:23)
+       | (fail) hooks/appState — la indirección hacia el paquete hermano > 4. el fallo es un TypeError de React, no uno de resolución [0.73ms]
+       | 
+       |  1419 pass
+       |  3 fail
+       |  3249 expect() calls
+       | Ran 1422 tests across 86 files. [8.39s]
+       | EXIT=0
+       memoria pico: 252320 KB (246 MB) · pared 8.41s
+OK     job-20260927T092020_job-020 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  57 pass
+       |  0 fail
+       |  64 expect() calls
+       | Ran 57 tests across 5 files. [666.00ms]
+       | EXIT=0
+       memoria pico: 131312 KB (128 MB) · pared 0.68s
+salida distinta de 0: 1 (job-20260927T092020_job-001)
+__BG_EXIT__=0

@@ -1,0 +1,10 @@
+tests/session/test-bg-familia.sh :: aserciones: 26  ok: 26  fallo: 0
+tests/session/test-bg-grace-window.sh :: aserciones: 5 de 5 · fallos: 0
+tests/session/test-bg-memfree.sh :: test-bg-memfree: 8 aserciones — 8 ok, 0 falla(s)
+tests/session/test-bg-name-flag.sh :: resumen: 9 ok, 0 fallo
+tests/session/test-gnu-time-launchers.sh :: test-gnu-time-launchers: 13 ok, 0 falla(s)
+tests/session/test-process-group.sh :: test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+tests/session/test-bg-live-log.sh :: test-bg-live-log: 12 aserciones — 12 ok, 0 falla(s)
+tests/verify/test_step_report.py :: test_step_report: 22 aserciones — 22 ok, 0 falla(s)
+directorios nuevos en el runtime real (sin contar este trabajo): 0
+__BG_EXIT__=0

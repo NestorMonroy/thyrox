@@ -1,0 +1,11 @@
+# Mitad ROJA — el desprendimiento automatico
+# fecha: 2026-09-19T16:19:14
+
+FALLA el grace por defecto cae en 20-30 s — esperado 'si', obtenido 'no (120 s)'
+FALLA start devuelve al vencer el grace, no al terminar — esperado '1', obtenido '0'
+FALLA start senala el desprendimiento con su codigo propio — esperado '125', obtenido '0'
+FALLA la clave de entorno se declara en .env.example — esperado '1', obtenido '0
+0'
+FALLA wait sin segundos NO hereda el grace: recoge el trabajo — esperado 'si', obtenido 'no'
+
+aserciones: 0 de 5 · fallos: 5

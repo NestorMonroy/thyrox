@@ -1,0 +1,10 @@
+Tipo: CompactionResult
+Copias:
+  src/packages/agent/compaction/compact.ts
+  src/packages/agent/compaction/compactUtils.ts
+  src/packages/agent/compaction/types.ts
+  src/packages/agent/types/compaction.ts
+  src/packages/agent/types/deps.ts
+
+src/packages/agent/query.ts(508): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+src/packages/agent/query.ts(1122): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.

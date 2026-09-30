@@ -1,0 +1,33 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/claudeExtraUsage.test.ts:
+221 |     // produciria una escritura nueva -- y este backoffLevel volveria a 1.
+222 |     const update = buildClaudeExtraUsageConnectionUpdate(currentState, {
+223 |       extraUsage: { queued: true },
+224 |       quotas: { session: { resetAt: rateLimitedUntil } },
+225 |     })
+226 |     expect(update).toBe(null)
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: null
+Received: {
+  testStatus: "unavailable",
+  lastError: "Claude extra usage was detected and blocked by this connection policy.",
+  lastErrorAt: "2026-09-13T06:02:12.833Z",
+  lastErrorType: "quota_exhausted",
+  lastErrorSource: "extra_usage",
+  errorCode: 429,
+  rateLimitedUntil: "2026-09-13T06:05:12.833Z",
+  backoffLevel: 3,
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeExtraUsage.test.ts:226:20)
+(fail) claude extra-usage blocking (cobertura propia, funciones sin ejercitar en la fuente) > buildClaudeExtraUsageConnectionUpdate es idempotente: el mismo estado exacto no produce una segunda escritura [2.19ms]
+
+ 12 pass
+ 1 fail
+ 44 expect() calls
+Ran 13 tests across 1 file. [97.00ms]
+EXIT=1
+__BG_EXIT__=0

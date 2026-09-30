@@ -1,0 +1,83 @@
+test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor (__main__.TestDestinoPorDefecto.test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor)
+Falla si sigue rehusando. Es el cambio entero: el llamador deja de ... ok
+test_2_no_apunta_al_silo (__main__.TestDestinoPorDefecto.test_2_no_apunta_al_silo)
+Falla si el defecto vuelve por otra via. El nombre del clon esta ... ok
+test_3_claude_dir_sigue_ganando (__main__.TestDestinoPorDefecto.test_3_claude_dir_sigue_ganando)
+Falla si el peldano nuevo pisa al mas especifico. Una ruta explicita ... ok
+test_4_un_repo_declarado_a_proposito_sigue_resolviendo (__main__.TestDestinoPorDefecto.test_4_un_repo_declarado_a_proposito_sigue_resolviendo)
+Falla si el peldano nuevo retira la capacidad de apuntar a un clon. ... ERROR
+test_5_un_repo_invalido_sigue_rehusando (__main__.TestDestinoPorDefecto.test_5_un_repo_invalido_sigue_rehusando)
+Falla si el peldano nuevo se traga un error del llamador. ... ERROR
+test_1_el_default_de_repo_no_nombra_un_consumidor (__main__.TestParserDefault.test_1_el_default_de_repo_no_nombra_un_consumidor) ... ok
+test_2_el_destino_sin_banderas_es_el_hogar (__main__.TestParserDefault.test_2_el_destino_sin_banderas_es_el_hogar) ... ok
+test_3_el_destino_sin_banderas_no_cae_en_ningun_clon (__main__.TestParserDefault.test_3_el_destino_sin_banderas_no_cae_en_ningun_clon) ... ok
+test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+El par que impide arreglar un eje rompiendo el otro. ... ERROR
+
+======================================================================
+ERROR: test_4_un_repo_declarado_a_proposito_sigue_resolviendo (__main__.TestDestinoPorDefecto.test_4_un_repo_declarado_a_proposito_sigue_resolviendo)
+Falla si el peldano nuevo retira la capacidad de apuntar a un clon.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_store_dir_default.py", line 92, in test_4_un_repo_declarado_a_proposito_sigue_resolviendo
+    d = agent_store.resolve_store_dir(_args(repo="docs"))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 483, in resolve_store_dir
+    repos = valid_repos()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 135, in valid_repos
+    return reach_roots.REACH_ROOTS
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach_roots.py", line 136, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_5_un_repo_invalido_sigue_rehusando (__main__.TestDestinoPorDefecto.test_5_un_repo_invalido_sigue_rehusando)
+Falla si el peldano nuevo se traga un error del llamador.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_store_dir_default.py", line 105, in test_5_un_repo_invalido_sigue_rehusando
+    agent_store.resolve_store_dir(_args(repo="no-existe"))
+  File "/home/user/thyrox/src/agents/agent_store.py", line 483, in resolve_store_dir
+    repos = valid_repos()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 135, in valid_repos
+    return reach_roots.REACH_ROOTS
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach_roots.py", line 136, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+El par que impide arreglar un eje rompiendo el otro.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_store_dir_default.py", line 152, in test_4_el_arbol_documental_no_se_rompe_con_repo_ausente
+    self.assertEqual(agent_store.document_root(argumentos),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 447, in document_root
+    return reach_roots.root(DOCS_CONSUMER)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.014s
+
+FAILED (errors=3)
+EXIT=1

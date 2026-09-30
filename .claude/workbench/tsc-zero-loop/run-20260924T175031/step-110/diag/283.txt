@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts(145,21): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts:135-155 ---
+    135    if (projectRootIsWorktree) {
+    136      setProjectRoot(originalCwd)
+    137      // setup.ts's --worktree block called updateHooksConfigSnapshot() to re-read
+    138      // hooks from the worktree. Restore symmetrically. (Mid-session
+    139      // EnterWorktreeTool never touched the snapshot, so no-op there.)
+    140      updateHooksConfigSnapshot()
+    141    }
+    142    saveWorktreeState(null)
+    143    clearSystemPromptSections()
+    144    clearMemoryFileCaches()
+    145>   getPlansDirectory.cache.clear?.()
+    146  }
+    147  
+    148  export const ExitWorktreeTool: Tool<InputSchema, Output> = buildTool({
+    149    name: EXIT_WORKTREE_TOOL_NAME,
+    150    searchHint: 'exit a worktree session and return to the original directory',
+    151    maxResultSizeChars: 100_000,
+    152    async description() {
+    153      return 'Exits a worktree session created by EnterWorktree and restores the original working directory'
+    154    },
+    155    async prompt() {

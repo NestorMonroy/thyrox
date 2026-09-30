@@ -1,0 +1,41 @@
+== 1. coincidencia directa por nombre ==
+  ok    rup resuelve a su homónimo
+== 2. si no hay homónimo, la descripción decide ==
+  ok    babok encuentra a ba-coordinator
+== 3. sin candidato, no se inventa uno ==
+  ok    scrum no resuelve
+== 4. DISCRIMINA: la descripción hace juego por PALABRA, no por subcadena ==
+  ok    BABOKISMO no es BABOK
+  ok    «responsable» no contiene el flow sp
+== 5. DISCRIMINA: el homónimo gana sobre el que sólo lo menciona ==
+  ok    gana el homónimo
+== 6. resolve_all reparte en resueltos y sin resolver ==
+  ok    dos resueltos
+  ok    uno sin resolver
+== 7. los flows canónicos son los catorce de DEC-R-01 ==
+  ok    catorce
+  ok    y son estos
+== 8. la mención lleva el prefijo obligatorio del ejecutable ==
+  ok    mención con prefijo
+  ok    y sin él no aparece
+== 9. los flows sin coordinator se NOMBRAN ==
+  ok    scrum aparece como sin coordinator
+== 10. las notas del consumidor entran verbatim ==
+  ok    la nota de evidencia
+  ok    la nota de cierre
+== 11. DISCRIMINA: un directorio ausente REHÚSA, no publica catorce huérfanos ==
+  ok    rehúsa
+  ok    y nombra la variable que lo declara
+== 12. main emite un SessionStart válido ==
+  ok    exit 0
+  ok    evento SessionStart
+  ok    con el mapa dentro
+== 13. main con directorio ausente: {} y el motivo en stderr, nunca rompe ==
+  ok    exit 0 — un hook no rompe el turno
+  ok    stdout es {}
+  ok    stderr nombra el directorio
+== 14. el recorrido por descripción es estable ==
+  ok    siempre el mismo, y es el primero alfabético
+
+24 ok, 0 fallos
+EXIT=0

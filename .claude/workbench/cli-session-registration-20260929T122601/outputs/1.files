@@ -1,0 +1,6 @@
+src/packages/app-host/package.json
+src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+src/packages/cli/__tests__/sessionRegistryAtLaunch.e2e.test.ts
+src/packages/cli/src/entry/print.ts
+src/packages/cli/src/entry/runLoop.ts
+src/packages/local-observability/package.json

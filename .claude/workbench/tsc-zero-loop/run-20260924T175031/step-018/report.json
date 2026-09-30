@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3160, "total_final": 3142, "tsc_runs": 1, "accepted": ["agent:lsp-config-types"], "files_kept": ["src/packages/ide/src/lsp/types.ts"], "outcomes": {"agent:lsp-config-types": "accepted-net"}}

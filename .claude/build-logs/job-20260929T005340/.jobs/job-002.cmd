@@ -1,0 +1,1 @@
+bash -c 'cd src/packages/agent && bun test __tests__'

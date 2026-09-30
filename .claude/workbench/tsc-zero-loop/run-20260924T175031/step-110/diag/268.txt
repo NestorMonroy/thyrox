@@ -1,0 +1,25 @@
+src/packages/swarm/src/teammateState.ts(307,13): error TS2322: Type '{ onIdleCallbacks: (() => void)[]; type: string; status: string; isIdle?: boolean; }' is not assignable to type 'TaskState'.
+  --- código src/packages/swarm/src/teammateState.ts:297-317 ---
+    297      // pasó a idle entre nuestro snapshot inicial y este registro.
+    298      setAppState(prev => {
+    299        const newTasks = { ...prev.tasks }
+    300        for (const taskId of workingTaskIds) {
+    301          const task = newTasks[taskId] as InProcessTeammateTaskLike | undefined
+    302          if (task && task.type === 'in_process_teammate') {
+    303            // Si la tarea ya está idle, invoca onIdle de inmediato.
+    304            if (task.isIdle) {
+    305              onIdle()
+    306            } else {
+    307>             newTasks[taskId] = {
+    308                ...task,
+    309                onIdleCallbacks: [...(task.onIdleCallbacks ?? []), onIdle],
+    310              }
+    311            }
+    312          }
+    313        }
+    314        return { ...prev, tasks: newTasks }
+    315      })
+    316    })
+    317  }
+  Type '{ onIdleCallbacks: (() => void)[]; type: string; status: string; isIdle?: boolean; }' is not assignable to type 'InProcessTeammateTaskState'.
+    Type '{ onIdleCallbacks: (() => void)[]; type: string; status: string; isIdle?: boolean | undefined; }' is missing the following properties from type 'TaskStateBase': id, description, startTime, outputFile, and 2 more.

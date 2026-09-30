@@ -1,0 +1,17 @@
+=== ANULACION 1: restaurar UNA copia plana real (src/packages/ink) desde HEAD
++   "ink: @ant/ink | ink",
+(fail) identidad del paquete > caso 3: ningun basename de workspace se repite [1.19ms]
+ 4 pass
+ 1 fail
+
+=== ANULACION 2: devolver UN import a @thyrox/ink, sin restaurar el directorio
++   "@thyrox/ink (1)",
+(fail) identidad del paquete > caso 4: todo specifier de alcance de workspace resuelve a un paquete declarado [162.97ms]
+ 4 pass
+ 1 fail
+
+=== RESTAURADO: verde de nuevo, y arbol sin residuo
+ 5 pass
+ 0 fail
+    M src/packages/repl/src/components/Spinner.tsx
+   (sin linea arriba = el archivo volvio a su estado)

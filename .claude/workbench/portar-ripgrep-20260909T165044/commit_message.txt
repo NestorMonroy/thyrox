@@ -1,0 +1,38 @@
+Port ripgrep.ts via system rg spawn
+
+ccnmt's ripgrep.ts (536 lines, UNLICENSED) adapts legacy rg flag
+arrays to the in-process ripgrep-napi module. That module is absent
+from this tree (no package.json entry, no node_modules/ripgrep-napi;
+already measured as blocked by
+.claude/workbench/frontera-tool-registry-simbolo/root_modules_
+report.txt).
+The system rg binary is present (/usr/bin/rg, v14.1.0).
+
+Coverage: 6 of 6 — RipgrepTimeoutError, ripgrepCommand,
+getRipgrepStatus, ripGrep, ripGrepStream, countFilesRoundedRg — all
+with real behavior, reimplemented (not copied) against system rg via
+node:child_process.spawn, parsing --json. Same divergence pattern as
+@thyrox/shell's execFileNoThrow.ts/which.ts for their own absent
+dependency (execa).
+
+Three declared improvements over the source, exercised by the test
+suite: -o extraction uses rg's own submatches (source re-matches with
+new RegExp(pattern) even under -F literal, which breaks on regex
+metacharacters); real process cancellation on timeout/abort instead
+of an uncancelable NAPI promise, with genuine partialResults instead
+of the source's always-[] fallback; and --glob anchoring fixed to the
+spawn cwd (measured: a glob with a mid-pattern slash anchors to the
+process cwd, not to the target path argument).
+
+Probed and documented in the module header: --json ignores
+-o/--max-columns (confirmed in rg --help too, so both are
+post-processed here); --json context mode has no native group-break
+sentinel (synthesized from line_number discontinuity, gated on
+context being active — an earlier version fired the sentinel on any
+match-only gap and broke test 5).
+
+TDD with nulling: 20/20 tests pass, 39 assertions. Three mechanisms
+verified to discriminate by nulling them one at a time (context-break
+guard, glob cwd-anchoring, memoization) and confirming exactly the
+dependent assertion failed, then restoring with a sha256 match.
+Evidence in .claude/workbench/portar-ripgrep-20260909T165044/.

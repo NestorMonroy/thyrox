@@ -1,0 +1,47 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(474,61): error TS2345: Argument of type '{ recursive?: boolean | undefined; } | undefined' is not assignable to parameter of type '{ mode?: number | undefined; } | undefined'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:464-484 ---
+    464    setGetSettingsForSourceFn(source => getSettingsForSource(source as any) as any)
+    465    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    466  
+    467    // --- fs / path (métodos sync + async)
+    468    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    469    const nodeFs = require('node:fs') as typeof import('node:fs')
+    470    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    471    const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
+    472    setFsImplementationFn({
+    473      existsSync: p => getFsImplementation().existsSync(p),
+    474>     mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
+    475      writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
+    476      readFileSync: (p, e) => getFsImplementation().readFileSync(p, e) as string,
+    477      readdirSync: p =>
+    478        nodeFs.readdirSync(p, { withFileTypes: true }) as Array<{
+    479          name: string
+    480          isFile(): boolean
+    481          isDirectory(): boolean
+    482        }>,
+    483      statSync: p => getFsImplementation().statSync(p) as any,
+    484      rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
+  Type '{ recursive?: boolean | undefined; }' has no properties in common with type '{ mode?: number | undefined; }'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(475,52): error TS2551: Property 'writeFileSync' does not exist on type 'FsOperations'. Did you mean 'readFileSync'?
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:465-485 ---
+    465    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    466  
+    467    // --- fs / path (métodos sync + async)
+    468    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    469    const nodeFs = require('node:fs') as typeof import('node:fs')
+    470    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    471    const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
+    472    setFsImplementationFn({
+    473      existsSync: p => getFsImplementation().existsSync(p),
+    474      mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
+    475>     writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
+    476      readFileSync: (p, e) => getFsImplementation().readFileSync(p, e) as string,
+    477      readdirSync: p =>
+    478        nodeFs.readdirSync(p, { withFileTypes: true }) as Array<{
+    479          name: string
+    480          isFile(): boolean
+    481          isDirectory(): boolean
+    482        }>,
+    483      statSync: p => getFsImplementation().statSync(p) as any,
+    484      rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
+    485      rmdirSync: p => nodeFs.rmdirSync(p),

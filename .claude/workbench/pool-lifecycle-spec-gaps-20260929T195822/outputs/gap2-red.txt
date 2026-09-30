@@ -1,0 +1,34 @@
+caso 5: la foto guarda todo y no toca HEAD, rama ni índice
+  ok    HEAD, rama e índice real intactos
+  ok    git status intacto
+  ok    lo preparado está en la foto
+  ok    lo modificado sin preparar está en la foto
+  ok    lo nuevo sin seguir está en la foto
+  ok    lo binario está en la foto, byte a byte
+  ok    el árbol del índice guarda sólo lo preparado
+  ok    la ref apunta a la foto
+  ok    el manifiesto está íntegro y en disco
+  ok    base_head es el HEAD de partida
+caso 5c: control — sin capturar el árbol, la foto se queda en lo preparado
+  ok    control: lo modificado sin preparar falta
+  ok    control: lo nuevo sin seguir falta
+  ok    control: lo binario falta
+caso 6: dos fotos concurrentes desde dos worktrees no chocan
+  ok    las dos refs existen
+  ok    cada ref apunta a su propia foto
+  ok    cada foto trae el archivo de su worktree
+  ok    ningún HEAD, rama o índice cambió
+  ok    repetir una ref existente se rehúsa
+  ok    ... y la ref sigue en la primera foto
+caso 6c: control — sin exigir que la ref no exista, la segunda la reemplaza
+  ok    control: la ref ya no apunta a la primera foto
+caso 11: recuperar abre un worktree aparte y no toca el árbol del usuario
+  ok    el árbol del usuario conserva su trabajo posterior
+  ok    HEAD, rama e índice del usuario intactos
+  ok    el worktree de recuperación trae la foto
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_snapshot_recovery.py", line 172, in <module>
+    check("la recuperación trabaja en una rama temporal propia", rc.recovery_branch("r11", "1", 1),
+                                                                 ^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.recovery_controller' has no attribute 'recovery_branch'. Did you mean: 'recovery_path'?
+exit=1

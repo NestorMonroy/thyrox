@@ -1,0 +1,48 @@
+src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts(88,12): error TS2349: This expression is not callable.
+  --- código src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts:78-98 ---
+     78      prompt: z.string().min(1, 'Prompt cannot be empty'),
+     79      model: z
+     80        .string()
+     81        .trim()
+     82        .min(1, 'Model cannot be empty')
+     83        .transform(m => (m.toLowerCase() === 'inherit' ? 'inherit' : m))
+     84        .optional(),
+     85      effort: z.union([z.enum(EFFORT_LEVELS), z.number().int()]).optional(),
+     86      permissionMode: z.enum(PERMISSION_MODES).optional(),
+     87      mcpServers: z.array(AgentMcpServerSpecSchema()).optional(),
+     88>     hooks: HooksSchema().optional(),
+     89      maxTurns: z.number().int().positive().optional(),
+     90      skills: z.array(z.string()).optional(),
+     91      initialPrompt: z.string().optional(),
+     92      memory: z.enum(['user', 'project', 'local']).optional(),
+     93      background: z.boolean().optional(),
+     94      isolation: (process.env.USER_TYPE === 'ant'
+     95        ? z.enum(['worktree', 'remote'])
+     96        : z.enum(['worktree'])
+     97      ).optional(),
+     98    }),
+  Type 'ZodObject<{ SessionStart: ZodOptional<ZodArray<ZodObject<{ matcher: ZodOptional<ZodString>; hooks: ZodArray<ZodObject<{ type: ZodLiteral<"command">; command: ZodString; timeout: ZodOptional<ZodNumber>; }, $strip>>; }, $strip>>>; ... 10 more ...; SubagentStop: ZodOptional<...>; }, $strict>' has no call signatures.
+src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts(432,18): error TS2349: This expression is not callable.
+  --- código src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts:422-442 ---
+    422   * @returns Parsed hooks settings or undefined if invalid/missing
+    423   */
+    424  function parseHooksFromFrontmatter(
+    425    frontmatter: Record<string, unknown>,
+    426    agentType: string,
+    427  ): HooksSettings | undefined {
+    428    if (!frontmatter.hooks) {
+    429      return undefined
+    430    }
+    431  
+    432>   const result = HooksSchema().safeParse(frontmatter.hooks)
+    433    if (!result.success) {
+    434      logForDebugging(
+    435        `Invalid hooks in agent '${agentType}': ${result.error.message}`,
+    436      )
+    437      return undefined
+    438    }
+    439    return result.data
+    440  }
+    441  
+    442  /**
+  Type 'ZodObject<{ SessionStart: ZodOptional<ZodArray<ZodObject<{ matcher: ZodOptional<ZodString>; hooks: ZodArray<ZodObject<{ type: ZodLiteral<"command">; command: ZodString; timeout: ZodOptional<ZodNumber>; }, $strip>>; }, $strip>>>; ... 10 more ...; SubagentStop: ZodOptional<...>; }, $strict>' has no call signatures.

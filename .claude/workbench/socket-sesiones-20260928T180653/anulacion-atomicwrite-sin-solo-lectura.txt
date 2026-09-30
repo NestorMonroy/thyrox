@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+338 |     expect(readFileSync(target, 'utf8')).toBe('x')
+339 |     chmodSync(target, 0o444)
+340 |     calls = 0
+341 |     await expect(
+342 |       writeFileAtomicWithMode(target, 'y', { renameFn: flaky, shouldRetryRename: error => (error as { code?: string }).code === 'ETXTBSY' }),
+343 |     ).rejects.toMatchObject({ code: 'ETXTBSY' })
+                    ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:343:15)
+(fail) opciones completas de Jne > shouldRetryRename reintenta el rename; un destino de sólo lectura corta el primer reintento [104.37ms]
+
+ 26 pass
+ 1 fail
+ 71 expect() calls
+Ran 27 tests across 1 file. [220.00ms]

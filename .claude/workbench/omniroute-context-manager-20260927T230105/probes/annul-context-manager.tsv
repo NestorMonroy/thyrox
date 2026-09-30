@@ -1,0 +1,29 @@
+trim-tools	s/  messages = trimToolMessages(messages, TOOL_RESULT_MAX_CHARS)/  void TOOL_RESULT_MAX_CHARS/
+prune-images	s/  if (images.pruned > 0) {/  if (false) {/
+compress-thinking	s/  messages = compressThinking(messages)$/  void 0/
+thinking-keep-last	s/if (message.role !== 'assistant' || i === last || /if (message.role !== 'assistant' || /
+purify	s/  messages = purifyHistory(messages, target)/  void target/
+purify-repair	s/  const result = repairToolPairs(\[...system, ...rest.slice(-keep)\])/  const result = [...system, ...rest.slice(-keep)]/
+notice-merge	s/  if (!first || !isSystem(first)) return/  if (true) return/
+notice-bytes	s/earlier messages removed to fit context window\]'/earlier messages removed\]'/
+image-budget	s/  if (media \&\& isInlineBase64ImageBlock(media)) return/  if (false) return/
+document-budget	s/  if (media \&\& isInlineBase64DocumentBlock(media)) return/  if (false) return/
+openai-image	s/  return isInlineImageUrl(node.image_url) || isInlineImageUrl(record(node.image_url)?.url)/  return isInlineImageUrl(node.image_url)/
+claude-image	s/|| isAnthropicBase64Source(node, 'image') //
+gemini-image	s/ || isGeminiInlineData(node)$//
+responses-placeholder	s/  if (block.type === 'input_image') return { type: 'input_text', text: IMAGE_REMOVED_PLACEHOLDER }/  void 0/
+prune-target-stop	s/    if (options.targetTokens != null \&\& estimateTokens(next) <= options.targetTokens) break/    void 0/
+pairs-keep-last	s/message.role === 'assistant' \&\& i !== messages.length - 1 ? /message.role === 'assistant' ? /
+pairs-orphan-result	s/    if (message.role === 'tool' \&\& message.tool_call_id \&\& !callIds.has(String(message.tool_call_id))) continue/    void 0/
+pairs-empty-assistant	s/    if (message.role === 'assistant' \&\& !hasBody(message)) continue/    void 0/
+adjacency	s/    const adjacent = new Set(toolResultIdsOf(next))/    const adjacent = { has: () => true }/
+strip-trailing	s/  const changed = withoutToolCalls(last, () => false)/  const changed = undefined as Message | undefined/
+mistral	s/new Set(\['mistral'\])/new Set<string>()/
+env-provider	s/  return positiveEnv(`THYROX_CONTEXT_LENGTH_\${provider/  return null \&\& positiveEnv(`THYROX_CONTEXT_LENGTH_\${provider/
+env-default	s/    ?? positiveEnv('THYROX_CONTEXT_LENGTH_DEFAULT')/    ?? null/
+env-reserve	s/?? positiveEnv('THYROX_CONTEXT_RESERVE_TOKENS') ?? defaultReserve/?? defaultReserve/
+env-keep	s/options.keepLatest ?? positiveEnv('THYROX_CONTEXT_KEEP_LATEST_IMAGES', true) ??/options.keepLatest ??/
+keep-zero	s/positiveEnv('THYROX_CONTEXT_KEEP_LATEST_IMAGES', true)/positiveEnv('THYROX_CONTEXT_KEEP_LATEST_IMAGES')/
+injected	s/    const injected = contextWindowOf?.(provider, model)/    const injected = 0/
+name-hints	s/    if (lower.includes('claude')) return/    if (false) return/
+reserve-scale	s/Math.max(256, Math.floor(maxTokens \* 0.15))/16_000/

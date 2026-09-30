@@ -1,0 +1,1 @@
+check "dos pools: el registro queda vacío" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"

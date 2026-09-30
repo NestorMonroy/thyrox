@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun install", "started_at": "2026-09-29T13:39:59+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T13:40:21+00:00", "duration_seconds": 22.321258}

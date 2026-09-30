@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.281
+import{w}from"/$bunfs/root/chunk-q93sw3mb.js";import{e}from"/$bunfs/root/chunk-srmsc891.js";import{Xhe,O$,_X}from"/$bunfs/root/chunk-48e17vjn.js";import{wg}from"/$bunfs/root/chunk-mn2tby87.js";import{Vt,Pe,A,g,Ct,D}from"/$bunfs/root/chunk-av0brfrs.js";D();D();var u=Vt({isTerminalFocused:!0,terminalFocusState:"unknown"});u.displayName="TerminalFocusContext";function K6n(c){let l=w(6),{children:r}=c,t=Ct(_X,Xhe),n=Ct(_X,O$),i;if(l[0]!==t||l[1]!==n)i={isTerminalFocused:t,terminalFocusState:n},l[0]=t,l[1]=n,l[2]=i;else i=l[2];let s=i,a;if(l[3]!==r||l[4]!==s)a=e(u.Provider,{value:s,children:r}),l[3]=r,l[4]=s,l[5]=a;else a=l[5];return a}var d=u;function Al(){let{isTerminalFocused:c}=Pe(d);return c}function NCe(){let{terminalFocusState:c}=Pe(d);return c}D();function I(){return v(wg)}var px=(c,r)=>{let t=setTimeout(c,r);return()=>clearTimeout(t)},$Ce=()=>()=>{},Ngn=()=>null;function v(c){let r=new Map,t=null,n=c,l=performance.now(),i=0;function s(){i=performance.now()-l;for(let o of r.keys())o()}function a(){if([...r.values()].some(Boolean)){if(t!==null)clearInterval(t);else i=performance.now()-l;t=setInterval(s,n)}else if(t!==null)clearInterval(t),t=null}function f(o,m){return r.set(o,m),a(),()=>{r.delete(o),a()}}return{subscribeKeepAlive(o){return f(o,!0)},subscribeFollower(o){return f(o,!1)},now(){if(t!==null)return i;return performance.now()-l},setTickInterval(o){if(o===n)return;n=o,a()},setTimeout(o,m){let b=setTimeout(o,m);return()=>clearTimeout(b)}}}var Eb=Vt(null),T=wg*2;function Y6n(c){let l=w(7),{children:r}=c,[t]=g(I),n=Al(),i,s;if(l[0]!==t||l[1]!==n)i=()=>{t.setTickInterval(n?wg:T)},s=[t,n],l[0]=t,l[1]=n,l[2]=i,l[3]=s;else i=l[2],s=l[3];A(i,s);let a;if(l[4]!==r||l[5]!==t)a=e(Eb.Provider,{value:t,children:r}),l[4]=r,l[5]=t,l[6]=a;else a=l[6];return a}
+export{K6n,Al,NCe,px,$Ce,Ngn,Eb,Y6n};

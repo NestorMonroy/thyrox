@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 --timeout 1800 .claude/cache/session-traces-20260927/shim-verify.jobs", "started_at": "2026-09-27T16:44:28+00:00"}

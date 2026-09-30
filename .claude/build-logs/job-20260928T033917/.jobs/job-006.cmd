@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/lib/test-node-resolution.sh 2>&1 | tail -2

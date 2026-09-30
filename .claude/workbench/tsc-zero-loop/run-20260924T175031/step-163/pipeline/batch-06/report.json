@@ -1,0 +1,1 @@
+{"status": "stalled", "total_before": 110, "total_final": 110, "tsc_runs": 1, "accepted": [], "files_kept": [], "outcomes": {"agent:pool:src/packages/app-host/src/runtime/commandRegistryRuntime.ts": "partial"}}

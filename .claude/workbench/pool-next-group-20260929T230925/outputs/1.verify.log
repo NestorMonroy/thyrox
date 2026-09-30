@@ -1,0 +1,68 @@
+caso 5: la foto guarda todo y no toca HEAD, rama ni índice
+  ok    HEAD, rama e índice real intactos
+  ok    git status intacto
+  ok    lo preparado está en la foto
+  ok    lo modificado sin preparar está en la foto
+  ok    lo nuevo sin seguir está en la foto
+  ok    lo binario está en la foto, byte a byte
+  ok    el árbol del índice guarda sólo lo preparado
+  ok    la ref apunta a la foto
+  ok    el manifiesto está íntegro y en disco
+  ok    base_head es el HEAD de partida
+caso 5c: control — sin capturar el árbol, la foto se queda en lo preparado
+  ok    control: lo modificado sin preparar falta
+  ok    control: lo nuevo sin seguir falta
+  ok    control: lo binario falta
+caso 6: dos fotos concurrentes desde dos worktrees no chocan
+  ok    las dos refs existen
+  ok    cada ref apunta a su propia foto
+  ok    cada foto trae el archivo de su worktree
+  ok    ningún HEAD, rama o índice cambió
+  ok    repetir una ref existente se rehúsa
+  ok    ... y la ref sigue en la primera foto
+caso 6c: control — sin exigir que la ref no exista, la segunda la reemplaza
+  ok    control: la ref ya no apunta a la primera foto
+caso 11: recuperar abre un worktree aparte y no toca el árbol del usuario
+  ok    el árbol del usuario conserva su trabajo posterior
+  ok    HEAD, rama e índice del usuario intactos
+  ok    el worktree de recuperación trae la foto
+  ok    la recuperación trabaja en una rama temporal propia
+  ok    la rama temporal parte de base_head
+  ok    el índice recuperado es original_index_tree
+  ok    preparado, sin preparar y sin seguir quedan como estaban al tomar la foto
+  ok    recuperar dos veces al mismo destino se rehúsa
+  ok    restaurar en el árbol sin confirmar se rehúsa
+  ok    ... y el árbol sigue intacto
+caso 11c: control — restaurar en el árbol con confirmación pisa el trabajo del usuario
+  ok    control: el trabajo posterior se perdió
+  ok    control: la foto de m11 era la restaurada
+caso 13: un ítem cancelado queda recuperable y su runtime no se retira
+  ok    con dueño muerto: abandoned-recoverable
+  ok    con dueño vivo: active
+  ok    prune rehúsa un runtime sin publicar
+  ok    ... y el runtime sigue
+  ok    publicados, los dos se clasifican closed
+  ok    prune retira el runtime ya publicado
+caso 14 (I4): la foto de una generación desplazada no toca la de la siguiente
+  ok    la foto de la generación 1 se rehúsa si ya existe la 2
+  ok    ... y no deja ref de la generación 1
+  ok    ... ni manifiesto de la generación 1
+  ok    la ref de la generación 2 sigue en su foto
+  ok    el manifiesto de la generación 2 sigue íntegro
+  ok    otro ítem de la misma ejecución no queda afectado
+caso 14c: control — sin rehusar la generación desplazada, su foto se escribe
+  ok    control: la ref de la generación 1 existe
+caso 15 (TASK-THYROX-0621): la recuperación que decide continuar toma la propiedad
+  ok    el ítem queda en la generación nueva, con el dueño nuevo
+  ok    el worktree de recuperación se nombra con la generación nueva
+  ok    la rama de recuperación es la de la generación nueva
+  ok    el contenido recuperado es el de la foto de la generación abandonada
+  ok    ... exactamente lo que esa foto capturó
+  ok    un actor de la generación abandonada queda rechazado al transicionar
+  ok    ...también al publicar con esa generación
+  ok    ... y la generación tomada sí puede seguir trabajando
+caso 15c: control — recuperar sin claim deja actuar a la generación abandonada
+  ok    control: sin claim, el ítem se queda en la generación abandonada
+  ok    control: sin claim, un actor de la generación abandonada NO se rechaza al transicionar
+  ok    control: sin claim, tampoco se rechaza al publicar con la generación abandonada
+resultado: 56 de 56 aserciones en verde

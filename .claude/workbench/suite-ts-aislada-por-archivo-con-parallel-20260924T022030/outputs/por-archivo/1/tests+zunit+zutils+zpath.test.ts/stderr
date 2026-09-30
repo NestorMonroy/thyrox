@@ -1,0 +1,21 @@
+
+tests/unit/utils/path.test.ts:
+184 | describe('getDirectoryForPath', () => {
+185 |   test('returns the path itself when given an existing directory', () => {
+186 |     // The packages directory is guaranteed to exist in this repo
+187 |     const dir = resolve(process.cwd(), 'packages')
+188 |     const result = getDirectoryForPath(dir)
+189 |     expect(result).toBe(dir)
+                         ^
+error: expect(received).toBe(expected)
+
+Expected: "/home/user/thyrox/packages"
+Received: "/home/user/thyrox"
+
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/path.test.ts:189:20)
+(fail) getDirectoryForPath > returns the path itself when given an existing directory [0.45ms]
+
+ 31 pass
+ 1 fail
+ 35 expect() calls
+Ran 32 tests across 1 file. [202.00ms]

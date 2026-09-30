@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(1244,37): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  --- código src/packages/agent/query.ts:1234-1254 ---
+   1234  
+   1235        // Skip stop hooks when the last message is an API error (rate limit,
+   1236        // prompt-too-long, auth failure, etc.). The model never produced a
+   1237        // real response — hooks evaluating it create a death spiral:
+   1238        // error → hook blocking → retry → error → …
+   1239        if (lastMessage?.isApiErrorMessage) {
+   1240          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1241          return { reason: 'completed' }
+   1242        }
+   1243  
+   1244>       const stopHookResult = yield* handleStopHooks(
+   1245          messagesForQuery,
+   1246          assistantMessages,
+   1247          systemPrompt,
+   1248          userContext,
+   1249          systemContext,
+   1250          toolUseContext,
+   1251          querySource,
+   1252          stopHookActive,
+   1253        )
+   1254  

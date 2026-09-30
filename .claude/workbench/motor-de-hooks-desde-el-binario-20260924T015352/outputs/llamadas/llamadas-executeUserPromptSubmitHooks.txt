@@ -1,0 +1,15 @@
+src/packages/repl/src/processUserInput/processUserInput.ts:184:  for await (const hookResult of executeUserPromptSubmitHooks(
+src/packages/repl/src/processUserInput/processUserInput.ts-185-    inputMessage,
+src/packages/repl/src/processUserInput/processUserInput.ts-186-    appState.toolPermissionContext.mode,
+src/packages/repl/src/processUserInput/processUserInput.ts-187-    context,
+src/packages/repl/src/processUserInput/processUserInput.ts-188-    context.requestPrompt,
+src/packages/repl/src/processUserInput/processUserInput.ts-189-  )) {
+src/packages/repl/src/processUserInput/processUserInput.ts-190-    // We only care about the result
+src/packages/repl/src/processUserInput/processUserInput.ts-191-    if (hookResult.message?.type === 'progress') {
+src/packages/repl/src/processUserInput/processUserInput.ts-192-      continue
+src/packages/repl/src/processUserInput/processUserInput.ts-193-    }
+src/packages/repl/src/processUserInput/processUserInput.ts-194-
+src/packages/repl/src/processUserInput/processUserInput.ts-195-    // Return only a system-level error message, erasing the original user input
+src/packages/repl/src/processUserInput/processUserInput.ts-196-    if (hookResult.blockingError) {
+src/packages/repl/src/processUserInput/processUserInput.ts-197-      const blockingMessage = getUserPromptSubmitHookBlockingMessage(
+src/packages/repl/src/processUserInput/processUserInput.ts-198-        hookResult.blockingError,

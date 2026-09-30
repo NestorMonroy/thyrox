@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+21 | 
+22 | const isSlug = (text: string) => /^(brave|calm)-(otter|fox)$/.test(text)
+23 | 
+24 | describe('normalizeSessionName (Cr)', () => {
+25 |   test('NFKC, sin controles salvo espacios, en minúsculas y con guiones', () => {
+26 |     expect(normalizeSessionName('  Mi​  SesiＯn\t2 ')).toBe('mi-sesion-2')
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "mi-sesion-2"
+Received: "mi​-sesion-2"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:26:54)
+(fail) normalizeSessionName (Cr) > NFKC, sin controles salvo espacios, en minúsculas y con guiones [0.45ms]
+
+ 14 pass
+ 1 fail
+ 43 expect() calls
+Ran 15 tests across 1 file. [57.00ms]

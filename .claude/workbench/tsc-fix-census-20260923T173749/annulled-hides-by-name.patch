@@ -1,0 +1,10 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -54,7 +54,6 @@
+   inferFromUsage: 'safe',
+   unusedIdentifier: 'judgment',
+   fixMissingMember: 'judgment',
+-  addConvertToUnknownForNonOverlappingTypes: 'hides',
+   spelling: 'hides',
+ }
+ 

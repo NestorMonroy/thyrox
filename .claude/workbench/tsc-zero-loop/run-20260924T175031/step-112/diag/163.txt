@@ -1,0 +1,29 @@
+src/packages/repl/src/components/Messages.tsx(632,9): error TS2345: Argument of type 'NormalizedMessage[]' is not assignable to parameter of type 'MessageWithoutProgress[]'.
+  --- código src/packages/repl/src/components/Messages.tsx:622-642 ---
+    622  
+    623        const messagesToShow = shouldTruncate
+    624          ? briefFiltered.slice(-MAX_MESSAGES_TO_SHOW_IN_TRANSCRIPT_MODE)
+    625          : briefFiltered
+    626  
+    627        const hasTruncatedMessages =
+    628          shouldTruncate &&
+    629          briefFiltered.length > MAX_MESSAGES_TO_SHOW_IN_TRANSCRIPT_MODE
+    630  
+    631        const { messages: groupedMessages } = applyGrouping(
+    632>         messagesToShow,
+    633          tools,
+    634          verbose,
+    635        )
+    636  
+    637        const collapsed = collapseBackgroundBashNotifications(
+    638          collapseHookSummaries(
+    639            collapseTeammateShutdowns(
+    640              collapseReadSearchGroups(groupedMessages, tools),
+    641            ),
+    642          ),
+  Type 'NormalizedMessage' is not assignable to type 'MessageWithoutProgress'.
+    Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type 'MessageWithoutProgress'.
+      Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | un...'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type '{ type: "grouped_tool_use" | "collapsed_read_search"; }'.
+          Types of property 'type' are incompatible.
+            Type '"progress"' is not assignable to type '"grouped_tool_use" | "collapsed_read_search"'.

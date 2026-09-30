@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+125 |     expect(failure).toMatchObject({ code: 'ENOSPC', targetOutcome: 'restored' })
+126 |     expect(String(failure.message)).toContain('original target restored')
+127 |     expect(readFileSync(target, 'utf8')).toBe('original')
+128 |     // el contenido nuevo se conserva en el temporal, y el error lo nombra
+129 |     expect(isTempNameFor(failure.preservedTmp, target)).toBe(true)
+130 |     expect(readFileSync(failure.preservedTmp, 'utf8')).toBe('nuevo')
+                 ^
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-N7fJ3S/uds-atomic-rHmbv8/k.json.tmp.e682e1d4'
+    path: "/tmp/thyrox-tests-N7fJ3S/uds-atomic-rHmbv8/k.json.tmp.e682e1d4",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:130:12)
+(fail) writeFileAtomicWithMode (An/Jne) > un fallo de escritura in situ tras truncar restaura el original y lo anota [4.38ms]
+137 |       mode: 0o600,
+138 |       renameFn: async () => { throw errno('EXDEV') },
+139 |       inPlaceWriteHook: () => { throw errno('EIO') },
+140 |     }).catch(e => e)
+141 |     expect(failure).toMatchObject({ code: 'EIO', targetOutcome: 'removed' })
+142 |     expect(readdirSync(dir)).toEqual([failure.preservedTmp.slice(dir.length + 1)])
+                                   ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "k.json.tmp.52580453",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:142:30)
+(fail) writeFileAtomicWithMode (An/Jne) > un fallo in situ sobre un destino ausente borra el parcial [1.51ms]
+
+ 13 pass
+ 2 fail
+ 35 expect() calls
+Ran 15 tests across 1 file. [108.00ms]

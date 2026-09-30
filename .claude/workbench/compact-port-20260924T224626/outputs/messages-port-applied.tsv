@@ -1,0 +1,127 @@
+anadido	HookAttachmentWithName
+anadido	getTeammateMailbox
+anadido	TOOL_REFERENCE_TURN_BOUNDARY
+anadido	isSyntheticApiErrorMessage
+anadido	ToolUseRequestMessage
+anadido	ToolUseResultMessage
+anadido	isHookAttachmentMessage
+anadido	getInProgressHookCount
+anadido	getResolvedHookCount
+anadido	hasUnresolvedHooks
+anadido	getSiblingToolUseIDs
+anadido	reorderAttachmentsForAPI
+anadido	stripUnavailableToolReferencesFromUserMessage
+anadido	appendMessageTagToUserMessage
+anadido	stripToolReferenceBlocksFromUserMessage
+anadido	stripCallerFieldFromAssistantMessage
+anadido	contentHasToolReference
+anadido	ensureSystemReminderWrap
+anadido	smooshSystemReminderSiblings
+anadido	sanitizeErrorToolResultContent
+anadido	relocateToolReferenceSiblings
+anadido	normalizeMessagesForAPI
+anadido	mergeUserMessagesAndToolResults
+anadido	mergeAssistantMessages
+anadido	isToolResultMessage
+anadido	mergeUserMessages
+anadido	mergeAdjacentUserMessages
+anadido	hoistToolResults
+anadido	normalizeUserTextContent
+anadido	joinTextAtSeam
+anadido	ToolResultContentItem
+anadido	smooshIntoToolResult
+anadido	mergeUserContentBlocks
+anadido	normalizeContentFromAPI
+anadido	filterUnresolvedToolUses
+anadido	StreamingToolUse
+anadido	StreamingThinking
+anadido	handleMessageFromStream
+anadido	wrapInSystemReminder
+anadido	wrapMessagesInSystemReminder
+anadido	getPlanModeInstructions
+anadido	PLAN_PHASE4_CONTROL
+anadido	PLAN_PHASE4_TRIM
+anadido	PLAN_PHASE4_CUT
+anadido	PLAN_PHASE4_CAP
+anadido	getPlanPhase4Section
+anadido	getPlanModeV2Instructions
+anadido	getReadOnlyToolNames
+anadido	getPlanModeInterviewInstructions
+anadido	getPlanModeV2SparseInstructions
+anadido	getPlanModeV2SubAgentInstructions
+anadido	getAutoModeInstructions
+anadido	getAutoModeFullInstructions
+anadido	getAutoModeSparseInstructions
+anadido	normalizeAttachmentForAPI
+anadido	createToolResultMessage
+anadido	createToolUseMessage
+anadido	findLastCompactBoundaryIndex
+anadido	isThinkingMessage
+anadido	countToolCalls
+anadido	hasSuccessfulToolCall
+anadido	ThinkingBlockType
+anadido	filterTrailingThinkingFromLastAssistant
+anadido	hasOnlyWhitespaceTextContent
+anadido	ensureNonEmptyAssistantContent
+anadido	stripCrossConnectionThinkingBlocks
+anadido	stripInvalidThinkingBlocks
+anadido	ensureToolResultPairing
+anadido	stripAdvisorBlocks
+anadido	wrapCommandText
+import	import { readEnv } from '@thyrox/config/env/utils'
+import	import { feature } from 'bun:bundle'
+import	import type { RedactedThinkingBlock, RedactedThinkingBlockParam, TextBlockParam, ThinkingBlock, ThinkingBlockParam, ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import	import { isObject } from 'lodash-es/isObject.js'
+import	import { last } from 'lodash-es/last.js'
+import	import { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS, logEvent } from '@thyrox/local-observability'
+import	import { sanitizeToolNameForAnalytics } from './eventMetadata.js'
+import	import type { AgentId } from '@thyrox/repl/replTypes/ids.js'
+import	import { OUTPUT_STYLE_CONFIG } from './constants/outputStyles.js'
+import	import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import	import { getImageTooLargeErrorMessage, getPdfInvalidErrorMessage, getPdfPasswordProtectedErrorMessage, getPdfTooLargeErrorMessage, getRequestTooLargeErrorMessage } from '@thyrox/provider/errors.js'
+import	import type { AnyObject } from '@thyrox/tool-registry/Tool.js'
+import	import { isConnectorTextBlock } from '@thyrox/repl/replTypes/connectorText.js'
+import	import type { AttachmentMessage, NormalizedUserMessage, RequestStartEvent, StreamEvent, TombstoneMessage } from '@thyrox/repl/replTypes/message.js'
+import	import { isAdvisorBlock } from '@thyrox/provider/advisor.js'
+import	import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
+import	import { count } from '@thyrox/tool-registry/utils/array.js'
+import	import { Attachment, HookAttachment, HookPermissionDecisionAttachment, memoryHeader } from './attachments.js'
+import	import { quote } from '@thyrox/shell/bash/shellQuote.js'
+import	import { formatNumber } from '@thyrox/output/formatters'
+import	import { getPewterLedgerVariant } from '@thyrox/permission/planModeV2.js'
+import	import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import	import type { BetaMessage, BetaRedactedThinkingBlock, BetaThinkingBlock, BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import	import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import	import { EXPLORE_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/exploreAgent.js'
+import	import { PLAN_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/planAgent.js'
+import	import { areExplorePlanAgentsEnabled } from '@thyrox/tool-registry/tools/AgentTool/builtInAgents.js'
+import	import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import	import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+import	import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
+import	import { ExitPlanModeV2Tool } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+import	import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
+import	import { FILE_READ_TOOL_NAME, MAX_LINES_TO_READ } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import	import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+import	import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+import	import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+import	import { getStrictToolResultPairing } from '@thyrox/app-host/bootstrap/state.js'
+import	import type { SpinnerMode } from '@thyrox/repl/components/Spinner.js'
+import	import { DiagnosticTrackingService } from './services/diagnosticTracking.js'
+import	import { findToolByName, Tool, Tools, toolMatchesName } from '@thyrox/tool-registry/Tool.js'
+import	import { FileReadTool, FileReadToolOutput } from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
+import	import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
+import	import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
+import	import { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'
+import	import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
+import	import { normalizeToolInput, normalizeToolInputForAPI } from '@thyrox/provider/legacy/api.js'
+import	import { getCurrentProjectConfig } from '@thyrox/config'
+import	import { logAntError } from '@thyrox/local-observability/debug.js'
+import	import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+import	import { formatFileSize } from '@thyrox/output/formatters'
+import	import { validateImagesForAPI } from '@thyrox/storage/imageValidation.js'
+import	import { safeParseJSON } from '@thyrox/storage/json.js'
+import	import { logError, logMCPDebug } from '@thyrox/local-observability/log.js'
+import	import { normalizeLegacyToolName } from '@thyrox/permission/permissionRuleParser'
+import	import { getPlanModeV2AgentCount, getPlanModeV2ExploreAgentCount, isPlanModeInterviewPhaseEnabled } from '@thyrox/permission/planModeV2.js'
+import	import { isTodoV2Enabled } from './tasks.js'
+import	import { isToolReferenceBlock, isToolSearchEnabledOptimistic } from './toolSearch.js'

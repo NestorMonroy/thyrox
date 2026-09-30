@@ -1,0 +1,6 @@
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-109/diag/22.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-109/diag/39.txt
+-- FALLIDO src/packages/repl/src/components/LogoV2/LogoV2.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-109/diag/84.txt
+-- FALLIDO src/packages/repl/src/screens/REPLView.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-109/diag/105.txt
+items=133 ok=129 fallidos=4
+__BG_EXIT__=1

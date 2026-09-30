@@ -1,0 +1,3 @@
+(fail) comparador LCP: diferencial contra Go > línea 60 (lookup) [0.26ms]
+ 1066 pass
+ 1 fail

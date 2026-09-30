@@ -1,0 +1,14 @@
+=== Caso 1: el gate existe y run ===
+  OK   existe y devuelve un veredicto
+=== Caso 2: publica su denominador ===
+  OK   declara el alcance
+=== Caso 3 (EL QUE DISCRIMINA): un banco del proveedor se marca ===
+  OK   marca el banco emitido en el proveedor y lo nombra
+=== Caso 4: un arbol sin evidencia propia pasa ===
+  OK   sin evidencia propia, verde
+=== Caso 5: rehusa si no puede medir, en vez de publicar un cero ===
+  OK   rehusa con 2 y sin cifra
+=== Caso 6 (EL QUE DISCRIMINA LA SEGUNDA MEDICION): con la raiz REAL
+  OK   publica el rehuse del consumidor y NO degrada el veredicto
+
+6 ok, 0 fallos (alcance medido: 6 aserciones sobre /home/user/thyrox/src/verify/check_provider_evidence.py)

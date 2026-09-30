@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 .claude/workbench/frontera-publica-20260927T023207/mcp.cmds", "started_at": "2026-09-27T02:52:46+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T02:53:02+00:00", "duration_seconds": 16.440819}

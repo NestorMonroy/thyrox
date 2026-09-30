@@ -1,0 +1,12 @@
+    235 lineas  /home/user/thyrox/src/packages/agent/internal/cronTasksCore.ts
+    464 lineas  /home/user/claude-code-nestor-monroy-tools/packages/agent/internal/cronTasksCore.ts
+--- exports de la fuente que el puerto NO tiene ---
+addCronTask
+getCronFilePath
+hasCronTasksSync
+listAllCronTasks
+markCronTasksFired
+readCronTasks
+removeCronTasks
+writeCronTasks
+--- lo que el puerto declara ausente ---

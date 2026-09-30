@@ -1,0 +1,69 @@
+src/packages/repl/src/promptSuggestion.tsx(245,23): error TS18048: 'usage' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestion.tsx:235-255 ---
+    235  }
+    236  
+    237  const MAX_PARENT_UNCACHED_TOKENS = 10_000
+    238  
+    239  export function getParentCacheSuppressReason(
+    240    lastAssistantMessage: ReturnType<typeof getLastAssistantMessage>,
+    241  ): string | null {
+    242    if (!lastAssistantMessage) return null
+    243  
+    244    const usage = lastAssistantMessage.message.usage
+    245>   const inputTokens = usage.input_tokens ?? 0
+    246    const cacheWriteTokens = usage.cache_creation_input_tokens ?? 0
+    247    // The fork re-processes the parent's output (never cached) plus its own prompt.
+    248    const outputTokens = usage.output_tokens ?? 0
+    249  
+    250    return (inputTokens as number) + (cacheWriteTokens as number) + (outputTokens as number) >
+    251      MAX_PARENT_UNCACHED_TOKENS
+    252      ? 'cache_cold'
+    253      : null
+    254  }
+    255  
+src/packages/repl/src/promptSuggestion.tsx(246,28): error TS18048: 'usage' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestion.tsx:236-256 ---
+    236  
+    237  const MAX_PARENT_UNCACHED_TOKENS = 10_000
+    238  
+    239  export function getParentCacheSuppressReason(
+    240    lastAssistantMessage: ReturnType<typeof getLastAssistantMessage>,
+    241  ): string | null {
+    242    if (!lastAssistantMessage) return null
+    243  
+    244    const usage = lastAssistantMessage.message.usage
+    245    const inputTokens = usage.input_tokens ?? 0
+    246>   const cacheWriteTokens = usage.cache_creation_input_tokens ?? 0
+    247    // The fork re-processes the parent's output (never cached) plus its own prompt.
+    248    const outputTokens = usage.output_tokens ?? 0
+    249  
+    250    return (inputTokens as number) + (cacheWriteTokens as number) + (outputTokens as number) >
+    251      MAX_PARENT_UNCACHED_TOKENS
+    252      ? 'cache_cold'
+    253      : null
+    254  }
+    255  
+    256  const SUGGESTION_PROMPT = `[SUGGESTION MODE: Suggest what the user might naturally type next into Claude Code.]
+src/packages/repl/src/promptSuggestion.tsx(248,24): error TS18048: 'usage' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestion.tsx:238-258 ---
+    238  
+    239  export function getParentCacheSuppressReason(
+    240    lastAssistantMessage: ReturnType<typeof getLastAssistantMessage>,
+    241  ): string | null {
+    242    if (!lastAssistantMessage) return null
+    243  
+    244    const usage = lastAssistantMessage.message.usage
+    245    const inputTokens = usage.input_tokens ?? 0
+    246    const cacheWriteTokens = usage.cache_creation_input_tokens ?? 0
+    247    // The fork re-processes the parent's output (never cached) plus its own prompt.
+    248>   const outputTokens = usage.output_tokens ?? 0
+    249  
+    250    return (inputTokens as number) + (cacheWriteTokens as number) + (outputTokens as number) >
+    251      MAX_PARENT_UNCACHED_TOKENS
+    252      ? 'cache_cold'
+    253      : null
+    254  }
+    255  
+    256  const SUGGESTION_PROMPT = `[SUGGESTION MODE: Suggest what the user might naturally type next into Claude Code.]
+    257  
+    258  FIRST: Look at the user's recent messages and original request.

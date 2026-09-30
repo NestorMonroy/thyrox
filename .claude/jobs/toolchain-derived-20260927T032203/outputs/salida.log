@@ -1,0 +1,132 @@
+run-task-pool: 14 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T032204
+  job-20260927T032204/job-001 pid 18469   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-degraded.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-degraded.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-degraded.out
+  job-20260927T032204/job-002 pid 18495   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-gawk.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-gawk.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-gawk.out
+  job-20260927T032204/job-003 pid 18634   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-gnu-time.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-gnu-time.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-gnu-time.out
+  job-20260927T032204/job-004 pid 18668   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-hunspell.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-hunspell.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-hunspell.out
+  job-20260927T032204/job-005 pid 18743   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-manifests.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-manifests.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-manifests.out
+  job-20260927T032204/job-006 pid 18821   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-parallel.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-parallel.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-parallel.out
+  job-20260927T032204/job-007 pid 18906   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-pdf-text.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-pdf-text.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-pdf-text.out
+  job-20260927T032204/job-008 pid 18938   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-poppler.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-poppler.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-poppler.out
+  job-20260927T032204/job-009 pid 19166   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-proxy.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-proxy.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-proxy.out
+  job-20260927T032204/job-010 pid 19588   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-sh.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-sh.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-sh.out
+  job-20260927T032204/job-011 pid 19813   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/lib/test-toolchain-texlive.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-texlive.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-texlive.out
+  job-20260927T032204/job-012 pid 20141   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/session/test-gnu-time-launchers.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-gnu-time-launchers.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-gnu-time-launchers.out
+  job-20260927T032204/job-013 pid 21067   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/session/test-run-task-pool-memfree.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-run-task-pool-memfree.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-run-task-pool-memfree.out
+  job-20260927T032204/job-014 pid 22436   cd /home/user/thyrox-toolchain-wt && timeout 300 bash tests/verify/test-toolchain-ready.sh > /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-ready.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/sustitutos-20260927T025549/toolchain/test-toolchain-ready.out
+run-task-pool: lanzados 14 de 14; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T032204_job-001 -> OK (2 de 15)
+asentado: job-20260927T032204_job-002 -> OK (3 de 15)
+asentado: job-20260927T032204_job-003 -> OK (4 de 15)
+asentado: job-20260927T032204_job-004 -> OK (5 de 15)
+asentado: job-20260927T032204_job-006 -> OK (6 de 15)
+asentado: job-20260927T032204_job-007 -> OK (7 de 15)
+asentado: job-20260927T032204_job-008 -> OK (8 de 15)
+asentado: job-20260927T032204_job-009 -> OK (9 de 15)
+asentado: job-20260927T032204_job-010 -> OK (10 de 15)
+asentado: job-20260927T032204_job-011 -> OK (11 de 15)
+asentado: job-20260927T032204_job-012 -> OK (12 de 15)
+asentado: job-20260927T032204_job-013 -> OK (13 de 15)
+asentado: job-20260927T032204_job-014 -> OK (14 de 15)
+esperando: 14 de 15 asentados, 31s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=53.51s
+esperando: 14 de 15 asentados, 61s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=79.87s
+esperando: 14 de 15 asentados, 91s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=106.99s
+esperando: 14 de 15 asentados, 123s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=135.88s
+esperando: 14 de 15 asentados, 154s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=164.64s
+esperando: 14 de 15 asentados, 184s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=191.42s
+esperando: 14 de 15 asentados, 215s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=220.47s
+esperando: 14 de 15 asentados, 247s; vivos: job-20260927T032204_job-005
+sonda job-20260927T032204_job-005: 18743 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18748 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18752 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18753 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18757 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T032204_job-005: 18839 awk stdin=devnull(/dev/null) escritores=- estado=R cpu=249.76s
+asentado: job-20260927T032204_job-005 -> OK (6 de 15)
+== 15 trabajos asentados ==
+OLVIDADO job-20260927T032204
+       | (vacío — no emitió nada)
+OK     job-20260927T032204_job-001
+       | EXIT=0
+       memoria pico: 12576 KB (12 MB) · pared 0.32s
+OK     job-20260927T032204_job-002
+       | EXIT=0
+       memoria pico: 12912 KB (13 MB) · pared 0.26s
+OK     job-20260927T032204_job-003
+       | EXIT=0
+       memoria pico: 12564 KB (12 MB) · pared 0.21s
+OK     job-20260927T032204_job-004
+       | EXIT=0
+       memoria pico: 12596 KB (12 MB) · pared 0.26s
+OK     job-20260927T032204_job-005
+       | EXIT=0
+       memoria pico: 12704 KB (12 MB) · pared 300.01s
+OK     job-20260927T032204_job-006
+       | EXIT=0
+       memoria pico: 22620 KB (22 MB) · pared 1.08s
+OK     job-20260927T032204_job-007
+       | EXIT=0
+       memoria pico: 12576 KB (12 MB) · pared 0.28s
+OK     job-20260927T032204_job-008
+       | EXIT=0
+       memoria pico: 18176 KB (18 MB) · pared 1.10s
+OK     job-20260927T032204_job-009
+       | EXIT=0
+       memoria pico: 12756 KB (12 MB) · pared 2.87s
+OK     job-20260927T032204_job-010
+       | EXIT=0
+       memoria pico: 12748 KB (12 MB) · pared 0.94s
+OK     job-20260927T032204_job-011
+       | EXIT=0
+       memoria pico: 18752 KB (18 MB) · pared 1.22s
+OK     job-20260927T032204_job-012
+       | EXIT=0
+       memoria pico: 212712 KB (208 MB) · pared 12.05s
+OK     job-20260927T032204_job-013
+       | EXIT=0
+       memoria pico: 15040 KB (15 MB) · pared 14.75s
+OK     job-20260927T032204_job-014
+       | EXIT=0
+       memoria pico: 18744 KB (18 MB) · pared 12.81s
+__BG_EXIT__=0

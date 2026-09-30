@@ -1,0 +1,15 @@
+== tests/hooks/test_detect_foreground_long_command.py exit=0 :: resumen: 0 fallo(s)
+== tests/session/hardware/test-gpu-pools-real.sh exit=2 :: test-gpu-pools-real: REHÚSA — nvidia-smi no responde (nvidia-smi). No se midió nada.
+== tests/session/test-gnu-time-launchers.sh exit=0 :: test-gnu-time-launchers: 13 ok, 0 falla(s)
+== tests/session/test-gpu-admission-cli.sh exit=0 :: aserciones: 3 de 3 · fallos: 0
+== tests/session/test-headless-pool-worktree.sh exit=0 :: test-headless-pool-worktree: 32 aserciones — 32 ok, 0 falla(s)
+== tests/session/test-headless-pool.sh exit=0 :: aserciones: 128 de 128 · fallos: 0
+== tests/session/test-item-worktree-disk.sh exit=0 :: item_worktree disk: 8/8
+== tests/session/test-item-worktree-location.sh exit=0 :: item_worktree location: 10/10
+== tests/session/test-item-worktree-lock.sh exit=0 :: item_worktree lock: 7/7
+== tests/session/test-item-worktree-orphans.sh exit=0 :: item_worktree orphans: 9/9
+== tests/session/test-item-worktree-stash.sh exit=0 :: item_worktree stash guard: 19/19
+== tests/session/test_gpu_scenarios.py exit=0 :: test_gpu_scenarios: 19 ok, 0 falla(s)
+== tests/session/test_user_wiring.py exit=0 :: 95 ok, 0 fallos
+EXIT=1
+__BG_EXIT__=0

@@ -1,0 +1,15 @@
+MITAD ROJA — que reescribe HOY un solo barrido de fechar-documentos
+filas: antes 5588 · despues 6358 · nuevas 770 · comunes 5588
+
+  updated_at           cambian  4828 de 5588
+  updated_at_source    cambian    14 de 5588
+  declared_at          cambian     1 de 5588
+  commit_at            cambian  4828 de 5588
+  scanned_at           cambian  4919 de 5588
+  section              cambian     0 de 5588
+  series               cambian     0 de 5588
+  retention_years      cambian     0 de 5588
+
+  filas TOCADAS (alguna columna)          : 4919
+  filas MOVIDAS (sin contar scanned_at)   : 4828
+  reescritura sin dato nuevo              : 91

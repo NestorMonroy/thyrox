@@ -1,0 +1,161 @@
+== 1: otra clave inicial
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the checksum encodes the unix seconds and carries the machine id [1.09ms]
+ 9 pass
+ 1 fail
+== 2: clave fija
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the checksum encodes the unix seconds and carries the machine id [1.25ms]
+ 9 pass
+ 1 fail
+== 3: milisegundos en vez de segundos
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the checksum encodes the unix seconds and carries the machine id [1.28ms]
+ 9 pass
+ 1 fail
+== 4: sin el id de máquina
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the checksum encodes the unix seconds and carries the machine id [1.02ms]
+ 9 pass
+ 1 fail
+== 5: windows no se nombra
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the client os and arch use the names Cursor expects [0.32ms]
+ 9 pass
+ 1 fail
+== 6: macos no se nombra
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the client os and arch use the names Cursor expects [0.43ms]
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.59ms]
+ 8 pass
+ 2 fail
+== 7: x64 sin traducir
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the client os and arch use the names Cursor expects [0.38ms]
+ 9 pass
+ 1 fail
+== 8: arm64 sin traducir
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the client os and arch use the names Cursor expects [0.41ms]
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.57ms]
+ 8 pass
+ 2 fail
+== 9: sin la versión declarada
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.86ms]
+ 9 pass
+ 1 fail
+== 10: sin el modo fantasma
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.77ms]
+ 9 pass
+ 1 fail
+== 11: la plataforma declarada no gana
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.45ms]
+ 9 pass
+ 1 fail
+== 12: la arquitectura declarada no gana
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.48ms]
+ 9 pass
+ 1 fail
+== 13: el checksum con otro reloj
+   (src/accounts/cursor/cursorService.ts)
+(fail) checksum and headers > the API headers carry the bearer, the client identity and the checksum [0.50ms]
+ 9 pass
+ 1 fail
+== 14: un token vacío pasa
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.40ms]
+ 9 pass
+ 1 fail
+== 15: un token corto pasa
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.42ms]
+ 9 pass
+ 1 fail
+== 16: el límite de longitud inclusivo
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > an IDE import has a machine id and lasts a day [0.47ms]
+(fail) import validation > a cursor-agent import has no machine id [0.12ms]
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.39ms]
+ 7 pass
+ 3 fail
+== 17: cualquier id de máquina
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.32ms]
+ 9 pass
+ 1 fail
+== 18: los guiones cuentan
+   (src/accounts/cursor/cursorService.ts)
+ 10 pass
+ 0 fail
+== 19: el id de máquina sin mínimo
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.40ms]
+ 9 pass
+ 1 fail
+== 20: el id de máquina sin distinguir hex
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.35ms]
+ 9 pass
+ 1 fail
+== 21: sin distinguir IDE de cursor-agent
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a cursor-agent import has no machine id [0.42ms]
+ 9 pass
+ 1 fail
+== 22: sin id de máquina queda vacío
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a cursor-agent import has no machine id [0.35ms]
+ 9 pass
+ 1 fail
+== 23: cualquier texto es correo
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > a JWT names the account by email (only if it looks like one) and subject [0.58ms]
+ 9 pass
+ 1 fail
+== 24: sin user_id
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > a JWT names the account by email (only if it looks like one) and subject [0.47ms]
+ 9 pass
+ 1 fail
+== 25: perfil sin token ni usuario
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > no token or user, a refusal, a network failure or odd fields give nothing [0.46ms]
+ 9 pass
+ 1 fail
+== 26: perfil rechazado se lee
+   (src/accounts/cursor/cursorService.ts)
+ 10 pass
+ 0 fail
+== 27: perfil que lanza
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > no token or user, a refusal, a network failure or odd fields give nothing [0.50ms]
+ 9 pass
+ 1 fail
+== 28: perfil con redirecciones
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > the dashboard profile is read with the WorkOS session cookie [0.96ms]
+ 9 pass
+ 1 fail
+== 29: otra cookie
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > the dashboard profile is read with the WorkOS session cookie [0.74ms]
+ 9 pass
+ 1 fail
+== 30: campos sin tipar
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > no token or user, a refusal, a network failure or odd fields give nothing [2.05ms]
+ 9 pass
+ 1 fail
+== 31: instrucciones sin la ruta de windows
+   (src/accounts/cursor/cursorService.ts)
+(fail) the storage instructions name the database, both keys and every platform path [0.36ms]
+ 9 pass
+ 1 fail
+== restaurado
+ 10 pass
+ 0 fail
+__BG_EXIT__=0

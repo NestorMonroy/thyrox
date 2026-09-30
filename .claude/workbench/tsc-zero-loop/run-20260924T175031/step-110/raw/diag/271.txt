@@ -1,0 +1,5 @@
+src/packages/tool-registry/src/services/toolHooks.ts(390,16): error TS2322: Type 'import("/home/user/thyrox-medicion/src/packages/permission/src/ruleBasedPermissions").PermissionDecision' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/permission/src/permissionTypes").PermissionDecision'.
+  Type 'PermissionDecision' is not assignable to type 'PermissionAskDecision<{ [key: string]: unknown; }>'.
+    Types of property 'behavior' are incompatible.
+      Type '"ask" | "passthrough" | "deny" | "allow"' is not assignable to type '"ask"'.
+        Type '"passthrough"' is not assignable to type '"ask"'.

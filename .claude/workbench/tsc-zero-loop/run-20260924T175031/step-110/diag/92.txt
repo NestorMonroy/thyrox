@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/rate-limit-options/index.ts(16,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/rate-limit-options/rate-limit-options")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/rate-limit-options/index.ts:6-19 ---
+      6    name: 'rate-limit-options',
+      7    description: 'Show options when rate limit is reached',
+      8    isEnabled: () => {
+      9      if (!isClaudeAISubscriber()) {
+     10        return false
+     11      }
+     12  
+     13      return true
+     14    },
+     15    isHidden: true, // Hidden from help - only used internally
+     16>   load: () => import('./rate-limit-options.js'),
+     17  } satisfies Command
+     18  
+     19  export default rateLimitOptions
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/rate-limit-options/rate-limit-options")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(onDone: LocalJSXCommandOnDone, context: ToolUseContext & LocalJSXCommandContext) => Promise<ReactNode>' is not assignable to type 'LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

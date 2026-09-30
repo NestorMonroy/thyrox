@@ -1,0 +1,1 @@
+  *--query-compute-apps=pid,used_memory*) pgrep -f "$HEADLESS_POOL_CLAUDE -p" | gawk '{print $1 ", 400"}' ;;

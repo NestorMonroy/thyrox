@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+177 | 
+178 |   test('onRefusalFallbackRestored avisa sólo cuando hubo restauración', () => {
+179 |     let calls = 0
+180 |     unsubscribers.push(onRefusalFallbackRestored(() => void calls++))
+181 |     switchSession('nueva' as SessionId, 'resume')
+182 |     expect(calls).toBe(0)
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:182:19)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > onRefusalFallbackRestored avisa sólo cuando hubo restauración [0.41ms]
+
+ 10 pass
+ 1 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [56.00ms]

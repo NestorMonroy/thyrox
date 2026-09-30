@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/cli && timeout 400 bunx tsc --noEmit -p tsconfig.json 2>&1 | tail -5; echo rc=$?", "started_at": "2026-09-29T15:50:42+00:00"}

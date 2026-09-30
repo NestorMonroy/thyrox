@@ -1,0 +1,138 @@
+src/packages/repl/src/components/ValidationErrorsList.tsx(121,21): error TS2339: Property 'suggestion' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/ValidationErrorsList.tsx:111-131 ---
+    111          // Build nested tree structure from error paths
+    112          const errorTree = buildNestedTree(fileErrors)
+    113  
+    114          // Collect unique suggestion+docLink pairs
+    115          const suggestionPairs = new Map<
+    116            string,
+    117            { suggestion?: string; docLink?: string }
+    118          >()
+    119  
+    120          fileErrors.forEach(error => {
+    121>           if (error.suggestion || error.docLink) {
+    122              // Create a key from suggestion+docLink combination
+    123              const key = `${error.suggestion || ''}|${error.docLink || ''}`
+    124              if (!suggestionPairs.has(key)) {
+    125                suggestionPairs.set(key, {
+    126                  suggestion: error.suggestion,
+    127                  docLink: error.docLink,
+    128                })
+    129              }
+    130            }
+    131          })
+src/packages/repl/src/components/ValidationErrorsList.tsx(121,41): error TS2339: Property 'docLink' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/ValidationErrorsList.tsx:111-131 ---
+    111          // Build nested tree structure from error paths
+    112          const errorTree = buildNestedTree(fileErrors)
+    113  
+    114          // Collect unique suggestion+docLink pairs
+    115          const suggestionPairs = new Map<
+    116            string,
+    117            { suggestion?: string; docLink?: string }
+    118          >()
+    119  
+    120          fileErrors.forEach(error => {
+    121>           if (error.suggestion || error.docLink) {
+    122              // Create a key from suggestion+docLink combination
+    123              const key = `${error.suggestion || ''}|${error.docLink || ''}`
+    124              if (!suggestionPairs.has(key)) {
+    125                suggestionPairs.set(key, {
+    126                  suggestion: error.suggestion,
+    127                  docLink: error.docLink,
+    128                })
+    129              }
+    130            }
+    131          })
+src/packages/repl/src/components/ValidationErrorsList.tsx(123,34): error TS2339: Property 'suggestion' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/ValidationErrorsList.tsx:113-133 ---
+    113  
+    114          // Collect unique suggestion+docLink pairs
+    115          const suggestionPairs = new Map<
+    116            string,
+    117            { suggestion?: string; docLink?: string }
+    118          >()
+    119  
+    120          fileErrors.forEach(error => {
+    121            if (error.suggestion || error.docLink) {
+    122              // Create a key from suggestion+docLink combination
+    123>             const key = `${error.suggestion || ''}|${error.docLink || ''}`
+    124              if (!suggestionPairs.has(key)) {
+    125                suggestionPairs.set(key, {
+    126                  suggestion: error.suggestion,
+    127                  docLink: error.docLink,
+    128                })
+    129              }
+    130            }
+    131          })
+    132  
+    133          // Render the tree
+src/packages/repl/src/components/ValidationErrorsList.tsx(123,60): error TS2339: Property 'docLink' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/ValidationErrorsList.tsx:113-133 ---
+    113  
+    114          // Collect unique suggestion+docLink pairs
+    115          const suggestionPairs = new Map<
+    116            string,
+    117            { suggestion?: string; docLink?: string }
+    118          >()
+    119  
+    120          fileErrors.forEach(error => {
+    121            if (error.suggestion || error.docLink) {
+    122              // Create a key from suggestion+docLink combination
+    123>             const key = `${error.suggestion || ''}|${error.docLink || ''}`
+    124              if (!suggestionPairs.has(key)) {
+    125                suggestionPairs.set(key, {
+    126                  suggestion: error.suggestion,
+    127                  docLink: error.docLink,
+    128                })
+    129              }
+    130            }
+    131          })
+    132  
+    133          // Render the tree
+src/packages/repl/src/components/ValidationErrorsList.tsx(126,35): error TS2339: Property 'suggestion' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/ValidationErrorsList.tsx:116-136 ---
+    116            string,
+    117            { suggestion?: string; docLink?: string }
+    118          >()
+    119  
+    120          fileErrors.forEach(error => {
+    121            if (error.suggestion || error.docLink) {
+    122              // Create a key from suggestion+docLink combination
+    123              const key = `${error.suggestion || ''}|${error.docLink || ''}`
+    124              if (!suggestionPairs.has(key)) {
+    125                suggestionPairs.set(key, {
+    126>                 suggestion: error.suggestion,
+    127                  docLink: error.docLink,
+    128                })
+    129              }
+    130            }
+    131          })
+    132  
+    133          // Render the tree
+    134          const treeOutput = treeify(errorTree, {
+    135            showValues: true,
+    136            themeName,
+src/packages/repl/src/components/ValidationErrorsList.tsx(127,32): error TS2339: Property 'docLink' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/ValidationErrorsList.tsx:117-137 ---
+    117            { suggestion?: string; docLink?: string }
+    118          >()
+    119  
+    120          fileErrors.forEach(error => {
+    121            if (error.suggestion || error.docLink) {
+    122              // Create a key from suggestion+docLink combination
+    123              const key = `${error.suggestion || ''}|${error.docLink || ''}`
+    124              if (!suggestionPairs.has(key)) {
+    125                suggestionPairs.set(key, {
+    126                  suggestion: error.suggestion,
+    127>                 docLink: error.docLink,
+    128                })
+    129              }
+    130            }
+    131          })
+    132  
+    133          // Render the tree
+    134          const treeOutput = treeify(errorTree, {
+    135            showValues: true,
+    136            themeName,
+    137            treeCharColors: {

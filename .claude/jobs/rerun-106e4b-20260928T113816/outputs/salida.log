@@ -1,0 +1,14 @@
+== 14: kimi sin host inyectado
+   (src/accounts/refresh/providerRefreshDispatch.ts)
+(fail) provider dispatch > connection data reaches the providers that read it [0.94ms]
+ 39 pass
+ 1 fail
+== 27: perfil fijo
+   (src/accounts/refresh/providerRefreshDispatch.ts)
+(fail) Antigravity project recovery > by default the project is discovered through Code Assist with the connection profile [2.74ms]
+ 39 pass
+ 1 fail
+== restaurado
+ 40 pass
+ 0 fail
+__BG_EXIT__=0

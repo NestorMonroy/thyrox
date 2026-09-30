@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerEnvelope.test.ts:
+126 |     expect(extendHopChain(undefined, 'h')).toBeUndefined()
+127 |     expect(extendHopChain([], undefined)).toBeUndefined()
+128 |     expect(extendHopChain(['a'], 'b')).toEqual(['a', 'b'])
+129 |     const long = Array.from({ length: MAX_HOP_CHAIN }, (_, index) => String(index))
+130 |     expect(extendHopChain(long, 'z')).toEqual([...long.slice(1), 'z'])
+131 |   })
+                                            ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
++   "0",
+    "1",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerEnvelope.test.ts:131:39)
+(fail) cadena de saltos > extendHopChain (dfn) añade el salto y conserva los últimos 32 [0.46ms]
+
+ 15 pass
+ 1 fail
+ 40 expect() calls
+Ran 16 tests across 1 file. [39.00ms]

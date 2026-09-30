@@ -1,0 +1,8 @@
+57:def default_root():
+76:def __getattr__(name: str):
+101:def baseline_path(raiz: pathlib.Path) -> pathlib.Path:
+151:def cargar_baseline(raiz: pathlib.Path) -> set[str]:
+162:def archivos(raiz: pathlib.Path):
+192:def lineas_de_bloque_literal(texto: str) -> set[int]:
+230:def scan(raiz: pathlib.Path) -> tuple[list[tuple[str, int, str, str]], int]:
+264:def main() -> int:

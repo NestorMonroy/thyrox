@@ -1,0 +1,12 @@
+# primera pasada
+== 1: el servidor ignora credentialsOf -> 3
+== 2: sin store -> 3
+== 3: declaradas no ganan -> 1
+== 4: filtro por proveedor -> 3
+== 5: store leído una vez -> 0
+== 6: sin límites del store -> 1
+== restaurado -> 0
+# repetición de la 5, reescrita como caché real de lectura única
+== 5: store leído una vez -> 1
+== restaurado -> 0
+6 de 6 discriminan. La 5 de la primera pasada no guardaba nada en su caché y por eso no anulaba; reescrita, cae exactamente la prueba de relectura.

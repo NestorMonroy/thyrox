@@ -1,0 +1,1 @@
+function vf(e,n=Vu()){return S(n,U_(e))}

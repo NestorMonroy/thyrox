@@ -1,0 +1,12 @@
+                 {"measured": 4, "max": 1200000, "median": 750000}, report["system"]["memory_kb"])
+    # La VRAM, de los `<n>.gpu` que escribe `gpu_monitor`: `pico media uso% muestras`.
+    # Sin ninguno —no hubo nvidia-smi— se declara no medida, igual que la RAM.
+    assert_equal("sin archivos .gpu la VRAM se declara no medida, no cero", {"measured": 0},
+                 report["system"]["gpu"])
+    for n, (peak, util) in ((1, (3200, 80)), (2, (4700, 91)), (3, (0, 0))):
+        (bench / f"outputs/{n}.gpu").write_text(f"{peak} {peak // 2} {util} 12\n")
+    (bench / "outputs/4.gpu").write_text("ilegible\n")
+    report = sr.step_report(bench, pipeline)
+    assert_equal("la VRAM de los items: pico máximo, mediana, uso pico y cuántos se midieron",
+                 {"measured": 3, "vram_max_mib": 4700, "vram_median_mib": 3200, "util_max_pct": 91},
+                 report["system"]["gpu"])

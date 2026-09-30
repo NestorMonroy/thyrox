@@ -1,0 +1,8 @@
+{
+  "id": "49",
+  "subject": "Cablear SkillRegistry al despacho de herramientas del bucle",
+  "description": "Sucesor nombrado del bloque 33 (#14): SkillRegistry sigue sin consumidor en tiempo de ejecución — loop.ts no despacha un tool de skill (medido: 0 referencias a 'skill' en loop.ts; las de context/attachments.ts son tipos de attachment de compactación, no del registry). Los cinco skills sólo-apoyo (cosmic, rup-inception, sp-adjust, sp-monitor, sphinx) quedan registrables via registerBundledSkills() pero aún no invocables desde el bucle. Cablear el registry al despacho: registrar bundledSkillDefs() al arrancar la sesión y hacer que el bucle resuelva una invocación de skill (por nombre, respetando disableModelInvocation/userInvocable) contra registry.invoke(). TDD con control anulado.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

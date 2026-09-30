@@ -1,0 +1,10 @@
+tests/conformance/harnessChecklist.test.ts
+tests/coordination/branchIntegration.test.ts
+tests/reference/home.test.ts
+tests/paths/reach.test.ts
+tests/paths/providerLayer.test.ts
+tests/workbench/paths.test.ts
+src/packages/agent/__tests__/emit.test.ts
+src/packages/observability/__tests__/observability.test.ts
+src/packages/agent/__tests__/compat.test.ts
+src/packages/skills/__tests__/skillsFromDir.test.ts

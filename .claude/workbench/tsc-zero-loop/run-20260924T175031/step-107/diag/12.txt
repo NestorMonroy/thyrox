@@ -1,0 +1,74 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/QueryEngine.ts(1327,9): error TS18048: 'result' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1317-1337 ---
+   1317            ]
+   1318          })(),
+   1319        }
+   1320        return
+   1321      }
+   1322  
+   1323      // Extract the text result based on message type
+   1324      let textResult = ''
+   1325      let isApiError = false
+   1326  
+   1327>     if (result.type === 'assistant') {
+   1328        const lastContent = last(result.message.content)
+   1329        if (
+   1330          lastContent?.type === 'text' &&
+   1331          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1332        ) {
+   1333          textResult = lastContent.text
+   1334        }
+   1335        isApiError = Boolean(result.isApiErrorMessage)
+   1336      }
+   1337  
+src/packages/agent/QueryEngine.ts(1328,32): error TS18048: 'result' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1318-1338 ---
+   1318          })(),
+   1319        }
+   1320        return
+   1321      }
+   1322  
+   1323      // Extract the text result based on message type
+   1324      let textResult = ''
+   1325      let isApiError = false
+   1326  
+   1327      if (result.type === 'assistant') {
+   1328>       const lastContent = last(result.message.content)
+   1329        if (
+   1330          lastContent?.type === 'text' &&
+   1331          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1332        ) {
+   1333          textResult = lastContent.text
+   1334        }
+   1335        isApiError = Boolean(result.isApiErrorMessage)
+   1336      }
+   1337  
+   1338      yield {
+src/packages/agent/QueryEngine.ts(1335,28): error TS18048: 'result' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1325-1345 ---
+   1325      let isApiError = false
+   1326  
+   1327      if (result.type === 'assistant') {
+   1328        const lastContent = last(result.message.content)
+   1329        if (
+   1330          lastContent?.type === 'text' &&
+   1331          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1332        ) {
+   1333          textResult = lastContent.text
+   1334        }
+   1335>       isApiError = Boolean(result.isApiErrorMessage)
+   1336      }
+   1337  
+   1338      yield {
+   1339        type: 'result',
+   1340        subtype: 'success',
+   1341        is_error: isApiError,
+   1342        duration_ms: Date.now() - startTime,
+   1343        duration_api_ms: getTotalAPIDuration(),
+   1344        num_turns: turnCount,
+   1345        result: textResult,

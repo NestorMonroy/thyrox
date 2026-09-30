@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsConfusableTagPatterns.test.ts:
+64 |     const pattern = channelSourceScrubPattern()
+65 |     expect(matches(pattern, '<channel source="x">')).toBe(true)
+66 |     expect(matches(pattern, '<channel id=1 source = x>')).toBe(true)
+67 |     expect(matches(pattern, '<channel>')).toBe(false)
+68 |     expect(matches(pattern, '<channel xsource=1>')).toBe(false)
+69 |     expect(matches(pattern, '<channels source=1>')).toBe(false)
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsConfusableTagPatterns.test.ts:69:53)
+(fail) channelSourceScrubPattern (Ofn) y antmlColonScrubPattern (Hfn) > channel con un atributo source [1.78ms]
+
+ 13 pass
+ 1 fail
+ 39 expect() calls
+Ran 14 tests across 1 file. [55.00ms]

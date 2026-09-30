@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+229 |     await sweepRegistry(undefined, d)
+230 |     expect(d.recorded.events).toEqual([
+231 |       ['tengu_unclean_exit', { session_age_sec: 60, prior_version: '2.0.0', on_current_version: true, prior_session_id: 's3' }],
+232 |     ])
+233 |     expect(d.recorded.logs).toContain('Prior session exited uncleanly: s3 (v2.0.0)')
+234 |     expect(d.state().reportedUncleanExitPaths.has(join(dir, '3.json'))).toBe(true)
+                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:234:73)
+(fail) sweepRegistry (xut) > reporta una salida sucia interactiva una vez, sin entrypoint embebido [2.42ms]
+
+ 27 pass
+ 1 fail
+ 81 expect() calls
+Ran 28 tests across 1 file. [193.00ms]

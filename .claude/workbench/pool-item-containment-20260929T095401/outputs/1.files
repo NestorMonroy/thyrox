@@ -1,0 +1,9 @@
+.claude/cache/test-item-containment/24969/w1.log
+.claude/cache/test-item-containment/24969/w2.log
+.claude/cache/test-item-containment/24969/w3.log
+.claude/cache/test-item-containment/24969/w4.log
+.env.example
+src/session/headless-pool.sh
+src/session/item_containment.sh
+src/session/item_worktree.sh
+tests/session/test-item-containment.sh

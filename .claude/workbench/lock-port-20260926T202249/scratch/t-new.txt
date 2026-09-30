@@ -1,0 +1,14 @@
+
+# Caso 15 — el guion se edita a SI MISMO: bash lee un guion por tramos, y un
+# `cat >` que reescribe el archivo en curso le hace leer la cola desplazada
+# («syntax error near unexpected token», 2026-09-26). Envuelto en `main`,
+# bash lee el cuerpo entero antes de ejecutar.
+cp "$SUBJECT" "$WORK/self.sh"
+printf '%s\n' '# linea anadida al principio' > "$WORK/new15"
+head -1 "$WORK/self.sh" > "$WORK/old15"
+{ cat "$WORK/old15"; cat "$WORK/new15"; } > "$WORK/new15b"
+bash "$WORK/self.sh" --old-file "$WORK/old15" --new-file "$WORK/new15b" "$WORK/self.sh" >/dev/null 2>"$WORK/err15"
+thyrox_check "15 editarse a si mismo sale 0" 0 "$?"
+thyrox_check "15 sin error de sintaxis en la cola" 0 "$(gawk '/syntax error|unexpected/{n++} END{print n+0}' "$WORK/err15")"
+
+thyrox_summary

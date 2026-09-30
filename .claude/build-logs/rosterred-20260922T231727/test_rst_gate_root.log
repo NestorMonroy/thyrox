@@ -1,0 +1,6 @@
+  ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+  FALLA test_la_aritmetica_vieja_da_un_veredicto_DISTINTO: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  FALLA test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  FALLA test_la_raiz_derivada_tiene_lo_que_el_gate_toca: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+1/4 aserciones verdes
+EXIT=1

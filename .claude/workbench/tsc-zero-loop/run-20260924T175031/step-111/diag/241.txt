@@ -1,0 +1,15 @@
+src/packages/repl/src/hooks/useUpdateNotification.ts(2,37): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  --- código src/packages/repl/src/hooks/useUpdateNotification.ts:1-12 ---
+      1  import { useRef } from 'react'
+      2> import { major, minor, patch } from 'semver'
+      3  
+      4  function getSemverPart(version: string): string {
+      5    return `${major(version, { loose: true })}.${minor(version, { loose: true })}.${patch(version, { loose: true })}`
+      6  }
+      7  
+      8  // The dedup memory must live in a ref, not useState. Calling setState during
+      9  // render causes React to throw away that render and immediately re-run; the
+     10  // re-run sees the just-updated state and the condition fails, so the hook
+     11  // returns null on the only render where it should have returned the new
+     12  // semver. Net effect with the prior useState implementation: the
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`

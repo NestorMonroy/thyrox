@@ -1,0 +1,99 @@
+16 — El pin de PROSA no discriminaba; el de CONDUCTA sí
+======================================================
+2026-09-18T18:01:44
+
+SUJETO
+  src/packages/agent/internal/loopSentinelCore.ts  (porte completo, 17/17)
+  src/packages/agent/__tests__/loopSentinelCore.test.ts
+
+EL DEFECTO
+  Mientras el módulo fue PORTE PARCIAL, los cinco casos de `readLoopFile`
+  de la fuente no se podían ejercitar: `getCwdState`/`setCwdState` no
+  resolvían. Se repropusieron como pines de PROSA — leían el propio
+  archivo con readFileSync y afirmaban que el docstring declarara el
+  recorte:
+
+      expect(source).toMatch(/PORTE PARCIAL declarado/)
+      expect(source).toMatch(/@claude-code-how-works\/config\/env\/utils/)
+      expect(source).not.toMatch(/homedir\(\)/)
+
+  Eso es el sub-patrón D con el propio test como sujeto: un verde que no
+  separa «el mecanismo funciona» de «el mecanismo no existe». Y además
+  quedaron pineados al alcance viejo: tras el renombre a @thyrox/ esos
+  dos regex ya no podían casar nunca.
+
+LA PREMISA QUE CAYÓ — medida, no leída
+  Los siete imports del puerto resuelven hoy. Sonda por conducta,
+  probes/resolve_scope_imports.ts (Bun.resolveSync desde el directorio
+  del módulo):
+
+    OK @thyrox/app-host/bootstrap/cwd.js  -> app-host/src/bootstrap/cwd.ts
+    OK @thyrox/config/feature-flags       -> config/feature-flags.ts
+    OK @thyrox/config/env                 -> config/env/index.ts
+    OK @thyrox/config/env/utils           -> config/env/utils.ts
+    OK @thyrox/local-observability        -> local-observability/src/index.ts
+    OK @thyrox/config/settings            -> config/settings/settings.ts
+    OK @thyrox/config                     -> config/index.ts
+
+  Y el que el TEST necesita, que es otro:
+    app-host/src/bootstrap/state.ts:562 getCwdState
+    app-host/src/bootstrap/state.ts:566 setCwdState
+
+  El directorio `app-host/bootstrap/` NO existe: vive bajo
+  `app-host/src/bootstrap/`. Un `ls` de la ruta del especificador habría
+  concluido «ausente» — el mapa de exports es quien resuelve, así que la
+  medición válida es la resolución, no la ruta.
+
+EL REEMPLAZO
+  Los cinco pines de prosa salen; entran los cinco casos de conducta de
+  `ccnmt: packages/agent/__tests__/loopSentinelCore.test.ts`, adaptados:
+  alcance @thyrox/, comentarios en español, prefijo de tmpdir thyrox-.
+  El conteo no cambia —30 pass antes y después— y eso es justamente por
+  qué el conteo no es el control.
+
+CONTROL DE ANULACIÓN — dos, y cada uno cae donde debe
+  1. El fix CRÍTICO: el segundo candidato pasa de
+     `getClaudeConfigHomeDir()` a `homedir()` (:350).
+       -> 28 pass, 2 fail — y son EXACTAMENTE las dos que dependen de la
+          base del config home:
+            «cae a ~/.claude/loop.md (NO a ~/loop.md)»
+            «un archivo vacio tras el trim salta al siguiente candidato»
+          Los otros tres (null, proyecto-local, truncado) NO dependen de
+          ella y sobreviven, que es lo correcto.
+  2. Se retira el truncado: `truncateLoopFile` devuelve el contenido tal
+     cual (:328).
+       -> 29 pass, 1 fail — EXACTAMENTE
+            «trunca un loop.md de mas de 25000 bytes con el footer WARNING»
+
+  Bajo los pines de prosa NINGUNA de las dos anulaciones habría movido el
+  veredicto: los cinco leían el docstring, no el comportamiento.
+
+  Restaurado byte a byte (`diff -q` contra la copia intacta, vacío) y
+  re-verificado: 30 pass, 0 fail, 50 expect().
+
+SUBCONJUNTO DERIVADO (alcance-de-la-suite.md)
+  grep -rlE "loopSentinelCore|readLoopFile|AUTONOMOUS_LOOP" --include=*.ts \
+      --include=*.py src/packages/*/__tests__/ tests/
+    -> 1  src/packages/agent/__tests__
+
+  bun test src/packages/agent/__tests__/
+    -> 2387 pass, 1 fail, 4339 expect(), 151 archivos, 14.16 s
+
+EL ÚNICO ROJO NO ES ATRIBUIBLE A ESTE CAMBIO
+  models.test.ts > «coincide byte a byte con la extracción del volcado
+  2.1.258» — `extract_model_registry.py` sale 2 porque su DUMP
+  (`_references/claude-code-bin/2.1.258/claude_strings.txt`) ya no
+  resuelve: esa build se archivó. El directorio hoy lista 2.1.266,
+  2.1.274, 2.1.275 y _archived.
+  Medido además: el archivo no nombra `loopSentinel`, `readLoopFile` ni
+  `AUTONOMOUS_LOOP` (grep -c -> 0), y no importa ninguno de los dos
+  archivos tocados.
+  Sucesor ya abierto: TASK-THYROX-0472 (reapuntar las 16 citas a builds
+  archivadas).
+
+Métrica: pass/fail de `bun test` sobre el archivo y sobre el directorio,
+  más la resolución por `Bun.resolveSync` de cada especificador.
+Ciega a: si los cinco casos portados cubren el contrato ENTERO de
+  `readLoopFile` — miden los cinco que la fuente eligió medir, no los que
+  la fuente omitió; y a cualquier consumidor de `readLoopFile` fuera de
+  `src/packages/*/__tests__` y `tests/`, que es el universo del derivado.

@@ -1,0 +1,2 @@
+escrito 3 archivo(s), 30253313 B en .claude/workbench/standalone-compile-probe-20260928T054036/corpus/0.0.0-dev
+(alcance medido: 3 de 3 entradas de la tabla)

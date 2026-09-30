@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 3 --timeout 1000 /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/catalog-commands.txt", "started_at": "2026-09-27T18:29:23+00:00"}

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash .claude/jobs/commit-loop.sh .claude/jobs/r2b-msg.txt src/packages/provider/src/fastMode.ts src/packages/provider/src/extraUsageCredits.ts src/packages/provider/src/__tests__/fastModeProcessContext.test.ts src/packages/provider/src/__tests__/fastModeUsageCredits.test.ts", "started_at": "2026-09-29T05:10:25+00:00"}

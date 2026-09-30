@@ -1,0 +1,26 @@
+src/packages/shell/src/shellCommand.ts(449,3): error TS2322: Type 'AbortedShellCommand' is not assignable to type 'ShellCommandWithOutput'.
+  --- código src/packages/shell/src/shellCommand.ts:439-459 ---
+    439  
+    440    kill(): void {}
+    441  
+    442    cleanup(): void {}
+    443  }
+    444  
+    445  export function createAbortedCommand(
+    446    backgroundTaskId?: string,
+    447    opts?: { stderr?: string; code?: number },
+    448  ): ShellCommandWithOutput {
+    449>   return new AbortedShellCommand({
+    450      backgroundTaskId,
+    451      ...opts,
+    452    })
+    453  }
+    454  
+    455  export function createFailedCommand(preSpawnError: string): ShellCommandWithOutput {
+    456    const taskOutput: TaskOutputPort = new StubTaskOutput(generateTaskId('local_bash'))
+    457    return {
+    458      status: 'completed' as const,
+    459      result: Promise.resolve({
+  Type 'AbortedShellCommand' is not assignable to type 'ShellCommand'.
+    Types of property 'taskOutput' are incompatible.
+      Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.

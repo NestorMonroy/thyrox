@@ -1,0 +1,393 @@
+run-task-pool: 28 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260927T045902
+  job-20260927T045902/job-001 pid 19546   timeout 600 bash tests/agents/test-agent-store-clasificar-documentos.sh
+  job-20260927T045902/job-002 pid 19590   timeout 600 bash tests/agents/test-agent-store-fecha-documento.sh
+  job-20260927T045902/job-003 pid 19644   timeout 600 bash tests/agents/test-agent-store-usage-columns.sh
+  job-20260927T045902/job-004 pid 19672   timeout 600 bash tests/agents/test-costo-agente.sh
+  job-20260927T045902/job-005 pid 20018   PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_agent_dispatch.py
+  job-20260927T045902/job-006 pid 20038   PYTHONPATH=src timeout 600 python3 tests/hooks/test_stop_gate.py
+  job-20260927T045902/job-007 pid 20159   timeout 600 bash tests/install/test_install.sh
+  job-20260927T045902/job-008 pid 20211   timeout 600 bash tests/session/test-contrato-de-escotilla.sh
+  job-20260927T045902/job-009 pid 20247   timeout 600 bash tests/session/test-gnu-time-launchers.sh
+  job-20260927T045902/job-010 pid 20580   timeout 600 bash tests/session/test-gpu-admission-cli.sh
+  job-20260927T045902/job-011 pid 20616   timeout 600 bash tests/session/test-headless-pool-thyrox-p.sh
+  job-20260927T045902/job-012 pid 21267   timeout 600 bash tests/session/test-headless-pool.sh
+  job-20260927T045902/job-013 pid 21576   timeout 600 bash tests/session/test-process-group.sh
+  job-20260927T045902/job-014 pid 21908   timeout 600 bash tests/session/test-run-task-pool-isolation.sh
+  job-20260927T045902/job-015 pid 23726   timeout 600 bash tests/session/test-run-task-pool-memfree.sh
+  job-20260927T045902/job-016 pid 24428   timeout 600 bash tests/session/test-run-task-pool.sh
+  job-20260927T045902/job-017 pid 24458   timeout 600 bash tests/session/test-wait-jobs-probe.sh
+  job-20260927T045902/job-018 pid 26434   timeout 600 bash tests/session/test-wait-jobs.sh
+  job-20260927T045902/job-019 pid 26816   PYTHONPATH=src timeout 600 python3 tests/session/test_generate_bin.py
+  job-20260927T045902/job-020 pid 31503   PYTHONPATH=src timeout 600 python3 tests/session/test_gpu_scenarios.py
+  job-20260927T045902/job-021 pid 586     PYTHONPATH=src timeout 600 python3 tests/session/test_pool_history.py
+  job-20260927T045902/job-022 pid 1636    timeout 600 bash tests/task/test-closure-graph.sh
+  job-20260927T045902/job-023 pid 2090    timeout 600 bash tests/verify/test-hallazgo-submodulo-baseline.sh
+  job-20260927T045902/job-024 pid 2418    timeout 600 bash tests/verify/test-verificar-premisa.sh
+  job-20260927T045902/job-025 pid 2465    timeout 600 bash tests/verify/test-vocabulario-baseline-resolucion.sh
+  job-20260927T045902/job-026 pid 3064    PYTHONPATH=src timeout 600 python3 tests/verify/test_tsc_cycle.py
+  job-20260927T045902/job-027 pid 3153    PYTHONPATH=src timeout 120 python3 tests/verify/test_unsized_writer_pipe.py
+  job-20260927T045902/job-028 pid 3178    PYTHONPATH=src timeout 120 python3 tests/verify/test_unbounded_pipe.py
+run-task-pool: lanzados 28 de 28; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T045902_job-001 -> OK (2 de 29)
+asentado: job-20260927T045902_job-002 -> OK (3 de 29)
+asentado: job-20260927T045902_job-003 -> OK (4 de 29)
+asentado: job-20260927T045902_job-004 -> OK (5 de 29)
+asentado: job-20260927T045902_job-005 -> OK (6 de 29)
+asentado: job-20260927T045902_job-006 -> OK (7 de 29)
+asentado: job-20260927T045902_job-007 -> OK (8 de 29)
+asentado: job-20260927T045902_job-008 -> OK (9 de 29)
+asentado: job-20260927T045902_job-009 -> OK (10 de 29)
+asentado: job-20260927T045902_job-010 -> OK (11 de 29)
+asentado: job-20260927T045902_job-011 -> OK (12 de 29)
+asentado: job-20260927T045902_job-013 -> OK (13 de 29)
+asentado: job-20260927T045902_job-014 -> OK (14 de 29)
+asentado: job-20260927T045902_job-015 -> OK (15 de 29)
+asentado: job-20260927T045902_job-016 -> OK (16 de 29)
+asentado: job-20260927T045902_job-017 -> OK (17 de 29)
+asentado: job-20260927T045902_job-018 -> OK (18 de 29)
+asentado: job-20260927T045902_job-019 -> OK (19 de 29)
+asentado: job-20260927T045902_job-020 -> OK (20 de 29)
+asentado: job-20260927T045902_job-021 -> OK (21 de 29)
+asentado: job-20260927T045902_job-022 -> OK (22 de 29)
+asentado: job-20260927T045902_job-023 -> OK (23 de 29)
+asentado: job-20260927T045902_job-024 -> OK (24 de 29)
+asentado: job-20260927T045902_job-026 -> OK (25 de 29)
+asentado: job-20260927T045902_job-027 -> OK (26 de 29)
+asentado: job-20260927T045902_job-028 -> OK (27 de 29)
+asentado: job-20260927T045902_job-025 -> OK (25 de 29)
+asentado: job-20260927T045902_job-012 -> OK (13 de 29)
+== 29 trabajos asentados ==
+OLVIDADO job-20260927T045902
+       | (vacío — no emitió nada)
+OK     job-20260927T045902_job-001
+       |   ok    7b sin filas duplicadas
+       |   ok    8 clasificar no borra la fecha
+       |   ok    9a publica denominador
+       |   ok    9b publica cuantas series salieron
+       |   ok    10 el plazo queda NULO (bloqueado por #760)
+       |   ok    11a reclasificar un arbol intacto no escribe
+       |   ok    11b un documento nuevo SI se escribe
+       | 
+       |   19 ok · 0 fallas
+       | EXIT=0
+       memoria pico: 27292 KB (27 MB) · pared 1.21s
+OK     job-20260927T045902_job-002
+       |   ok    11b --dry-run nombra los sin cota
+       |   ok    12 --dry-run no escribe filas
+       |   ok    13a un barrido sobre arbol intacto no escribe
+       |   ok    13b un documento nuevo SI se escribe
+       |   ok    14 scanned_at ya no es columna de documents
+       |   ok    15a la migracion retira la columna de un store previo
+       |   ok    15b la fila previa sobrevive a la migracion
+       | 
+       |   26 ok · 0 fallas
+       | EXIT=0
+       memoria pico: 27204 KB (27 MB) · pared 1.51s
+OK     job-20260927T045902_job-003
+       |   ok    rate_limit_type queda NULO: el real no trae quotaLimits
+       |   ok    client_version sale del nivel superior de la línea
+       |   ok    equiv_cost del transcript real
+       |   ok    turnos del transcript real
+       | == 10. denominador: la suma declara sobre cuántos mensajes se computó (#899) ==
+       |   ok    el alcance separa las dos causas del hueco
+       |   ok    transcript real: 10 de 16, todo el hueco es dedup
+       | 
+       | 31 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24628 KB (24 MB) · pared 2.64s
+OK     job-20260927T045902_job-004
+       |   ok    turnos, sin contar <synthetic>
+       |   ok    sin reset de cache
+       |   ok    equiv_cost con dedup por ULTIMA aparicion
+       |   ok    output completo (1144, no 87)
+       |   ok    reset de cache en el turno 3
+       |   ok    publica el alcance de la suma
+       |   ok    y nombra la causa del hueco
+       | 
+       | 27 ok, 0 fallos, 0 omitidos
+       | EXIT=0
+       memoria pico: 14104 KB (14 MB) · pared 1.44s
+OK     job-20260927T045902_job-005
+       | ok   test_stays_silent_on_a_payload_without_prompt
+       | ok   test_stays_silent_when_the_work_needs_judgment
+       | ok   test_suggests_the_headless_pool_for_judgment_over_many_items
+       | ok   test_the_judgment_half_carries_its_own_weight
+       | ok   test_the_notice_states_the_measured_cost_asymmetry
+       | ok   test_the_real_captured_payload_stays_silent
+       | ok   test_warns_when_the_dispatched_work_is_a_suite
+       | 
+       | 11 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 11640 KB (11 MB) · pared 0.03s
+OK     job-20260927T045902_job-006
+       |   ok    12.4 una ruta ausente no se resuelve
+       |   ok    12.5 con interprete SI hay veredicto, y bloquea
+       |   ok    12.6 y no avisa de motor irresoluble
+       | stop_gate: el motor 'bash' no se resuelve — sin veredicto
+       |   ok    12-bis.1 anulado, 12.5 cae: no hay veredicto
+       |   ok    12-bis.2 y 12.4 SOBREVIVE a la anulacion
+       |   ok    12-bis.3 restaurado, vuelve a resolver por PATH
+       | 
+       | 57 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15244 KB (15 MB) · pared 0.32s
+OK     job-20260927T045902_job-007
+       |   ok   --dry-run no invoca el instalador de clones
+       |   ok   --dry-run dice que prepararia el clon
+       |   ok   sin instalador -> SIN MEDIR
+       |   ok   sin instalador -> nombra el archivo
+       |   ok   exit 3 en el proveedor -> exit 0
+       |   ok   exit 3 en el proveedor -> lo dice
+       |   ok   exit 3 en un consumidor -> exit 1
+       | 
+       | 59 aserciones: 59 ok, 0 fallidas
+       | EXIT=0
+       memoria pico: 17956 KB (18 MB) · pared 3.74s
+OK     job-20260927T045902_job-008
+       |   ok    el aviso viaja por stderr (sobrevive a >/dev/null)
+       |   ok    el aviso NOMBRA la etiqueta soltada
+       | == 2. la escotilla sobre lo que NO existe — el control que discrimina ==
+       |   ok    NO sale 0: no se absuelve lo que nunca estuvo
+       |   ok    y NO afirma haber olvidado nada
+       | == 3. el ledger queda como debe ==
+       |   ok    el trabajo soltado desaparece del ledger
+       | 
+       | 7 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+       | EXIT=0
+       memoria pico: 13196 KB (13 MB) · pared 0.48s
+OK     job-20260927T045902_job-009
+       | == 5. sin GNU Time: corre igual, no deja .time y lo declara ==
+       |   ok    el trabajo terminó con su marcador
+       |   ok    no deja .time
+       |   ok    y declara que no midió
+       | == 6. medir NO contamina el entorno del trabajo ==
+       |   ok    bg.sh: el trabajo no hereda la cadena de herramientas
+       |   ok    run-task-pool: el trabajo no hereda la cadena de herramientas
+       | 
+       | test-gnu-time-launchers: 13 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 212688 KB (208 MB) · pared 10.71s
+OK     job-20260927T045902_job-010
+       | == 1. dos admisiones simultáneas de 3000 con 5000 libres: entra una ==
+       | OK   una admitida y otra esperó
+       | == 2. soltada la reserva, la otra entra ==
+       | OK   admit sale 0 tras el release
+       | == 3. sin sitio y con plazo corto, admit sale 3 ==
+       | OK   vencido: exit 3
+       | 
+       | aserciones: 3 de 3 · fallos: 0
+       | EXIT=0
+       memoria pico: 16820 KB (16 MB) · pared 1.92s
+OK     job-20260927T045902_job-011
+       |   ok   resumen del pool
+       |   ok   un .json por ítem
+       |   ok   el .json es la línea result, de éxito
+       |   ok   con el texto del modelo
+       |   ok   el stream abre con system/init
+       |   ok   las herramientas del pool llegan acotadas
+       |   ok   una línea assistant por petición, con su uso
+       | 
+       | 8 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+       | EXIT=0
+       memoria pico: 224324 KB (219 MB) · pared 3.42s
+OK     job-20260927T045902_job-012
+       | OK   una plantilla, un solo historial
+       | OK   otro binario: no deriva memfree de su fila
+       | OK   otro binario: lo dice
+       | OK   otro modelo: no deriva memfree de su fila
+       | OK   otro modelo: lo dice
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 92 de 92 · fallos: 0
+       | EXIT=0
+       memoria pico: 22040 KB (22 MB) · pared 59.23s
+OK     job-20260927T045902_job-013
+       |   ok   kill alcanza al lider de grupo sin sesion propia
+       |   ok   control: el grupo del zombi tiene 1 miembro, en estado Z
+       |   ok   control: kill -0 sobre el grupo dice SI (el ingenuo se equivoca)
+       |   ok   cmd_kill lee el cadaver como muerto, no lo señala
+       |   ok   el ledger se suelta: el turno no queda bloqueado por un cadaver
+       |   ok   dispatch: el dependiente es lider de su grupo (pgid==pid)
+       |   ok   dispatch: el .job no repite proc_start
+       |   ok   dispatch: el .job no repite cmd
+       | test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15368 KB (15 MB) · pared 6.11s
+OK     job-20260927T045902_job-014
+       |   ok   el directorio lleva prefijo e ISO
+       |   ok   dos despachos dejan DOS trabajos en el ledger
+       |   ok   el log lleva el nombre declarado, no el ordinal
+       |   ok   y el segundo tambien
+       |   ok   ninguno quedo con nombre de ordinal
+       |   ok   una linea sin tabulador sigue corriendo
+       |   ok   un comando con tabulador no se parte
+       | 
+       | resultado: 11 de 11 aserciones en verde
+       | EXIT=0
+       memoria pico: 15124 KB (15 MB) · pared 6.14s
+OK     job-20260927T045902_job-015
+       |   ok   con memoria escasa el pool termina
+       |   ok   con memoria escasa corre uno a la vez
+       |   ok   con memoria de sobra corren los tres a la vez
+       |   ok   tras la caida el pool termina en verde
+       |   ok   cada trabajo termina exactamente una vez
+       |   ok   el mas viejo no se reencola
+       |   ok   al menos un trabajo se reencolo
+       |   ok   el reencolado se anuncia
+       | test-run-task-pool-memfree: 12 aserciones — 12 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15072 KB (15 MB) · pared 12.28s
+OK     job-20260927T045902_job-016
+       |   ok   el archivo aporta la anchura
+       |   ok   los cuatro trabajos se lanzaron
+       |   ok   releer el archivo admite los cuatro en menos de 3 vueltas
+       |   ok   el drenaje corta antes de los seis
+       |   ok   y los vivos llegaron a su marcador
+       |   ok   publica la anchura EFECTIVA con 2 trabajos y --width 4
+       |   ok   con 6 trabajos y --width 2 publica 2, no 6
+       |   ok   capar no deja trabajos sin lanzar
+       | test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15124 KB (15 MB) · pared 25.80s
+OK     job-20260927T045902_job-017
+       |   ok    probe: sondea el árbol del trabajo y ve el canal del nieto
+       |   ok    probe: avisa de quien lee stdin de un canal, nombrando el trabajo
+       |   ok    probe: el trabajo limpio se sondea y no se avisa
+       |   ok    probe: una tubería sin escritor vivo no es un cuelgue: se sondea y no se avisa
+       |   ok    probe sin GNU Parallel: sondea en serie y lo dice
+       |   ok    wait: el latido sondea al vivo sin que se lo pidan
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18676 KB (18 MB) · pared 7.12s
+OK     job-20260927T045902_job-018
+       |   ok    etiqueta completa: queda solo el otro
+       |   ok    etiqueta completa: el que queda es el que no se nombro
+       |   ok    latido: wait sigue saliendo 0
+       |   ok    latido: stdout conserva su cabecera
+       |   ok    latido: stderr anuncia el primero que asienta
+       |   ok    latido: stderr late mientras uno sigue vivo
+       |   ok    latido: nada de progreso contamina stdout
+       | 
+       | 44 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18612 KB (18 MB) · pared 14.27s
+OK     job-20260927T045902_job-019
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |   ok   y el plan medido no esta vacio
+       | 
+       | 119 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=1
+       memoria pico: 26944 KB (26 MB) · pared 17.17s
+OK     job-20260927T045902_job-020
+       | == 5. un proceso AJENO al registro: su VRAM ya resta de lo libre ==
+       |   ok    margen = 1000
+       |   ok    GPU casi llena: 3200 no entra
+       |   ok    800 sí entra
+       | == 6. sin lectura de la GPU no hay margen: None, no cero ==
+       |   ok    headroom sin medida es None
+       | == 7. dos admisiones SIMULTÁNEAS tras una barrera, 4000 + 4000 sobre 6000, 5 rondas ==
+       |   ok    en cada ronda entra exactamente uno
+       | test_gpu_scenarios: 19 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16672 KB (16 MB) · pared 9.27s
+OK     job-20260927T045902_job-021
+       |   ok    record guarda el modelo
+       |   ok    derive usa la fila de su modelo
+       |   ok    ... y la del otro modelo es la del otro
+       |   ok    un modelo sin filas no hereda la de otro
+       |   ok    ... y lo nombra
+       |   ok    sin item_model se conserva la conducta anterior
+       |   ok    la CLI recibe --item-model en las dos órdenes
+       | 
+       | test_pool_history: 68 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 22116 KB (22 MB) · pared 0.11s
+OK     job-20260927T045902_job-022
+       | caso 7: con arista de vuelta, el reporte publica su cobertura
+       | caso 8: ordena por lo que desbloquea, no por el numero de la tarea
+       | caso 9: un DESCONOCIDO va antes que un pendiente comun del mismo peso
+       | caso 10: un nodo aislado recibe masa, que es lo que hace el reparto del sumidero
+       | caso 11: ordena por alcanzabilidad cuando el rango dice lo contrario
+       | caso 12: publica la ambiguedad del id de tarea, y sin store dice que no pudo
+       | caso 13: el default del store es absoluto y no depende del cwd
+       | 
+       | OK: 13 casos, 0 fallos (alcance medido: 5 fixtures)
+       | EXIT=0
+       memoria pico: 36664 KB (36 MB) · pared 1.74s
+OK     job-20260927T045902_job-023
+       | test-hallazgo-submodulo-baseline
+       |   ok    el baseline del consumidor congela la ruta (exit 0)
+       |   ok    la variable declarada resuelve el baseline (exit 0)
+       |   ok    rehusa sin baseline (exit 2) y no emite conteo
+       |   ok    --write-baseline aterriza en el consumidor
+       |   4 caso(s), 0 falla(s)
+       | EXIT=0
+       memoria pico: 11948 KB (12 MB) · pared 0.18s
+OK     job-20260927T045902_job-024
+       |   ok    #1 emite una presuposicion symbol-absent
+       |   ok      … y su alcance es un glob, no el archivo donde se hallo
+       |   ok    #4 emite una presuposicion path-exists
+       |   ok    #5 (S3) no emite predicado: el evaluador no lee el tablero
+       |   ok    una ficha sin senal no aparece
+       |   ok    el proveedor entra en PATH_ROOTS
+       |   ok    la composicion de PATH_ROOTS no nombra ninguna raiz
+       | 
+       | test-verificar-premisa.sh: 23 ok · 0 fallo(s)
+       | EXIT=0
+       memoria pico: 19764 KB (19 MB) · pared 3.60s
+OK     job-20260927T045902_job-025
+       |   ok    encuentra el baseline del consumidor ascendiendo desde el archivo
+       |   ok    rehusa con exit 2 y nombra el baseline ausente
+       |   ok    --write-baseline no queda atrapado por el rehuso de lectura
+       |   ok    no fabrica el baseline en el hogar del proveedor
+       |   ok    con el archivo fuera del arbol, asciende desde el cwd
+       |   ok    usa la lista canonica del proveedor e ignora la copia del consumidor
+       |   ok    rehusa con la lista declarada y ausente, y la nombra
+       |   ok    la clave es relativa al consumidor y el baseline la absorbe
+       | 9/9 aserciones verdes
+       | EXIT=0
+       memoria pico: 240940 KB (235 MB) · pared 11.63s
+OK     job-20260927T045902_job-026
+       |   ok    la variable del origen gana a activar 1h
+       |   ok    forzar 5m gana a todo
+       |   ok    un valor ilegible rehúsa nombrando la variable
+       |   ok    sin entorno, la cota decide como antes
+       |   ok    sin paso anterior medido no se decide: lo decide el cliente
+       |   ok    el TTL decidido llega al pool
+       |   ok    sin TTL decidido el pool no lo fija
+       |   ok    el TTL es parte de la configuración del paso (setup_id)
+       | test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 24476 KB (24 MB) · pared 0.25s
+OK     job-20260927T045902_job-027
+       |   ok    node_modules queda fuera
+       |   ok    publica el denominador
+       |   ok    declara qué mide
+       |   ok    y a qué es ciega
+       |   ok    --write-baseline congela y sale 0
+       |   ok    congelado: 0 nuevos y exit 0
+       |   ok    --quiet emite un entero pelado
+       | 
+       | test_unsized_writer_pipe: 48 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 14912 KB (15 MB) · pared 0.33s
+OK     job-20260927T045902_job-028
+       |   ok    --quiet emite un entero pelado
+       |   ok    y conserva el código
+       |   ok    --write-baseline sale 0
+       |   ok    congelada, la deuda heredada NO bloquea
+       |   ok    pero se declara en el conteo
+       |   ok    un incumplidor NUEVO sí bloquea
+       |   ok    y sólo se nombra él
+       | 
+       | 59 ok, 0 fallos (alcance medido: 59 aserciones)
+       | EXIT=0
+       memoria pico: 15056 KB (15 MB) · pared 0.37s
+__BG_EXIT__=0

@@ -1,0 +1,4 @@
+with tempfile.TemporaryDirectory() as tmp:
+    proc = Path(tmp)
+    fake_process(proc, 101, "socket:[1452327]")
+    fake_process(proc, 102, "pipe:[99]", state="R")

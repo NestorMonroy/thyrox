@@ -1,0 +1,8 @@
+src/packages/cli/src/__tests__/installOAuthTokens.behavior.test.ts
+src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts
+src/packages/mcp-runtime/src/__tests__/clientRuntime.transform.test.ts
+src/packages/mcp-runtime/src/__tests__/mcpRuntimeConstants.behavior.test.ts
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts
+src/packages/tool-registry/src/tools/ListMcpResourcesTool/__tests__/UI.test.ts
+src/packages/tool-registry/src/tools/MCPTool/__tests__/UI.test.ts
+src/packages/tool-registry/src/tools/ReadMcpResourceTool/__tests__/UI.test.ts

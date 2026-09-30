@@ -1,0 +1,998 @@
+[
+ {
+  "n": 1,
+  "file": "src/packages/agent/core/AgentLoop.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 2
+ },
+ {
+  "n": 2,
+  "file": "src/packages/agent/tee.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 5
+ },
+ {
+  "n": 3,
+  "file": "src/packages/binary/src/freshness.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 1
+ },
+ {
+  "n": 4,
+  "file": "src/packages/command-runtime/src/skills/bundled/keybindings.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 1
+ },
+ {
+  "n": 5,
+  "file": "src/packages/config/plugin/loadPluginCommands.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 1
+ },
+ {
+  "n": 6,
+  "file": "src/packages/config/settings/inventory.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 2
+ },
+ {
+  "n": 7,
+  "file": "src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 1
+ },
+ {
+  "n": 8,
+  "file": "src/packages/skills/src/fromDir.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 2
+ },
+ {
+  "n": 9,
+  "file": "src/packages/swarm/src/adapters/createSwarmHostDeps.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 1
+ },
+ {
+  "n": 10,
+  "file": "src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts",
+  "pattern": "indexed-access-inside-length-bounded-loop",
+  "instances": 3
+ },
+ {
+  "n": 11,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 4
+ },
+ {
+  "n": 12,
+  "file": "src/packages/agent/QueryEngine.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 3
+ },
+ {
+  "n": 13,
+  "file": "src/packages/agent/internal/abort.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 3
+ },
+ {
+  "n": 14,
+  "file": "src/packages/config/plugin/pluginLoader.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 1
+ },
+ {
+  "n": 15,
+  "file": "src/packages/context-compression/src/lite.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 1
+ },
+ {
+  "n": 16,
+  "file": "src/packages/provider/src/vcr.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 1
+ },
+ {
+  "n": 17,
+  "file": "src/packages/repl/src/components/MessageSelector.tsx",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 4
+ },
+ {
+  "n": 18,
+  "file": "src/packages/repl/src/promptSuggestion.tsx",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 3
+ },
+ {
+  "n": 19,
+  "file": "src/packages/tool-registry/src/tools/WebFetchTool/utils.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 2
+ },
+ {
+  "n": 20,
+  "file": "src/packages/tools/src/agent.ts",
+  "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+  "instances": 4
+ },
+ {
+  "n": 21,
+  "file": "src/packages/@ant/computer-use-swift/src/backends/win32.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 22,
+  "file": "src/packages/@ant/ink/src/vim/transitions.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 23,
+  "file": "src/packages/agent/hooks/execAgentHook.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 6
+ },
+ {
+  "n": 24,
+  "file": "src/packages/agent/hooks/execPromptHook.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 7
+ },
+ {
+  "n": 25,
+  "file": "src/packages/cli/src/structuredIO.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 26,
+  "file": "src/packages/cli/src/structuredIOHelper.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 27,
+  "file": "src/packages/config/plugin/PluginInstallationManager.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 28,
+  "file": "src/packages/config/plugin/loadPluginHooks.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 2
+ },
+ {
+  "n": 29,
+  "file": "src/packages/mcp-runtime/src/config.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 5
+ },
+ {
+  "n": 30,
+  "file": "src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 31,
+  "file": "src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts",
+  "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+  "instances": 1
+ },
+ {
+  "n": 32,
+  "file": "src/packages/agent/query.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 6
+ },
+ {
+  "n": 33,
+  "file": "src/packages/agent/sessionTools/analyzeContext.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 34,
+  "file": "src/packages/agent/sessionTools/transcriptSearch.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 35,
+  "file": "src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 36,
+  "file": "src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 3
+ },
+ {
+  "n": 37,
+  "file": "src/packages/output/src/render/exportRenderer.tsx",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 38,
+  "file": "src/packages/permission/src/yoloClassifier.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 39,
+  "file": "src/packages/provider/src/gemini/convertMessages.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 3
+ },
+ {
+  "n": 40,
+  "file": "src/packages/provider/src/openai/convertMessages.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 2
+ },
+ {
+  "n": 41,
+  "file": "src/packages/repl/src/components/Message.tsx",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 42,
+  "file": "src/packages/repl/src/components/StatusLine.tsx",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 2
+ },
+ {
+  "n": 43,
+  "file": "src/packages/repl/src/promptSuggestionSpeculation.tsx",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 3
+ },
+ {
+  "n": 44,
+  "file": "src/packages/repl/src/screens/repl/onlySleepToolActive.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 45,
+  "file": "src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts",
+  "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+  "instances": 1
+ },
+ {
+  "n": 46,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/platforms/darwin.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 47,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 48,
+  "file": "src/packages/agent/__tests__/contextGovernance.test.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 2
+ },
+ {
+  "n": 49,
+  "file": "src/packages/agent/compaction/sessionMemoryCompact.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 50,
+  "file": "src/packages/agent/forkedAgent.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 51,
+  "file": "src/packages/agent/goalStopHook.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 52,
+  "file": "src/packages/agent/loop/context/autocompact.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 53,
+  "file": "src/packages/agent/loop/context/systemPrompt.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 2
+ },
+ {
+  "n": 54,
+  "file": "src/packages/agent/tasks/LocalMainSessionTask.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 55,
+  "file": "src/packages/agent/workflow/workflowWorktree.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 56,
+  "file": "src/packages/app-host/src/runtime/installPluginBindings.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 57,
+  "file": "src/packages/binary/src/graph.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 58,
+  "file": "src/packages/binary/src/reflow.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 3
+ },
+ {
+  "n": 59,
+  "file": "src/packages/cli/src/headless/sdk/control/permission-helpers.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 60,
+  "file": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 61,
+  "file": "src/packages/permission/src/permission.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 62,
+  "file": "src/packages/provider/src/anthropic/client.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 63,
+  "file": "src/packages/provider/src/legacy/api.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 4
+ },
+ {
+  "n": 64,
+  "file": "src/packages/provider/src/modelAgent.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 65,
+  "file": "src/packages/provider/src/thinking.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 66,
+  "file": "src/packages/provider/src/withRetry.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 67,
+  "file": "src/packages/repl/src/components/MessageModel.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 68,
+  "file": "src/packages/repl/src/components/MessageRow.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 3
+ },
+ {
+  "n": 69,
+  "file": "src/packages/repl/src/components/Messages.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 70,
+  "file": "src/packages/repl/src/components/messageStaticness.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 71,
+  "file": "src/packages/repl/src/components/messages/HookProgressMessage.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 2
+ },
+ {
+  "n": 72,
+  "file": "src/packages/repl/src/hooks/useRemoteSession.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 73,
+  "file": "src/packages/repl/src/hooks/useReplBridge.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 74,
+  "file": "src/packages/repl/src/screens/REPLView.tsx",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 3
+ },
+ {
+  "n": 75,
+  "file": "src/packages/shell/src/exec.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 76,
+  "file": "src/packages/shell/src/shellCommand.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 2
+ },
+ {
+  "n": 77,
+  "file": "src/packages/tool-registry/src/__tests__/integration.test.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 78,
+  "file": "src/packages/tool-registry/src/notebook.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 79,
+  "file": "src/packages/tool-registry/src/services/toolExecution.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 2
+ },
+ {
+  "n": 80,
+  "file": "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 81,
+  "file": "src/packages/tool-registry/src/tools/BashTool/pathValidation.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 82,
+  "file": "src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 83,
+  "file": "src/task/rst.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 1
+ },
+ {
+  "n": 84,
+  "file": "tests/unit/utils/tokens.test.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 3
+ },
+ {
+  "n": 85,
+  "file": "tests/unit/utils/treeify.test.ts",
+  "pattern": "string-literal-field-without-as-const-widened-by-spread",
+  "instances": 4
+ },
+ {
+  "n": 86,
+  "file": "src/packages/cli/src/transports.ts",
+  "pattern": "spread-de-any-en-vez-de-array-ya-tipado",
+  "instances": 1
+ },
+ {
+  "n": 87,
+  "file": "src/packages/swarm/src/install/installSwarmHost.ts",
+  "pattern": "spread-de-any-en-vez-de-array-ya-tipado",
+  "instances": 1
+ },
+ {
+  "n": 88,
+  "file": "src/packages/agent/commands/commit-push-pr.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 89,
+  "file": "src/packages/agent/commands/commit.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 90,
+  "file": "src/packages/agent/commands/security-review.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 91,
+  "file": "src/packages/agent/fileChangedWatcher.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 4
+ },
+ {
+  "n": 92,
+  "file": "src/packages/agent/standalone/standaloneAgent.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 93,
+  "file": "src/packages/app-host/src/main/startup/telemetry.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 94,
+  "file": "src/packages/cli/src/setup/setup.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 95,
+  "file": "src/packages/command-runtime/src/commands/context/context.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 96,
+  "file": "src/packages/command-runtime/src/commands/login/login.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 3
+ },
+ {
+  "n": 97,
+  "file": "src/packages/command-runtime/src/commands/recap/recap.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 4
+ },
+ {
+  "n": 98,
+  "file": "src/packages/config/plugin/mcpPluginIntegration.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 99,
+  "file": "src/packages/config/plugin/officialMarketplaceGcs.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 100,
+  "file": "src/packages/config/plugin/pluginAutoupdate.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 6
+ },
+ {
+  "n": 101,
+  "file": "src/packages/config/plugin/zipCache.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 102,
+  "file": "src/packages/permission/src/components/rules/PermissionRuleList.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 103,
+  "file": "src/packages/provider/src/__tests__/integration.test.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 104,
+  "file": "src/packages/provider/src/authAlias.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 105,
+  "file": "src/packages/provider/src/referral.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 4
+ },
+ {
+  "n": 106,
+  "file": "src/packages/repl/src/commands/add-dir/add-dir.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 3
+ },
+ {
+  "n": 107,
+  "file": "src/packages/repl/src/commands/plan/plan.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 108,
+  "file": "src/packages/repl/src/components/CompactSummary.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 4
+ },
+ {
+  "n": 109,
+  "file": "src/packages/repl/src/components/LogoV2/LogoV2.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 110,
+  "file": "src/packages/repl/src/components/Passes/Passes.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 7
+ },
+ {
+  "n": 111,
+  "file": "src/packages/repl/src/components/Settings/Config.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 112,
+  "file": "src/packages/repl/src/components/VirtualMessageList.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 113,
+  "file": "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 114,
+  "file": "src/packages/repl/src/components/hooks/SelectEventMode.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 115,
+  "file": "src/packages/repl/src/components/messageActions.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 116,
+  "file": "src/packages/repl/src/components/messages/AssistantToolUseMessage.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 117,
+  "file": "src/packages/repl/src/hooks/useInboxPoller.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 118,
+  "file": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 119,
+  "file": "src/packages/repl/src/processUserInput/processUserInput.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 120,
+  "file": "src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 3
+ },
+ {
+  "n": 121,
+  "file": "src/packages/tool-registry/src/teleport.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 122,
+  "file": "src/packages/tool-registry/src/tools/SkillTool/UI.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 123,
+  "file": "src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 4
+ },
+ {
+  "n": 124,
+  "file": "src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 2
+ },
+ {
+  "n": 125,
+  "file": "src/packages/updater/src/nativeInstaller/platform.ts",
+  "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+  "instances": 1
+ },
+ {
+  "n": 126,
+  "file": "src/packages/config/plugin/lspPluginIntegration.ts",
+  "pattern": "spread-of-never-typed-test-double",
+  "instances": 2
+ },
+ {
+  "n": 127,
+  "file": "src/packages/config/plugin/marketplaceManager.ts",
+  "pattern": "spread-of-never-typed-test-double",
+  "instances": 1
+ },
+ {
+  "n": 128,
+  "file": "src/packages/provider/src/openai/client.ts",
+  "pattern": "spread-of-never-typed-test-double",
+  "instances": 1
+ },
+ {
+  "n": 129,
+  "file": "src/packages/storage/src/sessionRestore.ts",
+  "pattern": "spread-of-never-typed-test-double",
+  "instances": 1
+ },
+ {
+  "n": 130,
+  "file": "src/packages/agent/hooks/AsyncHookRegistry.ts",
+  "pattern": "sync-external-store-snapshot-inferred-unknown-from-untyped-require",
+  "instances": 2
+ },
+ {
+  "n": 131,
+  "file": "src/packages/agent/task/framework.ts",
+  "pattern": "sync-external-store-snapshot-inferred-unknown-from-untyped-require",
+  "instances": 1
+ },
+ {
+  "n": 132,
+  "file": "src/packages/@ant/computer-use-mcp/src/legacy/win32/uiAutomation.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 133,
+  "file": "src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 134,
+  "file": "src/packages/agent/__tests__/emit.test.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 135,
+  "file": "src/packages/agent/hooks/apiQueryHookHelper.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 136,
+  "file": "src/packages/agent/internal/loopDynamicCore.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 137,
+  "file": "src/packages/app-host/src/__tests__/declaredDependencies.test.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 138,
+  "file": "src/packages/app-host/src/providerHostSetup.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 139,
+  "file": "src/packages/binary/bin/binary.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 140,
+  "file": "src/packages/bridge/src/bridgeMain.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 4
+ },
+ {
+  "n": 141,
+  "file": "src/packages/bridge/src/runtimeHostSetup.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 142,
+  "file": "src/packages/command-runtime/src/commands/memory/memory.tsx",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 2
+ },
+ {
+  "n": 143,
+  "file": "src/packages/config/manager.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 144,
+  "file": "src/packages/permission/src/components/FallbackPermissionRequest.tsx",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 4
+ },
+ {
+  "n": 145,
+  "file": "src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 146,
+  "file": "src/packages/permission/src/components/SkillPermissionRequest/SkillPermissionRequest.tsx",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 5
+ },
+ {
+  "n": 147,
+  "file": "src/packages/permission/src/components/hooks.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 148,
+  "file": "src/packages/permission/src/components/utils.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 149,
+  "file": "src/packages/permission/src/toolPermission/PermissionContext.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 2
+ },
+ {
+  "n": 150,
+  "file": "src/packages/provider/src/gemini/indexImpl.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 151,
+  "file": "src/packages/provider/src/gemini/modelMapping.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 152,
+  "file": "src/packages/provider/src/mockRateLimits.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 153,
+  "file": "src/packages/provider/src/oauth/index.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 154,
+  "file": "src/packages/provider/src/openai/indexImpl.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 155,
+  "file": "src/packages/provider/src/openai/modelMapping.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 156,
+  "file": "src/packages/repl/src/hooks/useCanUseTool.tsx",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 157,
+  "file": "src/packages/repl/src/queryHelpers.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 2
+ },
+ {
+  "n": 158,
+  "file": "src/packages/repl/src/screens/agentFleet/FleetView.tsx",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 159,
+  "file": "src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 160,
+  "file": "src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 3
+ },
+ {
+  "n": 161,
+  "file": "tests/skills/markdown.test.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 162,
+  "file": "tests/task/premises.test.ts",
+  "pattern": "optional-field-narrower-than-always-assigned-value",
+  "instances": 1
+ },
+ {
+  "n": 163,
+  "file": "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts",
+  "pattern": "wrong-command-type-across-duplicate-packages",
+  "instances": 3
+ },
+ {
+  "n": 164,
+  "file": "src/packages/provider/__tests__/providerStreaming.test.ts",
+  "pattern": "tool-provider-discover-not-awaited",
+  "instances": 1
+ },
+ {
+  "n": 165,
+  "file": "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+  "pattern": "tool-provider-discover-not-awaited",
+  "instances": 1
+ },
+ {
+  "n": 166,
+  "file": "src/packages/tool-registry/src/collapseReadSearch.ts",
+  "pattern": "tool-provider-discover-not-awaited",
+  "instances": 1
+ }
+]

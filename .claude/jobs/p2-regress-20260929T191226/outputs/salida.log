@@ -1,0 +1,13 @@
+tests/session/test-headless-pool.sh exit=0 :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-worktree.sh exit=0 :: test-headless-pool-worktree: 32 aserciones — 32 ok, 0 falla(s)
+tests/session/test-gnu-time-launchers.sh exit=0 :: test-gnu-time-launchers: 13 ok, 0 falla(s)
+tests/session/test-gpu-admission-cli.sh exit=0 :: aserciones: 3 de 3 · fallos: 0
+tests/session/test-item-worktree-stash.sh exit=0 :: item_worktree stash guard: 19/19
+tests/skills/test-evals-use-thyrox-p.sh exit=0 :: 4 ok, 0 fallo(s)
+tests/session/test-headless-pool-frozen-launcher.sh exit=0 :: result: 6 of 6 assertions green
+tests/session/test-headless-pool-item-drain.sh exit=0 :: result: 16 of 16 assertions green
+tests/session/test_writer_inspector.py exit=0 :: resultado: 16 de 16 aserciones en verde
+tests/session/test_process_ownership.py exit=0 :: resultado: 12 de 12 aserciones en verde
+tests/session/test_gpu_scenarios.py exit=0 :: test_gpu_scenarios: 19 ok, 0 falla(s)
+tests/session/test_pool_history.py exit=0 :: test_pool_history: 89 ok, 0 falla(s)
+__BG_EXIT__=0

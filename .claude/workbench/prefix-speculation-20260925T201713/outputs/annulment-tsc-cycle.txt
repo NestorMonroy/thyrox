@@ -1,0 +1,3 @@
+== la ruta 2 con un solo worktree
+  FALLA la ruta 2 pasa los dos worktrees y un lote de su tamaño — esperado (2, True), obtenido (1, False)
+test_tsc_cycle: 56 aserciones — 55 ok, 1 falla(s)

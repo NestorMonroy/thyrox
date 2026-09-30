@@ -1,0 +1,3 @@
+forward directo: ERROR ECONNREFUSED connectRaw llamado: 0
+dest recibido: {"ip":"127.0.0.1","port":36681,"sni":"api.example.com"}
+último error del búfer: Error: x

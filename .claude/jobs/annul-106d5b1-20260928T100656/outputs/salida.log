@@ -1,0 +1,151 @@
+== 1: la plataforma sólo en el cuerpo
+   (src/accounts/oauth/flows/codebuddyCnFlow.ts)
+(fail) codebuddy-cn > the state request carries the platform in the query and the state doubles as the device code [1.08ms]
+ 20 pass
+ 1 fail
+== 2: cualquier código de estado sirve
+   (src/accounts/oauth/flows/codebuddyCnFlow.ts)
+ 21 pass
+ 0 fail
+== 3: el sondeo de codebuddy por POST
+SIN COINCIDENCIA ÚNICA en src/accounts
+== 4: sin caducidad por defecto de un día
+   (src/accounts/oauth/flows/codebuddyCnFlow.ts)
+(fail) codebuddy-cn > pending keeps its code and a missing expiry becomes one day [0.54ms]
+ 20 pass
+ 1 fail
+== 5: el tabulador pasa a la cabecera
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > header values keep printable ASCII only, with a fallback [0.67ms]
+ 20 pass
+ 1 fail
+== 6: todo id se escribe como UUID
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > a 32-hex device id is dashed like a UUID; anything else is kept [0.61ms]
+(fail) kimi identity > the device id is declared, persisted once with owner-only mode, or reused [0.67ms]
+(fail) kimi-coding > the device request is signed with the identity and demands the complete URI [0.54ms]
+ 18 pass
+ 3 fail
+== 7: la versión sin variable propia
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > the CLI version comes from its variable or the pinned default [0.42ms]
+ 20 pass
+ 1 fail
+== 8: macOS sin su versión de producto
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > the device model names the system, with the product version on macOS [0.50ms]
+ 20 pass
+ 1 fail
+== 9: el id declarado no gana
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > the device id is declared, persisted once with owner-only mode, or reused [0.65ms]
+ 20 pass
+ 1 fail
+== 10: el id persistido no se reusa
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > the device id is declared, persisted once with owner-only mode, or reused [0.69ms]
+ 20 pass
+ 1 fail
+== 11: el id persistido legible por todos
+   (src/accounts/kimi/kimiIdentity.ts)
+(fail) kimi identity > the device id is declared, persisted once with owner-only mode, or reused [0.65ms]
+ 20 pass
+ 1 fail
+== 12: sin exigir la URI completa
+   (src/accounts/oauth/flows/kimiCodingFlow.ts)
+(fail) kimi-coding > the device request is signed with the identity and demands the complete URI [0.66ms]
+ 20 pass
+ 1 fail
+== 13: la página de error se pierde
+   (src/accounts/oauth/flows/kimiCodingFlow.ts)
+(fail) kimi-coding > an error page from the poll surfaces as its text; the grant keeps the device identity [0.74ms]
+ 20 pass
+ 1 fail
+== 14: la cuenta sin el id de dispositivo
+   (src/accounts/oauth/flows/kimiCodingFlow.ts)
+(fail) kimi-coding > an error page from the poll surfaces as its text; the grant keeps the device identity [1.40ms]
+ 20 pass
+ 1 fail
+== 15: kimi sin variable no rehúsa
+   (src/accounts/oauth/flows/kimiCodingFlow.ts)
+(fail) kimi-coding > without its variable the flow refuses naming it [1093.67ms]
+ 20 pass
+ 1 fail
+== 16: cualquier token es dca
+   (src/accounts/muse/museCode.ts)
+(fail) muse-code > a dca token is recognised and the base URL loses its trailing slashes [0.67ms]
+ 20 pass
+ 1 fail
+== 17: la URL base con su barra final
+   (src/accounts/muse/museCode.ts)
+(fail) muse-code > a dca token is recognised and the base URL loses its trailing slashes [0.39ms]
+(fail) muse-code > the mint exchanges the dca token for the inference key and its subscription [0.67ms]
+ 19 pass
+ 2 fail
+== 18: sin clave no es error
+   (src/accounts/muse/museCode.ts)
+(fail) muse-code > the mint exchanges the dca token for the inference key and its subscription [1.16ms]
+ 20 pass
+ 1 fail
+== 19: la caducidad cero se acepta
+   (src/accounts/oauth/flows/museCodeFlow.ts)
+(fail) muse-code > an invalid expiry is refused; a missing interval takes the default [0.94ms]
+ 20 pass
+ 1 fail
+== 20: sin intervalo por defecto
+   (src/accounts/oauth/flows/museCodeFlow.ts)
+(fail) muse-code > an invalid expiry is refused; a missing interval takes the default [0.96ms]
+ 20 pass
+ 1 fail
+== 21: la clave acuñada hereda la caducidad
+   (src/accounts/oauth/flows/museCodeFlow.ts)
+(fail) muse-code > with a minted key the inference key is the access token and the dca token refreshes [0.78ms]
+ 20 pass
+ 1 fail
+== 22: un canje fallido tumba el login
+   (src/accounts/oauth/flows/museCodeFlow.ts)
+(fail) muse-code > a failed mint still saves the dca token as the credential and its refresh [0.57ms]
+ 20 pass
+ 1 fail
+== 23: la caducidad del dca sin su duración
+   (src/accounts/oauth/flows/museCodeFlow.ts)
+(fail) muse-code > with a minted key the inference key is the access token and the dca token refreshes [0.71ms]
+ 20 pass
+ 1 fail
+== 24: openference sin variable no rehúsa
+   (src/accounts/oauth/flows/openferenceFlow.ts)
+(fail) openference > without its variable the auth URL is refused naming it; with it, PKCE on the fixed loopback [0.93ms]
+ 20 pass
+ 1 fail
+== 25: el userinfo gana al id token
+   (src/accounts/oauth/flows/openferenceFlow.ts)
+(fail) openference identity precedence > the id token wins over the userinfo, and a failed userinfo is empty [0.63ms]
+ 20 pass
+ 1 fail
+== 26: sin nombre no hay etiqueta
+   (src/accounts/oauth/flows/openferenceFlow.ts)
+(fail) openference identity precedence > the id token wins over the userinfo, and a failed userinfo is empty [0.92ms]
+ 20 pass
+ 1 fail
+== 27: el correo con sus espacios
+SIN COINCIDENCIA ÚNICA en src/accounts
+== 28: un token de cuatro partes se decodifica
+   (src/accounts/oauth/flows/openferenceFlow.ts)
+(fail) openference > the id token names the account; otherwise the userinfo, and the name falls back to the email [0.90ms]
+ 20 pass
+ 1 fail
+== 29: un userinfo caído rompe el login
+   (src/accounts/oauth/flows/openferenceFlow.ts)
+(fail) openference identity precedence > the id token wins over the userinfo, and a failed userinfo is empty [0.43ms]
+ 20 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/kimi/
+?? src/packages/provider/src/accounts/muse/
+?? src/packages/provider/src/accounts/oauth/flows/codebuddyCnFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/kimiCodingFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/museCodeFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/openferenceFlow.ts
+ 21 pass
+ 0 fail
+__BG_EXIT__=0

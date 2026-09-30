@@ -5,7 +5,9 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Environment variables
+# `.env` es del consumidor y puede llevar secretos: no se versiona. Cada clave
+# que asigne tiene que figurar en `.env.example`, que sí viaja
+# (`src/verify/check_env_example_coverage.py`).
 .env
 .env.local
 .env.*.local
@@ -25,14 +27,32 @@ Thumbs.db
 Desktop.ini
 
 # Logs
+# `*.log` NO se ignora — directiva del ejecutor 2026-09-10. Un log de una
+# corrida es evidencia fechada: el nivel 4 de `niveles-de-retencion.md` es
+# completitud percibida SIN persistencia, y un log ignorado es tan durable como
+# el contenedor. `logs/` y los `*-debug.log` de los gestores de paquetes siguen
+# ignorados: son ruido de dependencia, no rastro de lo que la sesion hizo.
 logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 # Build outputs
 dist/
+#   ^ cubre tambien `src/packages/*/dist/`, que es donde
+#     `src/typescript/emit_declarations.py` emite las declaraciones de hermano.
+#     No se versionan, y CONSTRUIRLAS ES PRECONDICION REAL — no conveniencia.
+#
+#     Aqui decia que un clon sin ellas «compila como hoy». Es falso, medido
+#     con un instrumento unico sobre el typecheck de `cli`: 2701 con `dist`,
+#     3070 SIN `dist`, 2821 sin repuntar. O sea que el clon sin construir
+#     queda PEOR que antes del repunte, no igual.
+#
+#     Lo que si es cierto —y era la mitad que sostenia la frase— es que la
+#     resolucion no se rompe: `traceResolution` muestra «Failed to resolve
+#     under condition 'types'» seguido de «Matched 'exports' condition
+#     'default'», que aterriza en el `.ts`. El clon compila; lo que no
+#     conserva es el conteo. Ver H-THYROX-148.
 build/
 .next/
 out/
@@ -40,26 +60,54 @@ out/
 
 # Testing
 coverage/
+!.thyrox/context/**/coverage/
+.coverage
+htmlcov/
+coverage.xml
 .nyc_output/
 .pytest_cache/
 
-# Claude Code
-.claude/tasks/
-.claude/plans/
+# Claude Code — TODO es evidencia, así que NADA de esto se ignora.
+# El tablero (.claude/tasks/), los planes (.claude/plans/), los worktrees de
+# agente (.claude/worktrees/), el store sqlite y las cachés derivadas son el
+# rastro de lo que la sesión hizo. Ignorarlos deja el trabajo tan durable como
+# el contenedor, que es el nivel 4 de niveles-de-retencion.md: completitud
+# percibida sin persistencia. Directiva del ejecutor 2026-09-06.
 
 # Temporary files
 tmp/
 temp/
 *.tmp
+*.backup
+*.backup2
+*.bak
 
-# Database
-*.sqlite
-*.sqlite3
-*.db
-
-# Cache
-.cache/
-.eslintcache
+# Binaries & media (prevent grokputer-style pollution)
+*.exe
+*.msi
+*.dll
+*.mp4
+*.avi
+*.mov
+*.rar
+*.zip
+*.tar.gz
+# `*.7z` RETIRADO 2026-09-18 por directiva del ejecutor. El corpus de builds
+# archivado (`_references/claude-code-bin/_archived/`) son nueve `.7z` que la
+# regla global se tragaba en silencio: en disco estaban, en git solo el
+# MANIFEST. No habia perdida —el crudo sigue en el historial, en el `head` que
+# el manifiesto declara— pero `_archived/` se leia como un manifiesto que
+# apunta a archivos inexistentes. Ver H-THYROX-80.
+#
+# Medido al retirarla: 9 `.7z` en el arbol, los 9 bajo `_archived/`. La regla
+# no retenia nada mas, asi que quitarla no admite nada que no sea el archivo.
+*.bmp
+*.psd
+*.tiff
+*.xlsx
+*.docx
+*.pptx
+*.lnk
 
 # Build artifacts
 *.o
@@ -70,8 +118,73 @@ temp/
 # Platform-specific
 .env.production.local
 
-# Git worktrees
-.claude/worktrees/
-
 # Generated files
 CHANGELOG-auto.md
+*-report.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+# `env/` va ANCLADO a la raiz: sin la barra inicial git lo aplica a CUALQUIER
+# directorio llamado `env` a cualquier profundidad, y se trago los tres .ts de
+# `src/packages/config/env/` — codigo fuente, no un virtualenv. El agente que
+# los porto tuvo que forzarlos con `git add -f`; sin eso habrian desaparecido
+# del commit en silencio, que es la forma cara de perder trabajo.
+/env/
+venv/
+
+# El diario de SQLite NO es el store: es su bitácora en vuelo. `-wal` y `-shm`
+# existen sólo mientras hay un escritor abierto, y su contenido pertenece al
+# `.sqlite3` en cuanto se consolida (`PRAGMA wal_checkpoint`). Versionarlos
+# no añade evidencia —la evidencia ya está en el store— y sí puede confundir:
+# un `-wal` viejo junto a un store consolidado describe un estado que no es.
+# NO contradice la directiva de arriba: lo que ella preserva es el store, y
+# esto no es el store.
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Estado de GNU parallel: lo escribe la herramienta, como .venv y node_modules.
+.parallel/
+
+# Puntero de sesión al último banco creado — cambia con cada banco y no es
+# contenido: versionarlo produce el churn por turno de #151. El banco SÍ se
+# versiona; su puntero, no.
+.claude/workbench/.ultimo-banco
+# El renombre a inglés de `identificadores-en-ingles.md` dejó esta entrada
+# apuntando al nombre muerto: el puntero vivo es `.last-bank`, que quedó
+# sin ignorar y aparecía como `??` en cada turno. Se conservan los dos
+# nombres porque el viejo sigue en el árbol de trabajo de este clon.
+.claude/workbench/.last-bank
+
+# Estado de sesión del gate de mutación: qué mutación está EN VUELO ahora.
+# No es registro del proyecto — su contenido sólo vale dentro de la ejecución
+# que lo escribió, y versionarlo ensucia el árbol en cada corrida.
+#
+# Las DOS formas, y no es redundancia: el ledger se emite hoy como `.jsonl`
+# (un registro por línea, que sobrevive a la muerte del proceso porque un
+# append no puede pisar lo ya escrito), y el lector sigue aceptando el `.json`
+# heredado de forma permanente — un ledger escrito por una sesión anterior no
+# se convierte al leerse. Declarar sólo la forma nueva dejaría al heredado
+# fuera del ignore; declarar sólo la vieja fue el defecto que esta línea
+# corrige.
+agent-results/mutantes-en-vuelo.json
+agent-results/mutantes-en-vuelo.jsonl
+
+# El ledger de trabajos en segundo plano es POR SESIÓN
+# (.env.example: THYROX_JOBS_DIR/THYROX_JOBS_ARCHIVE_DIR) — dos sesiones que
+# compartieran uno se robarían los marcadores entre sí. Su contenido sólo
+# vale mientras la sesión que lo escribió sigue viva; versionarlo ensucia el
+# árbol cada vez que un trabajo queda VIVO al cerrar el turno.
+.claude/jobs-ledger/
+
+# La cascara de store del proveedor: 0 filas de negocio, tracked sin el
+# driver de merge que .gitattributes da al store real. La retira TASK-THYROX-0153.
+.claude/agent-results/agent_store.sqlite3
+
+# Estado local de ejecución de los lanzadores de repository/job: copias
+# congeladas de su capa de shell y, más adelante, sus artefactos vivos. Se
+# nombra cada espacio en vez de ignorar `.thyrox/` entero, para que ese
+# directorio no se vuelva un cajón invisible para Git.
+/.thyrox/runtime/
+/.thyrox/pool-worktrees/

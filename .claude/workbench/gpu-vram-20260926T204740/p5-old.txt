@@ -1,0 +1,2 @@
+    cap, cap_why = _width_cap(row, margin, free_vram_mib)
+    return Decision(ttl, memfree, why + cap_why, cap)

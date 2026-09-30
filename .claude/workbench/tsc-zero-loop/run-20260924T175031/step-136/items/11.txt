@@ -1,0 +1,7 @@
+Tipo: MCPServerConnection
+Copias:
+  src/packages/agent/sessionStores.ts
+  src/packages/mcp-runtime/src/compat.ts
+  src/packages/mcp-runtime/src/contracts.ts
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(135): error TS2322: Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown> | McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.

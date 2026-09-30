@@ -1,0 +1,23 @@
+src/packages/provider/src/proxy.ts(264,38): error TS7006: Parameter 'options' implicitly has an 'any' type.
+  --- código src/packages/provider/src/proxy.ts:254-274 ---
+    254    const agentOptions: HttpsProxyAgentOptions<string> = {
+    255      ...(mtlsConfig && {
+    256        cert: mtlsConfig.cert,
+    257        key: mtlsConfig.key,
+    258        passphrase: mtlsConfig.passphrase,
+    259      }),
+    260      ...(caCerts && { ca: caCerts }),
+    261    }
+    262  
+    263    if (isEnvTruthy(readEnv('CLAUDE_CODE_PROXY_RESOLVES_HOSTS'))) {
+    264>     agentOptions.lookup = (hostname, options, callback) => {
+    265        callback(null, hostname, getAddressFamily(options))
+    266      }
+    267    }
+    268  
+    269    return new HttpsProxyAgent(proxyUrl, { ...agentOptions, ...extra })
+    270  }
+    271  
+    272  /** Instancia de axios con su propio agente de proxy. */
+    273  export function createAxiosInstance(extra: HttpsProxyAgentOptions<string> = {}): AxiosInstance {
+    274    const proxyUrl = getProxyUrl()

@@ -1,0 +1,48 @@
+src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts(492,9): error TS2353: Object literal may only specify known properties, and 'workflowName' does not exist in type '{ taskId: string; summary?: string | undefined; status: "completed" | "failed" | "killed"; result?: unknown; failures?: string[] | undefined; error?: string | undefined; agentCount: number; totalTokens: number; ... 6 more ...; setAppState: SetAppState; }'.
+  --- código src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts:482-502 ---
+    482          status: result.error ? 'failed' : 'completed',
+    483          result: result.result,
+    484          failures: result.failures,
+    485          error: result.error,
+    486          agentCount: result.agentCount,
+    487          totalTokens: 0,
+    488          totalToolCalls: 0,
+    489          durationMs: result.durationMs,
+    490          scriptPath,
+    491          workflowRunId: runId,
+    492>         workflowName,
+    493          args: input.args,
+    494          transcriptDir,
+    495          setAppState,
+    496        })
+    497      })().catch(e => {
+    498        const msg = e instanceof Error ? e.message : String(e)
+    499        logForDebugging(`workflow run crashed: ${msg}`)
+    500        failWorkflowTask(taskId, msg, 0, [], setAppState)
+    501      })
+    502  
+src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts(551,3): error TS2322: Type '(output: { error?: string | undefined; }) => FunctionComponentElement<Props>' is not assignable to type '(result: string | (TextBlockParam | ImageBlockParam | DocumentBlockParam | SearchResultBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[] | undefined, options: { ...; }) => ReactNode'.
+  --- código src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts:541-560 ---
+    541        is_error: false,
+    542      }
+    543    },
+    544    renderToolUseMessage(input) {
+    545      if (input.name) return `workflow: ${input.name}`
+    546      return input.scriptPath ? `workflow: ${input.scriptPath}` : 'workflow'
+    547    },
+    548    renderToolUseRejectedMessage() {
+    549      return 'Workflow rejected'
+    550    },
+    551>   renderToolUseErrorMessage(output: { error?: string }) {
+    552      return createElement(Text, null, output.error ?? 'Workflow error')
+    553    },
+    554    renderToolUseProgressMessage() {
+    555      return null
+    556    },
+    557    renderToolResultMessage(output: Output) {
+    558      return createElement(Text, null, output.summary ?? 'Workflow launched')
+    559    },
+    560  } satisfies ToolDef<InputSchema, Output>)
+  Types of parameters 'output' and 'result' are incompatible.
+    Type 'string | (TextBlockParam | ImageBlockParam | DocumentBlockParam | SearchResultBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[] | undefined' is not assignable to type '{ error?: string | undefined; }'.
+      Type 'undefined' is not assignable to type '{ error?: string | undefined; }'.

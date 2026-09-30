@@ -1,0 +1,9 @@
+.claude/jobs/fetch-es-mx-20260926T194435/README.md
+.claude/jobs/fetch-es-mx-20260926T194435/manifest.jsonl
+.claude/jobs/fetch-es-mx-20260926T194435/outputs/pid
+.claude/jobs/fetch-es-mx-20260926T194435/outputs/salida.log
+.claude/jobs/fetch-es-mx-20260926T194435/outputs/salida.log.time
+.claude/workbench/all-tsconfigs-20260926T174919/commit-msg-hp-quiet.txt
+.claude/workbench/all-tsconfigs-20260926T174919/commit-paths-hp-quiet.txt
+src/session/headless-pool.sh
+tests/session/test-headless-pool.sh

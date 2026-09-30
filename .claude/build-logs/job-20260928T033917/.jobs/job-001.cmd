@@ -1,0 +1,1 @@
+bun test ./tests/verify/exactSiblingVersions.test.ts ./tests/verify/canonicalEnvHelpers.test.ts ./tests/package/sibling_exports.test.ts 2>&1 | tail -3

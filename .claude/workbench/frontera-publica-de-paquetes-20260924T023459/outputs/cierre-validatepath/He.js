@@ -1,0 +1,1 @@
+function He(e,n,r=!1){if(n?.unreadableAncestry!=="unverified")return;let i=e!==void 0&&typeof e==="object"&&"errno"in e?e.errno:void 0;if(i==="ENOENT"||i==="ENOTDIR")return;if(i==="ENAMETOOLONG"&&!r)return;return B2}

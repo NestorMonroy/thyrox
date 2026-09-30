@@ -1,0 +1,21 @@
+test_directive_content (__main__.ConstructsIntact.test_directive_content) ... ok
+test_doctest_block (__main__.ConstructsIntact.test_doctest_block) ... ok
+test_enumerators (__main__.ConstructsIntact.test_enumerators) ... ok
+test_field_list (__main__.ConstructsIntact.test_field_list) ... ok
+test_grid_table (__main__.ConstructsIntact.test_grid_table) ... ok
+test_literal_block (__main__.ConstructsIntact.test_literal_block) ... ok
+test_option_list (__main__.ConstructsIntact.test_option_list) ... ok
+test_unicode_bullets (__main__.ConstructsIntact.test_unicode_bullets) ... ok
+test_has_corpus_that_measure (__main__.CorpusReal.test_has_corpus_that_measure) ... ok
+test_preserves_the_parse_and_is_idempotente (__main__.CorpusReal.test_preserves_the_parse_and_is_idempotente) ... ok
+test_list_item_body (__main__.ProseJoined.test_list_item_body) ... ok
+test_paragraph_before_title_is_not_swallowed (__main__.ProseJoined.test_paragraph_before_title_is_not_swallowed) ... ok
+test_role_at_paragraph_start_is_prose (__main__.ProseJoined.test_role_at_paragraph_start_is_prose) ... ok
+test_title_keeps_its_underline (__main__.ProseJoined.test_title_keeps_its_underline) ... ok
+test_wrapped_paragraph (__main__.ProseJoined.test_wrapped_paragraph) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 34.000s
+
+OK
+EXIT=0

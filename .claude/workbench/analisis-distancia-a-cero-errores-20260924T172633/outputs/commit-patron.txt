@@ -1,0 +1,9 @@
+Make agent_proposal refuse a malformed pattern
+
+A pattern that does not compile made the proposer exit with a
+traceback instead of refusing with 2, which is its declared contract
+for bad input. Caught while writing the first real proposal, where a
+shell quote left a parenthesis unbalanced.
+
+Annulment: without catching re.error the new case fails with the
+traceback, exactly that case.

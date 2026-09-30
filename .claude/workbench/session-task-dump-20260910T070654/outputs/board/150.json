@@ -1,0 +1,8 @@
+{
+  "id": "150",
+  "subject": "Portar la familia session a thyrox — el pool, la barrera y el marcador",
+  "description": "REFORMULADA por H-DOCS-1086: el ledger de wait-jobs.sh y el roster del cliente son el mismo primitivo con dos nombres, asi que #150 y #152 portan uno solo. El porte NO tiene contraparte de referencia contra la que medir fidelidad — la barrera es nuestra, construida porque el corpus no la traia (medido ahora tambien contra el binario, no solo contra hccw). Es un movimiento con inyeccion de parametro, no una adaptacion: otro criterio de cierre y mas barato. run-task-pool.sh sigue siendo su propia cosa: acota anchura, no espera. Esperar a que #152 aterrice antes de arrancar, para no construir el mismo primitivo dos veces.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

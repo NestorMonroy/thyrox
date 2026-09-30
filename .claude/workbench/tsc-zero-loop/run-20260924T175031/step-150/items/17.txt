@@ -1,0 +1,314 @@
+Patrón: map-callback-return-type-not-widened
+Señal del verificador: TS2322.*is not assignable to type '.*\[\]'|TS2677: A type predicate's type must be assignable
+Arreglo genérico: Cuando un callback async de map produce un objeto vía `satisfies TipoAncho` con un campo cuyo valor real es un literal más estrecho que el del tipo declarado (p. ej. un subconjunto de la unión), `satisfies` conserva el tipo literal inferido en vez de ensancharlo. Anotar el tipo de retorno explícito de la función (`async (x): Promise<TipoAncho | null> => {...}`) fuerza el chequeo contra el tipo declarado y ensancha el resultado, sin cambiar la conducta en ejecución.
+Ya aplicado en: src/packages/agent/workflow/namedWorkflows.ts
+Archivos donde la señal sigue viva: src/packages/agent/QueryEngine.ts, src/packages/agent/messages.ts, src/packages/agent/query.ts, src/packages/app-host/src/runtime/commandRegistryRuntime.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/config/plugin/pluginLoader.ts
+
+src/packages/agent/QueryEngine.ts(797,9): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/QueryEngine.ts:787-807 ---
+    787                  : String(event.error ?? 'Agent core execution failed'),
+    788              ],
+    789            }
+    790            return
+    791          }
+    792  
+    793          continue
+    794        }
+    795  
+    796        if (event.type === 'compaction') {
+    797>         this.mutableMessages = fromCoreMessages(event.after)
+    798          messages.splice(0, messages.length, ...this.mutableMessages)
+    799  
+    800          const compactBoundary = createCompactBoundaryMessage(
+    801            'auto',
+    802            0,
+    803            this.mutableMessages.at(-1)?.uuid,
+    804          )
+    805          this.mutableMessages.push(compactBoundary)
+    806          messages.push(compactBoundary)
+    807  
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+
+src/packages/agent/messages.ts(4378,19): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  --- código src/packages/agent/messages.ts:4368-4388 ---
+   4368   * indice de `AttachmentMessage['attachment']` en ambos casos.
+   4369   */
+   4370  function getResolvedHookCount(
+   4371    messages: NormalizedMessage[],
+   4372    toolUseID: string,
+   4373    hookEvent: HookEvent,
+   4374  ): number {
+   4375    const uniqueHookNames = new Set(
+   4376      messages
+   4377        .filter(
+   4378>         (_): _ is AttachmentMessage =>
+   4379            isHookAttachmentMessage(_) &&
+   4380            _.attachment.toolUseID === toolUseID &&
+   4381            _.attachment.hookEvent === hookEvent,
+   4382        )
+   4383        .map(_ => _.attachment.hookName),
+   4384    )
+   4385    return uniqueHookNames.size
+   4386  }
+   4387  
+   4388  export function hasUnresolvedHooks(
+  Type 'AttachmentMessage<_T>' is not assignable to type 'NormalizedMessage'.
+    Type 'AttachmentMessage<_T>' is not assignable to type 'MessageBase & { type: "attachment"; attachment: { [key: string]: unknown; type: string; }; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...'.
+      Type 'AttachmentMessage<_T>' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.
+
+src/packages/agent/query.ts(515,7): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:505-525 ---
+    505          consecutiveRapidRefills,
+    506        }
+    507  
+    508        const postCompactMessages = buildPostCompactMessages(compactionResult)
+    509  
+    510        for (const message of postCompactMessages) {
+    511          yield message
+    512        }
+    513  
+    514        // Continue on with the current query call using the post compact messages
+    515>       messagesForQuery = postCompactMessages
+    516      } else if (consecutiveFailures !== undefined) {
+    517        // Autocompact failed — propagate failure count so the circuit breaker
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+src/packages/agent/query.ts(528,7): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/query.ts:518-538 ---
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+    526      toolUseContext = {
+    527        ...toolUseContext,
+    528>       messages: messagesForQuery,
+    529      }
+    530  
+    531      const assistantMessages: AssistantMessage[] = []
+    532      const toolResults: (UserMessage | AttachmentMessage)[] = []
+    533      // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    534      // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+    535      // Set during streaming whenever a tool_use block arrives — the sole
+    536      // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
+    537      const toolUseBlocks: ToolUseBlock[] = []
+    538      let needsFollowUp = false
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+src/packages/agent/query.ts(1127,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:1117-1137 ---
+   1117                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1118                  preCompactContext,
+   1119              )
+   1120            }
+   1121  
+   1122            const postCompactMessages = buildPostCompactMessages(compacted)
+   1123            for (const msg of postCompactMessages) {
+   1124              yield msg
+   1125            }
+   1126            const next: State = {
+   1127>             messages: postCompactMessages,
+   1128              toolUseContext,
+   1129              autoCompactTracking: undefined,
+   1130              maxOutputTokensRecoveryCount,
+   1131              hasAttemptedReactiveCompact: true,
+   1132              maxOutputTokensOverride: undefined,
+   1133              pendingToolUseSummary: undefined,
+   1134              stopHookActive: undefined,
+   1135              stopHookBlockingCount: 0,
+   1136              turnCount,
+   1137              transition: { reason: 'reactive_compact_retry' },
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(521,5): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:511-531 ---
+    511  
+    512    if (uniqueDynamicSkills.length === 0) {
+    513      return baseCommands
+    514    }
+    515  
+    516    // Insert dynamic skills after plugin skills but before built-in commands
+    517    const builtInNames = new Set(COMMANDS().map(c => c.name))
+    518    const insertIndex = baseCommands.findIndex(c => builtInNames.has(c.name))
+    519  
+    520    if (insertIndex === -1) {
+    521>     return [...baseCommands, ...uniqueDynamicSkills]
+    522    }
+    523  
+    524    return [
+    525      ...baseCommands.slice(0, insertIndex),
+    526      ...uniqueDynamicSkills,
+    527      ...baseCommands.slice(insertIndex),
+    528    ]
+    529  }
+    530  
+    531  /**
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(524,3): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:514-534 ---
+    514    }
+    515  
+    516    // Insert dynamic skills after plugin skills but before built-in commands
+    517    const builtInNames = new Set(COMMANDS().map(c => c.name))
+    518    const insertIndex = baseCommands.findIndex(c => builtInNames.has(c.name))
+    519  
+    520    if (insertIndex === -1) {
+    521      return [...baseCommands, ...uniqueDynamicSkills]
+    522    }
+    523  
+    524>   return [
+    525      ...baseCommands.slice(0, insertIndex),
+    526      ...uniqueDynamicSkills,
+    527      ...baseCommands.slice(insertIndex),
+    528    ]
+    529  }
+    530  
+    531  /**
+    532   * Clears only the memoization caches for commands, WITHOUT clearing skill caches.
+    533   * Use this when dynamic skills are added to invalidate cached command lists.
+    534   */
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(669,22): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:659-679 ---
+    659   * When adding a new 'local' command that should work from mobile, add it
+    660   * here. Default is blocked.
+    661   */
+    662  export const BRIDGE_SAFE_COMMANDS: Set<Command> = new Set(
+    663    [
+    664      compact, // Shrink context — useful mid-session from a phone
+    665      clear, // Wipe transcript
+    666      cost, // Show session cost
+    667      summary, // Summarize conversation
+    668      files, // List tracked files
+    669>   ].filter((c): c is Command => c !== null),
+    670  )
+    671  
+    672  /**
+    673   * Whether a slash command is safe to execute when its input arrived over the
+    674   * Remote Control bridge (mobile/web client).
+    675   *
+    676   * PR #19134 blanket-blocked all slash commands from bridge inbound because
+    677   * `/model` from iOS was popping the local Ink picker. This predicate relaxes
+    678   * that with an explicit allowlist: 'prompt' commands (skills) expand to text
+    679   * and are safe by construction; 'local' commands need an explicit opt-in via
+  Type 'Command' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox-control/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }'.
+    Type 'CommandBase & PromptCommand' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox-control/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }'.
+      Type 'CommandBase & PromptCommand' is missing the following properties from type '{ type: "local"; name: string; description: string; isEnabled: () => boolean; supportsNonInteractive: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox-control/src/packages/command-runtime/src/commands/compact/compact")>; }': supportsNonInteractive, load
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(786,33): error TS2322: Type '({ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand(args: string, context: ToolUseContext): Promise<...>; } | ... 4 more ... | null)[]' is not assignable to type 'readonly Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:776-796 ---
+    776      clearCommandsCache,
+    777      getCommandName,
+    778      isCommandEnabled,
+    779      builtInCommandNames: () => builtInCommandNames(),
+    780      findCommand,
+    781      hasCommand,
+    782      getCommand,
+    783      getSkillToolCommands,
+    784      getSlashCommandToolSkills,
+    785      getMcpSkillCommands: mcpCommands => getMcpSkillCommands(mcpCommands),
+    786>     internalOnlyCommands: () => INTERNAL_ONLY_COMMANDS,
+    787      remoteSafeCommands: () => REMOTE_SAFE_COMMANDS,
+    788      bridgeSafeCommands: () => BRIDGE_SAFE_COMMANDS,
+    789      isBridgeSafeCommand,
+    790      filterCommandsForRemoteMode,
+    791      formatDescriptionWithSource,
+    792    })
+    793  
+    794    commandRegistryHostBindingsInstalled = true
+    795  }
+    796  
+  Type '{ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand(args: string, context: ToolUseContext): Promise<...>; } | ... 4 more ... | null' is not assignable to type 'Command'.
+    Type 'null' is not assignable to type 'Command'.
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3474,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3464-3484 ---
+   3464          }
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467          trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474>         value: await resolveAndPrepend(message, message.message.content),
+   3475          uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })
+   3478        // Increment prompt count for attribution tracking and save snapshot
+   3479        // The snapshot persists promptCount so it survives compaction
+   3480        if (feature('COMMIT_ATTRIBUTION')) {
+   3481          setAppState(prev => ({
+   3482            ...prev,
+   3483            attribution: incrementPromptCount(prev.attribution, snapshot => {
+   3484              void recordAttributionSnapshot(snapshot).catch(error => {
+  Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+    Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+      Type 'unknown' is not assignable to type 'ContentBlockParam'.
+
+src/packages/config/plugin/pluginLoader.ts(3191,5): error TS2322: Type 'unknown[]' is not assignable to type 'LoadedPlugin[]'.
+  --- código src/packages/config/plugin/pluginLoader.ts:3181-3201 ---
+   3181    ])
+   3182    // 3. Load built-in plugins that ship with the CLI
+   3183    const builtinResult = getBuiltinPlugins()
+   3184  
+   3185    // Session plugins (--plugin-dir) override installed ones by name,
+   3186    // UNLESS the installed plugin is locked by managed settings
+   3187    // (policySettings). See mergePluginSources() for details.
+   3188    const { plugins: allPlugins, errors: mergeErrors } = mergePluginSources({
+   3189      session: sessionResult.plugins,
+   3190      marketplace: marketplaceResult.plugins,
+   3191>     builtin: [...builtinResult.enabled, ...builtinResult.disabled],
+   3192      managedNames: getManagedPluginNames(),
+   3193    })
+   3194    const allErrors = [
+   3195      ...marketplaceResult.errors,
+   3196      ...sessionResult.errors,
+   3197      ...mergeErrors,
+   3198    ]
+   3199  
+   3200    // Verify dependencies. Runs AFTER the parallel load — deps are presence
+   3201    // checks, not load-order, so no topological sort needed. Demotion is
+  Type 'unknown' is not assignable to type 'LoadedPlugin'.

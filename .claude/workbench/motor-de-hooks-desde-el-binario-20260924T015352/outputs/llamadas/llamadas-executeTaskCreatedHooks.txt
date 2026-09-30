@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts:123:    const generator = executeTaskCreatedHooks(
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-124-      taskId,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-125-      subject,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-126-      description,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-127-      getAgentName(),
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-128-      getTeamName(),
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-129-      undefined,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-130-      context?.abortController?.signal,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-131-      undefined,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-132-      context,
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-133-    )
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-134-    for await (const result of generator) {
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-135-      if (result.blockingError) {
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-136-        blockingErrors.push(getTaskCreatedHookMessage(result.blockingError))
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-137-      }

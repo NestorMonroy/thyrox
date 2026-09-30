@@ -1,0 +1,157 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/claudeAiLimits.test.ts:
+299 |   })
+300 | })
+301 | 
+302 | describe('isFreshWindow — el filtro de frescura, en MILISEGUNDOS (`bPn`)', () => {
+303 |   test('la ventana que vence dentro del horizonte sobrevive', () => {
+304 |     expect(isFreshWindow({ utilization: 0.5, resets_at: NOW_S + 3600 }, NOW_MS)).toBe(true)
+                                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:304:82)
+(fail) isFreshWindow — el filtro de frescura, en MILISEGUNDOS (`bPn`) > la ventana que vence dentro del horizonte sobrevive [0.25ms]
+329 |    *
+330 |    * Los dos casos usan la MISMA ventana: lo único que cambia es la unidad.
+331 |    */
+332 |   test('con la unidad correcta la ventana vive; con segundos, muere', () => {
+333 |     const window = { utilization: 0.5, resets_at: NOW_S + 3600 }
+334 |     expect(isFreshWindow(window, NOW_MS)).toBe(true)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:334:43)
+(fail) isFreshWindow — el filtro de frescura, en MILISEGUNDOS (`bPn`) > con la unidad correcta la ventana vive; con segundos, muere [0.06ms]
+337 | })
+338 | 
+339 | describe('filterFreshWindows — el filtro compuesto sobre las cuatro ventanas', () => {
+340 |   test('la ventana fresca sobrevive', () => {
+341 |     const fresh = { utilization: 0.5, resets_at: NOW_S + 3600 }
+342 |     expect(filterFreshWindows({ five_hour: fresh }, NOW_MS)).toEqual({ five_hour: fresh })
+                                                                   ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "five_hour": {
+-     "resets_at": 1800003600,
+-     "utilization": 0.5,
+-   },
+- }
++ {}
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:342:62)
+(fail) filterFreshWindows — el filtro compuesto sobre las cuatro ventanas > la ventana fresca sobrevive [0.16ms]
+367 |   test('la fracción 0-1 se publica como porcentaje 0-100', () => {
+368 |     const payload = composeRateLimitsPayload(
+369 |       { five_hour: { utilization: 0.87, resets_at: reset } },
+370 |       { nowMs: NOW_MS, source: 'firstParty' },
+371 |     )
+372 |     expect(payload).toEqual({ five_hour: { used_percentage: 87, resets_at: reset } })
+                          ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "five_hour": {
+-     "resets_at": 1800003600,
+-     "used_percentage": 87,
+-   },
+- }
++ {}
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:372:21)
+(fail) composeRateLimitsPayload — la escala y la puerta de gateway > la fracción 0-1 se publica como porcentaje 0-100 [0.11ms]
+380 |   test('`surpassedThreshold` NO se propaga al payload', () => {
+381 |     const payload = composeRateLimitsPayload(
+382 |       { five_hour: { utilization: 0.87, resets_at: reset, surpassedThreshold: 0.8 } },
+383 |       { nowMs: NOW_MS, source: 'firstParty' },
+384 |     )
+385 |     expect(payload.five_hour).toEqual({ used_percentage: 87, resets_at: reset })
+                                    ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "resets_at": 1800003600,
+-   "used_percentage": 87,
+- }
++ undefined
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:385:31)
+(fail) composeRateLimitsPayload — la escala y la puerta de gateway > `surpassedThreshold` NO se propaga al payload [0.10ms]
+385 |     expect(payload.five_hour).toEqual({ used_percentage: 87, resets_at: reset })
+386 |   })
+387 | 
+388 |   test('`overage` se publica como `spend_limit`, y SOLO bajo gateway', () => {
+389 |     const windows = { overage: { utilization: 0.25, resets_at: reset } }
+390 |     expect(composeRateLimitsPayload(windows, { nowMs: NOW_MS, source: 'gateway' })).toEqual({
+                                                                                          ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "spend_limit": {
+-     "resets_at": 1800003600,
+-     "used_percentage": 25,
+-   },
+- }
++ {}
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:390:85)
+(fail) composeRateLimitsPayload — la escala y la puerta de gateway > `overage` se publica como `spend_limit`, y SOLO bajo gateway [0.09ms]
+449 | 
+450 |   test('el recipe resuelve la CIFRA DE CUOTA de nuestro payload', () => {
+451 |     const payload = {
+452 |       rate_limits: composeRateLimitsPayload(windows, { nowMs, source: 'firstParty' }),
+453 |     }
+454 |     expect(runRecipe(statuslineRecipe(), payload)).toEqual({ out: '5h: 87%', code: 0 })
+                                                         ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "code": 0,
+-   "out": "5h: 87%",
++   "code": 1,
++   "out": "",
+  }
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:454:52)
+(fail) FIDELIDAD — el recipe del propio cliente lee nuestro payload > el recipe resuelve la CIFRA DE CUOTA de nuestro payload [10.79ms]
+459 |       rate_limits: composeRateLimitsPayload(windows, { nowMs, source: 'firstParty' }),
+460 |     }
+461 |     const reset = runRecipe(
+462 |       "cat | jq -r '.rate_limits.five_hour.resets_at // empty'", payload,
+463 |     )
+464 |     expect(Number(reset.out)).toBe(nowSeconds + 3 * 3600)
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: 1789646719
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:464:31)
+(fail) FIDELIDAD — el recipe del propio cliente lee nuestro payload > y el TIEMPO DE RESET es consultable por la misma vía [5.31ms]
+
+ 43 pass
+ 8 fail
+ 57 expect() calls
+Ran 51 tests across 1 file. [132.00ms]

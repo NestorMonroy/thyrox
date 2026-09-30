@@ -1,0 +1,2 @@
+no-fence	s/^        if MARKDOWN_FENCE.match(line):$/        if False:/
+no-code-span	s/^    tramos = \[m.span() for m in MARKDOWN_CODE_SPAN.finditer(text)\]$/    tramos = []/

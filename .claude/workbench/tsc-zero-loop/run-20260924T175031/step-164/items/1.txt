@@ -1,0 +1,8 @@
+Tipo: AppState
+Copias:
+  src/packages/agent/types/hooks.ts
+  src/packages/app-host/src/state/AppStateCompat.ts
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(68): error TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/packages/app-host/src/runtime/runtimeHandles.ts(154): error TS2322: Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<unknown> | HostSessionStore<AppState>'.
+src/packages/repl/src/hooks/useReplBridge.tsx(536): error TS2345: Argument of type '(prev: AppState) => AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.

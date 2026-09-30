@@ -1,0 +1,141 @@
+
+tests/package/dependencies.test.ts:
+165 |     const dir = join(PAQUETES, nombre)
+166 |     const m = manifiesto(dir)
+167 |     const conocidas = new Set([...declaradas(m), ...deLaRaiz])
+168 | 
+169 |     test(`${m.name}: sus terceros instalados están en el manifiesto`, () => {
+170 |       expect([...clasificar(dir, conocidas).sinDeclarar].sort()).toEqual([])
+                                                                       ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@aws-sdk/client-bedrock-runtime",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:170:66)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/provider: sus terceros instalados están en el manifiesto [20.49ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@aws-sdk/client-sts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/provider: todo import externo resuelve [17.73ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "audio-capture.node",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/voice: todo import externo resuelve [0.81ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/agent: todo import externo resuelve [33.49ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@thyrox/tool-registry",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/app-host: todo import externo resuelve [6.09ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@thyrox/agent",
++   "@thyrox/mcp-runtime",
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/cli: todo import externo resuelve [6.93ms]
+172 | 
+173 |     test(`${m.name}: todo import externo resuelve`, () => {
+174 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+175 |         .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+176 |         .sort()
+177 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@thyrox/tool-registry",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:177:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/tool-registry: todo import externo resuelve [31.54ms]
+
+ 71 pass
+ 7 fail
+ 79 expect() calls
+Ran 78 tests across 1 file. [548.00ms]

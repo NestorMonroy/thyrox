@@ -1,0 +1,9 @@
+State that the daemon executes and domains own data
+
+The daemon owns background execution and its own operational files;
+a task, finding or error its jobs produce is persisted through that
+domain's API down to @thyrox/store. Measured: the daemon opens no
+database and writes only its own state.
+
+The spool envelope write loaded node:fs with a require inside the
+function; the import now sits with the others at the top.

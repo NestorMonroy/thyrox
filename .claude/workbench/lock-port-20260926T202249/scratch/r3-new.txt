@@ -1,0 +1,6 @@
+  echo "FALLA: $failures lengua(s) en rojo"
+  veredicto_final 1 rojo
+fi
+echo
+echo "OK: las tres lenguas en verde"
+veredicto_final 0 verde

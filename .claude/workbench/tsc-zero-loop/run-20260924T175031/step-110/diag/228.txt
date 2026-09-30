@@ -1,0 +1,13 @@
+src/packages/repl/src/components/messages/nullRenderingAttachments.ts(1,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+  --- código src/packages/repl/src/components/messages/nullRenderingAttachments.ts:1-11 ---
+      1> import type { Attachment } from '@thyrox/agent/attachments.js'
+      2  import type { Message, NormalizedMessage } from '@thyrox/agent/messageShapes'
+      3  
+      4  /**
+      5   * Attachment types that AttachmentMessage renders as `null` unconditionally
+      6   * (no visible output regardless of runtime state). Messages.tsx filters these
+      7   * out BEFORE the render cap / message count so invisible entries don't consume
+      8   * the 200-message render budget (CC-724).
+      9   *
+     10   * Sync is enforced by TypeScript: AttachmentMessage's switch `default:` branch
+     11   * asserts `attachment.type satisfies NullRenderingAttachmentType`. Adding a new

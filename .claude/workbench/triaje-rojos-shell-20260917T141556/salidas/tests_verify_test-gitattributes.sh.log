@@ -1,0 +1,4 @@
+FALLO: 5c. git resuelve el atributo declarado (no 'unspecified')
+  esperado: si
+  obtenido: no
+test-gitattributes: 20 de 21 aserciones en verde

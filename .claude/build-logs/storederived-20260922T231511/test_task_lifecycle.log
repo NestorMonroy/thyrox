@@ -1,0 +1,42 @@
+test_task_lifecycle:
+
+== 1. el guard admite el EVENTO del hook, no solo el nombre del tool ==
+  ok    `TaskCreated` (el evento) esta en CREATION_EVENTS
+  ok    `TaskCreate` (el tool) sigue estando
+
+== 2. la OTRA mitad: lo que no crea sigue rechazado ==
+  ok    `TaskCompleted` NO acuña
+  ok    `TaskUpdate` NO acuña
+
+== 3. el hook lee el payload del cliente y acuña ==
+  ok    sale 0
+  ok    acuña exactamente una fila
+  ok    y su cita es de la capa declarada
+  ok    y lleva el sujeto de la tarjeta
+
+== 4. el evento de cierre NO acuña una fila mas ==
+  ok    sale 0 igualmente (no es un error)
+  ok    y el store sigue con UNA fila
+
+== 5. un payload roto no rompe el turno ==
+  ok    sale 0 ante JSON invalido
+  ok    sale 0 ante stdin vacio
+
+== 6. el cableado del usuario DECLARA el evento ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/hooks/test_task_lifecycle.py", line 181, in <module>
+    declared = user_wiring.declared_wiring(root=ROOT)["hooks"]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/user_wiring.py", line 127, in declared_wiring
+    for nombre, ruta in sorted(reach().items()))
+                               ^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 892, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+EXIT=1

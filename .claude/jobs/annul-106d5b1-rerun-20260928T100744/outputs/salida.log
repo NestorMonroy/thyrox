@@ -1,0 +1,25 @@
+== 2: cualquier código de estado sirve
+   (src/accounts/oauth/flows/codebuddyCnFlow.ts)
+(fail) codebuddy-cn > a state response without state is an error that carries the message [0.58ms]
+ 20 pass
+ 1 fail
+== 3: el sondeo de codebuddy por POST
+   (src/accounts/oauth/flows/codebuddyCnFlow.ts)
+(fail) codebuddy-cn > the poll is a GET with the state in the query; code 0 with a token is the grant [1.04ms]
+ 20 pass
+ 1 fail
+== 27: el correo con sus espacios
+   (src/accounts/oauth/flows/openferenceFlow.ts)
+(fail) openference > the id token names the account; otherwise the userinfo, and the name falls back to the email [1.40ms]
+ 20 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/kimi/
+?? src/packages/provider/src/accounts/muse/
+?? src/packages/provider/src/accounts/oauth/flows/codebuddyCnFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/kimiCodingFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/museCodeFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/openferenceFlow.ts
+ 21 pass
+ 0 fail
+__BG_EXIT__=0

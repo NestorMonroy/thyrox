@@ -1,0 +1,2 @@
+VERDE tests/task/test-implementation-order.sh
+EXIT=0

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/run_ts_isolated < .claude/jobs/r2b-tests.txt | tail -5; bash bin/check_package_typecheck --strict provider 2>&1 | tail -3", "started_at": "2026-09-29T05:02:44+00:00"}

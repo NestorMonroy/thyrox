@@ -1,0 +1,954 @@
+diff --git a/src/packages/daemon/src/__tests__/daemonLock.test.ts b/src/packages/daemon/src/__tests__/daemonLock.test.ts
+new file mode 100644
+index 00000000..26c30dc6
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/daemonLock.test.ts
+@@ -0,0 +1,346 @@
++import { afterEach, describe, expect, mock as mockFn, spyOn, test } from 'bun:test'
++import { spawn } from 'node:child_process'
++import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  acquireDaemonLock,
++  classifyListenError,
++  formatForegroundLockMessage,
++  formatLockConflictMessage,
++  formatLockRefusalMessage,
++  formatUnknownOriginLockMessage,
++  getDaemonLockPath,
++  isProcessAlive,
++  probeProcessSignal,
++  readDaemonLock,
++  releaseDaemonLock,
++  writeSocketTokensFile,
++  type DaemonLockInfo,
++  type LockConflictResult,
++} from '../daemonLock.js'
++
++const dirs: string[] = []
++
++function tmpScope(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'daemon-lock-test-'))
++  dirs.push(dir)
++  return dir
++}
++
++afterEach(() => {
++  while (dirs.length) {
++    const dir = dirs.pop()
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  }
++})
++
++/** Lanza un proceso hijo de verdad para simular un pid vivo, ajeno. */
++function spawnAlive(): { pid: number; kill: () => void } {
++  const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], {
++    stdio: 'ignore',
++  })
++  if (!child.pid) throw new Error('spawn failed to allocate a pid')
++  return { pid: child.pid, kill: () => child.kill('SIGKILL') }
++}
++
++async function waitForExit(pid: number, timeoutMs = 2000): Promise<void> {
++  const deadline = Date.now() + timeoutMs
++  while (Date.now() < deadline) {
++    if (!isProcessAlive(pid)) return
++    await new Promise(resolve => setTimeout(resolve, 20))
++  }
++  throw new Error(`pid ${pid} never exited`)
++}
++
++describe('getDaemonLockPath', () => {
++  test('daemon.lock junto al scopeDir', () => {
++    expect(getDaemonLockPath('/scope')).toBe(join('/scope', 'daemon.lock'))
++  })
++})
++
++describe('readDaemonLock', () => {
++  test('null cuando el archivo no existe', () => {
++    const scope = tmpScope()
++    expect(readDaemonLock(getDaemonLockPath(scope))).toBeNull()
++  })
++
++  test('null con JSON inválido', () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    Bun.write(lockPath, '{not json')
++    expect(readDaemonLock(lockPath)).toBeNull()
++  })
++
++  test('null cuando falta pid o startedAt', () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    Bun.write(lockPath, JSON.stringify({ pid: 1 }))
++    expect(readDaemonLock(lockPath)).toBeNull()
++  })
++
++  test('parsea un lock válido', async () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    const info: DaemonLockInfo = { pid: 123, startedAt: 456, origin: 'transient' }
++    await Bun.write(lockPath, JSON.stringify(info))
++    expect(readDaemonLock(lockPath)).toEqual(info)
++  })
++})
++
++describe('probeProcessSignal / isProcessAlive', () => {
++  test('el propio proceso está vivo', () => {
++    expect(probeProcessSignal(process.pid)).toBe('alive')
++    expect(isProcessAlive(process.pid)).toBe(true)
++  })
++
++  test('pid<=1 se trata como muerto sin sondear', () => {
++    expect(probeProcessSignal(1)).toBe('dead')
++    expect(probeProcessSignal(0)).toBe('dead')
++  })
++
++  test('un pid que ya salió está muerto', async () => {
++    const child = spawnAlive()
++    child.kill()
++    await waitForExit(child.pid)
++    expect(isProcessAlive(child.pid)).toBe(false)
++  })
++})
++
++describe('probeProcessSignal — EPERM', () => {
++  test('distingue EPERM de un pid vivo propio', () => {
++    // No hay forma de forzar un EPERM real de forma determinista sin un
++    // segundo usuario (este contenedor corre como root, que puede señalar
++    // cualquier pid) — se simula el syscall en vez de omitir la rama.
++    const kill = spyOn(process, 'kill').mockImplementation(() => {
++      throw Object.assign(new Error('Operation not permitted'), { code: 'EPERM' })
++    })
++    try {
++      expect(probeProcessSignal(process.pid)).toBe('eperm')
++    } finally {
++      kill.mockRestore()
++    }
++  })
++})
++
++describe('acquireDaemonLock', () => {
++  test('adquiere el lock en un scope limpio', async () => {
++    const scope = tmpScope()
++    const result = await acquireDaemonLock(scope, 'transient')
++    expect(result.ok).toBe(true)
++    if (!result.ok) throw new Error('unreachable')
++    expect(result.lock.pid).toBe(process.pid)
++    const lock = readDaemonLock(getDaemonLockPath(scope))
++    expect(lock?.pid).toBe(process.pid)
++    expect(lock?.origin).toBe('transient')
++  })
++
++  test('reemplaza un lock obsoleto (pid muerto)', async () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    const child = spawnAlive()
++    child.kill()
++    await waitForExit(child.pid)
++    await Bun.write(
++      lockPath,
++      JSON.stringify({ pid: child.pid, startedAt: 1, origin: 'transient' }),
++    )
++    const result = await acquireDaemonLock(scope, 'transient')
++    expect(result.ok).toBe(true)
++    expect(readDaemonLock(lockPath)?.pid).toBe(process.pid)
++  })
++
++  test('reemplaza un lock ilegible (basura)', async () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    await Bun.write(lockPath, 'not json at all')
++    const result = await acquireDaemonLock(scope, 'transient')
++    expect(result.ok).toBe(true)
++    expect(readDaemonLock(lockPath)?.pid).toBe(process.pid)
++  })
++
++  test('conflicto: lock vivo ajeno da unverified', async () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    const holder = spawnAlive()
++    try {
++      await Bun.write(
++        lockPath,
++        JSON.stringify({ pid: holder.pid, startedAt: 1, origin: 'transient' }),
++      )
++      const result = await acquireDaemonLock(scope, 'transient')
++      expect(result.ok).toBe(false)
++      if (!result.ok) {
++        expect(result.lock.pid).toBe(holder.pid)
++        expect(result.outcome).toBe('unverified')
++      }
++    } finally {
++      holder.kill()
++    }
++  })
++
++  test('conflicto: lock vivo ajeno con EPERM en la señal da outcome eperm', async () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    const holder = spawnAlive()
++    try {
++      await Bun.write(
++        lockPath,
++        JSON.stringify({ pid: holder.pid, startedAt: 1, origin: 'transient' }),
++      )
++      const kill = spyOn(process, 'kill').mockImplementation((pid: number) => {
++        if (pid === holder.pid) {
++          throw Object.assign(new Error('Operation not permitted'), { code: 'EPERM' })
++        }
++        return true
++      })
++      try {
++        const result = await acquireDaemonLock(scope, 'transient')
++        expect(result.ok).toBe(false)
++        if (!result.ok) expect(result.outcome).toBe('eperm')
++      } finally {
++        kill.mockRestore()
++      }
++    } finally {
++      holder.kill()
++    }
++  })
++
++  test('idempotente: el mismo pid ya sostiene el lock', async () => {
++    const scope = tmpScope()
++    const first = await acquireDaemonLock(scope, 'transient')
++    expect(first.ok).toBe(true)
++    const second = await acquireDaemonLock(scope, 'transient')
++    expect(second.ok).toBe(true)
++  })
++})
++
++describe('releaseDaemonLock', () => {
++  test('borra el lock sólo si el pid/startedAt coinciden', async () => {
++    const scope = tmpScope()
++    const lockPath = getDaemonLockPath(scope)
++    await acquireDaemonLock(scope, 'transient')
++    const lock = readDaemonLock(lockPath)
++    expect(lock).not.toBeNull()
++    if (!lock) throw new Error('unreachable')
++    releaseDaemonLock(scope, lock.pid + 1, lock.startedAt)
++    expect(existsSync(lockPath)).toBe(true)
++    releaseDaemonLock(scope, lock.pid, lock.startedAt)
++    expect(existsSync(lockPath)).toBe(false)
++  })
++})
++
++describe('mensajes de conflicto', () => {
++  test('formatForegroundLockMessage nombra el pid', () => {
++    expect(formatForegroundLockMessage('daemon start', 42)).toContain('pid 42')
++  })
++
++  test('formatUnknownOriginLockMessage nombra el pid', () => {
++    expect(formatUnknownOriginLockMessage('daemon start', 42)).toContain('pid 42')
++  })
++
++  test('formatLockConflictMessage varía el consejo por outcome', () => {
++    const base: LockConflictResult = {
++      ok: false,
++      lock: { pid: 42, startedAt: 1, origin: 'transient' },
++      outcome: 'eperm',
++    }
++    expect(formatLockConflictMessage('daemon start', base, '/x/daemon.lock')).toContain(
++      'owns it',
++    )
++    expect(
++      formatLockConflictMessage(
++        'daemon start',
++        { ...base, outcome: 'unverified' },
++        '/x/daemon.lock',
++      ),
++    ).toContain('/x/daemon.lock')
++    expect(
++      formatLockConflictMessage(
++        'daemon start',
++        { ...base, outcome: 'timed-out' },
++        '/x/daemon.lock',
++      ),
++    ).toContain('Wait for it')
++  })
++
++  test('formatLockRefusalMessage elige por origin', () => {
++    const lockPath = '/x/daemon.lock'
++    const shell: LockConflictResult = {
++      ok: false,
++      lock: { pid: 1, startedAt: 1, origin: 'shell' },
++      outcome: 'unverified',
++    }
++    expect(formatLockRefusalMessage('daemon start', shell, lockPath)).toContain('foreground')
++
++    const service: LockConflictResult = {
++      ok: false,
++      lock: { pid: 2, startedAt: 1, origin: 'service' },
++      outcome: 'unverified',
++    }
++    expect(formatLockRefusalMessage('daemon start', service, lockPath)).toContain(
++      'crash-loop',
++    )
++
++    const unknown: LockConflictResult = {
++      ok: false,
++      lock: { pid: 3, startedAt: 1, origin: 'future-origin' as DaemonLockInfo['origin'] },
++      outcome: 'unverified',
++    }
++    expect(formatLockRefusalMessage('daemon start', unknown, lockPath)).toContain(
++      'unrecognized origin',
++    )
++  })
++})
++
++describe('classifyListenError', () => {
++  function spies() {
++    const logErrorFn = mockFn<(error: unknown) => void>()
++    const logEventFn = mockFn<(name: string, metadata?: Record<string, unknown>) => void>()
++    return { logErrorFn, logEventFn }
++  }
++
++  test('EADDRINUSE va a logEvent, no a logError', () => {
++    const err = Object.assign(new Error('boom'), { syscall: 'listen', code: 'EADDRINUSE' })
++    const { logErrorFn, logEventFn } = spies()
++    classifyListenError(err, { logErrorFn, logEventFn })
++    expect(logEventFn).toHaveBeenCalledTimes(1)
++    expect(logEventFn.mock.calls[0]?.[0]).toBe('tengu_daemon_listen_conflict')
++    expect(logErrorFn).not.toHaveBeenCalled()
++  })
++
++  test('EACCES va a logEvent, no a logError', () => {
++    const err = Object.assign(new Error('boom'), { syscall: 'listen', code: 'EACCES' })
++    const { logErrorFn, logEventFn } = spies()
++    classifyListenError(err, { logErrorFn, logEventFn })
++    expect(logEventFn).toHaveBeenCalledTimes(1)
++    expect(logErrorFn).not.toHaveBeenCalled()
++  })
++
++  test('un error genérico va a logError, no a logEvent', () => {
++    const { logErrorFn, logEventFn } = spies()
++    classifyListenError(new Error('boom'), { logErrorFn, logEventFn })
++    expect(logErrorFn).toHaveBeenCalledTimes(1)
++    expect(logEventFn).not.toHaveBeenCalled()
++  })
++
++  test('un ENOENT en listen (no EADDRINUSE/EACCES) también va a logError', () => {
++    const err = Object.assign(new Error('boom'), { syscall: 'listen', code: 'ENOENT' })
++    const { logErrorFn, logEventFn } = spies()
++    classifyListenError(err, { logErrorFn, logEventFn })
++    expect(logErrorFn).toHaveBeenCalledTimes(1)
++    expect(logEventFn).not.toHaveBeenCalled()
++  })
++})
++
++describe('writeSocketTokensFile', () => {
++  test('escribe el archivo con modo 0600', () => {
++    if (process.platform === 'win32') return
++    const scope = tmpScope()
++    const path = writeSocketTokensFile(scope, { controlAuth: 'secret' })
++    expect(path).toBeDefined()
++    if (!path) throw new Error('unreachable')
++    expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual({ controlAuth: 'secret' })
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/socketServer.test.ts b/src/packages/daemon/src/__tests__/socketServer.test.ts
+new file mode 100644
+index 00000000..348ecd1c
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/socketServer.test.ts
+@@ -0,0 +1,140 @@
++import { afterEach, describe, expect, test } from 'bun:test'
++import { spawn } from 'node:child_process'
++import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { getDaemonLockPath, isProcessAlive, readDaemonLock } from '../daemonLock.js'
++import { type DaemonServer, startSocketServer } from '../socketServer.js'
++
++function spawnAlive(): { pid: number; kill: () => void } {
++  const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], {
++    stdio: 'ignore',
++  })
++  if (!child.pid) throw new Error('spawn failed to allocate a pid')
++  return { pid: child.pid, kill: () => child.kill('SIGKILL') }
++}
++
++async function waitForExit(pid: number, timeoutMs = 2000): Promise<void> {
++  const deadline = Date.now() + timeoutMs
++  while (Date.now() < deadline) {
++    if (!isProcessAlive(pid)) return
++    await new Promise(resolve => setTimeout(resolve, 20))
++  }
++  throw new Error(`pid ${pid} never exited`)
++}
++
++const dirs: string[] = []
++const servers: DaemonServer[] = []
++
++function tmpScope(): { scopeDir: string; socketPath: string } {
++  const scopeDir = mkdtempSync(join(tmpdir(), 'socket-server-test-'))
++  dirs.push(scopeDir)
++  return { scopeDir, socketPath: join(scopeDir, 'control.sock') }
++}
++
++afterEach(async () => {
++  while (servers.length) {
++    const server = servers.pop()
++    if (server) await server.close()
++  }
++  while (dirs.length) {
++    const dir = dirs.pop()
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  }
++})
++
++describe('startSocketServer — daemon.lock', () => {
++  test('escribe daemon.lock con el propio pid al arrancar', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    const server = await startSocketServer({}, { socketPath })
++    servers.push(server)
++    const lock = readDaemonLock(getDaemonLockPath(scopeDir))
++    expect(lock?.pid).toBe(process.pid)
++    expect(lock?.origin).toBe('transient')
++  })
++
++  test('escribe control.tokens.json (0600) junto al lock', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    const server = await startSocketServer({}, { socketPath })
++    servers.push(server)
++    const tokensPath = join(scopeDir, 'control.tokens.json')
++    expect(existsSync(tokensPath)).toBe(true)
++    const parsed = JSON.parse(readFileSync(tokensPath, 'utf8'))
++    expect(typeof parsed.controlAuth).toBe('string')
++    expect(parsed.controlAuth.length).toBeGreaterThan(0)
++  })
++
++  test('close() libera daemon.lock y borra el socket', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    const server = await startSocketServer({}, { socketPath })
++    const lockPath = getDaemonLockPath(scopeDir)
++    expect(existsSync(lockPath)).toBe(true)
++    await server.close()
++    expect(existsSync(lockPath)).toBe(false)
++    expect(existsSync(socketPath)).toBe(false)
++  })
++
++  test('un socket residual sin lock se limpia y se puede bindear', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    // Simula un socket huérfano de un daemon anterior que sí cerró bien
++    // (dejó el archivo del socket, pero nunca dejó daemon.lock detrás).
++    Bun.write(socketPath, '')
++    const server = await startSocketServer({}, { socketPath })
++    servers.push(server)
++    expect(server.clientCount).toBe(0)
++  })
++
++  test('rehúsa cuando un lock vivo ajeno ya sostiene el scope (no roba el socket)', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    const holder = spawnAlive()
++    try {
++      const lockPath = getDaemonLockPath(scopeDir)
++      await Bun.write(
++        lockPath,
++        JSON.stringify({ pid: holder.pid, startedAt: 1, origin: 'transient' }),
++      )
++      // El socket de un daemon vivo de verdad — probar que sigue ahí
++      // intacto tras el intento rehusado (no se le "roba" el bind).
++      await Bun.write(socketPath, '')
++
++      const rival = startSocketServer({}, { socketPath, origin: 'transient' })
++      await expect(rival).rejects.toThrow(/daemon lock/)
++
++      expect(existsSync(socketPath)).toBe(true)
++      expect(readDaemonLock(lockPath)?.pid).toBe(holder.pid)
++    } finally {
++      holder.kill()
++    }
++  })
++
++  test('el mensaje de rechazo nombra "foreground" cuando el holder es origin shell', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    const holder = spawnAlive()
++    try {
++      await Bun.write(
++        getDaemonLockPath(scopeDir),
++        JSON.stringify({ pid: holder.pid, startedAt: 1, origin: 'shell' }),
++      )
++      const rival = startSocketServer({}, { socketPath, origin: 'transient' })
++      await expect(rival).rejects.toThrow(/foreground/)
++    } finally {
++      holder.kill()
++    }
++  })
++
++  test('reemplaza un daemon.lock obsoleto (pid muerto) y arranca normalmente', async () => {
++    const { scopeDir, socketPath } = tmpScope()
++    const lockPath = getDaemonLockPath(scopeDir)
++    const dead = spawnAlive()
++    dead.kill()
++    await waitForExit(dead.pid)
++    await Bun.write(
++      lockPath,
++      JSON.stringify({ pid: dead.pid, startedAt: 1, origin: 'transient' }),
++    )
++    const server = await startSocketServer({}, { socketPath })
++    servers.push(server)
++    expect(readDaemonLock(lockPath)?.pid).toBe(process.pid)
++  })
++})
+diff --git a/src/packages/daemon/src/daemonLock.ts b/src/packages/daemon/src/daemonLock.ts
+new file mode 100644
+index 00000000..7244334b
+--- /dev/null
++++ b/src/packages/daemon/src/daemonLock.ts
+@@ -0,0 +1,354 @@
++/**
++ * `daemon.lock`: adquisición con reintento, reemplazo de lock obsoleto y
++ * clasificación de un conflicto de bind contra un daemon vivo.
++ *
++ * Puerto acotado de `chunk-92tvramn.js` (referencia 2.1.283): `xt`
++ * (adquisición/reemplazo, subconjunto — ver divergencia declarada abajo),
++ * `Wt` (mensaje: daemon en shell sosteniendo el lock), `Vt`/`Ibe` (mensaje
++ * clasificado por causa de conflicto), `Ft`/`a2t` (mensaje de origen
++ * desconocido) y `jr` (clasificación EADDRINUSE/EACCES vs crash genérico).
++ * También `chunk-ygx717jg.js` `Ae` (archivo de tokens del socket).
++ *
++ * Divergencia de scope: la referencia guarda `daemon.lock` en `~/.claude`
++ * global (`bR()`, un solo daemon por máquina). thyrox scopea el daemon por
++ * repo (`socketPaths.ts::getDaemonScopeDir`), así que el lock vive junto al
++ * `control.sock`, no en un directorio global.
++ *
++ * Pendiente: `i2t` distingue un lock obsoleto por `predates_boot` de uno
++ * por `pid_recycled` comparando el tiempo de arranque del proceso
++ * (`Hx`/`nc`, que leen `/proc/<pid>/stat` con caché). Ese seguimiento no
++ * existe en thyrox — aquí cualquier lock cuyo pid ya no responde a la señal
++ * 0 se trata como obsoleto sin distinguir la causa. `Vt`'s outcome
++ * `"timed-out"` tampoco es alcanzable desde `acquireDaemonLock`: sólo lo
++ * produce un intento activo de parada (`kyt`, `chunk-kfkmbq3a.js`), que no
++ * está portado — no hay wiring de `daemon stop` en esta tarea.
++ *
++ * @dynamicRequire
++ */
++
++import { mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
++import { join } from 'node:path'
++
++import { PRODUCT_NAME } from '@thyrox/config/product'
++import { logEvent } from '@thyrox/local-observability'
++import { logError } from '@thyrox/local-observability/logging'
++
++/** Contenido persistido en `daemon.lock`. */
++export interface DaemonLockInfo {
++  pid: number
++  startedAt: number
++  origin: 'transient' | 'service' | 'shell'
++}
++
++/** `chunk-kfkmbq3a.js` `Vt` — causas de conflicto con un lock vivo. */
++export type LockConflictOutcome = 'eperm' | 'unverified' | 'timed-out'
++
++export interface LockAcquireResult {
++  ok: true
++  lock: DaemonLockInfo
++}
++
++export interface LockConflictResult {
++  ok: false
++  lock: DaemonLockInfo
++  outcome: LockConflictOutcome
++}
++
++/** `chunk-kfkmbq3a.js` `wwn` — retardo entre reintentos de adquisición. */
++const RETRY_DELAY_MS = 250
++
++function delay(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms))
++}
++
++/** `chunk-kfkmbq3a.js` `bR`, re-scopeado por repo (ver divergencia arriba). */
++export function getDaemonLockPath(scopeDir: string): string {
++  return join(scopeDir, 'daemon.lock')
++}
++
++/**
++ * `chunk-kfkmbq3a.js` `Ij`, subconjunto legacy-fs (sin la rama de storage
++ * v5 vía `StorageBackend.read`, que thyrox no tiene). Contenido ausente,
++ * no-JSON o con forma inesperada se trata igual: `null`.
++ */
++export function readDaemonLock(lockPath: string): DaemonLockInfo | null {
++  let raw: string
++  try {
++    raw = readFileSync(lockPath, 'utf8')
++  } catch {
++    return null
++  }
++  let parsed: unknown
++  try {
++    parsed = JSON.parse(raw)
++  } catch {
++    return null
++  }
++  if (
++    parsed !== null &&
++    typeof parsed === 'object' &&
++    typeof (parsed as DaemonLockInfo).pid === 'number' &&
++    typeof (parsed as DaemonLockInfo).startedAt === 'number'
++  ) {
++    return parsed as DaemonLockInfo
++  }
++  return null
++}
++
++export type SignalProbeResult = 'alive' | 'eperm' | 'dead'
++
++/**
++ * `chunk-j2p7jgmc.js` `ua` — sondeo de vida por señal 0, salvo que aquí se
++ * distingue `EPERM` (el proceso existe pero es de otro usuario) de `dead`
++ * (`ESRCH`), porque `classifyLiveLockOutcome` necesita esa distinción.
++ */
++export function probeProcessSignal(pid: number): SignalProbeResult {
++  if (pid <= 1) return 'dead'
++  try {
++    process.kill(pid, 0)
++    return 'alive'
++  } catch (error) {
++    if ((error as NodeJS.ErrnoException).code === 'EPERM') return 'eperm'
++    return 'dead'
++  }
++}
++
++export function isProcessAlive(pid: number): boolean {
++  return probeProcessSignal(pid) !== 'dead'
++}
++
++function classifyLiveLockOutcome(pid: number): LockConflictOutcome {
++  return probeProcessSignal(pid) === 'eperm' ? 'eperm' : 'unverified'
++}
++
++function writeLockExclusive(lockPath: string, info: DaemonLockInfo): boolean {
++  try {
++    writeFileSync(lockPath, JSON.stringify(info), { flag: 'wx', mode: 0o600 })
++    return true
++  } catch (error) {
++    if ((error as NodeJS.ErrnoException).code === 'EEXIST') return false
++    throw error
++  }
++}
++
++async function tryAcquireOnce(
++  lockPath: string,
++  info: DaemonLockInfo,
++): Promise<LockAcquireResult | LockConflictResult | 'retry'> {
++  if (writeLockExclusive(lockPath, info)) return { ok: true, lock: info }
++  const held = readDaemonLock(lockPath)
++  if (held?.pid === info.pid) return { ok: true, lock: held }
++  if (held && isProcessAlive(held.pid)) {
++    return { ok: false, lock: held, outcome: classifyLiveLockOutcome(held.pid) }
++  }
++  // Lock ausente/ilegible (basura) o con un pid que ya no responde:
++  // obsoleto en los dos casos — chunk-92tvramn.js xt, camino de reemplazo.
++  try {
++    unlinkSync(lockPath)
++  } catch {
++    // otro intento concurrente ya lo limpió.
++  }
++  if (held) {
++    logEvent('tengu_daemon_stale_lock_replaced', { held_pid: String(held.pid) })
++  }
++  return 'retry'
++}
++
++/**
++ * Adquiere `daemon.lock` en `scopeDir`, con reintento acotado y reemplazo
++ * de lock obsoleto. `chunk-92tvramn.js` `xt`, subconjunto de adquisición
++ * (ver las dos divergencias declaradas en la cabecera del módulo).
++ */
++export async function acquireDaemonLock(
++  scopeDir: string,
++  origin: DaemonLockInfo['origin'] = 'transient',
++  opts: { retries?: number } = {},
++): Promise<LockAcquireResult | LockConflictResult> {
++  const lockPath = getDaemonLockPath(scopeDir)
++  mkdirSync(scopeDir, { recursive: true, mode: 0o700 })
++  const info: DaemonLockInfo = { pid: process.pid, startedAt: Date.now(), origin }
++  const retries = opts.retries ?? 2
++
++  for (let attempt = 0; ; attempt++) {
++    const result = await tryAcquireOnce(lockPath, info)
++    if (result !== 'retry') return result
++    if (attempt >= retries) {
++      const held = readDaemonLock(lockPath)
++      if (held && isProcessAlive(held.pid)) {
++        return { ok: false, lock: held, outcome: classifyLiveLockOutcome(held.pid) }
++      }
++      return { ok: false, lock: held ?? info, outcome: 'unverified' }
++    }
++    await delay(RETRY_DELAY_MS)
++  }
++}
++
++/**
++ * Libera `daemon.lock` sólo si sigue siendo el nuestro (mismo pid y
++ * `startedAt`) — mismo guardia que `chunk-92tvramn.js` `xt` usa antes de
++ * `p8r` en su cierre, para no borrar el lock de un daemon que ya ganó la
++ * carrera después de que este arranque se abortó.
++ */
++export function releaseDaemonLock(scopeDir: string, pid: number, startedAt: number): void {
++  const lockPath = getDaemonLockPath(scopeDir)
++  const held = readDaemonLock(lockPath)
++  if (held && held.pid === pid && held.startedAt === startedAt) {
++    try {
++      unlinkSync(lockPath)
++    } catch {
++      // ya no está — nada que liberar.
++    }
++  }
++}
++
++/** `chunk-92tvramn.js` `Wt` — un daemon en shell (`origin: 'shell'`, el
++ * equivalente de `foreground` en la referencia) ya sostiene el lock. */
++export function formatForegroundLockMessage(prefix: string, pid: number): string {
++  return (
++    `${prefix} refused: a foreground daemon (pid ${pid}) holds the daemon ` +
++    `lock — stop it first (Ctrl-C in its terminal or \`${PRODUCT_NAME} daemon stop\`)`
++  )
++}
++
++/** `chunk-kfkmbq3a.js` `Ibe` — texto de la causa, por outcome. */
++function describeLockConflict(result: LockConflictResult): string {
++  switch (result.outcome) {
++    case 'eperm':
++      return (
++        `the daemon holding the lock (pid ${result.lock.pid}) is owned by ` +
++        'another user and cannot be signalled from this session'
++      )
++    case 'unverified':
++      return (
++        `pid ${result.lock.pid} is holding the daemon lock but could not ` +
++        'be verified as the daemon, so it was not signalled'
++      )
++    case 'timed-out':
++      return (
++        `the daemon holding the lock (pid ${result.lock.pid}) was asked ` +
++        'to stop but has not exited yet'
++      )
++  }
++}
++
++/** `chunk-kfkmbq3a.js` `f8r` — consejo del caso `unverified`. */
++function unverifiedAdvice(lockPath: string): string {
++  return (
++    `Stop it with \`${PRODUCT_NAME} daemon stop --any\` (a graceful, ` +
++    `socket-based stop); if nothing is running at that pid, delete ${lockPath}`
++  )
++}
++
++/**
++ * `chunk-92tvramn.js` `Vt` — mensaje de rechazo clasificado por causa de
++ * conflicto con un lock vivo.
++ */
++export function formatLockConflictMessage(
++  prefix: string,
++  result: LockConflictResult,
++  lockPath: string,
++): string {
++  const advice =
++    result.outcome === 'eperm'
++      ? 'Stop it from the account that owns it'
++      : result.outcome === 'timed-out'
++        ? `Wait for it to exit (or kill pid ${result.lock.pid})`
++        : unverifiedAdvice(lockPath)
++  return (
++    `${prefix} refused: ${describeLockConflict(result)} — a freshly ` +
++    `started service would lose the lockfile race to it and crash-loop. ${advice}, then retry.`
++  )
++}
++
++/**
++ * `chunk-92tvramn.js` `Ft`/`a2t` — mensaje genérico cuando el origen del
++ * lock no se reconoce (pudo escribirlo un daemon de una versión más
++ * nueva).
++ */
++export function formatUnknownOriginLockMessage(prefix: string, pid: number): string {
++  return (
++    `${prefix} refused: a background daemon with an unrecognized origin ` +
++    `(pid ${pid}) holds the daemon lock — it may have been started by a ` +
++    `newer build, so it was left untouched. Stop it (\`${PRODUCT_NAME} daemon stop\`) and retry.`
++  )
++}
++
++/**
++ * Compone Wt/Vt/Ft según el `origin` del lock en conflicto — mismo
++ * discriminador que el `switch` de `wa` (`chunk-92tvramn.js`) sobre
++ * `M.kind` (`"foreground"` / `"not-stopped"` / `"unknown-origin"`), pero
++ * llamado desde `startSocketServer` en vez de los subcomandos de servicio
++ * (`install`/`start`), que thyrox no tiene.
++ */
++export function formatLockRefusalMessage(
++  prefix: string,
++  result: LockConflictResult,
++  lockPath: string,
++): string {
++  if (result.lock.origin === 'shell') {
++    return formatForegroundLockMessage(prefix, result.lock.pid)
++  }
++  if (result.lock.origin === 'transient' || result.lock.origin === 'service') {
++    return formatLockConflictMessage(prefix, result, lockPath)
++  }
++  return formatUnknownOriginLockMessage(prefix, result.lock.pid)
++}
++
++/**
++ * `chunk-92tvramn.js` `jr` — un fallo de `listen` por `EADDRINUSE`/
++ * `EACCES` es el caso esperado de dos daemons compitiendo por el mismo
++ * socket (se registra como evento, no como error persistente); cualquier
++ * otro fallo de bind es un crash real.
++ */
++export function classifyListenError(
++  error: unknown,
++  deps: {
++    logErrorFn?: (error: unknown) => void
++    logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
++  } = {},
++): void {
++  const { logErrorFn = logError, logEventFn = logEvent } = deps
++  const errno = error as NodeJS.ErrnoException
++  if (
++    errno &&
++    typeof errno === 'object' &&
++    errno.syscall === 'listen' &&
++    (errno.code === 'EADDRINUSE' || errno.code === 'EACCES')
++  ) {
++    logEventFn('tengu_daemon_listen_conflict', { code: String(errno.code) })
++    return
++  }
++  logErrorFn(error)
++}
++
++/** Tokens persistidos junto al socket de control. */
++export interface SocketTokens {
++  controlAuth: string
++}
++
++/**
++ * `chunk-ygx717jg.js` `Ae` — archivo de tokens del socket de control
++ * (0600, junto al lock). No-op en Windows, igual que la referencia.
++ *
++ * Pendiente: nada del lado del cliente (`daemonClient.ts`) ni del
++ * protocolo (`socketProto.ts`) verifica todavía este token — quedan fuera
++ * del alcance de esta tarea (no se tocan). Esta función sólo persiste el
++ * archivo; el cableado de verificación es trabajo futuro declarado.
++ */
++export function writeSocketTokensFile(
++  scopeDir: string,
++  tokens: SocketTokens,
++): string | undefined {
++  if (process.platform === 'win32') return undefined
++  const tokensPath = join(scopeDir, 'control.tokens.json')
++  try {
++    mkdirSync(scopeDir, { recursive: true, mode: 0o700 })
++    writeFileSync(tokensPath, JSON.stringify(tokens), { mode: 0o600 })
++    return tokensPath
++  } catch (error) {
++    logEvent('tengu_daemon_write_socket_tokens_failed', {
++      error: String(error instanceof Error ? error.message : error).slice(0, 120),
++    })
++    return undefined
++  }
++}
+diff --git a/src/packages/daemon/src/socketServer.ts b/src/packages/daemon/src/socketServer.ts
+index ab4f33e8..79807e96 100644
+--- a/src/packages/daemon/src/socketServer.ts
++++ b/src/packages/daemon/src/socketServer.ts
+@@ -9,6 +9,7 @@
+  * @dynamicRequire
+  */
+ 
++import { randomBytes } from 'node:crypto'
+ import { existsSync, mkdirSync } from 'node:fs'
+ import { unlink } from 'node:fs/promises'
+ import {
+@@ -19,6 +20,15 @@ import {
+ import { dirname } from 'node:path'
+ 
+ import { logEvent } from '@thyrox/local-observability'
++import {
++  type DaemonLockInfo,
++  acquireDaemonLock,
++  classifyListenError,
++  formatLockRefusalMessage,
++  getDaemonLockPath,
++  releaseDaemonLock,
++  writeSocketTokensFile,
++} from './daemonLock.js'
+ import { checkPeerUid } from './peerUid.js'
+ import {
+   type ErrorResponse,
+@@ -55,12 +65,26 @@ export interface DaemonServer {
+  */
+ export async function startSocketServer(
+   handlers: Partial<Record<ProtoOp, OpHandler>>,
+-  opts: { socketPath?: string } = {},
++  opts: { socketPath?: string; origin?: DaemonLockInfo['origin'] } = {},
+ ): Promise<DaemonServer> {
+   const socketPath = opts.socketPath ?? getControlSocketPath()
++  const scopeDir = dirname(socketPath)
+   // Ensure parent dir exists (mode 0o700 — owner only).
+-  mkdirSync(dirname(socketPath), { recursive: true, mode: 0o700 })
+-  // Pre-clean stale socket.
++  mkdirSync(scopeDir, { recursive: true, mode: 0o700 })
++
++  // chunk-92tvramn.js xt — adquiere daemon.lock ANTES de tocar el socket:
++  // un lock vivo ajeno rehúsa en vez de robarle el socket a otro daemon
++  // (el riesgo de crash-loop que Wt/Vt/Ft existen para evitar).
++  const lockResult = await acquireDaemonLock(scopeDir, opts.origin ?? 'transient')
++  if (!lockResult.ok) {
++    throw new Error(
++      formatLockRefusalMessage('daemon start', lockResult, getDaemonLockPath(scopeDir)),
++    )
++  }
++  const ownedLock = lockResult.lock
++
++  // Pre-clean stale socket. Seguro recién acá: el lock ya prueba que
++  // ningún daemon vivo lo sostiene.
+   if (existsSync(socketPath)) {
+     await unlink(socketPath).catch(() => {})
+   }
+@@ -175,10 +199,25 @@ export async function startSocketServer(
+     socket.on('data', decoder)
+   })
+ 
+-  await new Promise<void>((resolve, reject) => {
+-    server.once('error', reject)
+-    server.listen(socketPath, () => resolve())
+-  })
++  try {
++    await new Promise<void>((resolve, reject) => {
++      server.once('error', reject)
++      server.listen(socketPath, () => resolve())
++    })
++  } catch (error) {
++    // chunk-92tvramn.js jr — EADDRINUSE/EACCES es el caso esperado de dos
++    // daemons compitiendo por el mismo bind; cualquier otro fallo es un
++    // crash real. Clasifica igual, y libera el lock que acabamos de ganar
++    // antes de propagar.
++    classifyListenError(error)
++    releaseDaemonLock(scopeDir, ownedLock.pid, ownedLock.startedAt)
++    throw error
++  }
++
++  // chunk-ygx717jg.js Ae — archivo de tokens del socket de control, mejor
++  // esfuerzo (writeSocketTokensFile ya clasifica y registra su propio
++  // fallo). Pendiente: nadie lo verifica todavía (ver daemonLock.ts).
++  writeSocketTokensFile(scopeDir, { controlAuth: randomBytes(32).toString('hex') })
+ 
+   return {
+     get clientCount(): number {
+@@ -191,6 +230,7 @@ export async function startSocketServer(
+       if (process.platform !== 'win32') {
+         await unlink(socketPath).catch(() => {})
+       }
++      releaseDaemonLock(scopeDir, ownedLock.pid, ownedLock.startedAt)
+     },
+   }
+ }

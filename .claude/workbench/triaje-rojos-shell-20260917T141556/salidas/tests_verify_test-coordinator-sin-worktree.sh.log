@@ -1,0 +1,23 @@
+== HEAD: el árbol no declara aislamiento en ningún agente ==
+  FALLA exit 0 sobre .claude/agents
+        esperado: 0
+        obtenido: 1
+  FALLA --quiet imprime 0 incoherentes
+        esperado: 0
+        obtenido: 
+  FALLA 0 agentes declaran aislamiento
+        esperado: 1
+        obtenido: 0
+  ok    0 descripciones prometen worktree
+== el gate publica su denominador ==
+  FALLA el reporte declara el alcance medido
+        esperado: 1
+        obtenido: 0
+== control positivo: OMITIDO — ed727b96^ no alcanzable en este clon ==
+   (un clon shallow no tiene el padre; el caso queda SIN MEDIR, no en verde)
+== el contrato declara el criterio (#751) ==
+  ok    nombra cuándo se declara el aislamiento
+  ok    cita la condición del tool Agent
+  ok    declara el pase de consolidación
+
+Resultado: 4 ok, 5 fallas

@@ -1,0 +1,5 @@
+tests/install/test_install.sh
+tests/paths/test_reach.py
+tests/session/test-instalar-config-usuario.sh
+tests/session/test_generate_bin.py
+tests/unit/plugin/parseArgs.test.ts

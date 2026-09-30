@@ -1,0 +1,30 @@
+src/packages/repl/src/hooks/useDirectConnect.ts(105,11): error TS2322: Type '({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; } | ... 4 more ... | { ...; })[] | undefined' is not assignable to type 'PermissionUpdate[] | undefined'.
+  --- código src/packages/repl/src/hooks/useDirectConnect.ts:95-115 ---
+     95  
+     96          const syntheticMessage = createSyntheticAssistantMessage(
+     97            request,
+     98            requestId,
+     99          )
+    100  
+    101          const permissionResult: PermissionAskDecision = {
+    102            behavior: 'ask',
+    103            message:
+    104              request.description ?? `${request.tool_name} requires permission`,
+    105>           suggestions: request.permission_suggestions,
+    106            blockedPath: request.blocked_path,
+    107          }
+    108  
+    109          const toolUseConfirm: ToolUseConfirm = {
+    110            assistantMessage: syntheticMessage,
+    111            tool,
+    112            description:
+    113              request.description ?? `${request.tool_name} requires permission`,
+    114            input: request.input,
+    115            toolUseContext: {} as ToolUseConfirm['toolUseContext'],
+  Type '({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; } | ... 4 more ... | { ...; })[]' is not assignable to type 'PermissionUpdate[]'.
+    Type '{ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; } | ... 4 more ... | { ...; }' is not assignable to type 'PermissionUpdate'.
+      Type '{ type: "setMode"; mode: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; }' is not assignable to type 'PermissionUpdate'.
+        Type '{ type: "setMode"; mode: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; }' is not assignable to type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+          Types of property 'mode' are incompatible.
+            Type '"default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"' is not assignable to type '"default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"'.
+              Type '"auto"' is not assignable to type '"default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"'.

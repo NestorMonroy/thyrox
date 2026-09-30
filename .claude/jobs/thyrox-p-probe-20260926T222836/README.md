@@ -1,0 +1,16 @@
+# thyrox-p-probe
+
+## Qué se lanzó
+
+```
+bash -c cd /home/user/thyrox; printf 'Responde solo: hola\n' | timeout 120 bash bin/cli-main -p --model claude-sonnet-5 --setting-sources project --tools Read --allowedTools Read --max-turns 2 --no-session-persistence --output-format stream-json --verbose > .claude/workbench/thyrox-p-20260926T222836/probe.stream.jsonl 2> .claude/workbench/thyrox-p-20260926T222836/probe.err; echo rc=$?; wc -l < .claude/workbench/thyrox-p-20260926T222836/probe.stream.jsonl; tail -c 600 .claude/workbench/thyrox-p-20260926T222836/probe.err
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

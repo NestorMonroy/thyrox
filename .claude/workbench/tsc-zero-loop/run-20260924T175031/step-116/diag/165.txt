@@ -1,0 +1,33 @@
+src/packages/repl/src/conversationRecovery.tsx(562,33): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:552-572 ---
+    552          log = await loadFullLog(log)
+    553        }
+    554  
+    555        // Determine sessionId first so we can pass it to copy functions
+    556        if (!sessionId) {
+    557          sessionId = getSessionIdFromLog(log) as UUID
+    558        }
+    559        // Pass the original session ID to ensure the plan slug is associated with
+    560        // the session we're resuming, not the temporary session ID before resume
+    561        if (sessionId) {
+    562>         await copyPlanForResume(log, asSessionId(sessionId))
+    563        }
+    564  
+    565        // Copy file history for resume
+    566        void copyFileHistoryForResume(log)
+    567  
+    568        messages = log.messages
+    569        checkResumeConsistency(messages)
+    570      }
+    571  
+    572      // Restore skill state from invoked_skills attachments before deserialization.
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.

@@ -1,0 +1,1 @@
+function $E(e){return e==="owner"&&m1()?"unattributed":e}

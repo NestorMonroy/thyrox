@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3142, "total_final": 3119, "tsc_runs": 1, "accepted": ["agent:oauth-types"], "files_kept": ["src/packages/provider/src/oauth/types.ts"], "outcomes": {"agent:oauth-types": "accepted-net"}}

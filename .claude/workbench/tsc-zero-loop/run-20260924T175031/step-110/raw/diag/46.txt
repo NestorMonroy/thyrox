@@ -1,0 +1,2 @@
+src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts(147,12): error TS2367: This comparison appears to be unintentional because the types 'void' and 'boolean' have no overlap.
+src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts(150,12): error TS2367: This comparison appears to be unintentional because the types 'void' and 'boolean' have no overlap.

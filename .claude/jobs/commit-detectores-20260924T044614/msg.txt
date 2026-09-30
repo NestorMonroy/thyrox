@@ -1,0 +1,24 @@
+Add irreversible-operation and edit-loop detectors
+
+Two proposals from the ai-course-notes bench, both measured absent
+when opened (0 hits for rm -rf, push --force, DROP in src/hooks; 0 for
+doom loop or repeated edit in src).
+
+detect_irreversible_operation asks for confirmation instead of only
+warning: a warning arrives after the damage. It covers git reset
+--hard, git clean -f, git push --force without --force-with-lease,
+recursive rm over a root, home, .git, dot or glob, and DROP/TRUNCATE
+sent to a database client. Heredoc bodies are data and are skipped.
+The dispatcher now carries a detector's permission decision through
+permissionDecision, the strongest one winning, and still keeps the
+other detectors' notices.
+
+detect_edit_loop reads the turn from the transcript tail, cut at the
+last genuine user message (tool results also arrive as type user),
+and warns at the fifth edit of one file, counting sed -i too. 86 ms
+over a 30 MB transcript.
+
+Controls: dropping the heredoc skip, the dangerous-target filter or
+the lease exception each fails exactly its case; dropping the
+decision fails exactly the three decision cases; dropping the genuine
+cut fails exactly the three cases with tool results between edits.

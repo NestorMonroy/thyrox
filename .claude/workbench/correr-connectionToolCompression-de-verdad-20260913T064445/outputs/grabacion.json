@@ -1,0 +1,12 @@
+[
+  {
+    "id": "m1", "model": "claude-opus-5", "stop_reason": "tool_use",
+    "usage": {"input_tokens": 10, "output_tokens": 5, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 100},
+    "content": [{"type": "tool_use", "id": "tu1", "name": "Bash", "input": {"command": "git status"}}]
+  },
+  {
+    "id": "m2", "model": "claude-opus-5", "stop_reason": "end_turn",
+    "usage": {"input_tokens": 10, "output_tokens": 5, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 100},
+    "content": [{"type": "text", "text": "listo"}]
+  }
+]

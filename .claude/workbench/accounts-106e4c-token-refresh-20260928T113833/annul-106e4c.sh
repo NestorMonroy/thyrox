@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Anulaciones de #106e-4c: serializador por familia y orquestador del refresco.
+set -u
+T=${T:-/home/user/thyrox}; cd "$T/src/packages/provider"
+D="src/accounts/refresh"; SE="$D/refreshSerializer.ts"; TR="$D/tokenRefresh.ts"
+run() { timeout 120 bun test ./__tests__/accounts/refresh/tokenRefresh.test.ts 2>&1 | gawk '/^\(fail\)|^ *[0-9]+ (pass|fail)$/'; }
+source "$T/.claude/workbench/mitm-f7h-api-20260928T070339/annul-lib.sh"
+echo "== 1: openai en otro carril"; annul "$SE" "  openai: 'openai-auth0'," "  openai: 'openai',"
+echo "== 2: cline sin carril"; annul "$SE" "  cline: 'cline'," ""
+echo "== 3: pausa de 1 s"; annul "$SE" "const DEFAULT_REFRESH_SPACING_MS = 2000" "const DEFAULT_REFRESH_SPACING_MS = 1000"
+echo "== 4: vacío no es valor por defecto"; annul "$SE" "  if (raw === undefined || raw === '') return DEFAULT_REFRESH_SPACING_MS" "  if (raw === undefined) return DEFAULT_REFRESH_SPACING_MS"
+echo "== 5: negativo vale"; annul "$SE" "Number.isFinite(value) && value >= 0 ?" "Number.isFinite(value) ?"
+echo "== 6: infinito vale"; annul "$SE" "Number.isFinite(value) && value >= 0 ?" "!Number.isNaN(value) && value >= 0 ?"
+echo "== 7: sin carril"; annul "$SE" "    if (!group) return fn()" "    return fn()"
+echo "== 8: el fallo anterior bloquea"; annul "$SE" "    await previousTail.catch(() => {})" "    await previousTail"
+echo "== 9: pausa siempre"; annul "$SE" "      if (groupTail.get(group) !== myTail) {" "      {"
+echo "== 10: pausa cero se duerme"; annul "$SE" "        if (spacing > 0) await sleep(spacing)" "        await sleep(spacing)"
+echo "== 11: sin rotación recordada"; annul "$TR" "    if (rotated) {" "    if (false) {"
+echo "== 12: sin fila guardada"; annul "$TR" "    if (credentials.connectionId && deps.readConnection) {" "    if (false) {"
+echo "== 13: fila vigente se refresca"; annul "$TR" "          if (storedExpiresAt > now() + STORED_TOKEN_MIN_VALIDITY_MS) {" "          if (false) {"
+echo "== 14: margen de vigencia cero"; annul "$TR" "const STORED_TOKEN_MIN_VALIDITY_MS = 60_000" "const STORED_TOKEN_MIN_VALIDITY_MS = 0"
+echo "== 15: se refresca el token en memoria"; annul "$TR" "          current = { ...credentials, refreshToken: stored.refreshToken, accessToken: stored.accessToken ?? undefined }" ""
+echo "== 16: fallo de lectura lanza"; annul "$TR" "        log?.warn?.('TOKEN_REFRESH', \`Failed to check DB for stale token" "        throw error
+        log?.warn?.('TOKEN_REFRESH', \`Failed to check DB for stale token"
+echo "== 17: el mismo token cuenta como más nuevo"; annul "$TR" "stored?.refreshToken && stored.refreshToken !== credentials.refreshToken" "stored?.refreshToken"
+echo "== 18: recuerda sin refresh token"; annul "$TR" "if (hasAccessToken(result) && result.refreshToken && !('error' in result)) rotations.record" "if (result) rotations.record"
+echo "== 19: sin carril en el refresco"; annul "$TR" "const refreshInLane = (provider: string, credentials: AccessTokenCredentials) => serialize(provider, () => refreshWithFreshCredentials(provider, credentials))" "const refreshInLane = (provider: string, credentials: AccessTokenCredentials) => refreshWithFreshCredentials(provider, credentials)"
+echo "== 20: guarda sin access token"; annul "$TR" "    if (!hasAccessToken(result) || !persist) return result" "    if (!persist) return result"
+echo "== 21: sin CAS"; annul "$TR" "    if (await casGuardShouldSkipPersist(log)) return result" ""
+echo "== 22: fallo de guardado se traga"; annul "$TR" "      log?.error?.('TOKEN_REFRESH', \`\${failureContext}: \${errorMessage(error)}\`)
+      throw error" "      log?.error?.('TOKEN_REFRESH', \`\${failureContext}: \${errorMessage(error)}\`)"
+echo "== 23: sin guardado del contexto"; annul "$TR" "    const effectivePersist = persist ?? activePersist()" "    const effectivePersist = persist"
+echo "== 24: refresh token no texto pasa"; annul "$TR" "if (!credentials || typeof credentials.refreshToken !== 'string' || !credentials.refreshToken) {" "if (!credentials || !credentials.refreshToken) {"
+echo "== 25: sin mutex por conexión"; annul "$TR" "      if (existing) {" "      if (false) {"
+echo "== 26: mutex no se libera"; annul "$TR" "        .finally(() => connectionMutex.delete(connectionId))" ""
+echo "== 27: sin contar esperas"; annul "$TR" "        existing.waiters++" ""
+echo "== 28: sin compartir por token"; annul "$TR" "    if (inFlight) {" "    if (false) {"
+echo "== 29: caché por token no se libera"; annul "$TR" "      .finally(() => inFlightByToken.delete(cacheKey))" ""
+echo "== 30: sin aviso de guardado ausente"; annul "$TR" "        if (hasAccessToken(result) && !effectivePersist) {" "        if (false) {"
+echo "== 31: todas incluye inactivas"; annul "$TR" "      if (!connection.isActive || !connection.provider) continue" "      if (!connection.provider) continue"
+echo "== 32: todas incluye nulos"; annul "$TR" "      if (token) results[connection.provider] = token" "      results[connection.provider] = token"
+echo "== restaurado"; run

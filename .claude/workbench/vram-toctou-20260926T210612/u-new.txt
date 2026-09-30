@@ -1,0 +1,20 @@
+    print("== 13. la decisión es pura: se prueba sin nvidia-smi ni registro ==")
+    check("5000 libres, nada comprometido, pide 3000: cabe", True, gm.admissible(5000, 0, 3000))
+    check("5000 libres, 3000 comprometidos, pide 3000: no cabe", False, gm.admissible(5000, 3000, 3000))
+    check("sin lectura de VRAM libre: no se admite", False, gm.admissible(None, 0, 1))
+    usage = {10: 1000, 11: 500, 99: 7000}
+    check("pendiente: cada reserva menos lo que su árbol ya usa", 1500 + 3000,
+          gm.pending({"1": 3000, "2": 3000}, usage, trees={1: {1, 10, 11}, 2: {2}}))
+    check("una reserva ya visible entera no cuenta", 0, gm.pending({"1": 1500}, usage, trees={1: {1, 10, 11}}))
+
+    print("== 14. el registro: reservar, soltar, descartar dueños muertos ==")
+    book = gm.VramLedger(tmp / "libro.json")
+    alive = subprocess.Popen(["sleep", "5"])
+    dead = subprocess.Popen(["true"]); dead.wait()
+    book.reserve(alive.pid, 3000); book.reserve(dead.pid, 2000)
+    check("sólo cuentan los dueños vivos", {str(alive.pid): 3000}, book.live())
+    book.release(alive.pid)
+    check("soltada, no queda nada", {}, book.live())
+    alive.kill(); alive.wait()
+
+    print("== 6. disponible() distingue las dos situaciones ==")

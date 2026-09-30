@@ -1,0 +1,60 @@
+run-task-pool: 21 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260926T184809
+  job-20260926T184809/job-001 pid 17002   cd /home/user/thyrox/src/packages/agent && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_agent_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_agent_tsconfig.json.log
+  job-20260926T184809/job-002 pid 17026   cd /home/user/thyrox/src/packages/agent && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.messages.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_agent_tsconfig.messages.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_agent_tsconfig.messages.json.log
+  job-20260926T184809/job-003 pid 17051   cd /home/user/thyrox/src/packages/agent && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_agent_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_agent_tsconfig.tests.json.log
+  job-20260926T184809/job-004 pid 17722   cd /home/user/thyrox/src/packages/cli && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_cli_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_cli_tsconfig.json.log
+  job-20260926T184809/job-005 pid 17839   cd /home/user/thyrox/src/packages/cli && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_cli_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_cli_tsconfig.tests.json.log
+  job-20260926T184809/job-006 pid 18218   cd /home/user/thyrox/src/packages/context-compression && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_context-compression_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_context-compression_tsconfig.json.log
+  job-20260926T184809/job-007 pid 18272   cd /home/user/thyrox/src/packages/context-compression && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_context-compression_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_context-compression_tsconfig.tests.json.log
+  job-20260926T184809/job-008 pid 18298   cd /home/user/thyrox/src/packages/observability && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_observability_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_observability_tsconfig.json.log
+  job-20260926T184809/job-009 pid 18321   cd /home/user/thyrox/src/packages/observability && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_observability_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_observability_tsconfig.tests.json.log
+  job-20260926T184809/job-010 pid 18376   cd /home/user/thyrox/src/packages/permission && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_permission_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_permission_tsconfig.json.log
+  job-20260926T184809/job-011 pid 18399   cd /home/user/thyrox/src/packages/permission && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_permission_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_permission_tsconfig.tests.json.log
+  job-20260926T184809/job-012 pid 19266   cd /home/user/thyrox/src/packages/plan && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_plan_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_plan_tsconfig.json.log
+  job-20260926T184809/job-013 pid 19343   cd /home/user/thyrox/src/packages/plan && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_plan_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_plan_tsconfig.tests.json.log
+  job-20260926T184809/job-014 pid 19385   cd /home/user/thyrox/src/packages/provider && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_provider_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_provider_tsconfig.json.log
+  job-20260926T184809/job-015 pid 19434   cd /home/user/thyrox/src/packages/provider && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_provider_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_provider_tsconfig.tests.json.log
+  job-20260926T184809/job-016 pid 20201   cd /home/user/thyrox/src/packages/skills && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_skills_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_skills_tsconfig.json.log
+  job-20260926T184809/job-017 pid 20226   cd /home/user/thyrox/src/packages/skills && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_skills_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_skills_tsconfig.tests.json.log
+  job-20260926T184809/job-018 pid 20291   cd /home/user/thyrox/src/packages/swarm && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_swarm_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_swarm_tsconfig.json.log
+  job-20260926T184809/job-019 pid 20316   cd /home/user/thyrox/src/packages/tools && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_tools_tsconfig.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_tools_tsconfig.json.log
+  job-20260926T184809/job-020 pid 21115   cd /home/user/thyrox/src/packages/tools && /home/user/thyrox/node_modules/.bin/tsc -p tsconfig.tests.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_tools_tsconfig.tests.json.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/src_packages_tools_tsconfig.tests.json.log
+  job-20260926T184809/job-021 pid 21138   cd /home/user/thyrox && node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/root.log 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/all-tsconfigs-20260926T174919/logs4/root.log
+run-task-pool: lanzados 21 de 21; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260926T184809_job-012 -> OK (2 de 11)
+asentado: job-20260926T184809_job-013 -> OK (3 de 11)
+asentado: job-20260926T184809_job-014 -> OK (4 de 11)
+asentado: job-20260926T184809_job-015 -> OK (5 de 11)
+asentado: job-20260926T184809_job-016 -> OK (6 de 11)
+asentado: job-20260926T184809_job-017 -> OK (7 de 11)
+asentado: job-20260926T184809_job-018 -> OK (8 de 11)
+asentado: job-20260926T184809_job-019 -> OK (9 de 11)
+asentado: job-20260926T184809_job-020 -> OK (10 de 11)
+esperando: 10 de 11 asentados, 30s; vivos: job-20260926T184809_job-021
+sonda job-20260926T184809_job-021: 21138 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T184809_job-021: 21142 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T184809_job-021: 21143 node stdin=devnull(/dev/null) escritores=- estado=R cpu=41.85s
+asentado: job-20260926T184809_job-021 -> OK (11 de 11)
+== 11 trabajos asentados ==
+OLVIDADO job-20260926T184809
+       | (vacío — no emitió nada)
+OK     job-20260926T184809_job-012
+       | EXIT=0
+OK     job-20260926T184809_job-013
+       | EXIT=0
+OK     job-20260926T184809_job-014
+       | EXIT=0
+OK     job-20260926T184809_job-015
+       | EXIT=0
+OK     job-20260926T184809_job-016
+       | EXIT=0
+OK     job-20260926T184809_job-017
+       | EXIT=0
+OK     job-20260926T184809_job-018
+       | EXIT=0
+OK     job-20260926T184809_job-019
+       | EXIT=0
+OK     job-20260926T184809_job-020
+       | EXIT=0
+OK     job-20260926T184809_job-021
+       | EXIT=0

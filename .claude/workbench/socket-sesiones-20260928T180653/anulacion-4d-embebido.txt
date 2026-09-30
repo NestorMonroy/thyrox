@@ -1,0 +1,35 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+225 |     write('3.json', record(3, { version: '2.0.0', entrypoint: 'cli' }))
+226 |     write('6.json', record(6, { kind: 'bg' }))
+227 |     write('7.json', record(7, { entrypoint: 'embedded' }))
+228 |     const d = deps({}, [3, 6, 7])
+229 |     await sweepRegistry(undefined, d)
+230 |     expect(d.recorded.events).toEqual([
+                                    ^
+error: expect(received).toEqual(expected)
+
+@@ -10,3 +10,11 @@
+    ],
++   [
++     "tengu_unclean_exit",
++     {
++       "on_current_version": false,
++       "prior_session_id": "s7",
++       "prior_version": "none",
++       "session_age_sec": 60,
++     },
++   ],
+  ]
+
+- Expected  - 0
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:230:31)
+(fail) sweepRegistry (xut) > reporta una salida sucia interactiva una vez, sin entrypoint embebido [4.16ms]
+
+ 27 pass
+ 1 fail
+ 79 expect() calls
+Ran 28 tests across 1 file. [230.00ms]

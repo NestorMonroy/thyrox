@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+85 | })
+86 | 
+87 | describe('las demás variables del anfitrión', () => {
+88 |   test('THYROX_CODE_DESKTOP_APP_VERSION sólo para el escritorio propio o el agente local', () => {
+89 |     expect(desktopAppVersion(context({ THYROX_CODE_ENTRYPOINT: 'claude-desktop', THYROX_CODE_DESKTOP_APP_VERSION: ' 1.2 ' }))).toBe('1.2')
+90 |     expect(desktopAppVersion(context({ THYROX_CODE_ENTRYPOINT: 'claude-desktop-3p', THYROX_CODE_DESKTOP_APP_VERSION: '1.2' }))).toBeUndefined()
+                                                                                                                                     ^
+error: expect(received).toBeUndefined()
+
+Received: "1.2"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:90:129)
+(fail) las demás variables del anfitrión > THYROX_CODE_DESKTOP_APP_VERSION sólo para el escritorio propio o el agente local [0.32ms]
+
+ 15 pass
+ 1 fail
+ 90 expect() calls
+Ran 16 tests across 1 file. [56.00ms]

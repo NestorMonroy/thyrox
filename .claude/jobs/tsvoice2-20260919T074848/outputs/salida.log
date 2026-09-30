@@ -1,0 +1,7 @@
+src/packages/voice/src/hooks/useVoiceEnabled.ts(34,39): error TS18046: 's' is of type 'unknown'.
+src/packages/voice/src/hooks/useVoiceEnabled.ts(35,40): error TS18046: 's' is of type 'unknown'.
+src/packages/voice/src/voice.ts(64,33): error TS2307: Cannot find module 'audio-capture-napi' or its corresponding type declarations.
+src/packages/voice/src/voiceStreamSTT.ts(22,23): error TS2307: Cannot find module 'ws' or its corresponding type declarations.
+src/packages/voice/src/voiceStreamSTT.ts(495,19): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/packages/voice/src/voiceStreamSTT.ts(495,25): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+__BG_EXIT__=0

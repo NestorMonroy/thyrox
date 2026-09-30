@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+144 |     expect(state.registeredName).toBeUndefined()
+145 |   })
+146 | 
+147 |   test('si el registro no se actualiza avisa, salvo que el registro no sea de esta sesión', async () => {
+148 |     expect(await setSessionName('uno', undefined, undefined, undefined, deps())).toBe(false)
+149 |     expect(logs.at(-1)).toEqual({ message: '[session-name] "uno" applied locally but the session registry record was not updated — other sessions may keep showing the old name (see "updatePidFile failed" above)', level: 'warn' })
+                              ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  {
+-   "level": "warn",
++   "level": undefined,
+    "message": "[session-name] "uno" applied locally but the session registry record was not updated — other sessions may keep showing the old name (see "updatePidFile failed" above)",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:149:25)
+(fail) setSessionName (eF) > si el registro no se actualiza avisa, salvo que el registro no sea de esta sesión [0.94ms]
+
+ 21 pass
+ 1 fail
+ 71 expect() calls
+Ran 22 tests across 1 file. [127.00ms]

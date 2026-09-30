@@ -1,0 +1,7 @@
+src/packages/repl/src/commands/usage/index.ts(8,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/usage/usage")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/usage/usage")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+118 |   })
+119 | 
+120 |   test('un teammate no es sesión anidada', () => {
+121 |     setAmbientMarkerProbe(() => false)
+122 |     const child = host({ env: { THYROX_CODE_CHILD_SESSION: '1' } })
+123 |     expect(runWithTeammateContext(createTeammateContext(teammate), () => isNestedInteractiveSession(child))).toBe(false)
+                                                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:123:110)
+(fail) isNestedInteractiveSession (kFe) > un teammate no es sesión anidada [0.37ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [139.00ms]

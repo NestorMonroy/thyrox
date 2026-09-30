@@ -1,0 +1,1 @@
+estado: ledger vacío — 0 jobs registrados en /workspace/kaupamex/thyrox/.claude/workbench/audit-session-tools-20260913T213511/outputs/ledger

@@ -1,0 +1,10 @@
+DESAPARECE sin src/packages/provider/src/errors.ts
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/cual-modulo.sh: line 8: 13236 Illegal instruction     timeout 300 bun --smol test "${base[@]}" "$OBJ" > "$BENCH/outputs/sin-$(basename "$mod").txt" 2>&1
+SIGUE cayendo sin src/packages/config/settings/settings.ts
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/cual-modulo.sh: line 8: 14695 Illegal instruction     timeout 300 bun --smol test "${base[@]}" "$OBJ" > "$BENCH/outputs/sin-$(basename "$mod").txt" 2>&1
+SIGUE cayendo sin src/packages/agent/internalUtils.ts
+ M src/packages/agent/internalUtils.ts
+ M src/packages/config/settings/settings.ts
+ M src/packages/provider/src/errors.ts
+EXIT=0
+__BG_EXIT__=0

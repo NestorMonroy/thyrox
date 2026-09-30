@@ -1,0 +1,1 @@
+notraits	s/^    providerTraits: provider => config.providerTraits?.\[provider\],$//

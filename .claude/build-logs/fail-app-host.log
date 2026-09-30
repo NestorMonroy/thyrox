@@ -1,0 +1,53 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/declaredDependencies.test.ts:
+=== @thyrox/<name> derivados de app-host/src ===
+ - agent
+ - bridge
+ - cli
+ - command-runtime
+ - config
+ - ide
+ - local-observability
+ - mcp-runtime
+ - memory
+ - output
+ - permission
+ - provider
+ - repl
+ - server
+ - shell
+ - stdin-napi
+ - storage
+ - swarm
+ - teleport
+ - tool-registry
+ - voice
+size: 21
+
+src/bootstrap/__tests__/meterState.test.ts:
+124 |       return makeCounter();
+125 |     };
+126 | 
+127 |     setMeter(fakeMeter(), createCounter);
+128 | 
+129 |     expect(calls).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -28,3 +28,3 @@
+      "options": {
+-       "description": "Cost of the Claude Code session",
++       "description": "Cost of the thyrox session",
+        "unit": "USD",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts:129:19)
+(fail) meterState — counter snapshot (setMeter factory calls) > setMeter invokes createCounter exactly 8 times with locked names + descriptions + units [0.50ms]
+
+ 250 pass
+ 1 fail
+ 421 expect() calls
+Ran 251 tests across 28 files. [2.00s]

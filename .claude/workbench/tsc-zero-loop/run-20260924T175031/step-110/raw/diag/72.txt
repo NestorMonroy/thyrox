@@ -1,0 +1,5 @@
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(42,12): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(55,16): error TS2339: Property 'progressMessage' does not exist on type 'Command'.
+  Property 'progressMessage' does not exist on type 'CommandBase & LocalCommand'.
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(79,16): error TS2339: Property 'contentLength' does not exist on type 'Command'.
+  Property 'contentLength' does not exist on type 'CommandBase & LocalCommand'.

@@ -1,0 +1,10 @@
+src/coordination/claims.ts(90,18): error TS2532: Object is possibly 'undefined'.
+src/coordination/claims.ts(163,11): error TS2532: Object is possibly 'undefined'.
+src/coordination/claims.ts(163,31): error TS2532: Object is possibly 'undefined'.
+src/coordination/claims.ts(164,24): error TS2532: Object is possibly 'undefined'.
+src/coordination/claims.ts(164,40): error TS2532: Object is possibly 'undefined'.
+src/coordination/claims.ts(164,69): error TS2322: Type 'ClaimRecord | undefined' is not assignable to type 'ClaimRecord'.
+  Type 'undefined' is not assignable to type 'ClaimRecord'.
+src/coordination/claims.ts(164,80): error TS2322: Type 'ClaimRecord | undefined' is not assignable to type 'ClaimRecord'.
+  Type 'undefined' is not assignable to type 'ClaimRecord'.
+src/coordination/claims.ts(249,19): error TS2532: Object is possibly 'undefined'.

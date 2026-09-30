@@ -1,0 +1,10 @@
+ok   test_declares_it_could_not_measure_without_the_forbidden_list
+ok   test_stays_silent_on_extensions_other_gates_already_cover
+ok   test_stays_silent_on_forbidden_form_inside_a_string_literal
+ok   test_stays_silent_on_forbidden_form_marked_as_a_citation
+ok   test_stays_silent_on_other_tools_and_empty_payload
+ok   test_warns_on_forbidden_form_in_a_comment
+ok   test_warns_on_real_shell_file_of_this_repo
+ok   test_warns_on_spanish_identifier_in_typescript
+
+8 caso(s); 0 fallo(s)

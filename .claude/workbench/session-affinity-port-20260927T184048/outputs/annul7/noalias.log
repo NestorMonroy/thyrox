@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: lookupAffinity sobre LCP > los alias de proveedor comparten espacio LCP [0.66ms]
+ 99 pass
+ 1 fail

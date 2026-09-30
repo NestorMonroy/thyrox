@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/parallel_map --width 2 bash .claude/workbench/board-sync-english-cli-20260929T095950/diagnose-17-3.sh {} /tmp/claude-0/-home-user/efec8688-6a45-5d65-b899-cd988aa8816f/scratchpad/diag310 ::: head-only with-patch", "started_at": "2026-09-29T10:15:29+00:00"}

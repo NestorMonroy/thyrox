@@ -1,0 +1,29 @@
+{
+  "agent": {
+    "./claudeInChrome/toolRendering.js": "./claudeInChrome/toolRendering.tsx",
+    "./localAgentTask.js": "./localAgentTask.tsx",
+    "./services/mcpServerApproval.js": "./services/mcpServerApproval.tsx",
+    "./statusAlias.js": "./statusAlias.tsx",
+    "./tasks/LocalMainSessionTask.js": "./tasks/LocalMainSessionTask.tsx",
+    "./tasks/LocalShellTask.js": "./tasks/LocalShellTask.tsx"
+  },
+  "app-host": {
+    "./context/QueuedMessageContext.js": "./src/context/QueuedMessageContext.tsx"
+  },
+  "config": {
+    "./plugin/core/performStartupChecks.js": "./plugin/core/performStartupChecks.tsx"
+  },
+  "permission": {
+    "./components/ComputerUseApproval/ComputerUseApproval.js": "./src/components/ComputerUseApproval/ComputerUseApproval.tsx",
+    "./components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js": "./src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
+    "./components/FilePermissionDialog/permissionOptions.js": "./src/components/FilePermissionDialog/permissionOptions.tsx",
+    "./components/PermissionDialog.js": "./src/components/PermissionDialog.tsx",
+    "./components/PermissionRequest.js": "./src/components/PermissionRequest.tsx",
+    "./components/SandboxPermissionRequest.js": "./src/components/SandboxPermissionRequest.tsx",
+    "./components/WorkerPendingPermission.js": "./src/components/WorkerPendingPermission.tsx",
+    "./components/rules/AddWorkspaceDirectory.js": "./src/components/rules/AddWorkspaceDirectory.tsx"
+  },
+  "provider": {
+    "./commands/logout/logout.js": "./src/commands/logout/logout.tsx"
+  }
+}

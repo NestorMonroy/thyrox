@@ -1,0 +1,17 @@
+tests/session/test-headless-pool.sh :: aserciones: 128 de 128 · fallos: 0
+tests/session/test-headless-pool-worktree.sh :: test-headless-pool-worktree: 36 aserciones — 36 ok, 0 falla(s)
+tests/session/test-headless-pool-frozen-launcher.sh :: result: 6 of 6 assertions green
+tests/session/test-headless-pool-item-drain.sh :: result: 16 of 16 assertions green
+tests/session/test-headless-pool-lifecycle.sh :: result: 21 of 21 assertions green
+tests/session/test-headless-pool-thyrox-p.sh :: 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+tests/session/test-item-worktree-stash.sh :: item_worktree stash guard: 19/19
+tests/session/test_pool_lifecycle.py :: resultado: 41 de 41 aserciones en verde
+tests/session/test_snapshot_recovery.py :: resultado: 35 de 35 aserciones en verde
+tests/session/test_pool_history.py :: test_pool_history: 93 ok, 0 falla(s)
+tests/session/test_writer_inspector.py :: resultado: 16 de 16 aserciones en verde
+tests/session/test_process_ownership.py :: resultado: 12 de 12 aserciones en verde
+tests/verify/test_step_report.py :: test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+tests/verify/test_tsc_cycle.py :: test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+tests/verify/test_pool_pipeline.py :: test_pool_pipeline: 66 aserciones — 66 ok, 0 falla(s)
+tests/verify/test_check_staged_live_writers.py :: resultado: 8 de 8 aserciones en verde
+__BG_EXIT__=0

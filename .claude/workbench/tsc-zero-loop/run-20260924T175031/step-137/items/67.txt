@@ -1,0 +1,47 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(474,35): error TS2339: Property 'paused' does not exist on type '{ type: "goal_status"; met: boolean; condition: string; sentinel?: boolean | undefined; reason?: string | undefined; iterations?: number | undefined; durationMs?: number | undefined; tokens?: number | undefined; failed?: boolean | undefined; }'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:464-484 ---
+    464        //   2. met:    green ✔ "Goal achieved (stats)"
+    465        //   3. pending: dim ○ "Goal not yet met… continuing"
+    466        // Sentinels (set/clear lifecycle events) are invisible.
+    467        // Stats render for met OR failed.
+    468        // Click-to-expand: when this row is hovered/selected (isItemClickable
+    469        // wired in Messages.tsx) the parent flips `verbose=true` and Goal:/
+    470        // Reason: details show. Failure path renders the failure reason
+    471        // inline without a label so users instantly see why.
+    472        if (attachment.sentinel) return null
+    473        const isFailed = attachment.failed === true
+    474>       const isPaused = attachment.paused === true
+    475        const stats: string[] = []
+    476        if (attachment.met || isFailed || isPaused) {
+    477          if (attachment.durationMs !== undefined) {
+    478            stats.push(formatDurationCompact(attachment.durationMs))
+    479          }
+    480          if (attachment.iterations !== undefined) {
+    481            stats.push(
+    482              `${attachment.iterations} ${plural(attachment.iterations, 'turn')}`,
+    483            )
+    484          }
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(555,23): error TS1360: Type '"hook_additional_context" | "task_reminder" | "structured_output" | "output_style" | "hook_cancelled" | "auto_mode" | "max_turns_reached" | "edited_text_file" | "mcp_instructions_delta" | ... 23 more ... | "team_context"' does not satisfy the expected type '"hook_additional_context" | "hook_success" | "task_reminder" | "structured_output" | "output_style" | "goal_status" | "hook_cancelled" | "auto_mode" | "max_turns_reached" | ... 25 more ... | "team_context"'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:545-565 ---
+    545      default:
+    546        // Exhaustiveness: every type reaching here must be in NULL_RENDERING_TYPES.
+    547        // If TS errors, a new Attachment type was added without a case above AND
+    548        // without an entry in NULL_RENDERING_TYPES — decide: render something (add
+    549        // a case) or render nothing (add to the array). Messages.tsx pre-filters
+    550        // these so this branch is defense-in-depth for other render paths.
+    551        //
+    552        // skill_discovery and teammate_mailbox are handled BEFORE the switch in
+    553        // runtime-gated blocks (feature() / isAgentSwarmsEnabled()) that TS can't
+    554        // narrow through — excluded here via type union (compile-time only, no emit).
+    555>       attachment.type satisfies
+    556          | NullRenderingAttachmentType
+    557          | 'skill_discovery'
+    558          | 'teammate_mailbox'
+    559          | 'goal_status'
+    560        return null
+    561    }
+    562  }
+    563  
+    564  type TaskStatusAttachment = Extract<Attachment, { type: 'task_status' }>
+    565  
+  Type '"bagel_console"' is not assignable to type '"hook_additional_context" | "hook_success" | "task_reminder" | "structured_output" | "output_style" | "goal_status" | "hook_cancelled" | "auto_mode" | "max_turns_reached" | ... 25 more ... | "team_context"'.

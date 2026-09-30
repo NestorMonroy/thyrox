@@ -1,0 +1,33 @@
+=========== tests/agents/test-agent-store-reassignment-guard.sh
+  FALLO 5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)
+  FALLO 5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto
+=========== tests/agents/test-agent-store-render-tablero.sh
+  FALLO render-tablero sale 0
+  FALLO el archivo existe
+grep: /tmp/tmp.2pZgWEjcnQ/tablero.rst: No such file or directory
+=========== tests/agents/test-agent-store-usage-columns.sh
+  ok    api_error_status sale del apiErrorStatus declarado
+  ok    el <synthetic> del error no entra en model
+  ok    el 429 real llega a api_error_status
+=========== tests/agents/test-carrete-store.sh
+error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/drain_spool.py", line 77, in error_log
+=========== tests/lib/test-script-deprecated.sh
+=========== tests/repo/test-fixture-leak.sh
+ok=14 fallo=0
+=========== tests/session/test-instalar-config-usuario.sh
+  FAIL rc=0 · contenido intacto
+9 ok, 1 fallos (alcance medido: 10 aserciones sobre /home/user/thyrox/src/session/instalar-config-usuario.sh)
+=========== tests/verify/test-agent-artifacts.sh
+aserciones: 1 de 6 · fallos: 5
+=========== tests/verify/test-coordinator-sin-worktree.sh
+=========== tests/verify/test-destino-del-reporte.sh
+  FAIL fuera de .claude/eventos/: /home/user/thyrox/eventos/validar-referencias-20260917T162553/reference-validation-report.txt
+5 ok, 1 fallos (alcance medido: 6 aserciones sobre /home/user/thyrox/src/verify/detect_broken_references.py)
+=========== tests/verify/test-eventos-hook.sh
+=========== tests/verify/test-generator-determinism.sh
+=========== tests/verify/test-script-naming.sh
+tests/verify/test-script-naming.sh: line 56: /tmp/tmp.gWpBno8lUO/arbol/src/agents/classify_agents.py: No such file or directory
+=========== tests/verify/test-vocabulario-prosa.sh
+tests/verify/test-vocabulario-prosa.sh: line 149: cd: /home/user/thyrox/source: No such file or directory

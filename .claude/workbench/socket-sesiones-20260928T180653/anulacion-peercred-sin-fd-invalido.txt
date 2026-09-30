@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerCredentials.test.ts:
+36 |     const warn = (message: string) => warnings.push(message)
+37 |     expect(peerPid(socket(3), { platform: 'linux', getPeerPid: () => 42, warn })).toBe(42)
+38 |     expect(peerPid(socket(3), { platform: 'linux', getPeerPid: () => 0, warn })).toBeUndefined()
+39 |     expect(peerPid(socket(3), { platform: 'linux', getPeerPid: () => null, warn })).toBeUndefined()
+40 |     let asked = false
+41 |     expect(peerPid(socket(-1), { platform: 'linux', getPeerPid: () => ((asked = true), 42), warn })).toBeUndefined()
+                                                                                                          ^
+error: expect(received).toBeUndefined()
+
+Received: 42
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerCredentials.test.ts:41:102)
+(fail) peerPid (lsn) > un pid positivo es el del par; cero, nulo o un fd inválido no, y se avisa [0.28ms]
+
+ 9 pass
+ 1 fail
+ 23 expect() calls
+Ran 10 tests across 1 file. [153.00ms]

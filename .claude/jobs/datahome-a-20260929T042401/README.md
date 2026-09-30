@@ -1,0 +1,16 @@
+# datahome-a
+
+## Qué se lanzó
+
+```
+bash .claude/workbench/data-home-resolver-20260929T042341/launch.sh
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

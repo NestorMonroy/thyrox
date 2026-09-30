@@ -1,0 +1,3 @@
+Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
+medida, este contenedor no tiene GPU. Las suites usan un `nvidia-smi` falso:
+prueban el mecanismo, no la exactitud de `nvidia-smi` sobre una GPU real.

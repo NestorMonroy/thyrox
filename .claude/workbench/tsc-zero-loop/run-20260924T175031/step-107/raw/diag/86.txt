@@ -1,0 +1,6 @@
+patron: spread-de-any-en-vez-de-array-ya-tipado
+senal_del_verificador: TS2556: A spread argument must either have a tuple type or be passed to a rest parameter
+fix_generico: Un `...args` de una función rest ya tiene tipo `unknown[]` (o el tipo del contrato); envolverlo con `as any` antes de volverlo a esparcir rompe la comprobación de spread (TS2556) Y viola la prohibición de `as any`. La causa se resuelve quitando el cast: `fn(...args)` sin envoltorio, porque el array ya es del tipo que el parámetro rest de destino espera.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/cli/src/transports.ts(67,41): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.

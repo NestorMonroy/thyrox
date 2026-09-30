@@ -1,0 +1,6 @@
+R => { subtype: "interrupt"; } | { subtype: "can_use_tool"; tool_name: string; input: Record<string, unknown>; tool_use_id: string; permission_suggestions?: ({ type: "addRules"; rules: { toolName: string; 
+I => ZodUnion<readonly [ZodObject<{ subtype: ZodLiteral<"interrupt">; }, $strip>, ZodObject<{ subtype: ZodLiteral<"can_use_tool">; tool_name: ZodString; ... 8 more ...; description: ZodOptional<...>; }, $s
+zz => typeof import("/home/user/thyrox/node_modules/.bun/zod@4.6.2/node_modules/zod/v4/classic/external")
+[]
+zod/v4 -> /home/user/thyrox/node_modules/.bun/zod@4.6.2/node_modules/zod/v4/index.d.cts
+__BG_EXIT__=0

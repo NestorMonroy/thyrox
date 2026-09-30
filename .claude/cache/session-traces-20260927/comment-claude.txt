@@ -1,0 +1,413 @@
+src/packages/memory/src/memdir.ts:117: * Shipped because Claude was burning turns on `ls`/`mkdir -p` before writing.
+src/packages/local-observability/src/aggregates/stats.ts:3: * (1061 líneas fuente). Agrega estadísticas de uso de Claude Code a
+src/packages/local-observability/src/aggregates/stats.ts:621: * Agrega stats de todas las sesiones de Claude Code en todos los
+src/packages/shell/src/legacy/bashProvider.ts:212:      // We initialize Claude's tmux socket ONLY AFTER the Tmux tool has been used
+src/packages/shell/src/legacy/bashProvider.ts:217:      // commands will use Claude's isolated socket via the TMUX env var override.
+src/packages/shell/src/legacy/bashProvider.ts:229:      // CRITICAL: Override TMUX to isolate ALL tmux commands to Claude's socket.
+src/packages/shell/src/legacy/bashProvider.ts:230:      // This is NOT the user's TMUX value - it points to Claude's isolated socket.
+src/packages/shell/src/bash/ShellSnapshot.ts:259: * Generates Claude Code specific snapshot content
+src/packages/shell/src/bash/ShellSnapshot.ts:315:  // consistent fast behavior in Claude's shell.
+src/packages/shell/src/bash/ShellSnapshot.ts:349:  // Generate the user content and Claude Code content
+src/packages/shell/src/bash/ShellSnapshot.ts:387: * This function is a critical part of Claude CLI's shell integration strategy. It:
+src/packages/shell/src/bash/ShellSnapshot.ts:399: * This approach allows Claude CLI to execute commands as if they were run in the user's
+src/packages/config/embeddedTools.ts:7: * - `find` and `grep` in Claude's Bash shell are shadowed by shell functions
+src/packages/config/embeddedTools.ts:11: * - Prompt guidance steering Claude away from find/grep is omitted
+src/packages/config/outputStyles.ts:87:  // user sets `outputStyle: "Proactive"` Claude flips from default lazy mode
+src/packages/config/sync/index.ts:4: * Syncs user settings and memory files across Claude Code environments.
+src/packages/config/remote/index.ts:12: * - Usuarios OAuth (Claude.ai): sólo suscriptores Enterprise/C4E y Team.
+src/packages/config/mcpConfigSchema.ts:134:// Config type for Claude.ai proxy servers
+src/packages/shell/src/providers/bashProvider.ts:210:      // We initialize Claude's tmux socket ONLY AFTER the Tmux tool has been used
+src/packages/shell/src/providers/bashProvider.ts:215:      // commands will use Claude's isolated socket via the TMUX env var override.
+src/packages/shell/src/providers/bashProvider.ts:227:      // CRITICAL: Override TMUX to isolate ALL tmux commands to Claude's socket.
+src/packages/shell/src/providers/bashProvider.ts:228:      // This is NOT the user's TMUX value - it points to Claude's isolated socket.
+src/packages/config/settings/types.ts:205:    // ni `Co-Authored-By: Claude …` ni `Claude-Session:` en ningún mensaje.
+src/packages/shell/src/terminal/terminalPanel.ts:5: * socket (e.g., "claude-panel-a1b2c3d4") holds the shell session. Each Claude
+src/packages/shell/src/terminal/terminalPanel.ts:10: * Claude Code while the shell keeps running. Next toggle re-attaches to the
+src/packages/shell/src/terminal/terminalPanel.ts:30: * Uses a unique socket per Claude Code instance (based on session ID)
+src/packages/shell/src/terminal/terminalPanel.ts:113:    // Bind Meta+J (toggles back to Claude Code from inside the terminal)
+src/packages/config/settings/validateEditTool.ts:28:  // Only validate Claude settings files
+src/packages/shell/src/terminal/tmuxSocket.ts:4: * This module manages an isolated tmux socket for Claude's operations.
+src/packages/shell/src/terminal/tmuxSocket.ts:7: * Without isolation, Claude could accidentally affect the user's tmux sessions.
+src/packages/shell/src/terminal/tmuxSocket.ts:9: * user's current session if they started Claude from within tmux.
+src/packages/shell/src/terminal/tmuxSocket.ts:12: * 1. Claude creates its own tmux socket: `claude-<PID>` (e.g., `claude-12345`)
+src/packages/shell/src/terminal/tmuxSocket.ts:17: * This means ANY tmux command run through Claude - whether via the Tmux tool
+src/packages/shell/src/terminal/tmuxSocket.ts:18: * directly or via Bash - will operate on Claude's isolated socket, NOT the
+src/packages/shell/src/terminal/tmuxSocket.ts:88: * Gets the socket name for Claude's isolated tmux session.
+src/packages/shell/src/terminal/tmuxSocket.ts:115: * Gets the TMUX environment variable value for Claude's isolated socket.
+src/packages/shell/src/terminal/tmuxSocket.ts:119: * the Bash tool will operate on Claude's socket, NOT the user's session.
+src/packages/shell/src/terminal/tmuxSocket.ts:223: * Kills the tmux server for Claude's isolated socket.
+src/packages/shell/src/terminal/tmuxSocket.ts:293:  // Any Claude Code instance spawned on this socket will inherit this env var,
+src/packages/config/settings/mdm/constants.ts:14:/** Dominio de preferencia de macOS para perfiles MDM de Claude Code. */
+src/packages/config/settings/mdm/constants.ts:18: * Rutas de registro de Windows para políticas MDM de Claude Code.
+src/packages/config/settings/mdm/settings.ts:11: * Lectura de settings managed MDM (Mobile Device Management) para Claude
+src/packages/shell/src/sandbox/sandbox-adapter.ts:2: * Adapter layer that wraps @anthropic-ai/sandbox-runtime with Claude CLI-specific integrations.
+src/packages/shell/src/sandbox/sandbox-adapter.ts:3: * This file provides the bridge between the external sandbox-runtime package and Claude CLI's
+src/packages/shell/src/sandbox/sandbox-adapter.ts:84: * Resolve Claude Code-specific path patterns for sandbox-runtime.
+src/packages/shell/src/sandbox/sandbox-adapter.ts:86: * Claude Code uses special path prefixes in permission rules:
+src/packages/shell/src/sandbox/sandbox-adapter.ts:167: * Convert Claude Code settings format to SandboxRuntimeConfig format
+src/packages/shell/src/sandbox/sandbox-adapter.ts:223:  // Always include current directory and Claude temp directory as writable
+src/packages/shell/src/sandbox/sandbox-adapter.ts:231:  // This blocks settings in the original working directory (where Claude Code started)
+src/packages/shell/src/sandbox/sandbox-adapter.ts:250:  // (auto-discovered, auto-loaded, full Claude capabilities) so they need the
+src/packages/shell/src/sandbox/sandbox-adapter.ts:259:  // core.fsmonitor) escapes the sandbox when Claude's unsandboxed git runs.
+src/packages/shell/src/sandbox/sandbox-adapter.ts:385:// Claude CLI-specific state
+src/packages/shell/src/sandbox/sandbox-adapter.ts:402: * Claude's unsandboxed git calls can see them. See the SECURITY block above
+src/packages/shell/src/sandbox/sandbox-adapter.ts:854: * This is a Claude CLI-specific function that updates local settings.
+src/packages/shell/src/sandbox/sandbox-adapter.ts:953: * Claude CLI sandbox manager - wraps sandbox-runtime with Claude-specific features
+src/packages/config/settings/changeDetector.ts:42: * it's assumed to be from Claude Code itself and won't trigger a notification.
+src/packages/color-diff-napi/src/index.ts:17: *   getSyntaxTheme always returns the default for the given Claude theme.
+src/packages/config/plugin/validatePlugin.ts:259:    // but the Claude.ai marketplace sync rejects non-kebab names. Surfacing
+src/packages/config/plugin/schemas.ts:17: * Official marketplace names that are reserved for Anthropic/Claude official use.
+src/packages/config/plugin/schemas.ts:69: * Pattern to detect names that impersonate official Anthropic/Claude marketplaces.
+src/packages/config/plugin/schemas.ts:90: * Check if a marketplace name impersonates an official Anthropic/Claude marketplace.
+src/packages/config/plugin/schemas.ts:338: * Claude Code behavior at various lifecycle events.
+src/packages/config/plugin/schemas.ts:1246: * is a cache-dir entry managed by Claude Code and subject to rm/re-clone.
+src/packages/config/plugin/schemas.ts:1483: * Maintained automatically by Claude Code, not edited by users.
+src/packages/config/plugin/schemas.ts:1486: * the current schema version, Claude Code will update the file on next startup.
+src/packages/config/plugin/orphanedPluginFilter.ts:7: * could return files from orphaned versions, causing Claude to use
+src/packages/config/plugin/installCounts.ts:5: * Claude plugins statistics repository. The cache is refreshed if older
+src/packages/config/plugin/marketplaceManager.ts:2: * Marketplace manager for Claude Code plugins
+src/packages/config/plugin/marketplaceManager.ts:324:    // corrupted user config isn't a Claude Code bug, shouldn't hit the error file.
+src/packages/memory/src/teamMemorySyncWatcher.ts:264: * (fresh EAP repo) — otherwise Claude's first team-memory write
+src/packages/memory/src/teamMemorySyncWatcher.ts:266: * which is a chicken-and-egg: Claude's write rate is low enough that
+src/packages/memory/src/memoryFileDetection.ts:179: * Verifica si un archivo es un archivo de memoria gestionado por Claude
+src/packages/config/plugin/pluginLoader.ts:4: * This module is responsible for discovering, loading, and validating Claude Code plugins
+src/packages/memory/src/memoryTypes.ts:208: * is the delta. Failure mode: user says "ignore memory about X" → Claude reads
+src/packages/config/plugin/installedPluginsManager.ts:796: * getOriginalCwd() (not getCwd()) because "current project" is where Claude
+src/packages/config/env/privacy-level.ts:3: * Claude Code generates.
+src/packages/config/env/managed-constants.ts:125: * These are Claude Code specific settings that don't pose security risks.
+src/packages/bridge/src/inboundAttachments.ts:7: * return @path refs to prepend. Claude's Read tool takes it from there.
+src/packages/bridge/src/inboundAttachments.ts:10: * skips that attachment. The message still reaches Claude, just without @path.
+src/packages/bridge/src/peerSessions.ts:10: * Send a plain-text message to another Claude session via the bridge API.
+src/packages/config/__tests__/privacyLevel.test.ts:3: * network traffic Claude Code generates. The resolved level is the
+src/packages/config/product.ts:32:// URLs de sesión de Claude Code Remote.
+src/packages/config/product.ts:67: * Obtiene la URL base de Claude AI según el entorno.
+src/packages/tool-registry/src/tasks/RemoteAgentTask.tsx:316: *   {type:'system', subtype:'hook_progress', stdout:'...'}. Claude never
+src/packages/tool-registry/src/tasks/RemoteAgentTask.tsx:850:      // stableIdle is a prompt-mode completion signal (Claude stops writing
+src/packages/tool-registry/src/tasks/RemoteAgentTask.tsx:1045: * RemoteAgentTask - Handles remote Claude.ai session execution.
+src/packages/tool-registry/src/teleport.tsx:144: * Generates a title and branch name for a coding session using Claude Haiku
+src/packages/tool-registry/src/teleport.tsx:716: * Creates a remote Claude.ai session with error handling and UI feedback.
+src/packages/tool-registry/src/teleport.tsx:938: * Creates a remote Claude.ai session using the Sessions API.
+src/packages/provider/src/fingerprint.ts:43: * Computes 3-character fingerprint for Claude Code attribution.
+src/packages/provider/src/internal/legacyRuntimeSupport.ts:122:// aquí devuelven la base mínima verbatim-correcta (Claude Code +
+src/packages/provider/src/claudeExtraUsage.ts:82:/** True solo cuando el operador activo explicitamente el uso extra en esta conexion Claude. */
+src/packages/provider/src/firstTokenDate.ts:9: * Fetch the user's first Claude Code token date and store in config.
+src/packages/provider/src/firstTokenDate.ts:10: * This is called after successful login to cache when they started using Claude Code.
+src/packages/provider/src/legacy/api.ts:297:    // with Claude 4.5 reject this field with 400. See GH#32742, PR #21729.
+src/packages/provider/src/legacy/api.ts:728:      // Logging for commands that are only echoing a string. This is to help us understand how often  Claude talks via bash
+src/packages/tool-registry/src/markdownConfigLoader.ts:28:// Claude configuration directory names
+src/packages/provider/src/openai/modelMapping.ts:57: * El sufijo `[1m]` —modificador de ventana propio de Claude— se recorta ANTES
+src/packages/provider/src/policyLimits/index.ts:10: * - OAuth users (Claude.ai): Only Team and Enterprise/C4E subscribers are eligible
+src/packages/provider/src/policyLimits/index.ts:197:  // For OAuth users, check if they have Claude.ai tokens
+src/packages/provider/src/policyLimits/index.ts:203:  // Must have Claude.ai inference scope
+src/packages/provider/src/policyLimits/index.ts:254:  // Fall back to OAuth tokens (for Claude.ai users)
+src/packages/coordination/branchIntegration.ts:35:/** Committer esperado (``git-author-identity.md``): jamás Claude, siempre jcg-admin. */
+src/packages/provider/src/anthropic/client.ts:40: *   - VERTEX_REGION_CLAUDE_3_5_HAIKU: Region for Claude 3.5 Haiku model
+src/packages/provider/src/anthropic/client.ts:41: *   - VERTEX_REGION_CLAUDE_HAIKU_4_5: Region for Claude Haiku 4.5 model
+src/packages/provider/src/anthropic/client.ts:42: *   - VERTEX_REGION_CLAUDE_3_5_SONNET: Region for Claude 3.5 Sonnet model
+src/packages/provider/src/anthropic/client.ts:43: *   - VERTEX_REGION_CLAUDE_3_7_SONNET: Region for Claude 3.7 Sonnet model
+src/packages/provider/src/anthropic/client.ts:322:  // values. This keeps Claude Account OAuth (api.anthropic.com + OAuth
+src/packages/provider/src/claudeLegacyRuntime.ts:1051: * Consulta un modelo específico a través de la infraestructura de Claude
+src/packages/provider/src/providers.ts:157: * Vertex sólo en modelos Claude serie 4.
+src/packages/provider/src/oauthConstants.ts:55:// todos para manejar tanto el redirect Console → Claude.ai como el directo.
+src/packages/provider/src/cyberRiskInstruction.ts:4: * Guidance for Claude's behavior when handling security-related requests.
+src/packages/provider/src/model.ts:55: * id Haiku de Claude cuando Haiku es GENUINAMENTE alcanzable; si no, cae al
+src/packages/tool-registry/src/tools/BashTool/prompt.ts:276:  // Ant-native builds alias find/grep to embedded bfs/ugrep in Claude's shell,
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:792:    // For image data, format as image content block for Claude
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1063:    // Claude Code hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1326:  // Handle Claude asking to run it in the background explicitly
+src/packages/tool-registry/src/tools/BashTool/commentLabel.ts:6: * collapse-group ⎿ hint — it's what Claude wrote for the human to read.
+src/packages/computer-use-mcp/src/types.ts:26: *     must use the Claude-in-Chrome MCP for any navigation/clicking. Trading
+src/packages/computer-use-mcp/src/types.ts:155:   * For the "On Windows, Claude can see all apps..." footnote. Taken from
+src/packages/computer-use-mcp/src/types.ts:174:   * allowlist. These will be hidden the first time Claude takes an action.
+src/packages/computer-use-mcp/src/types.ts:182:   * between "...then restored when Claude is done" and "...will be hidden"
+src/packages/computer-use-mcp/src/legacy/win32/windowMessage.ts:509: * This is required for terminal apps like Claude Code REPL that read stdin in raw mode.
+src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts:1518:  // Claude CLI help
+src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts:1712:  // This requires defining a set of known safe flags. Claude can help with this,
+src/packages/provider/src/betas.ts:156:// Context management is supported on Claude 4+ models
+src/packages/provider/src/betas.ts:194:// (b) excluding legacy Claude models that lack the tool-use behavior the
+src/packages/provider/src/betas.ts:219: * - Claude API / Foundry: advanced-tool-use-2025-11-20
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:492: * This handles cases where Claude adds comments in bash commands, e.g.:
+src/packages/provider/src/grove.ts:308:  // whether to help improve Claude.
+src/packages/provider/src/systemPrompt.ts:39: * 4. Default system prompt (the standard Claude Code prompt)
+src/packages/computer-use-mcp/src/legacy/executor.ts:581:      //      of inserting a space (for example, a CJK sentence plus "Claude Code"
+src/packages/computer-use-mcp/src/legacy/common.ts:7: * Sentinel bundle ID for the frontmost gate. Claude Code is a terminal — it has
+src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts:448:    // so Claude knows the search didn't complete (rather than thinking there were no matches)
+src/packages/computer-use-mcp/src/deniedApps.ts:6: *     The model can read an already-open page but must use the Claude-in-Chrome
+src/packages/tool-registry/src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts:62: * Used by Claude to request semantic permissions when exiting plan mode.
+src/packages/computer-use-mcp/src/mcpServer.ts:12: *   and the Claude Code CLI's CU host wrapper — both did the same thing: build `ComputerUseOverrides`
+src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts:10: * official Claude Code) and ccb's internal packed `<connId>:<modelId>`
+src/packages/provider/src/__tests__/fetchProfileInfo.behavior.test.ts:13: *   - ccOnboardingFlags — UI gating for Claude Code onboarding state
+src/packages/provider/src/__tests__/billingAccess.behavior.test.ts:81:      // admin/billing only). Claude.ai adds owner/primary_owner because
+src/packages/computer-use-mcp/src/toolCalls.ts:2808:  // the resolver won't pick (e.g. Claude + another allowed app are co-located
+src/packages/computer-use-mcp/src/toolCalls.ts:4093:  // cuLockChanged, and showing "Claude is using your computer" while the
+src/packages/provider/src/__tests__/saveOAuthTokensIfNeeded.behavior.test.ts:11: *   1. Skip non-Claude.ai tokens (scope filter) — never save inference-only.
+src/packages/provider/src/__tests__/betasAssembly.behavior.test.ts:12: * sees Claude.ai OAuth header missing → server treats them as API user →
+src/packages/ide/src/idePathConversion.ts:3: * Handles conversions between Claude's environment and the IDE's environment
+src/packages/ide/src/idePathConversion.ts:10:   * Convert path from IDE format to Claude's local format
+src/packages/ide/src/idePathConversion.ts:16:   * Convert path from Claude's local format to IDE format
+src/packages/ide/src/idePathConversion.ts:23: * Converter for Windows IDE + WSL Claude scenario
+src/packages/provider/src/__tests__/extraUsage.test.ts:34:    // outermost short-circuit; if you're not on Claude.ai, none of the
+src/packages/ide/src/lsp/passiveFeedback.ts:12: * Map LSP severity to Claude diagnostic severity
+src/packages/ide/src/lsp/passiveFeedback.ts:14: * Maps LSP severity numbers to Claude diagnostic severity strings.
+src/packages/ide/src/lsp/passiveFeedback.ts:38: * Convert LSP diagnostics to Claude diagnostic format
+src/packages/ide/src/lsp/passiveFeedback.ts:41: * used by Claude's attachment system.
+src/packages/ide/src/lsp/passiveFeedback.ts:110: * from all LSP servers and routes them to Claude's diagnostic system.
+src/packages/ide/src/lsp/passiveFeedback.ts:180:            // Convert LSP diagnostics to Claude format (can throw on invalid URIs)
+src/packages/provider/src/__tests__/oauthHelpers.test.ts:8: * shouldUseClaudeAIAuth gates the Console-vs-Claude.ai code path —
+src/packages/ide/src/lsp/manager.ts:25: * durante el arranque de Claude Code.
+src/packages/ide/src/lsp/manager.ts:69: * inicialización ocurre de forma asíncrona durante el arranque de Claude
+src/packages/ide/src/lsp/manager.ts:148: * Se llama durante el arranque de Claude Code. Crea sincrónicamente la
+src/packages/ide/src/lsp/manager.ts:281: * Debe llamarse durante el apagado de Claude Code. Detiene todos los
+src/packages/provider/src/__tests__/modelDefaults.behavior.test.ts:18: * 3P, downgrading Opus from latest → 4.6 for a Claude Account subscriber.
+src/packages/provider/src/__tests__/modelDefaults.behavior.test.ts:81:   * ant's load-bearing invariant: only return a Claude Haiku id when Claude
+src/packages/provider/src/__tests__/modelDefaults.behavior.test.ts:131:      // NOT a bare Claude Haiku id that would 404/401 off-Anthropic.
+src/packages/provider/src/__tests__/getAccountInformation.behavior.test.ts:12: *  - subscription ⇒ "Claude Pro/Max/etc."
+src/packages/provider/src/__tests__/isBilledAsExtraUsage.behavior.test.ts:18: *   1. Must be a Claude.ai subscriber (Pro/Max/Team/Enterprise)
+src/packages/provider/src/__tests__/oauthLeafHelpers.behavior.test.ts:50:      // Service-key tokens have inference; bare /login may not. The Claude.ai
+src/packages/provider/src/__tests__/anthropicClientHeaders.behavior.test.ts:11: *  - X-Claude-Code-Session-Id: backend session correlation
+src/packages/provider/src/__tests__/composeUnpackModelId.behavior.test.ts:10: * connections (Claude Account, OpenAI-compat proxy, etc.).
+src/packages/provider/src/__tests__/cyberRiskInstruction.test.ts:6:  // Its purpose: tell Claude that the operator (user) has authorized
+src/packages/headless-sdk/src/agentSdkTypes.ts:9: * Main entrypoint for Claude Code Agent SDK types.
+src/packages/headless-sdk/src/runtimeTypes.ts:66://   xhigh                — extended reasoning on supported Claude/Codex models
+src/packages/provider/src/betasConstants.ts:21:// El header de tool-search difiere por proveedor: la API de Claude/Foundry
+src/packages/provider/src/thinking.ts:159:  // 1P and Foundry: all Claude 4+ models (including Haiku 4.5)
+src/packages/headless-sdk/src/sandboxTypes.ts:2: * Sandbox types for the Claude Code Agent SDK
+src/packages/tool-registry/src/tools/REPLTool/constants.ts:36: * When REPL mode is on, these tools are hidden from Claude's direct use,
+src/packages/tool-registry/src/tools/REPLTool/constants.ts:37: * forcing Claude to use REPL for batch operations.
+src/packages/provider/src/systemConstants.ts:108: * server verifies this token to confirm the request came from a real Claude
+src/packages/provider/src/codex/fetchAdapter.ts:324:                // the message history causes Claude API to 400 with
+src/packages/provider/src/codex/fetchAdapter.ts:327:                // back to a Claude model. Reasoning is dropped from
+src/packages/provider/src/withRetry.ts:350:        // TODO: Revisit if the isNonCustomOpusModel check should still exist, or if isNonCustomOpusModel is a stale artifact of when Claude Code was hardcoded on Opus.
+src/packages/provider/src/credentials.ts:3: * Claude Code 2.1.282: `jc()` y `Qf()` (chunk-wbbthbh9) eligen la fuente,
+src/packages/provider/src/filesApi.ts:5: * Used by the Claude Code agent to download file attachments at session startup.
+src/packages/provider/src/oauth/client.ts:3: * para los flujos de autenticación con los servicios de Claude. Sus 14
+src/packages/agent/attribution.ts:12: *   de caracteres de Claude, los prompts desde la última compactación y las
+src/packages/agent/attribution.ts:20: *   agrega la línea `Claude-Session:` de una sesión remota. Esa línea no se
+src/packages/agent/attribution.ts:23: * - El nombre del modelo usa el nombre público cuando se conoce, `Claude` para
+src/packages/agent/attribution.ts:24: *   la familia fable y `Claude Code` en otro caso: es la forma de `OMo` sin
+src/packages/agent/attribution.ts:145:/** El porcentaje de Claude sobre los archivos que la sesión tocó (`LMo`). */
+src/packages/agent/promptCacheTtl.ts:69:  /** `gt()`: suscripción de Claude, no clave de API ni nube. */
+src/packages/agent/internal/cronTasksLockCore.ts:3:// When multiple Claude sessions run in the same project directory, only one
+src/packages/agent/internal/loopSentinelCore.ts:331: * the Claude config home (NOT $HOME — ant explicitly resolves the
+src/packages/agent/internal/loopSentinelCore.ts:340: * Claude state tree.
+src/packages/agent/internal/cronSchedulerCore.ts:177:    // and fires immediately). This avoids a misleading "missed while Claude
+src/packages/agent/internal/cronSchedulerCore.ts:333:    // exists to stop two Claude sessions in the same cwd from double-firing
+src/packages/agent/internal/cronTasksCore.ts:496: * recurrente cuya ventana pasó mientras Claude estaba caído sigue estando
+src/packages/agent/logsTypes.ts:212: * Per-file attribution state tracking Claude's character contributions.
+src/packages/agent/logsTypes.ts:222: * Tracks character-level contributions by Claude for commit attribution.
+src/packages/agent/claudeInChromeCommon.ts:2: * Nombre del servidor MCP de "Claude in Chrome" + seguimiento de pestañas —
+src/packages/agent/messages.ts:4624: * otra conexión (Claude Account ↔ proxy Anthropic Compatible ↔ cualquier
+src/packages/agent/concurrentSessions.ts:197:      // ~/.claude/sessions/ is shared with Windows-native Claude (symlink
+src/packages/agent/prompts.ts:172:/** Los tres ids de la familia Claude 4.X mas reciente que el bullet de fast-mode nombra. */
+src/packages/agent/QueryEngine.ts:327:    // a memory directory and needs Claude to know how to use it (which
+src/packages/agent/QueryEngine.ts:1366: * Sends a single prompt to the Claude API and returns the response.
+src/packages/agent/claudeInChrome/toolRendering.tsx:162: * Renders a clickable "View Tab" link for Claude in Chrome MCP tools.
+src/packages/agent/claudeInChrome/toolRendering.tsx:164: * - The tool is not a Claude in Chrome MCP tool
+src/packages/agent/claudeInChrome/toolRendering.tsx:276: * Returns tool method overrides for Claude in Chrome MCP tools. Use this to customize
+src/packages/agent/claudeInChrome/prompt.ts:74: * Minimal hint about Claude in Chrome skill availability. This is injected at startup when the extension is installed
+src/packages/agent/background/fleet/generateJobName.ts:5: * worker whose state.json has no `name` yet, this module fires Claude
+src/packages/agent/background/preconditions.ts:19: * Checks if user needs to log in with Claude.ai
+src/packages/agent/claudeInChromeSetupPortable.ts:40: * Detects if the Claude in Chrome extension is installed by checking the Extensions
+src/packages/agent/sessionTools/agenticSessionSearch.ts:143: * Performs an agentic search using Claude to find relevant sessions
+src/packages/agent/sessionTools/transcriptSearch.ts:118:  // Strip <system-reminder> anywhere — Claude context, not user-visible.
+src/packages/agent/__tests__/effortNativeVsProxy.test.ts:10: * Contexto — la receta oficial de Claude Code de DeepSeek fija
+src/packages/agent/__tests__/tokenEstimation.behavior.test.ts:19: * tokenizan aproximadamente 1.5 tokens cada uno en el tokenizer de Claude,
+src/packages/agent/__tests__/claudeInChromeCommon.test.ts:24:    // doesn't lowercase. So "Claude-In-Chrome" stays as-is and fails
+src/packages/agent/__tests__/claudeInChromeBrowsers.test.ts:2: * Navegadores, sockets y apertura de URL de Claude in Chrome (2.1.275,
+src/packages/agent/__tests__/messageContractStrings.behavior.test.ts:20: * Pin the EXACT wire format of protocol strings between Claude Code and
+src/packages/agent/__tests__/attachmentConfig.behavior.test.ts:13: * how often Claude Code re-injects system reminders mid-session:
+src/packages/agent/__tests__/attributionTexts.test.ts:7: * pie enriquecido con el porcentaje de Claude, los prompts desde la última
+src/packages/agent/__tests__/loopSentinelCore.test.ts:168:// ─── readLoopFile (ant $67) — el fallback al config home de Claude ────────
+src/packages/agent/__tests__/loopSentinelCore.test.ts:229:    // home de Claude —que `CLAUDE_CONFIG_DIR` sobreescribe al temporal de
+src/packages/agent/claudeInChromeSetup.ts:89: * Setup Claude in Chrome MCP server and tools
+src/packages/agent/claudeInChromeSetup.ts:388: * Detects if the Claude in Chrome extension is installed by checking the Extensions
+src/packages/agent/tokens.ts:122: * This function is only useful for measuring how many tokens Claude generated
+src/packages/agent/hooks.ts:1987: * - Carga lazy cuando Claude toca un archivo que dispara un CLAUDE.md anidado
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:552:    // For image data, format as image content block for Claude
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:753:      // Claude Code hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1095:  // Handle Claude asking to run it in the background explicitly
+src/packages/swarm/src/backends/PaneBackendExecutor.ts:33: * - spawn(): Creates a pane and sends the Claude CLI command to it
+src/packages/swarm/src/backends/PaneBackendExecutor.ts:113:      // Build the command to spawn Claude Code with teammate identity
+src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts:1587:  // Runtime writes /project/.claude/settings.json (Claude's permission config).
+src/packages/tool-registry/src/tools/PowerShellTool/powershellPermissions.ts:1570:    // .claude/settings.json (a Claude config file the path validator didn't check).
+src/packages/swarm/src/worktree/index.ts:1181: * Creates the worktree and execs into tmux running Claude inside.
+src/packages/swarm/src/worktree/index.ts:1344:  // Check if tmux prefix conflicts with Claude keybindings
+src/packages/swarm/src/worktree/index.ts:1345:  // Claude binds: ctrl+b (task:background), ctrl+c, ctrl+d, ctrl+t, ctrl+o, ctrl+r, ctrl+s, ctrl+g, ctrl+e
+src/packages/swarm/src/worktree/index.ts:1359:  // Set env vars for the inner Claude to display tmux info in welcome message
+src/packages/swarm/src/worktree/index.ts:1402:    // Create detached session with Claude in first pane
+src/packages/swarm/src/worktree/index.ts:1441:    // Select the first pane (Claude)
+src/packages/swarm/src/teammateState.ts:18: * Estos helpers identifican si esta instancia de Claude Code corre como
+src/packages/cli/__tests__/productName.test.ts:3: * thyrox, vía `PRODUCT_NAME`. Los portados del binario decían «Claude Code»
+src/packages/cli/__tests__/productName.test.ts:6: * Sin excepciones, tampoco `install`: thyrox no es Claude Code, y con otro
+src/packages/cli/__tests__/productName.test.ts:7: * provider instalar las releases de Claude Code instala un programa que el
+src/packages/cli/__tests__/productName.test.ts:10: * *Métrica:* literales «Claude Code» en código de `src/` (sin comentarios).
+src/packages/cli/src/setup/setup.ts:411:      // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/index.ts:5: * Claude-4 / Foundry) get ant's original `web_search_20250305`
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.integration.ts:8: *   BING_QUERY  — search query (default: "Claude AI Anthropic")
+src/packages/cli/src/entry/run-cli.ts:78: * Top-level orchestrator for Claude Code CLI startup.
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts:357:  // command into a full prompt that Claude must process before continuing.
+src/packages/cli/src/secureStorage/keychainPrefetch.ts:7: *   1. "Claude Code-credentials" (OAuth tokens)  — ~32ms
+src/packages/cli/src/secureStorage/keychainPrefetch.ts:8: *   2. "Claude Code" (legacy API key)            — ~33ms
+src/packages/tool-registry/src/tools/WebFetchTool/WebFetchTool.ts:282:    // mime-derived extension. Note it so Claude can inspect the raw file
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts:104:// which provides a primary security boundary. In addition, Claude Code has
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts:436:  // Binary content: save raw bytes to disk with a proper extension so Claude
+src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts:346:    // Additional validation for Claude settings files
+src/packages/tool-registry/src/tools/FileEditTool/utils.ts:18:// Claude can't output curly quotes, so we define them as constants here for Claude to use
+src/packages/tool-registry/src/tools/FileEditTool/utils.ts:527: * Contains replacements to de-sanitize strings from Claude
+src/packages/tool-registry/src/tools/FileEditTool/utils.ts:528: * Since Claude can't see any of these strings (sanitized in the API)
+src/packages/tool-registry/src/tools/BriefTool/upload.ts:5: * viewer (they're on Claude's machine). We upload to /api/oauth/file_upload —
+src/packages/tool-registry/src/tools/BriefTool/UI.tsx:46:  // Brief-only (chat) view: "Claude" label + 2-col indent, matching the "You"
+src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts:190: * Only matches files within the Claude config directory (e.g., ~/.claude).
+src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts:198:  // Only match files within the Claude config directory
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts:80:    // where non-Anthropic connections have no Claude models.
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts:96: * Gemini) resolve to bare Claude model names that don't match any
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts:425:  // Build the command to spawn Claude Code with teammate identity
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts:625:  // Build the command to spawn Claude Code with teammate identity
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts:1040: * Handle spawn operation - creates a new Claude Code instance.
+src/packages/tool-registry/src/Tool.ts:519:   * archivo y Claude recibe una vista previa con la ruta del archivo en
+src/packages/tool-registry/src/collapseReadSearch.ts:846:          // Prefer the stripped `# comment` if present (it's what Claude wrote
+src/packages/storage/src/xdg.ts:2: * XDG Base Directory utilities for Claude CLI Native Installer
+src/packages/storage/src/secureStorage/plainTextStorage.ts:5: * de config de Claude, con permisos `0o600`.
+src/packages/storage/src/__tests__/classifyGuiEditor.test.ts:8: *   - GUI editor classified as terminal: Claude Code waits for
+src/packages/storage/src/filePersistence/filePersistence.ts:378: * not normal Claude Code CLI users.
+src/packages/storage/src/editor.ts:73: * in a separate window and Claude Code stays interactive.
+src/packages/storage/src/task/diskOutput.ts:54:// causando que Claude Code en el host escriba en esos archivos.
+src/packages/repl/src/queryHelpers.ts:179:        // Only emit for Claude Code Remote for now
+src/packages/agent/services/preventSleep.ts:2: * Prevents macOS from sleeping while Claude is working.
+src/packages/agent/query.ts:1673:    // These will be sent as attachments so Claude can respond to them in the current turn.
+src/packages/agent/localAgentTask.tsx:69:  // input_tokens in Claude API is cumulative per turn (includes all previous context),
+src/packages/voice/src/voiceStreamSTT.ts:6:// OAuth credentials as Claude Code.  The endpoint uses conversation_engine
+src/packages/voice/src/voiceStreamSTT.ts:99:  // voice_stream uses the same OAuth as Claude Code — available when the
+src/packages/voice/src/voiceStreamSTT.ts:100:  // user is authenticated with Anthropic (Claude.ai subscriber or has
+src/packages/voice/src/voiceKeyterms.ts:15:  // Note: "Claude" and "Anthropic" are already server-side base keyterms.
+src/packages/teleport/src/remote-setup/api.ts:170:/** Returns true when the user has valid Claude OAuth credentials. */
+src/packages/command-runtime/src/commands/model/model.tsx:303:    // with the official Claude Code CLI, which only understands bare model
+src/packages/command-runtime/src/commands/model/model.tsx:412:  // not "Opus 4.6" when their Claude account is the active connection.
+src/packages/command-runtime/src/commands/fork/fork.tsx:173:    // system prompt rather than falling back to the default Claude Code
+src/packages/command-runtime/src/xml.ts:58:// XML tag name for cross-session UDS messages (another Claude session's inbox)
+src/packages/command-runtime/src/skills/dynamicSkills.ts:4: * Porte del contrato de Claude Code 2.1.275 (`chunk-q2gh92k2.js` del
+src/packages/command-runtime/src/skills/bundled/stuck.ts:4:// Prompt text contains `ps` commands as instructions for Claude to run,
+src/packages/mcp-runtime/src/SdkControlTransport.ts:5: * to communicate with the Claude Code CLI process through control messages.
+src/packages/repl/src/screens/REPLView.tsx:514:// repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+src/packages/repl/src/screens/REPLView.tsx:1016:  // This enables "immediate" commands (like /btw) to persist while Claude is processing.
+src/packages/repl/src/screens/REPLView.tsx:1126:  // Prevent macOS from sleeping while Claude is working
+src/packages/repl/src/screens/REPLView.tsx:1991:  // This allows Claude to edit files that were read in previous sessions
+src/packages/repl/src/screens/REPLView.tsx:2804:      // Mark onboarding as complete when any user message is sent to Claude
+src/packages/repl/src/screens/REPLView.tsx:2813:      // title silently fell through to the "Claude Code" default.
+src/packages/repl/src/screens/REPLView.tsx:3402:      // even while Claude is processing. Commands opt-in via `immediate: true`.
+src/packages/repl/src/screens/REPLView.tsx:4266:  // Idle-prompt watcher: fire "Claude is waiting for your input" after
+src/packages/repl/src/screens/REPLView.tsx:4275:    // Don't set up notification if Claude is busy
+src/packages/repl/src/screens/REPLView.tsx:4291:          // User has interacted since Claude finished - they're not idle, don't notify
+src/packages/mcp-runtime/src/sanitization.ts:10: * The vulnerability was demonstrated in HackerOne report #3086545 targeting Claude Desktop's
+src/packages/mcp-runtime/src/sanitization.ts:12: * using Unicode Tag characters that would be executed by Claude but remain invisible to users.
+src/packages/mcp-runtime/src/channelPermissions.ts:35: * La pregunta de Kenneth "¿esto le permitiría a Claude auto-aprobarse?": la
+src/packages/mcp-runtime/src/channelPermissions.ts:36: * parte que aprueba es el humano vía el canal, no Claude. Pero la frontera
+src/packages/mcp-runtime/src/clientRuntime.ts:258:// Lazy: toolRendering.tsx pulls React/ink; only needed when Claude-in-Chrome MCP server is connected
+src/packages/mcp-runtime/src/normalization.ts:6:// Claude.ai server names are prefixed with this string
+src/packages/mcp-runtime/src/config.ts:1078: * Get Claude Code MCP configurations (excludes claude.ai servers from the
+src/packages/mcp-runtime/src/config.ts:1084: * @returns Claude Code server configurations with appropriate scopes
+src/packages/repl/src/screens/agentFleet/components/FleetBanner.tsx:7: *   │ Claude Code v2.1.143                        │  line 1 — bold "Claude Code" + dim version
+src/packages/command-runtime/src/commands/insights/insights.ts:1060: * Detects multi-clauding (using multiple Claude sessions concurrently).
+src/packages/command-runtime/src/commands/insights/insights.ts:2999:  // Generate parallel insights from Claude (6 sections)
+src/packages/command-runtime/src/commands/insights/insights.ts:3156:    // Return prompt for Claude to respond to
+src/packages/command-runtime/src/commands/login/login.tsx:74:          // even though the user is now on a fresh Claude Account login.
+src/packages/mcp-runtime/src/auth.ts:369: * Per RFC 7009, public clients (like Claude Code) should authenticate by including
+src/packages/mcp-runtime/src/claudeai.ts:87: * Claude.ai. Estos servidores son gestionados por la organización vía
+src/packages/mcp-runtime/src/claudeai.ts:88: * Claude.ai.
+src/packages/mcp-runtime/src/useManageMCPConnections.ts:187:      // flows to Claude as normal chat. One gate, full disable.
+src/packages/mcp-runtime/src/useManageMCPConnections.ts:857:  // Two-phase loading: Claude Code configs first (fast), then claude.ai configs (may be slow)
+src/packages/mcp-runtime/src/useManageMCPConnections.ts:875:      // Phase 1: Load Claude Code configs. Plugin MCP servers that duplicate a
+src/packages/mcp-runtime/src/useManageMCPConnections.ts:889:      // Start connecting to Claude Code servers (don't wait - runs concurrently with Phase 2)
+src/packages/mcp-runtime/src/vscodeSdkMcp.ts:37: * notify VSCode when files are edited or written by Claude.
+src/packages/command-runtime/src/commands/review/reviewRemote.ts:9: * pushed branches on repos with the Claude GitHub app installed.
+src/packages/command-runtime/src/commands/review/reviewRemote.ts:309:  // shouldn't echo the same info. Just enough for Claude to acknowledge the
+src/packages/command-runtime/src/commands/review/review.ts:15:// el nombre "Claude Code on the web" + la URL.
+src/packages/mcp-runtime/src/mcpOutputStorage.ts:31: * Generates instruction text for Claude to read from a saved output file.
+src/packages/mcp-runtime/src/mcpOutputStorage.ts:177: * Build a short message telling Claude where binary content was saved.
+src/packages/repl/src/hooks/useTaskListWatcher.ts:31: * This enables "tasks mode" where Claude watches for externally-created
+src/packages/repl/src/hooks/useTaskListWatcher.ts:211: * Format a task as a prompt for Claude to work on.
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:32: * Builds a deep link URL for Claude Desktop to resume a CLI session.
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:45: * Check if Claude Desktop app is installed.
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:46: * On macOS, checks for /Applications/Claude.app.
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:60:    // Check for Claude.app in /Applications
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:85: * Detect the installed Claude Desktop version.
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:204: * Build and open a deep link to resume the current session in Claude Desktop.
+src/packages/repl/src/hooks/useCancelRequest.ts:96:    // This takes precedence over queue management so users can always interrupt Claude
+src/packages/repl/src/hooks/useCancelRequest.ts:104:    // Priority 2: Pop queue when Claude is idle (no running task to cancel)
+src/packages/repl/src/diagnostics/claudeDesktop.ts:60:      // Look for Claude Desktop config in each user directory
+src/packages/repl/src/hooks/useIssueFlagBanner.ts:31:  // Direct corrections about Claude's output
+src/packages/repl/src/hooks/useIssueFlagBanner.ts:34:  // Referencing prior instructions Claude missed
+src/packages/repl/src/hooks/useIssueFlagBanner.ts:36:  // Questioning Claude's actions
+src/packages/repl/src/hooks/useIssueFlagBanner.ts:40:  // Explicit retry/revert of Claude's work
+src/packages/repl/src/localInstaller.ts:94: * Install or update Claude CLI package in the local directory
+src/packages/repl/src/hooks/useInboxPoller.ts:815:    // Format messages with XML wrapper for Claude (include color if available)
+src/packages/repl/src/hooks/useInboxPoller.ts:816:    // Transform plan approval requests to include instructions for Claude
+src/packages/repl/src/hooks/useInboxPoller.ts:922:    // Format messages with XML wrapper for Claude (include color if available)
+src/packages/repl/src/processUserInput/processUserInput.ts:359:  // Store images to disk so Claude can reference the path in context
+src/packages/repl/src/terminalSetup.ts:46: * not the remote server where Claude is running.
+src/packages/repl/src/terminalSetup.ts:93:  // keyboard protocol, which Claude Code already parses. No setup needed for
+src/packages/repl/src/hooks/fileSuggestions.ts:442: * Gets additional files from Claude config directories
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx:301:  // processes but ignored by Claude Code itself (see auth.ts).
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx:413:  // Show Chrome onboarding for first-time Claude in Chrome users
+src/packages/repl/src/hooks/usePromptsFromClaudeInChrome.tsx:42: * A hook that listens for prompt notifications from the Claude for Chrome extension,
+src/packages/repl/src/hooks/useChromeExtensionNotification.tsx:26:    // Claude in Chrome is only supported for claude.ai subscribers (unless user is ant)
+src/packages/repl/src/history.ts:35: * Claude Code parses history for pasted content references to match back to
+src/packages/repl/src/history.ts:412:  // Skip history when running in a tmux session spawned by Claude Code's Tungsten tool.
+src/packages/repl/src/deepLink/protocolHandler.ts:53:  // baked at registration time, and we want the terminal-launched Claude to
+src/packages/repl/src/deepLink/protocolHandler.ts:116: * Resolve the working directory for the launched Claude instance.
+src/packages/repl/src/deepLink/protocolHandler.ts:119: * so a web link referencing a repo the user doesn't have still opens Claude.
+src/packages/repl/src/deepLink/terminalLauncher.ts:4: * Detects the user's preferred terminal emulator and launches Claude Code
+src/packages/repl/src/deepLink/terminalLauncher.ts:197: * Launch Claude Code in the detected terminal emulator.
+src/packages/repl/src/keybindings/defaultBindings.ts:8: * Default keybindings that match current Claude Code behavior.
+src/packages/repl/src/deepLink/registerProtocol.ts:70: * Claude then uses the url-handler NAPI module to read the URL from the
+src/packages/repl/src/keybindings/reservedShortcuts.ts:14: * Shortcuts that cannot be rebound - they are hardcoded in Claude Code.
+src/packages/skills/src/bundled.ts:18: * esta sesión corre sobre el Claude Code real, que los lee de disco. Que un
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:214:  // Escape to cancel Claude AI authentication
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:227:  // Escape to cancel Claude AI clear auth
+src/packages/updater/src/nativeInstaller/download.ts:4: * Maneja la descarga de binarios de Claude desde varias fuentes:
+src/packages/updater/src/nativeInstaller/packageManagers.ts:2: * Package manager detection for Claude CLI
+src/packages/updater/src/nativeInstaller/packageManagers.ts:56: * Detects if the currently running Claude instance was installed via mise
+src/packages/updater/src/nativeInstaller/packageManagers.ts:75: * Detects if the currently running Claude instance was installed via asdf
+src/packages/updater/src/nativeInstaller/packageManagers.ts:94: * Detects if the currently running Claude instance was installed via Homebrew
+src/packages/updater/src/nativeInstaller/packageManagers.ts:146: * Detects if the currently running Claude instance was installed via winget
+src/packages/updater/src/nativeInstaller/packageManagers.ts:181: * Detects if the currently running Claude instance was installed via pacman
+src/packages/updater/src/nativeInstaller/packageManagers.ts:216: * Detects if the currently running Claude instance was installed via a .deb package
+src/packages/updater/src/nativeInstaller/packageManagers.ts:249: * Detects if the currently running Claude instance was installed via an RPM package
+src/packages/updater/src/nativeInstaller/packageManagers.ts:282: * Detects if the currently running Claude instance was installed via Alpine APK
+src/packages/updater/src/nativeInstaller/packageManagers.ts:320: * Memoized function to detect which package manager installed Claude
+src/packages/updater/src/nativeInstaller/pidLock.ts:4: * This module provides PID-based locking for running Claude Code versions.
+src/packages/updater/src/nativeInstaller/pidLock.ts:99: * Validate that a running process is actually a Claude process
+src/packages/updater/src/nativeInstaller/pidLock.ts:179:  // Secondary validation: is it actually a Claude process?
+src/packages/updater/src/nativeInstaller/pidLock.ts:248:  // validates it's actually a Claude process (to handle PID reuse scenarios)
+src/packages/permission/src/toolPermission/handlers/interactiveHandler.ts:317:  // nunca le llega a Claude como un turno de conversación.
+src/packages/permission/src/pathSafety.ts:3: * que una edición sin preguntar no debe tocar? Settings de Claude, carpetas
+src/packages/permission/src/pathSafety.ts:439:// ---- Archivos de configuración de Claude ----
+src/packages/permission/src/pathSafety.ts:472:/** ¿Es un archivo de settings de Claude, de cualquier fuente? (≙ `HTe`). */
+src/packages/permission/src/pathSafety.ts:500:/** ¿Es un directorio de configuración de Claude mismo? (≙ `xu`). */
+src/packages/permission/src/filesystem.ts:251: * Nombre del directorio temporal de Claude, específico por usuario.
+src/packages/permission/src/filesystem.ts:264: * Ruta del directorio temporal de Claude, con symlinks resueltos.
+src/packages/repl/src/components/FallbackToolUseErrorMessage.tsx:33:    // Remove sandbox_violations tags from error display (Claude still sees them in the tool result)
+src/packages/repl/src/components/hooks/ViewHookMode.tsx:5: * confirmation screen and directs users to settings.json or Claude for edits.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:7: * or ask Claude — the menu directs them there.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:212:  // users can edit settings.json or ask Claude instead.
+src/packages/repl/src/components/hooks/SelectEventMode.tsx:7: * edit settings.json directly or ask Claude.
+src/packages/repl/src/components/LogoV2/CondensedLogo.tsx:59:  // Truncate version to fit within available width, accounting for "Claude Code v" prefix
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:149:  // -20 to account for the max length of subscription name " · Claude Enterprise".
+src/packages/repl/src/components/FullscreenLayout.tsx:216: * users think of as "a new message from Claude" — not raw assistant entries
+src/packages/repl/src/components/FullscreenLayout.tsx:262: * until Claude's text response lands.
+src/packages/repl/src/components/FullscreenLayout.tsx:345:      // Most OSC 8 links emitted by Claude Code are file:// URLs from
+src/packages/repl/src/components/FullscreenLayout.tsx:533:// conversation turn's prompt above the viewport so you know what Claude was
+src/packages/repl/src/components/messages/AssistantTextMessage.tsx:90:    // Local JSX commands don't need a response, but we still want Claude to see them
+src/packages/repl/src/components/messages/UserTextMessage.tsx:164:  // Cross-session UDS message (from another Claude session's SendMessage).
+src/packages/repl/src/components/LogSelector.tsx:225:  // Track if the "Search deeply using Claude" option is focused
+src/packages/repl/src/components/Onboarding.tsx:81:    // processes but ignored by Claude Code itself (see auth.ts).
+src/packages/repl/src/components/InvalidConfigDialog.tsx:27: * Dialog shown when the Claude config file contains invalid JSON
+src/packages/repl/src/components/Settings/Config.tsx:1294:    // processes but ignored by Claude Code itself (see auth.ts).
+src/packages/repl/src/components/VirtualMessageList.tsx:141: * prepended to the stored text for Claude's context (memory updates, auto
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:122:    // Use Claude AI auth for setup-token mode to support user:inference scope
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:394:      // (would clobber Claude Account requests with the OpenAI adapter).
+src/packages/ink/src/theme/LoadingState.tsx:46: *   subtitle="Fetching your Claude Code sessions..."
+src/packages/ink/src/theme/Tree.tsx:10: * Mirrors upstream `M7` from Anthropic's Claude Code CLI (v2.1.128 reference:
+src/packages/ink/src/components/App.tsx:742:    // Emit suspend event for Claude Code to handle. Mostly just has a notification
+src/packages/ink/src/components/App.tsx:763:      // Emit resume event for Claude Code to handle
+src/packages/ink/src/core/colorize.ts:10: * downgrades to the nearest 6×6×6 cube color: rgb(215,119,87) (Claude

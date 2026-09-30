@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+58 |     const state = new SessionNameState()
+59 |     state.noteCorrespondent('bridge:x', 1, undefined)
+60 |     state.noteCorrespondent('', 1, undefined)
+61 |     expect(state.correspondents.size).toBe(0)
+62 |     for (let index = 0; index <= MAX_CORRESPONDENTS; index++) state.noteCorrespondent(`uds:/s/${index}.sock`, index, `t${index}`)
+63 |     expect(state.correspondents.size).toBe(MAX_CORRESPONDENTS)
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: 64
+Received: 65
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:63:39)
+(fail) SessionNameState (b) > noteCorrespondent guarda sólo direcciones uds, en orden de uso, hasta 64 [1.30ms]
+
+ 14 pass
+ 1 fail
+ 41 expect() calls
+Ran 15 tests across 1 file. [49.00ms]

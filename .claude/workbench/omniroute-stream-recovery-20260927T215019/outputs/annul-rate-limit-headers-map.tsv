@@ -1,0 +1,2 @@
+base	12 pass, 0 fail	—
+lowercase-names	11 pass, 1 fail	toPlainHeaders lleva a minúscula los nombres de un Map

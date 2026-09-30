@@ -1,0 +1,10 @@
+memoria [rejected] agent:signature-strip: messages.ts ya importa SystemLocalCommandMessage más abajo (no duplicar el import), y login.tsx pasa stripSignatureBlocks a un setMessages sobre unknown[]: la firma no puede restringir M a Message.
+memoria [revealed] agent:reorder-messages-ui: Una función de messages.ts que devuelve los mensajes que recibe NO debe restringir el elemento a Message: Messages.tsx lo pasa a funciones sobre sus formas locales. Mismo patrón que stripSignatureBlocks: genérico libre <M>.
+memoria [revealed] agent:reorder-messages-ui-free: CORRIGE la lección del paso 32: el genérico no era la causa. Los 3 errores de Messages.tsx (filterForBriefTool, dropTextInBriefTurns, applyGrouping) exigen message.content como arreglo, y NormalizedMessage en messageShapes.ts es sólo alias de Message (content string|opcional). Estaban ocultos mientras el import faltaba (any). Arreglo: dar a NormalizedMessage su forma normalizada, en un paso propio, junto con reorderMessagesInUI.
+receta step-030: Port stripSignatureBlocks and the local command guard
+receta step-031: Port shouldShowUserMessage from 2.1.275
+receta step-034: Give NormalizedMessage its normalized shape
+receta step-035: Declare the normalized return of normalizeMessages
+receta step-036: Build the renderable message types from normalized ones
+receta step-037: Make Message the union of its variants
+receta step-065: Type CompactMetadata with the fields it carries

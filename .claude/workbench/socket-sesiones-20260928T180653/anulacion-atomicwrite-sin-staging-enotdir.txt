@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+ENOENT: no such file or directory, open '/tmp/thyrox-tests-ToSYQi/uds-atomic-llo2HI/ausente'
+    path: "/tmp/thyrox-tests-ToSYQi/uds-atomic-llo2HI/ausente",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) opciones completas de Jne > stagingDir crea el temporal allí con el nombre base del destino; si no es un directorio, junto al destino [1.30ms]
+
+ 26 pass
+ 1 fail
+ 69 expect() calls
+Ran 27 tests across 1 file. [187.00ms]

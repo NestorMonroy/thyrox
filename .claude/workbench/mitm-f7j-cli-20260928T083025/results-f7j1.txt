@@ -1,0 +1,43 @@
+== 1: mitm sin modo propio
+   (src/entry/detect-mode.ts)
+(fail) mitm as the first word selects the mitm mode, ahead of any flag [0.48ms]
+(fail) thyrox mitm serve runs through the real launcher and stops on SIGTERM [20026.80ms]
+ 5 pass
+ 2 fail
+== 2: la señal de parar nunca llega
+   (src/commands/mitm-commands.ts)
+(fail) thyrox mitm serve runs through the real launcher and stops on SIGTERM [30003.56ms]
+ 6 pass
+ 1 fail
+== 3: parar sin detener la API
+   (src/commands/mitm-commands.ts)
+(fail) serve answers on the announced URL until stopped, then withdraws the ingest target [23.77ms]
+ 6 pass
+ 1 fail
+== 4: parar sin cerrar el store
+   (src/commands/mitm-commands.ts)
+(fail) serve closes the store it opened when it stops [8.01ms]
+ 6 pass
+ 1 fail
+== 5: puertos por encima de 65535 aceptados
+   (src/commands/mitm-commands.ts)
+(fail) an invalid port refuses with a usage exit and starts nothing [5000.22ms]
+ 6 pass
+ 1 fail
+== 6: un verbo desconocido como éxito
+   (src/commands/mitm-commands.ts)
+(fail) an unknown mitm verb refuses with a usage exit, naming the verbs [2.10ms]
+ 6 pass
+ 1 fail
+== 7: sin subcomando en el programa completo
+   (src/commands/mitm-commands.ts)
+(fail) the mitm command exposes serve with a port option [2.20ms]
+ 6 pass
+ 1 fail
+== restaurado
+ M src/packages/cli/src/entry/detect-mode.ts
+ M src/packages/cli/src/entry/mode-dispatch.ts
+ M src/packages/cli/src/entry/run-program.ts
+?? src/packages/cli/src/commands/mitm-commands.ts
+ 7 pass
+ 0 fail

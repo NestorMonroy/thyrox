@@ -1,0 +1,8 @@
+Install the rc update channel as stable
+
+The settings schema admits autoUpdatesChannel 'rc', which 2.1.275
+shows as "slow" and installs as stable: rc is not a download channel,
+and its version lookup rejects it. The auto-updater passed the setting
+straight to getLatestVersion and the package installer, so an rc
+setting would have asked for a channel that does not exist. It now
+maps rc to stable before either call.

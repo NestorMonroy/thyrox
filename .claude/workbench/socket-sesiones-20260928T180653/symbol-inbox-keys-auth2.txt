@@ -1,0 +1,25 @@
+==== ke: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js variable ke [4250,4297)
+ke=/^(\d+)\.[0-9a-f]{64}\.key\.tmp\.[0-9a-f]+$/
+==== rfn: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js variable rfn [4217,4249)
+rfn=/^(\d+)\.[0-9a-f]{64}\.key$/
+==== W: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js variable W [4330,4444)
+W=f(()=>u({peerToken:o().regex(he),procStart:o().optional(),procStartFt:o().optional(),pidDomain:o().optional()}))
+==== cl: 1 definicion(es) de nivel superior
+---- chunk-q8a07cv0.js function cl [1005,1130)
+async function cl(e,n){try{let r=await F(e);if(!r.isFile()||r.size>n)return null;return await U(e,"utf8")}catch{return null}}
+==== x: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js variable x [4323,4329)
+x=4096
+==== zo: 1 definicion(es) de nivel superior
+---- chunk-zkn0228z.js function zo [35258,35294)
+function zo(e){return JSON.parse(e)}
+==== J: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js function J [4722,4810)
+function J(e){let n=Iv(e);return n===void 0?void 0:le("sha256").update(n).digest("hex")}
+==== b: 1 definicion(es) de nivel superior
+---- chunk-zkn0228z.js function b [34868,34952)
+function b(e,n,r){using i=gm`JSON.stringify(${se(e)})`;return JSON.stringify(e,n,r)}
+symbol: 8 de 8 nombre(s) resueltos

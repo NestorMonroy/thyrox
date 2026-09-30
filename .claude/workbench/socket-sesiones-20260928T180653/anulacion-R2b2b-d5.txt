@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeProcessContext.test.ts:
+77 | })
+78 | 
+79 | describe('getFastModeUnavailableReason (D5)', () => {
+80 |   test('fuera de primera parte y apagado por el entorno', () => {
+81 |     process.env.THYROX_CODE_USE_BEDROCK = '1'
+82 |     expect(getFastModeUnavailableReason()).toBe('Fast mode is only available when using the Anthropic API directly')
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "Fast mode is only available when using the Anthropic API directly"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeProcessContext.test.ts:82:44)
+(fail) getFastModeUnavailableReason (D5) > fuera de primera parte y apagado por el entorno [0.27ms]
+
+ 5 pass
+ 1 fail
+ 12 expect() calls
+Ran 6 tests across 1 file. [279.00ms]

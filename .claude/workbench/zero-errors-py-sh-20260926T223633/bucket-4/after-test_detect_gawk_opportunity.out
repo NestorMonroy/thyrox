@@ -1,0 +1,28 @@
+== 1. cada momento avisa y su gemelo calla ==
+  ok    mv-vuelta
+  ok    mv-otro
+  ok    sort-mv
+  ok    gsub-grupo
+  ok    gensub-grupo
+  ok    gsub-amp
+  ok    py-escribe
+  ok    py-imprime
+  ok    py-dotall
+  ok    mawk-inplace
+  ok    gawk-inplace
+== 2. el aviso nombra la forma que corresponde ==
+  ok    mv-vuelta sugiere -i inplace
+  ok    gsub-grupo sugiere gensub
+  ok    gsub-grupo cita el resultado literal medido
+  ok    py-escribe sugiere gawk -i inplace
+  ok    mawk-inplace nombra gawk
+  ok    un comando que no es Bash no avisa
+== 3. anulación: cada mitad de juicio hace caer exactamente sus casos ==
+  ok    sin el ancla de awk cae sólo sort-mv
+  ok    sin exigir que el mv vuelva a la entrada cae sólo mv-otro
+  ok    sin excluir gensub cae sólo gensub-grupo
+  ok    sin exigir escritura cae sólo py-imprime
+  ok    sin el descuento multilínea cae sólo py-dotall
+  ok    sin excluir gawk de -i inplace cae sólo gawk-inplace
+
+23 ok, 0 fallos

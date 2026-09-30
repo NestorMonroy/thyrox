@@ -1,0 +1,2 @@
+
+# --- el historial: cada ejecución deja su medida y la siguiente deriva de ella --

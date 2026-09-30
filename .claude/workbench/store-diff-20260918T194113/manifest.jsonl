@@ -1,0 +1,1 @@
+{"banco":"store-diff-20260918T194113","proposito":"Copia del store en HEAD para diferenciarlo contra el del arbol de trabajo","sujeto":"agent-results/agent_store.sqlite3","metodo":"git show HEAD:agent-results/agent_store.sqlite3 > head.sqlite3","ciega_a":"El -shm y el -wal son locks transitorios de SQLite, no evidencia: quedan fuera del commit"}

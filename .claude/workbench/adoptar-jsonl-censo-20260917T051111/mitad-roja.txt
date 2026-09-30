@@ -1,0 +1,52 @@
+# La mitad ROJA de la conversion de `models.json` a JSONL
+
+Fecha: 2026-09-17T05:51:41 · TASK-THYROX-0066 · sujeto: `src/packages/agent/models.json`
+
+Se persiste ANTES de implementar, porque un rojo que no se guarda al
+producirse no se puede volver a citar: al implementar, el mismo comando ya da
+verde y la evidencia de que el control discriminaba desaparece.
+
+## Que se cambio en el test, y por que cada asercion puede fallar
+
+`__tests__/models.test.ts` — la constante del sujeto pasa de `models.json` a
+`models.jsonl`, y se anaden tres casos:
+
+| Caso | Que lo haria fallar |
+|---|---|
+| `es JSONL: una linea por registro, y el archivo entero no es JSON` | que el archivo tenga UNA linea: `json.load` del entero pasaria, y el lector nunca seria de lineas |
+| `cada registro declara su kind, y la meta no depende de su posicion` | que la meta se identifique por posicion (linea 1) en vez de por contenido |
+| `el catalogo reconstruido conserva sus nueve claves de raiz` | que la reconstruccion pierda una clave de raiz, un modelo o un tier |
+
+Mas el bump de `schema_version` a 2 en el caso que ya existia.
+
+**La primera asercion es la que discrimina de verdad.** `json.load` acepta un
+JSONL de una sola linea, asi que un lector de documento probado contra n=1
+pasaria sin ser nunca un lector de LINEAS — el sub-patron D con esta propia
+conversion como sujeto. Es la misma forma que `tests/verify/test-premise-drift.sh`
+ya exige de su baseline, que por eso tiene dos fichas y no una.
+
+## El rojo medido
+
+```
+$ cd src/packages/agent && bun test __tests__/models.test.ts
+ error: ENOENT: no such file or directory, open '/home/user/thyrox/src/packages/agent/models.jsonl'
+ (fail) src/models.json es derivado, no escrito a mano > coincide byte a byte con la extracción del volcado 2.1.258 [79.26ms]
+ error: ENOENT: no such file or directory, open '/home/user/thyrox/src/packages/agent/models.jsonl'
+ (fail) src/models.json es derivado, no escrito a mano > es JSONL: una línea por registro, y el archivo entero no es JSON [0.12ms]
+ error: ENOENT: no such file or directory, open '/home/user/thyrox/src/packages/agent/models.jsonl'
+ (fail) src/models.json es derivado, no escrito a mano > cada registro declara su kind, y la meta no depende de su posición [0.09ms]
+ Expected: 2
+ Received: 1
+ (fail) src/models.json es derivado, no escrito a mano > declara su fuente y su forma [0.07ms]
+  12 pass
+  4 fail
+ Ran 16 tests across 1 file. [143.00ms]
+```
+
+Los cuatro rojos son los cuatro esperados: tres porque `models.jsonl` aun no
+existe (el archivo sigue siendo `models.json`), y el cuarto porque
+`schema_version` sigue en 1. Ninguno es un rojo de instrumento.
+
+*Metrica:* salida de `bun test` sobre el unico archivo de test del paquete.
+*Ciega a:* si las tres aserciones nuevas miden lo que sus nombres dicen — eso
+solo lo prueba el verde tras implementar, mas el control de anulacion.

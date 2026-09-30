@@ -1,0 +1,8 @@
+    parts = command.split()
+    # Las asignaciones de entorno que preceden al intérprete no son el
+    # programa: `PYTHONPATH=<src> python3 <ruta>` es la forma del hook de
+    # `SessionStart`, y sin saltarlas el intérprete se leía como no reconocido.
+    while parts and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=\S*", parts[0]):
+        parts = parts[1:]
+    if not parts:
+        return None

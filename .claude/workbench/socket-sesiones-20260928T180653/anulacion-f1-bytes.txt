@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketPath.test.ts:
+35 |     const dir = `/${'ñ'.repeat(46)}`
+36 |     const candidate = `${dir}/cc-socks/9.sock`
+37 |     expect(candidate.length).toBeLessThanOrEqual(MAX_SOCKET_PATH_BYTES)
+38 |     expect(Buffer.byteLength(candidate)).toBeGreaterThan(MAX_SOCKET_PATH_BYTES)
+39 |     expect(defaultUdsSocketPath({ env: { XDG_RUNTIME_DIR: dir }, pid: 9, uid: 5, tmpdir: '/tmp' }))
+40 |       .toBe('/tmp/cc-socks-5/9.sock')
+            ^
+error: expect(received).toBe(expected)
+
+Expected: "/tmp/cc-socks-5/9.sock"
+Received: "/ññññññññññññññññññññññññññññññññññññññññññññññ/cc-socks/9.sock"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketPath.test.ts:40:8)
+(fail) defaultUdsSocketPath (W1o) > el límite cuenta bytes, no caracteres [0.58ms]
+
+ 11 pass
+ 1 fail
+ 22 expect() calls
+Ran 12 tests across 1 file. [42.00ms]

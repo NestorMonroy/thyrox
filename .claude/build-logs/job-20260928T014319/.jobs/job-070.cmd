@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/session/test-write-env-repairs-moved-clone.sh

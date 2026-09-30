@@ -1,0 +1,16 @@
+# mitm-f7h1-check
+
+## Qué se lanzó
+
+```
+bash -c cd src/packages/mitm && bun test 2>&1 | tail -4; bunx tsc -p tsconfig.build.json --noEmit 2>&1 | tail -5; echo BUILD_EXIT=$?; bunx tsc -p tsconfig.test.json --noEmit 2>&1 | tail -8; echo TEST_TSC_DONE
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

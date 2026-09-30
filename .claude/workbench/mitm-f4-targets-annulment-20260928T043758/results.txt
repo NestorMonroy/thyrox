@@ -1,0 +1,36 @@
+== A1 ruta sin consultar la exclusión
+(fail) routeConnection — default bypass (bank) wins over target match [1.61ms]
+(fail) routeConnection — user bypass glob beats target [0.26ms]
+(fail) routeConnection — precedence: bypass > target > passthrough [0.14ms]
+ 35 pass
+ 3 fail
+== A2 resolución que distingue mayúsculas
+(fail) resolveTarget — case-insensitive match [1.34ms]
+ 37 pass
+ 1 fail
+== A3 glob sin exigir el primer tramo
+ 38 pass
+ 0 fail
+== A4 destino cuyo handler no resuelve a su clase
+(fail) every ported target resolves to its handler class [0.58ms]
+ 37 pass
+ 1 fail
+== A5 tutorial que vuelve a nombrar la referencia
+(fail) no target text names the reference product [0.60ms]
+ 37 pass
+ 1 fail
+== restored
+ 38 pass
+ 0 fail
+== A3b glob sin exigir el primer tramo, con el caso nuevo
+(fail) globMatch — a fixed prefix anchors the start of the host [1.30ms]
+ 39 pass
+ 1 fail
+== A6 glob sin exigir el último tramo
+(fail) shouldBypass — user custom glob pattern matches [1.07ms]
+(fail) globMatch — a fixed suffix anchors the end of the host [0.31ms]
+ 38 pass
+ 2 fail
+== restored
+ 40 pass
+ 0 fail

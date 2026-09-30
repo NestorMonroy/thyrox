@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2592, "total_final": 2589, "tsc_runs": 1, "accepted": ["agent:context-output-percentages"], "files_kept": ["src/packages/agent/context.ts"], "outcomes": {"agent:context-output-percentages": "accepted-net"}}

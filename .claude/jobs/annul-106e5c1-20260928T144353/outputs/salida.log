@@ -1,0 +1,108 @@
+== 1: margen de 10 min
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a fresh sub-token is only validated, silently [0.61ms]
+(fail) the Copilot sub-token after a GitHub refresh > a sub-token with time left, or no token at all, is left alone [0.24ms]
+(fail) the Copilot sub-token after a GitHub refresh > the expiry falls back to the connection given, and accepts milliseconds and dates [0.29ms]
+ 8 pass
+ 3 fail
+== 2: sin caducidad vale
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > a failed renewal is warned; an error is logged [0.31ms]
+ 10 pass
+ 1 fail
+== 3: subtoken vacío vale
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+ 11 pass
+ 0 fail
+== 4: sin subtoken no renueva
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+ 11 pass
+ 0 fail
+== 5: sin host de empresa
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > an enterprise connection asks its own host [0.52ms]
+ 10 pass
+ 1 fail
+== 6: rechazo de GitHub pasa
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > GitHub rejecting the access token expires the connection [0.50ms]
+ 10 pass
+ 1 fail
+== 7: renueva sin hacer falta
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a fresh sub-token is only validated, silently [0.45ms]
+ 10 pass
+ 1 fail
+== 8: sin curar el estado
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a sub-token about to expire is renewed and the connection stays active [1.60ms]
+(fail) a Copilot connection without a refresh token > a fresh sub-token is only validated, silently [0.40ms]
+(fail) a Copilot connection without a refresh token > a failed renewal is recorded without leaving the connection [0.32ms]
+(fail) a Copilot connection without a refresh token > an expired no-refresh-token connection is healed [0.26ms]
+ 7 pass
+ 4 fail
+== 9: fallo sin error
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a failed renewal is recorded without leaving the connection [0.74ms]
+ 10 pass
+ 1 fail
+== 10: reintentos sin limpiar
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a sub-token about to expire is renewed and the connection stays active [1.92ms]
+ 10 pass
+ 1 fail
+== 11: otro estado sin subtoken
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > another state is only stamped, with the renewed sub-token if any [0.88ms]
+ 10 pass
+ 1 fail
+== 12: registra cada minuto
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) a Copilot connection without a refresh token > a fresh sub-token is only validated, silently [0.39ms]
+ 10 pass
+ 1 fail
+== 13: sin releer la fila
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > is renewed with the new access token when about to expire, over the latest row [0.88ms]
+(fail) the Copilot sub-token after a GitHub refresh > a sub-token with time left, or no token at all, is left alone [0.38ms]
+ 9 pass
+ 2 fail
+== 14: lectura fallida lanza
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > a failed renewal is warned; an error is logged [0.60ms]
+ 10 pass
+ 1 fail
+== 15: sin access token nuevo
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+ 11 pass
+ 0 fail
+== 16: sin respaldo de caducidad
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+ 11 pass
+ 0 fail
+== 17: renueva siempre
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > a sub-token with time left, or no token at all, is left alone [0.38ms]
+(fail) the Copilot sub-token after a GitHub refresh > the expiry falls back to the connection given, and accepts milliseconds and dates [0.35ms]
+ 9 pass
+ 2 fail
+== 18: sin guardar subtoken
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > is renewed with the new access token when about to expire, over the latest row [0.64ms]
+(fail) the Copilot sub-token after a GitHub refresh > a failed renewal is warned; an error is logged [0.45ms]
+ 9 pass
+ 2 fail
+== 19: datos previos perdidos
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > is renewed with the new access token when about to expire, over the latest row [1.09ms]
+ 10 pass
+ 1 fail
+== 20: error se propaga
+   (src/accounts/refresh/health/copilotHealthCheck.ts)
+(fail) the Copilot sub-token after a GitHub refresh > a failed renewal is warned; an error is logged [0.74ms]
+ 10 pass
+ 1 fail
+== restaurado
+ 11 pass
+ 0 fail
+__BG_EXIT__=0

@@ -1,0 +1,2 @@
+environment: line 2: _THYROX_VERDE: unbound variable
+EXIT=1

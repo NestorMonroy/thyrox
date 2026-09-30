@@ -1,0 +1,6 @@
+src/packages/agent/messages.ts(1413,27): error TS2345: Argument of type '(this: undefined, message: Message) => ProgressMessage<unknown>[] | NormalizedMessage[] | AttachmentMessage<unknown>[] | SystemMessage[] | (MessageBase & { ...; })[]' is not assignable to parameter of type '(this: undefined, value: Message, index: number, array: Message[]) => ProgressMessage<unknown> | readonly ProgressMessage<unknown>[]'.
+  Type 'ProgressMessage<unknown>[] | NormalizedMessage[] | AttachmentMessage<unknown>[] | SystemMessage[] | (MessageBase & { ...; })[]' is not assignable to type 'ProgressMessage<unknown> | readonly ProgressMessage<unknown>[]'.
+    Type 'NormalizedMessage[]' is not assignable to type 'ProgressMessage<unknown> | readonly ProgressMessage<unknown>[]'.
+      Type 'NormalizedMessage[]' is not assignable to type 'ProgressMessage<unknown>'.
+        Type 'NormalizedMessage[]' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/agent/messages.ts(1568,12): error TS2367: This comparison appears to be unintentional because the types 'false' and 'true' have no overlap.

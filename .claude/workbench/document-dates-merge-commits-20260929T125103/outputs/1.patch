@@ -1,0 +1,80 @@
+diff --git a/src/agents/agent_store.py b/src/agents/agent_store.py
+index 5cd33efa..0e0e705c 100644
+--- a/src/agents/agent_store.py
++++ b/src/agents/agent_store.py
+@@ -2267,10 +2267,25 @@ def _last_commit_dates(repo: Path, subtree: str) -> dict:
+     linea en blanco que ese mismo formato deja sin ``-z`` — asi que cada
+     fragmento se despoja de ese `\n` sobrante antes de decidir si es fecha o
+     ruta.
++
++    Se pide con ``--cc``, no con ``-m`` ni ``--first-parent``: sin ninguna
++    opcion de diff para merges, git NO lista archivos en un commit merge, asi
++    que un archivo cuyo UNICO commit es un merge (creado al resolver un
++    conflicto, o al añadirlo durante la resolucion) queda sin fecha —
++    H-THYROX-271, medido sobre `hallazgo-H-DOCS-492-…` en kaupamex-docs.
++    ``-m`` mostraria ese archivo, pero tambien CUALQUIER archivo que el merge
++    trajo sin cambios de una rama, contra CADA padre por separado —
++    re-fechando con la fecha del merge documentos que no cambiaron ahi.
++    ``--first-parent`` tiene el mismo defecto sobre un solo padre. ``--cc``
++    es la combinada: en un commit merge, lista solo los archivos que
++    difieren de TODOS los padres a la vez — exactamente el caso que hay que
++    recuperar, sin tocar lo que el merge trajo intacto (medido: 34307 lineas
++    sin ``--cc`` contra 34340 con ella sobre `source/`, 33 archivos que antes
++    no aparecian en ningun commit).
+     """
+     try:
+         salida = subprocess.run(
+-            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "-z", "--", subtree],
++            ["git", "-C", str(repo), "log", "--format=@%cI", "--name-only", "--cc", "-z", "--", subtree],
+             capture_output=True, text=True, check=True,
+         ).stdout
+     except (subprocess.CalledProcessError, FileNotFoundError):
+diff --git a/tests/agents/test-agent-store-fecha-documento.sh b/tests/agents/test-agent-store-fecha-documento.sh
+index d0ebece3..2efbf4bd 100755
+--- a/tests/agents/test-agent-store-fecha-documento.sh
++++ b/tests/agents/test-agent-store-fecha-documento.sh
+@@ -279,6 +279,44 @@ commit_en "2026-08-01T00:00:00" "no ascii"
+ python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
+ afirmar "16 ruta no ASCII se fecha con su ruta real"  "git-commit"  "$(leer 'source/h-tilde-í.rst' updated_at_source)"
+ 
++
++# --- 17 · H-THYROX-271: archivo cuyo UNICO commit es un merge ---------------
++# git log sin opcion de diff para merges no lista archivos de un commit merge.
++# Un archivo creado al resolver el merge (no existe en ningun padre) queda sin
++# fecha porque su unico commit nunca aparece en `--name-only`. `--cc` lo
++# recupera: lista, en cada merge, solo los archivos que difieren de TODOS los
++# padres -- exactamente este caso -- sin re-fechar lo que el merge trajo
++# intacto de una rama (el CONTROL de abajo).
++RAMA_BASE=$(git -C "$REPO" branch --show-current)
++git -C "$REPO" checkout -q -b rama-b
++
++git -C "$REPO" checkout -q "$RAMA_BASE"
++doc "k-en-master.rst" "-" "K"
++git -C "$REPO" add -A
++commit_en "2026-08-05T00:00:00" "avanza master"
++
++git -C "$REPO" checkout -q rama-b
++doc "i-viene-de-rama.rst" "-" "I"
++git -C "$REPO" add -A
++commit_en "2026-08-10T00:00:00" "archivo creado en la rama"
++
++git -C "$REPO" checkout -q "$RAMA_BASE"
++git -C "$REPO" merge -q --no-commit --no-ff rama-b
++doc "j-nace-en-merge.rst" "-" "J"
++git -C "$REPO" add -A
++commit_en "2026-08-20T00:00:00" "merge con archivo nuevo"
++
++python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" >/dev/null 2>&1
++afirmar "17a archivo nacido en el merge toma su fecha"  "git-commit" "$(leer source/j-nace-en-merge.rst updated_at_source)"
++FECHA_MERGE=$(leer source/j-nace-en-merge.rst commit_at)
++[[ "$FECHA_MERGE" == 2026-08-20* ]]
++afirmar "17b la fecha es la del commit merge"           "0" "$?"
++
++# CONTROL: el archivo que el merge trajo SIN cambios conserva la fecha de su
++# commit en la rama, no la del merge.
++FECHA_RAMA=$(leer source/i-viene-de-rama.rst commit_at)
++[[ "$FECHA_RAMA" == 2026-08-10* ]]
++afirmar "17c CONTROL archivo traido intacto conserva su fecha de rama" "0" "$?"
+ echo
+ echo "  $OK ok · $FALLO fallas"
+ [[ $FALLO -eq 0 ]]

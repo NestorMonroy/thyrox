@@ -1,0 +1,24 @@
+....F..F.
+======================================================================
+FAIL: test_the_measurable_population_supports_the_claim (__main__.CacheHomeResolution.test_the_measurable_population_supports_the_claim)
+Sin al menos dos clones, «un hogar POR CLON» no se puede observar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 112, in test_the_measurable_population_supports_the_claim
+    self.assertGreaterEqual(len(_without_per_clone_key()), 2)
+AssertionError: 1 not greater than or equal to 2
+
+======================================================================
+FAIL: test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike)
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 200, in test_the_three_families_compose_the_same_segment_alike
+    self.assertGreaterEqual(
+AssertionError: 1 not greater than or equal to 2 : sin dos clones observables en las TRES familias, la simetria no se puede afirmar
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.014s
+
+FAILED (failures=2)
+EXIT=1

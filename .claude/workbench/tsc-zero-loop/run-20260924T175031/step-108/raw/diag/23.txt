@@ -1,0 +1,42 @@
+src/packages/provider/src/__tests__/connections.test.ts(236,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(245,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(254,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(263,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(272,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.
+src/packages/provider/src/__tests__/connections.test.ts(281,44): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/config/global/config").ConnectionRecord' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/provider/src/connections").ConnectionRecord'.
+  Types of property 'auth' are incompatible.
+    Type '{ type: "oauth"; source: string; } | { type: "api_key"; key?: string | undefined; }' is not assignable to type 'ConnectionAuth'.
+      Type '{ type: "oauth"; source: string; }' is not assignable to type 'ConnectionAuth'.
+        Type '{ type: "oauth"; source: string; }' is not assignable to type '{ type: "oauth"; source: "codex" | "claude-ai"; }'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"codex" | "claude-ai"'.

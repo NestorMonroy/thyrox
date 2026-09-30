@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/repo/test_pending_work_telemetry.py

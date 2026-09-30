@@ -1,0 +1,3 @@
+commit_identity: remolque del agente prohibido: Claude-Session: https://x
+con remolque exit=1
+mencion en prosa exit=0

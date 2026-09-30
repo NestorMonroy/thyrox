@@ -1,0 +1,171 @@
+.. Template — reStructuredText tables.
+..
+.. Copy the form you need and replace the placeholder text. The decision rule
+.. is at the bottom: read it before picking a form.
+..
+.. This template is deliberately generic: it describes reStructuredText and
+.. Sphinx, not any one project. A project that wants a single mandatory form
+.. states that in its own conventions and points here for the syntax.
+
+
+Form 1 — ``list-table`` (default; pick this unless you have a reason not to)
+============================================================================
+
+Each row is a bullet; each cell is a nested bullet. Nothing has to line up, so
+the table survives editing, wide cells, code spans and multi-line prose.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 30 50
+
+   * - Column A
+     - Column B
+     - Column C
+   * - ``short``
+     - a cell that happens to be longer
+     - a cell whose prose wraps across several lines without breaking the
+       table, because nothing in ``list-table`` depends on column alignment
+   * - ``another``
+     - —
+     - use ``—`` for an empty cell; a bare ``-`` starts a new bullet
+
+Options worth knowing:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 78
+
+   * - Option
+     - What it does
+   * - ``:header-rows: 1``
+     - first row renders as ``<th>``. Omit it and every row is a body row
+   * - ``:widths: 20 30 50``
+     - relative column widths. Without it the builder guesses, and wide code
+       spans push the layout around
+   * - ``:widths: auto``
+     - let the writer/builder decide — acceptable when columns are even
+   * - ``:stub-columns: 1``
+     - first *column* also renders as a header
+   * - ``:align: center``
+     - table alignment on the page
+   * - ``:class: longtable``
+     - LaTeX: allow the table to break across pages
+
+
+Form 2 — grid table
+====================
+
+Explicit borders. The only form that supports **spanning cells**, which is its
+one real reason to exist. Every edit means redrawing the borders by hand.
+
+.. table:: Optional caption
+   :widths: auto
+
+   +--------------+------------------+-------------------+
+   | Column A     | Column B         | Column C          |
+   +==============+==================+===================+
+   | cell         | cell             | cell              |
+   +--------------+------------------+-------------------+
+   | this cell spans two columns     | cell              |
+   +--------------+------------------+-------------------+
+
+A spanning cell drops the internal ``|``, and its text must fit the **summed**
+width of the columns it covers plus the separator it swallowed. Getting that
+off by one character is a build error, and it is the reason this form is the
+last resort: the alignment is arithmetic you have to redo on every edit. If you
+write one, compute the widths — do not eyeball them.
+
+
+Form 3 — simple table
+======================
+
+Underline-delimited. Compact to read in raw form, but the column boundaries
+are positional: a cell that grows past its column silently corrupts the table,
+and cells cannot contain blank lines.
+
+==========  ==========  ==========
+Column A    Column B    Column C
+==========  ==========  ==========
+cell        cell        cell
+cell        cell        cell
+==========  ==========  ==========
+
+
+Form 4 — ``csv-table``
+=======================
+
+For data that already exists as CSV, or is generated. Do not hand-write a
+``csv-table`` you could have written as a ``list-table``: quoting rules make it
+harder to edit, not easier.
+
+.. csv-table:: Optional caption
+   :header: "Column A", "Column B"
+   :widths: 30, 70
+
+   "value", "value"
+   "value with, a comma", "value"
+
+From a file — shown as source, because the directive resolves the path at build
+time and a template has no data file to point at:
+
+.. code-block:: rst
+
+   .. csv-table:: From a file
+      :file: data/measurements.csv
+      :header-rows: 1
+
+
+Decision rule
+=============
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Situation
+     - Form
+   * - Anything, by default
+     - ``list-table``
+   * - A cell must span rows or columns
+     - grid table — the only form that can
+   * - The data is already a CSV file, or generated
+     - ``csv-table`` with ``:file:``
+   * - A tiny fixed table you will never edit again
+     - simple table is *acceptable*, not better
+
+Why ``list-table`` is the default, stated as consequences rather than taste:
+
+- **It does not break when edited.** Simple and grid tables encode column
+  boundaries in whitespace; widening one cell silently misaligns the row. A
+  malformed table is not always a build error — it can render as wrong content.
+- **It holds arbitrary cell content.** Multi-line prose, nested lists,
+  ``code-block``, admonitions. Simple tables cannot contain blank lines at all.
+- **Column widths are declared, not inferred.** ``:widths:`` states intent;
+  the other forms make the builder guess from character counts.
+- **Diffs stay legible.** Changing one cell changes one line. In a simple or
+  grid table it rewrites the borders too, so review cannot see what changed.
+
+The cost is real and worth naming: ``list-table`` is verbose, and the raw
+source is harder to read than a simple table. That cost is paid once at
+writing; the alignment cost of the other forms is paid at every edit.
+
+
+Checks before committing a table
+=================================
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Check
+     - How
+   * - The table parses
+     - build the file, or parse it standalone with ``docutils``
+   * - Every row has the same number of cells
+     - ``list-table`` errors loudly on this; the other forms may not
+   * - ``:widths:`` has one number per column
+     - a mismatch is a build error, and it is easy to miss after adding a
+       column
+   * - The header row is marked
+     - ``:header-rows: 1`` — a table whose first row is body text reads as
+       data, not as a heading

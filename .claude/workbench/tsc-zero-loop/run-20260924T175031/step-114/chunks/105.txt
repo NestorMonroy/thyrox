@@ -1,0 +1,2 @@
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(204,16): error TS18046: 'eventCount' is of type 'unknown'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(272,47): error TS2538: Type 'unknown' cannot be used as an index type.

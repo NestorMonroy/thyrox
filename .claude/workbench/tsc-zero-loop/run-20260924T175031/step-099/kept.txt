@@ -1,0 +1,9 @@
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts
+src/packages/agent/internal/fileHistoryCore.ts
+src/packages/agent/query.ts
+src/packages/app-host/src/runtime/installPluginBindings.ts
+src/packages/repl/src/screens/REPLView.tsx
+src/packages/repl/src/tips/tipRegistry.ts
+src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx
+src/packages/tool-registry/src/teleport.tsx
+src/packages/repl/src/components/MessageRow.tsx

@@ -1,0 +1,199 @@
+F401 [*] `dataclasses.replace` imported but unused
+  --> src/cache/work_cache.py:66:43
+   |
+64 | import pathlib
+65 | import stat
+66 | from dataclasses import dataclass, field, replace
+   |                                           ^^^^^^^
+67 | from typing import Callable, Iterable, Mapping
+   |
+help: Remove unused import: `dataclasses.replace`
+   |
+65 | import stat
+   - from dataclasses import dataclass, field, replace
+66 + from dataclasses import dataclass, field
+67 | from typing import Callable, Iterable, Mapping
+   |
+
+F401 [*] `pathlib` imported but unused
+  --> src/corpus/census_scripts.py:30:8
+   |
+28 | import argparse
+29 | import collections
+30 | import pathlib
+   |        ^^^^^^^
+31 | import subprocess
+32 | import sys
+   |
+help: Remove unused import: `pathlib`
+   |
+29 | import collections
+   - import pathlib
+30 | import subprocess
+   |
+
+F401 [*] `re` imported but unused
+  --> src/corpus/pdf_to_text.py:57:8
+   |
+55 | import argparse
+56 | import pathlib
+57 | import re
+   |        ^^
+58 | import shutil
+59 | import subprocess
+   |
+help: Remove unused import: `re`
+   |
+56 | import pathlib
+   - import re
+57 | import shutil
+   |
+
+F401 [*] `sys` imported but unused
+  --> tests/agents/test_balanced_block.py:39:8
+   |
+38 | import importlib.util
+39 | import sys
+   |        ^^^
+40 | from pathlib import Path
+   |
+help: Remove unused import: `sys`
+   |
+38 | import importlib.util
+   - import sys
+39 | from pathlib import Path
+   |
+
+F401 [*] `pathlib` imported but unused
+  --> tests/agents/test_derive_submodule.py:47:8
+   |
+46 | import importlib.util
+47 | import pathlib
+   |        ^^^^^^^
+48 | import sys
+   |
+help: Remove unused import: `pathlib`
+   |
+46 | import importlib.util
+   - import pathlib
+47 | import sys
+   |
+
+F401 [*] `os` imported but unused
+  --> tests/agents/test_document_root_default.py:19:8
+   |
+18 | import importlib.util
+19 | import os
+   |        ^^
+20 | import subprocess
+21 | import sys
+   |
+help: Remove unused import: `os`
+   |
+18 | import importlib.util
+   - import os
+19 | import subprocess
+   |
+
+F401 [*] `math` imported but unused
+  --> tests/measurement/test_distribution.py:30:8
+   |
+28 | from __future__ import annotations
+29 |
+30 | import math
+   |        ^^^^
+31 | import pathlib
+32 | import sys
+   |
+help: Remove unused import: `math`
+   |
+29 |
+   - import math
+30 | import pathlib
+   |
+
+F401 [*] `math` imported but unused
+  --> tests/measurement/test_residual_structure.py:19:8
+   |
+17 | from __future__ import annotations
+18 |
+19 | import math
+   |        ^^^^
+20 | import pathlib
+21 | import random
+   |
+help: Remove unused import: `math`
+   |
+18 |
+   - import math
+19 | import pathlib
+   |
+
+F401 [*] `sqlite3` imported but unused
+  --> tests/task/test_layer_axis.py:93:16
+   |
+91 |         """
+92 |         import json
+93 |         import sqlite3
+   |                ^^^^^^^
+94 |         import tempfile
+   |
+help: Remove unused import: `sqlite3`
+   |
+92 |         import json
+   -         import sqlite3
+93 |         import tempfile
+   |
+
+F401 [*] `os` imported but unused
+  --> tests/task/test_task_source_citas.py:36:8
+   |
+35 | import importlib.util
+36 | import os
+   |        ^^
+37 | import pathlib
+38 | import sqlite3
+   |
+help: Remove unused import: `os`
+   |
+35 | import importlib.util
+   - import os
+36 | import pathlib
+   |
+
+F401 [*] `os` imported but unused
+  --> tests/typescript/test_emit_declarations.py:28:8
+   |
+26 | """
+27 | import json
+28 | import os
+   |        ^^
+29 | import subprocess
+30 | import sys
+   |
+help: Remove unused import: `os`
+   |
+27 | import json
+   - import os
+28 | import subprocess
+   |
+
+F401 [*] `subprocess` imported but unused
+  --> tests/typescript/test_emit_declarations.py:29:8
+   |
+27 | import json
+28 | import os
+29 | import subprocess
+   |        ^^^^^^^^^^
+30 | import sys
+31 | import tempfile
+   |
+help: Remove unused import: `subprocess`
+   |
+28 | import os
+   - import subprocess
+29 | import sys
+   |
+
+Found 12 errors.
+[*] 12 fixable with the `--fix` option.

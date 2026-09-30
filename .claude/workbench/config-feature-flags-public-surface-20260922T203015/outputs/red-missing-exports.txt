@@ -1,0 +1,16 @@
+src/packages/@ant/computer-use-mcp/src/legacy/gates.ts(3,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'getDynamicConfig_CACHED_MAY_BE_STALE'.
+src/packages/agent/SessionMemory/sessionMemory.ts(72,3): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'getDynamicConfig_CACHED_MAY_BE_STALE'.
+src/packages/agent/background/remote/remoteSession.ts(3,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'checkGate_CACHED_OR_BLOCKING'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(22,3): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'getDynamicConfig_BLOCKS_ON_INIT'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(344,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'initializeGrowthBook'.
+src/packages/cli/src/headless/sdk/session/run.ts(51,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'initializeGrowthBook'.
+src/packages/command-runtime/src/commands/login/login.tsx(14,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'refreshGrowthBookAfterAuthChange'.
+src/packages/provider/src/commands/logout/logout.tsx(3,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'refreshGrowthBookAfterAuthChange'.
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx(4,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'getDynamicConfig_CACHED_MAY_BE_STALE'.
+src/packages/repl/src/components/LogoV2/EmergencyTip.tsx(4,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'getDynamicConfig_CACHED_MAY_BE_STALE'.
+src/packages/repl/src/hooks/useCommandReload.ts(8,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'onGrowthBookRefresh'.
+src/packages/repl/src/hooks/useMainLoopModel.ts(2,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'onGrowthBookRefresh'.
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx(26,3): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'checkGate_CACHED_OR_BLOCKING'.
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx(27,3): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'initializeGrowthBook'.
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx(28,3): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'resetGrowthBook'.
+src/packages/tool-registry/src/teleport.tsx(6,10): error TS2305: Module '"@thyrox/config/feature-flags"' has no exported member 'checkGate_CACHED_OR_BLOCKING'.

@@ -1,0 +1,14 @@
+  ok   el arbol vivo no declara ningun evento desconocido
+  ok   un evento con typo sale con codigo 1
+  ok   la caja distinta sale con codigo 1
+  ok   un evento valido no bloquea
+  ok   sin universo derivable sale con codigo 2
+  ok   el reporte declara ambos universos
+  ok   el reporte nombra los eventos sin consumir
+  ok   la raiz del arbol de trabajo entra en el alcance
+  ok   lo que SOLO declara el archivo externo no sale sin consumir
+  ok   el árbol declarado entra en el alcance: su typo sale con código 1
+  ok   y nombra su settings.local.json
+
+11 ok · 0 falla(s)
+EXIT=0

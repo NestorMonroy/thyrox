@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790394039.976	   152.648	0	0	0	0	_headless_item 1 'type:AppState .claude/workbench/tsc-zero-loop/run-20260924T175031/step-161/items/1.txt src/packages/agent/task/framework.ts src/packages/agent/types/hooks.ts src/packages/app-host/src/runtime/runtimeHandles.ts src/packages/app-host/src/state/AppStateCompat.ts src/packages/repl/src/hooks/useReplBridge.tsx src/packages/tool-registry/src/tools/BashTool/UI.tsx'

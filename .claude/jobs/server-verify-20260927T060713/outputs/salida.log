@@ -1,0 +1,41 @@
+  server: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+bun test v1.3.11 (af24e281)
+
+ 14 pass
+ 0 fail
+ 16 expect() calls
+Ran 14 tests across 1 file. [12.00ms]
+
+1. Nombra lo que un hermano ya exporta, con su especificador
+  ok    la función exportada por ./env/utils
+  ok    la constante también
+  ok    el tipo exportado por la raíz del hermano
+  ok    no lo que sólo existe en un archivo fuera de exports
+  ok    ni lo que exporta el propio paquete
+
+2. El conteo publica su denominador y la CLI discrimina
+  ok    con sustitutos obsoletos sale 1
+  ok    y publica cuántos símbolos midió en cuántos archivos
+  ok    sin obsoletos sale 0
+
+4. Marca el ciclo: importar el original desde un paquete que ya depende del dueño
+  ok    sin ciclo: config no depende de mcp
+  ok    con ciclo transitivo de módulos: loop -> mid -> mcp
+  ok    ciclo de paquetes sin ciclo de módulos: se puede importar
+  ok    la salida nombra el ciclo
+
+3. Rehúsa sin publicar un cero cuando no hay nada que medir
+  ok    sin sustitutos rehúsa con 2
+  ok    y sin conteo
+
+4. Un homónimo DECLARADO no es un sustituto: mismo nombre, otro símbolo
+  ok    el homónimo declarado con razón sale de los importables
+  ok    una declaración sin razón no cuenta: sigue siendo importable
+  ok    lo demás sigue igual
+  ok    el homónimo se publica con su razón
+  ok    la salida lo cuenta aparte
+
+test_check_stand_ins: 19 ok, 0 falla(s)
+__BG_EXIT__=0

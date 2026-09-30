@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && timeout 900 bunx tsc -p tsconfig.json --noEmit > .claude/workbench/ts-own-errors-20260926T225629/after-source-root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/ts-own-errors-20260926T225629/after-source-root-tsc.out", "started_at": "2026-09-27T00:33:04+00:00"}

@@ -1,0 +1,9 @@
+{
+  "id": "11",
+  "subject": "Nombrar el artefacto del set mínimo para los 17 skills sin coordinador que los mapee",
+  "description": "El triaje de #8 (analisis-triaje-destinos-md-de-los-skills.rst) deja el hogar de todo destino de entregable nombrado a nivel de DIRECTORIO — la iniciativa — pero no a nivel de ARTEFACTO para los skills cuya familia no tiene coordinador con tabla `## Mapping`.\n\nMedido: 33 tokens en 17 skills. Son los 13 `workflow-*`, los 4 `kanban-*`/`scrum-definition-of-done` con cajón de fase, y `thyrox`. Para las nueve familias que sí tienen coordinador (ba bpa cp dmaic lean pdca pps rup sp) la tabla del coordinador ya dice a cuál de los seis artefactos va cada salida; para estos 17 nadie lo dice.\n\n#310 está CERRADA y fija el directorio: `.thyrox/` no se importó, el equivalente del work package es `pm/<submodulo>/iniciativas/<slug>/` y el cajón de fase no tiene contraparte. Lo que sigue abierto es cuál de los seis artefactos recibe cada salida.\n\nCondición de cierre: cada uno de los 33 destinos con su artefacto del set mínimo nombrado, o declarado que la salida no se materializa. El precedente de forma es `ba-coordinator.md` sección \"Mapping BABOK -> artefactos de la iniciativa\".",
+  "activeForm": "Mapeando los destinos sin coordinador al set mínimo",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

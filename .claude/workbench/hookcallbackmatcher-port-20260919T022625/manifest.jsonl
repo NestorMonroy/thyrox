@@ -1,0 +1,6 @@
+{"ts": "2026-09-19T02:26:25", "tipo": "sujeto", "que": "TASK-THYROX-0201 — portar HookCallbackMatcher, HookCallback, HookCallbackContext, HookInput, AppState, PluginHookMatcher"}
+{"ts": "2026-09-19T02:26:25", "tipo": "control", "que": "grep -c \"state.js' has no exported member\" -> 0; hooks.ts 0 errores; state.ts solo 6 TS2307 preexistentes"}
+{"ts": "2026-09-19T02:26:25", "tipo": "medicion", "que": "tsc total 7227 -> 7018 (-209); TS2305 1168 -> 973 (-195)"}
+{"ts": "2026-09-19T02:26:25", "tipo": "refutacion", "que": "La prediccion de la tarea NO se cumplio: TS2322 y TS2345 con delta 0. Ningun consumidor construye un matcher malformado."}
+{"ts": "2026-09-19T02:26:25", "tipo": "defecto-propio", "que": "TS2304 +1 en config/settings/types.ts:261 — PluginHookMatcher uso HookCommand sin importarlo. Corregido desde ./schemas/hooks.js, el hogar de la fuente."}
+{"ts": "2026-09-19T02:26:25", "tipo": "sucesor", "que": "TS7016 +12, todos 'lodash-es/memoize.js' en provider/ — falta @types/lodash-es. Cascada, no defecto del porte."}

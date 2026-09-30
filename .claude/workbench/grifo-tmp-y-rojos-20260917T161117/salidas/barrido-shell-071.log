@@ -1,0 +1,2 @@
+VERDE tests/verify/test-gitattributes.sh
+EXIT=0

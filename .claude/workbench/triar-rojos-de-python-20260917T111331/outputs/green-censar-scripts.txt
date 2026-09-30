@@ -1,0 +1,17 @@
+== census_scripts.py — descubrimiento sobre el fondo agrupado por clase ==
+  ok   ve un guion en una subcarpeta de clase (gates/)
+  ok   recurre más de un nivel (agents/nested/)
+  ok   sigue viendo la raíz de .claude/scripts
+  ok   recurre también bajo scripts/ (producto)
+  ok   CONTROL — tests/ queda fuera del universo, como declara su Ciega a
+  ok   CONTROL — docs/ queda fuera del universo, como declara su Ciega a
+  ok   CONTROL — __pycache__ nunca es un guion
+== la clase se deriva del citante también con la ruta anidada ==
+  ok   gates/check_something.py citado desde docs → gate-de-reporte
+  ok   deep_tool.py sin citante → huerfano (el instrumento sí puede fallar)
+== el baseline de huérfanos apunta a un archivo que EXISTE en el repo real ==
+  FAIL BASELINE existe: .claude/scripts/corpus/scripts_huerfanos_baseline.txt
+       el generador declara una ruta anterior a la mudanza; --huerfanos lee 0 en baseline
+
+resultado: 9 ok, 1 fallas
+exit=1

@@ -1,0 +1,6 @@
+Record the tsc count for the zero-errors analysis
+
+The tsc job finished: 2324 unique errors, equal to the baseline.
+The bench keeps the unique error list, its breakdown by code and by
+package, and the 60 module/symbol pairs still reported as missing
+exports (TS2305/TS2724).

@@ -1,0 +1,4 @@
+base	27 pass, 0 fail	—
+pairs-upper-ignored	26 pass, 1 fail	los pares AWS suprimidos (Pd) > las que arriba ya se nombran no se suprimen
+pairs-any-variable	26 pass, 1 fail	los pares AWS suprimidos (Pd) > cada variable AWS que abajo se nombra y arriba no, se suprime con un par propio
+pairs-index-zero	26 pass, 1 fail	los pares AWS suprimidos (Pd) > cada variable AWS que abajo se nombra y arriba no, se suprime con un par propio

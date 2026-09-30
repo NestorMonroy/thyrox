@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bash src/verify/check-cli-typecheck.sh 2>&1; echo \"GATE_EXIT=$?\"", "started_at": "2026-09-19T11:30:29+00:00"}

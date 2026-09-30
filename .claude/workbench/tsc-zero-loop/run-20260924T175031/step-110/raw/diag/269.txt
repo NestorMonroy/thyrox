@@ -1,0 +1,1 @@
+src/packages/tool-registry/src/Tool.ts(152,15): error TS2724: '"@thyrox/permission/permissionTypes"' has no exported member named 'ToolPermissionRulesBySource'. Did you mean 'PermissionRuleSource'?

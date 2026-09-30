@@ -1,0 +1,25 @@
+src/packages/storage/src/sessionStart.ts(170,3): error TS2322: Type '{ type: "attachment"; uuid: `${string}-${string}-${string}-${string}-${string}`; timestamp: string; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' is not assignable to type 'Message'.
+  --- código src/packages/storage/src/sessionStart.ts:160-180 ---
+    160    // cabecera—, pero AHORA devuelve una forma conforme en vez de su entrada
+    161    // cruda. Antes devolvia `input` tal cual, que no es un `Message`: le falta
+    162    // `uuid` y su `type` es `string`, no `MessageType`. Con el tipo laxo eso
+    163    // pasaba callado; con el real es TS2741.
+    164    //
+    165    // Un cast lo habria silenciado igual y habria dejado el defecto EN TIEMPO
+    166    // DE EJECUCION para quien leyera `uuid`. La forma la fija la fuente
+    167    // (`ccnmt: packages/agent/attachments.ts:3302`): `type: 'attachment'`,
+    168    // `uuid: randomUUID()`, `timestamp`. Lo que falta sigue siendo el
+    169    // subsistema —el `Attachment` real—, no la envoltura.
+    170>   return {
+    171      ...input,
+    172      type: 'attachment',
+    173      uuid: randomUUID(),
+    174      timestamp: new Date().toISOString(),
+    175    }
+    176  }
+    177  let _createAttachmentMessage = createAttachmentMessageStub
+    178  export function setCreateAttachmentMessageFn(
+    179    fn: typeof createAttachmentMessageStub,
+    180  ): void {
+  Type '{ type: "attachment"; uuid: `${string}-${string}-${string}-${string}-${string}`; timestamp: string; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' is not assignable to type 'AttachmentMessage<unknown>'.
+    Property 'attachment' is missing in type '{ type: "attachment"; uuid: `${string}-${string}-${string}-${string}-${string}`; timestamp: string; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' but required in type '{ type: "attachment"; attachment: { [key: string]: unknown; type: string; }; }'.

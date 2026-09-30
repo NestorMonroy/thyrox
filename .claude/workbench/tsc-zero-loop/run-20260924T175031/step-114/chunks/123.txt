@@ -1,0 +1,3 @@
+src/packages/repl/src/queryHelpers.ts(157,17): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/repl/src/queryHelpers.ts(217,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+  Type 'undefined' is not assignable to type 'MessageParam'.

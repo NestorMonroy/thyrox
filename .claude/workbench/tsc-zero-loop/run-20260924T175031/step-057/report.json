@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2524, "total_final": 2519, "tsc_runs": 1, "accepted": ["agent:hook-progress-and-modes"], "files_kept": ["src/packages/@ant/ink/src/core/ink.tsx", "src/packages/agent/hooks.ts", "src/packages/config/settings/types.ts"], "outcomes": {"agent:hook-progress-and-modes": "accepted-net"}}

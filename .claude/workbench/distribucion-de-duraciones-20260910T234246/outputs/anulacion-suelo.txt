@@ -1,0 +1,38 @@
+CONTROL DE ANULACION — 2026-09-10T23:43:56
+Sujeto: src/session/job_runs.py, duration_distribution()["floor_wall_clock"].
+Anulacion: el suelo pasa de max(total/C, max(t)) a total/C — o sea, olvida que
+no se puede bajar de la pieza mas larga.
+Instrumento: python3 tests/session/test_job_runs.py
+
+Con el mecanismo:   0 fallo(s) de 13
+Anulado el max():   1 fallo(s)
+
+Cae EXACTAMENTE una, y es la que mide el fenomeno:
+  test_opposite_dispersion_with_the_SAME_total_gives_a_different_verdict
+
+Las otras doce sobreviven porque no dependen del suelo. Si hubieran caido mas,
+la asercion estaria midiendo algo que no es suyo; si no hubiera caido ninguna,
+el max() seria codigo muerto.
+
+Restaurado, verificado identico con diff -q, y el bytecode borrado antes de
+releer el veredicto — un __pycache__ de la version mutada habria dado un rojo
+que no distingue "el porte esta roto" de "el interprete lee una copia vieja".
+
+--- POR QUE ESTE EJE EXISTE ---
+Medido antes de construirlo: SECONDS|duration|elapsed|date +%s da 0 hits en
+run-task-pool.sh y en task_pool.py. El pool reparte N trabajos entre C
+servidores y nadie mide cuanto tarda cada uno, asi que el ancho del lote se
+elige a ojo.
+
+Es el seq_length.py del tutorial: la distribucion de longitudes se MIDE antes
+de decidir como se procesa. Con la MISMA suma (16 s) y n (4):
+  uniforme  [4,4,4,4]     -> suelo con C=2:  8 s   (manda total/C)
+  dominante [13,1,1,1]    -> suelo con C=2: 13 s   (manda max)
+Una media las volveria indistinguibles. Por eso el resultado publica sus
+OPERANDOS —n, total, min, mediana, max— y no una sola cifra.
+
+*Metrica:* duracion por run asentada en su manifiesto (started_at,
+finished_at, duration_seconds).
+*Ciega a:* el trabajo que nunca se registro como run; la varianza entre
+ejecuciones del mismo trabajo (una sola medicion por run); y el coste de
+arranque del propio reparto, que el suelo no modela.

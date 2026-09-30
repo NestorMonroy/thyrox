@@ -1,0 +1,1 @@
+    return sum(int(float(mib)) for _index, mib, *_ in rows) if rows else None

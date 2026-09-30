@@ -1,0 +1,126 @@
+F401 [*] `corpus.document_types.DOCUMENT_TYPES` imported but unused
+  --> src/agents/agent_store.py:96:5
+   |
+95 | from corpus.document_types import (  # noqa: E402
+96 |     DOCUMENT_TYPES,
+   |     ^^^^^^^^^^^^^^
+97 |     DOCUMENT_TYPE_UNKNOWN,
+98 |     document_type as _document_type_projected,
+   |
+help: Remove unused import: `corpus.document_types.DOCUMENT_TYPES`
+
+F401 [*] `os` imported but unused
+  --> src/agents/model_catalog.py:34:8
+   |
+32 | import argparse
+33 | import json
+34 | import os
+   |        ^^
+35 | import signal
+36 | import sqlite3
+   |
+help: Remove unused import: `os`
+
+F401 [*] `typing.Sequence` imported but unused
+  --> src/board/graph.py:55:49
+   |
+54 | from collections import deque
+55 | from typing import Iterable, Iterator, Mapping, Sequence
+   |                                                 ^^^^^^^^
+   |
+help: Remove unused import: `typing.Sequence`
+
+F401 [*] `pywinauto.controls.uiawrapper.UIAWrapper` imported but unused
+   --> src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:341:51
+    |
+339 |     try:
+340 |         from pywinauto import Desktop
+341 |         from pywinauto.controls.uiawrapper import UIAWrapper
+    |                                                   ^^^^^^^^^^
+342 |
+343 |         hwnd = int(hwnd_str)
+    |
+help: Remove unused import: `pywinauto.controls.uiawrapper.UIAWrapper`
+
+F841 [*] Local variable `e` is assigned to but never used
+   --> src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:401:25
+    |
+399 |         tree = walk(win, 0)
+400 |         return tree if tree else None
+401 |     except Exception as e:
+    |                         ^
+402 |         return None
+    |
+help: Remove assignment to unused variable `e`
+
+F401 [*] `sys` imported but unused
+   --> src/session/instruction_floor.py:141:12
+    |
+139 |     sincroniza.
+140 |     """
+141 |     import sys
+    |            ^^^
+142 |
+143 |     from paths.reach import clone_names, thyrox_root, tree_root
+    |
+help: Remove unused import: `sys`
+
+F401 [*] `json` imported but unused
+  --> src/session/job_runs.py:33:8
+   |
+31 | from __future__ import annotations
+32 |
+33 | import json
+   |        ^^^^
+34 | import pathlib
+35 | from collections.abc import Sequence
+   |
+help: Remove unused import: `json`
+
+F401 [*] `typing.Iterable` imported but unused
+  --> src/session/parallel.py:49:30
+   |
+47 | import concurrent.futures
+48 | import os
+49 | from typing import Callable, Iterable, Sequence, TypeVar
+   |                              ^^^^^^^^
+50 |
+51 | T = TypeVar("T")
+   |
+help: Remove unused import: `typing.Iterable`
+
+F811 [*] Redefinition of unused `subprocess` from line 40
+   --> tests/paths/test_reach.py:239:8
+    |
+237 | # BrokenPipeError por stderr: ruido que se lee como fallo del mecanismo cuando
+238 | # es conducta normal de una tubería.
+239 | import subprocess
+    |        ^^^^^^^^^^ `subprocess` redefined here
+240 |
+241 | _completado = subprocess.run(
+    |
+   ::: tests/paths/test_reach.py:40:8
+    |
+ 38 | import os
+ 39 | import pathlib
+ 40 | import subprocess
+    |        ---------- previous definition of `subprocess` here
+ 41 | import sys
+ 42 | import tempfile
+    |
+help: Remove definition: `subprocess`
+
+F401 [*] `subprocess` imported but unused
+  --> tests/paths/test_reach_roots_declared.py:23:8
+   |
+21 | import os
+22 | import shutil
+23 | import subprocess
+   |        ^^^^^^^^^^
+24 | import sys
+25 | import tempfile
+   |
+help: Remove unused import: `subprocess`
+
+Found 10 errors.
+[*] 10 fixable with the `--fix` option.

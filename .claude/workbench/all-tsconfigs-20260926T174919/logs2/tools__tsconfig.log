@@ -1,0 +1,51 @@
+../@ant/ink/src/components/Box.tsx(90,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Box.tsx(114,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Link.tsx(25,9): error TS2339: Property 'ink-link' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Link.tsx(25,39): error TS2339: Property 'ink-link' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Newline.tsx(15,10): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Newline.tsx(15,40): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/RawAnsi.tsx(33,5): error TS2339: Property 'ink-raw-ansi' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/ScrollBox.tsx(234,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/ScrollBox.tsx(235,12): error TS7006: Parameter 'el' implicitly has an 'any' type.
+../@ant/ink/src/components/ScrollBox.tsx(253,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Text.tsx(140,5): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../@ant/ink/src/components/Text.tsx(142,5): error TS2339: Property 'ink-text' does not exist on type 'JSX.IntrinsicElements'.
+../agent/messages/systemInit.ts(74,26): error TS2304: Cannot find name 'MACRO'.
+../bridge/src/envLessBridgeConfig.ts(147,29): error TS2304: Cannot find name 'MACRO'.
+../bridge/src/envLessBridgeConfig.ts(148,44): error TS2304: Cannot find name 'MACRO'.
+../cli/src/bg.ts(597,17): error TS2304: Cannot find name 'MACRO'.
+../cli/src/bg/spawnPty.ts(215,17): error TS2304: Cannot find name 'MACRO'.
+../cli/src/handlers/auth.ts(73,28): error TS2304: Cannot find name 'MACRO'.
+../local-observability/src/logging/error-log-sink.ts(181,14): error TS2304: Cannot find name 'MACRO'.
+../mcp-runtime/src/clientRuntime.ts(716,20): error TS2304: Cannot find name 'MACRO'.
+../mcp-runtime/src/clientRuntime.ts(3130,20): error TS2304: Cannot find name 'MACRO'.
+../mcp-runtime/src/headersHelper.ts(113,146): error TS2304: Cannot find name 'MACRO'.
+../provider/src/logging.ts(165,8): error TS2304: Cannot find name 'MACRO'.
+../provider/src/logging.ts(166,30): error TS2304: Cannot find name 'MACRO'.
+../provider/src/user.ts(109,19): error TS2304: Cannot find name 'MACRO'.
+../provider/src/userAgent.ts(9,25): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/AutoUpdater.tsx(83,28): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/AutoUpdater.tsx(305,53): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/AutoUpdater.tsx(306,29): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/NativeAutoUpdater.tsx(132,40): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/NativeAutoUpdater.tsx(145,46): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/NativeAutoUpdater.tsx(153,30): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/PackageManagerAutoUpdater.tsx(174,28): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/PackageManagerAutoUpdater.tsx(339,28): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx(426,11): error TS2304: Cannot find name 'TungstenPill'.
+../repl/src/components/StatusLine.tsx(123,14): error TS2304: Cannot find name 'MACRO'.
+../repl/src/components/messages/SystemTextMessage.tsx(203,37): error TS2304: Cannot find name 'HOOK_TIMING_DISPLAY_THRESHOLD_MS'.
+../repl/src/doctorDiagnostic.ts(223,7): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(223,28): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(224,26): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(521,12): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(521,37): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(521,53): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(552,11): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(553,11): error TS2304: Cannot find name 'MACRO'.
+../repl/src/doctorDiagnostic.ts(555,51): error TS2304: Cannot find name 'MACRO'.
+../repl/src/hooks/useUpdateNotification.ts(19,28): error TS2304: Cannot find name 'MACRO'.
+../repl/src/localInstaller.ts(115,22): error TS2304: Cannot find name 'MACRO'.
+../repl/src/uiHelpers/logoV2Utils.ts(246,47): error TS2304: Cannot find name 'MACRO'.
+../storage/src/sessionStorage.ts(143,24): error TS2304: Cannot find name 'MACRO'.
+../storage/src/sessionStorage.ts(143,48): error TS2304: Cannot find name 'MACRO'.

@@ -1,0 +1,33 @@
+{
+  "connections": [
+    {
+      "id": "demo-compress",
+      "name": "Demo compresion",
+      "protocol": "anthropic",
+      "endpoint": "https://api.anthropic.com",
+      "auth": {
+        "type": "api_key",
+        "key": "sk-demo"
+      },
+      "enabled": true,
+      "models": [],
+      "createdAt": 1789282040664,
+      "providerSpecificData": {
+        "compressToolResults": true
+      }
+    },
+    {
+      "id": "demo-sin-compresion",
+      "name": "Demo sin compresion",
+      "protocol": "anthropic",
+      "endpoint": "https://api.anthropic.com",
+      "auth": {
+        "type": "api_key",
+        "key": "sk-demo"
+      },
+      "enabled": true,
+      "models": [],
+      "createdAt": 1789282040684
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c timeout 900 bash tests/session/test-headless-pool.sh > .claude/workbench/sustitutos-20260927T025549/pool-green.out 2>&1; echo EXIT=$? >> .claude/workbench/sustitutos-20260927T025549/pool-green.out", "started_at": "2026-09-27T04:17:18+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T04:18:38+00:00", "duration_seconds": 80.214273}

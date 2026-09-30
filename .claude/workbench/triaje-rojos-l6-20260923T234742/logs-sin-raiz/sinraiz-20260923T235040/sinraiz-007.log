@@ -1,0 +1,38 @@
+  ok    compone la ruta dentro del run
+  ok    no crea el archivo, solo su ruta
+  ok    REHUSA si el run no existe, en vez de crearlo
+  ok    y no lo deja creado
+  ok    rehusa un nombre con separador — escaparia del run
+  ok    rehusa sin nombre
+  ok    rehusa sin run
+  ok    se exporta a procesos hijos
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+  FALLO acuna un identificador con sufijo ISO basico
+        esperado=[si]
+        obtenido=[no]
+  ok    acunar NO crea nada en el hogar
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+  FALLO el andamiaje crea el run bajo el hogar declarado
+        esperado=[si]
+        obtenido=[no]
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+  ok    y el resolutor lo encuentra sin puntero
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox
+thyrox_work_file: se exigen el run y el nombre
+tests/lib/test-workbench-sh.sh: line 95: : No such file or directory
+cat: /nota.txt: No such file or directory
+  FALLO el archivo de trabajo nace DENTRO del run
+        esperado=[contenido]
+        obtenido=[]
+  FALLO sin runs devuelve 1, no una ruta inventada
+        esperado=[1]
+        obtenido=[2]
+  ok    rehusa sin slug
+  ok    el resolutor tambien se exporta a procesos hijos
+
+16 casos: 12 ok, 4 fallos
+EXIT=1

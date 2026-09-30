@@ -1,0 +1,15 @@
+SEGUNDO barrido, arbol INTACTO entre los dos — nada se movio de verdad
+filas: antes 6358 · despues 6358 · comunes 6358
+
+  updated_at           cambian     0 de 6358
+  updated_at_source    cambian     0 de 6358
+  declared_at          cambian     0 de 6358
+  commit_at            cambian     0 de 6358
+  scanned_at           cambian  5689 de 6358
+  section              cambian     0 de 6358
+  series               cambian     0 de 6358
+  retention_years      cambian     0 de 6358
+
+  filas TOCADAS                           : 5689
+  filas MOVIDAS (sin contar scanned_at)   : 0
+  reescritura sin dato nuevo              : 5689

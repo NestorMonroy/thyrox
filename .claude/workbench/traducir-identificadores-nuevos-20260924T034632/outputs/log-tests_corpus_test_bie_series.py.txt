@@ -1,0 +1,46 @@
+test_10_the_ETOE_one_is_not (__main__.TestClassification.test_10_the_ETOE_one_is_not) ... ok
+test_11_the_ENOEN_ones_are_not (__main__.TestClassification.test_11_the_ENOEN_ones_are_not) ... ok
+test_12_2023_01_is_comparable_again (__main__.TestClassification.test_12_2023_01_is_comparable_again) ... ok
+test_13_the_OLD_base_is_not_comparable (__main__.TestClassification.test_13_the_OLD_base_is_not_comparable) ... ok
+test_14_and_the_base_cutoff_DIFFERS_between_series (__main__.TestClassification.test_14_and_the_base_cutoff_DIFFERS_between_series)
+2011/01 es comparable en TOSI (base 2010) y no en TIL1 (2012). ... ok
+test_15_the_DISRUPTED_quarter_is_excluded_where_the_note_says_so (__main__.TestClassification.test_15_the_DISRUPTED_quarter_is_excluded_where_the_note_says_so) ... ok
+test_9_an_ordinary_quarter_is_comparable (__main__.TestClassification.test_9_an_ordinary_quarter_is_comparable) ... ok
+test_21_UTF_16_LE_without_BOM_is_detected (__main__.TestEncoding.test_21_UTF_16_LE_without_BOM_is_detected) ... ok
+test_22_NULLIFICATION_a_SIGNATURE_detector_declares_it_UTF_8 (__main__.TestEncoding.test_22_NULLIFICATION_a_SIGNATURE_detector_declares_it_UTF_8)
+Control de anulacion, y es el defecto que se cometio: sin BOM, un ... ok
+test_23_ordinary_UTF_8_is_not_confused (__main__.TestEncoding.test_23_ordinary_UTF_8_is_not_confused)
+El que discrimina en la otra direccion: sin el, un detector que ... ok
+test_24_UTF_16_BE_is_distinguished_from_LE (__main__.TestEncoding.test_24_UTF_16_BE_is_distinguished_from_LE) ... ok
+test_25_an_EMPTY_file_does_not_blow_up (__main__.TestEncoding.test_25_an_EMPTY_file_does_not_blow_up) ... ok
+test_26_a_missing_origin_exits_2_and_emits_NO_count (__main__.TestLineSurface.test_26_a_missing_origin_exits_2_and_emits_NO_count) ... ok
+test_27_a_file_WITHOUT_periods_refuses_without_publishing_a_zero (__main__.TestLineSurface.test_27_a_file_WITHOUT_periods_refuses_without_publishing_a_zero) ... ok
+test_28_a_series_WITHOUT_a_note_refuses_and_explains_it (__main__.TestLineSurface.test_28_a_series_WITHOUT_a_note_refuses_and_explains_it)
+No publica un maximo: sin la nota no se sabe que es comparable. ... ok
+test_18_it_is_rebuilt_from_where_the_notes_start (__main__.TestNoteFromDump.test_18_it_is_rebuilt_from_where_the_notes_start) ... ok
+test_19_NULLIFICATION_the_LONGEST_cell_is_not_the_note (__main__.TestNoteFromDump.test_19_NULLIFICATION_the_LONGEST_cell_is_not_the_note)
+Control de anulacion, y es el defecto que se cometio: una ... ok
+test_20_a_dump_WITHOUT_notes_yields_an_empty_string_and_then_REFUSES (__main__.TestNoteFromDump.test_20_a_dump_WITHOUT_notes_yields_an_empty_string_and_then_REFUSES) ... ok
+test_1_the_BASE_year_comes_from_the_note (__main__.TestNoteReading.test_1_the_BASE_year_comes_from_the_note) ... ok
+test_2_and_it_is_ANOTHER_in_the_other_series (__main__.TestNoteReading.test_2_and_it_is_ANOTHER_in_the_other_series)
+El caso que discrimina todo este modulo: la misma frase, otro ... ok
+test_3_the_ETOE_quarter_is_read (__main__.TestNoteReading.test_3_the_ETOE_quarter_is_read) ... ok
+test_4_the_ENOEN_range_is_read (__main__.TestNoteReading.test_4_the_ENOEN_range_is_read) ... ok
+test_5_the_OTIS_disruption_is_read_where_it_is (__main__.TestNoteReading.test_5_the_OTIS_disruption_is_read_where_it_is) ... ok
+test_6_and_is_NOT_invented_where_it_is_not (__main__.TestNoteReading.test_6_and_is_NOT_invented_where_it_is_not)
+Control de anulacion del caso 5. Sin el, un detector que ... ok
+test_6b_the_phrase_WITHOUT_an_event_marks_no_disruption (__main__.TestNoteReading.test_6b_the_phrase_WITHOUT_an_event_marks_no_disruption)
+EL QUE DISCRIMINA la guarda de evento, y lo supo la anulacion: al ... ok
+test_6c_and_WITH_an_event_it_does_mark_it (__main__.TestNoteReading.test_6c_and_WITH_an_event_it_does_mark_it)
+El control positivo del anterior: misma frase, con el evento ... ok
+test_16_the_summary_publishes_its_DENOMINATOR (__main__.TestSummary.test_16_the_summary_publishes_its_DENOMINATOR) ... ok
+test_17_NO_SUBJECT_when_nothing_comparable_is_left (__main__.TestSummary.test_17_NO_SUBJECT_when_nothing_comparable_is_left)
+Un resumen sobre cero no es un resumen. Se declara en vez de ... ok
+test_7_a_note_that_does_not_declare_the_base_REFUSES (__main__.TestVerdict.test_7_a_note_that_does_not_declare_the_base_REFUSES)
+No se cae a un default. Un ano supuesto es exactamente el error ... ok
+test_8_the_rejection_NAMES_what_is_missing (__main__.TestVerdict.test_8_the_rejection_NAMES_what_is_missing) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.174s
+
+OK

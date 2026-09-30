@@ -1,0 +1,21 @@
+161474 |   if (callExpression === void 0 || length(callExpression.arguments) === 0) {
+161475 |     return void 0;
+161476 |   }
+161477 |   const checker = program.getTypeChecker();
+161478 |   const type = checker.getTypeAtLocation(callExpression.expression);
+161479 |   const convertibleSignatureDeclarations = filter(type.symbol.declarations, isConvertibleSignatureDeclaration);
+                                                                ^
+TypeError: undefined is not an object (evaluating 'type.symbol.declarations')
+      at getInfo11 (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:161479:56)
+      at getCodeActions (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:161428:18)
+      at <anonymous> (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:155231:46)
+      at flatMap (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:2536:17)
+      at getFixes (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:155231:10)
+      at <anonymous> (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:153495:33)
+      at flatMap (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:2536:17)
+      at getCodeFixesAtPosition (/home/user/thyrox/node_modules/.bun/typescript@5.9.3/node_modules/typescript/lib/typescript.js:153493:12)
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:108:33)
+      at /home/user/thyrox/src/verify/tscFixCensus.ts:157:16
+
+Bun v1.3.11 (Linux x64)
+__BG_EXIT__=1

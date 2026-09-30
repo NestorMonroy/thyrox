@@ -1,0 +1,21 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1346,5): error TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1336-1353 ---
+   1336      }),
+   1337      ...attachmentMessages,
+   1338      createAttachmentMessage({
+   1339        type: 'command_permissions',
+   1340        allowedTools: additionalAllowedTools,
+   1341        model: command.model,
+   1342      }),
+   1343    ]
+   1344  
+   1345    return {
+   1346>     messages, shouldQuery: true,
+   1347      allowedTools: additionalAllowedTools,
+   1348      model: command.model,
+   1349      effort: command.effort,
+   1350      command,
+   1351      ...(command.type === 'prompt' && { activeSkill: command.name }), // ant 5045.js:1623
+   1352    }
+   1353  }
+  Type 'unknown' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.

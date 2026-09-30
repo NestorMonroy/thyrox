@@ -1,0 +1,22 @@
+== 1. log Z y probabilidades ==
+  normales  log Z = 3.4608  probs = [0.085369, 0.232057, 0.051779, 0.630796]
+  grandes   log Z = 30.0067  probs = [0.0, 0.006693, 0.0, 0.993307]
+
+== 2. z-loss = alpha * (log Z)^2 ==
+  z_loss_normal  = 0.001198   (brief: 0.001198)
+  z_loss_grande  = 0.090040   (brief: 0.09004)
+
+== 3. LAS DOS QUE NO REPRODUCEN ==
+  3a. «colapsaron a 0.0» — los valores REALES en float64:
+      logit  10.0 -> P = 2.047359e-09   ¿es 0.0 exacto? False
+      logit  25.0 -> P = 6.692851e-03   ¿es 0.0 exacto? False
+      logit   5.0 -> P = 1.379499e-11   ¿es 0.0 exacto? False
+      logit  30.0 -> P = 9.933071e-01   ¿es 0.0 exacto? False
+      el piso de float64 es 2.225e-308, cuyo log natural es -708.396452
+      -> el `0.` del brief es precision de IMPRESION de numpy, no underflow.
+
+  3b. el descenso: que par (alpha, lr) reproduce la traza del brief
+      alpha=0.0001  lr=0.5    (brief tal cual) log Z: 30.0067 30.0038 30.0008 ... max=29.9851  ¿reproduce? False
+      alpha=0.0001  lr=50     (lr x100       ) log Z: 30.0067 29.7110 29.4196 ... max=28.5477  ¿reproduce? True
+      alpha=0.01    lr=0.5    (alpha x100    ) log Z: 30.0067 29.7110 29.4196 ... max=28.5477  ¿reproduce? True
+      traza del brief:                      30.0067 29.7110 29.4196 ... max=28.2698

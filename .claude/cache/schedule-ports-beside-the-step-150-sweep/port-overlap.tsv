@@ -1,0 +1,4 @@
+free	src/packages/agent/attachments.ts
+in-sweep	src/packages/agent/hooks.ts
+free	src/packages/storage/src/claudemd.ts
+in-sweep	src/packages/agent/messages.ts

@@ -1,0 +1,4 @@
+# Un nvidia-smi falso: declara 400 MiB para el proceso del `claude` falso y un
+# uso de 77 %. Anclado a `^bash`: sin ancla casa tambien con el `timeout` y el
+# GNU Time que lo envuelven, que un nvidia-smi real no lista (sonda:
+# `.claude/workbench/gpu-vram-*/probe-pgrep-anchor.out`). Y

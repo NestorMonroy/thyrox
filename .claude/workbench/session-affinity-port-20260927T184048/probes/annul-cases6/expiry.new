@@ -1,0 +1,1 @@
+    if (group.minPrefixLength > fingerprints.length || group.fingerprints.length < fingerprints.length) continue

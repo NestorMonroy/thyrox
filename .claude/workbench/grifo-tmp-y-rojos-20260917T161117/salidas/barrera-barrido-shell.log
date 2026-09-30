@@ -1,0 +1,247 @@
+== 82 trabajos asentados ==
+OK     barrido-shell-001
+       | VERDE tests/agents/test-agent-store-auto-recall-limit.sh
+       | EXIT=0
+OK     barrido-shell-002
+       | VERDE tests/agents/test-agent-store-buscar-tareas.sh
+       | EXIT=0
+OK     barrido-shell-003
+       | VERDE tests/agents/test-agent-store-clasificar-documentos.sh
+       | EXIT=0
+OK     barrido-shell-004
+       | VERDE tests/agents/test-agent-store-compara-antes-de-escribir.sh
+       | EXIT=0
+OK     barrido-shell-005
+       | VERDE tests/agents/test-agent-store-fecha-apertura.sh
+       | EXIT=0
+OK     barrido-shell-006
+       | VERDE tests/agents/test-agent-store-fecha-documento.sh
+       | EXIT=0
+OK     barrido-shell-007
+       | VERDE tests/agents/test-agent-store-fts-degradation.sh
+       | EXIT=0
+OK     barrido-shell-008
+       | ROJO tests/agents/test-agent-store-reassignment-guard.sh
+       | EXIT=0
+OK     barrido-shell-009
+       | ROJO tests/agents/test-agent-store-render-tablero.sh
+       | EXIT=0
+OK     barrido-shell-010
+       | VERDE tests/agents/test-agent-store-sessions.sh
+       | EXIT=0
+OK     barrido-shell-011
+       | VERDE tests/agents/test-agent-store-tareas.sh
+       | EXIT=0
+OK     barrido-shell-012
+       | VERDE tests/agents/test-agent-store-transcript-path.sh
+       | EXIT=0
+OK     barrido-shell-013
+       | VERDE tests/agents/test-agent-store-type-source.sh
+       | EXIT=0
+OK     barrido-shell-014
+       | ROJO tests/agents/test-agent-store-usage-columns.sh
+       | EXIT=0
+OK     barrido-shell-015
+       | VERDE tests/agents/test-agent-store-usage-source.sh
+       | EXIT=0
+OK     barrido-shell-016
+       | ROJO tests/agents/test-carrete-store.sh
+       | EXIT=0
+OK     barrido-shell-017
+       | VERDE tests/agents/test-costo-agente.sh
+       | EXIT=0
+OK     barrido-shell-018
+       | VERDE tests/agents/test-merge-sqlite-union.sh
+       | EXIT=0
+OK     barrido-shell-019
+       | VERDE tests/agents/test-model-catalog.sh
+       | EXIT=0
+OK     barrido-shell-020
+       | VERDE tests/agents/test-reconciliar-agentes.sh
+       | EXIT=0
+OK     barrido-shell-021
+       | VERDE tests/agents/test-reconciliar-store-completar.sh
+       | EXIT=0
+OK     barrido-shell-022
+       | VERDE tests/agents/test-reconciliar-store-journal.sh
+       | EXIT=0
+OK     barrido-shell-023
+       | VERDE tests/agents/test-reconciliar-store-status.sh
+       | EXIT=0
+OK     barrido-shell-024
+       | VERDE tests/agents/test-register-agent-session.sh
+       | EXIT=0
+OK     barrido-shell-025
+       | VERDE tests/corpus/test-censo-sobres-mensaje.sh
+       | EXIT=0
+OK     barrido-shell-026
+       | VERDE tests/corpus/test-find-reference-home.sh
+       | EXIT=0
+OK     barrido-shell-027
+       | VERDE tests/corpus/test-markdown-to-rst.sh
+       | EXIT=0
+OK     barrido-shell-028
+       | VERDE tests/graph/test-graph-metrics.sh
+       | EXIT=0
+OK     barrido-shell-029
+       | VERDE tests/hooks/test-bridge-hooks.sh
+       | EXIT=0
+OK     barrido-shell-030
+       | VERDE tests/hooks/test-hook-error-log.sh
+       | EXIT=0
+OK     barrido-shell-031
+       | VERDE tests/lib/test-assert-sh.sh
+       | EXIT=0
+OK     barrido-shell-032
+       | VERDE tests/lib/test-fixture-sh.sh
+       | EXIT=0
+OK     barrido-shell-033
+       | VERDE tests/lib/test-reach-sh.sh
+       | EXIT=0
+OK     barrido-shell-034
+       | ROJO tests/lib/test-script-deprecated.sh
+       | EXIT=0
+OK     barrido-shell-035
+       | VERDE tests/lib/test-toolchain-parallel.sh
+       | EXIT=0
+OK     barrido-shell-036
+       | VERDE tests/lib/test-toolchain-sh.sh
+       | EXIT=0
+OK     barrido-shell-037
+       | VERDE tests/lib/test-workbench-sh.sh
+       | EXIT=0
+OK     barrido-shell-038
+       | VERDE tests/repo/test-disk-headroom.sh
+       | EXIT=0
+OK     barrido-shell-039
+       | VERDE tests/repo/test-disk-usage.sh
+       | EXIT=0
+OK     barrido-shell-040
+       | ROJO tests/repo/test-fixture-leak.sh
+       | EXIT=0
+OK     barrido-shell-041
+       | VERDE tests/session/test-arranque-de-clon.sh
+       | EXIT=0
+OK     barrido-shell-042
+       | VERDE tests/session/test-bg-familia.sh
+       | EXIT=0
+OK     barrido-shell-043
+       | VERDE tests/session/test-contrato-de-escotilla.sh
+       | EXIT=0
+OK     barrido-shell-044
+       | VERDE tests/session/test-evidencia-varada.sh
+       | EXIT=0
+OK     barrido-shell-045
+       | ROJO tests/session/test-instalar-config-usuario.sh
+       | EXIT=0
+OK     barrido-shell-046
+       | VERDE tests/session/test-medir-disparo-de-hooks.sh
+       | EXIT=0
+OK     barrido-shell-047
+       | VERDE tests/session/test-process-group.sh
+       | EXIT=0
+OK     barrido-shell-048
+       | VERDE tests/session/test-record-environment.sh
+       | EXIT=0
+OK     barrido-shell-049
+       | VERDE tests/session/test-run-task-pool-alcance.sh
+       | EXIT=0
+OK     barrido-shell-050
+       | VERDE tests/session/test-run-task-pool.sh
+       | EXIT=0
+OK     barrido-shell-051
+       | VERDE tests/session/test-sincronizar-settings-local.sh
+       | EXIT=0
+OK     barrido-shell-052
+       | VERDE tests/session/test-tmpdir-faucet.sh
+       | EXIT=0
+OK     barrido-shell-053
+       | VERDE tests/session/test-wait-jobs-dependencia.sh
+       | EXIT=0
+OK     barrido-shell-054
+       | VERDE tests/session/test-wait-jobs.sh
+       | EXIT=0
+OK     barrido-shell-055
+       | VERDE tests/session/test-write-env-repara-clon-desplazado.sh
+       | EXIT=0
+OK     barrido-shell-056
+       | VERDE tests/skills/test-check-skill-artifacts.sh
+       | EXIT=0
+OK     barrido-shell-057
+       | VERDE tests/task/test-closure-graph.sh
+       | EXIT=0
+OK     barrido-shell-058
+       | VERDE tests/task/test-implementation-order.sh
+       | EXIT=0
+OK     barrido-shell-059
+       | VERDE tests/task/test-refresh-board.sh
+       | EXIT=0
+OK     barrido-shell-060
+       | ROJO tests/verify/test-agent-artifacts.sh
+       | EXIT=0
+OK     barrido-shell-061
+       | VERDE tests/verify/test-assert-no-writes.sh
+       | EXIT=0
+OK     barrido-shell-062
+       | VERDE tests/verify/test-audit-timing.sh
+       | EXIT=0
+OK     barrido-shell-063
+       | VERDE tests/verify/test-cifra-de-artefacto-vivo.sh
+       | EXIT=0
+OK     barrido-shell-064
+       | VERDE tests/verify/test-cli-typecheck.sh
+       | EXIT=0
+OK     barrido-shell-065
+       | ROJO tests/verify/test-coordinator-sin-worktree.sh
+       | EXIT=0
+OK     barrido-shell-066
+       | VERDE tests/verify/test-corpus-al-dia.sh
+       | EXIT=0
+OK     barrido-shell-067
+       | ROJO tests/verify/test-destino-del-reporte.sh
+       | EXIT=0
+OK     barrido-shell-068
+       | ROJO tests/verify/test-eventos-hook.sh
+       | EXIT=0
+OK     barrido-shell-069
+       | VERDE tests/verify/test-evidence-tracked.sh
+       | EXIT=0
+OK     barrido-shell-070
+       | ROJO tests/verify/test-generator-determinism.sh
+       | EXIT=0
+OK     barrido-shell-071
+       | VERDE tests/verify/test-gitattributes.sh
+       | EXIT=0
+OK     barrido-shell-072
+       | VERDE tests/verify/test-githooks-activos.sh
+       | EXIT=0
+OK     barrido-shell-073
+       | VERDE tests/verify/test-hallazgo-submodulo-baseline.sh
+       | EXIT=0
+OK     barrido-shell-074
+       | VERDE tests/verify/test-hook-script-token.sh
+       | EXIT=0
+OK     barrido-shell-075
+       | VERDE tests/verify/test-hooks-timeout.sh
+       | EXIT=0
+OK     barrido-shell-076
+       | VERDE tests/verify/test-ids-entre-ramas.sh
+       | EXIT=0
+OK     barrido-shell-077
+       | VERDE tests/verify/test-mutante-en-staging.sh
+       | EXIT=0
+OK     barrido-shell-078
+       | VERDE tests/verify/test-pre-commit-docs.sh
+       | EXIT=0
+OK     barrido-shell-079
+       | VERDE tests/verify/test-premise-drift.sh
+       | EXIT=0
+OK     barrido-shell-080
+       | ROJO tests/verify/test-script-naming.sh
+       | EXIT=0
+OK     barrido-shell-081
+       | VERDE tests/verify/test-suite-discrimina.sh
+       | EXIT=0
+OK     barrido-shell-082
+       | VERDE tests/verify/test-unreachable-rules.sh
+       | EXIT=0

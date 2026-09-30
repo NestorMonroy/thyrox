@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -195,7 +195,7 @@
+       if (candidates.size !== 1) continue
+       const [[symbol, declaring]] = [...candidates]
+       if (declaring === provider) continue
+-      if (declaring.text.includes('getAgentHostBindings')) continue
++
+       const cycle = declaring.statements.some(statement =>
+         (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) &&
+         statement.moduleSpecifier !== undefined &&

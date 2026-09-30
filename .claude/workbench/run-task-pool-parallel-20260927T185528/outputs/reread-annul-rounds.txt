@@ -1,0 +1,6 @@
+vuelta 1: sin adelantar=3 con adelanto=3
+vuelta 2: sin adelantar=1 con adelanto=3
+vuelta 3: sin adelantar=1 con adelanto=3
+vuelta 4: sin adelantar=1 con adelanto=3
+vuelta 5: sin adelantar=1 con adelanto=3
+vuelta 6: sin adelantar=1 con adelanto=3

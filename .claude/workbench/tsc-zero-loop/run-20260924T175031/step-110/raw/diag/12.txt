@@ -1,0 +1,5 @@
+src/packages/agent/__tests__/createMessageHelpers.test.ts(106,28): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '{ type: string; stdout: string; }' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '{ type: string; stdout: string; }' is not assignable to parameter of type 'undefined'.

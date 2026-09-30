@@ -1,0 +1,6 @@
+src/packages/command-runtime/src/host.ts(33,10): error TS2352: Conversion of type 'CommandRegistryHostBindings<CommandLike>' to type 'CommandRegistryHostBindings<TCommand>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  The types returned by 'getCommands(...)' are incompatible between these types.
+    Type 'Promise<CommandLike[]>' is not comparable to type 'Promise<TCommand[]>'.
+      Type 'CommandLike[]' is not comparable to type 'TCommand[]'.
+        Type 'CommandLike' is not comparable to type 'TCommand'.
+          'CommandLike' is assignable to the constraint of type 'TCommand', but 'TCommand' could be instantiated with a different subtype of constraint 'CommandLike'.

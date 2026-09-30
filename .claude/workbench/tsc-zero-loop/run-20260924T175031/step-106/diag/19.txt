@@ -1,0 +1,10 @@
+src/packages/config/plugin/loadPluginCommands.ts(266,7): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/config/plugin/loadPluginCommands.ts(304,7): error TS2322: Type '{}' is not assignable to type 'string'.
+src/packages/config/plugin/loadPluginCommands.ts(327,33): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/packages/config/plugin/loadPluginCommands.ts(327,39): error TS7006: Parameter 'context' implicitly has an 'any' type.
+src/packages/config/plugin/loadPluginCommands.ts(420,23): error TS2532: Object is possibly 'undefined'.
+src/packages/config/plugin/loadPluginCommands.ts(479,109): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+src/packages/config/plugin/loadPluginCommands.ts(505,32): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+src/packages/config/plugin/loadPluginCommands.ts(799,42): error TS2339: Property 'isSymbolicLink' does not exist on type '{ name: string; isFile(): boolean; isDirectory(): boolean; }'.
+src/packages/config/plugin/loadPluginCommands.ts(866,23): error TS2532: Object is possibly 'undefined'.

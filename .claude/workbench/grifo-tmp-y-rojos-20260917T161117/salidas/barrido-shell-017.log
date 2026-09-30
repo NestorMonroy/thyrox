@@ -1,0 +1,2 @@
+VERDE tests/agents/test-costo-agente.sh
+EXIT=0

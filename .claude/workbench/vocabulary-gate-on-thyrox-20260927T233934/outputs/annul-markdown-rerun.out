@@ -1,0 +1,3 @@
+base	31 pass, 0 fail	—
+no-fence	30 pass, 1 fail	un bloque cercado de Markdown es cita, no prosa — esperado [0] obtenido [1]
+no-code-span	30 pass, 1 fail	una comilla invertida en Markdown es mención — esperado [0] obtenido [1]

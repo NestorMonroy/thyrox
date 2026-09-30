@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declaration.test.ts:
+35 | 
+36 |   test('la SUBCADENA de un literal mayor NO cuenta', () => {
+37 |     // La forma real del defecto: la prosa de ayuda menciona el nombre del
+38 |     // campo dentro de un literal enorme.
+39 |     const doc = 'var d="...\\"used_percentage\\": number | null, // Pre-calculated...";'
+40 |     expect(findLiteralSites(doc, 'used_percentage').length).toBe(0)
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/declaration.test.ts:40:61)
+(fail) sitios de literal — la guarda de texto completo > la SUBCADENA de un literal mayor NO cuenta [0.69ms]
+102 |     expect(sitios.length).toBeGreaterThan(0)
+103 |     // Y el discriminador, que es lo que distingue este control de un verde
+104 |     // cualquiera: TODO sitio es el literal mismo, no un nodo que lo contiene.
+105 |     // Con la guarda anulada el nodo de la ayuda entra, y mide miles de bytes.
+106 |     const mayor = Math.max(...sitios.map((s) => s.end - s.start))
+107 |     expect(mayor).toBeLessThanOrEqual('used_percentage'.length + 2)
+                        ^
+error: expect(received).toBeLessThanOrEqual(expected)
+
+Expected: <= 17
+Received: 11776
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/declaration.test.ts:107:19)
+(fail) contra el corpus REAL de 2.1.274 > la guarda deja fuera la prosa de ayuda de la linea de estado [1060.70ms]
+
+ 11 pass
+ 2 fail
+ 22 expect() calls
+Ran 13 tests across 1 file. [7.31s]

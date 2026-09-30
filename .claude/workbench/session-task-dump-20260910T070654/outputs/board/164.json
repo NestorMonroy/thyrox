@@ -1,0 +1,9 @@
+{
+  "id": "164",
+  "subject": "Repartir las siete entradas de .claude/ que no dependen de TASK-DOCS-0406",
+  "description": "Tras sacar scripts/, quedan en kaupamex-docs/.claude/ trece entradas más los tres sueltos. Cuatro tienen dueño: eventos/ se queda por directiva; packages/ es #140; config/ es #134; baselines/ es #162. Cuatro están bloqueadas por TASK-DOCS-0406 (settings.json, hooks/, rules/, CLAUDE.md) porque moverlas deja la sesión sin gobierno. Quedan SIETE sin dueño ni bloqueo: skills 332 · references 179 · agents 31 · commands 27 · workflows 6 · agent-results 5 · coordination 1. Aplicar la misma regla de tres clases del evento mudar-scripts-a-thyrox: mecanismo a thyrox/src, estado a thyrox/.claude, parámetro del consumidor se queda. Ojo con agent-results/: es telemetría local gitignored — estado de ESTA sesión, no producto.",
+  "activeForm": "Repartiendo las entradas restantes de .claude",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

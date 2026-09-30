@@ -1,0 +1,3 @@
+check "sin sesion persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=stream-json"
+check "el .json es la linea result del stream, sola" "$(cat "$F/out"/*.json | jq -r .type | sort -u)" "result"
+check "un stream por item, una linea por peticion" "$(cat "$F/out"/*.stream.jsonl 2>/dev/null | jq -r 'select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}' | paste -sd,)" "3x111,3x500"

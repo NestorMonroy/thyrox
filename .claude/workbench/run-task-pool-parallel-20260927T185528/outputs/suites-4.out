@@ -1,0 +1,117 @@
+run-task-pool: 8 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/suites-4/suites-20260927T191607
+  suites-20260927T191607/test-run-task-pool bash tests/session/test-run-task-pool.sh
+  suites-20260927T191607/test-run-task-pool-memfree bash tests/session/test-run-task-pool-memfree.sh
+  suites-20260927T191607/test-run-task-pool-scope bash tests/session/test-run-task-pool-scope.sh
+  suites-20260927T191607/test-run-task-pool-isolation bash tests/session/test-run-task-pool-isolation.sh
+  suites-20260927T191607/test-gpu-admission-cli bash tests/session/test-gpu-admission-cli.sh
+  suites-20260927T191607/test-headless-pool bash tests/session/test-headless-pool.sh
+  suites-20260927T191607/test_gpu_scenarios python3 tests/session/test_gpu_scenarios.py
+  suites-20260927T191607/test_gpu_monitor python3 tests/session/test_gpu_monitor.py
+run-task-pool: lanzados 8 de 8; esperando en PRIMER PLANO (timeout 1125s)
+asentado: suites-20260927T191607_test-gpu-admission-cli -> OK (2 de 9)
+asentado: suites-20260927T191607_test-headless-pool -> OK (3 de 9)
+asentado: suites-20260927T191607_test-run-task-pool-isolation -> OK (4 de 9)
+asentado: suites-20260927T191607_test-run-task-pool-memfree -> OK (5 de 9)
+asentado: suites-20260927T191607_test-run-task-pool-scope -> OK (6 de 9)
+asentado: suites-20260927T191607_test-run-task-pool -> OK (7 de 9)
+asentado: suites-20260927T191607_test_gpu_monitor -> OK (8 de 9)
+asentado: suites-20260927T191607_test_gpu_scenarios -> OK (9 de 9)
+== 9 trabajos asentados ==
+OLVIDADO suites-20260927T191607
+       | (vacío — no emitió nada)
+OK     suites-20260927T191607_test-gpu-admission-cli exit=0
+       | == 1. dos admisiones simultáneas de 3000 con 5000 libres: entra una ==
+       | OK   una admitida y otra esperó
+       | == 2. soltada la reserva, la otra entra ==
+       | OK   admit sale 0 tras el release
+       | == 3. sin sitio y con plazo corto, admit sale 3 ==
+       | OK   vencido: exit 3
+       | 
+       | aserciones: 3 de 3 · fallos: 0
+       | EXIT=0
+       memoria pico: 16720 KB (16 MB) · pared 2.01s
+OK     suites-20260927T191607_test-headless-pool exit=0
+       | OK   una plantilla, un solo historial
+       | OK   otro binario: no deriva memfree de su fila
+       | OK   otro binario: lo dice
+       | OK   otro modelo: no deriva memfree de su fila
+       | OK   otro modelo: lo dice
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 108 de 108 · fallos: 0
+       | EXIT=0
+       memoria pico: 22604 KB (22 MB) · pared 66.92s
+OK     suites-20260927T191607_test-run-task-pool-isolation exit=0
+       |   ok   el directorio lleva prefijo e ISO
+       |   ok   dos despachos dejan DOS trabajos en el ledger
+       |   ok   el log lleva el nombre declarado, no el ordinal
+       |   ok   y el segundo tambien
+       |   ok   ninguno quedo con nombre de ordinal
+       |   ok   una linea sin tabulador sigue corriendo
+       |   ok   un comando con tabulador no se parte
+       | 
+       | resultado: 11 de 11 aserciones en verde
+       | EXIT=0
+       memoria pico: 24952 KB (24 MB) · pared 10.54s
+OK     suites-20260927T191607_test-run-task-pool-memfree exit=0
+       |   ok   con memoria escasa el pool termina
+       |   ok   con memoria escasa corre uno a la vez
+       |   ok   con memoria de sobra corren los tres a la vez
+       |   ok   tras la caida el pool termina en verde
+       |   ok   cada trabajo termina exactamente una vez
+       |   ok   el mas viejo no se reencola
+       |   ok   al menos un trabajo se reencolo
+       |   ok   el reencolado se anuncia
+       | test-run-task-pool-memfree: 12 aserciones — 12 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 24924 KB (24 MB) · pared 13.90s
+OK     suites-20260927T191607_test-run-task-pool-scope exit=0
+       | == 3. sin --only, la barrera SIGUE viendo todo el ledger ==
+       |   ok    wait sin filtro se topa con el sentinel y sale 3 (timeout)
+       | == 4. --only ve una etiqueta LLANA, no solo un grupo con guion ==
+       |   ok    wait --only <etiqueta llana> la asienta y sale 0
+       |   ok    y NO publica «sin trabajos registrados» sobre un trabajo real
+       | == 5. el grupo con guion sigue funcionando — el default no se rompe ==
+       |   ok    wait --only <prefijo> sigue viendo su grupo <prefijo>-NNN
+       | 
+       | resumen: 8 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 24872 KB (24 MB) · pared 6.07s
+OK     suites-20260927T191607_test-run-task-pool exit=1
+       |   ok   sin GNU Parallel sale 4
+       |   ok   y dice que falta GNU Parallel
+       |   ok   y no lanzo ningun trabajo
+       |   ok   reescribir el guion en su sitio no rompe el despacho en curso
+       |   ok   y los dos trabajos llegaron a su marcador
+       |   ok   un trabajo que muta el árbol medido sale 5
+       |   ok   y dice que el veredicto no es atribuible
+       |   ok   sin mutación el mismo árbol sale 0
+       | test-run-task-pool: 32 aserciones — 31 ok, 1 falla(s)
+       | EXIT=1
+       memoria pico: 27940 KB (27 MB) · pared 38.34s
+OK     suites-20260927T191607_test_gpu_monitor exit=0
+       |   ok    sólo cuentan los dueños vivos
+       |   ok    soltada, no queda nada
+       | == 5b. un proceso que sale a mitad del recorrido no tumba tree() ==
+       |   ok    el hijo que desapareció cuenta y el recorrido sigue
+       | == 6. disponible() distingue las dos situaciones ==
+       |   ok    con el falso: disponible
+       |   ok    sin él: no disponible
+       | 
+       | test_gpu_monitor: 43 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16952 KB (17 MB) · pared 8.92s
+OK     suites-20260927T191607_test_gpu_scenarios exit=0
+       | == 5. un proceso AJENO al registro: su VRAM ya resta de lo libre ==
+       |   ok    margen = 1000
+       |   ok    GPU casi llena: 3200 no entra
+       |   ok    800 sí entra
+       | == 6. sin lectura de la GPU no hay margen: None, no cero ==
+       |   ok    headroom sin medida es None
+       | == 7. dos admisiones SIMULTÁNEAS tras una barrera, 4000 + 4000 sobre 6000, 5 rondas ==
+       |   ok    en cada ronda entra exactamente uno
+       | test_gpu_scenarios: 19 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16592 KB (16 MB) · pared 9.25s
+salida distinta de 0: 1 (suites-20260927T191607_test-run-task-pool)

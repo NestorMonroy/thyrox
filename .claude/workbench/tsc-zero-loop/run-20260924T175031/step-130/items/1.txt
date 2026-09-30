@@ -1,0 +1,7 @@
+Módulo: src/packages/agent/attachments.ts
+Miembros que faltan: Attachment, getAttachmentMessages, getQueuedCommandAttachments
+
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(6): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(52): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+src/packages/repl/src/processUserInput/processUserInput.ts(35): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+src/packages/repl/src/screens/REPLView.tsx(506): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'getQueuedCommandAttachments'.

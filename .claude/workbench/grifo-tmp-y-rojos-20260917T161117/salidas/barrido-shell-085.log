@@ -1,0 +1,2 @@
+VERDE tests/verify/test-verify-task-store.sh
+EXIT=0

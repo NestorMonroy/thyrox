@@ -1,0 +1,163 @@
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(90,41): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:80-100 ---
+     80    const agent = useAppState(s => s.agent)
+     81    const effortValue = useAppState(s => s.effortValue)
+     82  
+     83    const config = getGlobalConfig()
+     84  
+     85    // Get company announcements and select one:
+     86    // - First startup (numStartups === 1): show first announcement
+     87    // - All other startups: randomly select from announcements
+     88    const [announcement] = useState(() => {
+     89      const announcements = getInitialSettings().companyAnnouncements
+     90>     if (!announcements || announcements.length === 0) return undefined
+     91      return config.numStartups === 1
+     92        ? announcements[0]
+     93        : announcements[Math.floor(Math.random() * announcements.length)]
+     94    })
+     95  
+     96    useEffect(() => {
+     97      if (showOnboarding) {
+     98        incrementProjectOnboardingSeenCount()
+     99      }
+    100    }, [showOnboarding])
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(92,9): error TS7053: Element implicitly has an 'any' type because expression of type '0' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:82-102 ---
+     82  
+     83    const config = getGlobalConfig()
+     84  
+     85    // Get company announcements and select one:
+     86    // - First startup (numStartups === 1): show first announcement
+     87    // - All other startups: randomly select from announcements
+     88    const [announcement] = useState(() => {
+     89      const announcements = getInitialSettings().companyAnnouncements
+     90      if (!announcements || announcements.length === 0) return undefined
+     91      return config.numStartups === 1
+     92>       ? announcements[0]
+     93        : announcements[Math.floor(Math.random() * announcements.length)]
+     94    })
+     95  
+     96    useEffect(() => {
+     97      if (showOnboarding) {
+     98        incrementProjectOnboardingSeenCount()
+     99      }
+    100    }, [showOnboarding])
+    101  
+    102    // In condensed mode (early-return below renders <CondensedLogo/>),
+  Property '0' does not exist on type '{}'.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(93,9): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:83-103 ---
+     83    const config = getGlobalConfig()
+     84  
+     85    // Get company announcements and select one:
+     86    // - First startup (numStartups === 1): show first announcement
+     87    // - All other startups: randomly select from announcements
+     88    const [announcement] = useState(() => {
+     89      const announcements = getInitialSettings().companyAnnouncements
+     90      if (!announcements || announcements.length === 0) return undefined
+     91      return config.numStartups === 1
+     92        ? announcements[0]
+     93>       : announcements[Math.floor(Math.random() * announcements.length)]
+     94    })
+     95  
+     96    useEffect(() => {
+     97      if (showOnboarding) {
+     98        incrementProjectOnboardingSeenCount()
+     99      }
+    100    }, [showOnboarding])
+    101  
+    102    // In condensed mode (early-return below renders <CondensedLogo/>),
+    103    // CondensedLogo's own useEffect handles the impression count. Skipping
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(93,64): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:83-103 ---
+     83    const config = getGlobalConfig()
+     84  
+     85    // Get company announcements and select one:
+     86    // - First startup (numStartups === 1): show first announcement
+     87    // - All other startups: randomly select from announcements
+     88    const [announcement] = useState(() => {
+     89      const announcements = getInitialSettings().companyAnnouncements
+     90      if (!announcements || announcements.length === 0) return undefined
+     91      return config.numStartups === 1
+     92        ? announcements[0]
+     93>       : announcements[Math.floor(Math.random() * announcements.length)]
+     94    })
+     95  
+     96    useEffect(() => {
+     97      if (showOnboarding) {
+     98        incrementProjectOnboardingSeenCount()
+     99      }
+    100    }, [showOnboarding])
+    101  
+    102    // In condensed mode (early-return below renders <CondensedLogo/>),
+    103    // CondensedLogo's own useEffect handles the impression count. Skipping
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(207,47): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:197-217 ---
+    197            <Box paddingLeft={2} flexDirection="column">
+    198              <Text color="warning">[ANT-ONLY] Logs:</Text>
+    199              <Text dimColor>
+    200                API calls: {getDisplayPath(getDumpPromptsPath())}
+    201              </Text>
+    202              <Text dimColor>
+    203                Debug logs: {getDisplayPath(getDebugLogPath())}
+    204              </Text>
+    205              {isDetailedProfilingEnabled() && (
+    206                <Text dimColor>
+    207>                 Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+    208                </Text>
+    209              )}
+    210            </Box>
+    211          )}
+    212          {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    213          {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    214        </>
+    215      )
+    216    }
+    217  
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(221,41): error TS2345: Argument of type 'string' is not assignable to parameter of type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:211-231 ---
+    211          )}
+    212          {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    213          {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    214        </>
+    215      )
+    216    }
+    217  
+    218    // Calculate layout and display values
+    219    const layoutMode = getLayoutMode(columns)
+    220  
+    221>   const userTheme = resolveThemeSetting(getGlobalConfig().theme)
+    222    const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
+    223    const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+    224  
+    225    // Early return for compact mode
+    226    if (layoutMode === 'compact') {
+    227      const layoutWidth = 4 // border + padding
+    228      let welcomeMessage = formatWelcomeMessage(username)
+    229      if (stringWidth(welcomeMessage) > columns - layoutWidth) {
+    230        welcomeMessage = formatWelcomeMessage(null)
+    231      }
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(422,45): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:412-432 ---
+    412        )}
+    413        {process.env.USER_TYPE === 'ant' && !process.env.DEMO_VERSION && (
+    414          <Box paddingLeft={2} flexDirection="column">
+    415            <Text color="warning">[ANT-ONLY] Logs:</Text>
+    416            <Text dimColor>
+    417              API calls: {getDisplayPath(getDumpPromptsPath())}
+    418            </Text>
+    419            <Text dimColor>Debug logs: {getDisplayPath(getDebugLogPath())}</Text>
+    420            {isDetailedProfilingEnabled() && (
+    421              <Text dimColor>
+    422>               Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+    423              </Text>
+    424            )}
+    425          </Box>
+    426        )}
+    427        {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    428        {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    429      </>
+    430    )
+    431  }
+    432  

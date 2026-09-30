@@ -1,0 +1,1 @@
+function qge(e){let n=Cj(),r=n.resolvedWorkingDirPaths.get(e);if(r!==void 0)return r;let s=a.CLAUDE_CODE_EVAL_CONFINED&&e===ye()?[e]:On(e);return n.resolvedWorkingDirPaths.set(e,s),s}

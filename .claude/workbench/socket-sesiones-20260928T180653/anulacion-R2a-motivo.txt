@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+146 |     unsubscribers.push(subscribeRefusalFallbackReset(app.setAppState, deps))
+147 |     latchAndDiverge()
+148 |     switchSession('otra' as SessionId, 'resume')
+149 |     expect(app.get().mainLoopModel).toBe('claude-opus-5')
+150 |     expect(getMainLoopModelOverride()).toBe('claude-opus-5')
+151 |     expect(events).toEqual([
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -6,3 +6,3 @@
+        "restored_to_explicit_override": true,
+-       "source": "resume",
++       "source": "clear",
+      },
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:151:20)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > al restaurarse aplica al estado y emite el evento de reinicio [0.96ms]
+
+ 10 pass
+ 1 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [68.00ms]

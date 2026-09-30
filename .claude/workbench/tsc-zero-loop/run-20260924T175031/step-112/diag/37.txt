@@ -1,0 +1,46 @@
+src/packages/agent/hooks/execPromptHook.ts(509,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:499-519 ---
+    499            // - Other events: prevent unless the hook opts into continueOnBlock=true
+    500            preventContinuation:
+    501              !isStopEvent && (hook as { continueOnBlock?: boolean }).continueOnBlock !== true,
+    502            stopReason: parsed.data.reason,
+    503          }
+    504        }
+    505  
+    506        // Condition was met
+    507        logForDebugging(`Hooks: Prompt hook condition was met`)
+    508        return {
+    509>         hook,
+    510          outcome: 'success',
+    511          stopReason: parsed.data.reason,
+    512          message: createAttachmentMessage({
+    513            type: 'hook_success',
+    514            hookName,
+    515            toolUseID: effectiveToolUseID,
+    516            hookEvent,
+    517            content: '',
+    518          }),
+    519        }
+src/packages/agent/hooks/execPromptHook.ts(525,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:515-535 ---
+    515            toolUseID: effectiveToolUseID,
+    516            hookEvent,
+    517            content: '',
+    518          }),
+    519        }
+    520      } catch (error) {
+    521        cleanupSignal()
+    522  
+    523        if (combinedSignal.aborted) {
+    524          return {
+    525>           hook,
+    526            outcome: 'cancelled',
+    527          }
+    528        }
+    529        throw error
+    530      }
+    531    } catch (error) {
+    532      const errorMsg = errorMessage(error)
+    533      logForDebugging(`Hooks: Prompt hook error: ${errorMsg}`)
+    534      return {
+    535        hook,

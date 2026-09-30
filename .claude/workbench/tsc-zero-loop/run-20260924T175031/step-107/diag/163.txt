@@ -1,0 +1,104 @@
+patron: wrong-command-type-across-duplicate-packages
+senal_del_verificador: agent/command\"\)\.(Command|CommandBase|PromptCommand)[^\n]*command-runtime/src/types|command-runtime/src/types\"\)\.(Command|CommandBase|PromptCommand)[^\n]*agent/command
+fix_generico: Cuando un valor proviene de `getCommands`/`findCommand`/`AppState.mcp.commands` (todos tipados contra el `Command` de `@thyrox/command-runtime/runtime`), pero la función local que lo produce o consume declara su tipo contra el `Command` de `@thyrox/agent/command.js` — un módulo paralelo y estructuralmente parecido pero nominalmente distinto —, se importa el `Command` correcto de `command-runtime/runtime` (con alias si el archivo ya usa el otro en otro punto) y se re-tipa sólo la función cuyo valor realmente fluye por ahí. No se toca la función que sí depende genuinamente del tipo rico de `agent/command.js` (p. ej. la que pasa el comando a `prepareForkedCommandContext`/`runAgent`).
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(569,9): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:559-579 ---
+    559        skill: (typeof allSkills)[0] & { type: 'prompt' }
+    560      }> = []
+    561  
+    562      for (const skillName of skillsToPreload) {
+    563        // Resolve the skill name, trying multiple strategies:
+    564        // 1. Exact match (hasCommand checks name, userFacingName, aliases)
+    565        // 2. Fully-qualified with agent's plugin prefix (e.g., "my-skill" → "plugin:my-skill")
+    566        // 3. Suffix match on ":skillName" for plugin-namespaced skills
+    567        const resolvedName = resolveSkillName(
+    568          skillName,
+    569>         allSkills,
+    570          agentDefinition,
+    571        )
+    572        if (!resolvedName) {
+    573          logForDebugging(
+    574            `[Agent: ${agentDefinition.agentType}] Warning: Skill '${skillName}' specified in frontmatter was not found`,
+    575            { level: 'warn' },
+    576          )
+    577          continue
+    578        }
+    579  
+  Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").Command'.
+    Type 'CommandBase & PromptCommand' is not assignable to type 'Command'.
+      Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").CommandBase & import("/home/user/thyrox/src/packages/command-runtime/src/types").PromptCommand' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").CommandBase & import("/home/user/thyrox/src/packages/agent/command").PromptCommand'.
+        Type 'CommandBase & PromptCommand' is not assignable to type 'PromptCommand'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"userSettings" | "projectSettings" | "localSettings" | "plugin" | "bundled" | "mcp" | "flagSettings" | "policySettings" | "builtin"'.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(921,29): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:911-931 ---
+    911   * 1. Exact match via hasCommand (name, userFacingName, aliases)
+    912   * 2. Prefix with agent's plugin name (e.g., "my-skill" → "my-plugin:my-skill")
+    913   * 3. Suffix match — find any command whose name ends with ":skillName"
+    914   */
+    915  function resolveSkillName(
+    916    skillName: string,
+    917    allSkills: Command[],
+    918    agentDefinition: AgentDefinition,
+    919  ): string | null {
+    920    // 1. Direct match
+    921>   if (hasCommand(skillName, allSkills)) {
+    922      return skillName
+    923    }
+    924  
+    925    // 2. Try prefixing with the agent's plugin name
+    926    // Plugin agents have agentType like "pluginName:agentName"
+    927    const pluginPrefix = agentDefinition.agentType.split(':')[0]
+    928    if (pluginPrefix) {
+    929      const qualifiedName = `${pluginPrefix}:${skillName}`
+    930      if (hasCommand(qualifiedName, allSkills)) {
+    931        return qualifiedName
+  Type 'import("/home/user/thyrox/src/packages/agent/command").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command'.
+    Type 'CommandBase & LocalCommand' is not assignable to type 'Command'.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").CommandBase & LocalCommand' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").CommandBase & LocalCommand'.
+        Type 'CommandBase & LocalCommand' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule>' is not assignable to type 'Promise<import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule>'.
+              Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+                        Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(930,35): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:920-940 ---
+    920    // 1. Direct match
+    921    if (hasCommand(skillName, allSkills)) {
+    922      return skillName
+    923    }
+    924  
+    925    // 2. Try prefixing with the agent's plugin name
+    926    // Plugin agents have agentType like "pluginName:agentName"
+    927    const pluginPrefix = agentDefinition.agentType.split(':')[0]
+    928    if (pluginPrefix) {
+    929      const qualifiedName = `${pluginPrefix}:${skillName}`
+    930>     if (hasCommand(qualifiedName, allSkills)) {
+    931        return qualifiedName
+    932      }
+    933    }
+    934  
+    935    // 3. Suffix match — find a skill whose name ends with ":skillName"
+    936    const suffix = `:${skillName}`
+    937    const match = allSkills.find(cmd => cmd.name.endsWith(suffix))
+    938    if (match) {
+    939      return match.name
+    940    }
+  Type 'import("/home/user/thyrox/src/packages/agent/command").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command'.
+    Type 'CommandBase & LocalCommand' is not assignable to type 'Command'.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").CommandBase & LocalCommand' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").CommandBase & LocalCommand'.
+        Type 'CommandBase & LocalCommand' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule>' is not assignable to type 'Promise<import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule>'.
+              Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+                        Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

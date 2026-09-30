@@ -1,0 +1,23 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(85,31): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:75-95 ---
+     75        } catch {
+     76          return true // Non-JSON messages are visible
+     77        }
+     78      })
+     79  
+     80      if (visibleMessages.length === 0) {
+     81        return null
+     82      }
+     83      return (
+     84        <Box flexDirection="column">
+     85>         {visibleMessages.map((msg, idx: number) => {
+     86            // Try to parse as JSON for task_assignment messages
+     87            let parsedMsg: {
+     88              type?: string
+     89              taskId?: string
+     90              subject?: string
+     91              assignedBy?: string
+     92            } | null = null
+     93            try {
+     94              parsedMsg = jsonParse(msg.text)
+     95            } catch {

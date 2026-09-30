@@ -1,0 +1,16 @@
+247 no existe
+93 sólo en otro paquete
+12 varias en el paquete
+12 candidato (mismo paquete)
+sólo en otro paquete	../internalUtils.js	pathExists
+sólo en otro paquete	./prompts.js	getSystemPrompt
+sólo en otro paquete	./compact.js	compactConversation
+sólo en otro paquete	../prompts.js	getSystemPrompt
+sólo en otro paquete	@thyrox/permission/permissions	hasPermissionsToUseTool
+sólo en otro paquete	@thyrox/cli	installCliHostBindings
+sólo en otro paquete	@thyrox/cli	HeadlessStoreParams
+sólo en otro paquete	@thyrox/shell/process.js	writeToStdout
+sólo en otro paquete	@thyrox/agent/hooks.js	hasWorktreeCreateHook
+sólo en otro paquete	@thyrox/permission	hasPermissionsToUseTool
+sólo en otro paquete	@thyrox/agent/sessionTitle.js	generateSessionTitle
+sólo en otro paquete	@thyrox/agent/attachments.js	resetSentSkillNames

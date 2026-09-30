@@ -1,0 +1,74 @@
+== 1: un Bash que pasa no corta la racha
+7 caso(s); 0 fallo(s)
+FAIL test_the_real_window_counts_six_in_a_row: AssertionError('CLASIFICADOR SIN VEREDICTO — 7 de 10 respuestas seguidas sin veredicto (error); en 10 el cliente corta el turno.\nEs una falla del servicio, no del comando: un reintento por acción, tal cual.\nPara leer, buscar o editar usa Read, Grep, Glob, Write y Edit: no consultan al clasificador. Deja Bash para lo que sólo Bash hace (pruebas, git, procesos).')
+10 caso(s); 1 fallo(s)
+== 2: un rechazo con veredicto no corta la racha
+7 caso(s); 0 fallo(s)
+FAIL test_a_denial_with_a_verdict_resets_the_streak: AssertionError()
+10 caso(s); 1 fallo(s)
+== 3: cuenta cualquier herramienta, no sólo Bash
+7 caso(s); 0 fallo(s)
+FAIL test_calls_that_do_not_consult_the_classifier_do_not_break_the_streak: AssertionError()
+FAIL test_the_real_window_counts_six_in_a_row: AssertionError('CLASIFICADOR SIN VEREDICTO — 1 de 10 respuestas seguidas sin veredicto (error); en 10 el cliente corta el turno.\nEs una falla del servicio, no del comando: un reintento por acción, tal cual.\nPara leer, buscar o editar usa Read, Grep, Glob, Write y Edit: no consultan al clasificador. Deja Bash para lo que sólo Bash hace (pruebas, git, procesos).')
+10 caso(s); 2 fallo(s)
+== 4: sin corte de turno en el mensaje del usuario
+7 caso(s); 0 fallo(s)
+FAIL test_a_genuine_user_message_starts_a_new_turn: AssertionError()
+10 caso(s); 1 fallo(s)
+== 5: sin la rama de falla dura
+FAIL test_a_hard_failure_is_hard_and_names_its_cause: AssertionError(Rejection(kind='transient', cause='the conversation is too long for the check'))
+7 caso(s); 1 fallo(s)
+FAIL test_a_hard_failure_says_not_to_retry: AssertionError('CLASIFICADOR SIN VEREDICTO — 1 de 10 respuestas seguidas sin veredicto (the conversation is too long for the check); en 10 el cliente corta el turno.\nEs una falla del servicio, no del comando: un reintento por acción, tal cual.\nPara leer, buscar o editar usa Read, Grep, Glob, Write y Edit: no consultan al clasificador. Deja Bash para lo que sólo Bash hace (pruebas, git, procesos).')
+10 caso(s); 1 fallo(s)
+== 6: sin reconocer el veredicto
+FAIL test_a_judged_denial_carries_a_verdict: AssertionError(None)
+7 caso(s); 1 fallo(s)
+10 caso(s); 0 fallo(s)
+== 7: el detector habla ante cualquier herramienta
+7 caso(s); 0 fallo(s)
+FAIL test_it_only_speaks_before_a_bash_call: AssertionError()
+10 caso(s); 1 fallo(s)
+== restaurado
+ M src/hooks/detect_edit_loop.py
+?? src/hooks/classifier_rejection.py
+?? src/hooks/detect_classifier_outage.py
+?? src/hooks/transcript_tail.py
+7 caso(s); 0 fallo(s)
+10 caso(s); 0 fallo(s)
+== C1: un Bash que pasa no recupera el episodio
+FAIL test_an_episode_carries_its_window_and_its_recovery: AssertionError()
+8 caso(s); 1 fallo(s)
+== C2: las otras herramientas cuentan como Bash
+FAIL test_a_verdict_ends_an_episode_without_recovering_it: AssertionError()
+FAIL test_an_episode_carries_its_window_and_its_recovery: AssertionError()
+FAIL test_an_episode_counts_the_tools_that_went_through_meanwhile: AssertionError()
+FAIL test_episodes_are_split_by_a_bash_call_that_went_through: AssertionError([Episode(started_at='2026-09-28T
+FAIL test_the_denominator_is_every_bash_result: AssertionError()
+FAIL test_the_json_output_is_machine_readable: AssertionError({'bash_results': 9, 'no_verdict': 3, 'episodes':
+FAIL test_the_text_report_names_the_denominator: AssertionError("3 episodio(s); 3 rechazo(s) sin veredicto sob
+8 caso(s); 7 fallo(s)
+== C3: un veredicto no termina el episodio
+FAIL test_a_verdict_ends_an_episode_without_recovering_it: AssertionError()
+FAIL test_episodes_are_split_by_a_bash_call_that_went_through: AssertionError([Episode(started_at='2026-09-28T
+FAIL test_the_denominator_is_every_bash_result: AssertionError()
+FAIL test_the_json_output_is_machine_readable: AssertionError({'bash_results': 6, 'no_verdict': 4, 'episodes':
+FAIL test_the_text_report_names_the_denominator: AssertionError("2 episodio(s); 4 rechazo(s) sin veredicto sob
+8 caso(s); 5 fallo(s)
+== restaurado
+8 caso(s); 0 fallo(s)
+== Q1: sin exigir is_error
+FAIL test_an_output_that_quotes_the_text_is_not_a_rejection: AssertionError()
+8 caso(s); 1 fallo(s)
+FAIL test_a_bash_output_that_quotes_the_rejection_is_not_counted: AssertionError()
+11 caso(s); 1 fallo(s)
+FAIL test_episodes_are_split_by_a_bash_call_that_went_through: AssertionError([Episode(started_at='2
+FAIL test_the_denominator_is_every_bash_result: AssertionError()
+FAIL test_the_json_output_is_machine_readable: AssertionError({'bash_results': 7, 'no_verdict': 4, '
+FAIL test_the_text_report_names_the_denominator: AssertionError("3 episodio(s); 4 rechazo(s) sin ver
+8 caso(s); 4 fallo(s)
+== Q2: la marca en cualquier línea, no en la primera
+FAIL test_an_output_that_quotes_the_text_is_not_a_rejection: AssertionError()
+8 caso(s); 1 fallo(s)
+11 caso(s); 0 fallo(s)
+8 caso(s); 0 fallo(s)
+== restaurado

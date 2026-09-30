@@ -1,0 +1,9 @@
+{
+  "id": "279",
+  "subject": "Portar InProcessBackend: getInProcessBackend es parcial declarada",
+  "description": "TASK-THYROX-0003. ABSORBIDA por TASK-THYROX-0006 (#276) el 2026-09-09 — no se trabaja por separado.\n\nRazón medida: sus dos módulos objetivo, `backends/InProcessBackend.ts` y `runtime/inProcessRunner.ts`, están dentro de los 15 portables que #276 enumera. Dos agentes escribiendo el mismo `src/packages/swarm/` en el mismo working tree se barren entre sí.\n\nY su primer paso ya no aplica: `runtime/spawnInProcess.ts` YA ESTÁ PORTADO (verificado 2026-09-09). El bloqueo declarado era el cuarto rancio consecutivo de esta familia de tarjetas.\n\nLo que sigue vigente de esta tarjeta y viaja a #276: `getInProcessBackend()` rehúsa hoy con un mensaje que nombra el módulo ausente, y eso es una DIVERGENCIA declarada en la cabecera de `backends/registry.ts`, no un olvido. Al portar `InProcessBackend.ts` hay que devolverle el cuerpo original Y retirar la nota — si no, la cabecera afirma un estado que dejó de ser cierto.\n\nSe cierra cuando #276 cierre.",
+  "activeForm": "Portando InProcessBackend",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

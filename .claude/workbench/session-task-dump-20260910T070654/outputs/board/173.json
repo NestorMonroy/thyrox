@@ -1,0 +1,9 @@
+{
+  "id": "173",
+  "subject": "Barrer los guiones que perdieron su aritmética de ruta en la mudanza a thyrox",
+  "description": "CERRADA con alcance corregido tres veces. Sólo kaupamex-docs perdió su `.claude/scripts/`: api y ui lo conservan (sus 8 y 9 hits resuelven), db y server dan 0.\n\nReparado y verificado POR EFECTO (estos hooks salen 0 por contrato, el exit no discrimina): 11 hooks .sh + inject_auto_recall.py + inject_vocabulario_gate.py + inject_rst_validation_gate.py + inject-arranque-de-clon.sh (prosa) + save-agent-result.mjs (comentario) + thyrox/src/corpus/backfill_findings_history.py.\n\nMecanismo nuevo: `.claude/hooks/thyrox-root.sh` (bootstrap sourceable) + `reach.py --thyrox-root` (thyrox@91060f93). Sustituye 5 ascensos copiados. Rehúsa en vez de emitir ruta plausible.\n\nCommits: kaupamex-docs@4b7bc3ed1, @0a823870d, @efa342d3e; thyrox@afb9d81f.\n\nTres ensanchamientos del censo (sub-patrón A tres veces dentro de la misma reparación): 6 archivos → 14 sitios en 11 → la ruta COMPUESTA sin literal (`RAIZ / 'scripts' / 'gates' / …`), que era además la única EJECUTABLE de las tres y estaba muerta desde la mudanza.\n\nCiega a: una cuarta forma de composición sin el segmento literal `scripts`. Sucesores: los 11 comentarios en `.claude/workflows/*.js` → #41; los ~11 `parents[N]` de thyrox/src que anclan al consumidor → tarea nueva.",
+  "activeForm": "Barriendo guiones con aritmética de ruta rota",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

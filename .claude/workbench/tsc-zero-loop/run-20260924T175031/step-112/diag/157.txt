@@ -1,0 +1,59 @@
+src/packages/repl/src/components/MessageRow.tsx(187,38): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:177-197 ---
+    177      if (isGrouped) {
+    178        shouldAnimate = msg.messages.some(m => {
+    179          const content = m.message.content[0]
+    180          return (
+    181            content?.type === 'tool_use' && inProgressToolUseIDs.has(content.id)
+    182          )
+    183        })
+    184      } else if (isCollapsed) {
+    185        shouldAnimate = hasAnyToolInProgress(msg, inProgressToolUseIDs)
+    186      } else {
+    187>       const toolUseID = getToolUseID(msg)
+    188        shouldAnimate = !toolUseID || inProgressToolUseIDs.has(toolUseID)
+    189      }
+    190    }
+    191  
+    192    const hasMetadata =
+    193      isTranscriptMode &&
+    194      displayMsg.type === 'assistant' &&
+    195      displayMsg.message.content.some((c: { type: string }) => c.type === 'text') &&
+    196      (displayMsg.timestamp || displayMsg.message.model)
+    197  
+  Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'NormalizedMessage'.
+    Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }'. Two different types with this name exist, but they are unrelated.
+      Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.
+src/packages/repl/src/components/MessageRow.tsx(200,7): error TS2322: Type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup' is not assignable to type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:190-210 ---
+    190    }
+    191  
+    192    const hasMetadata =
+    193      isTranscriptMode &&
+    194      displayMsg.type === 'assistant' &&
+    195      displayMsg.message.content.some((c: { type: string }) => c.type === 'text') &&
+    196      (displayMsg.timestamp || displayMsg.message.model)
+    197  
+    198    const messageEl = (
+    199      <Message
+    200>       message={msg}
+    201        lookups={lookups}
+    202        addMargin={!hasMetadata}
+    203        containerWidth={hasMetadata ? undefined : columns}
+    204        tools={tools}
+    205        commands={commands}
+    206        verbose={verbose}
+    207        inProgressToolUseIDs={inProgressToolUseIDs}
+    208        progressMessagesForMessage={progressMessagesForMessage}
+    209        shouldAnimate={shouldAnimate}
+    210        shouldShowDot={true}
+  Type 'MessageBase & { type: "progress"; data: unknown; } & { type: "progress"; }' is not assignable to type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup'.
+    Type 'MessageBase & { type: "progress"; data: unknown; } & { type: "progress"; }' is missing the following properties from type 'CollapsedReadSearchGroup': searchCount, readCount, listCount, replCount, and 7 more.

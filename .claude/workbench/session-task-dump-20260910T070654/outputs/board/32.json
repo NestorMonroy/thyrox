@@ -1,0 +1,9 @@
+{
+  "id": "32",
+  "subject": "Buscar la cifra plantada DESPUÉS de una compactación futura",
+  "description": "`compactionFidelity.ts` se validó contra 14 compactaciones que ocurrieron ANTES de que el instrumento existiera: ninguno de esos resúmenes pudo verse influido por él. Eso no prueba que vea el siguiente. `analisis-que-pasa-si-no-se-comprime-la-sesion.rst` planta su propia cifra —236 cifras medidas, 230 con antecedente, 6 sin él, sobre 14 compactaciones— para que se busque en el resumen de la PRÓXIMA compactación: si vuelve verbatim, si vuelve redondeada, o si desaparece. Hasta que ese chequeo corra, la tarea #21 no se cierra.",
+  "activeForm": "Buscando la cifra plantada tras la próxima compactación",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

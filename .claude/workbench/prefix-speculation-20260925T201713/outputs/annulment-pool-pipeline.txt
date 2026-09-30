@@ -1,0 +1,10 @@
+== no liberar lo no decidido
+test_pool_pipeline: 29 aserciones — 29 ok, 0 falla(s)
+== sin especulacion
+  FALLA el primer lote midió dos prefijos a la vez — esperado True, obtenido False
+  FALLA los dos worktrees terminan iguales — esperado 'const c = 3\n', obtenido 'const c = BAD3\n'
+  FALLA el ledger registra cada decisión — esperado {'agent:pool:src/a.ts': 'accepted-net', 'agent:pool:src/b.ts': 'rejected', 'agent:pool:src/c.ts': 'accept
+test_pool_pipeline: 29 aserciones — 26 ok, 3 falla(s)
+== no liberar lo no decidido (control corregido)
+  FALLA lo medido encima de un rechazo vuelve y se decide después — esperado ['src/b.ts', 'src/c.ts'], obtenido ['src/c.ts']
+test_pool_pipeline: 29 aserciones — 28 ok, 1 falla(s)

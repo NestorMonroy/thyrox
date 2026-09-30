@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# THYROX — commit-msg. Mide el ancho de línea en COLUMNAS de terminal.
+#
+# Por qué existe, y por qué el proveedor lo estrena
+# ------------------------------------------------
+# `commit-conventions.md` fija el cuerpo a 72 desde la ÉPICA 4 y declara que
+# el hook «NO valida el body». Medido al escribir esto: los cinco consumidores
+# llevan un `commit-msg` cada uno —cinco copias con cinco md5 distintos— y los
+# cinco validan sólo el asunto con `${#SUBJECT}`. El cuerpo no lo medía nadie
+# en ninguno de los seis repos, así que se comprobaba a mano con `awk`, que
+# contaba octetos y no columnas.
+#
+# (Esta línea decía «el `awk` de esta máquina es mawk». Medido 2026-09-18:
+#  `awk` resuelve por /etc/alternatives/awk a **gawk**. El síntoma sigue,
+#  y su causa es el LOCALE, no el binario — el contenedor no declara
+#  ninguno, así que gawk también cuenta octetos: `áéí` da 6, y bajo
+#  LC_ALL=C.UTF-8 da 3. Ver la nota de src/verify/commit_message.py.)
+#
+# THYROX no tenía hook de `commit-msg`, así que aquí no hay conducta previa
+# que romper — por eso el mecanismo se estrena en el proveedor y su extensión
+# a los cinco consumidores queda registrada como sucesor, no forzada en el
+# mismo pase.
+#
+# AVISA, NO BLOQUEA — directiva del ejecutor: «no seas tan rígido con los
+# commits, hay implementaciones más importantes». Medido antes de decidirlo:
+# de los 50 commits recientes de este repo, 20 serían rechazados, y son prosa
+# real de 73 a 76 columnas, no falsos positivos. Bloquear por eso pelearía en
+# cada commit por una propiedad cosmética, y un gate que se pelea se aprende a
+# saltar con `--no-verify` — que es como una regla se vuelve ruido.
+#
+# El valor está en el MECANISMO, no en el bloqueo: `src/verify/commit_message.py`
+# es invocable a mano antes de escribir el mensaje, y ahí sí decide. Mismo
+# precedente que `coherence-audit-gate.md`: surfacing automático, exit 0.
+set -uo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(dirname "$HERE")"
+GATE="$ROOT/src/verify/commit_message.py"
+
+# Rehusar en vez de omitir: un `exit 0` con el gate inalcanzable no distingue
+# «el mensaje cabe» de «no pude medirlo», y el llamador lee ese 0 como permiso.
+if [[ ! -f "$GATE" ]]; then
+    echo "commit-msg REHUSADO — no se encontro $GATE" >&2
+    echo "  No se emite veredicto: un 0 aqui seria un verde falso." >&2
+    exit 2
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "commit-msg REHUSADO — falta python3, el gate no se pudo correr." >&2
+    exit 2
+fi
+
+python3 "$GATE" "$1" || true   # avisa; el veredicto no detiene el commit
+
+# Los remolques del agente (`Co-Authored-By: Claude`, `Claude-Session:`) que el
+# entorno remoto pide y `git.md` prohibe. Este SI bloquea: un remolque
+# prohibido no es una incognita. Se parsea el bloque real de remolques, no
+# lineas sueltas, asi que un parrafo que los mencione no se rechaza.
+PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+    python3 "$ROOT/src/verify/commit_identity.py" trailers "$1" || exit 1
+
+# Segundo eje: la cita durable RESUELVE, no solo tiene la FORMA
+# -------------------------------------------------------------
+# El septimo detector de PreToolUse mide la FORMA —que un `board #N` venga con
+# un `TASK-<CAPA>-NNNN`— y no puede medir el REFERENTE: es puro por construccion
+# y bajo este harness ni dispara (H-DOCS-1010). Medir la forma y concluir sobre
+# el referente es el sub-patron C, y ya costo un commit publicado: `4acece94`
+# cita `TASK-THYROX-0445`, forma impecable y ningun sujeto.
+#
+# LA POLITICA NO VIVE AQUI: vive en el envoltorio, que sale 0 o 2 y nunca 1.
+# Este hook y los cinco de los consumidores lo invocan por igual, asi que la
+# graduacion —retirar el aviso cuando `citation_resolution --history 50`
+# sostenga 0 sin resolver— es UNA linea en UN archivo. Replicarla aqui la
+# volveria dos, que es lo que «derivar, no transcribir» prohibe.
+#
+# Se invoca por `bin/`, no por la ruta al fuente: el envoltorio generado resuelve
+# el interprete del proveedor y exporta PYTHONPATH, que una invocacion por ruta
+# no hace.
+ENVOLTORIO="$ROOT/bin/commit-msg-citation"
+if [[ ! -x "$ENVOLTORIO" ]]; then
+    echo "commit-msg REHUSADO — no se encontro $ENVOLTORIO" >&2
+    echo "  Generalo con: python3 src/session/generate_bin.py" >&2
+    exit 2
+fi
+CODIGO=0
+bash "$ENVOLTORIO" "$1" || CODIGO=$?
+[[ "$CODIGO" -eq 0 ]] || exit 2
+exit 0

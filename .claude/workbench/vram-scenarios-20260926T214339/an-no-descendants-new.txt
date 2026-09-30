@@ -1,0 +1,3 @@
+        seen.add(current)
+        break
+        for children

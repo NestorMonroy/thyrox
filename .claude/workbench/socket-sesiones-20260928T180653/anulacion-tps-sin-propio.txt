@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/transferPathSafety.test.ts:
+44 |   test('isDarwinNetworkPath (GF): sólo en darwin; /network, /.vol y el /home de otro usuario', () => {
+45 |     expect(isDarwinNetworkPath('/Network/x', 'linux')).toBe(false)
+46 |     expect(isDarwinNetworkPath('/Network/x', 'darwin')).toBe(true)
+47 |     expect(isDarwinNetworkPath('/.vol/1', 'darwin')).toBe(true)
+48 |     expect(isDarwinNetworkPath('/home/otro/x', 'darwin', true, () => '/home/yo')).toBe(true)
+49 |     expect(isDarwinNetworkPath('/home/yo/x', 'darwin', true, () => '/home/yo')).toBe(false)
+                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:49:81)
+(fail) rutas de red de macOS (yN, tt, GF) > isDarwinNetworkPath (GF): sólo en darwin; /network, /.vol y el /home de otro usuario [0.49ms]
+
+ 4 pass
+ 1 fail
+ 32 expect() calls
+Ran 5 tests across 1 file. [66.00ms]

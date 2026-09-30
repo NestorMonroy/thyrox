@@ -1,0 +1,4 @@
+parallel: SIGHUP received. No new jobs will be started.
+parallel: Waiting for these 2 jobs to finish. Send SIGTERM to stop now.
+parallel: echo start 1 >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/hup.log; sleep 2; echo end 1 >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/hup.log
+parallel: echo start 2 >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/hup.log; sleep 2; echo end 2 >> /home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/hup.log

@@ -1,0 +1,36 @@
+@thyrox/agent: +172 clave(s) explícita(s); 1 sin destino
+  sin destino: ./query-engine
+@thyrox/app-host: +17 clave(s) explícita(s); 0 sin destino
+@thyrox/binary: +0 clave(s) explícita(s); 0 sin destino
+@thyrox/bridge: +21 clave(s) explícita(s); 0 sin destino
+@thyrox/cli: +10 clave(s) explícita(s); 0 sin destino
+@thyrox/command-runtime: +56 clave(s) explícita(s); 0 sin destino
+@thyrox/config: +104 clave(s) explícita(s); 0 sin destino
+@thyrox/daemon: +7 clave(s) explícita(s); 0 sin destino
+@thyrox/headless-sdk: +1 clave(s) explícita(s); 0 sin destino
+@thyrox/ide: +7 clave(s) explícita(s); 0 sin destino
+@thyrox/local-observability: +2 clave(s) explícita(s); 0 sin destino
+@thyrox/mcp-runtime: +21 clave(s) explícita(s); 0 sin destino
+@thyrox/memory: +14 clave(s) explícita(s); 0 sin destino
+@thyrox/observability: +0 clave(s) explícita(s); 0 sin destino
+@thyrox/output: +11 clave(s) explícita(s); 0 sin destino
+@thyrox/permission: +32 clave(s) explícita(s); 0 sin destino
+@thyrox/plan: +0 clave(s) explícita(s); 0 sin destino
+@thyrox/provider: +95 clave(s) explícita(s); 0 sin destino
+@thyrox/repl: +7 clave(s) explícita(s); 0 sin destino
+@thyrox/server: +13 clave(s) explícita(s); 0 sin destino
+@thyrox/shell: +19 clave(s) explícita(s); 0 sin destino
+@thyrox/skills: +0 clave(s) explícita(s); 0 sin destino
+@thyrox/storage: +34 clave(s) explícita(s); 0 sin destino
+@thyrox/swarm: +1 clave(s) explícita(s); 0 sin destino
+@thyrox/teleport: +5 clave(s) explícita(s); 0 sin destino
+@thyrox/tool-registry: +93 clave(s) explícita(s); 5 sin destino
+  sin destino: ./tools/REPLTool/REPLTool.js
+  sin destino: ./tools/SleepTool/SleepTool.js
+  sin destino: ./tools/SnipTool/SnipTool.js
+  sin destino: ./tools/TerminalCaptureTool/TerminalCaptureTool.js
+  sin destino: ./tools/WebBrowserTool/WebBrowserTool.js
+@thyrox/tools: +1 clave(s) explícita(s); 0 sin destino
+@thyrox/updater: +0 clave(s) explícita(s); 0 sin destino
+@thyrox/voice: +0 clave(s) explícita(s); 0 sin destino
+close-exports: 29 paquete(s) a cerrar; 743 clave(s) explícita(s); 6 subruta(s) sin destino (alcance medido: 43 paquete(s))

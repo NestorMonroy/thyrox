@@ -1,0 +1,22 @@
+  ok    la adquisicion existe
+  ok    sin pg_config rehusa nombrandolo
+  ok    una version distinta a la pedida rehusa (exit 2) aunque el control exista
+  ok    el rechazo nombra la version instalada y la pedida
+  ok    el rechazo nombra la variable de opt-in
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    el rechazo nombra la variable de opt-in y la version pedida
+  ok    el instalador por defecto es la funcion que compila desde el fuente
+  ok    el instalador declarado gana
+  ok    con la version pedida ya presente pasa sin instalar
+  ok    no invoca el instalador cuando la version pedida ya esta
+  ok    un instalador que miente (no deja nada) NO se acepta
+  ok    un instalador que deja OTRA version NO se acepta: se re-comprueba la version, no el exit
+  ok    un instalador que deja la version 0.8.6 pedida se acepta
+  ok    el instalador por defecto termina 0 con herramientas simuladas
+  ok    el instalador por defecto pide postgresql-server-dev-<mayor>, no postgresql-<mayor>-pgvector
+  ok    el instalador por defecto clona la etiqueta v<version>
+  ok    make (build e install) se invoca con el pg_config declarado
+  ok    THYROX_PGVECTOR_VERSION esta en .env.example
+  ok    THYROX_PGVECTOR_SOURCE_URL esta en .env.example
+
+20 casos: 20 ok, 0 fallos

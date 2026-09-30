@@ -1,0 +1,36 @@
+== 0. verde de partida (el mecanismo presente) ==
+  ok   un comando con tabulador no se parte
+
+resultado: 11 de 11 aserciones en verde
+
+== 1. anulacion: se retira el despacho por directorio ==
+220:RUN_DIR="$DIR"
+221:mkdir -p "$RUN_DIR"; until true; do
+228:    RUN_DIR="$DIR"
+325:    LABEL="$_nombre"
+356:"$WAIT_JOBS" wait --timeout "$TIMEOUT"
+sintaxis del sujeto mutado: OK
+
+== 2. la suite con la causa retirada ==
+test-run-task-pool-aislamiento:
+  FALLA la evidencia del PRIMER despacho sobrevive — esperado «1», obtenido «0»
+  ok   la del SEGUNDO tambien esta
+  FALLA y son dos archivos distintos — esperado «2», obtenido «1»
+  FALLA cada despacho abrio su directorio — esperado «2», obtenido «0»
+  FALLA el directorio lleva prefijo e ISO — esperado «si», obtenido «no»
+  FALLA dos despachos dejan DOS trabajos en el ledger — esperado «2», obtenido «1»
+  ok   el log lleva el nombre declarado, no el ordinal
+  ok   y el segundo tambien
+  ok   ninguno quedo con nombre de ordinal
+  ok   una linea sin tabulador sigue corriendo
+  ok   un comando con tabulador no se parte
+
+resultado: 6 de 11 aserciones en verde
+
+== 3. restauracion, y su verificacion CONTRA LA COPIA ==
+cmp: identico a la copia — la restauracion fue exacta
+
+== 4. verde de vuelta ==
+  ok   un comando con tabulador no se parte
+
+resultado: 11 de 11 aserciones en verde

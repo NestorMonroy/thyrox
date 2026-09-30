@@ -1,0 +1,18 @@
+run-task-pool: 2 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T073728
+  job-20260927T073728/job-001 pid 27481   bash bin/finding rst H-THYROX-211 --resolved-in thyrox@7e6eedcf --body /home/user/thyrox/.claude/workbench/findings-211-212-20260927T073727/body-211.rst
+  job-20260927T073728/job-002 pid 27526   bash bin/finding rst H-THYROX-212 --resolved-in thyrox@4f465d63 --body /home/user/thyrox/.claude/workbench/findings-211-212-20260927T073727/body-212.rst
+run-task-pool: lanzados 2 de 2; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T073728_job-001 -> OK (2 de 3)
+asentado: job-20260927T073728_job-002 -> OK (3 de 3)
+== 3 trabajos asentados ==
+OLVIDADO job-20260927T073728
+       | (vacío — no emitió nada)
+OK     job-20260927T073728_job-001 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-211-un-commit-hecho-solo-de-renombres-no-pasaba-por-los-gates-que-se-disparan-por-ruta.rst
+       | EXIT=0
+       memoria pico: 54236 KB (53 MB) · pared 0.06s
+OK     job-20260927T073728_job-002 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-212-binary-references-no-veia-a-los-consumidores-que-cargan-un-modulo-como-namespace.rst
+       | EXIT=0
+       memoria pico: 54208 KB (53 MB) · pared 0.05s
+__BG_EXIT__=0

@@ -1,0 +1,5 @@
+emitibles sin derrame: 39 de 42
+  agent: 2 escape(s) -> ['../../paths/docs.ts', '../../paths/reach.ts']
+  bridge: 1 escape(s) -> ['package.json']
+  cli: 7 escape(s) -> ['../../coordination/branchIntegration.ts', '../../coordination/claims.ts', '../../coordination/ledger.ts', '../../task/io.ts']
+__BG_EXIT__=0

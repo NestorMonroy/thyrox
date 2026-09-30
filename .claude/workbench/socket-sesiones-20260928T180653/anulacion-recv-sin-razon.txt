@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionReceive.test.ts:
+75 |   })
+76 | 
+77 |   test('un hook que contesta sin pasar la entrega la consume, con su razón o la de omisión, y se registra', async () => {
+78 |     const logs: string[] = []
+79 |     const withReason = await runSessionReceive({ origin: { kind: 'peer' }, content: 'hola' }, site([async () => ({ consumed: 'filtrado' })], ['mod-a', 'mod-b']), message => void logs.push(message))
+80 |     expect(withReason).toEqual({ consumed: 'filtrado' })
+                            ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "consumed": "filtrado",
++   "consumed": "a hook answered without passing the delivery on",
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:80:24)
+(fail) runSessionReceive (Aot) > un hook que contesta sin pasar la entrega la consume, con su razón o la de omisión, y se registra [0.46ms]
+
+ 6 pass
+ 1 fail
+ 14 expect() calls
+Ran 7 tests across 1 file. [42.00ms]

@@ -1,0 +1,12 @@
+== 4: sin chmod
+   (provider/src/accounts/connectionStoreHome.ts)
+ 1 fail
+== 7: sin id exacto
+   (cli/src/commands/providers/connectionSelector.ts)
+ 1 fail
+== 11: sin minúsculas
+   (cli/src/commands/providers/connectionSelector.ts)
+ 1 fail
+== restaurado
+ 0 fail
+__BG_EXIT__=0

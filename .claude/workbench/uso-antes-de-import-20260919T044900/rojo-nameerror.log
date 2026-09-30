@@ -1,0 +1,51 @@
+
+resultado: 20 de 20 aserciones en verde
+-- tests/agents/test_document_root_default.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_document_root_default.py", line 24, in <module>
+    HERE = reach.thyrox_root()
+           ^^^^^
+NameError: name 'reach' is not defined
+-- ROJO tests/agents/test_document_root_default.py
+-- tests/agents/test_final_message_closing.py
+== 1. la REGLA no cambia: sigue publicando el ultimo NO NULO ==
+  ok    con el final parcial, la regla retrocede al turno anterior
+  ok    con el final reconciliado, la regla publica su cierre
+== 2. la columna NUEVA declara el cierre CRUDO del ultimo mensaje ==
+  ok    el final parcial no declaro cierre: la columna es nula
+  ok    el final reconciliado si lo declaro
+  File "/home/user/thyrox/tests/hooks/test_detect_agent_dispatch.py", line 18, in <module>
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+    ^^^
+NameError: name 'sys' is not defined
+-- ROJO tests/hooks/test_detect_agent_dispatch.py
+-- tests/hooks/test_detect_code_language.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/hooks/test_detect_code_language.py", line 22, in <module>
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+    ^^^
+NameError: name 'sys' is not defined
+-- ROJO tests/hooks/test_detect_code_language.py
+-- tests/hooks/test_detect_dedicated_tool_usage.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/hooks/test_detect_dedicated_tool_usage.py", line 16, in <module>
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+    ^^^
+NameError: name 'sys' is not defined
+-- ROJO tests/hooks/test_detect_dedicated_tool_usage.py
+-- tests/hooks/test_detect_ephemeral_citation.py
+  ok    test_evidence_surface_fires_on_workbench_and_jobs
+  ok    test_stays_silent_on_a_hash_with_no_task_word
+  ok    test_stays_silent_on_non_commit_bash_commands
+5358:-- ROJO tests/agents/test_document_root_default.py
+5601:-- ROJO tests/agents/test_store_dir_default.py
+5608:-- ROJO tests/agents/test_store_home.py
+5761:-- ROJO tests/corpus/test_censar_scripts.py
+6022:-- ROJO tests/hooks/test_detect_agent_dispatch.py
+6029:-- ROJO tests/hooks/test_detect_code_language.py
+6036:-- ROJO tests/hooks/test_detect_dedicated_tool_usage.py
+6791:-- ROJO tests/paths/test_consumer_root_refuses_provider.py
+7607:-- ROJO tests/session/test_generate_bin.py
+7960:-- ROJO tests/session/test_user_wiring.py
+9667:-- ROJO tests/verify/test-script-naming.sh
+9668:-- ROJO tests/verify/test_package_root_resolution.sh

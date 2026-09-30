@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c while read -r c; do echo \"== $c\"; (cd /home/user/thyrox && timeout 300 bash -c \"$c\"); done < .claude/workbench/step-overlap-20260925T235228/catalog-subset.txt", "started_at": "2026-09-26T00:41:46+00:00"}

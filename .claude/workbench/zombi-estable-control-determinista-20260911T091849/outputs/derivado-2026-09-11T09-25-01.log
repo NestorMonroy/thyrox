@@ -1,0 +1,11 @@
+# derivado con: grep -rlE 'job_alive|wait-jobs|cmd_kill' --include=*.sh --include=*.py tests/
+tests/hooks/test_stop_gate.py                  exit=0 | 57 ok, 0 fallos
+tests/roster/test_process_liveness.py          exit=0 | 29 ok, 0 fallos
+tests/session/test-contrato-de-escotilla.sh    exit=0 | 6 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+tests/session/test-process-group.sh            exit=0 | test-process-group: 12 aserciones — 12 ok, 0 falla(s)
+tests/session/test-run-task-pool.sh            exit=0 | test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+tests/session/test-wait-jobs-dependencia.sh    exit=0 | resumen: 9 ok, 0 fallo(s)
+tests/session/test-wait-jobs.sh                exit=0 | 31 ok, 0 fallos
+tests/session/test_job_ledger.py               exit=0 | 38 ok, 0 fallos
+tests/session/test_user_wiring.py              exit=0 | 74 ok, 0 fallos
+__BG_EXIT__=0

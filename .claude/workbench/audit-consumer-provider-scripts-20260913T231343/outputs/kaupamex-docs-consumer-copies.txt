@@ -1,0 +1,14 @@
+=== kaupamex-docs ===
+  COPIA  .claude/eventos/settings-local-20260821T110649/generado/verificar_rutas_de_hook.py
+  fork   .claude/eventos/barrido-fk-forma-c-20260828T184007/tests/run.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/catalogo-modelos-cache-20260902T045046/extract_model_registry.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/esqueleto-de-porte-20260828T230333/tests/run.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/implementar-agent-ts-20260829T001415/tests/run.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/recibir-nestor-monroy-tools-20260827T191257/extraido/claude-code-nestor-monroy-tools/bun-demincer/scheduler/install.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/recibir-nestor-monroy-tools-20260827T191257/extraido/claude-code-nestor-monroy-tools/install.sh   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/red-resolucion-de-raiz-20260906T165642/fixed/check_binary_literal_citations.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/red-resolucion-de-raiz-20260906T165642/fixed/check_gitattributes.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/red-resolucion-de-raiz-20260906T165642/fixed/check_hook_script_token.py   (mismo nombre, contenido distinto — juicio, no medicion)
+  fork   .claude/eventos/red-resolucion-de-raiz-20260906T165642/fixed/check_script_deprecated.py   (mismo nombre, contenido distinto — juicio, no medicion)
+check-consumer-copies: 1 copia(s) · 10 fork(s) (alcance medido: 381 archivo(s) de kaupamex-docs/.claude)
+rc=0

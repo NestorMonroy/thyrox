@@ -1,0 +1,20 @@
+cache-ttl: 5m (option)
+-- FALLIDO src/packages/agent/messages/mappers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/2.txt
+-- FALLIDO src/packages/agent/messages/mappers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/1.txt
+-- FALLIDO src/packages/agent/QueryEngine.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/4.txt
+-- FALLIDO src/packages/repl/src/hooks/useReplBridge.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/11.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/17.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/16.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/18.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/15.txt
+-- FALLIDO src/packages/repl/src/queryHelpers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/25.txt
+-- FALLIDO src/packages/repl/src/queryHelpers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/26.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/28.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/34.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/33.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/35.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/30.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/32.txt
+-- FALLIDO src/packages/app-host/src/runtime/runtimeHandles.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/items/42.txt
+items=63 ok=46 fallidos=17
+__BG_EXIT__=1

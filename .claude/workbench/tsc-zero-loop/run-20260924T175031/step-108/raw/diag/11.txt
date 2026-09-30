@@ -1,0 +1,7 @@
+src/packages/agent/internal/cronTasksCore.ts(90,45): error TS2339: Property 'getProjectRoot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronTasksCore.ts(101,23): error TS2339: Property 'getFsImplementation' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronTasksCore.ts(180,46): error TS2339: Property 'getProjectRoot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronTasksCore.ts(225,28): error TS2339: Property 'addSessionCronTask' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronTasksCore.ts(254,52): error TS2339: Property 'removeSessionCronTasks' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronTasksCore.ts(308,48): error TS2339: Property 'getSessionCronTasks' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronTasksCore.ts(308,83): error TS7006: Parameter 't' implicitly has an 'any' type.

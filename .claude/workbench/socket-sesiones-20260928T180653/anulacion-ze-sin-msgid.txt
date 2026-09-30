@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+87 |   })
+88 | 
+89 |   test('encola el prompt con su origen, avisa y marca la cola', async () => {
+90 |     const { deps, events, enqueued, logs } = harness()
+91 |     await deliverPeerUserMessage({ type: 'user', uuid: 'u-1', from: 'uds:/run/b/2.sock', msg_id: 'no-uuid', priority: 'now', from_plugin: 'p<>', message: { content: 'hola' } }, peer, deps)
+92 |     expect(enqueued).toEqual([
+                          ^
+error: expect(received).toEqual(expected)
+
+@@ -8,3 +8,3 @@
+        "kind": "peer",
++       "msg_id": "no-uuid",
+        "plugin": "p",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:92:22)
+(fail) deliverPeerUserMessage (ze) > encola el prompt con su origen, avisa y marca la cola [3.97ms]
+
+ 15 pass
+ 1 fail
+ 36 expect() calls
+Ran 16 tests across 1 file. [57.00ms]

@@ -1,0 +1,1 @@
+uv run --quiet python tests/task/test_task_ids_cli_names.py

@@ -1,0 +1,10 @@
+error: Socket closed before the connection was established
+ code: "ERR_SOCKET_CLOSED_BEFORE_CONNECTION"
+
+      at unknown:1:1
+      at onClose (node:net:881:34)
+      at emit (node:events:95:22)
+      at emitErrorAndCloseNextTick (node:net:1406:39)
+      at processTicksAndRejections (native:7:39)
+socket conectándose: ERROR Invalid socket
+socket ya conectado: ERROR upstream response has no HTTP status line

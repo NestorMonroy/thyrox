@@ -1,0 +1,40 @@
+
+1. classify — la categoria sale del vocabulario de SU lado
+  ok    nuestro update_or_create es 'por el enganche'
+  ok    de la fuente, upsert_en es 'por debajo'
+  ok    un cuerpo sin senal es ABSENT
+  ok    los dos vocabularios a la vez son BOTH
+
+2. direction — tres desenlaces, no dos
+  ok    categorias iguales: sin desacuerdo
+  ok    un lado sin senal: no se compara
+  ok    BOTH contra una categoria: indeterminado
+  ok    H-API-1058: nuestro por el enganche, la fuente por debajo
+  ok    la inversa NO es el mismo nombre
+
+3. mirrored_counterpart — los pares son parametro
+  ok    un prefijo declarado traduce a su destino
+  ok    una ruta que ninguna raiz cubre da None
+  ok    el segundo par tambien se consulta
+
+4. compare — el par divergente sale, el mudo no
+  ok    un hallazgo
+  ok    y es el metodo que escribe
+  ok    con la direccion del eje
+  ok    el par sin senal NO entra al denominador
+  ok    un archivo con contraparte
+
+5. CONTROL — el localizador es PARAMETRO, no esta cableado
+  ok    sin localizador no hay contraparte
+  ok    y por tanto no hay hallazgos
+  ok    pero el recorrido SI se declara
+
+6. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+  ok    6.1 con el lector de patrones, el par de TypeScript se compara
+  ok    6.2 y sale el mismo desacuerdo que en Python
+  ok    6.3 el lector de Python NO ve simbolos ahi (por eso es parametro)
+  ok    6.4 y las extensiones salen del lector, no del motor
+  ok    6.5 tree_files recorre lo que el lector declara
+
+25 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,66 @@
+bun test v1.3.11 (af24e281)
+
+tests/package/package_identity.test.ts:
+130 |           if (!line.includes(`'${SOURCE_SCOPE}/`) && !line.includes(`"${SOURCE_SCOPE}/`)) return
+131 |           offending.push(`${file.slice(PACKAGES.length + 1)}:${i + 1}`)
+132 |         })
+133 |       }
+134 |     }
+135 |     expect(offending).toEqual([])
+                            ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "@ant/computer-use-mcp/src/legacy/cleanup.ts:1",
++   "@ant/computer-use-mcp/src/legacy/cleanup.ts:3",
++   "@ant/computer-use-mcp/src/legacy/cleanup.ts:4",
++   "@ant/computer-use-mcp/src/legacy/cleanup.ts:5",
++   "@ant/computer-use-mcp/src/legacy/setup.ts:4",
++   "@ant/computer-use-mcp/src/legacy/setup.ts:5",
++   "@ant/computer-use-mcp/src/legacy/setup.ts:7",
++   "@ant/computer-use-mcp/src/legacy/computerUseLock.ts:3",
++   "@ant/computer-use-mcp/src/legacy/computerUseLock.ts:4",
++   "@ant/computer-use-mcp/src/legacy/computerUseLock.ts:5",
++   "@ant/computer-use-mcp/src/legacy/computerUseLock.ts:6",
++   "@ant/computer-use-mcp/src/legacy/computerUseLock.ts:7",
++   "@ant/computer-use-mcp/src/legacy/computerUseLock.ts:8",
++   "@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts:40",
++   "@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts:41",
++   "@ant/computer-use-mcp/src/legacy/mcpServer.ts:9",
++   "@ant/computer-use-mcp/src/legacy/mcpServer.ts:10",
++   "@ant/computer-use-mcp/src/legacy/mcpServer.ts:11",
++   "@ant/computer-use-mcp/src/legacy/common.ts:1",
++   "@ant/computer-use-mcp/src/legacy/common.ts:2",
++   "@ant/computer-use-mcp/src/legacy/escHotkey.ts:1",
++   "@ant/computer-use-mcp/src/legacy/hostAdapter.ts:6",
++   "@ant/computer-use-mcp/src/legacy/drainRunLoop.ts:1",
++   "@ant/computer-use-mcp/src/legacy/drainRunLoop.ts:2",
++   "@ant/computer-use-mcp/src/legacy/wrapper.tsx:29",
++   "@ant/computer-use-mcp/src/legacy/wrapper.tsx:30",
++   "@ant/computer-use-mcp/src/legacy/wrapper.tsx:31",
++   "@ant/computer-use-mcp/src/legacy/wrapper.tsx:32",
++   "@ant/computer-use-mcp/src/legacy/wrapper.tsx:33",
++   "@ant/computer-use-mcp/src/legacy/executor.ts:46",
++   "@ant/computer-use-mcp/src/legacy/executor.ts:47",
++   "@ant/computer-use-mcp/src/legacy/executor.ts:48",
++   "@ant/computer-use-mcp/src/legacy/executor.ts:49",
++   "@ant/computer-use-mcp/src/legacy/platforms/win32.ts:47",
++   "@ant/computer-use-mcp/src/legacy/gates.ts:3",
++   "@ant/computer-use-mcp/src/legacy/gates.ts:4",
++   "@ant/computer-use-mcp/src/legacy/gates.ts:5",
++   "@ant/computer-use-mcp/src/legacy/toolRendering.tsx:2",
++   "@ant/computer-use-mcp/src/legacy/toolRendering.tsx:4",
++   "@ant/computer-use-mcp/src/legacy/toolRendering.tsx:5",
++ ]
+
+- Expected  - 1
++ Received  + 42
+
+      at <anonymous> (/home/user/thyrox/tests/package/package_identity.test.ts:135:23)
+(fail) identidad del paquete > caso 2: ninguna línea de import de un miembro del workspace trae el alcance de la fuente [243.96ms]
+
+ 2 pass
+ 1 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [353.00ms]

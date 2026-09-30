@@ -1,0 +1,8 @@
+{
+  "id": "153",
+  "subject": "Portar el segundo primitivo de transcript: extraccion de uso",
+  "description": "H-DOCS-1087 lo nombra: el grupo llamado «transcript» contiene DOS primitivos. messages.py cubre la procedencia (5 consumidores); la extraccion de uso y modelo (usage, cache_read, input_tokens, message.model) tiene 10 consumidores propios y ninguno de ellos obtiene respuesta de messages.py. Produccion: agent_store.py, register_agent_session.py, model_catalog.py, medir_usage_subagentes.py, reconciliar_store.py. De el dependen el equiv_cost de calibration-verified-numbers.md y el censo por modelo de model-selection-subagents.md. El contrato sale de medir que campos leen los cinco, no de suponer que leen los mismos.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

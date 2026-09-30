@@ -1,0 +1,6 @@
+claves del plan: items, warnings
+items: 2
+por tipo: {"dir":2}
+   dir | /root/.claude/projects
+   dir | /root/.claude/tasks
+__BG_EXIT__=0

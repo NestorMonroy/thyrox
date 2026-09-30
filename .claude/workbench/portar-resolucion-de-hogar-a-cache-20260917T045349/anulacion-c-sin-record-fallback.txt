@@ -1,0 +1,3 @@
+FAIL: test_the_default_is_recorded_not_silent (__main__.CacheHomeResolution.test_the_default_is_recorded_not_silent)
+Ran 9 tests in 0.053s
+FAILED (failures=1)

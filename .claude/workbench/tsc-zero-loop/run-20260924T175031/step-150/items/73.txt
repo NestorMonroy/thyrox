@@ -1,0 +1,55 @@
+Patrón: untyped-passthrough-field-indexed-on-settings-json
+Señal del verificador: TS7053.*can't be used to index type '\{\}'
+Arreglo genérico: Cuando `SettingsJson`/`Settings` (schema con passthrough) se indexa por una clave no declarada en `SettingsSchema` (p. ej. `extraKnownMarketplaces`), afirmar su forma real con `as Record<string, unknown> | undefined` antes de indexar, en vez de indexar directo sobre el objeto tipado por el schema. No usar `any`.
+Ya aplicado en: src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx
+Archivos donde la señal sigue viva: src/packages/config/plugin/marketplaceManager.ts, src/packages/repl/src/components/Message.tsx
+
+src/packages/config/plugin/marketplaceManager.ts(1994,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/config/plugin/marketplaceManager.ts:1984-2004 ---
+   1984      const settings = getSettingsForSource(source)
+   1985      if (!settings) continue
+   1986  
+   1987      let needsUpdate = false
+   1988      const updates: {
+   1989        extraKnownMarketplaces?: typeof settings.extraKnownMarketplaces
+   1990        enabledPlugins?: typeof settings.enabledPlugins
+   1991      } = {}
+   1992  
+   1993      // Remove from extraKnownMarketplaces if present
+   1994>     if (settings.extraKnownMarketplaces?.[name]) {
+   1995        const updatedMarketplaces: Partial<
+   1996          SettingsJson['extraKnownMarketplaces']
+   1997        > = { ...settings.extraKnownMarketplaces }
+   1998        // Use undefined values (NOT delete) to signal key removal via mergeWith
+   1999        updatedMarketplaces[name] = undefined
+   2000        updates.extraKnownMarketplaces =
+   2001          updatedMarketplaces as SettingsJson['extraKnownMarketplaces']
+   2002        needsUpdate = true
+   2003      }
+   2004  
+  No index signature with a parameter of type 'string' was found on type '{}'.
+
+src/packages/repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/Message.tsx:148-168 ---
+    148        }
+    149        // Precompute the imageIndex prop for each content block. The previous
+    150        // version incremented a counter inside the .map() callback, which
+    151        // React Compiler bails on ("UpdateExpression to variables captured
+    152        // within lambdas"). A plain for loop keeps the mutation out of a
+    153        // closure so the compiler can memoize MessageImpl.
+    154        const imageIndices: number[] = []
+    155        let imagePosition = 0
+    156        for (const param of message.message.content) {
+    157          if (param.type === 'image') {
+    158>           const id = message.imagePasteIds?.[imagePosition]
+    159            imagePosition++
+    160            imageIndices.push(id ?? imagePosition)
+    161          } else {
+    162            imageIndices.push(imagePosition)
+    163          }
+    164        }
+    165        // Check if this message is the latest bash output - if so, wrap content
+    166        // with provider so OutputLine can show full output via context
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+  No index signature with a parameter of type 'number' was found on type '{}'.

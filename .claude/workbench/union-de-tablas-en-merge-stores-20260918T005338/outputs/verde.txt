@@ -1,0 +1,27 @@
+test_10_la_tabla_que_solo_esta_en_el_origen_se_reporta_con_sus_filas (__main__.TestUnion.test_10_la_tabla_que_solo_esta_en_el_origen_se_reporta_con_sus_filas)
+CONTROL POSITIVO del defecto: `merge` recorria `_real_tables(target)`, ... ok
+test_11_la_tabla_que_solo_esta_en_el_destino_sigue_reportandose (__main__.TestUnion.test_11_la_tabla_que_solo_esta_en_el_destino_sigue_reportandose)
+El par que hace discriminar al caso 10: recorrer la UNION no puede ... ok
+test_1_la_fila_que_solo_esta_en_el_origen_se_inserta (__main__.TestUnion.test_1_la_fila_que_solo_esta_en_el_origen_se_inserta)
+Falla si la union no trae lo ausente — el defecto que motiva el guion. ... ok
+test_2_la_fila_que_solo_esta_en_el_destino_SOBREVIVE (__main__.TestUnion.test_2_la_fila_que_solo_esta_en_el_destino_SOBREVIVE)
+Falla si la fusion se implementa como copia. Es el riesgo real: 3 filas ... ok
+test_3_gana_el_updated_at_mayor (__main__.TestUnion.test_3_gana_el_updated_at_mayor)
+Falla si el defecto no compara fechas. ... ok
+test_4_ante_empate_NO_se_toca_el_destino (__main__.TestUnion.test_4_ante_empate_NO_se_toca_el_destino)
+Falla si el origen gana por defecto. Sin criterio, no cambiar es la ... ok
+test_5_dry_run_no_escribe (__main__.TestUnion.test_5_dry_run_no_escribe)
+Falla si --dry-run escribe. Es lo que permite medir antes de aplicar. ... ok
+test_6_el_registro_devuelve_el_resolvedor_declarado (__main__.TestUnion.test_6_el_registro_devuelve_el_resolvedor_declarado)
+Falla si el motor ignora el registro y usa siempre el defecto. ... ok
+test_7_un_resolvedor_registrado_a_mano_gobierna_su_tabla (__main__.TestUnion.test_7_un_resolvedor_registrado_a_mano_gobierna_su_tabla)
+Falla si registrar no tiene efecto — el punto entero del registro. ... ok
+test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto (__main__.TestUnion.test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto)
+CONTROL POSITIVO, con la forma del defecto real de H-DOCS-1236: una ... ok
+test_9_citation_is_stable_deja_pasar_lo_que_no_desliza (__main__.TestUnion.test_9_citation_is_stable_deja_pasar_lo_que_no_desliza)
+Falla si el resolvedor rehusa TODO — un guard que siempre rehusa no ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.046s
+
+OK

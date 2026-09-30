@@ -1,0 +1,6 @@
+tests/typescript/test_emit_declarations.py exit=0
+tests/package/test_packages_home.py exit=0
+tests/verify/test_package_typecheck.py exit=0
+tests/verify/test_provider_refresh.py exit=0
+root_resolution exit=0
+__BG_EXIT__=0

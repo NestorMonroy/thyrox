@@ -1,0 +1,27 @@
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(729,7): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:719-739 ---
+    719    // Track the last recorded message UUID for parent chain continuity
+    720    let lastRecordedUuid: UUID | null = initialMessages.at(-1)?.uuid ?? null
+    721  
+    722    try {
+    723      for await (const message of query({
+    724        messages: initialMessages,
+    725        systemPrompt: agentSystemPrompt,
+    726        userContext: resolvedUserContext,
+    727        systemContext: resolvedSystemContext,
+    728        canUseTool,
+    729>       toolUseContext: agentToolUseContext,
+    730        querySource,
+    731        maxTurns: maxTurns ?? agentDefinition.maxTurns,
+    732      })) {
+    733        onQueryProgress?.()
+    734        // Forward subagent API request starts to parent's metrics display
+    735        // so TTFT/OTPS update during subagent execution.
+    736        if (message.type === 'stream_event') {
+    737          const streamMsg = message as Message & { event?: { type: string }; ttftMs?: number }
+    738          if (streamMsg.event?.type === 'message_start' && streamMsg.ttftMs != null) {
+    739            toolUseContext.pushApiMetricsEntry?.(streamMsg.ttftMs)
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+292 |     expect(existsSync(path)).toBe(true)
+293 |   })
+294 | 
+295 |   test('sin ámbito o sin escritura, la publicación falla con el mensaje de la referencia; un delete que falla no', async () => {
+296 |     const noScope = memoryStorage({ ensureScope: async () => ({ ok: false, error: { code: 'EUNAVAIL', cause: new Error('down') } }) })
+297 |     await expect(publishInboxKey(ADDRESS, TOKEN, { sweepPermitted: false, storage: noScope.storage }, active())).rejects.toThrow(
+                                                                                                                               ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:297:122)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > sin ámbito o sin escritura, la publicación falla con el mensaje de la referencia; un delete que falla no [0.73ms]
+
+ 33 pass
+ 1 fail
+ 57 expect() calls
+Ran 34 tests across 1 file. [144.00ms]

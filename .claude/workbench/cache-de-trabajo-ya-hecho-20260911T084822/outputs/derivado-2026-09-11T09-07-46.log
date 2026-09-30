@@ -1,0 +1,116 @@
+### tests/cache
+tests/cache/test_work_cache.py exit=0 | test_work_cache: 23 aserciones — 23 ok, 0 falla(s)
+### tests/install
+tests/install/test_install.sh exit=0 | 33 aserciones: 33 ok, 0 fallidas
+### tests/paths
+tests/paths/test_config_home_cli.py exit=0 | OK
+tests/paths/test_consumer_root.py exit=0 | OK
+tests/paths/test_consumer_root_refuses_provider.py exit=0 | OK
+tests/paths/test_declaration_port.py exit=0 | OK
+tests/paths/test_deferred_names_not_used_bare.py exit=0 | OK
+tests/paths/test_reach.py exit=0 | resultado: 46 de 46 aserciones en verde
+tests/paths/test_reach_roots_declared.py exit=0 | 9 ok, 0 fallos
+tests/paths/test_reach_roots_shim.py exit=0 | resultado: 18 de 18 aserciones en verde
+tests/paths/test_surface.py exit=0 | 14 ok, 0 fallos
+### tests/session
+tests/session/test_adopt_background.py exit=0 | 27 ok, 0 fallos
+tests/session/test_background.py exit=0 | 21 ok, 0 fallos
+tests/session/test_background_log_home.py exit=0 | OK
+tests/session/test_installed_hooks_resolve.py exit=1 | FAILED (failures=1)
+tests/session/test_instruction_floor.py exit=0 | 15 ok, 0 fallos
+tests/session/test_job_ledger.py exit=0 | 38 ok, 0 fallos
+tests/session/test_job_runs.py exit=0 | resumen: 0 fallo(s)
+tests/session/test_jobs_home.py exit=0 | OK
+tests/session/test_marker_wait.py exit=0 | 23 ok, 0 fallos
+tests/session/test_parallel.py exit=0 | 16 ok, 0 fallos
+tests/session/test_probe_model_switch_cache.py exit=0 | test_probe_model_switch_cache: 48 ok, 0 fallos (alcance medido: 48 aserciones)
+tests/session/test_reconcile_user_hooks.py exit=0 | 17 aprobada(s) · 0 fallida(s) (alcance medido: reconcile_user_hooks.py)
+tests/session/test_task_pool.py exit=0 | 27 ok, 0 fallos
+tests/session/test_user_wiring.py exit=0 | 74 ok, 0 fallos
+tests/session/test_write_env.py exit=0 | 24 aprobada(s) · 0 fallida(s) (alcance medido: write-env.sh)
+tests/session/test-arranque-de-clon.sh exit=0 | test-arranque-de-clon: 21 de 21 aserciones en verde
+tests/session/test-bg-familia.sh exit=0 | aserciones: 20  ok: 20  fallo: 0
+tests/session/test-contrato-de-escotilla.sh exit=0 | 6 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+tests/session/test-evidencia-varada.sh exit=1 | aciertos: 10 · fallos: 1
+tests/session/test-instalar-config-usuario.sh exit=1 | 9 ok, 1 fallos (alcance medido: 10 aserciones sobre /home/user/thyrox/src/session/instalar-config-usuario.sh)
+tests/session/test-medir-disparo-de-hooks.sh exit=0 | RESULTADO: todos los casos pasaron.
+tests/session/test-process-group.sh exit=0 | test-process-group: 8 aserciones — 8 ok, 0 falla(s)
+tests/session/test-record-environment.sh exit=0 | 18 ok · 0 falla(s)
+tests/session/test-run-task-pool.sh exit=0 | test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+tests/session/test-sincronizar-settings-local.sh exit=0 | resultado: 28 aserciones en verde, 0 en rojo
+tests/session/test-wait-jobs-dependencia.sh exit=0 | resumen: 9 ok, 0 fallo(s)
+tests/session/test-wait-jobs.sh exit=0 | 31 ok, 0 fallos
+### tests/task
+tests/task/test_board_sync.py exit=0 | OK: todas las aserciones pasan
+tests/task/test_layer_axis.py exit=0 | OK
+tests/task/test_layer_signals.py exit=0 | OK
+tests/task/test_task_ids.py exit=0 | OK: todas las aserciones pasan
+tests/task/test_task_source_citas.py exit=0 | OK: todas las aserciones pasan
+tests/task/test_vecinos_de_tarea.py exit=0 | resultado: 44 de 44 aserciones en verde
+tests/task/test-closure-graph.sh exit=0 | OK: 12 casos, 0 fallos (alcance medido: 5 fixtures)
+tests/task/test-implementation-order.sh exit=0 | test-implementation-order.sh: 28 ok · 0 fallo(s)
+tests/task/test-refresh-board.sh exit=0 | test-refresh-board: 10 ok, 0 falla(s)
+### tests/verify
+tests/verify/test_byte_class_gate.py exit=0 | resultado: 11 de 11 aserciones en verde
+tests/verify/test_class_header.py exit=0 | 23 ok, 0 fallos
+tests/verify/test_commit_message.py exit=0 | == 12 ok · 0 fallas ==
+tests/verify/test_commit_message_label.py exit=0 | test-commit-message-label: 5 ok, 0 fallo(s)
+tests/verify/test_config_precedence.py exit=1 | resultado: 17 de 18 aserciones en verde
+tests/verify/test_consumer_anchor.py exit=0 | 11 ok, 0 fallos
+tests/verify/test_consumer_copies.py exit=0 | resultado: 14 de 14 aserciones en verde
+tests/verify/test_consumer_root_gates.py exit=0 | OK
+tests/verify/test_counterpart_body.py exit=0 | 25 ok, 0 fallos
+tests/verify/test_docs_root_resolution.py exit=0 | OK
+tests/verify/test_env_contract_keys.py exit=1 | FAILED (failures=1)
+tests/verify/test_error_catalog.py exit=2 | NO se emite conteo: sin positivo real no hay prueba.
+tests/verify/test_gitattributes.py exit=0 | resultado: 23 de 23 aserciones en verde
+tests/verify/test_hallazgo_sucesor.py exit=0 | 15 ok, 0 fallos
+tests/verify/test_hook_script_token.py exit=0 | resultado: 21 de 21 aserciones en verde
+tests/verify/test_identifier_language.py exit=0 | 19 ok, 0 fallos (alcance medido: 19 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/verify/test_identifier_language_baseline.py exit=0 | 12 ok, 0 fallos (alcance medido: 12 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/verify/test_identifier_language_corpus.py exit=0 | 20 ok, 0 fallos (alcance medido: 20 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/verify/test_manifest_language.py exit=0 | 19 ok, 0 fallos (alcance medido: 19 aserciones sobre /home/user/thyrox/src/verify/check_manifest_language.py)
+tests/verify/test_owner_resolution.py exit=0 | OK
+tests/verify/test_package_boundary.py exit=0 | resultado: 23 de 23 aserciones en verde
+tests/verify/test_path_arithmetic.py exit=1 | resultado: 16 de 17 aserciones en verde
+tests/verify/test_pathspec_commit.py exit=0 | 16 ok, 0 fallos
+tests/verify/test_pre_commit_hook.py exit=1 | FAILED (failures=6)
+tests/verify/test_pushed_branch.py exit=0 | 19 ok, 0 fallos
+tests/verify/test_reference_root_resolution.py exit=0 | 12 ok, 0 fallos
+tests/verify/test_rst_gate_root.py exit=0 | 4/4 aserciones verdes
+tests/verify/test_rule_divergence.py exit=0 | OK
+tests/verify/test_runner.py exit=1 | FAILED (failures=1)
+tests/verify/test_script_deprecated.py exit=0 | resultado: 23 de 23 aserciones en verde
+tests/verify/test_script_naming_scope.py exit=0 | 8 ok, 0 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+tests/verify/test_symbol_home.py exit=0 | 21 ok, 0 fallos
+tests/verify/test_symbol_presence.py exit=0 | 20 ok, 0 fallos
+tests/verify/test_unbounded_pipe.py exit=0 | 59 ok, 0 fallos (alcance medido: 59 aserciones)
+tests/verify/test-agent-artifacts.sh exit=1 | aserciones: 1 de 6 · fallos: 5
+tests/verify/test-audit-timing.sh exit=0 | audit-timing: todo en verde
+tests/verify/test-cifra-de-artefacto-vivo.sh exit=0 | 11 ok · 0 falla(s)
+tests/verify/test-coordinator-sin-worktree.sh exit=1 | Resultado: 4 ok, 5 fallas
+tests/verify/test-corpus-al-dia.sh exit=0 | RESULTADO: todos los casos pasaron.
+tests/verify/test-destino-del-reporte.sh exit=1 | 5 ok, 1 fallos (alcance medido: 6 aserciones sobre /home/user/thyrox/src/verify/detect_broken_references.py)
+tests/verify/test-eventos-hook.sh exit=1 | 8 ok · 1 falla(s)
+tests/verify/test-evidence-tracked.sh exit=0 | 13 casos: 13 ok, 0 fallos
+tests/verify/test-generator-determinism.sh exit=1 | 4 ok · 9 falla(s)
+tests/verify/test-gitattributes.sh exit=1 | test-gitattributes: 20 de 21 aserciones en verde
+tests/verify/test-githooks-activos.sh exit=0 | test-githooks-activos: OK — 9 aserciones sobre 5 clones sinteticos
+tests/verify/test-hook-script-token.sh exit=0 | test-hook-script-token: 21 de 21 aserciones en verde
+tests/verify/test-hooks-timeout.sh exit=0 | TODO OK
+tests/verify/test-ids-entre-ramas.sh exit=0 | RESULTADO: todos los casos pasaron.
+tests/verify/test-mutante-en-staging.sh exit=0 | 10 de 10 aserciones en verde
+tests/verify/test-pre-commit-docs.sh exit=0 | 9 ok · 0 falla(s)
+tests/verify/test-premise-drift.sh exit=0 | 13 ok, 0 fallo(s)  (alcance medido: 13 asercion(es))
+tests/verify/test-script-naming.sh exit=1 | 24 ok · 5 falla(s)
+tests/verify/test-suite-discrimina.sh exit=0 | 22 ok, 0 fallos
+tests/verify/test-unreachable-rules.sh exit=0 | 13 ok · 0 falla(s)
+tests/verify/test-veredicto-de-gate.sh exit=0 | test-veredicto-de-gate: 7 ok, 0 fallo(s) (alcance medido: 7 aserciones)
+tests/verify/test-verificar-premisa.sh exit=1 | test-verificar-premisa.sh: 12 ok · 9 fallo(s)
+tests/verify/test-verify-task-store.sh exit=0 | RESULTADO: el fix esta protegido — el guion pasa y su version con el bug no.
+tests/verify/test-vocabulario-baseline-resolucion.sh exit=0 | 9/9 aserciones verdes
+tests/verify/test-vocabulario-prosa.sh exit=1 | 10 ok · 16 falla(s)
+tests/verify/test_audit_delegates.sh exit=1 | test-audit-delegates: 4 ok, 1 falla
+tests/verify/test_package_root_resolution.sh exit=0 | test-package-root-resolution: 5 ok, 0 falla
+tests/verify/test_pre_push.sh exit=0 | pre-push: 6 ok, 0 fallo(s) (alcance medido: /home/user/thyrox/src/verify/pre-push.sh)
+EXIT=0

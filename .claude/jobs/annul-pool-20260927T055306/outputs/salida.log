@@ -1,0 +1,14 @@
+--- A: ejecutor por defecto claude
+FALLA sin ejecutor declarado: thyrox -p (bin/cli) — esperado '/home/user/thyrox/bin/cli', obtenido '/opt/node22/bin/claude'
+aserciones: 96 de 97 · fallos: 1
+--- B: sin --template en record
+FALLA admision: sin VRAM para su pico el item no arranca — esperado 'items=1 ok=0 fallidos=1', obtenido 'items=1 ok=1 fallidos=0'
+FALLA admision: la causa queda en su .err — esperado '1', obtenido '0'
+FALLA la edad máxima declarada deja fuera la fila — esperado '1', obtenido '0'
+FALLA la fila lleva la huella del CONTENIDO de la plantilla — esperado 'fe4725f385197bcdd9c86aa2450e1eb0d8435f93a7b9a4be4afdbcf1056bfa5d', obtenido 'null'
+aserciones: 93 de 97 · fallos: 4
+--- C: sin --min-items
+FALLA calibrado exige tantos ítems medidos como van a la vez — esperado '1', obtenido '0'
+aserciones: 96 de 97 · fallos: 1
+restaurado
+__BG_EXIT__=0

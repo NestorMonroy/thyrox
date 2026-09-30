@@ -1,0 +1,24 @@
+== packages/mitm/
+packages/app-host/src/runtime/bootstrap.ts
+  -> packages/app-host/src/runtime/installCliBindings.ts
+  -> packages/cli/src/index.ts
+  -> packages/cli/src/entry/run-cli.ts
+  -> packages/cli/src/entry/run-program.ts
+  -> packages/cli/src/commands/mitm-commands.ts
+  -> packages/mitm/src/api/mitmApi.ts
+== packages/repl/
+packages/app-host/src/runtime/bootstrap.ts
+  -> packages/agent/sessionStores.ts
+  -> packages/repl/src/onChangeAppState.ts
+== node_modules/@sentry/core/
+packages/app-host/src/runtime/bootstrap.ts
+  -> packages/app-host/src/runtime/installPluginBindings.ts
+  -> packages/app-host/src/bootstrap/gracefulShutdown.ts
+  -> packages/local-observability/src/sentry.ts
+  -> node_modules/@sentry/node/build/esm/index.js
+  -> node_modules/@sentry/core/build/esm/index.js
+== lodash-es/lodash.js
+packages/app-host/src/runtime/bootstrap.ts
+  -> packages/app-host/src/runtime/installPluginBindings.ts
+  -> packages/tool-registry/src/tools/SkillTool/prompt.ts
+  -> node_modules/lodash-es/lodash.js

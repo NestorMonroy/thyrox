@@ -1,0 +1,31 @@
+adjacency	3 fail
+base	0 fail  <-- NO DISCRIMINA
+claude-image	1 fail
+compress-thinking	2 fail
+document-budget	2 fail
+env-default	1 fail
+env-keep	1 fail
+env-provider	10 fail
+env-reserve	1 fail
+gemini-image	3 fail
+image-budget	9 fail
+injected	2 fail
+keep-zero	1 fail
+mistral	2 fail
+name-hints	1 fail
+notice-bytes	0 fail  <-- NO DISCRIMINA
+notice-merge	2 fail
+openai-image	5 fail
+pairs-empty-assistant	0 fail  <-- NO DISCRIMINA
+pairs-keep-last	0 fail  <-- NO DISCRIMINA
+pairs-orphan-result	0 fail  <-- NO DISCRIMINA
+prune-images	1 fail
+prune-target-stop	0 fail  <-- NO DISCRIMINA
+purify	4 fail
+purify-repair	0 fail  <-- NO DISCRIMINA
+reserve-scale	1 fail
+responses-placeholder	1 fail
+strip-trailing	1 fail
+thinking-keep-last	0 fail  <-- NO DISCRIMINA
+trim-tools	1 fail
+__BG_EXIT__=0

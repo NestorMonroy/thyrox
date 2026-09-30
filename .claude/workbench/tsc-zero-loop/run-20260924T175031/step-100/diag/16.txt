@@ -1,0 +1,73 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(161,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'getSkillDirCommands'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(397,7): error TS2322: Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command[]' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").Command[]'.
+  Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").Command'.
+    Type 'Command' is not assignable to type 'CommandBase & PromptCommand'.
+      Type 'Command' is not assignable to type 'CommandBase'.
+        Types of property 'description' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(469,27): error TS2349: This expression is not callable.
+  Type 'never' has no call signatures.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(506,1): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: DynamicPromptSkill, index: number, array: DynamicPromptSkill[]) => value is DynamicPromptSkill, thisArg?: any): DynamicPromptSkill[]', gave the following error.
+    Argument of type '(s: Command) => boolean' is not assignable to parameter of type '(value: DynamicPromptSkill, index: number, array: DynamicPromptSkill[]) => value is DynamicPromptSkill'.
+      Types of parameters 's' and 'value' are incompatible.
+        Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+          Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+            Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+  Overload 2 of 2, '(predicate: (value: DynamicPromptSkill, index: number, array: DynamicPromptSkill[]) => unknown, thisArg?: any): DynamicPromptSkill[]', gave the following error.
+    Argument of type '(s: Command) => boolean' is not assignable to parameter of type '(value: DynamicPromptSkill, index: number, array: DynamicPromptSkill[]) => unknown'.
+      Types of parameters 's' and 'value' are incompatible.
+        Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+          Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+            Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(521,5): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(524,3): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(631,14): error TS2322: Type 'Set<{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; } | ... 4 more ... | { ...; }>' is not assignable to type 'Set<Command>'.
+  Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; } | ... 4 more ... | { ...; }' is not assignable to type 'Command'.
+    Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'Command'.
+      Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'CommandBase & LocalJSXCommand'.
+        Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'LocalJSXCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+              Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")' is not assignable to type 'LocalJSXCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type '(onDone: LocalJSXCommandOnDone, context: ProcessUserInputContext, args: string) => Promise<ReactNode>' is not assignable to type 'LocalJSXCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'ProcessUserInputContext'.
+                        Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'LocalJSXCommandContext'.
+                          Types of property 'setMessages' are incompatible.
+                            Types of parameters 'updater' and 'updater' are incompatible.
+                              Type 'unknown[]' is not assignable to type 'Message[]'.
+                                Type 'unknown' is not assignable to type 'Message'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(662,14): error TS2322: Type 'Set<{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }>' is not assignable to type 'Set<Command>'.
+  Type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'Command'.
+    Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'Command'.
+      Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'CommandBase & LocalCommand'.
+        Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>' is not assignable to type 'Promise<LocalCommandModule>'.
+              Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")' is not assignable to type 'LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext'.
+                        Types of property 'setMessages' are incompatible.
+                          Types of parameters 'updater' and 'updater' are incompatible.
+                            Type 'unknown[]' is not assignable to type 'Message[]'.
+                              Type 'unknown' is not assignable to type 'Message'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(669,22): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  Type 'Command' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }'.
+    Type 'CommandBase & PromptCommand' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }'.
+      Type 'CommandBase & PromptCommand' is missing the following properties from type '{ type: "local"; name: string; description: string; isEnabled: () => boolean; supportsNonInteractive: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/compact/compact")>; }': supportsNonInteractive, load
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(786,33): error TS2322: Type '({ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: string; getPromptForCommand(args: string, context: unknown): Promise<...>; } | ... 4 more ... | null)[]' is not assignable to type 'readonly Command[]'.
+  Type '{ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: string; getPromptForCommand(args: string, context: unknown): Promise<...>; } | ... 4 more ... | null' is not assignable to type 'Command'.
+    Type 'null' is not assignable to type 'Command'.

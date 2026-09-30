@@ -1,0 +1,4 @@
+REHUSA — el control positivo real no esta en /home/user/kaupamex-docs/source/gestion/pm/hallazgo-H-DOCS-439-el-valor-por-omision-se-ataba-como-declaracion.rst.
+Es evidencia del consumidor, resuelta por `paths.reach`. Sin ella solo quedaria un incumplidor fabricado, que confirma el patron en vez de probarlo. No se emite conteo.
+ANULADA (ancla atada a la iniciativa vieja) : exit=2
+RESTAURADA (ancla por nombre)              : exit=0

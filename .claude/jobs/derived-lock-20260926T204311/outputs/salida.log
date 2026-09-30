@@ -1,0 +1,535 @@
+run-task-pool: 38 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260926T204311
+  job-20260926T204311/job-001 pid 18545   PYTHONPATH=src python3 tests/corpus/test_censo_contraparte.py
+  job-20260926T204311/job-002 pid 18578   PYTHONPATH=src python3 tests/hallazgo/test_finding_id_collision.py
+  job-20260926T204311/job-003 pid 18615   PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+  job-20260926T204311/job-004 pid 18657   PYTHONPATH=src python3 tests/hooks/test_detect_bare_awk.py
+  job-20260926T204311/job-005 pid 18687   PYTHONPATH=src python3 tests/hooks/test_detect_client_background.py
+  job-20260926T204311/job-006 pid 18700   PYTHONPATH=src python3 tests/hooks/test_detect_foreground_long_command.py
+  job-20260926T204311/job-007 pid 18717   PYTHONPATH=src python3 tests/hooks/test_detect_self_matching_pgrep.py
+  job-20260926T204311/job-008 pid 18730   PYTHONPATH=src python3 tests/hooks/test_detect_stdin_reading_interpreter.py
+  job-20260926T204311/job-009 pid 18743   PYTHONPATH=src python3 tests/hooks/test_detect_temp_home_write.py
+  job-20260926T204311/job-010 pid 18756   PYTHONPATH=src python3 tests/hooks/test_stop_tests.py
+  job-20260926T204311/job-011 pid 18785   bash tests/install/test_install.sh
+  job-20260926T204311/job-012 pid 19419   bash tests/lib/test-reach-pythonpath.sh
+  job-20260926T204311/job-013 pid 19741   bash tests/lib/test-reach-sh.sh
+  job-20260926T204311/job-014 pid 19949   PYTHONPATH=src python3 tests/measurement/test_normalizer_magnitude.py
+  job-20260926T204311/job-015 pid 19972   PYTHONPATH=src python3 tests/measurement/test_rejection_sampling_brief.py
+  job-20260926T204311/job-016 pid 19998   PYTHONPATH=src python3 tests/meta/test_runner_exit_two.py
+  job-20260926T204311/job-017 pid 20022   PYTHONPATH=src python3 tests/meta/test_runner_reach.py
+  job-20260926T204311/job-018 pid 20062   bash tests/repo/test-fixture-leak.sh
+  job-20260926T204311/job-019 pid 20131   bash tests/session/test-tmpdir-faucet.sh
+  job-20260926T204311/job-020 pid 20555   PYTHONPATH=src python3 tests/session/test_generate_bin.py
+  job-20260926T204311/job-021 pid 20585   PYTHONPATH=src python3 tests/session/test_installed_hooks_resolve.py
+  job-20260926T204311/job-022 pid 20774   PYTHONPATH=src python3 tests/session/test_job_runs.py
+  job-20260926T204311/job-023 pid 20867   bash tests/verify/test-assert-no-writes.sh
+  job-20260926T204311/job-024 pid 21254   bash tests/verify/test-run-ts-isolated.sh
+  job-20260926T204311/job-025 pid 21523   PYTHONPATH=src python3 tests/verify/test_finding_id_unique.py
+  job-20260926T204311/job-026 pid 21933   bash tests/verify/test_package_root_resolution.sh
+  job-20260926T204311/job-027 pid 22997   PYTHONPATH=src python3 tests/workbench/test_manifest_jsonl.py
+  job-20260926T204311/job-028 pid 23010   PYTHONPATH=src python3 tests/verify/test_tree_fingerprint.py
+  job-20260926T204311/job-029 pid 23100   bash tests/verify/test-run-tree-mutation.sh
+  job-20260926T204311/job-030 pid 23389   PYTHONPATH=src python3 tests/session/test_shared_lock.py
+  job-20260926T204311/job-031 pid 25209   bash tests/session/test-shared-lock-cli.sh
+  job-20260926T204311/job-032 pid 25427   PYTHONPATH=src python3 tests/verify/test_step_setup.py
+  job-20260926T204311/job-033 pid 25738   PYTHONPATH=src python3 tests/verify/test_step_close.py
+  job-20260926T204311/job-034 pid 26038   bash tests/lib/test-replace-literal.sh
+  job-20260926T204311/job-035 pid 26307   bun test src/packages/config/__tests__/sharedLock.test.ts
+  job-20260926T204311/job-036 pid 26519   bun test src/packages/binary/__tests__/reflow.test.ts
+  job-20260926T204311/job-037 pid 26541   PYTHONPATH=src python3 tests/session/test_pool_history.py
+  job-20260926T204311/job-038 pid 26596   bash tests/session/test-headless-pool.sh
+run-task-pool: lanzados 38 de 38; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260926T204311_job-001 -> OK (2 de 39)
+asentado: job-20260926T204311_job-002 -> OK (3 de 39)
+asentado: job-20260926T204311_job-003 -> OK (4 de 39)
+asentado: job-20260926T204311_job-004 -> OK (5 de 39)
+asentado: job-20260926T204311_job-005 -> OK (6 de 39)
+asentado: job-20260926T204311_job-006 -> OK (7 de 39)
+asentado: job-20260926T204311_job-007 -> OK (8 de 39)
+asentado: job-20260926T204311_job-008 -> OK (9 de 39)
+asentado: job-20260926T204311_job-009 -> OK (10 de 39)
+asentado: job-20260926T204311_job-010 -> OK (11 de 39)
+asentado: job-20260926T204311_job-011 -> OK (12 de 39)
+asentado: job-20260926T204311_job-012 -> OK (13 de 39)
+asentado: job-20260926T204311_job-013 -> OK (14 de 39)
+asentado: job-20260926T204311_job-014 -> OK (15 de 39)
+asentado: job-20260926T204311_job-015 -> OK (16 de 39)
+asentado: job-20260926T204311_job-016 -> OK (17 de 39)
+asentado: job-20260926T204311_job-017 -> OK (18 de 39)
+asentado: job-20260926T204311_job-018 -> OK (19 de 39)
+asentado: job-20260926T204311_job-019 -> OK (20 de 39)
+asentado: job-20260926T204311_job-020 -> OK (21 de 39)
+asentado: job-20260926T204311_job-021 -> OK (22 de 39)
+asentado: job-20260926T204311_job-022 -> OK (23 de 39)
+asentado: job-20260926T204311_job-023 -> OK (24 de 39)
+asentado: job-20260926T204311_job-024 -> OK (25 de 39)
+asentado: job-20260926T204311_job-025 -> OK (26 de 39)
+asentado: job-20260926T204311_job-027 -> OK (27 de 39)
+asentado: job-20260926T204311_job-028 -> OK (28 de 39)
+asentado: job-20260926T204311_job-029 -> OK (29 de 39)
+asentado: job-20260926T204311_job-030 -> OK (30 de 39)
+asentado: job-20260926T204311_job-031 -> OK (31 de 39)
+asentado: job-20260926T204311_job-032 -> OK (32 de 39)
+asentado: job-20260926T204311_job-033 -> OK (33 de 39)
+asentado: job-20260926T204311_job-034 -> OK (34 de 39)
+asentado: job-20260926T204311_job-035 -> OK (35 de 39)
+asentado: job-20260926T204311_job-036 -> OK (36 de 39)
+asentado: job-20260926T204311_job-037 -> OK (37 de 39)
+asentado: job-20260926T204311_job-038 -> OK (38 de 39)
+esperando: 38 de 39 asentados, 30s; vivos: job-20260926T204311_job-026
+sonda job-20260926T204311_job-026: 21933 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 21937 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 21939 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 21973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 21975 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 26783 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 26785 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T204311_job-026: 26790 node stdin=devnull(/dev/null) escritores=- estado=S cpu=44.45s
+asentado: job-20260926T204311_job-026 -> OK (27 de 39)
+== 39 trabajos asentados ==
+OLVIDADO job-20260926T204311
+       | (vacío — no emitió nada)
+OK     job-20260926T204311_job-001
+       |   ok    con la declaración completa --strict vuelve a 0
+       | == 10. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==
+       |   ok    el repo censado no cae a un consumidor concreto
+       |   ok    el árbol de referencia no se nombra en el mecanismo
+       |   ok    qué marca la unidad censada se declara
+       |   ok    y su constante existe
+       |   ok    igual que la del árbol de referencia
+       | 
+       | 34 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13588 KB (13 MB) · pared 0.66s
+OK     job-20260926T204311_job-002
+       |   ok   y el contenido converge
+       |   ok   el siguiente id no colisiona con la fila del store
+       |   ok   sin el store, el verificador lo ve libre (la mitad ciega)
+       |   ok   con el store, el verificador lo ve OCUPADO
+       |   ok   el .rst del consumidor sigue contando
+       |   FAIL no aparecen archivos nuevos en el árbol — ['/home/user/thyrox/.claude/build-logs/job-20260926T204311/job-012.log', '/home/user/thyrox/.claude/build-logs/job-20260926T204311/job-012.log.time', '/home/user/thyrox/.claude/build-logs/job-20260926T204311/job-013.log']
+       |   FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/build-logs/job-20260926T204311/job-011.log', '/home/user/thyrox/.claude/build-logs/job-20260926T204311/job-011.log.time', '/home/user/thyrox/.claude/jobs/derived-lock-20260926T204311/outputs/salida.log']
+       | 
+       | 10 aprobada(s) · 2 fallida(s) (alcance medido: hallazgo_ids.next_id + agent_store agregar-hallazgo)
+       | EXIT=1
+       memoria pico: 105196 KB (103 MB) · pared 5.82s
+OK     job-20260926T204311_job-003
+       | ok   test_stays_silent_on_a_payload_without_prompt
+       | ok   test_stays_silent_when_the_work_needs_judgment
+       | ok   test_suggests_the_headless_pool_for_judgment_over_many_items
+       | ok   test_the_judgment_half_carries_its_own_weight
+       | ok   test_the_notice_states_the_measured_cost_asymmetry
+       | ok   test_the_real_captured_payload_stays_silent
+       | ok   test_warns_when_the_dispatched_work_is_a_suite
+       | 
+       | 11 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 11636 KB (11 MB) · pared 0.04s
+OK     job-20260926T204311_job-004
+       |   ok    como argumento de grep
+       |   ok    la variable declarada
+       | == 3. el aviso nombra la salida ==
+       |   ok    nombra gawk
+       |   ok    nombra THYROX_TOOLCHAIN_AWK_BIN
+       | == 4. anulado el ancla de posición de comando, caen EXACTAMENTE los de prosa ==
+       |   ok    caen cadena y grep, no gawk
+       | 
+       | 11 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11436 KB (11 MB) · pared 0.10s
+OK     job-20260926T204311_job-005
+       | == 4. el aviso nombra los tres ensambladores ==
+       |   ok    nombra thyrox-bg start
+       |   ok    nombra register
+       |   ok    nombra run-task-pool
+       |   ok    nombra wait-jobs
+       | == 5. anulado el descuento del ensamblador, cae EXACTAMENTE ese caso ==
+       |   ok    cae el de thyrox-bg y ninguno más
+       | 
+       | 12 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11472 KB (11 MB) · pared 0.03s
+OK     job-20260926T204311_job-006
+       |   ok    test_names_every_family_the_command_invokes
+       |   ok    test_stays_silent_on_short_commands
+       |   ok    test_stays_silent_when_the_command_already_uses_the_assembler
+       |   ok    test_stays_silent_without_a_command
+       |   ok    test_the_background_discount_carries_its_own_weight
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_warns_on_the_bare_suite
+       | resumen: 0 fallo(s)
+       | EXIT=0
+       memoria pico: 15988 KB (16 MB) · pared 0.07s
+OK     job-20260926T204311_job-007
+       |   ok    y nombra la clase de corchete como salida minima
+       | == 8b. el corchete no basta si el resto del comando casa el patron ==
+       |   ok    avisa sobre el episodio de la ola 6
+       |   ok    calla si la palabra aparece pero el patron entero no casa
+       | == 9. anulada la excepcion del corchete, cae EXACTAMENTE ese caso ==
+       |   ok    cae el del corchete y ninguno mas
+       |   ok    y restaurada, vuelve a callar
+       | 
+       | 17 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11540 KB (11 MB) · pared 0.03s
+OK     job-20260926T204311_job-008
+       |   ok    nombra el programa que no esta instalado
+       |   ok    calla con la variable entre comillas: vacia es un error, no stdin
+       |   ok    calla con ${F:?}: vacia aborta
+       |   ok    calla con una asignacion literal
+       |   ok    calla con otro archivo literal
+       |   ok    calla si la entrada llega por tubo
+       |   ok    calla ante $F/ruta: nunca queda vacia
+       | 
+       | 26 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 12168 KB (12 MB) · pared 0.03s
+OK     job-20260926T204311_job-009
+       |   ok    sin /tmp no hay nada que decir
+       | == 5. el aviso nombra los tres hogares ==
+       |   ok    nombra THYROX_WORKBENCH_DIR
+       |   ok    nombra THYROX_CACHE_DIR
+       |   ok    nombra THYROX_BACKGROUND_LOG_DIR
+       | == 6. anulado el filtro de escritura, caen EXACTAMENTE los de lectura ==
+       |   ok    caen los tres de lectura y ninguno más
+       | 
+       | 15 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11712 KB (11 MB) · pared 0.03s
+OK     job-20260926T204311_job-010
+       |   ok    sale 0
+       |   ok    y NO muere importando su propio paquete
+       | == O. El hook NO se invoca a sí mismo: guard de recursión POR PROCESO ==
+       |   ok    con el marcador puesto rehúsa: sale 0
+       |   ok    y NO corre el corredor (salida vacía)
+       |   ok    sin el marcador SÍ corre (control de anulación)
+       |   ok    y el marcador viaja al corredor hijo
+       | 
+       | 24 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 28156 KB (27 MB) · pared 1.19s
+OK     job-20260926T204311_job-011
+       |   ok   --dry-run no invoca el instalador de clones
+       |   ok   --dry-run dice que prepararia el clon
+       |   ok   sin instalador -> SIN MEDIR
+       |   ok   sin instalador -> nombra el archivo
+       |   ok   exit 3 en el proveedor -> exit 0
+       |   ok   exit 3 en el proveedor -> lo dice
+       |   ok   exit 3 en un consumidor -> exit 1
+       | 
+       | 59 aserciones: 59 ok, 0 fallidas
+       | EXIT=0
+       memoria pico: 17196 KB (17 MB) · pared 3.54s
+OK     job-20260926T204311_job-012
+       |   ok    el modulo importa su hermano
+       | === Caso 4: el prepend NO pisa lo que el llamador ya traia ===
+       |   ok    src va delante y lo del llamador sobrevive
+       | === Caso 5: dos source no duplican la entrada ===
+       |   ok    el guard de doble inclusion lo cubre
+       | === Caso 6: 0 guiones de PRODUCCION invocan un modulo que no podran importar ===
+       |   ok    0 guiones de produccion sin cobertura (universo medido: 127 modulos)
+       | 
+       | 6 casos: 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13096 KB (13 MB) · pared 0.23s
+OK     job-20260926T204311_job-013
+       |   ok    la declaracion gana
+       | === Caso 7 (DEC-04): THYROX_ENV_FILE declara la raiz, sin ascender ===
+       |   ok    la declaracion por archivo resuelve
+       | === Caso 8 (DEC-04): el marcador es CONSTANTE con entrada de entorno ===
+       |   ok    el marcador se declara, no se cablea
+       | 
+       | alcance medido: 8 aserciones sobre /home/user/thyrox/src/lib/reach.sh
+       | 
+       | 8 casos: 8 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 12484 KB (12 MB) · pared 0.31s
+OK     job-20260926T204311_job-014
+       | == 7. un paso de descenso REDUCE log Z ==
+       |   ok    log Z baja tras el paso
+       |   ok    y reproduce el primer valor de la traza (~29.711)
+       | 
+       | == 8. el modulo NO escribe — medido por CONDUCTA, no por docstring ==
+       |   ok    el sujeto no intenta ninguna escritura
+       |   ok    y el tracer publica su alcance medido
+       | 
+       | resultado: 29 de 29 aserciones en verde
+       | EXIT=0
+       memoria pico: 12096 KB (12 MB) · pared 0.11s
+OK     job-20260926T204311_job-015
+       | test_rejection_sampling_brief: falta `numpy`, que vive en el grupo
+       |                                `verify` de pyproject.toml.
+       |                                Instalalo con `uv sync --group verify`.
+       |                                NO se emite conteo: un cero aqui seria
+       |                                un verde falso.
+       | EXIT=2
+       memoria pico: 8048 KB (8 MB) · pared 0.01s
+OK     job-20260926T204311_job-016
+       | test_runner_declares_the_tree_it_is_measuring (__main__.RunnerExitTwoTestCase.test_runner_declares_the_tree_it_is_measuring) ... ok
+       | test_still_names_the_real_red (__main__.RunnerExitTwoTestCase.test_still_names_the_real_red) ... ok
+       | test_the_refusal_alone_does_not_fail_the_run (__main__.RunnerExitTwoTestCase.test_the_refusal_alone_does_not_fail_the_run)
+       | Sin el rojo real, un rehuse NO puede hacer fallar la ejecucion. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 0.601s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 15420 KB (15 MB) · pared 0.65s
+OK     job-20260926T204311_job-017
+       |   ok  Python: hay archivos de test en disco (255)
+       |   ok  Python: los 255 archivos están en el alcance
+       |   ok  shell: hay archivos de test en disco (123)
+       |   ok  shell: los 123 archivos están en el alcance
+       | == el corredor no promete más lenguas de las que invoca ==
+       |   ok  hay un solo mensaje de éxito (1)
+       |   ok  el mensaje de éxito dice «tres» — hay 3 lengua(s) en el alcance
+       | 
+       | OK: alcance del corredor verificado (1427 archivos enumerados)
+       | EXIT=0
+       memoria pico: 12928 KB (13 MB) · pared 0.12s
+OK     job-20260926T204311_job-018
+       |   ok    el caso sano sigue en 0 con y sin el desvio
+       | == 7. NO BORRA: la sonda conserva lo que se fugo ==
+       |   ok    queda al menos una entrada de evidencia
+       | == 8. ATRIBUCION: la entrada de OTRO proceso se imputa a la suite ==
+       |   ok    la suite LIMPIA sale FUGA por la entrada ajena
+       |   ok    la imputacion cae en el eje compartido
+       |   ok    y el confinado queda en 0: no fue ella
+       | 
+       | ok=17 fallo=0
+       | EXIT=0
+       memoria pico: 3368 KB (3 MB) · pared 0.33s
+OK     job-20260926T204311_job-019
+       |   ok   delta de directorios thyrox-tests- en /tmp
+       | == caso 3: anulacion — retirado el bunfig, el fixture vuelve a /tmp ==
+       |   ok   sin preload la suite SI deja fixture
+       | == caso 4: un TMPDIR heredado sobrevive al preload ==
+       |   ok   el directorio heredado sigue existiendo
+       | == caso 5: el fixture aterriza dentro del TMPDIR heredado ==
+       |   ok   hay fixture dentro del heredado
+       | 
+       | == 5 asercion(es), 0 en rojo ==
+       | EXIT=0
+       memoria pico: 216464 KB (211 MB) · pared 35.27s
+OK     job-20260926T204311_job-020
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |   ok   y el plan medido no esta vacio
+       | 
+       | 118 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=0
+       memoria pico: 28056 KB (27 MB) · pared 17.85s
+OK     job-20260926T204311_job-021
+       | test_it_emits_the_declared_event_set (__main__.InstalledHooksResolve.test_it_emits_the_declared_event_set)
+       | Sin esto, un instalador que no escribiera nada daría verde. ... ok
+       | test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+       | CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.667s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 15908 KB (16 MB) · pared 0.74s
+OK     job-20260926T204311_job-022
+       |   ok    test_scaffold_records_when_the_job_started
+       |   ok    test_settle_forced_reasserts_and_says_so
+       |   ok    test_settle_is_idempotent_and_its_duration_does_not_grow
+       |   ok    test_settle_records_the_duration_not_only_the_exit_code
+       |   ok    test_settle_records_the_exit_code_where_the_manifest_can_be_read
+       |   ok    test_the_distribution_publishes_its_operands_not_only_the_total
+       |   ok    test_the_log_lives_inside_its_run_not_beside_it
+       |   ok    test_the_manifest_declares_the_instrument_and_OMITS_what_it_cannot_know
+       | resumen: 0 fallo(s)
+       | EXIT=0
+       memoria pico: 13348 KB (13 MB) · pared 0.08s
+OK     job-20260926T204311_job-023
+       |   ok   payload 2: el despacho salio 0
+       |   ok   payload 3: el despacho de los 11 no escribe
+       |   ok   payload 3: el despacho salio 0
+       |   ok   payload 4: el despacho de los 11 no escribe
+       |   ok   payload 4: el despacho salio 0
+       |   ok   payload 5: el despacho de los 11 no escribe
+       |   ok   payload 5: el despacho salio 0
+       | 
+       | OK: todas las aserciones pasan (alcance medido: 5 payload(s) de despacho, 11 detector(es) por payload)
+       | EXIT=0
+       memoria pico: 16292 KB (16 MB) · pared 1.28s
+OK     job-20260926T204311_job-024
+       | OK   un fallo real: nombra el archivo
+       | OK   un aborto: exit 1
+       | OK   un aborto: nombra el archivo
+       | OK   un aborto: los otros dos siguen contando
+       | OK   sin PYTHONPATH en quien llama: el ejecutor lo exporta
+       | OK   sin archivos: rehusa con exit 2
+       | OK   sin archivos: no publica pass=
+       | 
+       | aserciones: 11 de 11 · fallos: 0
+       | EXIT=0
+       memoria pico: 39432 KB (39 MB) · pared 0.80s
+OK     job-20260926T204311_job-025
+       |   FAIL la entrada congelada no bloquea — exit=1 
+       |   FAIL y el denominador se publica igual
+       |   FAIL rehúsa con exit 2 — exit=1
+       |   ok   y no emite ningún conteo
+       |   FAIL el gate ve los 3 pares de relleno reales del corpus — vistos=[] :: 
+       |   FAIL no aparecen archivos nuevos en el árbol — ['/home/user/thyrox/.claude/workbench/lock-port-20260926T202249/commit-msg-6.txt']
+       |   ok   no cambia ningún archivo del árbol
+       | 
+       | 4 aprobada(s) · 8 fallida(s) (alcance medido: check_finding_id_unique, sus dos mitades)
+       | EXIT=1
+       memoria pico: 104656 KB (102 MB) · pared 5.07s
+OK     job-20260926T204311_job-026
+       |   ok   agent-artifacts resuelve su paquete dentro del árbol
+       |   ok   cli-typecheck resuelve su paquete dentro del árbol
+       |   ok   cli-typecheck mide los dos proyectos del paquete
+       |   ok   cli-typecheck sale 0 sobre el arbol limpio
+       |   ok   la variable gana sobre la resolución por árbol
+       | 
+       | test-package-root-resolution: 5 ok, 0 falla
+       | EXIT=0
+       memoria pico: 1759112 KB (1718 MB) · pared 65.76s
+OK     job-20260926T204311_job-027
+       | == 8. el lector acepta los DOS nombres; el escritor emite uno ==
+       |   ok   el nombre heredado se declara
+       |   ok   un documento MULTILINEA se lee entero
+       |   ok   tras asentar, el heredado ya no esta
+       |   ok   y el JSONL lleva los dos momentos
+       |   ok   con el codigo de salida asentado
+       |   ok   y el instrumento del lanzamiento intacto
+       | 
+       | 43 ok, 0 fallos (alcance medido: 43 aserciones)
+       | EXIT=0
+       memoria pico: 14328 KB (14 MB) · pared 0.07s
+OK     job-20260926T204311_job-028
+       | == 5. lo que la medición escribe fuera del alcance NO la cambia ==
+       |   ok    .claude/jobs no cuenta
+       |   ok    lo ignorado no cuenta
+       | == 6. un commit de otro escritor la cambia ==
+       |   ok    HEAD movido: cambia
+       | == 7. fuera de un repo git, rehúsa en vez de dar una huella ==
+       |   ok    rehúsa
+       | 
+       | test_tree_fingerprint: 9 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16392 KB (16 MB) · pared 0.16s
+OK     job-20260926T204311_job-029
+       | OK   sin aviso de árbol mutado
+       | == 2. una suite escribe en src/: el veredicto no es atribuible ==
+       | OK   exit 3, ni verde ni rojo
+       | OK   lo declara
+       | OK   y dice qué veredicto habría dado
+       | == 3. también en --changed ==
+       | OK   --changed con árbol mutado: exit 3
+       | 
+       | aserciones: 6 de 6 · fallos: 0
+       | EXIT=0
+       memoria pico: 15460 KB (15 MB) · pared 0.70s
+OK     job-20260926T204311_job-030
+       |   ok    150 incrementos, 150 en el archivo
+       | == 10. un dueño de OTRO lock (robado por quien no escribe dueño) no se atribuye ==
+       |   ok    el dueño cuyo inodo no es el del lock se ignora
+       |   ok    force_remove retira también el dueño
+       | == 11. escritura atómica: tmp + rename, sin restos ==
+       |   ok    contenido nuevo
+       |   ok    sin temporales
+       | 
+       | test_shared_lock: 27 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15596 KB (15 MB) · pared 8.47s
+OK     job-20260926T204311_job-031
+       | OK   nombra el pid del dueño
+       | OK   check lo ve tomado
+       | OK   check lo ve libre al soltar
+       | == 3. N shells que leen-modifican-escriben bajo run no pierden cuentas ==
+       | OK   80 incrementos, 80 en el archivo
+       | == 4. sin comando, rehúsa con 2 ==
+       | OK   uso inválido: exit 2
+       | 
+       | aserciones: 9 de 9 · fallos: 0
+       | EXIT=0
+       memoria pico: 16048 KB (16 MB) · pared 6.90s
+OK     job-20260926T204311_job-032
+       |   ok    el registro guardado es el mismo
+       |   ok    por configuración: intentos y media de Laplace
+       |   ok    los códigos que introducen los rechazos, material para revisar el scaffold
+       |   ok    las filas sin configuración se cuentan aparte, no se descartan
+       |   ok    la mejor configuración de la ruta, entre las que tienen evidencia
+       |   ok    sin evidencia suficiente no se elige ninguna
+       |   ok    los ocho procesos terminan bien
+       |   ok    ocho escritores concurrentes: cada setup una sola vez
+       | test_step_setup: 18 aserciones — 18 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 19412 KB (19 MB) · pared 7.46s
+OK     job-20260926T204311_job-033
+       |   ok    empuja la rama actual a su upstream
+       |   ok    el resultado nombra los commits
+       |   ok    el cierre suelta el lock de commit del repo
+       |   ok    con el lock de otro, rehúsa nombrando a su dueño
+       |   ok    y no commitea nada
+       |   ok    sin informe del pipeline no hay cierre: rehúsa nombrándolo
+       |   ok    y no commitea nada
+       |   ok    un git que falla nombra su stderr: el cierre no calla la causa
+       | test_step_close: 14 aserciones — 14 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 17912 KB (17 MB) · pared 0.62s
+OK     job-20260926T204311_job-034
+       |   ok    11 publica el conteo con su archivo
+       |   ok    12 --old-file/--new-file reemplazan
+       |   ok    12 las comillas llegan intactas
+       |   ok    13 el salto interno se conserva, el final del heredoc no
+       |   ok    14 --old-file ausente rehusa con 2
+       |   ok    15 editarse a si mismo sale 0
+       |   ok    15 sin error de sintaxis en la cola
+       | 
+       | 25 casos: 25 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 4088 KB (4 MB) · pared 0.39s
+OK     job-20260926T204311_job-035
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  3 pass
+       |  0 fail
+       |  7 expect() calls
+       | Ran 3 tests across 1 file. [3.28s]
+       | EXIT=0
+       memoria pico: 62724 KB (61 MB) · pared 3.29s
+OK     job-20260926T204311_job-036
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  12 pass
+       |  1 skip
+       |  0 fail
+       |  17 expect() calls
+       | Ran 13 tests across 1 file. [708.00ms]
+       | EXIT=0
+       memoria pico: 104040 KB (102 MB) · pared 0.73s
+OK     job-20260926T204311_job-037
+       |   ok    y el nombre es legible
+       | == 9. la reserva de un vecino se SUMA a lo medido, no lo sustituye ==
+       |   ok    266000 x 2 + 2 GiB -> 2568M
+       | == 10. sin historial, la reserva sola es la cota, y se dice ==
+       |   ok    memfree = la reserva
+       |   ok    sin TTL inventado
+       |   ok    nombra la reserva
+       | 
+       | test_pool_history: 20 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 19352 KB (19 MB) · pared 0.08s
+OK     job-20260926T204311_job-038
+       | OK   lo declarado gana al historial: TTL
+       | OK   lo declarado gana al historial: memfree
+       | OK   el entorno gana al historial
+       | OK   la reserva del vecino se suma a lo medido
+       | OK   una plantilla, un solo historial
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 59 de 59 · fallos: 0
+       | EXIT=0
+       memoria pico: 19636 KB (19 MB) · pared 9.69s
+__BG_EXIT__=0

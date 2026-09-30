@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+182 |     const previous = state.registeredName
+183 |     let emitted = 0
+184 |     state.registeredNameChanged.subscribe(() => void emitted++)
+185 |     expect(await applyAutoSessionName('nuevo', undefined, deps())).toBe(false)
+186 |     expect(state.registeredName).toBe(previous)
+187 |     expect(state.heldNames.has('base')).toBe(false)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:187:41)
+(fail) applyAutoSessionName (Rut) > si el registro no se actualizó, vuelve al nombre anterior y lo avisa [1.08ms]
+
+ 21 pass
+ 1 fail
+ 72 expect() calls
+Ran 22 tests across 1 file. [129.00ms]

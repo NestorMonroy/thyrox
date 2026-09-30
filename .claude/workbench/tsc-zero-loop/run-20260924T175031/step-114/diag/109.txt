@@ -1,0 +1,57 @@
+src/packages/repl/src/components/messageStaticness.ts(25,4): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/repl/src/components/messageStaticness.ts:15-35 ---
+     15  import type { RenderableMessage } from '@thyrox/agent/messageShapes'
+     16  import type { Screen } from '../screens/REPL.js'
+     17  
+     18  export function shouldRenderStatically(
+     19    message: RenderableMessage,
+     20    streamingToolUseIDs: Set<string>,
+     21    inProgressToolUseIDs: Set<string>,
+     22    siblingToolUseIDs: ReadonlySet<string>,
+     23    screen: Screen,
+     24    lookups: ReturnType<typeof buildMessageLookups>,
+     25> ): boolean {
+     26    if (screen === 'transcript') {
+     27      return true
+     28    }
+     29    switch (message.type) {
+     30      case 'attachment':
+     31      case 'user':
+     32      case 'assistant': {
+     33        if (message.type === 'assistant') {
+     34          const block = message.message.content[0]
+     35          if (block?.type === 'server_tool_use') {
+src/packages/repl/src/components/messageStaticness.ts(39,38): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "attachment"; attachment: { ...; }; } & { ...; })' is not assignable to parameter of type 'NormalizedMessage'.
+  --- código src/packages/repl/src/components/messageStaticness.ts:29-49 ---
+     29    switch (message.type) {
+     30      case 'attachment':
+     31      case 'user':
+     32      case 'assistant': {
+     33        if (message.type === 'assistant') {
+     34          const block = message.message.content[0]
+     35          if (block?.type === 'server_tool_use') {
+     36            return lookups.resolvedToolUseIDs.has(block.id)
+     37          }
+     38        }
+     39>       const toolUseID = getToolUseID(message)
+     40        if (!toolUseID) {
+     41          return true
+     42        }
+     43        if (streamingToolUseIDs.has(toolUseID)) {
+     44          return false
+     45        }
+     46        if (inProgressToolUseIDs.has(toolUseID)) {
+     47          return false
+     48        }
+     49        if (hasUnresolvedHooksFromLookup(toolUseID, 'PostToolUse', lookups)) {
+  Type 'MessageBase & { type: "attachment"; attachment: { [key: string]: unknown; type: string; }; } & { type: "attachment"; attachment: { [key: string]: unknown; type: string; memories?: { path: string; content: string; mtimeMs: number; }[] | undefined; }; }' is not assignable to type 'NormalizedMessage'.
+    Type 'MessageBase & { type: "attachment"; attachment: { [key: string]: unknown; type: string; }; } & { type: "attachment"; attachment: { [key: string]: unknown; type: string; memories?: { path: string; content: string; mtimeMs: number; }[] | undefined; }; }' is not assignable to type 'MessageBase & { type: "attachment"; attachment: { [key: string]: unknown; type: string; }; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...'.
+      Type 'MessageBase & { type: "attachment"; attachment: { [key: string]: unknown; type: string; }; } & { type: "attachment"; attachment: { [key: string]: unknown; type: string; memories?: { path: string; content: string; mtimeMs: number; }[] | undefined; }; }' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.

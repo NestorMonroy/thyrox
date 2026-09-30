@@ -1,0 +1,7 @@
+Re-export the defined oauth types from their home
+
+Twentieth step of the agent-compiler loop, accepted-net 3142 -> 3119.
+provider/oauth/types.ts was a decompiled stub; seven of its eleven
+types already had a definition in provider/internal/oauthTypes.ts and
+are now re-exported from there. The four referral types have no
+measured shape yet and stay as placeholders.

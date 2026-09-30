@@ -1,0 +1,1 @@
+        used = sum(mib for p, mib in current.vram_by_pid.items() if p in members)

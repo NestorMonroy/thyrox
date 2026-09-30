@@ -1,0 +1,24 @@
+## verificacion independiente 2026-09-28T18:10:42
+-- MaybePromise en interface.ts:
+MemoryCore/src/metadata/store/interface.ts:57:export type MaybePromise<T> = T | Promise<T>;
+MemoryCore/src/metadata/store/interface.ts:73:  init(): MaybePromise<void>;
+MemoryCore/src/metadata/store/interface.ts:75:  close(): MaybePromise<void>;
+-- mysql no implementado en factory:
+MemoryCore/src/metadata/store/factory.ts:164:    case "mysql":
+MemoryCore/src/metadata/store/factory.ts:165:      throw new Error("MySQL backend not yet implemented");
+-- StoreCapabilities:
+MemoryCore/src/core/store/types.ts:250:export interface StoreCapabilities {
+MemoryCore/src/core/store/types.ts:252:  vectorSearch: boolean;
+-- rrfMerge k=60:
+MemoryCore/src/core/hooks/auto-recall.ts:639: * RRF score for a record at rank r = 1 / (k + r), where k=60 is a constant.
+MemoryCore/src/core/hooks/auto-recall.ts:733:  // RRF merge: k=60 is a standard constant from the RRF paper
+MemoryCore/src/core/store/search-utils.ts:27: * @param k       RRF constant (default: 60).
+MemoryCore/src/core/store/search-utils.ts:32: * const merged = rrfMerge(
+-- pgvector 0.6.0 instalado, halfvec:
+0
+27
+-- Bun.SQL sqlite y extensiones:
+loadExtension en SQL: undefined | en instancia: -
+bun:sqlite Database.prototype.loadExtension: function
+mysql -> adapter mysql
+mariadb -> adapter mariadb

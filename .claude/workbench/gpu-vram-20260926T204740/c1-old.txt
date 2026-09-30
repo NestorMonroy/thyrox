@@ -1,0 +1,1 @@
+    p_free = sub.add_parser("free", help="imprime la VRAM libre (MiB) de la GPU con más espacio")

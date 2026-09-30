@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/typescript/test_close_exports.py", line 29, in <module>
+    from typescript import close_exports as ce  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'close_exports' from 'typescript' (/home/user/thyrox/src/typescript/__init__.py)
+EXIT=1

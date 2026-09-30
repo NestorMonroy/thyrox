@@ -1,0 +1,258 @@
+13c13
+<   _
+---
+>   y
+16c16
+<   Isn
+---
+>   tdn
+19c19
+<   f4e,m4e,c9,uvo,fD
+---
+>   N5e,$5e,WX,RPo,uL
+22c22
+<   Kun
+---
+>   yhn
+35c35
+< Kun();
+---
+> yhn();
+41,43c41,43
+<     let C=n[t];
+<     if(C==="--debug"||C==="-d"||C==="--debug-to-stderr"||C==="-d2e"||C.startsWith("--debug=")||C.startsWith("--debug-file="))continue;
+<     if(C==="--debug-file"&&t+1<n.length){
+---
+>     let _=n[t];
+>     if(_==="--debug"||_==="-d"||_==="--debug-to-stderr"||_==="-d2e"||_.startsWith("--debug=")||_.startsWith("--debug-file="))continue;
+>     if(_==="--debug-file"&&t+1<n.length){
+49,51c49,51
+<   let t,C,g,B,c,a,y=[];
+<   for(let P=0;P<n.length;P++){
+<     let x=n[P],H=x.indexOf("="),[R,T]=H>0?[x.slice(0,H),x.slice(H+1)]:[x,void 0],b=T!==void 0||P+1<n.length;
+---
+>   let t,_,g,B,c,a,L=[];
+>   for(let C=0;C<n.length;C++){
+>     let x=n[C],H=x.indexOf("="),[R,T]=H>0?[x.slice(0,H),x.slice(H+1)]:[x,void 0],b=T!==void 0||C+1<n.length;
+54,60c54,60
+<     else if(R==="--permission-mode"&&b)t=T??n[++P];
+<     else if(R==="--inherit-permission-mode"&&b)C=T??n[++P];
+<     else if(R==="--model"&&b)g=T??n[++P];
+<     else if(R==="--effort"&&b)B=T??n[++P];
+<     else if(R==="--agent"&&b)c=T??n[++P];
+<     else y.push(x)
+<   }let W=t??C;
+---
+>     else if(R==="--permission-mode"&&b)t=T??n[++C];
+>     else if(R==="--inherit-permission-mode"&&b)_=T??n[++C];
+>     else if(R==="--model"&&b)g=T??n[++C];
+>     else if(R==="--effort"&&b)B=T??n[++C];
+>     else if(R==="--agent"&&b)c=T??n[++C];
+>     else L.push(x)
+>   }let W=t??_;
+63c63
+<       permissionMode:W,...!t&&C&&{
+---
+>       permissionMode:W,...!t&&_&&{
+66c66
+<     }:void 0,rest:y
+---
+>     }:void 0,rest:L
+69c69
+<   let n=Isn(process.argv);
+---
+>   let n=tdn(process.argv);
+73c73
+<     if(console.log(`${{ISSUES_EXPLAINER:"report the issue at https://github.com/anthropics/claude-code/issues",PACKAGE_URL:"@anthropic-ai/claude-code",README_URL:"https://code.claude.com/docs/en/overview",VERSION:"V",FEEDBACK_CHANNEL:"https://github.com/anthropics/claude-code/issues",BUILD_TIME:"T",GIT_SHA:"S",HOOKS_WORKER_URL:"/$bunfs/root/src/plugins/functionHooks/hooks-worker/hooks-worker.js",DD_SOURCEMAP_GROUP:"default"}.VERSION} (Claude Code)${fD()}`),t.length===2&&{
+---
+>     if(console.log(`${{ISSUES_EXPLAINER:"report the issue at https://github.com/anthropics/claude-code/issues",PACKAGE_URL:"@anthropic-ai/claude-code",README_URL:"https://code.claude.com/docs/en/overview",VERSION:"V",FEEDBACK_CHANNEL:"https://github.com/anthropics/claude-code/issues",BUILD_TIME:"T",GIT_SHA:"S",HOOKS_WORKER_URL:"/$bunfs/root/src/plugins/functionHooks/hooks-worker/hooks-worker.js",DD_SOURCEMAP_GROUP:"default"}.VERSION} (Claude Code)${uL()}`),t.length===2&&{
+77,79c77,79
+<   }let C=rt();
+<   if(C){
+<     console.error(C);
+---
+>   }let _=rt();
+>   if(_){
+>     console.error(_);
+86c86
+<       sessionId:o(),message:C,reason:"cwd_unavailable"
+---
+>       sessionId:o(),message:_,reason:"cwd_unavailable"
+106c106
+<         REPORT_MARK:L
+---
+>         REPORT_MARK:A
+108c108
+<       process.stdout.write(`${L}${JSON.stringify({file:t[3],results:[],error:m})}
+---
+>       process.stdout.write(`${A}${JSON.stringify({file:t[3],results:[],error:m})}
+116c116
+<       pluginTestMain:D
+---
+>       pluginTestMain:v
+118c118
+<     process.exitCode=await D(t.slice(2));
+---
+>     process.exitCode=await v(t.slice(2));
+215,217c215,217
+<       refuseRemoteControlLocally:i,refuseRemoteControlIneligible:m,startRemoteControl:D
+<     }=await import("/$bunfs/root/chunk-X.js"),L=await i(),[{
+<       pinStorageV5:v
+---
+>       refuseRemoteControlLocally:i,refuseRemoteControlIneligible:m,startRemoteControl:v
+>     }=await import("/$bunfs/root/chunk-X.js"),A=await i(),[{
+>       pinStorageV5:S
+220c220
+<     }]=await Promise.all([import("/$bunfs/root/chunk-X.js"),import("/$bunfs/root/chunk-X.js")]),r=v(c);
+---
+>     }]=await Promise.all([import("/$bunfs/root/chunk-X.js"),import("/$bunfs/root/chunk-X.js")]),r=S(c);
+241c241
+<       initDefaultDebugLog:A
+---
+>       initDefaultDebugLog:D
+248,249c248,249
+<     let z=await m(L);
+<     if(N()&&r!==void 0)A({
+---
+>     let z=await m(A);
+>     if(N()&&r!==void 0)D({
+252c252
+<     await D(z,t.slice(1),r,M);
+---
+>     await v(z,t.slice(1),r,M);
+255c255
+<     let e=uvo(t);
+---
+>     let e=RPo(t);
+294c294
+<       initDefaultDebugLog:D
+---
+>       initDefaultDebugLog:v
+296c296
+<       seedInstallIDs:L,watchGlobalConfigThroughStorage:v
+---
+>       seedInstallIDs:A,watchGlobalConfigThroughStorage:S
+299c299
+<       D({
+---
+>       v({
+301c301
+<       }),v(s);
+---
+>       }),S(s);
+307c307
+<         composePolicyLimitsClient:w,primePolicyLimitsCache:A
+---
+>         composePolicyLimitsClient:w,primePolicyLimitsCache:D
+313c313
+<       }),await I(M),await A(s),await L(s)
+---
+>       }),await I(M),await D(s),await A(s)
+323c323
+<           sleep:A
+---
+>           sleep:D
+330c330
+<         return await Promise.race([Promise.all([l(),w()]),A(500,void 0,{
+---
+>         return await Promise.race([Promise.all([l(),w()]),D(500,void 0,{
+342c342
+<           logEvent:A
+---
+>           logEvent:D
+346,347c346,347
+<         r(),f(s),A("tengu_background",{
+<           via_flag:!0,via:_("flag")
+---
+>         r(),f(s),D("tengu_background",{
+>           via_flag:!0,via:y("flag")
+354c354
+<   }let a=f4e(t);
+---
+>   }let a=N5e(t);
+357,359c357,359
+<     dispatchDefaults:y,rest:W
+<   }=It(a.rest),P=a.hasAgentsPositional&&st(W);
+<   if((P||st(t)&&process.stdin.isTTY)&&process.stdout.isTTY){
+---
+>     dispatchDefaults:L,rest:W
+>   }=It(a.rest),C=a.hasAgentsPositional&&st(W);
+>   if((C||st(t)&&process.stdin.isTTY)&&process.stdout.isTTY){
+371c371
+<       enableConfigs:D,getGlobalConfig:L,seedInstallIDs:v
+---
+>       enableConfigs:v,getGlobalConfig:A,seedInstallIDs:S
+374c374
+<       await D(N()?c?.backend:void 0),r=L().defaultToAgentsView===!0,s=P||r
+---
+>       await v(N()?c?.backend:void 0),r=A().defaultToAgentsView===!0,s=C||r
+427c427
+<         isAgentsFleetEnabled:A,ensureFleetGateHydrated:I,fleetGateRejected:M,consumeAgentViewRelaunchMarker:z
+---
+>         isAgentsFleetEnabled:D,ensureFleetGateHydrated:I,fleetGateRejected:M,consumeAgentViewRelaunchMarker:z
+431c431
+<       }),A()){
+---
+>       }),D()){
+459c459
+<           j=p(d),O(j),k(d),await q(j),await v(d)
+---
+>           j=p(d),O(j),k(d),await q(j),await S(d)
+469c469
+<           ...Z,...y
+---
+>           ...Z,...L
+532,534c532,534
+<         let K=y?.permissionMode==="bypassPermissions"||y?.allowBypass?await import("/$bunfs/root/chunk-X.js"):void 0;
+<         K?.refuseBypassUnderRoot(y);
+<         let et=K?.applyBypassPolicyGate(y)??y,J=await h(E(!1)),{
+---
+>         let K=L?.permissionMode==="bypassPermissions"||L?.allowBypass?await import("/$bunfs/root/chunk-X.js"):void 0;
+>         K?.refuseBypassUnderRoot(L);
+>         let et=K?.applyBypassPolicyGate(L)??L,J=await h(E(!1)),{
+539c539
+<           cwdFilter:a.cwdFilter,dispatchExtraArgs:c9(m4e(Z,F)),dispatchDefaults:et,entryChannel:it.isListReturnRelaunch()?"list_return":P?"cli_agents":"default_home",storageV5:d,credentials:j
+---
+>           cwdFilter:a.cwdFilter,dispatchExtraArgs:WX($5e(Z,F)),dispatchDefaults:et,entryChannel:it.isListReturnRelaunch()?"list_return":C?"cli_agents":"default_home",storageV5:d,credentials:j
+555c555
+<       }if(P)return M("claude agents")
+---
+>       }if(C)return M("claude agents")
+608c608
+<           exitWithError:D
+---
+>           exitWithError:v
+610c610
+<         D(m)
+---
+>         v(m)
+619c619
+<         pinStorageV5:D
+---
+>         pinStorageV5:v
+621,625c621,625
+<         initDefaultDebugLog:L
+<       }]=await Promise.all([import("/$bunfs/root/chunk-X.js"),import("/$bunfs/root/chunk-X.js"),import("/$bunfs/root/chunk-X.js")]),v=D(c),s;
+<       if(N()&&v!==void 0){
+<         L({
+<           storageV5:v
+---
+>         initDefaultDebugLog:A
+>       }]=await Promise.all([import("/$bunfs/root/chunk-X.js"),import("/$bunfs/root/chunk-X.js"),import("/$bunfs/root/chunk-X.js")]),S=v(c),s;
+>       if(N()&&S!==void 0){
+>         A({
+>           storageV5:S
+630c630
+<           setGrowthBookCredentials:w,setGrowthBookStorageBackend:A
+---
+>           setGrowthBookCredentials:w,setGrowthBookStorageBackend:D
+634c634
+<         s=l(v),w(s),A(v),await I(s);
+---
+>         s=l(S),w(s),D(S),await I(s);
+638,639c638,639
+<         await M(v)
+<       }let r=await m(t,v,s);
+---
+>         await M(S)
+>       }let r=await m(t,S,s);

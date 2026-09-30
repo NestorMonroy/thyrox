@@ -1,0 +1,8 @@
+base	8 pass, 0 fail	—
+thinking-keep-last	7 pass, 1 fail	el último asistente conserva su razonamiento
+purify-repair	7 pass, 1 fail	un recorte que parte un par de herramienta no deja el resultado huérfano
+notice-bytes	7 pass, 1 fail	el aviso de historia recortada es un texto fijo, sin la cuenta de lo retirado
+prune-target-stop	7 pass, 1 fail	la poda de imágenes para en cuanto la petición cabe
+pairs-keep-last	7 pass, 1 fail	fixToolPairs conserva la llamada del último mensaje: su resultado aún no llega
+pairs-orphan-result	6 pass, 2 fail	fixToolPairs retira un resultado de herramienta cuya llamada no está | un recorte que parte un par de herramienta no deja el resultado huérfano
+pairs-empty-assistant	7 pass, 1 fail	fixToolPairs retira un asistente que se queda sin contenido ni llamadas

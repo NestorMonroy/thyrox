@@ -1,0 +1,3 @@
+18 aserciones
+  FALLA — 1b: `census` (antes `censo`) es un subcomando valido
+  FALLA — 2: el subcomando viejo `censo` ya no se acepta (exit 2)

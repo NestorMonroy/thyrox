@@ -1,0 +1,44 @@
+src/packages/config/plugin/loadPluginAgents.ts(9,15): error TS2305: Module '"./_deps.js"' has no exported member 'AgentDefinition'.
+  --- código src/packages/config/plugin/loadPluginAgents.ts:1-19 ---
+      1  import memoize from 'lodash-es/memoize.js'
+      2  import { basename } from 'path'
+      3  import { isAutoMemoryEnabled } from '@thyrox/memory'
+      4  import type { AgentColorName } from './_deps.js'
+      5  import {
+      6    type AgentMemoryScope,
+      7    loadAgentMemoryPrompt,
+      8  } from '@thyrox/memory/agentMemory'
+      9> import type { AgentDefinition } from './_deps.js'
+     10  import { FILE_EDIT_TOOL_NAME } from './_deps.js'
+     11  import { FILE_READ_TOOL_NAME } from './_deps.js'
+     12  import { FILE_WRITE_TOOL_NAME } from './_deps.js'
+     13  import { getPluginErrorMessage } from './types.js'
+     14  import { logForDebugging } from './_deps.js'
+     15  import { EFFORT_LEVELS, parseEffortValue } from './_deps.js'
+     16  import {
+     17    coerceDescriptionToString,
+     18    parseFrontmatter,
+     19    parsePositiveIntFromFrontmatter,
+src/packages/config/plugin/loadPluginAgents.ts(303,36): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+  --- código src/packages/config/plugin/loadPluginAgents.ts:293-313 ---
+    293                        plugin.manifest,
+    294                        loadedPaths,
+    295                      )
+    296  
+    297                      if (agents.length > 0) {
+    298                        logForDebugging(
+    299                          `Loaded ${agents.length} agents from plugin ${plugin.name} custom path: ${agentPath}`,
+    300                        )
+    301                      }
+    302                      return agents
+    303>                   } else if (stats.isFile() && agentPath.endsWith('.md')) {
+    304                      // Load single agent file
+    305                      const agent = await loadAgentFromFile(
+    306                        agentPath,
+    307                        plugin.name,
+    308                        [],
+    309                        plugin.source,
+    310                        plugin.path,
+    311                        plugin.manifest,
+    312                        loadedPaths,
+    313                      )

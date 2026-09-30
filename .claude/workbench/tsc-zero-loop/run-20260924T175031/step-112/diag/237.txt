@@ -1,0 +1,28 @@
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(837,13): error TS2322: Type '() => { effortValue: {} | null; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; chann...' is not assignable to type '() => AppState'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts:827-847 ---
+    827                ),
+    828              },
+    829            }
+    830          }
+    831  
+    832          // Override effort level if skill specifies one
+    833          if (effort !== undefined) {
+    834            const previousGetAppState = modifiedContext.getAppState
+    835            modifiedContext = {
+    836              ...modifiedContext,
+    837>             getAppState() {
+    838                const appState = previousGetAppState()
+    839                return {
+    840                  ...appState,
+    841                  effortValue: effort,
+    842                }
+    843              },
+    844            }
+    845          }
+    846  
+    847          return modifiedContext
+  Type '{ effortValue: {} | null; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; mainLoopModelForSession: ModelSetting; ... 77 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ effortValue: {} | null; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; mainLoopModelForSession: ModelSetting; ... 77 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'effortValue' are incompatible.
+        Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+          Type 'null' is not assignable to type 'EffortValue | undefined'.

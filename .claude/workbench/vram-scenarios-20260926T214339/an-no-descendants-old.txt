@@ -1,0 +1,2 @@
+        seen.add(current)
+        for children

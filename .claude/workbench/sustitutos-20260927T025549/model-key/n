@@ -1,0 +1,15 @@
+    # `propose-id` y `verify` son los nombres públicos; `mint`, `acunar` y
+    # `verificar` quedan como alias para los guiones y documentos que ya los
+    # invocan. «Proponer» y no «acuñar» ni «emitir»: el número NO se reserva,
+    # y un nombre que prometa la asignación invita a saltarse el registro que
+    # sí la hace (H-THYROX-26).
+    propose = sub.add_parser(
+        'propose-id', aliases=['mint', 'acunar'],
+        help='propone H-<PREFIJO>-N para un hallazgo nuevo',
+        description='Propone H-<PREFIJO>-N: el mayor número usado en los .rst y en '
+                    'el store, más uno. Es una propuesta: no lo reserva. Queda '
+                    'asignado cuando se escribe su fila o su .rst.')
+    propose.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
+    propose.add_argument('--consumer', default='docs',
+                         help='el clon a resolver con reach.root (default: docs)')
+    propose.set_defaults(func=_cmd_propose_id)

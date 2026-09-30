@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/task/test_census_open_tasks.py", line 181, in <module>
+    _evidence = cot.reach.root("api") / "scripts" / "evidence"
+                ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+    raise KeyError(
+KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+EXIT=1

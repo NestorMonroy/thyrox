@@ -1,0 +1,48 @@
+== 1: un rechazo de la API como éxito
+   (src/commands/mitm/stateVerbs.ts)
+(fail) an API refusal exits 1 with its message [1.44ms]
+ 15 pass
+ 1 fail
+== 2: detect sin exigir el agente
+   (src/commands/mitm/stateVerbs.ts)
+(fail) a missing argument exits 2 without calling the API [4.00ms]
+ 15 pass
+ 1 fail
+== 3: --set sin validar origen=destino
+   (src/commands/mitm/stateVerbs.ts)
+(fail) a missing argument exits 2 without calling the API [2.41ms]
+ 15 pass
+ 1 fail
+== 4: el patrón de bypass sin codificar
+   (src/commands/mitm/stateVerbs.ts)
+(fail) each state verb maps to its API request [4.36ms]
+ 15 pass
+ 1 fail
+== 5: config import sin leer el archivo
+   (src/commands/mitm/stateVerbs.ts)
+(fail) config export round-trips through config import [5.08ms]
+ 15 pass
+ 1 fail
+== 6: el verbo de estado sin cerrar el store
+   (src/commands/mitm-commands.ts)
+(fail) a state verb runs against the store and closes it afterwards [2.61ms]
+ 15 pass
+ 1 fail
+== 7: los verbos de estado fuera de la tabla de modos
+   (src/commands/mitm-commands.ts)
+(fail) a state verb runs against the store and closes it afterwards [3.38ms]
+ 15 pass
+ 1 fail
+== 8: los verbos de estado fuera del programa completo
+   (src/commands/mitm-commands.ts)
+(fail) the full program exposes every state verb under mitm [0.57ms]
+ 15 pass
+ 1 fail
+== restaurado
+ M src/packages/cli/src/entry/detect-mode.ts
+ M src/packages/cli/src/entry/mode-dispatch.ts
+ M src/packages/cli/src/entry/run-program.ts
+?? src/packages/cli/src/commands/mitm-commands.ts
+?? src/packages/cli/src/commands/mitm/
+ 16 pass
+ 0 fail

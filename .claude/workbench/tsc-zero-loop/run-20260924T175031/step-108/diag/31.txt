@@ -1,0 +1,121 @@
+src/packages/config/plugin/refresh.ts(129,7): error TS2322: Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command[]' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
+  --- código src/packages/config/plugin/refresh.ts:119-139 ---
+    119    ])
+    120    const mcp_count = mcpCounts.reduce((sum, n) => sum + n, 0)
+    121    const lsp_count = lspCounts.reduce((sum, n) => sum + n, 0)
+    122  
+    123    setAppState(prev => ({
+    124      ...prev,
+    125      plugins: {
+    126        ...prev.plugins,
+    127        enabled,
+    128        disabled,
+    129>       commands: pluginCommands,
+    130        errors: mergePluginErrors(prev.plugins.errors, errors),
+    131        needsRefresh: false,
+    132      },
+    133      agentDefinitions,
+    134      mcp: {
+    135        ...prev.mcp,
+    136        pluginReconnectKey: prev.mcp.pluginReconnectKey + 1,
+    137      },
+    138    }))
+    139  
+  Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command'.
+    Type 'Command' is not assignable to type 'CommandBase & PromptCommand'.
+      Type 'Command' is not assignable to type 'CommandBase'.
+        Types of property 'description' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+src/packages/config/plugin/refresh.ts(133,5): error TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents
+  --- código src/packages/config/plugin/refresh.ts:123-143 ---
+    123    setAppState(prev => ({
+    124      ...prev,
+    125      plugins: {
+    126        ...prev.plugins,
+    127        enabled,
+    128        disabled,
+    129        commands: pluginCommands,
+    130        errors: mergePluginErrors(prev.plugins.errors, errors),
+    131        needsRefresh: false,
+    132      },
+    133>     agentDefinitions,
+    134      mcp: {
+    135        ...prev.mcp,
+    136        pluginReconnectKey: prev.mcp.pluginReconnectKey + 1,
+    137      },
+    138    }))
+    139  
+    140    // Re-initialize LSP manager so newly-loaded plugin LSP servers are picked
+    141    // up. No-op if LSP was never initialized (headless subcommand path).
+    142    // Unconditional so removing the last LSP plugin also clears stale config.
+    143    // Fixes issue #15521: LSP manager previously read a stale memoized
+src/packages/config/plugin/refresh.ts(176,109): error TS2339: Property 'allAgents' does not exist on type 'unknown[]'.
+  --- código src/packages/config/plugin/refresh.ts:166-186 ---
+    166        sum +
+    167        (Object.values(p.hooksConfig) as Array<Array<{ hooks: unknown[] }> | undefined>).reduce(
+    168          (s, matchers) =>
+    169            s + (matchers?.reduce((h: number, m: { hooks: { length: number } }) => h + m.hooks.length, 0) ?? 0),
+    170          0,
+    171        )
+    172      )
+    173    }, 0)
+    174  
+    175    logForDebugging(
+    176>     `refreshActivePlugins: ${enabled.length} enabled, ${pluginCommands.length} commands, ${agentDefinitions.allAgents.length} agents, ${hook_count} hooks, ${mcp_count} MCP, ${lsp_count} LSP`,
+    177    )
+    178  
+    179    return {
+    180      enabled_count: enabled.length,
+    181      disabled_count: disabled.length,
+    182      command_count: pluginCommands.length,
+    183      agent_count: agentDefinitions.allAgents.length,
+    184      hook_count,
+    185      mcp_count,
+    186      lsp_count,
+src/packages/config/plugin/refresh.ts(183,35): error TS2339: Property 'allAgents' does not exist on type 'unknown[]'.
+  --- código src/packages/config/plugin/refresh.ts:173-193 ---
+    173    }, 0)
+    174  
+    175    logForDebugging(
+    176      `refreshActivePlugins: ${enabled.length} enabled, ${pluginCommands.length} commands, ${agentDefinitions.allAgents.length} agents, ${hook_count} hooks, ${mcp_count} MCP, ${lsp_count} LSP`,
+    177    )
+    178  
+    179    return {
+    180      enabled_count: enabled.length,
+    181      disabled_count: disabled.length,
+    182      command_count: pluginCommands.length,
+    183>     agent_count: agentDefinitions.allAgents.length,
+    184      hook_count,
+    185      mcp_count,
+    186      lsp_count,
+    187      error_count: errors.length + (hook_load_failed ? 1 : 0),
+    188      agentDefinitions,
+    189      pluginCommands,
+    190    }
+    191  }
+    192  
+    193  /**
+src/packages/config/plugin/refresh.ts(188,5): error TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents
+  --- código src/packages/config/plugin/refresh.ts:178-198 ---
+    178  
+    179    return {
+    180      enabled_count: enabled.length,
+    181      disabled_count: disabled.length,
+    182      command_count: pluginCommands.length,
+    183      agent_count: agentDefinitions.allAgents.length,
+    184      hook_count,
+    185      mcp_count,
+    186      lsp_count,
+    187      error_count: errors.length + (hook_load_failed ? 1 : 0),
+    188>     agentDefinitions,
+    189      pluginCommands,
+    190    }
+    191  }
+    192  
+    193  /**
+    194   * Merge fresh plugin-load errors with existing errors, preserving LSP and
+    195   * plugin-component errors that were recorded by other systems and
+    196   * deduplicating. Same logic as refreshPlugins()/updatePluginState(), extracted
+    197   * so refresh.ts doesn't leave those errors stranded.
+    198   */

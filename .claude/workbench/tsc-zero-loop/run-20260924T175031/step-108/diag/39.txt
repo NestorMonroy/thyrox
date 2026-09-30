@@ -1,0 +1,85 @@
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(5,7): error TS2322: Type '{ type: "system"; subtype: "snip_boundary"; }' is not assignable to type 'Message'.
+  --- código src/packages/agent/__tests__/compactionSnipProjection.test.ts:1-15 ---
+      1  import { describe, expect, test } from 'bun:test'
+      2  import { isSnipBoundaryMessage, projectSnippedView } from '../compaction/snipProjection.ts'
+      3  import type { Message } from '../messageShapes.ts'
+      4  
+      5> const boundary: Message = { type: 'system', subtype: 'snip_boundary' }
+      6  const otherSystem: Message = { type: 'system', subtype: 'other' }
+      7  const user: Message = { type: 'user' }
+      8  
+      9  describe('isSnipBoundaryMessage', () => {
+     10    test('un system con subtype snip_boundary es la frontera', () => {
+     11      expect(isSnipBoundaryMessage(boundary)).toBe(true)
+     12    })
+     13    test('un system con otro subtype no lo es', () => {
+     14      expect(isSnipBoundaryMessage(otherSystem)).toBe(false)
+     15    })
+  Types of property 'subtype' are incompatible.
+    Type '"snip_boundary"' is not assignable to type '"thinking" | "compact_boundary" | "local_command" | "api_error" | "file_snapshot" | "agents_killed" | "api_metrics" | "away_summary" | "bridge_status" | "informational" | ... 5 more ... | "turn_duration"'.
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(6,7): error TS2322: Type '{ type: "system"; subtype: "other"; }' is not assignable to type 'Message'.
+  --- código src/packages/agent/__tests__/compactionSnipProjection.test.ts:1-16 ---
+      1  import { describe, expect, test } from 'bun:test'
+      2  import { isSnipBoundaryMessage, projectSnippedView } from '../compaction/snipProjection.ts'
+      3  import type { Message } from '../messageShapes.ts'
+      4  
+      5  const boundary: Message = { type: 'system', subtype: 'snip_boundary' }
+      6> const otherSystem: Message = { type: 'system', subtype: 'other' }
+      7  const user: Message = { type: 'user' }
+      8  
+      9  describe('isSnipBoundaryMessage', () => {
+     10    test('un system con subtype snip_boundary es la frontera', () => {
+     11      expect(isSnipBoundaryMessage(boundary)).toBe(true)
+     12    })
+     13    test('un system con otro subtype no lo es', () => {
+     14      expect(isSnipBoundaryMessage(otherSystem)).toBe(false)
+     15    })
+     16    test('un mensaje que no es system nunca lo es, aunque lleve el subtype', () => {
+  Types of property 'subtype' are incompatible.
+    Type '"other"' is not assignable to type '"thinking" | "compact_boundary" | "local_command" | "api_error" | "file_snapshot" | "agents_killed" | "api_metrics" | "away_summary" | "bridge_status" | "informational" | ... 5 more ... | "turn_duration"'.
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(7,7): error TS2322: Type '{ type: "user"; }' is not assignable to type 'Message'.
+  --- código src/packages/agent/__tests__/compactionSnipProjection.test.ts:1-17 ---
+      1  import { describe, expect, test } from 'bun:test'
+      2  import { isSnipBoundaryMessage, projectSnippedView } from '../compaction/snipProjection.ts'
+      3  import type { Message } from '../messageShapes.ts'
+      4  
+      5  const boundary: Message = { type: 'system', subtype: 'snip_boundary' }
+      6  const otherSystem: Message = { type: 'system', subtype: 'other' }
+      7> const user: Message = { type: 'user' }
+      8  
+      9  describe('isSnipBoundaryMessage', () => {
+     10    test('un system con subtype snip_boundary es la frontera', () => {
+     11      expect(isSnipBoundaryMessage(boundary)).toBe(true)
+     12    })
+     13    test('un system con otro subtype no lo es', () => {
+     14      expect(isSnipBoundaryMessage(otherSystem)).toBe(false)
+     15    })
+     16    test('un mensaje que no es system nunca lo es, aunque lleve el subtype', () => {
+     17      expect(isSnipBoundaryMessage({ type: 'user', subtype: 'snip_boundary' } as Message)).toBe(false)
+  Type '{ type: "user"; }' is not assignable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; }' but required in type 'MessageBase'.
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(17,34): error TS2352: Conversion of type '{ type: "user"; subtype: string; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/compactionSnipProjection.test.ts:7-27 ---
+      7  const user: Message = { type: 'user' }
+      8  
+      9  describe('isSnipBoundaryMessage', () => {
+     10    test('un system con subtype snip_boundary es la frontera', () => {
+     11      expect(isSnipBoundaryMessage(boundary)).toBe(true)
+     12    })
+     13    test('un system con otro subtype no lo es', () => {
+     14      expect(isSnipBoundaryMessage(otherSystem)).toBe(false)
+     15    })
+     16    test('un mensaje que no es system nunca lo es, aunque lleve el subtype', () => {
+     17>     expect(isSnipBoundaryMessage({ type: 'user', subtype: 'snip_boundary' } as Message)).toBe(false)
+     18    })
+     19  })
+     20  
+     21  describe('projectSnippedView', () => {
+     22    test('sin frontera, devuelve todos los mensajes intactos', () => {
+     23      const messages = [user, otherSystem]
+     24      expect(projectSnippedView(messages)).toBe(messages)
+     25    })
+     26  
+     27    test('con frontera, descarta todo lo anterior a ella (la frontera queda incluida)', () => {
+  Type '{ type: "user"; subtype: string; }' is not comparable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; subtype: string; }' but required in type 'MessageBase'.

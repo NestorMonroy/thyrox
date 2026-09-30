@@ -1,0 +1,30 @@
+src/packages/repl/src/screens/REPLView.tsx(1800,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  Types of parameters 'updater' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/repl/src/screens/REPLView.tsx(1820,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+    Types of property 'color' are incompatible.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.
+src/packages/repl/src/screens/REPLView.tsx(2016,5): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2022,5): error TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.
+  Type 'null' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2447,9): error TS2322: Type '(action: React.SetStateAction<MessageType[]>) => void' is not assignable to type '(updater: (prev: unknown[]) => unknown[]) => void'.
+  Types of parameters 'action' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<Message[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: Message[]) => Message[]'.
+        Type 'unknown[]' is not assignable to type 'Message[]'.
+          Type 'unknown' is not assignable to type 'Message'.
+src/packages/repl/src/screens/REPLView.tsx(2478,9): error TS2322: Type '(config: Record<string, ScopedMcpServerConfig>) => void' is not assignable to type '(config: Record<string, unknown>) => void'.
+  Types of parameters 'config' and 'config' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/repl/src/screens/REPLView.tsx(2479,9): error TS2322: Type 'Dispatch<SetStateAction<IdeType | null>>' is not assignable to type '(ide: unknown) => void'.
+  Types of parameters 'value' and 'ide' are incompatible.
+    Type 'unknown' is not assignable to type 'SetStateAction<IdeType | null>'.

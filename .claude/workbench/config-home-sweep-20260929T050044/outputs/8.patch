@@ -1,0 +1,55 @@
+diff --git a/src/packages/permission/src/__tests__/internalPaths.test.ts b/src/packages/permission/src/__tests__/internalPaths.test.ts
+index 9e27c224..478ea93f 100644
+--- a/src/packages/permission/src/__tests__/internalPaths.test.ts
++++ b/src/packages/permission/src/__tests__/internalPaths.test.ts
+@@ -118,6 +118,10 @@ describe('checkEditableInternalPath (yyt)', () => {
+       delete process.env.THYROX_CODE_HOST_CREDS_FILE
+     }
+   })
++  test('el almacen de revision de settings vive bajo el directorio de configuracion, no homedir()/.claude a mano', () => {
++    const store = touch(join(home, 'state', 'settings-review.json'))
++    expect(checkEditableInternalPath(store, input).behavior).toBe('deny')
++  })
+ })
+ 
+ describe('checkReadableInternalPath (hee)', () => {
+diff --git a/src/packages/permission/src/__tests__/permissionOptions.test.ts b/src/packages/permission/src/__tests__/permissionOptions.test.ts
+new file mode 100644
+index 00000000..60ff2c06
+--- /dev/null
++++ b/src/packages/permission/src/__tests__/permissionOptions.test.ts
+@@ -0,0 +1,20 @@
++/**
++ * `isInGlobalClaudeFolder` (≙ `Y8t` de 2.1.283): a diferencia del almacén de
++ * revisión de settings, este sitio SI usa `homedir()` crudo a proposito —
++ * medido en `claude_strings.txt`, su chunk importa `homedir` de `node:os`
++ * directamente (`import{homedir as G8t}from"os"`) y lo combina con `.claude`
++ * sin pasar por `Se()`/`getConfigHomeDir`. No se cambia a `claudeConfigHome`.
++ */
++import { describe, expect, test } from 'bun:test'
++import { homedir } from 'node:os'
++import { join } from 'node:path'
++import { isInGlobalClaudeFolder } from '../components/FilePermissionDialog/permissionOptions.tsx'
++
++describe('isInGlobalClaudeFolder', () => {
++  test('un archivo bajo homedir()/.claude cae dentro', () => {
++    expect(isInGlobalClaudeFolder(join(homedir(), '.claude', 'settings.json'))).toBe(true)
++  })
++  test('un archivo fuera de homedir()/.claude no cae dentro', () => {
++    expect(isInGlobalClaudeFolder(join(homedir(), 'otro-directorio', 'a.txt'))).toBe(false)
++  })
++})
+diff --git a/src/packages/permission/src/internalPaths.ts b/src/packages/permission/src/internalPaths.ts
+index 307244d0..4455c215 100644
+--- a/src/packages/permission/src/internalPaths.ts
++++ b/src/packages/permission/src/internalPaths.ts
+@@ -459,7 +459,8 @@ export function isSeedAdminPath(path: string): boolean {
+ /** El almacén de revisión de settings (≙ `zr`). */
+ export function isSettingsReviewStore(path: string): boolean {
+   const target = comparableSessionPath(path)
+-  const stateDir = nodePath.join(homedir(), '.claude', 'state')
++  // en 2.1.283 el store vive en <config>/state (`Xe(Se(),"state")`, claude_strings.txt), no homedir()/.claude a mano
++  const stateDir = nodePath.join(claudeConfigHome(), 'state')
+   return [stateDir, nodePath.join(stateDir, 'settings-review.json')].some(p =>
+     getPathsForPermissionCheck(p).some(spelled => comparableSessionPath(spelled) === target),
+   )

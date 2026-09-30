@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(90,41): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:80-100 ---
+     80    const agent = useAppState(s => s.agent)
+     81    const effortValue = useAppState(s => s.effortValue)
+     82  
+     83    const config = getGlobalConfig()
+     84  
+     85    // Get company announcements and select one:
+     86    // - First startup (numStartups === 1): show first announcement
+     87    // - All other startups: randomly select from announcements
+     88    const [announcement] = useState(() => {
+     89      const announcements = getInitialSettings().companyAnnouncements
+     90>     if (!announcements || announcements.length === 0) return undefined
+     91      return config.numStartups === 1
+     92        ? announcements[0]
+     93        : announcements[Math.floor(Math.random() * announcements.length)]
+     94    })
+     95  
+     96    useEffect(() => {
+     97      if (showOnboarding) {
+     98        incrementProjectOnboardingSeenCount()
+     99      }
+    100    }, [showOnboarding])
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(93,64): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:83-103 ---
+     83    const config = getGlobalConfig()
+     84  
+     85    // Get company announcements and select one:
+     86    // - First startup (numStartups === 1): show first announcement
+     87    // - All other startups: randomly select from announcements
+     88    const [announcement] = useState(() => {
+     89      const announcements = getInitialSettings().companyAnnouncements
+     90      if (!announcements || announcements.length === 0) return undefined
+     91      return config.numStartups === 1
+     92        ? announcements[0]
+     93>       : announcements[Math.floor(Math.random() * announcements.length)]
+     94    })
+     95  
+     96    useEffect(() => {
+     97      if (showOnboarding) {
+     98        incrementProjectOnboardingSeenCount()
+     99      }
+    100    }, [showOnboarding])
+    101  
+    102    // In condensed mode (early-return below renders <CondensedLogo/>),
+    103    // CondensedLogo's own useEffect handles the impression count. Skipping

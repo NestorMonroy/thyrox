@@ -1,0 +1,97 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(939,33): error TS18048: 'r' is possibly 'undefined'.
+  --- código src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts:929-949 ---
+    929    } | null {
+    930      if (!boundHwnd) return null
+    931      const out = ps(`${WINDOW_MGMT_TYPES}
+    932  $rect = New-Object CuWinMgmt+RECT
+    933  if ([CuWinMgmt]::GetWindowRect([IntPtr]::new([long]${boundHwnd}), [ref]$rect)) {
+    934      "$($rect.Left),$($rect.Top),$($rect.Right),$($rect.Bottom)"
+    935  } else { "FAIL" }
+    936  `)
+    937      if (!out || out === 'FAIL') return null
+    938      const [l, t, r, b] = out.split(',').map(Number)
+    939>     return { x: l, y: t, width: r - l, height: b - t }
+    940    },
+    941  }
+    942  
+    943  // ---------------------------------------------------------------------------
+    944  // Export
+    945  // ---------------------------------------------------------------------------
+    946  
+    947  // Clean up all overlays on process exit
+    948  function cleanupAll() {
+    949    cleanupAllBorders()
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(939,37): error TS18048: 'l' is possibly 'undefined'.
+  --- código src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts:929-949 ---
+    929    } | null {
+    930      if (!boundHwnd) return null
+    931      const out = ps(`${WINDOW_MGMT_TYPES}
+    932  $rect = New-Object CuWinMgmt+RECT
+    933  if ([CuWinMgmt]::GetWindowRect([IntPtr]::new([long]${boundHwnd}), [ref]$rect)) {
+    934      "$($rect.Left),$($rect.Top),$($rect.Right),$($rect.Bottom)"
+    935  } else { "FAIL" }
+    936  `)
+    937      if (!out || out === 'FAIL') return null
+    938      const [l, t, r, b] = out.split(',').map(Number)
+    939>     return { x: l, y: t, width: r - l, height: b - t }
+    940    },
+    941  }
+    942  
+    943  // ---------------------------------------------------------------------------
+    944  // Export
+    945  // ---------------------------------------------------------------------------
+    946  
+    947  // Clean up all overlays on process exit
+    948  function cleanupAll() {
+    949    cleanupAllBorders()
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(939,48): error TS18048: 'b' is possibly 'undefined'.
+  --- código src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts:929-949 ---
+    929    } | null {
+    930      if (!boundHwnd) return null
+    931      const out = ps(`${WINDOW_MGMT_TYPES}
+    932  $rect = New-Object CuWinMgmt+RECT
+    933  if ([CuWinMgmt]::GetWindowRect([IntPtr]::new([long]${boundHwnd}), [ref]$rect)) {
+    934      "$($rect.Left),$($rect.Top),$($rect.Right),$($rect.Bottom)"
+    935  } else { "FAIL" }
+    936  `)
+    937      if (!out || out === 'FAIL') return null
+    938      const [l, t, r, b] = out.split(',').map(Number)
+    939>     return { x: l, y: t, width: r - l, height: b - t }
+    940    },
+    941  }
+    942  
+    943  // ---------------------------------------------------------------------------
+    944  // Export
+    945  // ---------------------------------------------------------------------------
+    946  
+    947  // Clean up all overlays on process exit
+    948  function cleanupAll() {
+    949    cleanupAllBorders()
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(939,52): error TS18048: 't' is possibly 'undefined'.
+  --- código src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts:929-949 ---
+    929    } | null {
+    930      if (!boundHwnd) return null
+    931      const out = ps(`${WINDOW_MGMT_TYPES}
+    932  $rect = New-Object CuWinMgmt+RECT
+    933  if ([CuWinMgmt]::GetWindowRect([IntPtr]::new([long]${boundHwnd}), [ref]$rect)) {
+    934      "$($rect.Left),$($rect.Top),$($rect.Right),$($rect.Bottom)"
+    935  } else { "FAIL" }
+    936  `)
+    937      if (!out || out === 'FAIL') return null
+    938      const [l, t, r, b] = out.split(',').map(Number)
+    939>     return { x: l, y: t, width: r - l, height: b - t }
+    940    },
+    941  }
+    942  
+    943  // ---------------------------------------------------------------------------
+    944  // Export
+    945  // ---------------------------------------------------------------------------
+    946  
+    947  // Clean up all overlays on process exit
+    948  function cleanupAll() {
+    949    cleanupAllBorders()

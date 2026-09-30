@@ -1,0 +1,3 @@
+rm -rf "$F/out"; EXTRA="--width 4" THYROX_POOL_MEMINFO_PATH="$F/meminfo" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa beta
+check "RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"

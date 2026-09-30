@@ -1,0 +1,2 @@
+ROJO tests/verify/test-script-naming.sh
+EXIT=0

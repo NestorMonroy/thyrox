@@ -1,0 +1,194 @@
+== 1: cualquier verificador es una clave
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed native auth > the sign-in URL carries the port, the public key and the system id; the verifier carries the private key [54.59ms]
+ 16 pass
+ 1 fail
+== 2: sin consulta suelta
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed native auth > the callback is read as a URL, a bare query or JSON [0.54ms]
+(fail) zed-hosted > a failed user lookup keeps the account; a token for another key is refused [23.17ms]
+ 15 pass
+ 2 fail
+== 3: sin JSON
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed native auth > the callback is read as a URL, a bare query or JSON [0.70ms]
+ 16 pass
+ 1 fail
+== 4: sin el alias token
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed native auth > the callback is read as a URL, a bare query or JSON [0.57ms]
+ 16 pass
+ 1 fail
+== 5: la organización declarada no gana
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed native auth > the organization is the declared one, then the default, then the personal one, then the first [0.41ms]
+ 16 pass
+ 1 fail
+== 6: sin la organización personal
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed native auth > the organization is the declared one, then the default, then the personal one, then the first [0.48ms]
+ 16 pass
+ 1 fail
+== 7: el usuario de zed como Bearer
+   (src/accounts/zed/zedNativeAuth.ts)
+(fail) zed-hosted > the pasted callback is decrypted with the private key and the account is named by the user info [121.02ms]
+ 16 pass
+ 1 fail
+== 8: cualquier host reusa el puerto local
+   (src/accounts/oauth/flows/zedHostedFlow.ts)
+(fail) zed-hosted > a loopback redirect reuses the local port; any other keeps the default native port [152.31ms]
+ 16 pass
+ 1 fail
+== 9: un usuario caído tumba el login
+   (src/accounts/oauth/flows/zedHostedFlow.ts)
+(fail) zed-hosted > a failed user lookup keeps the account; a token for another key is refused [67.62ms]
+ 16 pass
+ 1 fail
+== 10: sin el login de github como nombre
+   (src/accounts/oauth/flows/zedHostedFlow.ts)
+ 17 pass
+ 0 fail
+== 11: xai sin variable no rehúsa
+   (src/accounts/oauth/flows/xaiOAuthFlow.ts)
+(fail) xai-oauth > without its variable the auth URL is refused naming it [1.26ms]
+ 16 pass
+ 1 fail
+== 12: el nonce fijo
+   (src/accounts/oauth/flows/xaiOAuthFlow.ts)
+(fail) xai-oauth > a 96-byte verifier, a fresh nonce, the CLI plan and percent-encoded spaces [0.79ms]
+ 16 pass
+ 1 fail
+== 13: xai con el verificador corto
+   (src/accounts/oauth/flows/xaiOAuthFlow.ts)
+(fail) xai-oauth > a 96-byte verifier, a fresh nonce, the CLI plan and percent-encoded spaces [1.00ms]
+ 16 pass
+ 1 fail
+== 14: los espacios como +
+   (src/accounts/grok/grokBuild.ts)
+(fail) xai-oauth > a 96-byte verifier, a fresh nonce, the CLI plan and percent-encoded spaces [0.71ms]
+ 16 pass
+ 1 fail
+== 15: xai sin nombre no hay etiqueta
+   (src/accounts/oauth/flows/xaiOAuthFlow.ts)
+(fail) xai-oauth > the id token names the account and the name falls back to the email [1.00ms]
+ 16 pass
+ 1 fail
+== 16: cualquier código de usuario
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the device code asks for the wide scope and validates what comes back [1.41ms]
+ 16 pass
+ 1 fail
+== 17: cualquier esquema
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the device code asks for the wide scope and validates what comes back [3.54ms]
+ 16 pass
+ 1 fail
+== 18: caracteres de control admitidos
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the device code asks for the wide scope and validates what comes back [1.47ms]
+ 16 pass
+ 1 fail
+== 19: sin HTTP local
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the device code asks for the wide scope and validates what comes back [2.12ms]
+ 16 pass
+ 1 fail
+== 20: la respuesta sin URI no es incompleta
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the device code asks for the wide scope and validates what comes back [1.60ms]
+ 16 pass
+ 1 fail
+== 21: el error sin la descripción
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > a failed device request carries the upstream description; a non-JSON poll is an invalid response [0.51ms]
+ 16 pass
+ 1 fail
+== 22: una página que no es JSON queda vacía
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > a failed device request carries the upstream description; a non-JSON poll is an invalid response [0.65ms]
+ 16 pass
+ 1 fail
+== 23: el navegador sin cota inferior
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > browser tokens keep their identity and a non-positive expiry becomes one second [0.56ms]
+ 16 pass
+ 1 fail
+== 24: el navegador sin seis horas por defecto
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > browser tokens keep their identity and a non-positive expiry becomes one second [0.56ms]
+ 16 pass
+ 1 fail
+== 25: el principal de equipo no es el usuario
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > a pasted JWT takes its expiry from exp, and a team principal is the user and the team [0.78ms]
+(fail) grok build pasted object > an organization principal is the user and the organization; the object refresh token is kept [0.19ms]
+ 15 pass
+ 2 fail
+== 26: el equipo sin su principal
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > a pasted JWT takes its expiry from exp, and a team principal is the user and the team [0.99ms]
+ 16 pass
+ 1 fail
+== 27: la organización sin su principal
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build pasted object > an organization principal is the user and the organization; the object refresh token is kept [0.38ms]
+ 16 pass
+ 1 fail
+== 28: el principal distingue mayúsculas
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > a pasted JWT takes its expiry from exp, and a team principal is the user and the team [0.79ms]
+ 16 pass
+ 1 fail
+== 29: el ámbito activo no se prefiere
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > an auth.json paste prefers the active issuer and client, and reads its expires_at [0.58ms]
+ 16 pass
+ 1 fail
+== 30: sin expires_at
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > an auth.json paste prefers the active issuer and client, and reads its expires_at [0.54ms]
+ 16 pass
+ 1 fail
+== 31: sin exp
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > a pasted JWT takes its expiry from exp, and a team principal is the user and the team [0.85ms]
+ 16 pass
+ 1 fail
+== 32: lo pegado sin cota inferior
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > a pasted JWT takes its expiry from exp, and a team principal is the user and the team [0.87ms]
+ 16 pass
+ 1 fail
+== 33: el objeto pegado sin su refresco
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build pasted object > an organization principal is the user and the organization; the object refresh token is kept [0.52ms]
+ 16 pass
+ 1 fail
+== 34: el auth.json sin desenvolver
+   (src/accounts/grok/grokTokens.ts)
+(fail) grok build > an auth.json paste prefers the active issuer and client, and reads its expires_at [0.47ms]
+ 16 pass
+ 1 fail
+== 35: la respuesta de servidor como pegado
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > browser tokens keep their identity and a non-positive expiry becomes one second [1.05ms]
+ 16 pass
+ 1 fail
+== 36: el navegador de grok sin verificador largo
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+(fail) grok build > the browser login is PKCE on its own port with the Grok Build scope [0.47ms]
+ 16 pass
+ 1 fail
+== 37: la URL de verificación completa se ignora
+   (src/accounts/oauth/flows/grokCliFlow.ts)
+ 17 pass
+ 0 fail
+== restaurado
+?? src/packages/provider/src/accounts/grok/
+?? src/packages/provider/src/accounts/oauth/flows/grokCliFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/xaiOAuthFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/zedHostedFlow.ts
+?? src/packages/provider/src/accounts/zed/
+ 17 pass
+ 0 fail
+__BG_EXIT__=0

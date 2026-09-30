@@ -1,0 +1,224 @@
+El store del mapa se declara, no se deriva por aritmetica
+74 aserciones
+OK: todas las aserciones pasan
+100 aserciones
+OK: todas las aserciones pasan
+test_1_thyrox_es_un_repo_admitido (__main__.TestEjeDelIdentificador.test_1_thyrox_es_un_repo_admitido)
+Falla si thyrox sigue fuera. Es el cambio entero: con el eje en la ... ok
+test_2_los_seis_repos_del_multirepo_estan (__main__.TestEjeDelIdentificador.test_2_los_seis_repos_del_multirepo_estan)
+Falla si alguno se cae al editar. El conjunto ES la enumeracion de ... ok
+test_3_el_prefijo_de_thyrox_es_el_nombre_del_repo_en_mayuscula (__main__.TestEjeDelIdentificador.test_3_el_prefijo_de_thyrox_es_el_nombre_del_repo_en_mayuscula)
+Falla si alguien abrevia a THX o PROV. ... ok
+test_4_la_forma_canonica_admite_el_prefijo_nuevo (__main__.TestEjeDelIdentificador.test_4_la_forma_canonica_admite_el_prefijo_nuevo)
+Falla si `ID_RE` acotara la longitud de la capa. No la acota ... ok
+test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.059s
+
+OK
+snapshot-tareas: 1 nuevas · 0 actualizadas · 0 sin cambio (origen: /tmp/tmpkbq8_jgl/sesion-identidad)
+snapshot-tareas: 1 nuevas · 0 actualizadas · 0 sin cambio (origen: /tmp/tmpzli8hblv/sesion-identidad)
+20 aserciones
+OK: todas las aserciones pasan
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. la tabla tasks existe tras conectar (migrado aditivo, como las columnas de uso) ==
+  ok    la tabla tasks se crea sola
+== 3. snapshot de un directorio de TASK: 3 archivos -> 3 filas ==
+  ok    el snapshot reporta 3 tareas
+  ok    subject se conserva con acentos
+  ok    status se conserva
+  ok    session_id queda en la fila
+== 4. campos opcionales: activeForm presente en unas y ausente en otras ==
+  ok    activeForm se guarda cuando viene
+  ok    activeForm ausente queda NULO, no rompe
+  ok    blocks se guarda como JSON
+== 5. idempotencia: re-correr no duplica, y un cambio de status SÍ se refleja ==
+  ok    segunda ejecución no duplica filas
+  ok    un cambio de status se refleja en la fila
+== 6. una clave nueva del cliente NO se pierde: va a metadata_json ==
+  ok    owner tiene columna propia (el cliente ya lo emite)
+  ok    la clave sin columna va a metadata_json
+== 7. dos sesiones con el MISMO id de tarea NO se pisan (H-DOCS-175) ==
+  ok    la tarea 447 de SES1 sobrevive al alta de la 447 de SES2
+  ok    las dos filas 447 coexisten, una por sesión
+== 8. directorio inexistente: reporta 0, no revienta ==
+  ok    un directorio ausente sale 0 (nada que snapshotear)
+== 9. compara antes de escribir: sobre un árbol sin cambios, 0 escrituras ==
+  ok    el archivo no cambia ni un byte
+  ok    el resumen separa los tres desenlaces
+== 10. y una tarea REALMENTE cambiada sí se cuenta como actualizada ==
+  ok    una sola fila cambiada se reporta como 1 actualizada
+  ok    y el status nuevo aterriza
+== 11. DOS llamadores con source distinto NO se pisan (H-DOCS-279) ==
+  ok    cambiar sólo la procedencia no escribe
+  ok    y se reporta como sin cambio
+== 12. pero el contenido SÍ gana, aunque venga por otra vía ==
+  ok    un cambio real por la otra vía sí se cuenta
+  ok    y el status nuevo aterriza
+== 13. blocks/blockedBy nulos: DESCONOCIDO se guarda como null, no como [] ==
+  ok    blocks nulo NO se guarda como lista vacia
+  ok    blockedBy nulo tampoco
+  ok    y el vacio conocido sigue siendo []
+== 14. la celda del tablero distingue el desconocido del vacio ==
+  ok    null->sin dato, []->vacio, lista->ids, None->vacio
+== 15. la fila nace con capa declarada, no con NULL (TASK-THYROX-0021) ==
+  ok    la fila nueva trae submodule, no NULL
+  ok    y su procedencia dice que es el respaldo, no una clasificacion
+== 16. una capa ya clasificada SOBREVIVE al siguiente volcado ==
+  ok    la capa clasificada no se pisa
+  ok    ni su procedencia
+  ok    y el contenido SI se actualiza — el volcado sigue haciendo su trabajo
+
+33 ok, 0 fallos
+  ok    preparación: la cita 1 nombra su sujeto
+  ok    rehúsa cuando un id cambiaría de sujeto (exit 4)
+  ok    y NO escribió: la cita sigue nombrando lo suyo
+  ok    y nombra la cita afectada
+  ok    con --permitir-reasignacion sí vuelca (exit 0)
+  ok    y entonces la cita cambia de sujeto
+  ok    un volcado sin reasignación pasa (exit 0)
+  ok    y el alta nueva aterrizó
+  ok    editar el sujeto de una fila sin cita pasa (exit 0)
+  ok    caso 5 · preparación: la cita 1 nombra su sujeto
+  ok    una renumeración pura NO dispara el guard (exit 0)
+  ok    y la cita viajó CON su sujeto
+  ok    al ordinal nuevo (2), no al 1 que reciclaron
+  ok    y la segunda cita también, al ordinal 3
+  ok    ninguna cita quedó duplicada
+  ok    5d: el mutante SÍ anuló la línea (si no, el control no mide nada)
+  ok    5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)
+  ok    5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto
+
+18 ok · 0 falla(s)
+  ok   comilla doble es entrypoint
+  ok   comilla simple TAMBIÉN es entrypoint (el defecto original)
+  ok   un módulo sin guarda NO es entrypoint
+  ok   anulado: la comilla doble sigue contando
+  ok   anulado: la comilla simple YA NO cuenta — cae exactamente ella
+  ok   restaurado: la comilla simple vuelve a contar
+  ok   __init__.py nunca es entrypoint, aunque lleve la guarda
+  ok   un .sh con bit ejecutable es entrypoint
+  ok   un .sh SIN bit ejecutable es biblioteca, no entrypoint
+  ok   colisión de stem levanta ValueError
+  ok   y el mensaje nombra el stem
+  ok   symlink plano invocado de lejos: NO resuelve la raíz correcta
+  ok   el wrapper generado, con cwd en el mismo sitio lejano: SÍ resuelve
+  ok   sin .venv, el envoltorio .py sale 0
+  ok   y SI ejecuto el .py
+  ok   y declara por stderr que va sin el entorno del proveedor
+  ok   un repuesto bajo el piso hace rehusar el envoltorio
+  ok   y NO llego a ejecutar el .py
+  ok   sin interprete alguno, el envoltorio .py sale 1
+  ok   y NO sale 2, que es el codigo que bloquea un PreToolUse
+  ok   y nombra el remedio (uv sync)
+  ok   y emite el aviso degradado IMPORTANT
+  ok   y el aviso declara la continuacion
+  ok   y NO llegó a ejecutar el .py
+  ok   primera corrida: escribe el entrypoint
+  ok   primera corrida: nada que retirar
+  ok   regenerar sin cambios: NO reescribe nada (idempotente)
+  ok   al desaparecer la fuente, el generador RETIRA su wrapper huérfano
+  ok   y no queda en el disco
+  ok   recién generado: current_state == plan (al día)
+  ok   wrapper borrado a mano: current_state YA NO == plan
+  ok   primera corrida: escribe el envoltorio de segundo salto
+  ok   primera corrida: nada ajeno que preservar aquí
+  ok   el envoltorio delega a bin/<stem>, no repite la lógica del wrapper
+  ok   y fija THYROX_ROOT por env-o-literal (no por BASH_SOURCE)
+  ok   regenerar sin cambios: idempotente, no reescribe
+  ok   al desaparecer del plan, el envoltorio NUESTRO se retira
+  ok   y no queda en disco
+  ok   el archivo ajeno se reporta como preservado, no como escrito
+  ok   y su contenido NO cambió — ni una línea
+  ok   anulación: SIN la guarda, la escritura habría pisado el archivo ajeno (confirma que el control de arriba es el que discrimina)
+  ok   stem fuera del plan por completo: el ajeno TAMPOCO se retira
+  ok   sigue en disco, intacto
+  ok   bg (builtin) resuelve a thyrox-bg
+  ok   un stem que no es builtin no se toca
+  ok   anulado: sin bg en BASH_BUILTINS, deja de prefijarse
+  ok   restaurado: bg vuelve a resolver a thyrox-bg
+  ok   avisa cuando el destino no esta en PATH
+  ok   y da la linea export para arreglarlo
+  ok   calla cuando el destino SI esta en PATH
+  ok   un import relativo exige contexto de paquete
+  ok   un import plano NO lo exige
+  ok   el nombre punteado se deriva contra src/, no contra la raíz
+  ok   el envoltorio del relativo entra por -m
+  ok   y NO por la ruta del archivo
+  ok   el del plano sigue entrando por ruta
+  ok   y NO lleva -m
+  ok   anulado: el relativo cae a la forma de ruta — cae exactamente él
+  ok   anulado: el plano no se mueve
+  ok   restaurado: el relativo vuelve a -m
+  ok   un objetivo fuera de src/ levanta ValueError
+  ok   y el mensaje nombra la ruta
+  ok   con el plan correcto, el de import relativo NO falla
+  ok   y el que rehusa por politica TAMPOCO se reporta
+  ok   anulado: el de import relativo SI falla — cae exactamente el
+  ok   anulado: y el ImportError es la razon reportada
+  ok   anulado: el que rehusa por politica sigue sin reportarse
+  ok   un .ts con shebang bajo bin/ SI es entrypoint
+  ok   la guarda import.meta.main SIN shebang NO lo es
+  ok   un shebang fuera de bin/ o entry/ TAMPOCO lo es
+  ok   los tres emit.ts reciben nombres distintos
+  ok   skills-emit esta en el plan TS
+  ok   rules-emit esta en el plan TS
+  ok   commands-emit esta en el plan TS
+  ok   dueño y stem iguales se colapsan a uno
+  ok   un .tsx con shebang bajo entry/ SI es entrypoint
+  ok   y un .tsx sin shebang no lo es
+  ok   una declaracion .d.ts con shebang NO es entrypoint
+  ok   sin bun, el envoltorio .ts rehusa sin bloquear
+  ok   y emite el aviso degradado IMPORTANT
+  ok   y NO llego a ejecutar el .ts
+  ok   el hijo del exec ve la raiz del envoltorio
+  ok   una raiz declarada gana sobre la calculada
+  ok   el stem crudo del árbol real choca con exactamente 1 builtin: bg
+  ok   el plan RESUELTO ya no choca con ningún builtin
+  ok   bg crudo no aparece como clave del plan resuelto
+  ok   aparece como thyrox-bg en su lugar
+  FAIL bin/ real está al día tras la última generación (exit 0) — stdout='' stderr='bin/ DESACTUALIZADO respecto a src/session, src/verify, src/agents:\n  faltan: provider-generate-storage-key\n  corre: python3 src/session/generate_bin.py\n'
+  FAIL y NO avisa de ningún choque con builtins — ya resuelto en el plan — bin/ DESACTUALIZADO respecto a src/session, src/verify, src/agents:
+  faltan: provider-generate-storage-key
+  corre: python3 src/session/generate_bin.py
+
+  ok   hay modulos de biblioteca que medir
+  ok   las 76 bibliotecas de import absoluto salen 0 en silencio
+  ok   los 3 modulos de paquete rehusan con ImportError
+  ok   src/repo esta en SOURCE_DIRS
+  ok   bin/pack_headroom esta en el plan
+  ok   bin/disk-headroom esta en el plan
+  ok   bin/disk-usage esta en el plan
+  ok   bin/pack_headroom existe en el arbol
+  ok   bin/disk-headroom existe en el arbol
+  ok   bin/disk-usage existe en el arbol
+  ok   bin/task_ids esta en el plan
+  ok   bin/task_ids existe en el arbol
+  ok   bin/hallazgo_ids esta en el plan
+  ok   bin/hallazgo_ids existe en el arbol
+  ok   ningun entrypoint de src/ queda fuera del universo de SOURCE_DIRS
+  ok   bin/reach resuelve a la mitad Python, no a la de shell
+  ok   src/lib/assert.sh no entra al plan
+  ok   src/lib/logging.sh no entra al plan
+  ok   src/lib/toolchain.sh no entra al plan
+  ok   src/lib/workbench.sh no entra al plan
+  ok   el árbol tiene al menos un entrypoint con import relativo
+  ok   bin/cache_probe --help sale 0
+  ok   bin/manifest --help sale 0
+  ok   0 envoltorios .py fallan al cargar en el arbol real
+  ok   el envoltorio ejecuta el interprete del proveedor
+  ok   y el ejercicio USA el interprete que se le pasa
+  ok   el arbol real declara al menos 14 entrypoints .ts
+  ok   todos los .ts del arbol llegan al plan de bin/
+  ok   ningun entrypoint TS sale de un node_modules
+  ok   los cuatro emit.ts del arbol real estan los cuatro
+  ok   ningun envoltorio del arbol real lleva 'exit 2'
+  ok   y el plan medido no esta vacio
+
+119 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+__BG_EXIT__=1

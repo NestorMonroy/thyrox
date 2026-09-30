@@ -1,0 +1,47 @@
+src/packages/swarm/src/worktree/index.ts:732:    const hookResult = await executeWorktreeCreateHook(slug)
+src/packages/swarm/src/worktree/index.ts-733-    logForDebugging(`Created hook-based worktree at: ${hookResult.worktreePath}`)
+src/packages/swarm/src/worktree/index.ts-734-
+src/packages/swarm/src/worktree/index.ts-735-    currentWorktreeSession = {
+src/packages/swarm/src/worktree/index.ts-736-      originalCwd,
+src/packages/swarm/src/worktree/index.ts-737-      worktreePath: hookResult.worktreePath,
+src/packages/swarm/src/worktree/index.ts-738-      worktreeName: slug,
+src/packages/swarm/src/worktree/index.ts-739-      sessionId,
+src/packages/swarm/src/worktree/index.ts-740-      tmuxSessionName,
+src/packages/swarm/src/worktree/index.ts-741-      hookBased: true,
+src/packages/swarm/src/worktree/index.ts-742-    }
+src/packages/swarm/src/worktree/index.ts-743-  } else {
+src/packages/swarm/src/worktree/index.ts-744-    // Cae al git worktree.
+src/packages/swarm/src/worktree/index.ts-745-    const gitRoot = findGitRoot(getCwd())
+src/packages/swarm/src/worktree/index.ts-746-    if (!gitRoot) {
+--
+src/packages/swarm/src/worktree/index.ts:915:    const hookResult = await executeWorktreeCreateHook(slug)
+src/packages/swarm/src/worktree/index.ts-916-    logForDebugging(`Created hook-based agent worktree at: ${hookResult.worktreePath}`)
+src/packages/swarm/src/worktree/index.ts-917-
+src/packages/swarm/src/worktree/index.ts-918-    return { worktreePath: hookResult.worktreePath, hookBased: true }
+src/packages/swarm/src/worktree/index.ts-919-  }
+src/packages/swarm/src/worktree/index.ts-920-
+src/packages/swarm/src/worktree/index.ts-921-  // Cae al git worktree. findCanonicalGitRoot (no findGitRoot) para que
+src/packages/swarm/src/worktree/index.ts-922-  // los worktrees de agente siempre caigan en el .claude/worktrees/ del
+src/packages/swarm/src/worktree/index.ts-923-  // repo principal aún cuando se generen desde dentro de un worktree de
+src/packages/swarm/src/worktree/index.ts-924-  // sesión — de lo contrario anidan en <worktree>/.claude/worktrees/ y la
+src/packages/swarm/src/worktree/index.ts-925-  // limpieza periódica (que escanea la raíz canónica) nunca los encuentra.
+src/packages/swarm/src/worktree/index.ts-926-  const gitRoot = findCanonicalGitRoot(getCwd())
+src/packages/swarm/src/worktree/index.ts-927-  if (!gitRoot) {
+src/packages/swarm/src/worktree/index.ts-928-    throw new Error(
+src/packages/swarm/src/worktree/index.ts-929-      'Cannot create agent worktree: not in a git repository and no WorktreeCreate hooks are configured. ' +
+--
+src/packages/swarm/src/worktree/index.ts:1257:      const hookResult = await executeWorktreeCreateHook(worktreeName)
+src/packages/swarm/src/worktree/index.ts-1258-      worktreeDir = hookResult.worktreePath
+src/packages/swarm/src/worktree/index.ts-1259-    } catch (error) {
+src/packages/swarm/src/worktree/index.ts-1260-      return { handled: false, error: `Error: ${errorMessage(error)}` }
+src/packages/swarm/src/worktree/index.ts-1261-    }
+src/packages/swarm/src/worktree/index.ts-1262-    repoName = basename(findCanonicalGitRoot(getCwd()) ?? getCwd())
+src/packages/swarm/src/worktree/index.ts-1263-    console.log(`Using worktree via hook: ${worktreeDir}`)
+src/packages/swarm/src/worktree/index.ts-1264-  } else {
+src/packages/swarm/src/worktree/index.ts-1265-    // Obtiene la raíz del repo git principal (resuelve a través de
+src/packages/swarm/src/worktree/index.ts-1266-    // worktrees).
+src/packages/swarm/src/worktree/index.ts-1267-    const repoRoot = findCanonicalGitRoot(getCwd())
+src/packages/swarm/src/worktree/index.ts-1268-    if (!repoRoot) {
+src/packages/swarm/src/worktree/index.ts-1269-      return { handled: false, error: 'Error: --worktree requires a git repository' }
+src/packages/swarm/src/worktree/index.ts-1270-    }
+src/packages/swarm/src/worktree/index.ts-1271-

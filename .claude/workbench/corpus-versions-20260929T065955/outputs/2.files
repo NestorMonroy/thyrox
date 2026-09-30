@@ -1,0 +1,7 @@
+src/packages/binary/__tests__/canonical.test.ts
+src/packages/binary/__tests__/corpus.test.ts
+src/packages/binary/__tests__/corpusDiff.test.ts
+src/packages/binary/bin/binary.ts
+src/packages/binary/src/canonical.ts
+src/packages/binary/src/corpus.ts
+src/packages/binary/src/corpusDiff.ts

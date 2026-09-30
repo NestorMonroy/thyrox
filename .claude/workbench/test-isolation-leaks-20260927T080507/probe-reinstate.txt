@@ -1,0 +1,4 @@
+Received: "mock"
+(fail) b, en otro archivo, ve el módulo real [0.25ms]
+ 1 pass
+ 1 fail

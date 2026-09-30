@@ -1,0 +1,19 @@
+Reserve VRAM under a shared ledger before launch
+
+Admission compared each item's peak against the free VRAM alone, so
+two items that saw 5000 MiB free with 3000 MiB each both started (the
+shell probe in the bench reproduced it). Check and reservation now run
+under the shared_lock of a committed-VRAM ledger: an item is admitted
+when free minus what live owners reserved and do not use yet covers
+its peak, and it releases the reservation when it ends. A dead
+owner's reservation stops counting on its own.
+
+The pieces stay separate: VramLedger persists, measure measures,
+pending and admissible decide, admit only holds the lock and retries.
+wait_free is deleted, not kept beside it.
+
+headless-pool now calls bin/gpu_monitor and bin/pool_history instead
+of reaching into src/session with PYTHONPATH, and declares the
+ledger as HEADLESS_POOL_VRAM_LEDGER. Annulments in the bench: without
+release only the empty-ledger case falls; with a private ledger only
+the foreign-reservation case and the empty-ledger case fall.

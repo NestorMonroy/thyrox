@@ -1,0 +1,20 @@
+== ANULACION: se retira el discriminador semantico `n=`, dejando len >= 4 ==
+Esperado: las filas de la tabla de USD —5 campos, impresas DESPUES—
+pisan a las de dispersion en el diccionario, y caen las aserciones
+que leen la desviacion y la n.
+
+== 1. la media NO discrimina: los dos modelos dan la misma ==
+  ok    las dos filas estan en la tabla
+  FALLO misma media en los dos modelos
+        esperado=[True] obtenido=[False]
+== 2. la desviacion tipica SI las distingue ==
+  FALLO el estable publica su desviacion
+        esperado=[7,071] obtenido=[sin]
+  FALLO el erratico publica la suya, un orden mayor
+        esperado=[141,421] obtenido=[sin]
+== 3. la cifra viaja con su denominador ==
+  FALLO cada modelo declara su n
+        esperado=[['n=5', 'n=5']] obtenido=[['5', '5']]
+
+1 ok, 4 fallos
+exit=1

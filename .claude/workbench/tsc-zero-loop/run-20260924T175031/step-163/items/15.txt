@@ -1,0 +1,55 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2144,9): error TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2134-2154 ---
+   2134    structuredIO.setUnexpectedResponseCallback(async message => {
+   2135      await handleOrphanedPermissionResponse({
+   2136        message,
+   2137        handledToolUseIds: handledOrphanedToolUseIds,
+   2138        onEnqueued: () => {
+   2139          // The first message of a session might be the orphaned permission
+   2140          // check rather than a user prompt, so kick off the loop.
+   2141          void run()
+   2142        },
+   2143        deps: {
+   2144>         findUnresolvedToolUse,
+   2145          enqueue,
+   2146          logDebug: logForDebugging,
+   2147        },
+   2148      })
+   2149    })
+   2150  
+   2151    // Track active OAuth flows per server so we can abort a previous flow
+   2152    // when a new mcp_authenticate request arrives for the same server.
+   2153    const activeOAuthFlows = new Map<string, AbortController>()
+   2154    // Track manual callback URL submit functions for active OAuth flows.
+  Type 'Promise<AssistantMessage | null>' is not assignable to type 'Promise<OrphanedAssistantMessage | null | undefined>'.
+    Type 'AssistantMessage | null' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+      Type 'AssistantMessage' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2145,9): error TS2322: Type '(command: QueuedCommand) => void' is not assignable to type '(entry: { mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }) => void'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2135-2155 ---
+   2135      await handleOrphanedPermissionResponse({
+   2136        message,
+   2137        handledToolUseIds: handledOrphanedToolUseIds,
+   2138        onEnqueued: () => {
+   2139          // The first message of a session might be the orphaned permission
+   2140          // check rather than a user prompt, so kick off the loop.
+   2141          void run()
+   2142        },
+   2143        deps: {
+   2144          findUnresolvedToolUse,
+   2145>         enqueue,
+   2146          logDebug: logForDebugging,
+   2147        },
+   2148      })
+   2149    })
+   2150  
+   2151    // Track active OAuth flows per server so we can abort a previous flow
+   2152    // when a new mcp_authenticate request arrives for the same server.
+   2153    const activeOAuthFlows = new Map<string, AbortController>()
+   2154    // Track manual callback URL submit functions for active OAuth flows.
+   2155    // Used when localhost is not reachable (e.g., browser-based IDEs).
+  Types of parameters 'command' and 'entry' are incompatible.
+    Type '{ mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }' is not assignable to type 'QueuedCommand'.
+      Types of property 'value' are incompatible.
+        Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+          Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+            Type 'unknown' is not assignable to type 'ContentBlockParam'.

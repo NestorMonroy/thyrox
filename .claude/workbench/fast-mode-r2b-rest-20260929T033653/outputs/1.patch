@@ -1,0 +1,677 @@
+diff --git a/src/packages/provider/src/__tests__/fastModeOrgStatus.test.ts b/src/packages/provider/src/__tests__/fastModeOrgStatus.test.ts
+new file mode 100644
+index 00000000..6b0c98e1
+--- /dev/null
++++ b/src/packages/provider/src/__tests__/fastModeOrgStatus.test.ts
+@@ -0,0 +1,301 @@
++/**
++ * El ciclo de vida de `orgStatus` de 2.1.283 (`chunk-t6pwageh.js`): `Vg`
++ * (`replaceOrgStatus`, el aviso de créditos agotados una vez por turno),
++ * `$Oo` con su guarda de origen, `source: 'server'` cuando el estado se lee
++ * del servidor, y el rechazo por excedente `lC`/`UOo`.
++ */
++import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
++
++import { mkdtempSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { installConfigHostBindings } from '@thyrox/config/host'
++import { InMemoryConfig } from '@thyrox/config/testing'
++import { saveGlobalConfig } from '@thyrox/config'
++
++// `saveGlobalConfig` real no conoce `penguinModeOrgEnabled` (no tiene sitio
++// en `GlobalConfig`, ver docstring de `fastMode.ts`) — el mismo motivo por
++// el que la propia `fastMode.ts` sigue leyéndolo detrás de un `require()`
++// con un tipo local. Aquí, el cast va contra un índice `Record`, no contra
++// `GlobalConfig`, para no pasar por alto un excess-property real.
++function setCachedPenguinModeOrgEnabled(value: boolean | undefined): void {
++  ;(saveGlobalConfig as unknown as (fn: (c: Record<string, unknown>) => Record<string, unknown>) => void)(current => ({
++    ...current,
++    penguinModeOrgEnabled: value,
++  }))
++}
++
++const VARIABLES = [
++  'THYROX_CODE_DISABLE_FAST_MODE',
++  'THYROX_CODE_USE_BEDROCK',
++  'ANTHROPIC_API_KEY',
++  'ANTHROPIC_AUTH_TOKEN',
++  'USER_TYPE',
++]
++let home: string
++let saved: Record<string, string | undefined> = {}
++beforeEach(() => {
++  saved = Object.fromEntries(VARIABLES.map(name => [name, process.env[name]]))
++  for (const name of VARIABLES) delete process.env[name]
++  process.env.ANTHROPIC_API_KEY = 'marcador-local-de-prueba'
++  home = mkdtempSync(join(tmpdir(), 'fast-mode-org-status-'))
++  installConfigHostBindings(new InMemoryConfig({ configHomeDir: home }).bindings)
++  setCachedPenguinModeOrgEnabled(undefined)
++})
++afterEach(() => {
++  for (const name of VARIABLES) {
++    if (saved[name] === undefined) delete process.env[name]
++    else process.env[name] = saved[name]
++  }
++})
++
++async function importFresh(): Promise<typeof import('../fastMode.js')> {
++  return import(`../fastMode.js?t=${Date.now()}-${Math.random()}`)
++}
++
++describe('handleFastModeRejectedByAPI ($Oo)', () => {
++  test('desde pending: deshabilita con source server, limpia settings y avisa', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const changes: boolean[] = []
++    mod.onOrgFastModeChanged(enabled => changes.push(enabled))
++    mod.handleFastModeRejectedByAPI()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'preference',
++      source: 'server',
++    })
++    expect(changes).toEqual([false])
++  })
++
++  test('ya deshabilitado por el servidor, razón durable: no-op', async () => {
++    const mod = await importFresh()
++    mod._setFastModeOrgStatusForTesting({ status: 'disabled', reason: 'free', source: 'server' })
++    const changes: boolean[] = []
++    mod.onOrgFastModeChanged(enabled => changes.push(enabled))
++    mod.handleFastModeRejectedByAPI()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'free',
++      source: 'server',
++    })
++    expect(changes).toEqual([])
++  })
++
++  test('ya deshabilitado por el servidor, razón transitoria: sí se pisa', async () => {
++    const mod = await importFresh()
++    mod._setFastModeOrgStatusForTesting({ status: 'disabled', reason: 'network_error', source: 'server' })
++    mod.handleFastModeRejectedByAPI()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'preference',
++      source: 'server',
++    })
++  })
++
++  test('deshabilitado por una adivinanza (sin source server): sí se pisa aunque la razón no sea transitoria', async () => {
++    const mod = await importFresh()
++    mod._setFastModeOrgStatusForTesting({ status: 'disabled', reason: 'preference' })
++    mod.handleFastModeRejectedByAPI()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'preference',
++      source: 'server',
++    })
++  })
++})
++
++describe('getOverageDisabledMessage / handleFastModeOverageRejection (lC, $dn, UOo)', () => {
++  test('la redacción de 2.1.283 dice "usage credits", no "extra usage"', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const messages: string[] = []
++    mod.onFastModeOverageRejection(message => messages.push(message))
++    mod.handleFastModeOverageRejection('out_of_credits')
++    expect(messages).toEqual(['Fast mode disabled · usage credits exhausted'])
++  })
++
++  test('org_spend_cap_reached es una razón de "sin crédito" nueva en 2.1.283', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const messages: string[] = []
++    mod.onFastModeOverageRejection(message => messages.push(message))
++    mod.handleFastModeOverageRejection('org_spend_cap_reached')
++    expect(messages).toEqual(['Fast mode disabled · usage credit limit reached'])
++    // No deshabilita permanentemente: es "sin crédito", no "sin permiso".
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'pending' })
++  })
++
++  test('overage_not_provisioned reusa extraUsageDisabledMessage (Wg)', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const messages: string[] = []
++    mod.onFastModeOverageRejection(message => messages.push(message))
++    mod.handleFastModeOverageRejection('overage_not_provisioned')
++    expect(messages).toEqual(['Fast mode requires usage credits'])
++  })
++
++  test('sin crédito: no toca settings ni orgStatus, sólo notifica', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    mod.handleFastModeOverageRejection('out_of_credits')
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'pending' })
++  })
++
++  test('sin crédito: el aviso se suprime si ya se dio este turno, y rearmFastModeCreditsExhaustedNotice lo reabre', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const messages: string[] = []
++    mod.onFastModeOverageRejection(message => messages.push(message))
++    mod.handleFastModeOverageRejection('out_of_credits')
++    mod.handleFastModeOverageRejection('org_level_disabled_until')
++    expect(messages).toEqual(['Fast mode disabled · usage credits exhausted'])
++    mod.rearmFastModeCreditsExhaustedNotice()
++    mod.handleFastModeOverageRejection('out_of_credits')
++    expect(messages).toEqual([
++      'Fast mode disabled · usage credits exhausted',
++      'Fast mode disabled · usage credits exhausted',
++    ])
++  })
++
++  test('con permiso (no out-of-credits): deshabilita de forma durable con source server', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const changes: boolean[] = []
++    mod.onOrgFastModeChanged(enabled => changes.push(enabled))
++    mod.handleFastModeOverageRejection('org_level_disabled')
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'extra_usage_disabled',
++      source: 'server',
++    })
++    expect(changes).toEqual([false])
++  })
++})
++
++describe('resolveFastModeStatusFromCache (lLr)', () => {
++  test('pending y caché habilitada: enabled', async () => {
++    setCachedPenguinModeOrgEnabled(true)
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    mod.resolveFastModeStatusFromCache()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'enabled' })
++  })
++
++  test('pending y sin caché: disabled/unknown, sin source', async () => {
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    mod.resolveFastModeStatusFromCache()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'disabled', reason: 'unknown' })
++  })
++
++  test('2.1.283 ya no exime a USER_TYPE=ant (medido: 0 hits en el chunk)', async () => {
++    process.env.USER_TYPE = 'ant'
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    mod.resolveFastModeStatusFromCache()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'disabled', reason: 'unknown' })
++  })
++
++  test('ya no pending: no-op', async () => {
++    const mod = await importFresh()
++    mod._setFastModeOrgStatusForTesting({ status: 'enabled' })
++    mod.resolveFastModeStatusFromCache()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'enabled' })
++  })
++})
++
++describe('prefetchFastModeStatus — la lectura del endpoint y el catch de red', () => {
++  afterEach(() => {
++    mock.restore()
++  })
++
++  test('éxito: source server y razón normalizada contra el conjunto conocido', async () => {
++    mock.module('axios', () => ({
++      default: {
++        get: async () => ({ data: { enabled: false, disabled_reason: 'not-a-known-reason' } }),
++        isAxiosError: () => false,
++      },
++    }))
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    await mod.prefetchFastModeStatus()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'unknown',
++      source: 'server',
++    })
++  })
++
++  test('éxito con enabled=true: sin source (sólo aplica al deshabilitado)', async () => {
++    mock.module('axios', () => ({
++      default: {
++        get: async () => ({ data: { enabled: true, disabled_reason: null } }),
++        isAxiosError: () => false,
++      },
++    }))
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    await mod.prefetchFastModeStatus()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({ status: 'enabled' })
++  })
++
++  test('dos éxitos con razones distintas: aunque siga disabled, la razón cambió y sí avisa (zl)', async () => {
++    let disabledReason = 'free'
++    mock.module('axios', () => ({
++      default: {
++        get: async () => ({ data: { enabled: false, disabled_reason: disabledReason } }),
++        isAxiosError: () => false,
++      },
++    }))
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    const changes: boolean[] = []
++    mod.onOrgFastModeChanged(enabled => changes.push(enabled))
++    await mod.prefetchFastModeStatus()
++    expect(changes).toEqual([])
++    disabledReason = 'preference'
++    mod._resetFastModeOrgStatusForTesting()
++    mod._setFastModeOrgStatusForTesting({ status: 'disabled', reason: 'free', source: 'server' })
++    await mod.prefetchFastModeStatus()
++    expect(changes).toEqual([false])
++  })
++
++  test('catch de red: no pisa un disabled durable del servidor (guarda de origen)', async () => {
++    mock.module('axios', () => ({
++      default: {
++        get: async () => {
++          throw new Error('network down')
++        },
++        isAxiosError: () => false,
++      },
++    }))
++    const mod = await importFresh()
++    mod._setFastModeOrgStatusForTesting({ status: 'disabled', reason: 'free', source: 'server' })
++    await mod.prefetchFastModeStatus()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'free',
++      source: 'server',
++    })
++  })
++
++  test('catch de red: sin disabled durable, cae a network_error', async () => {
++    mock.module('axios', () => ({
++      default: {
++        get: async () => {
++          throw new Error('network down')
++        },
++        isAxiosError: () => false,
++      },
++    }))
++    const mod = await importFresh()
++    mod._resetFastModeOrgStatusForTesting()
++    await mod.prefetchFastModeStatus()
++    expect(mod.processFastModeAvailabilityContext().orgStatus).toEqual({
++      status: 'disabled',
++      reason: 'network_error',
++    })
++  })
++})
+diff --git a/src/packages/provider/src/fastMode.ts b/src/packages/provider/src/fastMode.ts
+index 5054b059..cdef29ce 100644
+--- a/src/packages/provider/src/fastMode.ts
++++ b/src/packages/provider/src/fastMode.ts
+@@ -57,6 +57,25 @@
+  * `Bun.resolveSync('@thyrox/agent/context', …)` resuelve. Se corrigió
+  * quitando el sufijo (mismo target); 0 ocurrencias fuera de `provider/src/`
+  * entre mis 8 paquetes.
++ *
++ * R-2b-5 (2.1.283, `chunk-t6pwageh.js`): ciclo de vida de `orgStatus` —
++ * `Vg` (`replaceOrgStatus`, `updateOrgStatus`/`zl`, el aviso de créditos
++ * agotados una vez por turno), `$Oo`/`handleFastModeRejectedByAPI` con su
++ * guarda de origen (`isDurablyDisabledByServer`, de `Udn`+`Yg`), `source:
++ * 'server'` en la lectura del endpoint y su normalización de razón (`dC`), y
++ * `lC`/`getOverageDisabledMessage` con su nueva redacción y `org_spend_cap_
++ * reached`. Corrige de paso una divergencia stale del párrafo de arriba:
++ * `@thyrox/config` SÍ exporta `getGlobalConfig`/`saveGlobalConfig` hoy
++ * (medido: `global/config.ts` los declara y el barril los re-exporta) — pero
++ * `penguinModeOrgEnabled` no tiene sitio en su `GlobalConfig` (medido: 0
++ * hits de `penguin` en `src/packages/config/`), así que `requireGlobalConfig`
++ * sigue siendo un `require()` diferido con un tipo local mínimo para ESE
++ * campo, no porque el paquete falte sino porque el campo no tiene tipo
++ * anfitrión sin tocar `@thyrox/config` (fuera de mis archivos en este pase).
++ * NO portado en este pase: `Ga`/`ar()` (la cola de notificaciones del
++ * transcript, keyed por host, clase `Gg` en el mismo chunk) — declarado en
++ * `handleFastModeOverageRejection`, no en este encabezado, junto a la
++ * función que la necesitaría.
+  */
+ import axios from 'axios'
+ import { getOauthConfig, OAUTH_BETA_HEADER } from './oauthConstants.ts'
+@@ -85,6 +104,7 @@ import { modelHasCapability } from '@thyrox/agent/modelCapabilities'
+ import { canonicalModelName, MODELS } from '@thyrox/agent/models'
+ import { isCoworkEntrypoint, isTruthyFlag } from '@thyrox/config/entrypoint'
+ import {
++  extraUsageDisabledMessage,
+   fastModeUnavailableMessage,
+   isFastModeAvailableFor,
+   type FastModeAvailabilityContext,
+@@ -346,63 +366,73 @@ export function clearFastModeCooldown(): void {
+ }
+ 
+ /**
+- * Se llama cuando la API rechaza una petición de fast mode (p. ej. 400
+- * "Fast mode is not enabled for your organization"). Deshabilita fast
+- * mode permanentemente por el mismo flujo que cuando el prefetch descubre
+- * que la org lo tiene deshabilitado.
++ * `$Oo`: se llama cuando la API rechaza una petición de fast mode (p. ej.
++ * 400 "Fast mode is not enabled for your organization"). Su guarda de
++ * origen es asimétrica con la de `handleFastModeOverageRejection` — no
++ * cualquier `'disabled'` la detiene, sólo uno que YA vino del servidor por
++ * una razón que un reintento no corrige; una adivinanza de caché, o un
++ * `'network_error'`/`'unknown'` transitorio, sí se pisan aquí.
+  */
+ export function handleFastModeRejectedByAPI(): void {
+-  if (orgStatus.status === 'disabled') {
++  if (isDurablyDisabledByServer()) {
+     return
+   }
+-  orgStatus = { status: 'disabled', reason: 'preference' }
++  replaceOrgStatus({ status: 'disabled', reason: 'preference', source: 'server' })
+   updateSettingsForSource('userSettings', { fastMode: undefined })
+-  requireGlobalConfig().saveGlobalConfig(current => ({
+-    ...current,
+-    penguinModeOrgEnabled: false,
+-  }))
++  requireGlobalConfig().saveGlobalConfig(current =>
++    current.penguinModeOrgEnabled === false ? current : { ...current, penguinModeOrgEnabled: false },
++  )
+   orgFastModeChange.emit(false)
+ }
+ 
+ // --- Listeners de rechazo por overage ---
+-// Se disparan cuando un 429 indica que fast mode fue rechazado porque el
+-// billing de uso extra no está disponible. Distinto del deshabilitado a
+-// nivel de organización.
++// Se disparan cuando un 429 indica que fast mode fue rechazado porque los
++// créditos de uso no están disponibles. Distinto del deshabilitado a nivel
++// de organización.
+ const overageRejection = createSignal<[message: string]>()
+ export const onFastModeOverageRejection = overageRejection.subscribe
+ 
++/** `lC`: el mensaje por razón; las dos de aprovisionamiento reusan `Wg` (`extraUsageDisabledMessage`). */
+ function getOverageDisabledMessage(reason: string | null): string {
+   switch (reason) {
+     case 'out_of_credits':
+-      return 'Fast mode disabled · extra usage credits exhausted'
++      return 'Fast mode disabled · usage credits exhausted'
+     case 'org_level_disabled':
+     case 'org_service_level_disabled':
+-      return 'Fast mode disabled · extra usage disabled by your organization'
++      return 'Fast mode disabled · usage credits turned off by your organization'
+     case 'org_level_disabled_until':
+-      return 'Fast mode disabled · extra usage spending cap reached'
++    case 'org_spend_cap_reached':
++      return 'Fast mode disabled · usage credit limit reached'
+     case 'member_level_disabled':
+-      return 'Fast mode disabled · extra usage disabled for your account'
++      return 'Fast mode disabled · usage credits turned off for your account'
+     case 'seat_tier_level_disabled':
+     case 'seat_tier_zero_credit_limit':
+     case 'member_zero_credit_limit':
+-      return 'Fast mode disabled · extra usage not available for your plan'
++      return 'Fast mode disabled · usage credits not available for your plan'
+     case 'overage_not_provisioned':
+     case 'no_limits_configured':
+-      return 'Fast mode requires extra usage billing · /extra-usage to enable'
++      return extraUsageDisabledMessage(processFastModeAvailabilityContext())
+     default:
+-      return 'Fast mode disabled · extra usage not available'
++      return 'Fast mode disabled · usage credits not available'
+   }
+ }
+ 
++/** `$dn`: las tres razones que significan "sin crédito", no "sin permiso". */
+ function isOutOfCreditsReason(reason: string | null): boolean {
+-  return reason === 'org_level_disabled_until' || reason === 'out_of_credits'
++  return reason === 'org_level_disabled_until' || reason === 'org_spend_cap_reached' || reason === 'out_of_credits'
+ }
+ 
+ /**
+- * Se llama cuando un 429 indica que fast mode fue rechazado porque el
+- * overage no está disponible. Deshabilita fast mode permanentemente
+- * (salvo que el usuario se haya quedado sin crédito) y notifica con un
+- * mensaje específico de la razón.
++ * `UOo`: se llama cuando un 429 indica que fast mode fue rechazado porque
++ * el overage no está disponible. Sin crédito (`isOutOfCreditsReason`) NO
++ * deshabilita fast mode —puede volver en cuanto haya crédito— y sólo
++ * notifica, una vez por turno (`claimCreditsExhaustedNotice`); cualquier
++ * otra razón sí lo deshabilita de forma durable (`source: 'server'`).
++ *
++ * NO PORTADO: el aviso inmediato al transcript (`Ga`/`ar()`, la cola `Gg`
++ * propia del host en `chunk-t6pwageh.js`, keyed por host) — ningún
++ * consumidor de este árbol la tiene portada. `onFastModeOverageRejection`
++ * sigue siendo el canal para quien quiera mostrarlo.
+  */
+ export function handleFastModeOverageRejection(reason: string | null): void {
+   const message = getOverageDisabledMessage(reason)
+@@ -413,12 +443,19 @@ export function handleFastModeOverageRejection(reason: string | null): void {
+     overage_disabled_reason: (reason ??
+       'unknown') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+   })
+-  if (!isOutOfCreditsReason(reason)) {
++  if (isOutOfCreditsReason(reason)) {
++    if (!claimCreditsExhaustedNotice()) {
++      logForDebugging('Fast mode credits rejection already surfaced this turn, suppressing repeat')
++      return
++    }
++  } else {
+     updateSettingsForSource('userSettings', { fastMode: undefined })
+     requireGlobalConfig().saveGlobalConfig(current => ({
+       ...current,
+       penguinModeOrgEnabled: false,
+     }))
++    replaceOrgStatus({ status: 'disabled', reason: 'extra_usage_disabled', source: 'server' })
++    orgFastModeChange.emit(false)
+   }
+   overageRejection.emit(message)
+ }
+@@ -458,7 +495,7 @@ export type FastModeDisabledReason =
+ // Caché en memoria del estado de fast mode que viene de la API. Distinto
+ // del app state de fast mode del usuario — representa si la org *permite*
+ // fast mode y por qué puede estar deshabilitado.
+-type FastModeOrgStatus = FastModeOrgStatusSnapshot
++export type FastModeOrgStatus = FastModeOrgStatusSnapshot
+ 
+ let orgStatus: FastModeOrgStatus = { status: 'pending' }
+ 
+@@ -466,6 +503,88 @@ let orgStatus: FastModeOrgStatus = { status: 'pending' }
+ const orgFastModeChange = createSignal<[orgEnabled: boolean]>()
+ export const onOrgFastModeChanged = orgFastModeChange.subscribe
+ 
++/**
++ * `Vg.replaceOrgStatus`: sustituye `orgStatus` y devuelve el valor anterior,
++ * para que quien llama pueda comparar antes/después sin leer dos veces.
++ */
++function replaceOrgStatus(next: FastModeOrgStatus): FastModeOrgStatus {
++  const previous = orgStatus
++  orgStatus = next
++  return previous
++}
++
++/** `Yg`: las dos razones que un reintento puede corregir por sí solo. */
++function isTransientDisabledReason(reason: FastModeDisabledReason): boolean {
++  return reason === 'network_error' || reason === 'unknown'
++}
++
++/**
++ * `Udn` + `Yg`: el estado actual lo fijó una respuesta real del servidor por
++ * una razón que un reintento no corrige — no lo pisa una adivinanza de
++ * caché ni un error de red transitorio.
++ */
++function isDurablyDisabledByServer(): boolean {
++  return orgStatus.status === 'disabled' && orgStatus.source === 'server' && !isTransientDisabledReason(orgStatus.reason)
++}
++
++/**
++ * `dC`: normaliza la razón que trae la respuesta del servidor contra el
++ * conjunto conocido; ausente cae a `'preference'`, cualquier otra cosa a
++ * `'unknown'` — nunca se propaga un string no declarado.
++ */
++const KNOWN_FAST_MODE_DISABLED_REASONS = new Set<FastModeDisabledReason>([
++  'free',
++  'preference',
++  'extra_usage_disabled',
++  'network_error',
++  'unknown',
++])
++function normalizeFastModeDisabledReason(reason: string | null | undefined): FastModeDisabledReason {
++  if (reason !== null && reason !== undefined && KNOWN_FAST_MODE_DISABLED_REASONS.has(reason as FastModeDisabledReason)) {
++    return reason as FastModeDisabledReason
++  }
++  return reason === null || reason === undefined ? 'preference' : 'unknown'
++}
++
++/**
++ * `zl`: reemplaza `orgStatus` y, sólo si el nuevo valor deja de ser
++ * `'pending'`, decide si el cambio es observable — de habilitado a
++ * deshabilitado o viceversa, o la razón del deshabilitado cambió — y sólo
++ * entonces emite `orgFastModeChange`. Un `'pending'` nunca emite: todavía no
++ * hay nada que anunciar.
++ */
++function updateOrgStatus(next: FastModeOrgStatus): void {
++  const previous = replaceOrgStatus(next)
++  if (next.status === 'pending') return
++  const wasEnabled =
++    previous.status !== 'pending'
++      ? previous.status === 'enabled'
++      : requireGlobalConfig().getGlobalConfig().penguinModeOrgEnabled === true
++  const isEnabled = next.status === 'enabled'
++  const reasonChanged = previous.status === 'disabled' && next.status === 'disabled' && previous.reason !== next.reason
++  if (wasEnabled !== isEnabled || reasonChanged) {
++    orgFastModeChange.emit(isEnabled)
++  }
++}
++
++// --- Aviso de créditos agotados, una vez por turno ---
++// `Vg.creditsExhaustedNotifiedThisTurn`: sin este guardado, cada llamada
++// consecutiva a `handleFastModeOverageRejection` con la misma razón (p. ej.
++// un reintento inmediato) volvería a anunciar el mismo aviso.
++let creditsExhaustedNotifiedThisTurn = false
++
++/** `Vg.claimCreditsExhaustedNotice`: primera vez este turno → `true` y se marca; repetida → `false`. */
++function claimCreditsExhaustedNotice(): boolean {
++  if (creditsExhaustedNotifiedThisTurn) return false
++  creditsExhaustedNotifiedThisTurn = true
++  return true
++}
++
++/** `Fdn`: rearma el aviso — lo invoca el límite de turno, que no vive en este pase. */
++export function rearmFastModeCreditsExhaustedNotice(): void {
++  creditsExhaustedNotifiedThisTurn = false
++}
++
+ type FastModeResponse = {
+   enabled: boolean
+   disabled_reason: FastModeDisabledReason | null
+@@ -492,10 +611,12 @@ let lastPrefetchAt = 0
+ let inflightPrefetch: Promise<void> | null = null
+ 
+ /**
+- * Resuelve orgStatus desde la caché persistida sin llamadas a la API. Se
+- * usa cuando los prefetches de arranque están throttled, para que las
+- * comprobaciones de disponibilidad de fast mode sigan funcionando sin
+- * tocar la red.
++ * `lLr`: resuelve `orgStatus` desde la caché persistida sin llamadas a la
++ * API. Se usa cuando los prefetches de arranque están throttled, para que
++ * las comprobaciones de disponibilidad de fast mode sigan funcionando sin
++ * tocar la red. 2.1.283 ya no trae la salida directa por `USER_TYPE ===
++ * 'ant'` que esta función tenía antes (medido: `USER_TYPE` no aparece en
++ * `chunk-t6pwageh.js`) — se retira aquí también.
+  */
+ export function resolveFastModeStatusFromCache(): void {
+   if (!isFastModeEnabled()) {
+@@ -504,12 +625,8 @@ export function resolveFastModeStatusFromCache(): void {
+   if (orgStatus.status !== 'pending') {
+     return
+   }
+-  const isAnt = process.env.USER_TYPE === 'ant'
+   const cachedEnabled = requireGlobalConfig().getGlobalConfig().penguinModeOrgEnabled === true
+-  orgStatus =
+-    isAnt || cachedEnabled
+-      ? { status: 'enabled' }
+-      : { status: 'disabled', reason: 'unknown' }
++  replaceOrgStatus(cachedEnabled ? { status: 'enabled' } : { status: 'disabled', reason: 'unknown' })
+ }
+ 
+ export async function prefetchFastModeStatus(): Promise<void> {
+@@ -591,17 +708,16 @@ export async function prefetchFastModeStatus(): Promise<void> {
+         }
+       }
+ 
+-      const previousEnabled =
++      const wasEnabled =
+         orgStatus.status !== 'pending'
+           ? orgStatus.status === 'enabled'
+-          : requireGlobalConfig().getGlobalConfig().penguinModeOrgEnabled
+-      orgStatus = status.enabled
+-        ? { status: 'enabled' }
+-        : {
+-            status: 'disabled',
+-            reason: status.disabled_reason ?? 'preference',
+-          }
+-      if (previousEnabled !== status.enabled) {
++          : requireGlobalConfig().getGlobalConfig().penguinModeOrgEnabled === true
++      updateOrgStatus(
++        status.enabled
++          ? { status: 'enabled' }
++          : { status: 'disabled', reason: normalizeFastModeDisabledReason(status.disabled_reason), source: 'server' },
++      )
++      if (wasEnabled !== status.enabled) {
+         if (!status.enabled) {
+           updateSettingsForSource('userSettings', { fastMode: undefined })
+         }
+@@ -609,24 +725,22 @@ export async function prefetchFastModeStatus(): Promise<void> {
+           ...current,
+           penguinModeOrgEnabled: status.enabled,
+         }))
+-        orgFastModeChange.emit(status.enabled)
+       }
+       logForDebugging(
+         `Org fast mode: ${status.enabled ? 'enabled' : `disabled (${status.disabled_reason ?? 'preference'})`}`,
+       )
+     } catch (err) {
+-      // En fallo: los ants por defecto quedan habilitados (no bloquear
+-      // usuarios internos). Usuarios externos: caen al valor cacheado de
+-      // penguinModeOrgEnabled; sin caché positiva, deshabilita con razón
+-      // network_error.
+-      const isAnt = process.env.USER_TYPE === 'ant'
+-      const cachedEnabled = requireGlobalConfig().getGlobalConfig().penguinModeOrgEnabled === true
+-      orgStatus =
+-        isAnt || cachedEnabled
+-          ? { status: 'enabled' }
+-          : { status: 'disabled', reason: 'network_error' }
++      // Una respuesta real del servidor por una razón durable no se pisa
++      // con la adivinanza de un error de red (`isDurablyDisabledByServer`,
++      // el mismo guardado de `handleFastModeRejectedByAPI`); si no hay tal
++      // respuesta, cae al valor cacheado de `penguinModeOrgEnabled`, y sin
++      // caché positiva deshabilita con razón `network_error`.
++      if (!isDurablyDisabledByServer()) {
++        const cachedEnabled = requireGlobalConfig().getGlobalConfig().penguinModeOrgEnabled === true
++        updateOrgStatus(cachedEnabled ? { status: 'enabled' } : { status: 'disabled', reason: 'network_error' })
++      }
+       logForDebugging(
+-        `Failed to fetch org fast mode status, defaulting to ${orgStatus.status === 'enabled' ? 'enabled (cached)' : 'disabled (network_error)'}: ${err}`,
++        `Failed to fetch org fast mode status, standing on ${orgStatus.status === 'enabled' ? 'enabled (cached)' : `disabled (${orgStatus.status === 'disabled' ? orgStatus.reason : 'unknown'})`}: ${err}`,
+         { level: 'error' },
+       )
+       logEvent('tengu_org_penguin_mode_fetch_failed', {})
+@@ -638,3 +752,21 @@ export async function prefetchFastModeStatus(): Promise<void> {
+   inflightPrefetch = doFetch()
+   return inflightPrefetch
+ }
++
++/**
++ * `Vg.reset`, sólo la porción de estado de este pase (org status, aviso de
++ * créditos, ventana de prefetch) — sin tocar `runtimeState`/
++ * `hasLoggedCooldownExpiry`, que no son de este ítem. Sólo para pruebas: el
++ * store es module-level y sobrevive entre `test()` del mismo proceso.
++ */
++export function _resetFastModeOrgStatusForTesting(): void {
++  orgStatus = { status: 'pending' }
++  creditsExhaustedNotifiedThisTurn = false
++  lastPrefetchAt = 0
++  inflightPrefetch = null
++}
++
++/** Setter directo, sólo para pruebas — sembrar un `orgStatus` concreto sin pasar por el ciclo público. */
++export function _setFastModeOrgStatusForTesting(status: FastModeOrgStatus): void {
++  orgStatus = status
++}

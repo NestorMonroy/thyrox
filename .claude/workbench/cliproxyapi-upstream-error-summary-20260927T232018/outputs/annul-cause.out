@@ -1,0 +1,47 @@
+== upstreamErrorSummary
+base	125 pass, 0 fail	—
+no-json	125 pass, 0 fail	—
+no-prefix-json	125 pass, 0 fail	—
+no-code-join	125 pass, 0 fail	—
+no-root-fallback	125 pass, 0 fail	—
+no-truncate	122 pass, 3 fail	paquete auth > long connector string bounded to 256 runes | manejadores > long connector string bounded to 256 runes | manejadores > long utf-8 text truncated to 256 runes
+no-scheme-auth	119 pass, 6 fail	paquete auth > unstructured socks5 proxy auth redacted | paquete auth > uri userinfo redacted | paquete auth > protocol relative uri userinfo redacted | manejadores > unstructured socks5 proxy auth redacted | manejadores > uri userinfo redacted | manejadores > protocol relative uri userinfo redacted
+no-query	125 pass, 0 fail	—
+no-connector	123 pass, 2 fail	paquete auth > uppercase connector between paths preserved | manejadores > uppercase connector between paths preserved
+no-before-colon	119 pass, 6 fail	paquete auth > leaf filename with space redacted | paquete auth > multiple paths with leaf filename spaces redacted | paquete auth > unquoted path with colon space in leaf component redacted | manejadores > leaf filename with space redacted | manejadores > multiple paths with leaf filename spaces redacted | manejadores > unquoted path with colon space in leaf component redacted
+no-unix	121 pass, 4 fail	paquete auth > workspace unix path redacted | paquete auth > uppercase connector between paths preserved | manejadores > workspace unix path redacted | manejadores > uppercase connector between paths preserved
+no-file-ext	125 pass, 0 fail	—
+no-windows	121 pass, 4 fail	paquete auth > windows path with spaces redacted | paquete auth > windows path redacted | manejadores > windows path with spaces redacted | manejadores > windows path redacted
+no-cookie	121 pass, 4 fail	paquete auth > cookie header redacted | paquete auth > set-cookie header redacted | manejadores > cookie header redacted | manejadores > set-cookie header redacted
+no-auth-header	116 pass, 9 fail	paquete auth > authorization header with bearer redacted | paquete auth > authorization header with basic redacted | paquete auth > authorization header with custom scheme redacted | paquete auth > authorization header with comma separated parameters redacted | paquete auth > authorization header with digest parameters redacted | manejadores > authorization header with bearer and topsecret redacted | manejadores > authorization header with custom scheme redacted | manejadores > authorization header with comma separated parameters redacted | manejadores > authorization header with digest parameters redacted
+no-sk	125 pass, 0 fail	—
+no-bearer	124 pass, 1 fail	manejadores > bearer token redacted
+no-invalid-token	125 pass, 0 fail	—
+no-natural	121 pass, 4 fail	paquete auth > natural language password is redacted | paquete auth > incorrect api key provided redacted | manejadores > natural language password is redacted | manejadores > incorrect api key provided redacted
+no-key-value	117 pass, 8 fail	paquete auth > single quoted key kv redacted | paquete auth > aws secret access key redacted | paquete auth > service key kv redacted | paquete auth > openai key kv redacted | manejadores > single quoted key kv redacted | manejadores > aws secret access key redacted | manejadores > service key kv redacted | manejadores > openai key kv redacted
+js-space	125 pass, 0 fail	—
+== ModelCooldownError (causa)
+base	8 pass, 0 fail	—
+no-cause	7 pass, 1 fail	ModelCooldownError con causa > la causa resumida va en last_upstream_error y al final del mensaje
+no-cause-message	7 pass, 1 fail	ModelCooldownError con causa > la causa resumida va en last_upstream_error y al final del mensaje
+== credentialCooldown / proxyCredentialCooldown
+base	14 pass, 0 fail	—
+no-last-error	14 pass, 0 fail	—
+no-http-fallback	14 pass, 0 fail	—
+no-clear-error	14 pass, 0 fail	—
+no-quota	13 pass, 1 fail	CredentialCooldown.markUnavailable > un 429 escribe además la cuota agotada, que el selector lee como enfriamiento
+no-clear-quota	13 pass, 1 fail	CredentialCooldown.clear > un acierto retira el enfriamiento y vuelve el retroceso a cero
+no-tie-break	14 pass, 0 fail	—
+== credentialCooldown / proxyModelCooldownCause
+base	8 pass, 0 fail	—
+no-last-error	4 pass, 4 fail	CredentialCooldown.latestError > guarda el último error de cada credencial y da el más reciente del grupo | CredentialCooldown.latestError > a igual instante gana el id mayor | CredentialCooldown.latestError > sin cuerpo, el error es el estado | con todas las credenciales en enfriamiento, el cliente recibe 429, Retry-After y la causa
+no-http-fallback	7 pass, 1 fail	CredentialCooldown.latestError > sin cuerpo, el error es el estado
+no-clear-error	7 pass, 1 fail	CredentialCooldown.latestError > un acierto borra el error de la credencial
+no-quota	7 pass, 1 fail	con todas las credenciales en enfriamiento, el cliente recibe 429, Retry-After y la causa
+no-clear-quota	8 pass, 0 fail	—
+no-tie-break	7 pass, 1 fail	CredentialCooldown.latestError > a igual instante gana el id mayor
+== server
+base	8 pass, 0 fail	—
+no-capture	7 pass, 1 fail	con todas las credenciales en enfriamiento, el cliente recibe 429, Retry-After y la causa
+no-response	7 pass, 1 fail	con todas las credenciales en enfriamiento, el cliente recibe 429, Retry-After y la causa
+no-latest	7 pass, 1 fail	con todas las credenciales en enfriamiento, el cliente recibe 429, Retry-After y la causa

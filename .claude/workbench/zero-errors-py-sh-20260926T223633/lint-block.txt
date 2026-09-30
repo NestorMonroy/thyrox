@@ -1,0 +1,7 @@
+pythonVersion = "3.11"
+# Los verificadores de la mitad Python y shell (plan de cero errores): pyright
+# y ruff para `.py`, shellcheck para `.sh`. `shellcheck-py` trae el binario
+# oficial de ShellCheck como rueda, así que no depende del apt del contenedor.
+#
+#     uv sync --group lint
+lint = ["pyright", "ruff", "shellcheck-py"]

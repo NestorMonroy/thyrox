@@ -1,0 +1,2 @@
+src/packages/config/plugin/pluginLoader.ts(3174,5): error TS18048: 'inlinePlugins' is possibly 'undefined'.
+src/packages/config/plugin/pluginLoader.ts(3174,5): error TS18046: 'inlinePlugins.length' is of type 'unknown'.

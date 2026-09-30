@@ -1,0 +1,15 @@
+check-package-typecheck: 2 provider(s) reconstruido(s) por viejos: computer-use-mcp, computer-use-swift
+  audio-capture-napi: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  binary: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  computer-use-input: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  computer-use-mcp: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  computer-use-swift: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  finding: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+  image-processor-napi: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  modifiers-napi: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  plan: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tools: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  url-handler-napi: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 11 de 11 paquete(s))
+__BG_EXIT__=0

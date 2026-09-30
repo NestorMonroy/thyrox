@@ -1,0 +1,10 @@
+thyrox           .sh   21
+thyrox           .json 5
+thyrox           .py   48
+thyrox           .md   21
+kaupamex-docs    .sh   2
+kaupamex-docs    .json 5
+kaupamex-docs    .md   33
+kaupamex-docs    .rst  25
+kaupamex-api     .json 1
+kaupamex-api     .md   1

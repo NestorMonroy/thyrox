@@ -1,0 +1,8 @@
+(fail) SessionAffinitySelector: LCP > cada caller_scope tiene su propio espacio [2.58ms]
+(fail) SessionAffinitySelector: LCP > un fallo retira la secuencia exacta [2.76ms]
+(fail) SessionAffinitySelector: LCP > canonicalSessionId: explícita, LCP, y la explícita gana a una LCP vieja [0.97ms]
+(fail) SessionAffinitySelector: LCP > sin formato de origen se infiere del cuerpo [1.54ms]
+(fail) SessionAffinitySelector: LCP > una bifurcación conserva la credencial y estrena sesión con su padre [1.84ms]
+(fail) SessionAffinitySelector: LCP > una compactación conserva la credencial y enlaza con la sesión anterior [4.44ms]
+ 94 pass
+ 6 fail

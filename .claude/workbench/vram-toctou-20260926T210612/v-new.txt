@@ -1,0 +1,1 @@
+    # Se lee sin lanzar una excepción: si el archivo falta, el caso sale FALLA,

@@ -1,0 +1,54 @@
+test-agent-store-auto-recall-limit	bash tests/agents/test-agent-store-auto-recall-limit.sh
+test-agent-store-buscar-tareas	bash tests/agents/test-agent-store-buscar-tareas.sh
+test-agent-store-clasificar-documentos	bash tests/agents/test-agent-store-clasificar-documentos.sh
+test-agent-store-compara-antes-de-escribir	bash tests/agents/test-agent-store-compara-antes-de-escribir.sh
+test-agent-store-fecha-apertura	bash tests/agents/test-agent-store-fecha-apertura.sh
+test-agent-store-fecha-documento	bash tests/agents/test-agent-store-fecha-documento.sh
+test-agent-store-fts-degradation	bash tests/agents/test-agent-store-fts-degradation.sh
+test-agent-store-reassignment-guard	bash tests/agents/test-agent-store-reassignment-guard.sh
+test-agent-store-render-tablero	bash tests/agents/test-agent-store-render-tablero.sh
+test-agent-store-sessions	bash tests/agents/test-agent-store-sessions.sh
+test-agent-store-tareas	bash tests/agents/test-agent-store-tareas.sh
+test-agent-store-transcript-path	bash tests/agents/test-agent-store-transcript-path.sh
+test-agent-store-type-source	bash tests/agents/test-agent-store-type-source.sh
+test-agent-store-usage-columns	bash tests/agents/test-agent-store-usage-columns.sh
+test-agent-store-usage-source	bash tests/agents/test-agent-store-usage-source.sh
+test-carrete-store	bash tests/agents/test-carrete-store.sh
+test-merge-sqlite-union	bash tests/agents/test-merge-sqlite-union.sh
+test-model-catalog	bash tests/agents/test-model-catalog.sh
+test-reconciliar-store-journal	bash tests/agents/test-reconciliar-store-journal.sh
+test-reconciliar-store-status	bash tests/agents/test-reconciliar-store-status.sh
+test-register-agent-session	bash tests/agents/test-register-agent-session.sh
+test_derive_submodule	PYTHONPATH=src .venv/bin/python tests/agents/test_derive_submodule.py
+test_document_root_default	PYTHONPATH=src .venv/bin/python tests/agents/test_document_root_default.py
+test_readonly_connection	PYTHONPATH=src .venv/bin/python tests/agents/test_readonly_connection.py
+test_register_session	PYTHONPATH=src .venv/bin/python tests/agents/test_register_session.py
+test_retention_backfill	PYTHONPATH=src .venv/bin/python tests/agents/test_retention_backfill.py
+test_stop_reason_provenance	PYTHONPATH=src .venv/bin/python tests/agents/test_stop_reason_provenance.py
+test_store_dir_default	PYTHONPATH=src .venv/bin/python tests/agents/test_store_dir_default.py
+test_store_home	PYTHONPATH=src .venv/bin/python tests/agents/test_store_home.py
+test_store_import_without_roster	PYTHONPATH=src .venv/bin/python tests/agents/test_store_import_without_roster.py
+test_table_census	PYTHONPATH=src .venv/bin/python tests/agents/test_table_census.py
+test_task_status_vocabulary	PYTHONPATH=src .venv/bin/python tests/agents/test_task_status_vocabulary.py
+test_usage_census_deviation	PYTHONPATH=src .venv/bin/python tests/agents/test_usage_census_deviation.py
+test_finding_id_collision	PYTHONPATH=src .venv/bin/python tests/hallazgo/test_finding_id_collision.py
+test-hook-error-log	bash tests/hooks/test-hook-error-log.sh
+test_detect_dedicated_tool_usage	PYTHONPATH=src .venv/bin/python tests/hooks/test_detect_dedicated_tool_usage.py
+test_task_lifecycle	PYTHONPATH=src .venv/bin/python tests/hooks/test_task_lifecycle.py
+test-reach-pythonpath	bash tests/lib/test-reach-pythonpath.sh
+test_residual_structure	PYTHONPATH=src .venv/bin/python tests/measurement/test_residual_structure.py
+test_series	PYTHONPATH=src .venv/bin/python tests/measurement/test_series.py
+test_trend	PYTHONPATH=src .venv/bin/python tests/measurement/test_trend.py
+test_child_env	PYTHONPATH=src .venv/bin/python tests/paths/test_child_env.py
+test_pending_work_telemetry	PYTHONPATH=src .venv/bin/python tests/repo/test_pending_work_telemetry.py
+test_generate_bin	PYTHONPATH=src .venv/bin/python tests/session/test_generate_bin.py
+test_agent_sessions	PYTHONPATH=src .venv/bin/python tests/store/test_agent_sessions.py
+test-closure-graph	bash tests/task/test-closure-graph.sh
+test-refresh-board	bash tests/task/test-refresh-board.sh
+test_layer_axis	PYTHONPATH=src .venv/bin/python tests/task/test_layer_axis.py
+test_layer_signals	PYTHONPATH=src .venv/bin/python tests/task/test_layer_signals.py
+test_task_ids	PYTHONPATH=src .venv/bin/python tests/task/test_task_ids.py
+test_task_source_citas	PYTHONPATH=src .venv/bin/python tests/task/test_task_source_citas.py
+test-gitattributes	bash tests/verify/test-gitattributes.sh
+test-post-commit-store-index	bash tests/verify/test-post-commit-store-index.sh
+test_pre_commit_hook	PYTHONPATH=src .venv/bin/python tests/verify/test_pre_commit_hook.py

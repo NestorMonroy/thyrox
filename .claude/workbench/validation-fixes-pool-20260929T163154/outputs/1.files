@@ -1,0 +1,4 @@
+src/hooks/detect_library_path_invocation.py
+src/hooks/shell_text.py
+tests/hooks/test_detect_library_path_invocation.py
+tests/hooks/test_shell_text.py

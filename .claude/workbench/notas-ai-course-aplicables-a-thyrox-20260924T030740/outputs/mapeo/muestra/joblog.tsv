@@ -1,0 +1,3 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+2	:	1790224928.048	     9.412	0	0	0	0	_headless_item 2 outputs/mapeo/entrada/6s191_lecture03_lecture03.jsonl
+1	:	1790224928.045	    22.872	0	0	0	0	_headless_item 1 outputs/mapeo/entrada/6s191_lecture02_lecture02.jsonl

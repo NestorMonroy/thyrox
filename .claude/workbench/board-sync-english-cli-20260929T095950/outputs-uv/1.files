@@ -1,0 +1,6 @@
+.claude/baselines/identifier_language_baseline.txt
+.claude/baselines/identifier_language_baseline_claude.txt
+src/hooks/task_lifecycle.py
+src/task/board_sync.py
+tests/hooks/test_task_lifecycle.py
+tests/task/test_board_sync.py

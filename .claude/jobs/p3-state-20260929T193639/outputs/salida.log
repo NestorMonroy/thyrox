@@ -1,0 +1,4 @@
+tests/session/test-headless-pool-worktree.sh exit=0
+tests/session/test-headless-pool-lifecycle.sh exit=0
+tests/session/test-headless-pool.sh exit=0
+__BG_EXIT__=0

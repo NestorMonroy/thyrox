@@ -1,0 +1,3 @@
+    peak_vram = row.get("peak_vram_mib")
+    need = math.ceil(peak_vram * margin) if peak_vram else None
+    return Decision(ttl, memfree, why + ram_why + vram_why, min(caps) if caps else None, ram_cap, vram_cap, need)

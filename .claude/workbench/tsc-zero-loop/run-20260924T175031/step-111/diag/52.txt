@@ -1,0 +1,54 @@
+src/packages/app-host/src/providerHostSetup.ts(62,7): error TS2322: Type '(args: ProviderQueryArgs) => AsyncGenerator<unknown, void, any>' is not assignable to type 'ProviderQueryStreamFn'.
+  --- código src/packages/app-host/src/providerHostSetup.ts:52-72 ---
+     52    return (await queryModelWithoutStreaming({
+     53      messages: args.messages as any,
+     54      systemPrompt: args.systemPrompt as any,
+     55      thinkingConfig: args.thinkingConfig as any,
+     56      tools: args.tools as any,
+     57      signal: args.signal,
+     58      options: args.options as any,
+     59    })) as any
+     60  }
+     61  
+     62> const anthropicQueryStreamBinding: NonNullable<
+     63    ProviderHostBindings['anthropic']['queryStream']
+     64  > = async function* (args) {
+     65    const { queryModelWithStreaming } = claudeLegacyRuntime
+     66    yield* queryModelWithStreaming({
+     67      messages: args.messages as any,
+     68      systemPrompt: args.systemPrompt as any,
+     69      thinkingConfig: args.thinkingConfig as any,
+     70      tools: args.tools as any,
+     71      signal: args.signal,
+     72      options: args.options as any,
+  Call signature return types 'AsyncGenerator<unknown, void, any>' and 'ProviderQueryStream' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<IteratorResult<unknown, void>>' is not assignable to type 'Promise<IteratorResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent, void>>'.
+        Type 'IteratorResult<unknown, void>' is not assignable to type 'IteratorResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent, void>'.
+          Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent, void>'.
+            Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorYieldResult<ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent>'.
+              Type 'unknown' is not assignable to type 'ProviderAssistantMessage | ProviderSystemAPIErrorMessage | ProviderStreamEvent'.
+src/packages/app-host/src/providerHostSetup.ts(130,39): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/app-host/src/providerHostSetup.ts:120-140 ---
+    120      refreshGcpCredentialsIfNeeded: refreshGcpCredentialsIfNeededBinding,
+    121      getUserAgent: () => getUserAgent(),
+    122      getSmallFastModel: () => getSmallFastModel(),
+    123      isFirstPartyAnthropicBaseUrl: () => isFirstPartyAnthropicBaseUrl(),
+    124      getIsNonInteractiveSession: () => getIsNonInteractiveSession(),
+    125      getSessionId: () => getSessionId(),
+    126      isDebugToStdErr: () => isDebugToStdErr(),
+    127      logForDebugging: (message, options) =>
+    128        logForDebugging(message, options as any),
+    129      getAWSRegion: () => getAWSRegion(),
+    130>     getVertexRegionForModel: model => getVertexRegionForModel(model),
+    131      isEnvTruthy: value => isEnvTruthy(value as string | boolean),
+    132      query: anthropicQueryBinding,
+    133      queryStream: anthropicQueryStreamBinding,
+    134    },
+    135    session: {
+    136      addToTotalSessionCost: (costUSD, usage, model) =>
+    137        addToTotalSessionCost(costUSD, usage as any, model),
+    138      logForDebugging: (message, options) =>
+    139        logForDebugging(message, options as any),
+    140    },
+  Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2966, "total_final": 2960, "tsc_runs": 1, "accepted": ["agent:normalized-message-shape"], "files_kept": ["src/packages/agent/messageShapes.ts", "src/packages/agent/messages.ts"], "outcomes": {"agent:normalized-message-shape": "accepted-net"}}

@@ -1,0 +1,2 @@
+src/packages/agent/QueryEngine.ts(954,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(969,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.

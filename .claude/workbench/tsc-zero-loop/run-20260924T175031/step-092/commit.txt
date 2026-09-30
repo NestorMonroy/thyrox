@@ -1,0 +1,19 @@
+Make SystemMessage a union discriminated by subtype
+
+Step 092 of the tsc-zero loop: 1870 -> 1834, accepted net, 27
+targets -> 0.
+
+Every system message type was an identical alias,
+Message & { type: 'system' }, so SystemTextMessage's
+`message.subtype === 'bridge_status'` narrowed nothing and url,
+content, commands, writtenPaths and hookErrors came out unknown
+through MessageBase's index signature. Each variant now carries a
+literal subtype and the fields its producer in agent/messages.ts
+builds, and SystemMessage is their union.
+
+The step reveals 15 diagnostics where code builds or reads a system
+message the union does not describe (MessageRow, two snip tests,
+sessionStorage, among others); they stay in the log as the next
+work. The change is type-only.
+
+Memory (gate 3b): variant-alias-without-discriminant.

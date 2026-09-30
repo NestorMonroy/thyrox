@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+57 |       ),
+58 |     ).toBe(true)
+59 |   })
+60 | 
+61 |   test('un fixId fuera de la lista cerrada no se admite', () => {
+62 |     expect(classifyFix('someFutureFix', 'someFutureFix_id')).toBe('unclassified')
+                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "unclassified"
+Received: "safe"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:62:62)
+(fail) tscFixCensus > un fixId fuera de la lista cerrada no se admite [0.41ms]
+
+ 7 pass
+ 1 fail
+ 10 expect() calls
+Ran 8 tests across 1 file. [4.70s]
+
+[exit=1]

@@ -1,0 +1,3 @@
+PYTHONPATH=src python3 tests/typescript/test_emit_declarations.py > .claude/workbench/entry-point-20260927T015546/green4/emit.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green4/emit.out
+python3 tests/verify/test_check_exports_types.py > .claude/workbench/entry-point-20260927T015546/green4/gate-suite.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green4/gate-suite.out
+bash bin/check_lint_zero > .claude/workbench/entry-point-20260927T015546/green4/lint.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green4/lint.out

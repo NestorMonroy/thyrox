@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+GPU_STATE="/home/user/thyrox/.claude/workbench/flow-demo-20260926T222151/gpu" exec bash "/home/user/thyrox/tests/session/fakes/stateful-nvidia-smi.sh" "$@"

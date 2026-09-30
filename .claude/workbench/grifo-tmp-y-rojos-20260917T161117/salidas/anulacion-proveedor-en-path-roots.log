@@ -1,0 +1,7 @@
+=== ANULACION: se retira el proveedor del universo ===
+  ok    una ficha sin senal no aparece
+  FALLO el proveedor entra en PATH_ROOTS
+        esperado=[si] obtenido=[no]
+  ok    la composicion de PATH_ROOTS no nombra ninguna raiz
+
+test-verificar-premisa.sh: 22 ok · 1 fallo(s)

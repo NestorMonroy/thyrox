@@ -1,0 +1,27 @@
+
+1. El stub declara a THYROX como dueño canónico
+  ok    nombra el árbol dueño
+  ok    nombra el módulo dueño
+  ok    declara que es un stub de reexportación
+
+2. La superficie que los 12 consumidores usan sigue entera
+  ok    reexporta require_all
+  ok    reexporta reach
+  ok    reexporta root
+  ok    reexporta roots
+  ok    reexporta paths
+  ok    reexporta clone_name
+  ok    reexporta clone_names
+  ok    reexporta extra_roots
+  ok    reexporta ReachRootError
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_reach_roots_shim.py", line 74, in <module>
+    check(f"reexporta {name}", True, hasattr(reach_roots, name))
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach_roots.py", line 136, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+EXIT=1

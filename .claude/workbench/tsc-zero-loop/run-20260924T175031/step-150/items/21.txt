@@ -1,0 +1,124 @@
+Patrón: local-jsx-context-option-typed-unknown
+Señal del verificador: TS2345: Argument of type 'unknown' is not assignable to parameter of type '(?!unknown)[^']*(\| null)?[^']*'
+Arreglo genérico: `LocalJSXCommandContext['options']` (command-runtime/src/types.ts) tipa varios campos como `unknown` porque es un contrato compartido genérico. Cuando el sitio de uso conoce el tipo real —porque el mismo dato se construye con un tipo concreto en el productor (p. ej. un `useState<T>` que termina asignándose a ese campo de `options`)— se afirma localmente con `as T | null | undefined` (o el tipo que exija el consumidor), importando `T` desde su módulo de origen. No se toca `types.ts` porque el contrato es compartido; el `as` no cambia la conducta, sólo documenta lo que el flujo de datos ya garantiza.
+Ya aplicado en: src/packages/repl/src/components/Settings/Status.tsx
+Archivos donde la señal sigue viva: src/packages/agent/query.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/mcp-runtime/src/channelNotification.ts, src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx
+
+src/packages/agent/query.ts(798,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+  --- código src/packages/agent/query.ts:788-808 ---
+    788              }
+    789              if (isWithheldReactivePromptTooLong(message as Message)) {
+    790                withheld = true
+    791              }
+    792              if (
+    793                mediaRecoveryEnabled &&
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798>             if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804              if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2362,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2352-2372 ---
+   2352            const sdkClient = sdkClients.find(
+   2353              client => client.name === mcpRequest.server_name,
+   2354            )
+   2355            // Check client exists - dynamically added SDK servers may have
+   2356            // placeholder clients with null client until updateSdkMcp() runs
+   2357            if (
+   2358              sdkClient &&
+   2359              sdkClient.type === 'connected' &&
+   2360              sdkClient.client?.transport?.onmessage
+   2361            ) {
+   2362>             sdkClient.client.transport.onmessage(mcpRequest.message)
+   2363            }
+   2364            sendControlResponseSuccess(message)
+   2365          } else if (message.request.subtype === 'rewind_files') {
+   2366            const appState = getAppState()
+   2367            const result = await handleRewindFiles(
+   2368              message.request.user_message_id as UUID,
+   2369              appState,
+   2370              setAppState,
+   2371              message.request.dry_run ?? false,
+   2372            )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3302,56): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: "control_response"; response: { subtype: "success"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: "error"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3292-3312 ---
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+   3300                      // stdin processing loop so they resolve pending
+   3301                      // permission requests from the SDK consumer.
+   3302>                     structuredIO.injectControlResponse(response)
+   3303                    },
+   3304                    onInterrupt() {
+   3305                      abortController?.abort()
+   3306                    },
+   3307                    onSetModel(model) {
+   3308                      const resolved =
+   3309                        model === 'default' ? getDefaultMainLoopModel() : model
+   3310                      activeUserSpecifiedModel = resolved
+   3311                      setMainLoopModelOverride(resolved)
+   3312                    },
+
+src/packages/mcp-runtime/src/channelNotification.ts(285,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+  --- código src/packages/mcp-runtime/src/channelNotification.ts:275-295 ---
+    275        }
+    276      }
+    277  
+    278      // Approved-plugin allowlist. Marketplace gate already verified
+    279      // tag == reality, so this is a pure entry check. entry.dev (per-entry,
+    280      // not the session-wide bit) bypasses — so accepting the dev dialog for
+    281      // one entry doesn't leak allowlist-bypass to --channels entries.
+    282      if (!entry.dev) {
+    283        const { entries, source } = getEffectiveChannelAllowlist(
+    284          sub,
+    285>         policy?.allowedChannelPlugins,
+    286        )
+    287        if (
+    288          !entries.some(
+    289            e => e.plugin === entry.name && e.marketplace === entry.marketplace,
+    290          )
+    291        ) {
+    292          return {
+    293            action: 'skip',
+    294            kind: 'allowlist',
+    295            reason:
+
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx(51,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+  --- código src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx:41-61 ---
+     41            policyBlocked: false,
+     42            list: '',
+     43            unmatched: [] as Unmatched[],
+     44          }
+     45        const l = ch.map(formatEntry).join(', ')
+     46        const sub = getSubscriptionType()
+     47        const managed = sub === 'team' || sub === 'enterprise'
+     48        const policy = getSettingsForSource('policySettings')
+     49        const allowlist = getEffectiveChannelAllowlist(
+     50          sub,
+     51>         policy?.allowedChannelPlugins,
+     52        )
+     53        return {
+     54          channels: ch,
+     55          disabled: !isChannelsEnabled(),
+     56          noAuth: !getClaudeAIOAuthTokens()?.accessToken,
+     57          policyBlocked: managed && policy?.channelsEnabled !== true,
+     58          list: l,
+     59          unmatched: findUnmatched(ch, allowlist),
+     60        }
+     61      })

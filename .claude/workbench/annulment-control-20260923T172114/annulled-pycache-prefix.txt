@@ -1,0 +1,35 @@
+== 1. sujeto commiteado: anula, mide, restaura, y lo prueba ==
+  ok    la suite anulada sale distinto de cero
+  ok    la suite restaurada sale cero
+  ok    el blob restaurado es el de partida
+  ok    el árbol seguido queda sin cambios
+  ok    el parche queda en el banco
+  ok    la salida anulada queda en el banco
+  ok    la salida restaurada queda en el banco
+  ok    el manifiesto nombra el commit de partida
+  ok    sujeto commiteado: no se copia su estado de partida
+== 2. sujeto SIN commitear: su estado de partida va al banco ==
+  ok    el estado de partida sin commitear queda en el banco
+  ok    y el archivo vuelve a él
+  ok    blob antes == blob después
+== 3. un parche que no aplica rehúsa sin tocar nada ==
+  ok    rehúsa con ValueError
+  ok    el sujeto no cambió
+  ok    no deja salida de una medición que no ocurrió
+== 4. anulación por sustitución declarada ==
+  ok    una sustitución que no casa rehúsa con ValueError
+  ok    y no deja parche de una anulación que no existe
+  ok    ni toca el sujeto
+  ok    una sustitución ambigua (dos casos) rehúsa
+  ok    la sustitución que casa anula: la suite cae
+  ok    y restaura al blob de partida
+  ok    el parche compuesto sólo cambia la línea sustituida
+  ok    el manifiesto guarda la sustitución declarada
+== 5. el bytecode en caché no puede esconder la anulación ==
+  ok    una anulación del mismo tamaño SÍ se ejecuta: la suite cae
+  FALLO y al restaurar vuelve a verde
+        esperado=0 obtenido=1
+
+24 ok, 1 fallos
+
+[exit=1]

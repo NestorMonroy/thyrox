@@ -1,0 +1,52 @@
+  ok   las tres piezas existen en el modulo
+  ok   deriva la entrada cuando main entra por src/
+  ok   y cuando main entra por la raiz del paquete
+  ok   emitio la declaracion pese al error de tipo
+  ok   el veredicto declara que hubo errores
+  ok   y no los confunde con un fallo de emision
+  ok   conserva la firma de la funcion exportada
+  ok   no derrama declaraciones fuera de dist/
+  ok   el paquete con entrada en la raiz emite igual
+  ok   el exports pasa a condiciones, no sigue siendo cadena
+  ok   y su condicion types apunta a la declaracion
+  ok   mientras default conserva la fuente, que es el respaldo
+  ok   el types de raiz tambien, para el resolutor que no lee exports
+  ok   el subpath literal tambien pasa a condiciones
+  ok   y su types apunta a la declaracion del subpath
+  ok   el comodin conserva su sustitucion en la declaracion
+  ok   repuntar dos veces no cambia el resultado
+  ok   un import que escapa NO EMITE
+  ok   y su veredicto nombra el escape
+  ok   nombra el archivo que se escapa
+  ok   y NO deja una declaracion fuera de dist/
+  ok   con rootDir src, la ruta relativa es el nombre solo
+  ok   con rootDir de paquete, conserva el directorio
+  ok   y conserva el comodin dentro del directorio
+  ok   los destinos de un manifiesto repuntado son solo la fuente
+  ok   un escape DENTRO del paquete emite igual
+  ok   y su declaracion no sale de dist/
+  ok   el repunte tras ensanchar apunta a un archivo que existe
+  ok   un comodin de raiz declara el paquete entero
+sindist: repunte INERTE — 1 destino(s) de types no existen:
+  . -> ./dist/index.d.ts
+  Corre la emision antes del repunte: emit_declarations <paquete>
+  ok   sin dist/ el repunte rehusa
+  ok   y NO toca el manifiesto
+  ok   un paquete con tests emite igual
+  ok   y la declaracion del modulo si sale
+  FALLO pero la del test NO
+       esperado: []
+       obtenido: ['__tests__/util.test.d.ts', 'algo.spec.d.ts']
+  FALLO y el test no aporta errores propios
+       esperado: 0
+       obtenido: 2
+  ok   check_package cuenta el error del paquete
+  ok   NO escribe dist/
+  ok   NO toca el manifiesto
+  ok   retira su proyecto temporal
+  ok   [local] el propio cuenta SOLO el error del paquete
+  ok   [local] y el hermano se le atribuye a el
+  ok   [root] el propio cuenta SOLO el error del paquete
+  ok   [root] y el hermano se le atribuye a el
+
+test_emit_declarations: 41 ok, 2 falla

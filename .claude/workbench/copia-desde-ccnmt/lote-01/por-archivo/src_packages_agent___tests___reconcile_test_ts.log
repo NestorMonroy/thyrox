@@ -1,0 +1,8 @@
+bun test v1.3.11 (af24e281)
+fatal: not a git repository (or any of the parent directories): .git
+
+ 29 pass
+ 0 fail
+ 39 expect() calls
+Ran 29 tests across 1 file. [451.00ms]
+exit=0

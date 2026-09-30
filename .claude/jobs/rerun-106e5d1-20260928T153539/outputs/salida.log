@@ -1,0 +1,18 @@
+== 6: id en arreglo
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > a raw model is mapped with both spellings of each field [0.62ms]
+(fail) the Zed model catalog > is fetched live, without disabled models, and kept an hour [1.55ms]
+ 12 pass
+ 2 fail
+== 34: forzado comparte
+   (src/accounts/zed/zedLlm.ts)
+(fail) the Zed model catalog > concurrent reads share one request, and a forced one does not [1.05ms]
+ 13 pass
+ 1 fail
+== restaurado
+ 14 pass
+ 0 fail
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+__BG_EXIT__=0

@@ -1,0 +1,1 @@
+  *--query-gpu=index,utilization.gpu*)    echo "0, 77" ;;

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2983, "total_final": 2979, "tsc_runs": 1, "accepted": ["agent:hook-progress"], "files_kept": ["src/packages/agent/types/hooks.ts"], "outcomes": {"agent:hook-progress": "accepted-net"}}

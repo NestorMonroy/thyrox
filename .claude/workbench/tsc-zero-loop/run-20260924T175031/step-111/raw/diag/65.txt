@@ -1,0 +1,9 @@
+src/packages/cli/src/handlers/util.tsx(29,25): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: { children?: ReactNode; onChangeAppState?: ((prev: unknown, next: unknown) => void) | undefined; }, context?: any): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void' is not assignable to type '(prev: unknown, next: unknown) => void'.
+      Types of parameters '__0' and 'prev' are incompatible.
+        Type 'unknown' is not assignable to type '{ newState: AppState; oldState: AppState; }'.
+  Overload 2 of 2, '(props: { children?: ReactNode; onChangeAppState?: ((prev: unknown, next: unknown) => void) | undefined; }): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void' is not assignable to type '(prev: unknown, next: unknown) => void'.
+      Types of parameters '__0' and 'prev' are incompatible.
+        Type 'unknown' is not assignable to type '{ newState: AppState; oldState: AppState; }'.

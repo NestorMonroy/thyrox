@@ -1,0 +1,31 @@
+tests/unit/openai/streamAdapter.test.ts(10,5): error TS2322: Type '() => { next(): Promise<{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }>; }' is not assignable to type '() => AsyncIterator<ChatCompletionChunk, any, any>'.
+  --- código tests/unit/openai/streamAdapter.test.ts:1-20 ---
+      1  import { describe, expect, test } from 'bun:test'
+      2  import { adaptOpenAIStreamToAnthropic } from '@thyrox/provider'
+      3  import type { ChatCompletionChunk } from 'openai/resources/chat/completions/completions.mjs'
+      4  
+      5  /** Helper to create a mock async iterable from chunk array */
+      6  function mockStream(
+      7    chunks: ChatCompletionChunk[],
+      8  ): AsyncIterable<ChatCompletionChunk> {
+      9    return {
+     10>     [Symbol.asyncIterator]() {
+     11        let i = 0
+     12        return {
+     13          async next() {
+     14            if (i >= chunks.length) return { done: true, value: undefined }
+     15            return { done: false, value: chunks[i++] }
+     16          },
+     17        }
+     18      },
+     19    }
+     20  }
+  Call signature return types '{ next(): Promise<{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }>; }' and 'AsyncIterator<ChatCompletionChunk, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }>' is not assignable to type 'Promise<IteratorResult<ChatCompletionChunk, any>>'.
+        Type '{ done: true; value: undefined; } | { done: false; value: ChatCompletionChunk | undefined; }' is not assignable to type 'IteratorResult<ChatCompletionChunk, any>'.
+          Type '{ done: false; value: ChatCompletionChunk | undefined; }' is not assignable to type 'IteratorResult<ChatCompletionChunk, any>'.
+            Type '{ done: false; value: ChatCompletionChunk | undefined; }' is not assignable to type 'IteratorYieldResult<ChatCompletionChunk>'.
+              Types of property 'value' are incompatible.
+                Type 'ChatCompletionChunk | undefined' is not assignable to type 'ChatCompletionChunk'.
+                  Type 'undefined' is not assignable to type 'ChatCompletionChunk'.

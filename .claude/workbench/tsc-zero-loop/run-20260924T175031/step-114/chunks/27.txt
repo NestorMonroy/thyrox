@@ -1,0 +1,3 @@
+src/packages/config/plugin/loadPluginCommands.ts(266,7): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/config/plugin/loadPluginCommands.ts(304,7): error TS2322: Type '{}' is not assignable to type 'string'.

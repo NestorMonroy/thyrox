@@ -1,0 +1,4 @@
+    # Cambio deliberado (H-THYROX-192): con GPU presente y un historial SIN
+    # VRAM medida no se corre sin tope, se corre de a uno hasta calibrar.
+    check("sin pico de VRAM en el historial y con GPU: de a uno hasta calibrar", 1,
+          ph.derive(TMP / "h-sin-gpu", MODEL, catalog, free_vram_mib=12000).width_cap)

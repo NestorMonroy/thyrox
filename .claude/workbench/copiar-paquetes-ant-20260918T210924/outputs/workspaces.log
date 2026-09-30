@@ -1,0 +1,6 @@
+workspaces de la fuente (ccnmt):
+  packages/*
+  packages/@ant/*
+workspaces de thyrox tras el porte:
+  src/packages/*
+  src/packages/@ant/*

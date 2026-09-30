@@ -1,0 +1,1 @@
+function Et(){return H3()==="bg"}

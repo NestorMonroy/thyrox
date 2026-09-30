@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && python3 .claude/workbench/izar-dependencias-a-la-raiz-20260919T103301/probes/classify_undeclared_deps.py > .claude/workbench/izar-dependencias-a-la-raiz-20260919T103301/outputs/antes.txt 2>&1; echo EXIT=$?", "started_at": "2026-09-19T10:34:40+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-19T10:35:03+00:00", "duration_seconds": 23.06984}

@@ -1,0 +1,3 @@
+src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts(23,67): error TS2322: Type '{ source: string; ruleBehavior: string; ruleValue: { toolName: string; ruleContent: string; }; }' is not assignable to type 'PermissionRule'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type 'PermissionRuleSource'.

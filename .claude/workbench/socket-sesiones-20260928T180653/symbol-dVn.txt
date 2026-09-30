@@ -1,0 +1,4 @@
+==== dVn: 1 definicion(es) de nivel superior
+---- chunk-w1vp9f7e.js function dVn [1255,1543)
+function dVn(e){if(typeof e!=="boolean")t(`tengu_hover_rest served a ${typeof e}, not a boolean; treating it as off`,{level:"warn"});let o=DBo(e);if(o==="conflict")t(`tengu_hover_rest read ${String(e)} at a second pin in this process; keeping the first decision`,{level:"warn"});return o}
+symbol: 1 de 1 nombre(s) resueltos

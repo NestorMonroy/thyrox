@@ -1,0 +1,1 @@
+uv run --quiet python tests/verify/test_pre_commit_hook.py

@@ -1,0 +1,27 @@
+tests/unit/utils/controlMessageCompat.test.ts(80,27): error TS2769: No overload matches this call.
+  --- código tests/unit/utils/controlMessageCompat.test.ts:70-90 ---
+     70    test('empty object is unchanged', () => {
+     71      const obj = {}
+     72      normalizeControlMessageKeys(obj)
+     73      expect(obj).toEqual({})
+     74    })
+     75  
+     76    test('mutates the original object in place', () => {
+     77      const obj = { requestId: 'abc', other: 'data' }
+     78      const result = normalizeControlMessageKeys(obj)
+     79      expect(result).toBe(obj) // same reference
+     80>     expect(obj).toEqual({ request_id: 'abc', other: 'data' })
+     81    })
+     82  
+     83    test('does not affect other keys on the object', () => {
+     84      const obj = { requestId: '123', type: 'control_request', payload: {} }
+     85      normalizeControlMessageKeys(obj)
+     86      expect((obj as any).type).toBe('control_request')
+     87      expect((obj as any).payload).toEqual({})
+     88      expect((obj as any).request_id).toBe('123')
+     89    })
+     90  
+  Overload 1 of 2, '(expected: { requestId: string; other: string; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; other: string; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ requestId: string; other: string; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; other: string; }'. Did you mean to write 'requestId'?

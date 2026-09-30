@@ -1,0 +1,2 @@
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(146,46): error TS2554: Expected 0 arguments, but got 2.
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(153,46): error TS2554: Expected 0 arguments, but got 2.

@@ -1,0 +1,20 @@
+== 8. proc_start distingue un pid RECICLADO (control anulado) ==
+  ok    con el proc_start real -> VIVO
+  ok    con el proc_start falseado -> RECICLADO
+  ok    wait consume el eje: reciclado -> exit 2, no timeout 3
+== 9. la salida de estado no arrastra el token del renombre (ERR-028) ==
+  ok    el resumen dice 'estado:'
+== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) ==
+  ok    un VIVO sano -> status exit 0
+  ok    un BAIL real -> status sigue en exit 1
+  FALLO nombre corto sin ambiguedad: suelta el ledger
+        esperado=[] obtenido=[batch-a_job-001  [ESPERANDO]  /tmp/fixture-tnxdRI]
+  FALLO ambiguo: nombra el primer candidato
+        esperado=[si] obtenido=[no]
+  FALLO ambiguo: nombra el segundo candidato
+        esperado=[si] obtenido=[no]
+  ok    ambiguo: los dos siguen anotados
+  ok    etiqueta completa: queda solo el otro
+  ok    etiqueta completa: el que queda es el que no se nombro
+
+36 ok, 3 fallos

@@ -1,0 +1,8 @@
+src/packages/repl/src/hooks/useSwarmInitialization.ts(60,35): error TS2345: Argument of type 'SetAppState' is not assignable to parameter of type '(updater: (prev: PermissionCarryingState) => PermissionCarryingState) => void'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'PermissionCarryingState' is not assignable to type 'AppState'.
+      Type 'PermissionCarryingState' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+src/packages/repl/src/hooks/useSwarmInitialization.ts(72,35): error TS2345: Argument of type 'SetAppState' is not assignable to parameter of type '(updater: (prev: PermissionCarryingState) => PermissionCarryingState) => void'.
+  Types of parameters 'f' and 'updater' are incompatible.
+    Type 'PermissionCarryingState' is not assignable to type 'AppState'.
+      Type 'PermissionCarryingState' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.

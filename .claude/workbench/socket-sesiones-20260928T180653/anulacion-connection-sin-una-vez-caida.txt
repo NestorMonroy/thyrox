@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+164 | 
+165 |   test('un token equivocado cierra la conexión y la caída se reporta una sola vez', async () => {
+166 |     expect((await exchange([authFrameLine('0'.repeat(32)), line({ type: 'user' })], { waitMs: 400 })).closedByServer).toBe(true)
+167 |     await exchange([authFrameLine('1'.repeat(32))], { waitMs: 400 })
+168 |     expect(routed).toEqual([])
+169 |     expect(events).toEqual([['bad', 'cross_session_inbox_auth', 'unauthed_drop']])
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -6,3 +6,7 @@
+    ],
++   [
++     "bad",
++     "cross_session_inbox_auth",
++     "unauthed_drop",
++   ],
+  ]
+
+- Expected  - 0
++ Received  + 5
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:169:20)
+(fail) con autenticación exigida > un token equivocado cierra la conexión y la caída se reporta una sola vez [14.45ms]
+
+ 16 pass
+ 1 fail
+ 28 expect() calls
+Ran 17 tests across 1 file. [564.00ms]

@@ -1,0 +1,14 @@
+== 18: los guiones cuentan
+   (src/accounts/cursor/cursorService.ts)
+(fail) import validation > a missing or short token, or a malformed machine id, is refused [0.44ms]
+ 9 pass
+ 1 fail
+== 26: perfil rechazado se lee
+   (src/accounts/cursor/cursorService.ts)
+(fail) account identity > no token or user, a refusal, a network failure or odd fields give nothing [0.69ms]
+ 9 pass
+ 1 fail
+== restaurado
+ 10 pass
+ 0 fail
+__BG_EXIT__=0

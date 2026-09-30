@@ -1,0 +1,19 @@
+Let replace_literal take its texts from files
+
+OLD and NEW only arrived through the environment, so a text holding
+single quotes had to be written inside a single-quoted shell word,
+and the shell dropped them before the script saw them: 'pid' became
+pid and a test died with a NameError. --old-file and --new-file read
+the texts from files written with a quoted heredoc, which interprets
+nothing; exactly the one trailing newline the heredoc adds is removed.
+
+The script also broke when it edited itself: bash reads a script in
+chunks, and rewriting the running file with cat > made it read the
+shifted tail as a syntax error. The body now runs in main, closed on
+the same line as the call, so bash parses it whole first.
+
+Also records in the rule that gawk -i inplace sends END output to
+stdout, not to the file.
+
+Annulment: stripping every trailing newline fails case 13; without
+main, both self-edit assertions fail.

@@ -1,0 +1,40 @@
+{
+  "capability": {
+    "delta": 0,
+    "total_before": 96,
+    "total_final": 96
+  },
+  "cost": {
+    "basis": {
+      "claude-sonnet-5": "tier_2_10"
+    },
+    "cache_prefix": {
+      "first_item": {
+        "item": 1,
+        "read": 6379,
+        "write": 30150
+      },
+      "measured": 1
+    },
+    "equiv_per_accepted": null,
+    "equiv_tokens": 380803.1
+  },
+  "data": {
+    "acceptance": 0.0,
+    "accepted": 0,
+    "proposals": 0
+  },
+  "system": {
+    "failed_items": 0,
+    "full_width_share": 1.0,
+    "memory_kb": {
+      "max": 277248,
+      "measured": 1,
+      "median": 277248
+    },
+    "pool_wall_s": 173.769,
+    "pool_width": 1,
+    "straggler_ratio": 1.0,
+    "tsc_runs": 0
+  }
+}

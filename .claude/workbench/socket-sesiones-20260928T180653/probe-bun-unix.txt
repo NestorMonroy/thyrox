@@ -1,0 +1,3 @@
+sobre socket vivo: ok
+sobre archivo existente: ok
+tras close, el archivo del socket existe: true

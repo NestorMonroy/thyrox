@@ -1,0 +1,47 @@
+src/packages/tool-registry/src/tools/SkillTool/UI.tsx(100,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/UI.tsx:90-110 ---
+     90      )
+     91    }
+     92  
+     93    // Take only the last few messages for display in non-verbose mode
+     94    const displayedMessages = verbose
+     95      ? progressMessages
+     96      : progressMessages.slice(-MAX_PROGRESS_MESSAGES_TO_SHOW)
+     97  
+     98    const hiddenCount = progressMessages.length - displayedMessages.length
+     99    const { inProgressToolUseIDs } = buildSubagentLookups(
+    100>     progressMessages.map(pm => pm.data),
+    101    )
+    102  
+    103    return (
+    104      <MessageResponse>
+    105        <Box flexDirection="column">
+    106          <SubAgentProvider>
+    107            {displayedMessages.map(progressMessage => (
+    108              <Box key={progressMessage.uuid} height={1} overflow="hidden">
+    109                <MessageComponent
+    110                  message={progressMessage.data.message}
+  Type 'unknown' is not assignable to type '{ message: AnyMessage; }'.
+src/packages/tool-registry/src/tools/SkillTool/UI.tsx(110,26): error TS18046: 'progressMessage.data' is of type 'unknown'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/UI.tsx:100-120 ---
+    100      progressMessages.map(pm => pm.data),
+    101    )
+    102  
+    103    return (
+    104      <MessageResponse>
+    105        <Box flexDirection="column">
+    106          <SubAgentProvider>
+    107            {displayedMessages.map(progressMessage => (
+    108              <Box key={progressMessage.uuid} height={1} overflow="hidden">
+    109                <MessageComponent
+    110>                 message={progressMessage.data.message}
+    111                  lookups={EMPTY_LOOKUPS}
+    112                  addMargin={false}
+    113                  tools={tools}
+    114                  commands={[]}
+    115                  verbose={verbose}
+    116                  inProgressToolUseIDs={inProgressToolUseIDs}
+    117                  progressMessagesForMessage={[]}
+    118                  shouldAnimate={false}
+    119                  shouldShowDot={false}
+    120                  style="condensed"

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxRouting.test.ts:
+83 |     const { deps, warnings } = harness({
+84 |       controlActions: { peer_message_status: { accepts: message => message.status === 'held', handle: message => void handled.push(message.status) } },
+85 |     })
+86 |     await handleInboxMessage({ type: 'control', action: 'peer_message_status', status: 'held' }, PEER, deps)
+87 |     await handleInboxMessage({ type: 'control', action: 'peer_message_status', status: 'weird' }, PEER, deps)
+88 |     expect(handled).toEqual(['held'])
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "held",
++   "weird",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxRouting.test.ts:88:21)
+(fail) handleInboxMessage (be) > una acción con guarda que no la acepta cae como sin manejar, igual que las guardas de be [0.56ms]
+
+ 11 pass
+ 1 fail
+ 20 expect() calls
+Ran 12 tests across 1 file. [116.00ms]

@@ -1,0 +1,3 @@
+OLD='thyrox@PENDIENTE' NEW='thyrox@55a76fcc' bash bin/replace_literal /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-202-thyrox-p-pedia-una-hora-de-cache-a-toda-cuenta.rst
+OLD='thyrox@PENDIENTE' NEW='thyrox@c05c8c86' bash bin/replace_literal /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-203-la-memoria-de-thyrox-p-se-mide-sin-clave-real.rst
+OLD='thyrox@PENDIENTE' NEW='thyrox@2982283c' bash bin/replace_literal /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-204-la-tarea-de-thyrox-p-cerro-con-el-pool-lanzando-claude.rst

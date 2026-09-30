@@ -1,0 +1,1 @@
+function cfe(){let e=ye(),n=So(),r=n??e,s=[r],g=n??Aq(e,Xr);if(g!==pt(r))s.push(g);let h=!1,y=!1;for(let T of s){let A=dfe(T);if(A==="tracked_in_index")return"tracked_in_index";if(A==="tracked")h=!0;if(A==="indeterminate")y=!0}if(h)return"tracked";return y?"indeterminate":"untracked"}

@@ -1,0 +1,8 @@
+{
+  "id": "57",
+  "subject": "Decidir el fix durable para la captura empobrecida de agent_sessions (hook",
+  "description": "Decidido (B, por el ejecutor) e implementado. Rama B: @kaupamex/harness captura la fila de agent_sessions él mismo — recordHarnessSession toma subagentType opcional (el campo que la reconciliación pierde) y actualiza session_id en ON CONFLICT (escritura en dos fases running→completed); agentTool escribe running al despachar y completed/failed al cerrar con model/subagent_type/turns/usage/equiv_cost del LoopResult, source='harness', gated en storePath. docs@b521fc2f6. Task a (extensión del timing de H-DOCS-1024): docs@04b46f703.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

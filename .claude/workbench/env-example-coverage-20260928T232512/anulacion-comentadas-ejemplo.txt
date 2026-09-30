@@ -1,0 +1,28 @@
+F.......F
+======================================================================
+FAIL: test_all_keys_declared_passes (__main__.CoverageTest.test_all_keys_declared_passes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_env_example_coverage.py", line 43, in test_all_keys_declared_passes
+    self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+AssertionError: 1 != 0 :   sin declarar en .env.example: THYROX_B (en .env)
+check_env_example_coverage: 1 clave(s) sin declarar (alcance medido: 3 clave(s) en 1 archivo(s) ignorado(s), 2 declarada(s) en .env.example)
+
+
+======================================================================
+FAIL: test_this_tree_declares_every_key_of_its_env (__main__.RealTreeTest.test_this_tree_declares_every_key_of_its_env)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_env_example_coverage.py", line 91, in test_this_tree_declares_every_key_of_its_env
+    self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+AssertionError: 1 != 0 :   sin declarar en .env.example: THYROX_JOBS_API (en .env)
+  sin declarar en .env.example: THYROX_JOBS_DOCS (en .env)
+  sin declarar en .env.example: THYROX_WORKBENCH_API (en .env)
+  sin declarar en .env.example: THYROX_WORKBENCH_DOCS (en .env)
+check_env_example_coverage: 4 clave(s) sin declarar (alcance medido: 19 clave(s) en 1 archivo(s) ignorado(s), 442 declarada(s) en .env.example)
+
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.268s
+
+FAILED (failures=2)

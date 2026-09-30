@@ -1,0 +1,28 @@
+patron: spread-de-any-en-vez-de-array-ya-tipado
+senal_del_verificador: TS2556: A spread argument must either have a tuple type or be passed to a rest parameter
+fix_generico: Un `...args` de una función rest ya tiene tipo `unknown[]` (o el tipo del contrato); envolverlo con `as any` antes de volverlo a esparcir rompe la comprobación de spread (TS2556) Y viola la prohibición de `as any`. La causa se resuelve quitando el cast: `fn(...args)` sin envoltorio, porque el array ya es del tipo que el parámetro rest de destino espera.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/swarm/src/install/installSwarmHost.ts(176,34): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
+  --- código src/packages/swarm/src/install/installSwarmHost.ts:166-186 ---
+    166  let installed = false
+    167  
+    168  export function installSwarmHost(): void {
+    169    if (installed) {
+    170      return
+    171    }
+    172  
+    173    installSwarmAppRuntime({
+    174      async getSystemPrompt(...args: any[]) {
+    175        const mod = await import('@thyrox/agent/constants/prompts.js')
+    176>       return mod.getSystemPrompt(...args)
+    177      },
+    178      TEAMMATE_MESSAGE_TAG,
+    179      processMailboxPermissionResponse,
+    180      registerPermissionCallback,
+    181      unregisterPermissionCallback,
+    182      logEvent,
+    183      getAutoCompactThreshold,
+    184      buildPostCompactMessages,
+    185      compactConversation,
+    186      ERROR_MESSAGE_USER_ABORT,

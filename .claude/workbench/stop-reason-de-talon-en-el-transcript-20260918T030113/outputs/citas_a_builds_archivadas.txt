@@ -1,0 +1,10 @@
+=== builds archivadas, segun el MANIFEST del archivador ===
+
+=== citas a una build ARCHIVADA en el arbol (fuera de _archived y del banco) ===
+  2.1.246 -> 3 archivo(s)
+  2.1.250 -> 3 archivo(s)
+  2.1.258 -> 10 archivo(s)
+
+=== y si la ruta resuelve hoy ===
+  _references/claude-code-bin/2.1.258/claude_strings.txt     AUSENTE
+  _references/claude-code-bin/2.1.246/MANIFEST.tsv           AUSENTE

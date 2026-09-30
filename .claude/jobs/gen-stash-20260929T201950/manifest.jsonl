@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash tests/session/test-item-worktree-stash.sh 2>&1 | tail -2", "started_at": "2026-09-29T20:19:50+00:00"}

@@ -1,0 +1,202 @@
+asentado: job-20260927T154302_job-003 -> OK (1 de 6)
+asentado: job-20260927T154302_job-004 -> OK (2 de 6)
+asentado: job-20260927T154302_job-005 -> OK (3 de 6)
+asentado: job-20260927T154302_job-002 -> OK (1 de 6)
+esperando: 4 de 6 asentados, 30s; vivos: job-20260927T154302_job-001 rest-rename
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.33s
+sonda job-20260927T154302_job-001: 15038 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T154302_job-001: 15039 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T154302_job-001: 15128 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 15130 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.23s
+sonda rest-rename: 7581 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7587 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7589 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.03s
+sonda rest-rename: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.33s
+sonda rest-rename: 15128 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15130 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.88s
+sonda rest-rename: 15423 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15424 node stdin=devnull(/dev/null) escritores=- estado=S cpu=1.28s
+sonda rest-rename: 8725 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 8730 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 8732 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 8734 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.33s
+sonda rest-rename: 15331 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15466 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15534 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15535 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15542 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 8735 tail stdin=channel(pipe:[15597]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 8735 (tail) lee stdin de un canal (pipe:[15597]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 15008 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15013 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15014 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15015 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.05s
+sonda rest-rename: 15344 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15016 tail stdin=channel(pipe:[23916]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 15016 (tail) lee stdin de un canal (pipe:[23916]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 15451 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 4 de 6 asentados, 60s; vivos: job-20260927T154302_job-001 rest-rename
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.36s
+sonda job-20260927T154302_job-001: 16595 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 16596 node stdin=devnull(/dev/null) escritores=- estado=R cpu=6.98s
+sonda job-20260927T154302_job-001: 17101 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 17102 node stdin=devnull(/dev/null) escritores=- estado=R cpu=1.69s
+sonda rest-rename: 7581 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7587 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7589 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+sonda rest-rename: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.36s
+sonda rest-rename: 16595 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 16596 node stdin=devnull(/dev/null) escritores=- estado=R cpu=7.82s
+sonda rest-rename: 17101 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 17102 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.69s
+sonda rest-rename: 8725 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 8730 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 8732 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 8734 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.44s
+sonda rest-rename: 17240 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=1.50s
+sonda rest-rename: 8735 tail stdin=channel(pipe:[15597]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 8735 (tail) lee stdin de un canal (pipe:[15597]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 15008 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15013 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15014 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15015 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.07s
+sonda rest-rename: 17159 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15016 tail stdin=channel(pipe:[23916]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 15016 (tail) lee stdin de un canal (pipe:[23916]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 17174 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 4 de 6 asentados, 91s; vivos: job-20260927T154302_job-001 rest-rename
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.39s
+sonda job-20260927T154302_job-001: 18711 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 18712 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.90s
+sonda job-20260927T154302_job-001: 18732 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 18733 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.99s
+sonda rest-rename: 7581 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7587 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7589 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.06s
+sonda rest-rename: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.39s
+sonda rest-rename: 18711 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 18712 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.37s
+sonda rest-rename: 18732 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 18733 ? stdin=devnull(/dev/null) escritores=- estado=R cpu=3.85s
+sonda rest-rename: 15008 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15013 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15014 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 15015 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.10s
+sonda rest-rename: 18928 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 15016 tail stdin=channel(pipe:[23916]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 15016 (tail) lee stdin de un canal (pipe:[23916]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 18527 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 18530 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 18533 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 18534 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=0.96s
+sonda rest-rename: 19014 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 19015 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 19022 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 18535 tail stdin=channel(pipe:[35080]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 18535 (tail) lee stdin de un canal (pipe:[35080]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 19048 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 4 de 6 asentados, 121s; vivos: job-20260927T154302_job-001 rest-rename
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.47s
+sonda job-20260927T154302_job-001: 20353 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 20354 node stdin=devnull(/dev/null) escritores=- estado=R cpu=11.16s
+sonda job-20260927T154302_job-001: 20487 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 20488 node stdin=devnull(/dev/null) escritores=- estado=R cpu=9.33s
+sonda rest-rename: 7581 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7587 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7589 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.09s
+sonda rest-rename: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.48s
+sonda rest-rename: 20353 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 20354 node stdin=devnull(/dev/null) escritores=- estado=R cpu=11.80s
+sonda rest-rename: 20487 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 20518 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 20523 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 20524 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 20525 ? stdin=devnull(/dev/null) escritores=- estado=S cpu=6.45s
+sonda rest-rename: 20526 ? stdin=channel(pipe:[40142]) escritores=1 estado=S cpu=0.00s
+  AVISO rest-rename: pid 20526 (?) lee stdin de un canal (pipe:[40142]) — si su productor no escribe ni cierra, espera para siempre
+sonda rest-rename: 21365 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 21369 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 21370 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 21371 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 21372 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 21393 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+esperando: 4 de 6 asentados, 151s; vivos: job-20260927T154302_job-001 rest-rename
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.65s
+sonda job-20260927T154302_job-001: 23086 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 23088 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.34s
+sonda job-20260927T154302_job-001: 23087 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 23089 node stdin=devnull(/dev/null) escritores=- estado=R cpu=8.00s
+sonda rest-rename: 7581 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7587 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7589 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.10s
+sonda rest-rename: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.65s
+sonda rest-rename: 23086 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 23088 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda rest-rename: 23087 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 23089 node stdin=devnull(/dev/null) escritores=- estado=R cpu=9.14s
+sonda rest-rename: 21530 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.14s
+sonda rest-rename: 23530 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+esperando: 4 de 6 asentados, 183s; vivos: job-20260927T154302_job-001 rest-rename
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.67s
+sonda job-20260927T154302_job-001: 25352 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 25353 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.48s
+sonda job-20260927T154302_job-001: 25360 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 25361 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.08s
+sonda rest-rename: 7581 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7587 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7589 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.10s
+sonda rest-rename: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.67s
+sonda rest-rename: 25352 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 25353 node stdin=devnull(/dev/null) escritores=- estado=S cpu=3.18s
+sonda rest-rename: 25360 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda rest-rename: 25361 node stdin=devnull(/dev/null) escritores=- estado=R cpu=2.50s
+sonda rest-rename: 21530 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.26s
+sonda rest-rename: 25509 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+asentado: rest-rename -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T154302_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T154302_job-002
+       | (vacío — no emitió nada)
+OK     job-20260927T154302_job-003
+       | (vacío — no emitió nada)
+OK     job-20260927T154302_job-004
+       | (vacío — no emitió nada)
+OK     job-20260927T154302_job-005
+       | (vacío — no emitió nada)
+OK     rest-rename exit=0
+       |        | bun test v1.3.11 (af24e281)
+       |        | 
+       |        |  27 pass
+       |        |  0 fail
+       |        |  63 expect() calls
+       |        | Ran 27 tests across 2 files. [997.00ms]
+       |        | EXIT=0
+       |        memoria pico: 149344 KB (146 MB) · pared 1.01s
+       | salida distinta de 0: 8 (job-20260927T154302_job-002 job-20260927T154302_job-003 job-20260927T154302_job-006 job-20260927T154302_job-009 job-20260927T154302_job-015 job-20260927T154302_job-016 job-20260927T154302_job-018 job-20260927T154302_job-020)
+       | __BG_EXIT__=0
+       memoria pico: 851504 KB (832 MB) · pared 211.77s

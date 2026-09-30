@@ -1,0 +1,64 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+37 |   })
+38 | 
+39 |   test('un segmento sin modelo aplica a todos; el signo menos niega', () => {
+40 |     process.env[ENV] = 'fast_mode, -effort'
+41 |     expect(capabilityOverrideFromEnv('fast_mode', 'x')).toBe(true)
+42 |     expect(capabilityOverrideFromEnv('effort', 'x')).toBe(false)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:42:54)
+(fail) capabilityOverrideFromEnv (UYe) — THYROX_CODE_MODEL_CAPABILITIES > un segmento sin modelo aplica a todos; el signo menos niega [0.42ms]
+45 | 
+46 |   test('modelo exacto o prefijo con asterisco, sobre el nombre sin [1m]', () => {
+47 |     process.env[ENV] = 'claude-opus-5=fast_mode;claude-sonnet-*=-effort; =effort'
+48 |     expect(capabilityOverrideFromEnv('fast_mode', 'claude-opus-5[1m]')).toBe(true)
+49 |     expect(capabilityOverrideFromEnv('fast_mode', 'claude-opus-5-5')).toBeUndefined()
+50 |     expect(capabilityOverrideFromEnv('effort', 'claude-sonnet-5')).toBe(false)
+                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:50:68)
+(fail) capabilityOverrideFromEnv (UYe) — THYROX_CODE_MODEL_CAPABILITIES > modelo exacto o prefijo con asterisco, sobre el nombre sin [1m] [0.21ms]
+51 |     expect(capabilityOverrideFromEnv('effort', 'claude-haiku-4-5')).toBeUndefined()
+52 |   })
+53 | 
+54 |   test('la última mención gana', () => {
+55 |     process.env[ENV] = 'fast_mode;-fast_mode'
+56 |     expect(capabilityOverrideFromEnv('fast_mode', 'x')).toBe(false)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:56:57)
+(fail) capabilityOverrideFromEnv (UYe) — THYROX_CODE_MODEL_CAPABILITIES > la última mención gana [0.13ms]
+80 | })
+81 | 
+82 | describe('modelHasCapability ($h)', () => {
+83 |   test('la anulación por entorno gana sobre el catálogo', () => {
+84 |     process.env[ENV] = 'claude-opus-5=-fast_mode'
+85 |     expect(modelHasCapability('claude-opus-5', 'fast_mode', 'claude-opus-5')).toBe(false)
+                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:85:79)
+(fail) modelHasCapability ($h) > la anulación por entorno gana sobre el catálogo [0.21ms]
+
+ 7 pass
+ 4 fail
+ 25 expect() calls
+Ran 11 tests across 1 file. [69.00ms]

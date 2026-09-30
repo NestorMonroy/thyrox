@@ -1,0 +1,4 @@
+FAIL: test_the_composed_default_anchors_at_the_consumer_root (__main__.CacheHomeResolution.test_the_composed_default_anchors_at_the_consumer_root)
+FAIL: test_the_provider_default_is_decided_not_inherited (__main__.CacheHomeResolution.test_the_provider_default_is_decided_not_inherited)
+Ran 9 tests in 0.053s
+FAILED (failures=2)

@@ -1,0 +1,7 @@
+no-plan	s/  const combo = await comboPlan(config, model)/  const combo = undefined as ComboPlan | undefined/
+declared-order	s/    upstreams: \[...ordered.map(t => byName.get(t.executionKey)!), /    upstreams: [...targets.map(t => byName.get(t.executionKey)!), /
+no-settle-success	s/      settle(upstream, response.status < 400)/      void 0/
+no-settle-failure	s/^  settle(lastTried, false)$/  void lastTried/
+no-fallback-count	s/        success, latencyMs, fallbackCount: Math.max(0, attempts - 1),/        success, latencyMs, fallbackCount: 0,/
+no-weights	s/weight: entry.weights?.\[upstream.name\] ?? 0 })/weight: 0 })/
+unknown-strategy	s/  if (!router || !entry || !isComboStrategy(strategy)) return undefined/  if (!router || !entry || !strategy) return undefined/

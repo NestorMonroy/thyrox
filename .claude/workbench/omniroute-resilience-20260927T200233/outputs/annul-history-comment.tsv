@@ -1,0 +1,16 @@
+base	36 pass, 0 fail	—
+date	35 pass, 1 fail	sólo una fecha
+logbook	34 pass, 2 fail	bitácora en # | ts
+before	34 pass, 2 fail	«antes vivía» en docstring | sin extensión, shebang de python
+previous	34 pass, 2 fail	«la versión anterior» en * | py
+round	34 pass, 2 fail	ronda N | mts y cts
+episode	35 pass, 1 fail	episodio
+findingid	35 pass, 1 fail	id de hallazgo
+commentonly	35 pass, 1 fail	fecha en una cadena
+pyquote	33 pass, 3 fail	«antes vivía» en docstring | py | sin extensión, shebang de python
+docclose	35 pass, 1 fail	docstring de varias líneas cerrado
+suffixfilter	33 pass, 3 fail	un .rst lleva fechas por diseño | un .md tampoco | heredoc hacia un .md
+shebanglang	35 pass, 1 fail	sin extensión, primera línea que nombra python sin shebang
+editdiff	35 pass, 1 fail	el historial que ya estaba no avisa
+heredoctarget	23 pass, 1 fail	abortó (exit 1)
+blockcomment	33 pass, 3 fail	«la versión anterior» en * | ts | ts

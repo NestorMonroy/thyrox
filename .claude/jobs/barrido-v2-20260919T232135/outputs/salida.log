@@ -1,0 +1,48 @@
+agent: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/docs.ts, ../../paths/reach.ts, ../../store/db.ts
+app-host: emitio pese a 776 errores (332 propio(s))
+audio-capture-napi: emitio pese a 23 errores (23 propio(s))
+binary: emitio pese a 18 errores (18 propio(s))
+bridge: emitio pese a 224 errores (122 propio(s))
+cli: NO EMITIO — 7 import(s) salen de su rootDir: ../../coordination/branchIntegration.ts, ../../coordination/claims.ts, ../../coordination/ledger.ts, ../../task/io.ts, ../../task/premises.ts, ../../task/rst.ts, ../../workbench/manifest.ts
+color-diff-napi: emitio pese a 8 errores (8 propio(s))
+command-runtime: emitio pese a 1172 errores (433 propio(s))
+config: emitio pese a 174 errores (0 propio(s))
+context-compression: OK
+daemon: emitio pese a 250 errores (250 propio(s))
+headless-sdk: emitio pese a 15 errores (15 propio(s))
+ide: emitio pese a 189 errores (102 propio(s))
+image-processor-napi: emitio pese a 31 errores (31 propio(s))
+local-observability: emitio pese a 101 errores (101 propio(s))
+mcp-runtime: emitio pese a 393 errores (279 propio(s))
+memory: emitio pese a 81 errores (81 propio(s))
+modifiers-napi: emitio pese a 4 errores (4 propio(s))
+observability: NO EMITIO — 2 import(s) salen de su rootDir: ../../paths/reach.ts, ../../store/db.ts
+output: emitio pese a 144 errores (52 propio(s))
+permission: emitio pese a 501 errores (198 propio(s))
+plan: emitio pese a 3 errores (3 propio(s))
+provider: emitio pese a 531 errores (409 propio(s))
+repl: emitio pese a 2973 errores (1978 propio(s))
+repl: repunte INERTE — 1 destino(s) de types no existen:
+  ./screens/* -> ./dist/src/screens/*.d.ts
+  Corre la emision antes del repunte: emit_declarations <paquete>
+ripgrep-napi: emitio pese a 19 errores (19 propio(s))
+server: emitio pese a 156 errores (69 propio(s))
+shell: emitio pese a 606 errores (266 propio(s))
+skills: NO EMITIO — 1 import(s) salen de su rootDir: ../../paths/reach.ts
+stdin-napi: emitio pese a 22 errores (22 propio(s))
+storage: emitio pese a 492 errores (385 propio(s))
+swarm: emitio pese a 572 errores (110 propio(s))
+teleport: emitio pese a 5 errores (5 propio(s))
+tool-registry: emitio pese a 1187 errores (787 propio(s))
+tools: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/reach.ts, ../../store/db.ts, ../../task/schema.ts
+updater: emitio pese a 140 errores (140 propio(s))
+url-handler-napi: OK
+voice: emitio pese a 370 errores (79 propio(s))
+claude-for-chrome-mcp: emitio pese a 24 errores (24 propio(s))
+computer-use-input: emitio pese a 12 errores (12 propio(s))
+computer-use-mcp: emitio pese a 274 errores (187 propio(s))
+computer-use-swift: emitio pese a 29 errores (29 propio(s))
+ink: emitio pese a 180 errores (180 propio(s))
+
+emit_declarations: 42 paquete(s) medido(s), 11699 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

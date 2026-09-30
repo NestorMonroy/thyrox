@@ -1,0 +1,3 @@
+updater: emitio pese a 1179 errores (152 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1179 error(es) que siguen vivos en su propio paquete

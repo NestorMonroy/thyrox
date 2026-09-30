@@ -1,0 +1,9 @@
+LLAMADAS PERDIDAS src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx: setState×1
+LLAMADAS PERDIDAS src/packages/config/plugin/loadPluginAgents.ts: stats.isFile×1
+LLAMADAS PERDIDAS src/packages/config/plugin/loadPluginCommands.ts: stats.isFile×2
+LLAMADAS PERDIDAS src/packages/shell/src/sandbox/sandbox-adapter.ts: require×1, getSandboxBinaryPath×1
+LLAMADAS PERDIDAS src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts: import×1
+5 de 31 archivos pierden llamadas al transpilar
+TESTS
+10
+__BG_EXIT__=0

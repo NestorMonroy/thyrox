@@ -1,0 +1,12 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -120,8 +120,7 @@
+         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+         // censo entero. La fila queda con su error y sin arreglos admitidos:
+         // el lado seguro, y visible en el resumen.
+-        rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+-        continue
++        throw error
+       }
+       for (const fix of offered) {
+         const fixId = fix.fixId === undefined ? undefined : String(fix.fixId)

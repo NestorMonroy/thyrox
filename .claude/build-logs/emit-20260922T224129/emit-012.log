@@ -1,0 +1,4 @@
+ripgrep-napi: emitio pese a 19 errores (19 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 19 error(es) que siguen vivos en su propio paquete
+EXIT=0

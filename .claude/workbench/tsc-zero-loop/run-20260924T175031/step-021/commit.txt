@@ -1,0 +1,7 @@
+Type the app state hook shims over AppState
+
+Twenty-first step of the agent-compiler loop, accepted-net
+3119 -> 3059. The useAppState/useSetAppState/useAppStateStore shims in
+mcp-runtime and permission declared their selectors and updaters over
+unknown even though both files already alias the canonical AppState;
+every prev/state they handed out was unknown.

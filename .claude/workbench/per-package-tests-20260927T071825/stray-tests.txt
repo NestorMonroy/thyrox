@@ -1,0 +1,5 @@
+src/packages/shell/src/__test__/import.test.ts
+src/packages/shell/src/__test__/shellQuoting.test.ts
+src/packages/shell/src/__test__/shellQuote.behavior.test.ts
+src/packages/shell/src/__test__/commands.test.ts
+src/packages/tool-registry/src/tools/SyntheticOutputTool/SyntheticOutputTool.test.ts

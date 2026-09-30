@@ -1,0 +1,21 @@
+== A1 sin quitar la cola de traza
+(fail) sanitizeErrorMessage strips multi-line stack traces [13.07ms]
+(fail) sanitizeErrorMessage redacts closed and unterminated PGP private-key armor [3.73ms]
+ 26 pass
+ 2 fail
+== A2 reenvío sin la comprobación de credencial
+(fail) a body that echoes a credential is not relayed [0.21ms]
+ 27 pass
+ 1 fail
+== A3 reenvío sin la de filtración interna
+(fail) a body that leaks the proxy internals is not relayed [0.36ms]
+ 27 pass
+ 1 fail
+== A4 sin el tachado de Bearer/Basic
+(fail) redactSensitiveErrorText — raw credential patterns (GHSA-qv45-56jc-4wmj) > keeps the pre-existing redactions working [2.33ms]
+(fail) sanitizeErrorMessage redacts credentials hidden behind serialized whitespace [4.98ms]
+ 26 pass
+ 2 fail
+== restored
+ 28 pass
+ 0 fail

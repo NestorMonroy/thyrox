@@ -1,0 +1,1 @@
+function u(){try{if(TM())return!1;if(He()!=="firstParty")return!1;let e=s7e("ENABLE_TOOL_SEARCH");if(e===d)return!0;if(Usr()!==d)return!1;if(Oe(s7e("CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS")))return!1;return e===void 0||!p(e)}catch(e){return t(`isToolSearchForceOverride: settings read failed: ${e}`,{level:"error"}),!1}}

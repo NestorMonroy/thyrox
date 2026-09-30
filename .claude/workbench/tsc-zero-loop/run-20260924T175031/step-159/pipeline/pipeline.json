@@ -1,0 +1,37 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 5,
+   "total_before": 119,
+   "total_final": 115,
+   "tsc_runs": 2,
+   "kept": 3
+  },
+  {
+   "batch": 2,
+   "files": 6,
+   "total_before": 115,
+   "total_final": 112,
+   "tsc_runs": 1,
+   "kept": 3
+  },
+  {
+   "batch": 3,
+   "files": 3,
+   "total_before": 112,
+   "total_final": 112,
+   "tsc_runs": 0,
+   "kept": 0
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/QueryEngine.ts",
+  "src/packages/agent/query.ts",
+  "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+  "src/packages/repl/src/commands/color/color.ts",
+  "src/packages/repl/src/screens/REPLView.tsx",
+  "src/packages/storage/src/sessionStorage.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-159/pipeline/batch-02/final.log"
+}

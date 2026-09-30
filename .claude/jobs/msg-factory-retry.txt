@@ -1,0 +1,11 @@
+Retry Redis on the next call after a failure
+
+ADR-THYROX-006 says a Redis failure degrades to local state with a
+warning and retries the connection on the next call. The factory
+degraded once and never went back, so one blip left every proxy on
+its own view until restart, which R3 and R4 would inherit.
+
+Each call now tries Redis first and falls back to memory only for
+that call. The warning fires on each transition into degradation,
+not on every call while it lasts. Annulling either guard drops
+exactly its own case.

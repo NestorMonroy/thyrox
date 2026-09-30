@@ -1,0 +1,5 @@
+storage: emitio pese a 2425 errores
+
+emit_declarations: 1 paquete(s) medido(s), 2425 error(es) que siguen vivos en su propio paquete
+EMIT_EXIT=0
+__BG_EXIT__=0

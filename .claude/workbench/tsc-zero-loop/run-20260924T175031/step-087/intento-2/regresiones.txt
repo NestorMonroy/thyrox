@@ -1,0 +1,4 @@
+src/packages/config/__tests__/config.test.ts
+src/packages/config/__tests__/inventory.test.ts
+src/packages/config/__tests__/testImpact.test.ts
+tests/unit/settings/config.test.ts

@@ -1,0 +1,6 @@
+Tipo: HookJSONOutput
+Copias:
+  src/packages/agent/types/hooks.ts
+  src/packages/headless-sdk/src/coreTypes.generated.ts
+
+src/packages/cli/src/structuredIO.ts(669): error TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.

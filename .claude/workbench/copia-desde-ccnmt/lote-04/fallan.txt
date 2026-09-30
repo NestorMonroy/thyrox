@@ -1,0 +1,4 @@
+src/packages/agent/__tests__/agentSwarmsEnabled.test.ts
+src/packages/agent/__tests__/cronJitterConfig.test.ts
+src/packages/provider/__tests__/openaiClientSourcePinning.test.ts
+src/packages/provider/__tests__/openaiIndexImplSourcePinning.test.ts

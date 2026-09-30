@@ -1,0 +1,7 @@
+== 1. sintaxis ==
+  ok    verificar_premisa.py parsea
+== 2'. sin el clon de la aplicacion: el gate REHUSA ==
+  ok    sale con 2, no con un veredicto
+  ok      … y nombra la raiz que falta
+
+3 ok · 0 fallo(s) · SIN MEDIR: falta el clon de la aplicacion

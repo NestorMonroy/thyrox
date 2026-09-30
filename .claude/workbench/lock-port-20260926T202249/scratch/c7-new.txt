@@ -1,0 +1,6 @@
+    with tempfile.TemporaryDirectory() as outside:
+        try:
+            outcome = tf.fingerprint(Path(outside))
+        except tf.NotARepository:
+            outcome = "rehúsa"
+        check("rehúsa", "rehúsa", outcome)

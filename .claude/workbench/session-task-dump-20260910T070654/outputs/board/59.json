@@ -1,0 +1,9 @@
+{
+  "id": "59",
+  "subject": "Close the documents=0 gap: agent_store `documents` table has no writer",
+  "description": "CERRADA 2026-09-04: la premisa es FALSA hoy. La tabla `documents` tiene escritor y tiene filas.\n\nMedido:\n  documents: 5078 filas (agent_sessions 896, tasks 1326)\n  escritor:  .claude/scripts/agents/agent_store.py\n             :1629  \"INSERT INTO documents \"\n             :1728  \"INSERT INTO documents (path, section, series, scanned_at) \"\n  ultimo barrido: scanned_at = 2026-09-03T02:41:15\n  columnas: path, updated_at, updated_at_source, declared_at, commit_at, scanned_at, section, series, retention_years\n\nEl titulo decia \"has no writer\" — era cierto al escribirse y dejo de serlo cuando agent_store.py gano el barrido de documentos. Nadie cerro la tarea porque nada vuelve a medir la premisa de una tarea ya escrita: es el nivel 3 de niveles-de-retencion.md (persistencia declarada, sin verificar) aplicado al tablero, la misma clase que #513.\n\n*Metrica:* count(*) sobre las tres tablas del store vivo y grep de INSERT sobre .claude/scripts y .claude/packages.\n*Ciega a:* si las 5078 filas estan COMPLETAS o son un barrido parcial — el count no distingue \"escribio todo\" de \"escribio lo que alcanzo\". Si eso importa, es otra tarea con su propia medicion.",
+  "activeForm": "Closing the documents=0 gap",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

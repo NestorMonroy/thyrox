@@ -1,0 +1,4 @@
+provider: emitio pese a 5007 errores (401 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 5007 error(es) que siguen vivos en su propio paquete
+EXIT=0

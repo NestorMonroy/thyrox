@@ -1,0 +1,4 @@
+output: emitio pese a 4652 errores (52 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 4652 error(es) que siguen vivos en su propio paquete
+EXIT=0

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3232, "total_final": 3197, "tsc_runs": 1, "accepted": ["agent:github-app-state"], "files_kept": ["src/packages/command-runtime/src/commands/install-github-app/types.ts"], "outcomes": {"agent:github-app-state": "accepted-net"}}

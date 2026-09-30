@@ -1,0 +1,8 @@
+{
+  "id": "75",
+  "subject": "Completar el porte de TaskUpdate en el harness (tasks.ts): hoy sólo actualiza",
+  "description": "CERRADA por medición del árbol, no por inferencia (2026-09-05).\n\nDEC-TASK-02 está entero en `.claude/packages/harness/src/tools/tasks.ts`: TaskUpdate declara los ocho campos —status, subject, description, activeForm, owner, metadata, addBlocks, addBlockedBy—, `metadata` se fusiona con COALESCE (un null borra la clave), las aristas se AÑADEN en los dos extremos, `deleted` borra la fila, limpia las aristas que la nombran y sube la marca de agua para que el id no se reuse.\n\nVerificado con `bun test __tests__/taskReminder.test.ts`: 12 pass, 0 fail, 39 expect(). Seis de esos casos son de TaskUpdate, incluido el de la marca de agua y el del estado inválido que se rechaza nombrando los válidos.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

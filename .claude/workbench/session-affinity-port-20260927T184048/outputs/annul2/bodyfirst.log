@@ -1,0 +1,6 @@
+(fail) extractSessionInfo: reglas > user_id anidado de Messages con padre y agente; cabecera más padre del cuerpo [2.79ms]
+(fail) extractSessionInfo: reglas > el user_id de Messages en el cuerpo gana a la cabecera genérica [0.32ms]
+(fail) extractSessionInfo: reglas > user_id de Messages con el agente en cabecera [0.37ms]
+(fail) extractSessionInfo: arneses > parent_agent_id en el metadata de Messages con user_id heredado [0.41ms]
+ 32 pass
+ 4 fail

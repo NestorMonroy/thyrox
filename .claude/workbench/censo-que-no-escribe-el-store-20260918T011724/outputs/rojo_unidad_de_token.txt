@@ -1,0 +1,24 @@
+== 1. la media NO discrimina: los dos modelos dan la misma ==
+  ok    las dos filas estan en la tabla
+  FALLO misma media en los dos modelos
+        esperado=[True] obtenido=[False]
+== 2. la desviacion tipica SI las distingue ==
+  FALLO el estable publica su desviacion
+        esperado=[7,071] obtenido=[AUSENTE]
+  FALLO el erratico publica la suya, un orden mayor
+        esperado=[141,421] obtenido=[AUSENTE]
+== 3. la cifra viaja con su denominador ==
+  ok    cada modelo declara su n
+== 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==
+  FALLO el bloque nombra su unidad
+        esperado=[True] obtenido=[False]
+  ok    y NO mezcla dinero en el mismo bloque
+== 5. publica equiv_cost, que es la unidad de coste que SE CITA ==
+  FALLO el estable publica la desviacion de su equiv_cost
+        esperado=[707] obtenido=[7,071]
+  FALLO el erratico publica la suya, un orden mayor
+        esperado=[14,142] obtenido=[141,421]
+  FALLO misma media de equiv_cost: tampoco ahi discrimina
+        esperado=[True] obtenido=[False]
+
+3 ok, 7 fallos

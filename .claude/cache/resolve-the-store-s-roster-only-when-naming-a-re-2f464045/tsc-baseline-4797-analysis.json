@@ -1,0 +1,3293 @@
+{
+  "by_code": {
+    "TS1064": 1,
+    "TS1230": 1,
+    "TS1354": 1,
+    "TS1360": 13,
+    "TS18046": 771,
+    "TS18047": 6,
+    "TS18048": 325,
+    "TS2304": 2,
+    "TS2305": 381,
+    "TS2307": 19,
+    "TS2315": 6,
+    "TS2322": 427,
+    "TS2328": 5,
+    "TS2339": 567,
+    "TS2344": 23,
+    "TS2345": 666,
+    "TS2349": 61,
+    "TS2352": 43,
+    "TS2353": 23,
+    "TS2355": 1,
+    "TS2362": 1,
+    "TS2363": 1,
+    "TS2365": 1,
+    "TS2366": 8,
+    "TS2367": 16,
+    "TS2416": 5,
+    "TS2440": 1,
+    "TS2459": 5,
+    "TS2464": 1,
+    "TS2488": 6,
+    "TS2493": 8,
+    "TS2504": 1,
+    "TS2532": 220,
+    "TS2536": 1,
+    "TS2538": 17,
+    "TS2551": 4,
+    "TS2552": 1,
+    "TS2554": 79,
+    "TS2556": 2,
+    "TS2558": 1,
+    "TS2559": 2,
+    "TS2571": 17,
+    "TS2578": 12,
+    "TS2614": 1,
+    "TS2638": 3,
+    "TS2677": 3,
+    "TS2678": 1,
+    "TS2693": 2,
+    "TS2694": 1,
+    "TS2698": 66,
+    "TS2703": 10,
+    "TS2722": 5,
+    "TS2724": 30,
+    "TS2739": 5,
+    "TS2740": 10,
+    "TS2741": 27,
+    "TS2769": 90,
+    "TS2783": 1,
+    "TS6133": 395,
+    "TS6138": 1,
+    "TS6192": 10,
+    "TS6196": 48,
+    "TS7006": 263,
+    "TS7016": 22,
+    "TS7019": 1,
+    "TS7031": 4,
+    "TS7053": 46
+  },
+  "by_file": {
+    "src/conformance/maintenance.ts": 2,
+    "src/coordination/claims.ts": 8,
+    "src/packages/@ant/claude-for-chrome-mcp/src/bridgeClient.ts": 1,
+    "src/packages/@ant/computer-use-input/src/backends/darwin.ts": 1,
+    "src/packages/@ant/computer-use-input/src/backends/linux.ts": 2,
+    "src/packages/@ant/computer-use-input/src/backends/win32.ts": 2,
+    "src/packages/@ant/computer-use-mcp/src/legacy/cleanup.ts": 1,
+    "src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts": 4,
+    "src/packages/@ant/computer-use-mcp/src/legacy/gates.ts": 1,
+    "src/packages/@ant/computer-use-mcp/src/legacy/platforms/darwin.ts": 1,
+    "src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts": 13,
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts": 8,
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/inputIndicator.ts": 1,
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts": 1,
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/uiAutomation.ts": 1,
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/windowMessage.ts": 2,
+    "src/packages/@ant/computer-use-mcp/src/toolCalls.ts": 14,
+    "src/packages/@ant/computer-use-swift/src/backends/darwin.ts": 16,
+    "src/packages/@ant/computer-use-swift/src/backends/linux.ts": 1,
+    "src/packages/@ant/computer-use-swift/src/backends/win32.ts": 8,
+    "src/packages/@ant/ink/src/components/App.tsx": 1,
+    "src/packages/@ant/ink/src/components/Box.tsx": 6,
+    "src/packages/@ant/ink/src/components/ErrorOverview.tsx": 2,
+    "src/packages/@ant/ink/src/components/Newline.tsx": 1,
+    "src/packages/@ant/ink/src/components/Spacer.tsx": 1,
+    "src/packages/@ant/ink/src/core/ink.tsx": 9,
+    "src/packages/@ant/ink/src/core/terminal.ts": 1,
+    "src/packages/@ant/ink/src/hooks/useSearchInput.ts": 1,
+    "src/packages/@ant/ink/src/keybindings/KeybindingSetup.tsx": 1,
+    "src/packages/@ant/ink/src/theme/Tree.tsx": 1,
+    "src/packages/@ant/ink/src/vim/transitions.ts": 2,
+    "src/packages/agent/AgentSummary/agentSummary.ts": 2,
+    "src/packages/agent/MagicDocs/magicDocs.ts": 2,
+    "src/packages/agent/QueryEngine.ts": 53,
+    "src/packages/agent/SessionMemory/sessionMemory.ts": 4,
+    "src/packages/agent/__tests__/agentContextGuards.test.ts": 3,
+    "src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts": 3,
+    "src/packages/agent/__tests__/autocompact.test.ts": 3,
+    "src/packages/agent/__tests__/claudeInChromeCommon.test.ts": 1,
+    "src/packages/agent/__tests__/compactionSnipProjection.test.ts": 4,
+    "src/packages/agent/__tests__/compat.test.ts": 11,
+    "src/packages/agent/__tests__/contentTextHelpers.test.ts": 11,
+    "src/packages/agent/__tests__/contextCompressionWiring.test.ts": 2,
+    "src/packages/agent/__tests__/contextGovernance.test.ts": 4,
+    "src/packages/agent/__tests__/createMessageHelpers.test.ts": 1,
+    "src/packages/agent/__tests__/createProductionDeps.test.ts": 1,
+    "src/packages/agent/__tests__/directMemberMessage.test.ts": 9,
+    "src/packages/agent/__tests__/emit.test.ts": 1,
+    "src/packages/agent/__tests__/extractConversationText.test.ts": 3,
+    "src/packages/agent/__tests__/fixtures/mockDeps.ts": 1,
+    "src/packages/agent/__tests__/flowHomes.test.ts": 2,
+    "src/packages/agent/__tests__/fromAgentEvent.test.ts": 2,
+    "src/packages/agent/__tests__/hooksEvents.test.ts": 11,
+    "src/packages/agent/__tests__/isSyntheticMessage.test.ts": 1,
+    "src/packages/agent/__tests__/loop.test.ts": 10,
+    "src/packages/agent/__tests__/messageFactories.test.ts": 4,
+    "src/packages/agent/__tests__/messageQueries.test.ts": 4,
+    "src/packages/agent/__tests__/microcompact.test.ts": 1,
+    "src/packages/agent/__tests__/models.test.ts": 6,
+    "src/packages/agent/__tests__/preModelSwitch.test.ts": 8,
+    "src/packages/agent/__tests__/productionWiring.test.ts": 4,
+    "src/packages/agent/__tests__/reconcile.test.ts": 7,
+    "src/packages/agent/__tests__/registry.test.ts": 1,
+    "src/packages/agent/__tests__/sessions.test.ts": 8,
+    "src/packages/agent/__tests__/snipProjection.test.ts": 3,
+    "src/packages/agent/__tests__/stopHookBlockCap.test.ts": 1,
+    "src/packages/agent/__tests__/stripImagesFromMessages.test.ts": 5,
+    "src/packages/agent/__tests__/systemPrompt.test.ts": 1,
+    "src/packages/agent/__tests__/taskCitation.test.ts": 3,
+    "src/packages/agent/__tests__/taskReminder.test.ts": 6,
+    "src/packages/agent/__tests__/tee.test.ts": 8,
+    "src/packages/agent/__tests__/toolSearchPure.test.ts": 1,
+    "src/packages/agent/__tests__/transcript.test.ts": 1,
+    "src/packages/agent/awaySummary.ts": 1,
+    "src/packages/agent/background/fleet/generateJobName.ts": 1,
+    "src/packages/agent/background/fleet/replBridgeSeed.ts": 1,
+    "src/packages/agent/claudeInChrome/chromeNativeHost.ts": 2,
+    "src/packages/agent/claudeInChrome/mcpServer.ts": 2,
+    "src/packages/agent/claudeInChrome/toolRendering.tsx": 1,
+    "src/packages/agent/claudeInChromeSetup.ts": 5,
+    "src/packages/agent/claudeInChromeSetupPortable.ts": 2,
+    "src/packages/agent/command.ts": 1,
+    "src/packages/agent/commands/brief.ts": 2,
+    "src/packages/agent/commands/commit-push-pr.ts": 5,
+    "src/packages/agent/commands/commit.ts": 3,
+    "src/packages/agent/commands/security-review.ts": 4,
+    "src/packages/agent/commands/tasks/tasks.tsx": 1,
+    "src/packages/agent/commitAttribution.ts": 1,
+    "src/packages/agent/compaction/autoCompact.ts": 4,
+    "src/packages/agent/compaction/microCompact.ts": 10,
+    "src/packages/agent/compaction/postCompactCleanup.ts": 3,
+    "src/packages/agent/compaction/sessionMemoryCompact.ts": 17,
+    "src/packages/agent/constants/spinnerVerbs.ts": 4,
+    "src/packages/agent/contracts.ts": 1,
+    "src/packages/agent/core/AgentLoop.ts": 2,
+    "src/packages/agent/createDeps.ts": 6,
+    "src/packages/agent/featureFlags.ts": 1,
+    "src/packages/agent/fileChangedWatcher.ts": 14,
+    "src/packages/agent/forkedAgent.ts": 7,
+    "src/packages/agent/goalStopHook.ts": 1,
+    "src/packages/agent/hooks/AsyncHookRegistry.ts": 6,
+    "src/packages/agent/hooks/apiQueryHookHelper.ts": 10,
+    "src/packages/agent/hooks/execAgentHook.ts": 8,
+    "src/packages/agent/hooks/execPromptHook.ts": 5,
+    "src/packages/agent/hooks/hookHelpers.ts": 1,
+    "src/packages/agent/hooks/registerFrontmatterHooks.ts": 1,
+    "src/packages/agent/hooks/sessionHooks.ts": 8,
+    "src/packages/agent/internal/abort.ts": 3,
+    "src/packages/agent/internal/cronSchedulerCore.ts": 8,
+    "src/packages/agent/internal/cronTasksCore.ts": 7,
+    "src/packages/agent/internal/cronTasksLockCore.ts": 3,
+    "src/packages/agent/internal/fileHistoryCore.ts": 14,
+    "src/packages/agent/internal/loopDynamicCore.ts": 2,
+    "src/packages/agent/internal/messageHelpers.ts": 3,
+    "src/packages/agent/internal/queryDeps.ts": 2,
+    "src/packages/agent/internal/queryRuntime.ts": 34,
+    "src/packages/agent/internal/stopHooksCore.ts": 6,
+    "src/packages/agent/localAgentTask.tsx": 28,
+    "src/packages/agent/loop/context/autocompact.ts": 1,
+    "src/packages/agent/loop/context/systemPrompt.ts": 2,
+    "src/packages/agent/loop/session.ts": 1,
+    "src/packages/agent/messages/mappers.ts": 2,
+    "src/packages/agent/query.ts": 56,
+    "src/packages/agent/queryContext.ts": 2,
+    "src/packages/agent/services/mcpServerApproval.tsx": 1,
+    "src/packages/agent/sessionFileAccessHooks.ts": 2,
+    "src/packages/agent/sessionStores.ts": 5,
+    "src/packages/agent/sessionTitle.ts": 1,
+    "src/packages/agent/sessionTools/analyzeContext.ts": 12,
+    "src/packages/agent/sideQuestion.ts": 2,
+    "src/packages/agent/skillSearch/prefetch.ts": 3,
+    "src/packages/agent/standalone/standaloneAgent.ts": 1,
+    "src/packages/agent/statusAlias.tsx": 4,
+    "src/packages/agent/task/framework.ts": 26,
+    "src/packages/agent/tasks/DreamTask/DreamTask.ts": 5,
+    "src/packages/agent/tasks/LocalMainSessionTask.tsx": 8,
+    "src/packages/agent/tasks/LocalShellTask.tsx": 12,
+    "src/packages/agent/tasks/LocalShellTask/killShellTasks.ts": 1,
+    "src/packages/agent/tasks/LocalWorkflowTask/LocalWorkflowTask.ts": 6,
+    "src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts": 2,
+    "src/packages/agent/tasks/stopTask.ts": 1,
+    "src/packages/agent/tee.ts": 5,
+    "src/packages/agent/testing/index.ts": 7,
+    "src/packages/agent/tokens.ts": 2,
+    "src/packages/agent/toolUseSummaryGenerator.ts": 4,
+    "src/packages/agent/types/compaction-deps.ts": 3,
+    "src/packages/agent/types/tools.ts": 1,
+    "src/packages/agent/workflow/hooks.ts": 2,
+    "src/packages/agent/workflow/namedWorkflows.ts": 2,
+    "src/packages/agent/workflow/workflowWorktree.ts": 1,
+    "src/packages/app-host/src/__tests__/declaredDependencies.test.ts": 2,
+    "src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts": 2,
+    "src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts": 8,
+    "src/packages/app-host/src/bootstrap/gracefulShutdown.ts": 3,
+    "src/packages/app-host/src/init.ts": 10,
+    "src/packages/app-host/src/launchRepl.tsx": 1,
+    "src/packages/app-host/src/main/startup/telemetry.ts": 1,
+    "src/packages/app-host/src/providerHostSetup.ts": 2,
+    "src/packages/app-host/src/runtime/commandRegistryRuntime.ts": 11,
+    "src/packages/app-host/src/runtime/installCliBindings.ts": 4,
+    "src/packages/app-host/src/runtime/installPluginBindings.ts": 11,
+    "src/packages/app-host/src/runtime/runtimeHandles.ts": 28,
+    "src/packages/app-host/src/runtime/toolRegistryRuntime.ts": 1,
+    "src/packages/app-host/src/startup/__tests__/apiPreconnect.test.ts": 2,
+    "src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts": 4,
+    "src/packages/app-host/src/state/__tests__/selectors.test.ts": 3,
+    "src/packages/app-host/src/state/selectors.ts": 1,
+    "src/packages/binary/__tests__/corpus.test.ts": 3,
+    "src/packages/binary/__tests__/declaration.test.ts": 8,
+    "src/packages/binary/__tests__/reflow.test.ts": 3,
+    "src/packages/binary/bin/binary.ts": 1,
+    "src/packages/binary/src/freshness.ts": 2,
+    "src/packages/binary/src/graph.ts": 1,
+    "src/packages/binary/src/reflow.ts": 4,
+    "src/packages/bridge/commands/bridge-kick.ts": 1,
+    "src/packages/bridge/src/bridgeMain.ts": 4,
+    "src/packages/bridge/src/bridgeUI.ts": 1,
+    "src/packages/bridge/src/index.ts": 1,
+    "src/packages/bridge/src/internal/pendingCrossPackageDeps.ts": 1,
+    "src/packages/bridge/src/remoteBridgeCore.ts": 6,
+    "src/packages/bridge/src/replBridge.ts": 6,
+    "src/packages/bridge/src/runtimeHostSetup.ts": 3,
+    "src/packages/cli/__tests__/aristaTransitoria.test.ts": 1,
+    "src/packages/cli/__tests__/binAgentWiring.test.ts": 6,
+    "src/packages/cli/__tests__/cli.test.ts": 4,
+    "src/packages/cli/__tests__/rstTasks.test.ts": 5,
+    "src/packages/cli/__tests__/systemPromptLayering.test.ts": 1,
+    "src/packages/cli/__tests__/workbench.test.ts": 1,
+    "src/packages/cli/src/bg.ts": 4,
+    "src/packages/cli/src/bg/openAgentsFromRepl.ts": 1,
+    "src/packages/cli/src/commands/mcp-commands.ts": 1,
+    "src/packages/cli/src/entry/bootstrap-utils.ts": 1,
+    "src/packages/cli/src/entry/cli.tsx": 4,
+    "src/packages/cli/src/entry/commander.ts": 1,
+    "src/packages/cli/src/entry/main.tsx": 2,
+    "src/packages/cli/src/entry/mcp.ts": 6,
+    "src/packages/cli/src/entry/preprocess-argv.ts": 3,
+    "src/packages/cli/src/entry/run-program.ts": 2,
+    "src/packages/cli/src/entry/runLoop.ts": 1,
+    "src/packages/cli/src/handlers/auth.ts": 10,
+    "src/packages/cli/src/handlers/autoMode.ts": 1,
+    "src/packages/cli/src/handlers/mcp.tsx": 1,
+    "src/packages/cli/src/handlers/util.tsx": 1,
+    "src/packages/cli/src/headless.ts": 1,
+    "src/packages/cli/src/headless/sdk/control/handlers.ts": 13,
+    "src/packages/cli/src/headless/sdk/control/permission-helpers.ts": 2,
+    "src/packages/cli/src/headless/sdk/session/load.ts": 2,
+    "src/packages/cli/src/headless/sdk/session/run-streaming.ts": 345,
+    "src/packages/cli/src/headless/sdk/session/run.ts": 12,
+    "src/packages/cli/src/headless/sdk/session/utils/streamlinedTransform.ts": 3,
+    "src/packages/cli/src/mcpServersHandlers.ts": 9,
+    "src/packages/cli/src/remoteIO.ts": 1,
+    "src/packages/cli/src/rollback.ts": 2,
+    "src/packages/cli/src/setup/setup.ts": 5,
+    "src/packages/cli/src/structuredIO.ts": 20,
+    "src/packages/cli/src/transports.ts": 1,
+    "src/packages/cli/src/transports/ccrClient.ts": 7,
+    "src/packages/color-diff-napi/src/__tests__/color-diff.test.ts": 6,
+    "src/packages/color-diff-napi/src/index.ts": 1,
+    "src/packages/command-runtime/src/__tests__/command.test.ts": 2,
+    "src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts": 5,
+    "src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts": 3,
+    "src/packages/command-runtime/src/commands/bridge/bridge.tsx": 1,
+    "src/packages/command-runtime/src/commands/bridge/index.ts": 1,
+    "src/packages/command-runtime/src/commands/btw/btw.tsx": 3,
+    "src/packages/command-runtime/src/commands/btw/index.ts": 1,
+    "src/packages/command-runtime/src/commands/chrome/chrome.tsx": 3,
+    "src/packages/command-runtime/src/commands/clear/caches.ts": 3,
+    "src/packages/command-runtime/src/commands/clear/clear.ts": 1,
+    "src/packages/command-runtime/src/commands/clear/conversation.ts": 2,
+    "src/packages/command-runtime/src/commands/clear/index.ts": 1,
+    "src/packages/command-runtime/src/commands/compact/compact.ts": 11,
+    "src/packages/command-runtime/src/commands/compact/index.ts": 1,
+    "src/packages/command-runtime/src/commands/context/context-noninteractive.ts": 2,
+    "src/packages/command-runtime/src/commands/context/context.tsx": 5,
+    "src/packages/command-runtime/src/commands/context/index.ts": 1,
+    "src/packages/command-runtime/src/commands/copy/index.ts": 1,
+    "src/packages/command-runtime/src/commands/effort/effort.tsx": 2,
+    "src/packages/command-runtime/src/commands/fast/fast.tsx": 1,
+    "src/packages/command-runtime/src/commands/fork/index.ts": 1,
+    "src/packages/command-runtime/src/commands/goal/index.ts": 2,
+    "src/packages/command-runtime/src/commands/ide/ide.tsx": 2,
+    "src/packages/command-runtime/src/commands/insights/insights.ts": 3,
+    "src/packages/command-runtime/src/commands/install-github-app/ApiKeyStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/CheckExistingSecretStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/CheckGitHubStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/ChooseRepoStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/CreatingStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/ErrorStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/ExistingWorkflowStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/InstallAppStep.tsx": 1,
+    "src/packages/command-runtime/src/commands/install-github-app/OAuthFlowStep.tsx": 3,
+    "src/packages/command-runtime/src/commands/install-github-app/WarningsStep.tsx": 7,
+    "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx": 35,
+    "src/packages/command-runtime/src/commands/install/install.tsx": 2,
+    "src/packages/command-runtime/src/commands/login/login.tsx": 8,
+    "src/packages/command-runtime/src/commands/mcp/mcp.tsx": 1,
+    "src/packages/command-runtime/src/commands/memory/index.ts": 1,
+    "src/packages/command-runtime/src/commands/memory/memory.tsx": 4,
+    "src/packages/command-runtime/src/commands/model/index.ts": 1,
+    "src/packages/command-runtime/src/commands/plugin/ManageMarketplaces.tsx": 1,
+    "src/packages/command-runtime/src/commands/plugin/ManagePlugins.tsx": 62,
+    "src/packages/command-runtime/src/commands/plugin/PluginErrors.tsx": 1,
+    "src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx": 39,
+    "src/packages/command-runtime/src/commands/plugin/UnifiedInstalledCell.tsx": 24,
+    "src/packages/command-runtime/src/commands/plugin/plugin.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/at-mentions.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/automate.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/background.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/fork.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/mcp.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/memory.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/model-dial.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/modes.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/multi-provider.tsx": 1,
+    "src/packages/command-runtime/src/commands/powerup/lessons/undo.tsx": 1,
+    "src/packages/command-runtime/src/commands/rate-limit-options/index.ts": 1,
+    "src/packages/command-runtime/src/commands/recap/recap.ts": 5,
+    "src/packages/command-runtime/src/commands/remoteControlServer/index.ts": 1,
+    "src/packages/command-runtime/src/commands/remoteControlServer/remoteControlServer.tsx": 2,
+    "src/packages/command-runtime/src/commands/rename/index.ts": 1,
+    "src/packages/command-runtime/src/commands/rename/rename.ts": 1,
+    "src/packages/command-runtime/src/commands/resume/index.ts": 1,
+    "src/packages/command-runtime/src/commands/resume/resume.tsx": 5,
+    "src/packages/command-runtime/src/commands/review/featureFlags.ts": 1,
+    "src/packages/command-runtime/src/commands/review/review.ts": 1,
+    "src/packages/command-runtime/src/commands/review/reviewRemote.ts": 1,
+    "src/packages/command-runtime/src/commands/review/ultrareviewCommand.tsx": 1,
+    "src/packages/command-runtime/src/commands/session/index.ts": 1,
+    "src/packages/command-runtime/src/commands/session/session.tsx": 1,
+    "src/packages/command-runtime/src/commands/skills/skills.tsx": 1,
+    "src/packages/command-runtime/src/commands/terminalSetup/index.ts": 1,
+    "src/packages/command-runtime/src/commands/theme/index.ts": 1,
+    "src/packages/command-runtime/src/commands/upgrade/upgrade.tsx": 2,
+    "src/packages/command-runtime/src/commands/voice/index.ts": 1,
+    "src/packages/command-runtime/src/host.ts": 1,
+    "src/packages/command-runtime/src/runtime.ts": 8,
+    "src/packages/command-runtime/src/skills/bundled/keybindings.ts": 1,
+    "src/packages/command-runtime/src/skills/bundled/skillify.ts": 1,
+    "src/packages/command-runtime/src/skills/bundled/updateConfig.ts": 1,
+    "src/packages/command-runtime/src/skills/bundled/verify.ts": 2,
+    "src/packages/command-runtime/src/skills/bundledSkills.ts": 1,
+    "src/packages/command-runtime/src/skills/mcpSkillBuilders.ts": 2,
+    "src/packages/config/__tests__/config.test.ts": 3,
+    "src/packages/config/__tests__/pluginIdentifier.test.ts": 1,
+    "src/packages/config/dxt/helpers.ts": 1,
+    "src/packages/config/dxt/zip.ts": 1,
+    "src/packages/config/generators.ts": 1,
+    "src/packages/config/global/config.ts": 1,
+    "src/packages/config/manager.ts": 6,
+    "src/packages/config/migrations/migrateBypassPermissionsAcceptedToSettings.ts": 1,
+    "src/packages/config/migrations/resetAutoModeOptInForDefaultOffer.ts": 1,
+    "src/packages/config/plugin/PluginInstallationManager.ts": 2,
+    "src/packages/config/plugin/addDirPluginSettings.ts": 1,
+    "src/packages/config/plugin/commands/reload-plugins/index.ts": 1,
+    "src/packages/config/plugin/gitAvailability.ts": 1,
+    "src/packages/config/plugin/headlessPluginInstall.ts": 2,
+    "src/packages/config/plugin/hintRecommendation.ts": 4,
+    "src/packages/config/plugin/installCounts.ts": 1,
+    "src/packages/config/plugin/installedPluginsManager.ts": 15,
+    "src/packages/config/plugin/loadPluginAgents.ts": 3,
+    "src/packages/config/plugin/loadPluginCommands.ts": 10,
+    "src/packages/config/plugin/loadPluginHooks.ts": 8,
+    "src/packages/config/plugin/loadPluginOutputStyles.ts": 2,
+    "src/packages/config/plugin/lspPluginIntegration.ts": 5,
+    "src/packages/config/plugin/marketplaceHelpers.ts": 3,
+    "src/packages/config/plugin/marketplaceManager.ts": 31,
+    "src/packages/config/plugin/mcpPluginIntegration.ts": 4,
+    "src/packages/config/plugin/mcpbHandler.ts": 43,
+    "src/packages/config/plugin/nameCollision.ts": 1,
+    "src/packages/config/plugin/officialMarketplaceGcs.ts": 4,
+    "src/packages/config/plugin/orphanedPluginFilter.ts": 3,
+    "src/packages/config/plugin/parseMarketplaceInput.ts": 1,
+    "src/packages/config/plugin/pluginAutoupdate.ts": 7,
+    "src/packages/config/plugin/pluginFlagging.ts": 1,
+    "src/packages/config/plugin/pluginLoader.ts": 18,
+    "src/packages/config/plugin/pluginOptionsStorage.ts": 8,
+    "src/packages/config/plugin/pluginVersioning.ts": 1,
+    "src/packages/config/plugin/refresh.ts": 4,
+    "src/packages/config/plugin/trustedPluginConfig.ts": 3,
+    "src/packages/config/plugin/zipCache.ts": 7,
+    "src/packages/config/plugin/zipCacheAdapters.ts": 2,
+    "src/packages/config/semver.ts": 3,
+    "src/packages/config/settings/allErrors.ts": 1,
+    "src/packages/config/settings/inventory.ts": 3,
+    "src/packages/config/settings/settings.ts": 1,
+    "src/packages/config/sync/index.ts": 4,
+    "src/packages/context-compression/__tests__/lite.test.ts": 6,
+    "src/packages/context-compression/src/lite.ts": 3,
+    "src/packages/daemon/src/__tests__/bgAdopt.test.ts": 1,
+    "src/packages/daemon/src/__tests__/dispatchSpool.test.ts": 4,
+    "src/packages/daemon/src/bgDaemon.ts": 14,
+    "src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts": 5,
+    "src/packages/headless-sdk/src/sdkMemorySummary.ts": 1,
+    "src/packages/ide/src/lsp/LSPServerInstance.ts": 13,
+    "src/packages/ide/src/lsp/LSPServerManager.ts": 5,
+    "src/packages/ide/src/lsp/passiveFeedback.ts": 1,
+    "src/packages/local-observability/src/__tests__/cleanupHelpers.test.ts": 1,
+    "src/packages/local-observability/src/__tests__/fileOperationAnalytics.test.ts": 1,
+    "src/packages/local-observability/src/aggregates/stats.ts": 1,
+    "src/packages/local-observability/src/aggregates/statsCache.ts": 1,
+    "src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts": 1,
+    "src/packages/local-observability/src/log.ts": 1,
+    "src/packages/local-observability/src/slowLoggingTag.ts": 2,
+    "src/packages/mcp-runtime/src/SdkControlTransport.ts": 1,
+    "src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts": 6,
+    "src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts": 2,
+    "src/packages/mcp-runtime/src/__tests__/sanitization.test.ts": 1,
+    "src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts": 2,
+    "src/packages/mcp-runtime/src/api.ts": 2,
+    "src/packages/mcp-runtime/src/auth.ts": 43,
+    "src/packages/mcp-runtime/src/channelNotification.ts": 1,
+    "src/packages/mcp-runtime/src/client.ts": 3,
+    "src/packages/mcp-runtime/src/clientRuntime.ts": 12,
+    "src/packages/mcp-runtime/src/config.ts": 17,
+    "src/packages/mcp-runtime/src/elicitationHandler.ts": 5,
+    "src/packages/mcp-runtime/src/mcpInstructionsDelta.ts": 1,
+    "src/packages/mcp-runtime/src/mcpValidation.ts": 1,
+    "src/packages/mcp-runtime/src/runtimeHostSetup.ts": 6,
+    "src/packages/mcp-runtime/src/useManageMCPConnections.ts": 28,
+    "src/packages/mcp-runtime/src/utils.ts": 3,
+    "src/packages/memory/src/extractMemories.ts": 3,
+    "src/packages/memory/src/memdir.ts": 2,
+    "src/packages/memory/src/teamMemPaths.ts": 2,
+    "src/packages/memory/src/teamMemSyncTypes.ts": 4,
+    "src/packages/memory/src/teamMemorySync.ts": 2,
+    "src/packages/observability/__tests__/observability.test.ts": 7,
+    "src/packages/output/src/__tests__/safeJoinAndTruncate.test.ts": 1,
+    "src/packages/output/src/capture/asciicast.ts": 2,
+    "src/packages/output/src/render/exportRenderer.tsx": 1,
+    "src/packages/permission/__tests__/permissionPersistence.test.ts": 1,
+    "src/packages/permission/__tests__/permissionSchemas.test.ts": 4,
+    "src/packages/permission/src/__tests__/dangerousPatterns.test.ts": 1,
+    "src/packages/permission/src/__tests__/pathValidation.test.ts": 4,
+    "src/packages/permission/src/__tests__/permissionSchemas.behavior.test.ts": 1,
+    "src/packages/permission/src/__tests__/permissionUpdatePure.test.ts": 5,
+    "src/packages/permission/src/__tests__/shellRuleMatching.test.ts": 4,
+    "src/packages/permission/src/bypassPermissionsKillswitch.ts": 11,
+    "src/packages/permission/src/classifierDecision.ts": 1,
+    "src/packages/permission/src/commands/index.ts": 1,
+    "src/packages/permission/src/commands/permissions.tsx": 1,
+    "src/packages/permission/src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx": 2,
+    "src/packages/permission/src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx": 1,
+    "src/packages/permission/src/components/AskUserQuestionPermissionRequest/QuestionView.tsx": 1,
+    "src/packages/permission/src/components/BashPermissionRequest/BashPermissionRequest.tsx": 1,
+    "src/packages/permission/src/components/BashPermissionRequest/bashToolUseOptions.tsx": 1,
+    "src/packages/permission/src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx": 1,
+    "src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx": 19,
+    "src/packages/permission/src/components/FallbackPermissionRequest.tsx": 5,
+    "src/packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx": 1,
+    "src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts": 2,
+    "src/packages/permission/src/components/FilePermissionDialog/usePermissionHandler.ts": 1,
+    "src/packages/permission/src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx": 2,
+    "src/packages/permission/src/components/FilesystemPermissionRequest/FilesystemPermissionRequest.tsx": 1,
+    "src/packages/permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx": 6,
+    "src/packages/permission/src/components/PermissionDecisionDebugInfo.tsx": 1,
+    "src/packages/permission/src/components/PermissionPrompt.tsx": 3,
+    "src/packages/permission/src/components/PermissionRequest.tsx": 8,
+    "src/packages/permission/src/components/PermissionRuleExplanation.tsx": 1,
+    "src/packages/permission/src/components/SandboxPermissionRequest.tsx": 1,
+    "src/packages/permission/src/components/SkillPermissionRequest/SkillPermissionRequest.tsx": 5,
+    "src/packages/permission/src/components/hooks.ts": 5,
+    "src/packages/permission/src/components/rules/AddPermissionRules.tsx": 3,
+    "src/packages/permission/src/components/rules/PermissionRuleList.tsx": 10,
+    "src/packages/permission/src/components/rules/RemoveWorkspaceDirectory.tsx": 2,
+    "src/packages/permission/src/components/shellPermissionHelpers.tsx": 1,
+    "src/packages/permission/src/components/useShellPermissionFeedback.ts": 3,
+    "src/packages/permission/src/components/utils.ts": 1,
+    "src/packages/permission/src/permission.ts": 2,
+    "src/packages/permission/src/toolPermission/PermissionContext.ts": 7,
+    "src/packages/permission/src/toolPermission/handlers/interactiveHandler.ts": 4,
+    "src/packages/permission/src/toolPermission/handlers/swarmWorkerHandler.ts": 1,
+    "src/packages/permission/src/toolPermission/permissionLogging.ts": 1,
+    "src/packages/permission/src/yoloClassifier.ts": 7,
+    "src/packages/permission/src/yoloSystemPrompt.ts": 1,
+    "src/packages/plan/src/mode.ts": 1,
+    "src/packages/provider/__tests__/adapters.test.ts": 1,
+    "src/packages/provider/__tests__/contractsHostSmoke.test.ts": 1,
+    "src/packages/provider/__tests__/cost.test.ts": 1,
+    "src/packages/provider/__tests__/crossModelRead.test.ts": 1,
+    "src/packages/provider/__tests__/providerStreaming.test.ts": 6,
+    "src/packages/provider/__tests__/runtimeHelpers.test.ts": 9,
+    "src/packages/provider/src/__tests__/advisor.test.ts": 1,
+    "src/packages/provider/src/__tests__/connections.test.ts": 6,
+    "src/packages/provider/src/__tests__/integration.test.ts": 4,
+    "src/packages/provider/src/__tests__/modelCost.test.ts": 3,
+    "src/packages/provider/src/__tests__/withRetryClassification.behavior.test.ts": 2,
+    "src/packages/provider/src/adapters.ts": 1,
+    "src/packages/provider/src/antModels.ts": 1,
+    "src/packages/provider/src/anthropic/client.ts": 3,
+    "src/packages/provider/src/authAlias.ts": 2,
+    "src/packages/provider/src/aws.ts": 1,
+    "src/packages/provider/src/betas.ts": 2,
+    "src/packages/provider/src/betasConstants.ts": 1,
+    "src/packages/provider/src/claudeLegacy.ts": 3,
+    "src/packages/provider/src/claudeLegacyRuntime.ts": 3,
+    "src/packages/provider/src/codex/fetchAdapter.ts": 1,
+    "src/packages/provider/src/commands/advisor.ts": 1,
+    "src/packages/provider/src/commands/provider.ts": 13,
+    "src/packages/provider/src/contracts.ts": 1,
+    "src/packages/provider/src/dumpPrompts.ts": 1,
+    "src/packages/provider/src/fastMode.ts": 3,
+    "src/packages/provider/src/gemini/convertMessages.ts": 4,
+    "src/packages/provider/src/gemini/indexImpl.ts": 1,
+    "src/packages/provider/src/gemini/modelMapping.ts": 1,
+    "src/packages/provider/src/gemini/streamAdapter.ts": 1,
+    "src/packages/provider/src/grove.ts": 1,
+    "src/packages/provider/src/imageDimensionStrip.ts": 1,
+    "src/packages/provider/src/legacy/api.ts": 8,
+    "src/packages/provider/src/logging.ts": 3,
+    "src/packages/provider/src/mockRateLimits.ts": 10,
+    "src/packages/provider/src/model/configs.ts": 26,
+    "src/packages/provider/src/model/deprecation.ts": 3,
+    "src/packages/provider/src/model/modelStrings.ts": 3,
+    "src/packages/provider/src/modelAgent.ts": 1,
+    "src/packages/provider/src/modelCapabilities.ts": 1,
+    "src/packages/provider/src/oauth/client.ts": 14,
+    "src/packages/provider/src/oauth/index.ts": 8,
+    "src/packages/provider/src/openai/__tests__/convertMessages.test.ts": 4,
+    "src/packages/provider/src/openai/client.ts": 1,
+    "src/packages/provider/src/openai/convertMessages.ts": 2,
+    "src/packages/provider/src/openai/indexImpl.ts": 1,
+    "src/packages/provider/src/openai/modelMapping.ts": 1,
+    "src/packages/provider/src/openai/streamAdapter.ts": 1,
+    "src/packages/provider/src/promptCacheBreakDetection.ts": 2,
+    "src/packages/provider/src/proxy.ts": 9,
+    "src/packages/provider/src/rateLimitMessages.ts": 1,
+    "src/packages/provider/src/referral.ts": 8,
+    "src/packages/provider/src/runtimeHelpers.ts": 5,
+    "src/packages/provider/src/thinking.ts": 1,
+    "src/packages/provider/src/user.ts": 1,
+    "src/packages/provider/src/vcr.ts": 5,
+    "src/packages/provider/src/withRetry.ts": 1,
+    "src/packages/repl/src/__tests__/history.test.ts": 1,
+    "src/packages/repl/src/__tests__/killRing.test.ts": 4,
+    "src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts": 3,
+    "src/packages/repl/src/__tests__/relaunch.test.ts": 1,
+    "src/packages/repl/src/clipboard/screenshotClipboard.ts": 2,
+    "src/packages/repl/src/commands/add-dir/add-dir.tsx": 4,
+    "src/packages/repl/src/commands/cd/cd.ts": 1,
+    "src/packages/repl/src/commands/cd/index.ts": 1,
+    "src/packages/repl/src/commands/color/color.ts": 3,
+    "src/packages/repl/src/commands/config/config.tsx": 2,
+    "src/packages/repl/src/commands/config/index.ts": 1,
+    "src/packages/repl/src/commands/diff/diff.tsx": 1,
+    "src/packages/repl/src/commands/diff/index.ts": 1,
+    "src/packages/repl/src/commands/doctor/doctor.tsx": 1,
+    "src/packages/repl/src/commands/doctor/index.ts": 1,
+    "src/packages/repl/src/commands/export/index.ts": 1,
+    "src/packages/repl/src/commands/files/index.ts": 1,
+    "src/packages/repl/src/commands/help/help.tsx": 1,
+    "src/packages/repl/src/commands/help/index.ts": 1,
+    "src/packages/repl/src/commands/hooks/hooks.tsx": 1,
+    "src/packages/repl/src/commands/hooks/index.ts": 1,
+    "src/packages/repl/src/commands/mobile/mobile.tsx": 1,
+    "src/packages/repl/src/commands/plan/plan.tsx": 3,
+    "src/packages/repl/src/commands/rewind/index.ts": 1,
+    "src/packages/repl/src/commands/stats/index.ts": 1,
+    "src/packages/repl/src/commands/stats/stats.tsx": 1,
+    "src/packages/repl/src/commands/tui/tui.ts": 1,
+    "src/packages/repl/src/commands/usage/index.ts": 1,
+    "src/packages/repl/src/commands/usage/usage.tsx": 2,
+    "src/packages/repl/src/commands/vim/index.ts": 1,
+    "src/packages/repl/src/components/App.tsx": 2,
+    "src/packages/repl/src/components/AutoModeOptInDialog.tsx": 2,
+    "src/packages/repl/src/components/AutoUpdater.tsx": 4,
+    "src/packages/repl/src/components/AutoUpdaterWrapper.tsx": 1,
+    "src/packages/repl/src/components/BridgeDialog.tsx": 1,
+    "src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx": 1,
+    "src/packages/repl/src/components/CompactSummary.tsx": 4,
+    "src/packages/repl/src/components/ConsoleOAuthFlow.tsx": 8,
+    "src/packages/repl/src/components/CoordinatorAgentStatus.tsx": 3,
+    "src/packages/repl/src/components/DiagnosticsDisplay.tsx": 7,
+    "src/packages/repl/src/components/EffortCallout.tsx": 2,
+    "src/packages/repl/src/components/EffortIndicator.ts": 2,
+    "src/packages/repl/src/components/FastIcon.tsx": 1,
+    "src/packages/repl/src/components/FileEditToolDiff.tsx": 1,
+    "src/packages/repl/src/components/FullscreenLayout.tsx": 2,
+    "src/packages/repl/src/components/IdeOnboardingDialog.tsx": 2,
+    "src/packages/repl/src/components/InvalidConfigDialog.tsx": 1,
+    "src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx": 1,
+    "src/packages/repl/src/components/LogoV2/CondensedLogo.tsx": 2,
+    "src/packages/repl/src/components/LogoV2/LogoV2.tsx": 16,
+    "src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx": 2,
+    "src/packages/repl/src/components/LogoV2/feedConfigs.tsx": 1,
+    "src/packages/repl/src/components/MCPServerDesktopImportDialog.tsx": 1,
+    "src/packages/repl/src/components/MemoryUsageIndicator.tsx": 1,
+    "src/packages/repl/src/components/Message.tsx": 20,
+    "src/packages/repl/src/components/MessageModel.tsx": 9,
+    "src/packages/repl/src/components/MessageRow.tsx": 32,
+    "src/packages/repl/src/components/MessageSelector.tsx": 9,
+    "src/packages/repl/src/components/MessageTimestamp.tsx": 5,
+    "src/packages/repl/src/components/Messages.tsx": 29,
+    "src/packages/repl/src/components/ModelPicker.tsx": 3,
+    "src/packages/repl/src/components/NativeAutoUpdater.tsx": 4,
+    "src/packages/repl/src/components/Onboarding.tsx": 1,
+    "src/packages/repl/src/components/PackageManagerAutoUpdater.tsx": 1,
+    "src/packages/repl/src/components/Passes/Passes.tsx": 7,
+    "src/packages/repl/src/components/PromptInput/Notifications.tsx": 2,
+    "src/packages/repl/src/components/PromptInput/PromptInput.tsx": 25,
+    "src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx": 1,
+    "src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx": 2,
+    "src/packages/repl/src/components/PromptInput/PromptInputQueuedCommands.tsx": 2,
+    "src/packages/repl/src/components/PromptInput/SandboxPromptFooterHint.tsx": 1,
+    "src/packages/repl/src/components/PromptInput/useSwarmBanner.ts": 4,
+    "src/packages/repl/src/components/SandboxViolationExpandedView.tsx": 1,
+    "src/packages/repl/src/components/SessionBackgroundHint.tsx": 1,
+    "src/packages/repl/src/components/SessionPreview.tsx": 1,
+    "src/packages/repl/src/components/Settings/Config.tsx": 49,
+    "src/packages/repl/src/components/Settings/Status.tsx": 1,
+    "src/packages/repl/src/components/Settings/Usage.tsx": 1,
+    "src/packages/repl/src/components/Settings/questionTimeoutSetting.ts": 1,
+    "src/packages/repl/src/components/Spinner.tsx": 12,
+    "src/packages/repl/src/components/Spinner/SpinnerAnimationRow.tsx": 3,
+    "src/packages/repl/src/components/Spinner/SpinnerGlyph.tsx": 5,
+    "src/packages/repl/src/components/Spinner/TeammateSpinnerLine.tsx": 9,
+    "src/packages/repl/src/components/Spinner/utils.ts": 12,
+    "src/packages/repl/src/components/Stats.tsx": 3,
+    "src/packages/repl/src/components/StatusLine.tsx": 8,
+    "src/packages/repl/src/components/StatusNotices.tsx": 1,
+    "src/packages/repl/src/components/TaskListV2.tsx": 2,
+    "src/packages/repl/src/components/TeammateViewHeader.tsx": 1,
+    "src/packages/repl/src/components/TeleportProgress.tsx": 1,
+    "src/packages/repl/src/components/TextInput.tsx": 3,
+    "src/packages/repl/src/components/ThemePicker.tsx": 1,
+    "src/packages/repl/src/components/ValidationErrorsList.tsx": 6,
+    "src/packages/repl/src/components/VirtualMessageList.tsx": 7,
+    "src/packages/repl/src/components/WorktreeExitDialog.tsx": 4,
+    "src/packages/repl/src/components/agents/generateAgent.ts": 1,
+    "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx": 5,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStepWrapper.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/LocationStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/PromptStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx": 2,
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx": 2,
+    "src/packages/repl/src/components/agents/types.ts": 1,
+    "src/packages/repl/src/components/goal/GoalPanel.tsx": 1,
+    "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx": 7,
+    "src/packages/repl/src/components/hooks/PromptDialog.tsx": 3,
+    "src/packages/repl/src/components/hooks/SelectEventMode.tsx": 4,
+    "src/packages/repl/src/components/hooks/SelectHookMode.tsx": 2,
+    "src/packages/repl/src/components/hooks/SelectMatcherMode.tsx": 4,
+    "src/packages/repl/src/components/hooks/ViewHookMode.tsx": 3,
+    "src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx": 18,
+    "src/packages/repl/src/components/mcp/MCPListPanel.tsx": 23,
+    "src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx": 88,
+    "src/packages/repl/src/components/mcp/MCPSettings.tsx": 18,
+    "src/packages/repl/src/components/mcp/MCPStdioServerMenu.tsx": 25,
+    "src/packages/repl/src/components/mcp/MCPToolDetailView.tsx": 2,
+    "src/packages/repl/src/components/mcp/MCPToolListView.tsx": 4,
+    "src/packages/repl/src/components/mcp/McpParsingWarnings.tsx": 3,
+    "src/packages/repl/src/components/memory/MemoryFileSelector.tsx": 8,
+    "src/packages/repl/src/components/messageActions.tsx": 31,
+    "src/packages/repl/src/components/messageStaticness.ts": 9,
+    "src/packages/repl/src/components/messages/AssistantTextMessage.tsx": 1,
+    "src/packages/repl/src/components/messages/AssistantToolUseMessage.tsx": 5,
+    "src/packages/repl/src/components/messages/AttachmentMessage.tsx": 8,
+    "src/packages/repl/src/components/messages/CollapsedReadSearchContent.tsx": 9,
+    "src/packages/repl/src/components/messages/GroupedToolUseContent.tsx": 15,
+    "src/packages/repl/src/components/messages/HookProgressMessage.tsx": 2,
+    "src/packages/repl/src/components/messages/SystemAPIErrorMessage.tsx": 6,
+    "src/packages/repl/src/components/messages/SystemTextMessage.tsx": 29,
+    "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx": 2,
+    "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx": 2,
+    "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx": 1,
+    "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx": 2,
+    "src/packages/repl/src/components/messages/UserToolResultMessage/utils.tsx": 1,
+    "src/packages/repl/src/components/messages/nullRenderingAttachments.ts": 2,
+    "src/packages/repl/src/components/sandbox/SandboxSettings.tsx": 1,
+    "src/packages/repl/src/components/skills/SkillsMenu.tsx": 1,
+    "src/packages/repl/src/components/tasks/AsyncAgentDetailDialog.tsx": 1,
+    "src/packages/repl/src/components/tasks/BackgroundTaskStatus.tsx": 5,
+    "src/packages/repl/src/components/tasks/BackgroundTasksDialog.tsx": 22,
+    "src/packages/repl/src/components/tasks/InProcessTeammateDetailDialog.tsx": 13,
+    "src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx": 3,
+    "src/packages/repl/src/components/tasks/ShellProgress.tsx": 1,
+    "src/packages/repl/src/components/tasks/WorkflowsDialog.tsx": 2,
+    "src/packages/repl/src/components/tasks/renderToolActivity.tsx": 1,
+    "src/packages/repl/src/components/tasks/taskStatusUtils.tsx": 4,
+    "src/packages/repl/src/components/teams/TeamsDialog.tsx": 6,
+    "src/packages/repl/src/components/ultraplan/UltraplanChoiceDialog.tsx": 2,
+    "src/packages/repl/src/components/wizard/WizardDialogLayout.tsx": 1,
+    "src/packages/repl/src/components/wizard/WizardNavigationFooter.tsx": 1,
+    "src/packages/repl/src/components/wizard/WizardProvider.tsx": 2,
+    "src/packages/repl/src/components/wizard/types.ts": 1,
+    "src/packages/repl/src/conversationRecovery.tsx": 12,
+    "src/packages/repl/src/diagnostics/desktopDeepLink.ts": 1,
+    "src/packages/repl/src/diagnostics/doctorContextWarnings.ts": 1,
+    "src/packages/repl/src/dialogLaunchers/dialogLaunchers.tsx": 1,
+    "src/packages/repl/src/doctorDiagnostic.ts": 3,
+    "src/packages/repl/src/fileIndex/index.ts": 5,
+    "src/packages/repl/src/hooks/fileSuggestions.ts": 3,
+    "src/packages/repl/src/hooks/notifs/useAutoModeUnavailableNotification.ts": 1,
+    "src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx": 3,
+    "src/packages/repl/src/hooks/notifs/useIDEStatusIndicator.tsx": 1,
+    "src/packages/repl/src/hooks/notifs/useMcpConnectivityStatus.tsx": 1,
+    "src/packages/repl/src/hooks/notifs/usePluginAutoupdateNotification.tsx": 1,
+    "src/packages/repl/src/hooks/notifs/usePluginInstallationStatus.tsx": 1,
+    "src/packages/repl/src/hooks/notifs/useRateLimitWarningNotification.tsx": 3,
+    "src/packages/repl/src/hooks/useArrowKeyHistory.tsx": 1,
+    "src/packages/repl/src/hooks/useBackgroundTaskNavigation.ts": 6,
+    "src/packages/repl/src/hooks/useCanUseTool.tsx": 4,
+    "src/packages/repl/src/hooks/useCancelRequest.ts": 3,
+    "src/packages/repl/src/hooks/useChromeExtensionNotification.tsx": 2,
+    "src/packages/repl/src/hooks/useClaudeCodeHintRecommendation.tsx": 1,
+    "src/packages/repl/src/hooks/useDirectConnect.ts": 1,
+    "src/packages/repl/src/hooks/useGlobalKeybindings.tsx": 2,
+    "src/packages/repl/src/hooks/useInboxPoller.ts": 10,
+    "src/packages/repl/src/hooks/useIssueFlagBanner.ts": 1,
+    "src/packages/repl/src/hooks/useManagePlugins.ts": 1,
+    "src/packages/repl/src/hooks/useMergedTools.ts": 2,
+    "src/packages/repl/src/hooks/useOfficialMarketplaceNotification.tsx": 1,
+    "src/packages/repl/src/hooks/usePromptSuggestion.ts": 1,
+    "src/packages/repl/src/hooks/usePromptsFromClaudeInChrome.tsx": 1,
+    "src/packages/repl/src/hooks/useRemoteSession.ts": 6,
+    "src/packages/repl/src/hooks/useReplBridge.tsx": 7,
+    "src/packages/repl/src/hooks/useSSHSession.ts": 2,
+    "src/packages/repl/src/hooks/useScheduledTasks.ts": 2,
+    "src/packages/repl/src/hooks/useSwarmInitialization.ts": 3,
+    "src/packages/repl/src/hooks/useSwarmPermissionPoller.ts": 1,
+    "src/packages/repl/src/hooks/useTaskListWatcher.ts": 1,
+    "src/packages/repl/src/hooks/useTasksV2.ts": 1,
+    "src/packages/repl/src/hooks/useTeammateViewAutoExit.ts": 2,
+    "src/packages/repl/src/hooks/useTextInput.ts": 2,
+    "src/packages/repl/src/hooks/useTurnDiffs.ts": 3,
+    "src/packages/repl/src/hooks/useTypeahead.tsx": 1,
+    "src/packages/repl/src/hooks/useUpdateNotification.ts": 1,
+    "src/packages/repl/src/hooksConfigManager.ts": 11,
+    "src/packages/repl/src/hooksSettings.ts": 10,
+    "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx": 7,
+    "src/packages/repl/src/isHookEqual.ts": 2,
+    "src/packages/repl/src/notifier.ts": 2,
+    "src/packages/repl/src/processUserInput/processBashCommand.tsx": 1,
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx": 20,
+    "src/packages/repl/src/processUserInput/processTextPrompt.ts": 2,
+    "src/packages/repl/src/processUserInput/processUserInput.ts": 8,
+    "src/packages/repl/src/promptEditor.ts": 1,
+    "src/packages/repl/src/promptOverlayContext.tsx": 1,
+    "src/packages/repl/src/promptSuggestion.tsx": 9,
+    "src/packages/repl/src/promptSuggestionSpeculation.tsx": 30,
+    "src/packages/repl/src/queryHelpers.ts": 11,
+    "src/packages/repl/src/screens/Doctor.tsx": 3,
+    "src/packages/repl/src/screens/REPLView.tsx": 113,
+    "src/packages/repl/src/screens/ResumeConversation.tsx": 4,
+    "src/packages/repl/src/screens/agentFleet/FleetView.tsx": 2,
+    "src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts": 6,
+    "src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts": 1,
+    "src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts": 1,
+    "src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts": 3,
+    "src/packages/repl/src/screens/agentFleet/mountFleetView.tsx": 1,
+    "src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts": 1,
+    "src/packages/repl/src/screens/repl/bgDetachSignal.ts": 1,
+    "src/packages/repl/src/screens/repl/onlySleepToolActive.ts": 5,
+    "src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts": 5,
+    "src/packages/repl/src/screens/repl/useReplRuntimeViews.ts": 1,
+    "src/packages/repl/src/tasksTypes.ts": 1,
+    "src/packages/repl/src/teammateViewHelpers.ts": 1,
+    "src/packages/repl/src/terminalSetup.ts": 1,
+    "src/packages/repl/src/tips/tipRegistry.ts": 22,
+    "src/packages/repl/src/tips/tipScheduler.ts": 4,
+    "src/packages/repl/src/uiHelpers/groupToolUses.ts": 1,
+    "src/packages/repl/src/uiHelpers/logoV2Utils.ts": 1,
+    "src/packages/repl/src/ultraplan.ts": 8,
+    "src/packages/ripgrep-napi/__tests__/native.test.ts": 4,
+    "src/packages/server/src/directConnectManager.ts": 1,
+    "src/packages/server/src/remote/RemoteSessionManager.ts": 4,
+    "src/packages/server/src/remote/SessionsWebSocket.ts": 1,
+    "src/packages/server/src/remote/sdkMessageAdapter.ts": 1,
+    "src/packages/server/src/upstreamproxy/relay.ts": 1,
+    "src/packages/shell/src/Shell.ts": 7,
+    "src/packages/shell/src/__test__/import.test.ts": 3,
+    "src/packages/shell/src/bash/ShellSnapshot.ts": 1,
+    "src/packages/shell/src/bash/ast.ts": 1,
+    "src/packages/shell/src/bash/parser.ts": 3,
+    "src/packages/shell/src/bash/prefix.ts": 2,
+    "src/packages/shell/src/exec.ts": 2,
+    "src/packages/shell/src/execFileNoThrow.ts": 2,
+    "src/packages/shell/src/legacy/bashProvider.ts": 1,
+    "src/packages/shell/src/legacy/prefix.ts": 5,
+    "src/packages/shell/src/prefix/specPrefix.ts": 1,
+    "src/packages/shell/src/sandbox/sandbox-adapter.ts": 27,
+    "src/packages/shell/src/shell/prefix.ts": 1,
+    "src/packages/shell/src/shellCommand.ts": 2,
+    "src/packages/shell/src/shellDiscovery.ts": 1,
+    "src/packages/skills/__tests__/skillsFromDir.test.ts": 11,
+    "src/packages/skills/src/fromDir.ts": 5,
+    "src/packages/storage/src/__tests__/conversationChain.test.ts": 9,
+    "src/packages/storage/src/__tests__/diskOutput.test.ts": 1,
+    "src/packages/storage/src/__tests__/sessionPaths.test.ts": 1,
+    "src/packages/storage/src/__tests__/sessionStart.test.ts": 11,
+    "src/packages/storage/src/glob.ts": 2,
+    "src/packages/storage/src/plans.ts": 1,
+    "src/packages/storage/src/sessionStorage.ts": 103,
+    "src/packages/storage/src/toolResultStorage.ts": 1,
+    "src/packages/swarm/__tests__/buildSwarmAgentDeps.test.ts": 2,
+    "src/packages/swarm/__tests__/createSwarmHostDeps.test.ts": 2,
+    "src/packages/swarm/__tests__/inProcessBackend.test.ts": 1,
+    "src/packages/swarm/__tests__/inProcessRunner.test.ts": 5,
+    "src/packages/swarm/__tests__/spawnInProcess.test.ts": 10,
+    "src/packages/swarm/commands/agents/agents.tsx": 1,
+    "src/packages/swarm/commands/agents/index.ts": 1,
+    "src/packages/swarm/commands/branch/branch.ts": 3,
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts": 8,
+    "src/packages/swarm/src/backends/InProcessBackend.ts": 3,
+    "src/packages/swarm/src/core/It2SetupPrompt.tsx": 3,
+    "src/packages/swarm/src/install/installSwarmHost.ts": 9,
+    "src/packages/swarm/src/runtime/inProcessRunner.ts": 19,
+    "src/packages/swarm/src/runtime/pollForPromptOrShutdown.ts": 1,
+    "src/packages/swarm/src/runtime/spawnInProcess.ts": 8,
+    "src/packages/swarm/src/tasks/InProcessTeammateTask.ts": 2,
+    "src/packages/swarm/src/tasks/__tests__/InProcessTeammateTask.test.ts": 8,
+    "src/packages/swarm/src/worktree/index.ts": 7,
+    "src/packages/tool-registry/src/Tool.ts": 4,
+    "src/packages/tool-registry/src/__tests__/integration.test.ts": 2,
+    "src/packages/tool-registry/src/__tests__/rootModules.test.ts": 1,
+    "src/packages/tool-registry/src/__tests__/semanticCoercion.test.ts": 1,
+    "src/packages/tool-registry/src/collapseReadSearch.ts": 2,
+    "src/packages/tool-registry/src/markdownConfigLoader.ts": 2,
+    "src/packages/tool-registry/src/notebook.ts": 48,
+    "src/packages/tool-registry/src/services/StreamingToolExecutor.ts": 3,
+    "src/packages/tool-registry/src/services/toolExecution.ts": 29,
+    "src/packages/tool-registry/src/services/toolHooks.ts": 9,
+    "src/packages/tool-registry/src/skills/skillChangeDetector.ts": 5,
+    "src/packages/tool-registry/src/tasks/RemoteAgentTask.tsx": 28,
+    "src/packages/tool-registry/src/teleport.tsx": 4,
+    "src/packages/tool-registry/src/toolPool.ts": 1,
+    "src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx": 22,
+    "src/packages/tool-registry/src/tools/AgentTool/UI.tsx": 42,
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts": 6,
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts": 1,
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts": 8,
+    "src/packages/tool-registry/src/tools/AgentTool/agentToolUtils.ts": 3,
+    "src/packages/tool-registry/src/tools/AgentTool/built-in/claudeCodeGuideAgent.ts": 1,
+    "src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts": 1,
+    "src/packages/tool-registry/src/tools/AgentTool/forkSubagent.ts": 1,
+    "src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts": 3,
+    "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts": 6,
+    "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts": 15,
+    "src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts": 1,
+    "src/packages/tool-registry/src/tools/BashTool/BashTool.tsx": 11,
+    "src/packages/tool-registry/src/tools/BashTool/UI.tsx": 1,
+    "src/packages/tool-registry/src/tools/BashTool/bashCommandHelpers.ts": 1,
+    "src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts": 1,
+    "src/packages/tool-registry/src/tools/BashTool/pathValidation.ts": 3,
+    "src/packages/tool-registry/src/tools/BashTool/prompt.ts": 1,
+    "src/packages/tool-registry/src/tools/BashTool/shouldUseSandbox.ts": 1,
+    "src/packages/tool-registry/src/tools/ConfigTool/ConfigTool.ts": 1,
+    "src/packages/tool-registry/src/tools/ConfigTool/supportedSettings.ts": 1,
+    "src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts": 3,
+    "src/packages/tool-registry/src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts": 3,
+    "src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts": 2,
+    "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts": 6,
+    "src/packages/tool-registry/src/tools/FileEditTool/utils.ts": 2,
+    "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts": 7,
+    "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts": 7,
+    "src/packages/tool-registry/src/tools/FileWriteTool/UI.tsx": 1,
+    "src/packages/tool-registry/src/tools/GlobTool/GlobTool.ts": 1,
+    "src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts": 3,
+    "src/packages/tool-registry/src/tools/LSPTool/LSPTool.ts": 1,
+    "src/packages/tool-registry/src/tools/MCPTool/UI.ts": 1,
+    "src/packages/tool-registry/src/tools/McpAuthTool/McpAuthTool.ts": 1,
+    "src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts": 14,
+    "src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx": 10,
+    "src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts": 1,
+    "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts": 7,
+    "src/packages/tool-registry/src/tools/PowerShellTool/powershellPermissions.ts": 1,
+    "src/packages/tool-registry/src/tools/PushNotificationTool/PushNotificationTool.tsx": 1,
+    "src/packages/tool-registry/src/tools/ScheduleCronTool/prompt.ts": 1,
+    "src/packages/tool-registry/src/tools/ScheduleWakeupTool/ScheduleWakeupTool.tsx": 1,
+    "src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts": 5,
+    "src/packages/tool-registry/src/tools/SendMessageTool/UI.tsx": 1,
+    "src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts": 6,
+    "src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts": 10,
+    "src/packages/tool-registry/src/tools/SkillTool/UI.tsx": 3,
+    "src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts": 1,
+    "src/packages/tool-registry/src/tools/TaskOutputTool/TaskOutputTool.tsx": 4,
+    "src/packages/tool-registry/src/tools/TaskStopTool/TaskStopTool.ts": 3,
+    "src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts": 1,
+    "src/packages/tool-registry/src/tools/TeamCreateTool/TeamCreateTool.ts": 1,
+    "src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts": 5,
+    "src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts": 5,
+    "src/packages/tool-registry/src/tools/WebFetchTool/utils.ts": 3,
+    "src/packages/tool-registry/src/tools/WebSearchTool/UI.tsx": 4,
+    "src/packages/tool-registry/src/tools/WebSearchTool/WebSearchTool.ts": 1,
+    "src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.integration.ts": 1,
+    "src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts": 24,
+    "src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts": 2,
+    "src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts": 11,
+    "src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts": 3,
+    "src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts": 6,
+    "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts": 6,
+    "src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts": 3,
+    "src/packages/tool-registry/src/tools/__tests__/utils.test.ts": 4,
+    "src/packages/tool-registry/src/tools/registry/ToolRegistry.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/__tests__/filtering.test.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/filtering.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/providers/McpToolsProvider.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/providers/PluginToolsProvider.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/providers/UserToolsProvider.ts": 1,
+    "src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts": 10,
+    "src/packages/tool-registry/src/tools/shared/__tests__/ensureTeamFile.test.ts": 1,
+    "src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts": 4,
+    "src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts": 4,
+    "src/packages/tools/__tests__/planMode.test.ts": 7,
+    "src/packages/tools/__tests__/subagent.test.ts": 29,
+    "src/packages/tools/__tests__/tools.test.ts": 1,
+    "src/packages/tools/src/agent.ts": 4,
+    "src/packages/updater/src/internal/semverCompat.ts": 3,
+    "src/packages/updater/src/nativeInstaller/__tests__/packageManagers.test.ts": 1,
+    "src/packages/updater/src/nativeInstaller/download.ts": 1,
+    "src/packages/updater/src/nativeInstaller/platform.ts": 1,
+    "src/rules/emit/markdown.ts": 2,
+    "src/skills/bin/import.ts": 1,
+    "src/task/rst.ts": 2,
+    "tests/agents/save_result.test.ts": 1,
+    "tests/conformance/harnessChecklist.test.ts": 2,
+    "tests/conformance/maintenance.test.ts": 2,
+    "tests/coordination/branchIntegration.test.ts": 30,
+    "tests/integration/agent-loop.test.ts": 6,
+    "tests/integration/cli-arguments.test.ts": 11,
+    "tests/integration/context-build.test.ts": 8,
+    "tests/integration/message-pipeline.test.ts": 6,
+    "tests/integration/tool-chain.test.ts": 11,
+    "tests/package/package_identity.test.ts": 3,
+    "tests/rules/markdown.test.ts": 1,
+    "tests/skills/markdown.test.ts": 1,
+    "tests/smoke/bg-cycle-smoke.test.ts": 1,
+    "tests/smoke/lib/runtime-probe.ts": 1,
+    "tests/smoke/live-fire-smoke.test.ts": 1,
+    "tests/task/extraction.test.ts": 2,
+    "tests/task/premises.test.ts": 2,
+    "tests/unit/gemini/convertMessages.test.ts": 1,
+    "tests/unit/gemini/streamAdapter.test.ts": 1,
+    "tests/unit/openai/convertMessages.test.ts": 6,
+    "tests/unit/openai/convertTools.test.ts": 4,
+    "tests/unit/openai/streamAdapter.test.ts": 1,
+    "tests/unit/settings/config.test.ts": 22,
+    "tests/unit/utils/claudemd.test.ts": 1,
+    "tests/unit/utils/collapseHookSummaries.test.ts": 8,
+    "tests/unit/utils/collapseTeammateShutdowns.test.ts": 12,
+    "tests/unit/utils/controlMessageCompat.test.ts": 1,
+    "tests/unit/utils/diff.test.ts": 5,
+    "tests/unit/utils/effort.test.ts": 2,
+    "tests/unit/utils/errors.test.ts": 1,
+    "tests/unit/utils/frontmatterParser.test.ts": 8,
+    "tests/unit/utils/gitDiff.test.ts": 10,
+    "tests/unit/utils/memoize.test.ts": 1,
+    "tests/unit/utils/messages.test.ts": 12,
+    "tests/unit/utils/notebook.test.ts": 2,
+    "tests/unit/utils/sequential.test.ts": 2,
+    "tests/unit/utils/textHighlighting.test.ts": 7,
+    "tests/unit/utils/tokens.test.ts": 3,
+    "tests/unit/utils/treeify.test.ts": 11,
+    "tests/unit/utils/uuid.test.ts": 2,
+    "tests/workbench/paths.test.ts": 1
+  },
+  "diagnostics": 4797,
+  "files": 924,
+  "missing_exports": [
+    {
+      "consumer": "src/packages/@ant/ink/src/keybindings/KeybindingSetup.tsx",
+      "count": 1,
+      "provider": "../hooks/use-input.js",
+      "symbol": "Key"
+    },
+    {
+      "consumer": "src/packages/agent/SessionMemory/sessionMemory.ts",
+      "count": 1,
+      "provider": "../prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChrome/chromeNativeHost.ts",
+      "count": 1,
+      "provider": "./common.js",
+      "symbol": "getSecureSocketPath"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChrome/chromeNativeHost.ts",
+      "count": 1,
+      "provider": "./common.js",
+      "symbol": "getSocketDir"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChrome/mcpServer.ts",
+      "count": 1,
+      "provider": "./common.js",
+      "symbol": "getAllSocketPaths"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChrome/mcpServer.ts",
+      "count": 1,
+      "provider": "./common.js",
+      "symbol": "getSecureSocketPath"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChromeSetup.ts",
+      "count": 1,
+      "provider": "./claudeInChromeCommon.js",
+      "symbol": "getAllBrowserDataPaths"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChromeSetup.ts",
+      "count": 1,
+      "provider": "./claudeInChromeCommon.js",
+      "symbol": "getAllNativeMessagingHostsDirs"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChromeSetup.ts",
+      "count": 1,
+      "provider": "./claudeInChromeCommon.js",
+      "symbol": "getAllWindowsRegistryKeys"
+    },
+    {
+      "consumer": "src/packages/agent/claudeInChromeSetup.ts",
+      "count": 1,
+      "provider": "./claudeInChromeCommon.js",
+      "symbol": "openInChrome"
+    },
+    {
+      "consumer": "src/packages/agent/command.ts",
+      "count": 1,
+      "provider": "./compaction/compact.js",
+      "symbol": "CompactionResult"
+    },
+    {
+      "consumer": "src/packages/agent/commands/commit-push-pr.ts",
+      "count": 1,
+      "provider": "../attribution.js",
+      "symbol": "getAttributionTexts"
+    },
+    {
+      "consumer": "src/packages/agent/commands/commit-push-pr.ts",
+      "count": 1,
+      "provider": "../attribution.js",
+      "symbol": "getEnhancedPRAttribution"
+    },
+    {
+      "consumer": "src/packages/agent/commands/commit.ts",
+      "count": 1,
+      "provider": "../attribution.js",
+      "symbol": "getAttributionTexts"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/autoCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "CompactionResult"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/autoCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "ERROR_MESSAGE_USER_ABORT"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/autoCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "RecompactionInfo"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/autoCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "compactConversation"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/postCompactCleanup.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "resetGetMemoryFilesCache"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/sessionMemoryCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "CompactionResult"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/sessionMemoryCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "annotateBoundaryWithPreservedSegment"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/sessionMemoryCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "buildPostCompactMessages"
+    },
+    {
+      "consumer": "src/packages/agent/compaction/sessionMemoryCompact.ts",
+      "count": 1,
+      "provider": "./compact.js",
+      "symbol": "createPlanAttachmentIfNeeded"
+    },
+    {
+      "consumer": "src/packages/agent/fileChangedWatcher.ts",
+      "count": 1,
+      "provider": "./hooks.js",
+      "symbol": "HookOutsideReplResult"
+    },
+    {
+      "consumer": "src/packages/agent/fileChangedWatcher.ts",
+      "count": 1,
+      "provider": "./hooks.js",
+      "symbol": "executeCwdChangedHooks"
+    },
+    {
+      "consumer": "src/packages/agent/fileChangedWatcher.ts",
+      "count": 1,
+      "provider": "./hooks.js",
+      "symbol": "executeFileChangedHooks"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/execAgentHook.ts",
+      "count": 1,
+      "provider": "../attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/execAgentHook.ts",
+      "count": 1,
+      "provider": "../hooks.js",
+      "symbol": "HookResult"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/execAgentHook.ts",
+      "count": 1,
+      "provider": "../messages.js",
+      "symbol": "handleMessageFromStream"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/execAgentHook.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/execPromptHook.ts",
+      "count": 1,
+      "provider": "../attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/execPromptHook.ts",
+      "count": 1,
+      "provider": "../hooks.js",
+      "symbol": "HookResult"
+    },
+    {
+      "consumer": "src/packages/agent/hooks/hookHelpers.ts",
+      "count": 1,
+      "provider": "../messages.js",
+      "symbol": "hasSuccessfulToolCall"
+    },
+    {
+      "consumer": "src/packages/agent/internal/fileHistoryCore.ts",
+      "count": 1,
+      "provider": "../internalUtils.js",
+      "symbol": "pathExists"
+    },
+    {
+      "consumer": "src/packages/agent/query.ts",
+      "count": 1,
+      "provider": "./hooks.js",
+      "symbol": "executePostToolBatchHooks"
+    },
+    {
+      "consumer": "src/packages/agent/queryContext.ts",
+      "count": 1,
+      "provider": "./prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/agent/sessionTools/analyzeContext.ts",
+      "count": 1,
+      "provider": "../prompts.js",
+      "symbol": "SYSTEM_PROMPT_DYNAMIC_BOUNDARY"
+    },
+    {
+      "consumer": "src/packages/agent/sessionTools/analyzeContext.ts",
+      "count": 1,
+      "provider": "../prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/agent/sessionTools/analyzeContext.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/agent/statusAlias.tsx",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "getManagedFileSettingsPresence"
+    },
+    {
+      "consumer": "src/packages/agent/statusAlias.tsx",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "getPolicySettingsOrigin"
+    },
+    {
+      "consumer": "src/packages/agent/statusAlias.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "AgentEvent"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "AgentInput"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "CompactionResult"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "PermissionResult"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "ProviderEvent"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "ProviderStreamParams"
+    },
+    {
+      "consumer": "src/packages/agent/testing/index.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "StopHookResult"
+    },
+    {
+      "consumer": "src/packages/app-host/src/init.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "recordFirstStartTime"
+    },
+    {
+      "consumer": "src/packages/app-host/src/init.ts",
+      "count": 1,
+      "provider": "@thyrox/shell",
+      "symbol": "getCachedPowerShellPath"
+    },
+    {
+      "consumer": "src/packages/app-host/src/runtime/commandRegistryRuntime.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "clearSkillCaches"
+    },
+    {
+      "consumer": "src/packages/app-host/src/runtime/commandRegistryRuntime.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "getDynamicSkills"
+    },
+    {
+      "consumer": "src/packages/app-host/src/runtime/commandRegistryRuntime.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "getSkillDirCommands"
+    },
+    {
+      "consumer": "src/packages/app-host/src/runtime/installCliBindings.ts",
+      "count": 1,
+      "provider": "@thyrox/cli",
+      "symbol": "HeadlessStoreParams"
+    },
+    {
+      "consumer": "src/packages/app-host/src/runtime/installCliBindings.ts",
+      "count": 1,
+      "provider": "@thyrox/cli",
+      "symbol": "installCliHostBindings"
+    },
+    {
+      "consumer": "src/packages/app-host/src/runtime/runtimeHandles.ts",
+      "count": 1,
+      "provider": "@thyrox/cli",
+      "symbol": "HeadlessStoreParams"
+    },
+    {
+      "consumer": "src/packages/cli/src/bg.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasAutoModeOptIn"
+    },
+    {
+      "consumer": "src/packages/cli/src/bg.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasSkipDangerousModePermissionPrompt"
+    },
+    {
+      "consumer": "src/packages/cli/src/bg/openAgentsFromRepl.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "markHasUsedAgentsFleet"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/bootstrap-utils.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "getManagedSettingsKeysForLogging"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/main.tsx",
+      "count": 1,
+      "provider": "@thyrox/cli",
+      "symbol": "runClaudeCode"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/mcp.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/preprocess-argv.ts",
+      "count": 1,
+      "provider": "./mode-dispatch.js",
+      "symbol": "PendingAssistantChat"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/preprocess-argv.ts",
+      "count": 1,
+      "provider": "./mode-dispatch.js",
+      "symbol": "PendingConnect"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/preprocess-argv.ts",
+      "count": 1,
+      "provider": "./mode-dispatch.js",
+      "symbol": "PendingSSH"
+    },
+    {
+      "consumer": "src/packages/cli/src/entry/run-program.ts",
+      "count": 1,
+      "provider": "./mode-dispatch.js",
+      "symbol": "runModeDispatch"
+    },
+    {
+      "consumer": "src/packages/cli/src/handlers/autoMode.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "getAutoModeConfig"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/control/handlers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "getAutoModeUnavailableNotification"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/control/handlers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "getAutoModeUnavailableReason"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/control/handlers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "isAutoModeGateEnabled"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/control/handlers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "isBypassPermissionsModeDisabled"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/control/handlers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "transitionPermissionMode"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/control/permission-helpers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/load.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreSessionStateFromLog"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeNotificationHooks"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/sessionTitle.js",
+      "symbol": "generateSessionTitle"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/permission",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "registerProcessOutputErrorHandlers"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "writeToStdout"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreAgentFromSession"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreSessionStateFromLog"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "registerProcessOutputErrorHandlers"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "writeToStdout"
+    },
+    {
+      "consumer": "src/packages/cli/src/headless/sdk/session/run.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreAgentFromSession"
+    },
+    {
+      "consumer": "src/packages/cli/src/remoteIO.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "writeToStdout"
+    },
+    {
+      "consumer": "src/packages/cli/src/setup/setup.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "hasWorktreeCreateHook"
+    },
+    {
+      "consumer": "src/packages/cli/src/setup/setup.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "clearMemoryFileCaches"
+    },
+    {
+      "consumer": "src/packages/cli/src/structuredIO.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePermissionRequestHooks"
+    },
+    {
+      "consumer": "src/packages/cli/src/structuredIO.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/cli/src/structuredIO.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "writeToStdout"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/btw/btw.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/btw/btw.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/chrome/chrome.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/claudeInChrome/common.js",
+      "symbol": "openInChrome"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/clear/caches.ts",
+      "count": 1,
+      "provider": "../../skills/loadSkillsDir.js",
+      "symbol": "clearDynamicSkills"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/clear/caches.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "resetSentSkillNames"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/clear/caches.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "resetGetMemoryFilesCache"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/clear/conversation.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeSessionEndHooks"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/clear/conversation.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "getSessionEndHookTimeoutMs"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "CompactionResult"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "ERROR_MESSAGE_INCOMPLETE_RESPONSE"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "ERROR_MESSAGE_NOT_ENOUGH_MESSAGES"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "ERROR_MESSAGE_USER_ABORT"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "compactConversation"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "mergeHookInstructions"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePreCompactHooks"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/compact/compact.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/context/context-noninteractive.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/context/context.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/effort/effort.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getDisplayedEffortLevel"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/effort/effort.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getEffortValueDescription"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/login/login.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "stripSignatureBlocks"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/memory/memory.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "clearMemoryFileCaches"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/memory/memory.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/plugin/ManageMarketplaces.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "shouldSkipPluginAutoupdate"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/commands/rename/rename.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/skills/bundled/skillify.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/skills/bundledSkills.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "getBundledSkillsRoot"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/skills/mcpSkillBuilders.ts",
+      "count": 1,
+      "provider": "./loadSkillsDir.js",
+      "symbol": "createSkillCommand"
+    },
+    {
+      "consumer": "src/packages/command-runtime/src/skills/mcpSkillBuilders.ts",
+      "count": 1,
+      "provider": "./loadSkillsDir.js",
+      "symbol": "parseSkillFrontmatterFields"
+    },
+    {
+      "consumer": "src/packages/config/migrations/migrateBypassPermissionsAcceptedToSettings.ts",
+      "count": 1,
+      "provider": "../settings/settings.js",
+      "symbol": "hasSkipDangerousModePermissionPrompt"
+    },
+    {
+      "consumer": "src/packages/config/plugin/PluginInstallationManager.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "AppState"
+    },
+    {
+      "consumer": "src/packages/config/plugin/addDirPluginSettings.ts",
+      "count": 1,
+      "provider": "../settings/types.js",
+      "symbol": "ExtraKnownMarketplaceSchema"
+    },
+    {
+      "consumer": "src/packages/config/plugin/loadPluginAgents.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "AgentColorName"
+    },
+    {
+      "consumer": "src/packages/config/plugin/loadPluginAgents.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "AgentDefinition"
+    },
+    {
+      "consumer": "src/packages/config/plugin/loadPluginHooks.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "HookEvent"
+    },
+    {
+      "consumer": "src/packages/config/plugin/loadPluginOutputStyles.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "OutputStyleConfig"
+    },
+    {
+      "consumer": "src/packages/config/plugin/lspPluginIntegration.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "LspServerConfig"
+    },
+    {
+      "consumer": "src/packages/config/plugin/mcpPluginIntegration.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "McpServerConfig"
+    },
+    {
+      "consumer": "src/packages/config/plugin/mcpbHandler.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "McpServerConfig"
+    },
+    {
+      "consumer": "src/packages/config/plugin/pluginAutoupdate.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "shouldSkipPluginAutoupdate"
+    },
+    {
+      "consumer": "src/packages/config/plugin/refresh.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "AgentDefinitionsResult"
+    },
+    {
+      "consumer": "src/packages/config/plugin/refresh.ts",
+      "count": 1,
+      "provider": "./_deps.js",
+      "symbol": "AppState"
+    },
+    {
+      "consumer": "src/packages/config/sync/index.ts",
+      "count": 1,
+      "provider": "../global/config.js",
+      "symbol": "getMemoryPath"
+    },
+    {
+      "consumer": "src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts",
+      "count": 1,
+      "provider": "../types.js",
+      "symbol": "Command"
+    },
+    {
+      "consumer": "src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts",
+      "count": 1,
+      "provider": "../types.js",
+      "symbol": "Tool"
+    },
+    {
+      "consumer": "src/packages/mcp-runtime/src/utils.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasSkipDangerousModePermissionPrompt"
+    },
+    {
+      "consumer": "src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/context.js",
+      "symbol": "calculateContextPercentages"
+    },
+    {
+      "consumer": "src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "getUseAutoModeDuringPlan"
+    },
+    {
+      "consumer": "src/packages/permission/src/components/FilePermissionDialog/usePermissionHandler.ts",
+      "count": 1,
+      "provider": "../../filesystem.js",
+      "symbol": "generateSuggestions"
+    },
+    {
+      "consumer": "src/packages/permission/src/components/FileWritePermissionRequest/FileWriteToolDiff.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchForDisplay"
+    },
+    {
+      "consumer": "src/packages/permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchForDisplay"
+    },
+    {
+      "consumer": "src/packages/permission/src/components/rules/PermissionRuleList.tsx",
+      "count": 1,
+      "provider": "../../permissions.js",
+      "symbol": "deletePermissionRule"
+    },
+    {
+      "consumer": "src/packages/permission/src/toolPermission/PermissionContext.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePermissionRequestHooks"
+    },
+    {
+      "consumer": "src/packages/permission/src/toolPermission/PermissionContext.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "withMemoryCorrectionHint"
+    },
+    {
+      "consumer": "src/packages/permission/src/toolPermission/handlers/interactiveHandler.ts",
+      "count": 1,
+      "provider": "../../permissions.js",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/permission/src/yoloClassifier.ts",
+      "count": 1,
+      "provider": "./permissionTypes.js",
+      "symbol": "YoloClassifierResult"
+    },
+    {
+      "consumer": "src/packages/permission/src/yoloSystemPrompt.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "getAutoModeConfig"
+    },
+    {
+      "consumer": "src/packages/provider/src/grove.ts",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "writeToStderr"
+    },
+    {
+      "consumer": "src/packages/provider/src/legacy/api.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "SYSTEM_PROMPT_DYNAMIC_BOUNDARY"
+    },
+    {
+      "consumer": "src/packages/provider/src/legacy/api.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "getFileReadIgnorePatterns"
+    },
+    {
+      "consumer": "src/packages/provider/src/legacy/api.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "normalizePatternsToPath"
+    },
+    {
+      "consumer": "src/packages/provider/src/logging.ts",
+      "count": 1,
+      "provider": "./errors.js",
+      "symbol": "classifyAPIError"
+    },
+    {
+      "consumer": "src/packages/provider/src/user.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getOrCreateUserID"
+    },
+    {
+      "consumer": "src/packages/provider/src/vcr.ts",
+      "count": 1,
+      "provider": "@thyrox/config/env",
+      "symbol": "env"
+    },
+    {
+      "consumer": "src/packages/repl/src/clipboard/screenshotClipboard.ts",
+      "count": 1,
+      "provider": "@thyrox/output/capture",
+      "symbol": "ansiToPng"
+    },
+    {
+      "consumer": "src/packages/repl/src/commands/cd/cd.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "clearMemoryFileCaches"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/AutoUpdater.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "isAutoUpdaterDisabled"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/AutoUpdaterWrapper.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "isAutoUpdaterDisabled"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "ExternalClaudeMdInclude"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/DiagnosticsDisplay.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "Attachment"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/EffortCallout.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getDefaultEffortForModel"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/EffortCallout.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getOpusDefaultEffortConfig"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/EffortIndicator.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getDisplayedEffortLevel"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/FileEditToolDiff.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchForDisplay"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/LogoV2/CondensedLogo.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getEffortSuffix"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/LogoV2/LogoV2.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getEffortSuffix"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/MCPServerDesktopImportDialog.tsx",
+      "count": 1,
+      "provider": "@thyrox/shell/process.js",
+      "symbol": "writeToStdout"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Message.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/MessageRow.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "EMPTY_STRING_SET"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/MessageRow.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/MessageRow.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getProgressMessagesFromLookup"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/MessageRow.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getSiblingToolUseIDsFromLookup"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "StreamingThinking"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "StreamingToolUse"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "hasUnresolvedHooksFromLookup"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "reorderMessagesInUI"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "shouldShowUserMessage"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Messages.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/sessionTools/transcriptSearch.js",
+      "symbol": "renderableSearchText"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/ModelPicker.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getDefaultEffortForModel"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/ModelPicker.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "resolvePickerEffortPersistence"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/NativeAutoUpdater.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "isAutoUpdaterDisabled"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Onboarding.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getCustomApiKeyStatus"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/PackageManagerAutoUpdater.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "isAutoUpdaterDisabled"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/PromptInput/Notifications.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasAutoModeOptIn"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+      "count": 1,
+      "provider": "@thyrox/permission/getNextPermissionMode.js",
+      "symbol": "cyclePermissionMode"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/PromptInput/PromptInputQueuedCommands.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "EMPTY_LOOKUPS"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Settings/Config.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "formatAutoUpdaterDisabledReason"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Settings/Config.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getAutoUpdaterDisabledReason"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Settings/Config.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getRemoteControlAtStartup"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Settings/Config.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getExternalClaudeMdIncludes"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Settings/Config.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Settings/Config.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "hasExternalClaudeMdIncludes"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/Spinner.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/effort.js",
+      "symbol": "getEffortSuffix"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/StatusLine.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/context.js",
+      "symbol": "calculateContextPercentages"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/StatusLine.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "createBaseHookInput"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/StatusLine.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeStatusLineCommand"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/StatusNotices.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/VirtualMessageList.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/sessionTools/transcriptSearch.js",
+      "symbol": "renderableSearchText"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/hooks/PromptDialog.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "PromptRequest"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/memory/MemoryFileSelector.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messageStaticness.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messageStaticness.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "hasUnresolvedHooksFromLookup"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/AssistantTextMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "ERROR_MESSAGE_USER_ABORT"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/AssistantToolUseMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/AttachmentMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "Attachment"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/CollapsedReadSearchContent.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/GroupedToolUseContent.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/HookProgressMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/UserToolResultMessage/utils.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildMessageLookups"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/messages/nullRenderingAttachments.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "Attachment"
+    },
+    {
+      "consumer": "src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "EMPTY_LOOKUPS"
+    },
+    {
+      "consumer": "src/packages/repl/src/conversationRecovery.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "suppressNextSkillListing"
+    },
+    {
+      "consumer": "src/packages/repl/src/conversationRecovery.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "filterOrphanedThinkingOnlyMessages"
+    },
+    {
+      "consumer": "src/packages/repl/src/conversationRecovery.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "filterUnresolvedToolUses"
+    },
+    {
+      "consumer": "src/packages/repl/src/conversationRecovery.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "filterWhitespaceOnlyAssistantMessages"
+    },
+    {
+      "consumer": "src/packages/repl/src/diagnostics/doctorContextWarnings.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/repl/src/doctorDiagnostic.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "formatAutoUpdaterDisabledReason"
+    },
+    {
+      "consumer": "src/packages/repl/src/doctorDiagnostic.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getAutoUpdaterDisabledReason"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/fileSuggestions.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "createBaseHookInput"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/fileSuggestions.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeFileSuggestionCommand"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/notifs/useAutoModeUnavailableNotification.ts",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasAutoModeOptIn"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/notifs/useRateLimitWarningNotification.tsx",
+      "count": 1,
+      "provider": "@thyrox/provider/claudeAiLimits.js",
+      "symbol": "getRateLimitWarning"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/notifs/useRateLimitWarningNotification.tsx",
+      "count": 1,
+      "provider": "@thyrox/provider/claudeAiLimits.js",
+      "symbol": "getUsingOverageText"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useCanUseTool.tsx",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useInboxPoller.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/inProcessTeammateHelpers.js",
+      "symbol": "handlePlanApprovalResponse"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useRemoteSession.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "StreamingToolUse"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useRemoteSession.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "handleMessageFromStream"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useRemoteSession.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/sessionTitle.js",
+      "symbol": "generateSessionTitle"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useReplBridge.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages/systemInit.js",
+      "symbol": "buildSystemInitMessage"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useTaskListWatcher.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/tasks.js",
+      "symbol": "claimTask"
+    },
+    {
+      "consumer": "src/packages/repl/src/hooks/useTasksV2.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/tasks.js",
+      "symbol": "resetTaskList"
+    },
+    {
+      "consumer": "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getCustomApiKeyStatus"
+    },
+    {
+      "consumer": "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasAutoModeOptIn"
+    },
+    {
+      "consumer": "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx",
+      "count": 1,
+      "provider": "@thyrox/config/settings",
+      "symbol": "hasSkipDangerousModePermissionPrompt"
+    },
+    {
+      "consumer": "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getExternalClaudeMdIncludes"
+    },
+    {
+      "consumer": "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "shouldShowClaudeMdExternalIncludesWarning"
+    },
+    {
+      "consumer": "src/packages/repl/src/notifier.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeNotificationHooks"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "getAttachmentMessages"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "buildPostCompactMessages"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeUserPromptExpansionHooks"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "isSystemLocalCommandMessage"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processUserInput.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "AgentMentionAttachment"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processUserInput.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processUserInput.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "getAttachmentMessages"
+    },
+    {
+      "consumer": "src/packages/repl/src/processUserInput/processUserInput.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeUserPromptSubmitHooks"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/Doctor.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/context.js",
+      "symbol": "getModelMaxOutputTokens"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "getQueuedCommandAttachments"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "partialCompactConversation"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeSessionEndHooks"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "getSessionEndHookTimeoutMs"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "StreamingThinking"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "StreamingToolUse"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "getMessagesAfterCompactBoundary"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "handleMessageFromStream"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/sessionTitle.js",
+      "symbol": "generateSessionTitle"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "HookProgress"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "PromptRequest"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "PromptResponse"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "getMemoryFiles"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "exitRestoredWorktree"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreAgentFromSession"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreSessionStateFromLog"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/REPLView.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreWorktreeForResume"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/ResumeConversation.tsx",
+      "count": 1,
+      "provider": "@thyrox/output/capture",
+      "symbol": "renameRecordingForSession"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/ResumeConversation.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreAgentFromSession"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/ResumeConversation.tsx",
+      "count": 1,
+      "provider": "@thyrox/storage/sessionRestore.js",
+      "symbol": "restoreWorktreeForResume"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/agentFleet/mountFleetView.tsx",
+      "count": 1,
+      "provider": "@thyrox/app-host/state/AppState.js",
+      "symbol": "getDefaultAppState"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/repl/backgroundAgentNotifications.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeNotificationHooks"
+    },
+    {
+      "consumer": "src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "HookProgress"
+    },
+    {
+      "consumer": "src/packages/shell/src/Shell.ts",
+      "count": 1,
+      "provider": "./index.js",
+      "symbol": "MAX_TASK_OUTPUT_BYTES"
+    },
+    {
+      "consumer": "src/packages/shell/src/Shell.ts",
+      "count": 1,
+      "provider": "./index.js",
+      "symbol": "TaskOutputPort"
+    },
+    {
+      "consumer": "src/packages/storage/src/glob.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "getFileReadIgnorePatterns"
+    },
+    {
+      "consumer": "src/packages/storage/src/glob.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "normalizePatternsToPath"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "ERROR_MESSAGE_USER_ABORT"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "buildPostCompactMessages"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/compaction/compact.js",
+      "symbol": "compactConversation"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeWorktreeCreateHook"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeWorktreeRemoveHook"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "hasWorktreeCreateHook"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/tasks.js",
+      "symbol": "claimTask"
+    },
+    {
+      "consumer": "src/packages/swarm/src/install/installSwarmHost.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "hasPermissionsToUseTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/Tool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "HookProgress"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/Tool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "PromptRequest"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/Tool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "PromptResponse"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/__tests__/integration.test.ts",
+      "count": 1,
+      "provider": "../index.js",
+      "symbol": "__resetToolRegistryForTests"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/StreamingToolExecutor.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "withMemoryCorrectionHint"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/eventMetadata.js",
+      "symbol": "extractToolInputForTelemetry"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePermissionDeniedHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "withMemoryCorrectionHint"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/toolSearch.js",
+      "symbol": "isToolSearchEnabledOptimistic"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/toolSearch.js",
+      "symbol": "isToolSearchToolAvailable"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolExecution.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "HookProgress"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolHooks.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolHooks.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePostToolHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolHooks.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePostToolUseFailureHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolHooks.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executePreToolHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolHooks.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/types/hooks.js",
+      "symbol": "HookProgress"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/services/toolHooks.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "checkRuleBasedPermissions"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/skills/skillChangeDetector.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "resetSentSkillNames"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/skills/skillChangeDetector.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeConfigChangeHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/skills/skillChangeDetector.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "hasBlockingResult"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/skills/skillChangeDetector.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "clearSkillCaches"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/skills/skillChangeDetector.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "onDynamicSkillsLoaded"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "enhanceSystemPromptWithEnvDetails"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/UI.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "EMPTY_LOOKUPS"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/UI.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildSubagentLookups"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "filterOrphanedThinkingOnlyMessages"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "filterUnresolvedToolUses"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "filterWhitespaceOnlyAssistantMessages"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "getSystemPrompt"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attachments.js",
+      "symbol": "createAttachmentMessage"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeSubagentStartHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "DEFAULT_AGENT_PROMPT"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/prompts.js",
+      "symbol": "enhanceSystemPromptWithEnvDetails"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/BashTool/bashCommandHelpers.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "createPermissionRequestMessage"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "createPermissionRequestMessage"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/BashTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/pathValidation.js",
+      "symbol": "isDangerousRemovalPath"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/BashTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/pathValidation.js",
+      "symbol": "validatePath"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/BashTool/prompt.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/attribution.js",
+      "symbol": "getAttributionTexts"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/ConfigTool/ConfigTool.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getRemoteControlAtStartup"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/ConfigTool/supportedSettings.ts",
+      "count": 1,
+      "provider": "@thyrox/config",
+      "symbol": "getRemoteControlAtStartup"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "clearMemoryFileCaches"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/inProcessTeammateHelpers.js",
+      "symbol": "setAwaitingPlanApproval"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts",
+      "count": 1,
+      "provider": "@thyrox/storage/claudemd.js",
+      "symbol": "clearMemoryFileCaches"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "countLinesChanged"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "activateConditionalSkillsForPaths"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "addSkillDirectories"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "discoverSkillDirsForPaths"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkWritePermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "matchingRuleForInput"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/utils.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchForDisplay"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileEditTool/utils.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchFromContents"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/tokenEstimation.js",
+      "symbol": "countTokensWithAPI"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "activateConditionalSkillsForPaths"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "addSkillDirectories"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "discoverSkillDirsForPaths"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkReadPermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "matchingRuleForInput"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "countLinesChanged"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchForDisplay"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "activateConditionalSkillsForPaths"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "addSkillDirectories"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/command-runtime/skills/loadSkillsDir.js",
+      "symbol": "discoverSkillDirsForPaths"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkWritePermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "matchingRuleForInput"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/FileWriteTool/UI.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchForDisplay"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/GlobTool/GlobTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkReadPermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkReadPermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "getFileReadIgnorePatterns"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "normalizePatternsToPath"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/LSPTool/LSPTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkReadPermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkWritePermissionForTool"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkEditableInternalPath"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkPathSafetyForAutoEdit"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "checkReadableInternalPath"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/filesystem",
+      "symbol": "matchingRuleForInput"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/pathValidation.js",
+      "symbol": "isDangerousRemovalPath"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/pathValidation.js",
+      "symbol": "isPathInSandboxWriteAllowlist"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/PowerShellTool/powershellPermissions.ts",
+      "count": 1,
+      "provider": "@thyrox/permission/permissions",
+      "symbol": "createPermissionRequestMessage"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/SkillTool/UI.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "EMPTY_LOOKUPS"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/SkillTool/UI.tsx",
+      "count": 1,
+      "provider": "@thyrox/agent/messages.js",
+      "symbol": "buildSubagentLookups"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeTaskCreatedHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/hooks.js",
+      "symbol": "executeTaskCompletedHooks"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/TeamCreateTool/TeamCreateTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/tasks.js",
+      "symbol": "resetTaskList"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/toolSearch.js",
+      "symbol": "isToolSearchEnabledOptimistic"
+    },
+    {
+      "consumer": "src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/toolSearch.js",
+      "symbol": "isToolSearchEnabledOptimistic"
+    },
+    {
+      "consumer": "tests/unit/utils/diff.test.ts",
+      "count": 1,
+      "provider": "@thyrox/agent/diff.js",
+      "symbol": "getPatchFromContents"
+    }
+  ]
+}

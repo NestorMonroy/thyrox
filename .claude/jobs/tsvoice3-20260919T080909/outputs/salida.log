@@ -1,0 +1,4 @@
+src/packages/voice/src/voiceStreamSTT.ts(22,23): error TS2307: Cannot find module 'ws' or its corresponding type declarations.
+src/packages/voice/src/voiceStreamSTT.ts(495,19): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/packages/voice/src/voiceStreamSTT.ts(495,25): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+__BG_EXIT__=0

@@ -1,0 +1,4 @@
+==== _Lo: 1 definicion(es) de nivel superior
+---- chunk-j2p7jgmc.js function _Lo [1704,1964)
+async function _Lo(n){if(n==="windows")return`linux:${i().toLowerCase()}`;if(n!=="linux"&&n!=="wsl")return"linux";let[e,t]=await Promise.all([r("/etc/machine-id","utf8").then((o)=>o.trim(),()=>""),s("/proc/self/ns/pid").catch(()=>"")]);return`linux:${e}:${t}`}
+symbol: 1 de 1 nombre(s) resueltos

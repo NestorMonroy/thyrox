@@ -1,0 +1,10 @@
+src/packages/mcp-runtime/src/config.ts(1323,7): error TS2322: Type '{ path: string; message: string; mcpErrorMetadata: { scope: "user" | "local" | "managed" | "project" | "enterprise" | "dynamic" | "claudeai"; severity: string; }; file?: string | undefined; }[]' is not assignable to type 'SettingsError[]'.
+  Type '{ path: string; message: string; mcpErrorMetadata: { scope: "user" | "local" | "managed" | "project" | "enterprise" | "dynamic" | "claudeai"; severity: string; }; file?: string | undefined; }' is not assignable to type 'SettingsError'.
+    Types of property 'file' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/packages/mcp-runtime/src/config.ts(1350,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+src/packages/mcp-runtime/src/config.ts(1375,9): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+src/packages/mcp-runtime/src/config.ts(1421,13): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+src/packages/mcp-runtime/src/config.ts(1441,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+src/packages/mcp-runtime/src/config.ts(1465,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.

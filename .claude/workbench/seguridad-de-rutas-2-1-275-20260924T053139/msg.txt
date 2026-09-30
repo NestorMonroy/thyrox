@@ -1,0 +1,24 @@
+Port the auto-edit path safety check from 2.1.275
+
+checkPathSafetyForAutoEdit was declared omitted in filesystem.ts; the
+isPathAllowed chain that validatePath needs calls it for every write.
+pathSafety.ts reimplements Gge and its predicates from
+chunk-9apg35nm.js: Claude settings files and config directories,
+project commands/agents/skills, sensitive directories, sequences and
+files (the 2.1.275 lists), suspicious Windows paths, and the UNC and
+/net automount predicates with the trusted network directories.
+
+One branch of Lu is not ported and is declared with its successor,
+TASK-THYROX-0251: directories that produce plugin commands and inline
+plugin roots. This tree records no producer paths and has no inline
+plugin API. The plugin cache under ~/.claude stays covered because the
+.claude segment is sensitive by itself.
+
+One test followed the binary: U+200B is outside the invisible range
+the binary strips, which starts at U+200C.
+
+Annulment: without opening .claude/commands, without the trusted
+network exemption and without the 8.3 short-name check, exactly one
+case fails each time.
+
+The tsc baseline drops to the 2398 the previous commit measured.

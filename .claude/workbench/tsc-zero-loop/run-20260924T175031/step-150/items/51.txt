@@ -1,0 +1,238 @@
+Patrón: unknown-attachment-field-needs-local-shape
+Señal del verificador: TS18046: '\w+' is of type 'unknown'|TS7006: Parameter '\w+' implicitly has an 'any' type
+Arreglo genérico: El campo `attachment` de AttachmentMessage es `{ type: string; [key: string]: unknown }`, así que cualquier propiedad distinta de `type` llega como `unknown`. Tras descartar la rama `string` con `typeof`, castear explícitamente al shape mínimo que el código ya asume (p. ej. `Array<{ type: string; text?: string }>`), replicando el patrón ya usado en `transcriptSearch.ts:99` para el mismo campo `prompt`. No usar `any`/`as unknown as`.
+Ya aplicado en: src/packages/repl/src/components/VirtualMessageList.tsx
+Archivos donde la señal sigue viva: src/packages/agent/query.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/repl/src/commands/color/color.ts
+
+src/packages/agent/query.ts(725,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:715-735 ---
+    715                    toolUseContext,
+    716                  )
+    717                }
+    718              }
+    719              // Backfill tool_use inputs on a cloned message before yield so
+    720              // SDK stream output and transcript serialization see legacy/derived
+    721              // fields. The original `message` is left untouched for
+    722              // assistantMessages.push below — it flows back to the API and
+    723              // mutating it would break prompt caching (byte mismatch).
+    724              let yieldMessage: typeof message = message
+    725>             if (message.type === 'assistant') {
+    726                const assistantMsg = message as AssistantMessage
+    727                const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
+    728                let clonedContent: typeof contentArr | undefined
+    729                for (let i = 0; i < contentArr.length; i++) {
+    730                  const block = contentArr[i]!
+    731                  if (
+    732                    block.type === 'tool_use' &&
+    733                    typeof block.input === 'object' &&
+    734                    block.input !== null
+    735                  ) {
+src/packages/agent/query.ts(804,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:794-814 ---
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798              if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804>             if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    809                  (content: { type: string }) => content.type === 'tool_use',
+    810                ) as ToolUseBlock[]
+    811                if (msgToolUseBlocks.length > 0) {
+    812                  toolUseBlocks.push(...msgToolUseBlocks)
+    813                  needsFollowUp = true
+    814                }
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,10): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:782-802 ---
+    782          if (!currentServerNames.has(client.name)) {
+    783            if (client.type === 'connected') {
+    784              await client.cleanup()
+    785            }
+    786          }
+    787        }
+    788  
+    789        // Re-initialize all SDK MCP servers with current config
+    790        const sdkSetup = await setupSdkMcpClients(
+    791          sdkMcpConfigs,
+    792>         (serverName, message) =>
+    793            structuredIO.sendMcpMessage(serverName, message),
+    794        )
+    795        sdkClients = sdkSetup.clients
+    796        sdkTools = sdkSetup.tools
+    797  
+    798        // Store SDK MCP tools in appState so subagents can access them via
+    799        // assembleToolPool. Only tools are stored here — SDK clients are already
+    800        // merged separately in the query loop (allMcpClients) and mcp_status handler.
+    801        // Use both old (connectedServerNames) and new (currentServerNames) to remove
+    802        // stale SDK tools when servers are added or removed.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,22): error TS7006: Parameter 'message' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:782-802 ---
+    782          if (!currentServerNames.has(client.name)) {
+    783            if (client.type === 'connected') {
+    784              await client.cleanup()
+    785            }
+    786          }
+    787        }
+    788  
+    789        // Re-initialize all SDK MCP servers with current config
+    790        const sdkSetup = await setupSdkMcpClients(
+    791          sdkMcpConfigs,
+    792>         (serverName, message) =>
+    793            structuredIO.sendMcpMessage(serverName, message),
+    794        )
+    795        sdkClients = sdkSetup.clients
+    796        sdkTools = sdkSetup.tools
+    797  
+    798        // Store SDK MCP tools in appState so subagents can access them via
+    799        // assembleToolPool. Only tools are stored here — SDK clients are already
+    800        // merged separately in the query loop (allMcpClients) and mcp_status handler.
+    801        // Use both old (connectedServerNames) and new (currentServerNames) to remove
+    802        // stale SDK tools when servers are added or removed.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2713,17): error TS7006: Parameter 'url' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2703-2723 ---
+   2703                // Capture the auth URL from the callback
+   2704                let resolveAuthUrl: (url: string) => void
+   2705                const authUrlPromise = new Promise<string>(resolve => {
+   2706                  resolveAuthUrl = resolve
+   2707                })
+   2708  
+   2709                // Start the OAuth flow in the background
+   2710                const oauthPromise = performMCPOAuthFlow(
+   2711                  serverName,
+   2712                  config,
+   2713>                 url => resolveAuthUrl!(url),
+   2714                  controller.signal,
+   2715                  {
+   2716                    skipBrowserOpen: true,
+   2717                    onWaitingForCallback: submit => {
+   2718                      oauthCallbackSubmitters.set(serverName, submit)
+   2719                    },
+   2720                  },
+   2721                )
+   2722  
+   2723                // Wait for the auth URL (or the flow to complete without needing redirect)
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2717,41): error TS7006: Parameter 'submit' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2707-2727 ---
+   2707                })
+   2708  
+   2709                // Start the OAuth flow in the background
+   2710                const oauthPromise = performMCPOAuthFlow(
+   2711                  serverName,
+   2712                  config,
+   2713                  url => resolveAuthUrl!(url),
+   2714                  controller.signal,
+   2715                  {
+   2716                    skipBrowserOpen: true,
+   2717>                   onWaitingForCallback: submit => {
+   2718                      oauthCallbackSubmitters.set(serverName, submit)
+   2719                    },
+   2720                  },
+   2721                )
+   2722  
+   2723                // Wait for the auth URL (or the flow to complete without needing redirect)
+   2724                const authUrl = await Promise.race([
+   2725                  authUrlPromise,
+   2726                  oauthPromise.then(() => null as string | null),
+   2727                ])
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2813,24): error TS7006: Parameter 'error' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2803-2823 ---
+   2803                        result.client,
+   2804                      ],
+   2805                      tools: [
+   2806                        ...dynamicMcpState.tools.filter(
+   2807                          t => !t.name?.startsWith(prefix),
+   2808                        ),
+   2809                        ...result.tools,
+   2810                      ],
+   2811                    }
+   2812                  })
+   2813>                 .catch(error => {
+   2814                    logForDebugging(
+   2815                      `MCP OAuth failed for ${serverName}: ${error}`,
+   2816                      { level: 'error' },
+   2817                    )
+   2818                  })
+   2819                  .finally(() => {
+   2820                    // Clean up only if this is still the active flow
+   2821                    if (activeOAuthFlows.get(serverName) === controller) {
+   2822                      activeOAuthFlows.delete(serverName)
+   2823                      oauthCallbackSubmitters.delete(serverName)
+
+src/packages/repl/src/commands/color/color.ts(53,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:43-63 ---
+     43  
+     44    // Handle reset to default (gray)
+     45    if (RESET_ALIASES.includes(colorArg as (typeof RESET_ALIASES)[number])) {
+     46      const sessionId = getSessionId() as UUID
+     47      const fullPath = getTranscriptPath()
+     48  
+     49      // Use "default" sentinel (not empty string) so truthiness guards
+     50      // in sessionStorage.ts persist the reset across session restarts
+     51      await saveAgentColor(sessionId, 'default', fullPath)
+     52  
+     53>     context.setAppState(prev => ({
+     54        ...prev,
+     55        standaloneAgentContext: {
+     56          ...prev.standaloneAgentContext,
+     57          name: prev.standaloneAgentContext?.name ?? '',
+     58          color: undefined,
+     59        },
+     60      }))
+     61  
+     62      onDone('Session color reset to default', { display: 'system' })
+     63      return null
+src/packages/repl/src/commands/color/color.ts(82,23): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:72-92 ---
+     72      return null
+     73    }
+     74  
+     75    const sessionId = getSessionId() as UUID
+     76    const fullPath = getTranscriptPath()
+     77  
+     78    // Save to transcript for persistence across sessions
+     79    await saveAgentColor(sessionId, colorArg, fullPath)
+     80  
+     81    // Update AppState for immediate effect
+     82>   context.setAppState(prev => ({
+     83      ...prev,
+     84      standaloneAgentContext: {
+     85        ...prev.standaloneAgentContext,
+     86        name: prev.standaloneAgentContext?.name ?? '',
+     87        color: colorArg as AgentColorName,
+     88      },
+     89    }))
+     90  
+     91    onDone(`Session color set to: ${colorArg}`, { display: 'system' })
+     92    return null

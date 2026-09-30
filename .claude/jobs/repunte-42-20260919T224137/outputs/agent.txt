@@ -1,0 +1,3 @@
+agent: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/docs.ts, ../../paths/reach.ts, ../../store/db.ts
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete

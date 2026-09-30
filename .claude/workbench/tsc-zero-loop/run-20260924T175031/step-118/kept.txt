@@ -1,0 +1,10 @@
+src/packages/cli/src/handlers/util.tsx
+src/packages/cli/src/headless/sdk/control/handlers.ts
+src/packages/mcp-runtime/src/clientRuntime.ts
+src/packages/repl/src/components/LogoV2/LogoV2.tsx
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx
+src/packages/repl/src/components/messages/AttachmentMessage.tsx
+src/packages/repl/src/hooks/useRemoteSession.ts
+src/packages/repl/src/hooks/useReplBridge.tsx
+src/packages/tool-registry/src/services/toolExecution.ts
+src/packages/tool-registry/src/tools/SkillTool/UI.tsx

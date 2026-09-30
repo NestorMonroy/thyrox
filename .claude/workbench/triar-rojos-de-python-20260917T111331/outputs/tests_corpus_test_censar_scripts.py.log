@@ -1,0 +1,14 @@
+== census_scripts.py — descubrimiento sobre el fondo agrupado por clase ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_censar_scripts.py", line 71, in <module>
+    real_root = censar.ROOT
+                ^^^^^^^^^^^
+  File "/home/user/thyrox/src/corpus/census_scripts.py", line 84, in __getattr__
+    return root_dir()
+           ^^^^^^^^^^
+  File "/home/user/thyrox/src/corpus/census_scripts.py", line 47, in root_dir
+    return reach.consumer_root()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 654, in consumer_root
+    raise ConsumerUnknownError(
+reach.ConsumerUnknownError: El ascenso desde /home/user/thyrox aterriza en el PROVEEDOR (/home/user/thyrox), no en un consumidor. El proveedor tambien lleva .claude/, asi que el marcador no lo distingue. Declara THYROX_CONSUMER con la raiz del clon, pasa `declared=`, o invoca desde dentro de el. NO se devuelve la raiz de thyrox: el llamador compondria un hogar dentro del proveedor que declarations.py no lista.

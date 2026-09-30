@@ -1,0 +1,21 @@
+  ok   ve la copia identica
+  ok   el divergente NO es copia: es fork
+  ok   el propio del consumidor no entra
+  ok   publica su denominador
+  ok   nombra la copia en su salida
+  ok   --strict sale 1 con copias
+  ok   un consumidor sin copias sale 0 con --strict
+  ok   rehusa con exit 2 si falta una raiz
+  ok   y NO emite conteo al rehusar
+  FALLA ve copias reales en kaupamex-api
+         esperado: True
+         real:     False
+  ok   sin argumentos NO rehusa por falta de argumentos
+  ok   sin consumidor derivable rehusa con exit 2
+  ok   y NO emite conteo al no poder derivarlo
+  FALLA con THYROX_CONSUMER declarado SI mide a secas
+         esperado: True
+         real:     False
+
+resultado: 12 de 14 aserciones en verde
+EXIT=1

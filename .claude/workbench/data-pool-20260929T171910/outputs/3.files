@@ -1,0 +1,2 @@
+src/packages/local-observability/__tests__/errorStoreMigrations.test.ts
+src/packages/local-observability/src/errorStore/migrations.ts

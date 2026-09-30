@@ -1,0 +1,8 @@
+ANTES DEL MOVIMIENTO — cwd=thyrox, sujeto fuera de todo consumidor
+exit=2
+ERROR — no se encontro vocabulario_prohibido.txt.
+  Buscado: $VOCAB_GATE_FORBIDDEN · /home/user/thyrox/src/verify · <consumidor>/.claude/baselines/
+  Ultimo candidato: /home/user/thyrox/src/verify/vocabulario_prohibido.txt
+  NO se emite un conteo: sin la lista, el detector `prohibido` compara
+  contra CERO formas y todo texto pasa. Es la mitad del gate, y su
+  ausencia lo dejaria midiendo un solo eje sin decirlo.

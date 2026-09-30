@@ -1,0 +1,9 @@
+{
+  "id": "275",
+  "subject": "Dos defensas para el mismo filtro de destino: la guarda de persistencia es invisible",
+  "description": "El caso 1 de permissionPersistence.test.ts (un destino NO persistible no escribe nada) NO discrimina, y está declarado así en el propio test.\n\nMedido con la anulación: retirando la guarda `if (!supportsPersistence(update.destination)) return` de `persistPermissionUpdate`, los 20 casos siguen en verde. La causa es que `updateSettingsForSource` YA filtra por su cuenta — `session` y `cliArg` no resuelven a ninguna ruta de archivo (`getSettingsFilePathForSource` no los contempla), así que retorna sin escribir.\n\nHay DOS defensas para el mismo fenómeno y el test sólo alcanza la de fuera. Que la guarda sea redundante no la hace inútil: evita el viaje y hace explícita la intención en el sitio donde se decide, que es donde alguien la lee.\n\nCondición de cierre: un instrumento que vea la llamada, no su efecto — espiar `updateSettingsForSource` (inyección o doble) para que retirar la guarda haga caer exactamente ese caso. Alternativa: decidir que la redundancia sobra y retirar una de las dos, midiendo antes qué otros consumidores dependen de cada una.\n\nVer src/packages/permission/__tests__/permissionPersistence.test.ts (caso 1) y src/packages/permission/src/PermissionUpdate.ts.",
+  "activeForm": "Midiendo la guarda de persistencia por llamada",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

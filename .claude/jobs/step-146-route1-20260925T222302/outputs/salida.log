@@ -1,0 +1,2 @@
+tsc_zero_loop: SIN MEDIR — Command '['git', 'commit', '-q', '-m', 'Apply tsc-zero step 1: 226 -> 196\n\nAccepted by one tsc pass: dead-declarations:src/packages/agent/hooks.ts, dead-declarations:src/packages/agent/messages.ts, dead-declarations:src/packages/storage/src/claudemd.ts.', '--', 'src/packages/agent/hooks.ts', 'src/packages/agent/messages.ts', 'src/packages/storage/src/claudemd.ts', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-146/route1']' returned non-zero exit status 1.
+__BG_EXIT__=2

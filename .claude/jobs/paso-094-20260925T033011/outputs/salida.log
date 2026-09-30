@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1815, "total_final": 1799, "tsc_runs": 1, "accepted": ["agent:agent:unused-params-as-in-source-bulk"], "files_kept": ["src/packages/@ant/claude-for-chrome-mcp/src/bridgeClient.ts", "src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts", "src/p__BG_EXIT__=0

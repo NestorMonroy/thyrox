@@ -1,0 +1,55 @@
+src/packages/repl/src/screens/REPLView.tsx(2447,9): error TS2322: Type '(action: React.SetStateAction<MessageType[]>) => void' is not assignable to type '(updater: (prev: unknown[]) => unknown[]) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2437-2457 ---
+   2437            dynamicMcpConfig,
+   2438            theme,
+   2439            agentDefinitions: allowedAgentTypes ? { ...s.agentDefinitions, allowedAgentTypes } : s.agentDefinitions,
+   2440            customSystemPrompt,
+   2441            appendSystemPrompt,
+   2442            refreshTools: computeTools,
+   2443          },
+   2444          getAppState: () => store.getState(),
+   2445          setAppState,
+   2446          messages,
+   2447>         setMessages,
+   2448          updateFileHistoryState(updater: (prev: FileHistoryState) => FileHistoryState) {
+   2449            // Perf: skip the setState when the updater returns the same reference
+   2450            // (e.g. fileHistoryTrackEdit returns `state` when the file is already
+   2451            // tracked). Otherwise every no-op call would notify all store listeners.
+   2452            setAppState(prev => {
+   2453              const updated = updater(prev.fileHistory);
+   2454              if (updated === prev.fileHistory) return prev;
+   2455              return { ...prev, fileHistory: updated };
+   2456            });
+   2457          },
+  Types of parameters 'action' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<Message[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: Message[]) => Message[]'.
+        Type 'unknown[]' is not assignable to type 'Message[]'.
+          Type 'unknown' is not assignable to type 'Message'.
+src/packages/repl/src/screens/REPLView.tsx(2478,9): error TS2322: Type '(config: Record<string, ScopedMcpServerConfig>) => void' is not assignable to type '(config: Record<string, unknown>) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2468-2488 ---
+   2468            }
+   2469          },
+   2470          onChangeAPIKey: reverify,
+   2471          readFileState: readFileState.current,
+   2472          setToolJSX,
+   2473          addNotification,
+   2474          appendSystemMessage: msg => setMessages(prev => [...prev, msg]),
+   2475          sendOSNotification: opts => {
+   2476            void sendNotification(opts, terminal);
+   2477          },
+   2478>         onChangeDynamicMcpConfig,
+   2479          onInstallIDEExtension: setIDEToInstallExtension,
+   2480          nestedMemoryAttachmentTriggers: new Set<string>(),
+   2481          loadedNestedMemoryPaths: loadedNestedMemoryPathsRef.current,
+   2482          dynamicSkillDirTriggers: new Set<string>(),
+   2483          discoveredSkillNames: discoveredSkillNamesRef.current,
+   2484          setResponseLength,
+   2485          pushApiMetricsEntry:
+   2486            process.env.USER_TYPE === 'ant'
+   2487              ? (ttftMs: number) => {
+   2488                  const now = Date.now();
+  Types of parameters 'config' and 'config' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.

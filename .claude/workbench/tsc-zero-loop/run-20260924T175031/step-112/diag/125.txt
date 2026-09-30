@@ -1,0 +1,47 @@
+src/packages/config/plugin/marketplaceManager.ts(211,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/config/plugin/marketplaceManager.ts:201-221 ---
+    201    name: string,
+    202  ): 'userSettings' | 'projectSettings' | 'localSettings' | null {
+    203    // Check highest-precedence editable sources first — the one that wins
+    204    // in the merged view is the one we should write back to.
+    205    const editableSources: Array<
+    206      'localSettings' | 'projectSettings' | 'userSettings'
+    207    > = ['localSettings', 'projectSettings', 'userSettings']
+    208  
+    209    for (const source of editableSources) {
+    210      const settings = getSettingsForSource(source)
+    211>     if (settings?.extraKnownMarketplaces?.[name]) {
+    212        return source
+    213      }
+    214    }
+    215    return null
+    216  }
+    217  
+    218  /**
+    219   * Save a marketplace entry to settings (intent layer).
+    220   * Does NOT touch known_marketplaces.json (state layer).
+    221   *
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/packages/config/plugin/marketplaceManager.ts(235,21): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/config/plugin/marketplaceManager.ts:225-245 ---
+    225   */
+    226  export function saveMarketplaceToSettings(
+    227    name: string,
+    228    entry: DeclaredMarketplace,
+    229    settingSource:
+    230      | 'userSettings'
+    231      | 'projectSettings'
+    232      | 'localSettings' = 'userSettings',
+    233  ): void {
+    234    const existing = getSettingsForSource(settingSource) ?? {}
+    235>   const current = { ...existing.extraKnownMarketplaces }
+    236    current[name] = entry
+    237    updateSettingsForSource(settingSource, { extraKnownMarketplaces: current })
+    238  }
+    239  
+    240  /**
+    241   * Load known marketplaces configuration from disk
+    242   *
+    243   * Reads the configuration file at ~/.claude/plugins/known_marketplaces.json
+    244   * which contains a mapping of marketplace names to their sources and metadata.
+    245   *

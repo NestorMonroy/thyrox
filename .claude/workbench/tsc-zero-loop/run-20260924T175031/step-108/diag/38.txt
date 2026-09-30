@@ -1,0 +1,115 @@
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(90,61): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:80-100 ---
+     80      expect(TaskGetTool.isEnabled()).toBe(false)
+     81    })
+     82  
+     83    test('3. es de sólo lectura y seguro ante concurrencia', () => {
+     84      expect(TaskGetTool.isReadOnly()).toBe(true)
+     85      expect(TaskGetTool.isConcurrencySafe()).toBe(true)
+     86    })
+     87  
+     88    test('4. una tarea que existe vuelve con sus seis campos', async () => {
+     89      const id = await crear('arreglar el login')
+     90>     const { data } = await TaskGetTool.call({ taskId: id }, CTX)
+     91      expect(data.task).toEqual({
+     92        id,
+     93        subject: 'arreglar el login',
+     94        description: 'descripción de arreglar el login',
+     95        status: 'pending',
+     96        blocks: [],
+     97        blockedBy: [],
+     98      })
+     99    })
+    100  
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(102,65): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:92-112 ---
+     92        id,
+     93        subject: 'arreglar el login',
+     94        description: 'descripción de arreglar el login',
+     95        status: 'pending',
+     96        blocks: [],
+     97        blockedBy: [],
+     98      })
+     99    })
+    100  
+    101    test('5. una tarea que NO existe vuelve nula, no revienta', async () => {
+    102>     const { data } = await TaskGetTool.call({ taskId: '9999' }, CTX)
+    103      expect(data.task).toBeNull()
+    104    })
+    105  
+    106    test('6. el bloque de resultado lo dice cuando no la halla', () => {
+    107      const bloque = TaskGetTool.mapToolResultToToolResultBlockParam(
+    108        { task: null },
+    109        'uso-1',
+    110      )
+    111      expect(bloque.content).toBe('Task not found')
+    112      expect(bloque.tool_use_id).toBe('uso-1')
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(146,46): error TS2554: Expected 0 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:136-156 ---
+    136    })
+    137  
+    138    test('9. se apaga con la sesión no interactiva', () => {
+    139      setIsInteractive(false)
+    140      expect(TaskListTool.isEnabled()).toBe(false)
+    141    })
+    142  
+    143    test('10. lista lo que hay en el listado', async () => {
+    144      await crear('primera')
+    145      await crear('segunda')
+    146>     const { data } = await TaskListTool.call({}, CTX)
+    147      expect(data.tasks.map(t => t.subject).sort()).toEqual(['primera', 'segunda'])
+    148    })
+    149  
+    150    test('11. las tareas internas NO se listan', async () => {
+    151      await crear('visible')
+    152      await crear('interna', { metadata: { _internal: true } })
+    153      const { data } = await TaskListTool.call({}, CTX)
+    154      expect(data.tasks.map(t => t.subject)).toEqual(['visible'])
+    155    })
+    156  
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(153,46): error TS2554: Expected 0 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:143-163 ---
+    143    test('10. lista lo que hay en el listado', async () => {
+    144      await crear('primera')
+    145      await crear('segunda')
+    146      const { data } = await TaskListTool.call({}, CTX)
+    147      expect(data.tasks.map(t => t.subject).sort()).toEqual(['primera', 'segunda'])
+    148    })
+    149  
+    150    test('11. las tareas internas NO se listan', async () => {
+    151      await crear('visible')
+    152      await crear('interna', { metadata: { _internal: true } })
+    153>     const { data } = await TaskListTool.call({}, CTX)
+    154      expect(data.tasks.map(t => t.subject)).toEqual(['visible'])
+    155    })
+    156  
+    157    test('12. un bloqueante YA completado deja de contarse como bloqueo', async () => {
+    158      // Es la decisión no obvia del útil: sin este filtro, una tarea seguiría
+    159      // reportándose bloqueada por algo que ya terminó, y quien lea la lista
+    160      // no la tomaría.
+    161      const hecha = await crear('la que ya terminó')
+    162      const pendiente = await crear('la que espera', { blockedBy: [hecha] })
+    163      await updateTask(LISTA, hecha, { status: 'completed' })
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(165,46): error TS2554: Expected 0 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:155-175 ---
+    155    })
+    156  
+    157    test('12. un bloqueante YA completado deja de contarse como bloqueo', async () => {
+    158      // Es la decisión no obvia del útil: sin este filtro, una tarea seguiría
+    159      // reportándose bloqueada por algo que ya terminó, y quien lea la lista
+    160      // no la tomaría.
+    161      const hecha = await crear('la que ya terminó')
+    162      const pendiente = await crear('la que espera', { blockedBy: [hecha] })
+    163      await updateTask(LISTA, hecha, { status: 'completed' })
+    164  
+    165>     const { data } = await TaskListTool.call({}, CTX)
+    166      const fila = data.tasks.find(t => t.id === pendiente)!
+    167      expect(fila.blockedBy).toEqual([])
+    168    })
+    169  
+    170    test('13. sin tareas, el bloque lo dice', () => {
+    171      const bloque = TaskListTool.mapToolResultToToolResultBlockParam(
+    172        { tasks: [] },
+    173        'uso-4',
+    174      )
+    175      expect(bloque.content).toBe('No tasks found')

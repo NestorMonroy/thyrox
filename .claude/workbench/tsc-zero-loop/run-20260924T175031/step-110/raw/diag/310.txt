@@ -1,0 +1,29 @@
+tests/unit/utils/notebook.test.ts(65,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(80,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(106,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(108,40): error TS2339: Property 'filter' does not exist on type 'string | (TextBlockParam | ImageBlockParam | DocumentBlockParam | SearchResultBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[]'.
+  Property 'filter' does not exist on type 'string'.
+tests/unit/utils/notebook.test.ts(138,49): error TS2345: Argument of type '({ cellType: string; source: string; cell_id: string; language: string; outputs: { output_type: string; text: string; image: { image_data: string; media_type: "image/png"; }; }[]; } | { cellType: string; source: string; cell_id: string; language: string; outputs?: undefined; })[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  Type '{ cellType: string; source: string; cell_id: string; language: string; outputs: { output_type: string; text: string; image: { image_data: string; media_type: "image/png"; }; }[]; } | { cellType: string; source: string; cell_id: string; language: string; outputs?: undefined; }' is not assignable to type 'NotebookCellSource'.
+    Type '{ cellType: string; source: string; cell_id: string; language: string; outputs: { output_type: string; text: string; image: { image_data: string; media_type: "image/png"; }; }[]; }' is not assignable to type 'NotebookCellSource'.
+      Types of property 'cellType' are incompatible.
+        Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(139,35): error TS2339: Property 'map' does not exist on type 'string | (TextBlockParam | ImageBlockParam | DocumentBlockParam | SearchResultBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[]'.
+  Property 'map' does not exist on type 'string'.
+tests/unit/utils/notebook.test.ts(152,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  Type '{ cellType: string; source: string; cell_id: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(167,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.

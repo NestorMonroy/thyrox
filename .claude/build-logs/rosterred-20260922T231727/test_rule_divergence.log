@@ -1,0 +1,93 @@
+EEEEE
+======================================================================
+ERROR: test_anular_el_detector_mueve_solo_a_las_que_lo_declaran (__main__.RuleDivergence.test_anular_el_detector_mueve_solo_a_las_que_lo_declaran)
+La anulacion: sin marcador, caen las cheat-sheet y NADIE mas.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_cada_copia_recibe_exactamente_un_veredicto (__main__.RuleDivergence.test_cada_copia_recibe_exactamente_un_veredicto)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_el_universo_tiene_denominador (__main__.RuleDivergence.test_el_universo_tiene_denominador)
+Un conteo sin denominador no es un resultado.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_todo_nombre_compartido_vive_en_dos_arboles_o_mas (__main__.RuleDivergence.test_todo_nombre_compartido_vive_en_dos_arboles_o_mas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_una_subsumida_no_aporta_ninguna_linea_propia (__main__.RuleDivergence.test_una_subsumida_no_aporta_ninguna_linea_propia)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.002s
+
+FAILED (errors=5)
+EXIT=1

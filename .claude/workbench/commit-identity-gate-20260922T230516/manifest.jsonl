@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿Que identidad firma el commit cuando el entorno inyecta otra distinta de la declarada?","instrument":"commit_identity.py contra repos sinteticos y el entorno real, con dos anulaciones","metric":"git var GIT_AUTHOR_IDENT/GIT_COMMITTER_IDENT contra THYROX_COMMIT_*","blind_to":"la veracidad de la declaracion"}

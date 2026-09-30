@@ -1,0 +1,60 @@
+El porte de agent/messages.ts tiene que ser ADITIVO, no una copia
+
+LA PREGUNTA
+El puerto lleva 834 lineas contra 5690 de la fuente, y 66 exports
+ausentes. La forma barata seria copiar la fuente entera y reescribir el
+alcance. Antes de hacerlo hay que saber si los 40 exports que YA estan
+son copia fiel o reimplementacion.
+
+LA MEDICION, Y SU PRIMERA VERSION EQUIVOCADA
+El primer instrumento recortaba cada export "hasta el siguiente export",
+y publico 19 divergentes de 40. Eso mide el TRAMO DE TEXTO, no el
+simbolo: un bloque arrastra los helpers NO exportados que vienen detras.
+deriveUUID salio divergente siendo identico, porque tras el el puerto
+declara un escapeRegExp local que la fuente importa de otro paquete.
+
+Rehecho por emparejamiento de llaves, simbolo a simbolo:
+
+    comunes      40
+    identicos    24
+    divergentes  16
+    divergencias DECLARADAS en el puerto:  5
+
+LA NATURALEZA DE LAS DIVERGENCIAS
+Dos casos leidos enteros, y los dos son adaptacion, no obsolescencia:
+
+  getContentText
+    fuente:  content: string | DeepImmutable<Array<ContentBlockParam>>
+    puerto:  content: string | ReadonlyArray<ContentBlockParam>
+    El cuerpo es identico. Cambia el tipo porque DeepImmutable no esta
+    en este arbol.
+
+  isToolUseResultMessage
+    fuente:  message is ToolUseResultMessage
+    puerto:  message is UserMessage, con message.message?.content y un
+             cast a ContentBlockParam[]
+    El predicado es el mismo. Cambia porque ToolUseResultMessage no esta
+    portado y porque strict exige el acceso opcional.
+
+EL VEREDICTO
+Copiar la fuente entera REGRESA esas 16 adaptaciones, cinco de ellas con
+su razon escrita en el propio archivo. El porte es ADITIVO: se traen los
+66 exports ausentes y no se toca ninguno de los 40 que ya estan. Cuando
+un export nuevo dependa de un tipo ausente, la adaptacion se declara en
+el sitio, como las cinco que ya lo hacen.
+
+    Metrica: exports de nivel superior de cada archivo, recortados por
+      emparejamiento de llaves, normalizados quitando comentarios y
+      unificando el alcance a @thyrox/, comparados texto a texto.
+    Ciega a: una diferencia puramente de formato que el normalizador no
+      colapse (aqui no aplica: los dos casos leidos son de tipo, no de
+      espacios); y a un export que la fuente declare con una forma que el
+      patron no reconozca -- el patron cubre function, const, class,
+      type, interface y enum de nivel superior, no una reexportacion
+      `export { X } from`.
+
+LO QUE ESTA DECISION NO CIERRA
+Cual de los 66 se porta primero. Eso lo decide el veredicto de bun, que
+es con lo que tests/run.sh juzga la mitad TypeScript -- no tsc. Si los
+rojos de bun no nombran agent/messages, portar 4856 lineas baja tsc sin
+mover al corredor, y "0 errores" es del corredor.

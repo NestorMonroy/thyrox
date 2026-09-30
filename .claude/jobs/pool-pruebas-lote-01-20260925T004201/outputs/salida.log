@@ -1,0 +1,958 @@
+run-task-pool: 238 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260925T004201
+  job-20260925T004201/job-001 pid 1878    timeout 120 bun test src/packages/@ant/claude-for-chrome-mcp/src/__tests__/mcpSocketPool.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_@ant_claude-for-chrome-mcp_src___tests___mcpSocketPool_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_@ant_claude-for-chrome-mcp_src___tests___mcpSocketPool_test_ts.log
+  job-20260925T004201/job-002 pid 1898    timeout 120 bun test src/packages/@ant/ink/src/__tests__/ui-foundation.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_@ant_ink_src___tests___ui-foundation_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_@ant_ink_src___tests___ui-foundation_test_ts.log
+  job-20260925T004201/job-003 pid 1917    timeout 120 bun test src/packages/@ant/ink/src/__tests__/vimTypes.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_@ant_ink_src___tests___vimTypes_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_@ant_ink_src___tests___vimTypes_behavior_test_ts.log
+  job-20260925T004201/job-004 pid 1936    timeout 120 bun test src/packages/agent/__tests__/AgentCore.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___AgentCore_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___AgentCore_test_ts.log
+  job-20260925T004201/job-005 pid 1988    timeout 120 bun test src/packages/agent/__tests__/AgentLoop.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___AgentLoop_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___AgentLoop_test_ts.log
+  job-20260925T004201/job-006 pid 2007    timeout 120 bun test src/packages/agent/__tests__/abort.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___abort_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___abort_test_ts.log
+  job-20260925T004201/job-007 pid 2026    timeout 120 bun test src/packages/agent/__tests__/abortController.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___abortController_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___abortController_test_ts.log
+  job-20260925T004201/job-008 pid 2045    timeout 120 bun test src/packages/agent/__tests__/agentErrors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___agentErrors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___agentErrors_test_ts.log
+  job-20260925T004201/job-009 pid 2094    timeout 120 bun test src/packages/agent/__tests__/apiMicrocompact.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___apiMicrocompact_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___apiMicrocompact_test_ts.log
+  job-20260925T004201/job-010 pid 2113    timeout 120 bun test src/packages/agent/__tests__/attachments.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___attachments_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___attachments_test_ts.log
+  job-20260925T004201/job-011 pid 2132    timeout 120 bun test src/packages/agent/__tests__/autocompact.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___autocompact_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___autocompact_test_ts.log
+  job-20260925T004201/job-012 pid 2151    timeout 120 bun test src/packages/agent/__tests__/blockTaskAndCascade.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___blockTaskAndCascade_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___blockTaskAndCascade_test_ts.log
+  job-20260925T004201/job-013 pid 2275    timeout 120 bun test src/packages/agent/__tests__/cacheTtl.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___cacheTtl_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___cacheTtl_test_ts.log
+  job-20260925T004201/job-014 pid 2294    timeout 120 bun test src/packages/agent/__tests__/cachedMicrocompact.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___cachedMicrocompact_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___cachedMicrocompact_test_ts.log
+  job-20260925T004201/job-015 pid 2313    timeout 120 bun test src/packages/agent/__tests__/catalogCoverage.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___catalogCoverage_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___catalogCoverage_test_ts.log
+  job-20260925T004201/job-016 pid 2332    timeout 120 bun test src/packages/agent/__tests__/causalChain.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___causalChain_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___causalChain_test_ts.log
+  job-20260925T004201/job-017 pid 2402    timeout 120 bun test src/packages/agent/__tests__/compactionIndex.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___compactionIndex_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___compactionIndex_test_ts.log
+  job-20260925T004201/job-018 pid 2421    timeout 120 bun test src/packages/agent/__tests__/compactionPrompt.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___compactionPrompt_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___compactionPrompt_test_ts.log
+  job-20260925T004201/job-019 pid 2440    timeout 120 bun test src/packages/agent/__tests__/compat.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___compat_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___compat_test_ts.log
+  job-20260925T004201/job-020 pid 2459    timeout 120 bun test src/packages/agent/__tests__/contentTextHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contentTextHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contentTextHelpers_test_ts.log
+  job-20260925T004201/job-021 pid 2632    timeout 120 bun test src/packages/agent/__tests__/contextCompressionWiring.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextCompressionWiring_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextCompressionWiring_test_ts.log
+  job-20260925T004201/job-022 pid 2669    timeout 120 bun test src/packages/agent/__tests__/contextGovernance.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextGovernance_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextGovernance_test_ts.log
+  job-20260925T004201/job-023 pid 2691    timeout 120 bun test src/packages/agent/__tests__/contextLevel.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextLevel_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextLevel_test_ts.log
+  job-20260925T004201/job-024 pid 2710    timeout 120 bun test src/packages/agent/__tests__/contextPressure.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextPressure_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contextPressure_test_ts.log
+  job-20260925T004201/job-025 pid 2896    timeout 120 bun test src/packages/agent/__tests__/contract.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contract_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___contract_test_ts.log
+  job-20260925T004201/job-026 pid 3705    timeout 120 bun test src/packages/agent/__tests__/createProductionDeps.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___createProductionDeps_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___createProductionDeps_test_ts.log
+  job-20260925T004201/job-027 pid 3724    timeout 120 bun test src/packages/agent/__tests__/diffDisplay.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___diffDisplay_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___diffDisplay_test_ts.log
+  job-20260925T004201/job-028 pid 3743    timeout 120 bun test src/packages/agent/__tests__/emit.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___emit_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___emit_test_ts.log
+  job-20260925T004201/job-029 pid 3762    timeout 120 bun test src/packages/agent/__tests__/eventMetadata.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___eventMetadata_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___eventMetadata_test_ts.log
+  job-20260925T004201/job-030 pid 3824    timeout 120 bun test src/packages/agent/__tests__/extractToolInputForTelemetry.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___extractToolInputForTelemetry_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___extractToolInputForTelemetry_test_ts.log
+  job-20260925T004201/job-031 pid 3843    timeout 120 bun test src/packages/agent/__tests__/fileStateCache.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___fileStateCache_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___fileStateCache_test_ts.log
+  job-20260925T004201/job-032 pid 3862    timeout 120 bun test src/packages/agent/__tests__/flowHomes.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___flowHomes_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___flowHomes_test_ts.log
+  job-20260925T004201/job-033 pid 3881    timeout 120 bun test src/packages/agent/__tests__/generateSessionTitle.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___generateSessionTitle_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___generateSessionTitle_test_ts.log
+  job-20260925T004201/job-034 pid 3937    timeout 120 bun test src/packages/agent/__tests__/goalStopHook.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___goalStopHook_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___goalStopHook_test_ts.log
+  job-20260925T004201/job-035 pid 3956    timeout 120 bun test src/packages/agent/__tests__/handleStopHooks.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___handleStopHooks_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___handleStopHooks_test_ts.log
+  job-20260925T004201/job-036 pid 3975    timeout 120 bun test src/packages/agent/__tests__/hookProgress.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___hookProgress_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___hookProgress_test_ts.log
+  job-20260925T004201/job-037 pid 3994    timeout 120 bun test src/packages/agent/__tests__/hooks.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___hooks_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___hooks_test_ts.log
+  job-20260925T004201/job-038 pid 4644    timeout 120 bun test src/packages/agent/__tests__/hooksEvents.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___hooksEvents_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___hooksEvents_test_ts.log
+  job-20260925T004201/job-039 pid 4673    timeout 120 bun test src/packages/agent/__tests__/idleCollapse.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___idleCollapse_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___idleCollapse_test_ts.log
+  job-20260925T004201/job-040 pid 4705    timeout 120 bun test src/packages/agent/__tests__/internalCommandQueue.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalCommandQueue_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalCommandQueue_behavior_test_ts.log
+  job-20260925T004201/job-041 pid 5049    timeout 120 bun test src/packages/agent/__tests__/internalHeadlessRuntime.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalHeadlessRuntime_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalHeadlessRuntime_behavior_test_ts.log
+  job-20260925T004201/job-042 pid 5078    timeout 120 bun test src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalRuntimeSignals_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalRuntimeSignals_behavior_test_ts.log
+  job-20260925T004201/job-043 pid 5116    timeout 120 bun test src/packages/agent/__tests__/internalSdkRuntime.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalSdkRuntime_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalSdkRuntime_behavior_test_ts.log
+  job-20260925T004201/job-044 pid 5852    timeout 120 bun test src/packages/agent/__tests__/internalSessionRuntime.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalSessionRuntime_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___internalSessionRuntime_behavior_test_ts.log
+  job-20260925T004201/job-045 pid 5884    timeout 120 bun test src/packages/agent/__tests__/loop.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___loop_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___loop_test_ts.log
+  job-20260925T004201/job-046 pid 5918    timeout 120 bun test src/packages/agent/__tests__/mailbox.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___mailbox_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___mailbox_test_ts.log
+  job-20260925T004201/job-047 pid 6812    timeout 120 bun test src/packages/agent/__tests__/microcompact.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___microcompact_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___microcompact_test_ts.log
+  job-20260925T004201/job-048 pid 6845    timeout 120 bun test src/packages/agent/__tests__/models.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___models_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___models_test_ts.log
+  job-20260925T004201/job-049 pid 8163    timeout 120 bun test src/packages/agent/__tests__/productionWiring.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___productionWiring_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___productionWiring_test_ts.log
+  job-20260925T004201/job-050 pid 8198    timeout 120 bun test src/packages/agent/__tests__/reconcile.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___reconcile_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___reconcile_test_ts.log
+  job-20260925T004201/job-051 pid 8551    timeout 120 bun test src/packages/agent/__tests__/registry.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___registry_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___registry_test_ts.log
+  job-20260925T004201/job-052 pid 8570    timeout 120 bun test src/packages/agent/__tests__/schema.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___schema_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___schema_test_ts.log
+  job-20260925T004201/job-053 pid 8589    timeout 120 bun test src/packages/agent/__tests__/sdkCompatToolName.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___sdkCompatToolName_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___sdkCompatToolName_test_ts.log
+  job-20260925T004201/job-054 pid 8608    timeout 120 bun test src/packages/agent/__tests__/sessions.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___sessions_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___sessions_test_ts.log
+  job-20260925T004201/job-055 pid 8665    timeout 120 bun test src/packages/agent/__tests__/storeReconcile.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___storeReconcile_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___storeReconcile_test_ts.log
+  job-20260925T004201/job-056 pid 8684    timeout 120 bun test src/packages/agent/__tests__/stream.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___stream_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___stream_test_ts.log
+  job-20260925T004201/job-057 pid 8703    timeout 120 bun test src/packages/agent/__tests__/taskReminder.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___taskReminder_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___taskReminder_test_ts.log
+  job-20260925T004201/job-058 pid 8722    timeout 120 bun test src/packages/agent/__tests__/tokenBudgetLoop.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___tokenBudgetLoop_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_agent___tests___tokenBudgetLoop_test_ts.log
+  job-20260925T004201/job-059 pid 8881    timeout 120 bun test src/packages/app-host/src/__tests__/packageHostSetupResolution.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src___tests___packageHostSetupResolution_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src___tests___packageHostSetupResolution_test_ts.log
+  job-20260925T004201/job-060 pid 8911    timeout 120 bun test src/packages/app-host/src/commands/__tests__/init-verifiers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src_commands___tests___init-verifiers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src_commands___tests___init-verifiers_test_ts.log
+  job-20260925T004201/job-061 pid 9115    timeout 120 bun test src/packages/app-host/src/main/startup/__tests__/settings.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src_main_startup___tests___settings_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src_main_startup___tests___settings_test_ts.log
+  job-20260925T004201/job-062 pid 9135    timeout 120 bun test src/packages/app-host/src/startup/__tests__/skillLoadedEvent.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src_startup___tests___skillLoadedEvent_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_app-host_src_startup___tests___skillLoadedEvent_test_ts.log
+  job-20260925T004201/job-063 pid 9154    timeout 120 bun test src/packages/bridge/src/__tests__/bridgeApi.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_bridge_src___tests___bridgeApi_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_bridge_src___tests___bridgeApi_test_ts.log
+  job-20260925T004201/job-064 pid 9173    timeout 120 bun test src/packages/bridge/src/__tests__/jwtUtils.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_bridge_src___tests___jwtUtils_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_bridge_src___tests___jwtUtils_test_ts.log
+  job-20260925T004201/job-065 pid 9231    timeout 120 bun test src/packages/cli/__tests__/binAgentWiring.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___binAgentWiring_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___binAgentWiring_test_ts.log
+  job-20260925T004201/job-066 pid 9250    timeout 120 bun test src/packages/cli/__tests__/binSkillWiring.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___binSkillWiring_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___binSkillWiring_test_ts.log
+  job-20260925T004201/job-067 pid 9269    timeout 120 bun test src/packages/cli/__tests__/cli.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___cli_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___cli_test_ts.log
+  job-20260925T004201/job-068 pid 9288    timeout 120 bun test src/packages/cli/__tests__/compressToolResultsWiring.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___compressToolResultsWiring_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___compressToolResultsWiring_test_ts.log
+  job-20260925T004201/job-069 pid 9387    timeout 120 bun test src/packages/cli/__tests__/hogarDeLaCli.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___hogarDeLaCli_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___hogarDeLaCli_test_ts.log
+  job-20260925T004201/job-070 pid 9414    timeout 120 bun test src/packages/cli/__tests__/impact.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___impact_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___impact_test_ts.log
+  job-20260925T004201/job-071 pid 9450    timeout 120 bun test src/packages/cli/__tests__/impactCli.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___impactCli_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___impactCli_test_ts.log
+  job-20260925T004201/job-072 pid 9715    timeout 120 bun test src/packages/cli/__tests__/loopStreaming.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___loopStreaming_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli___tests___loopStreaming_test_ts.log
+  job-20260925T004201/job-073 pid 9738    timeout 120 bun test src/packages/cli/src/__tests__/promptUtils.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli_src___tests___promptUtils_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_cli_src___tests___promptUtils_test_ts.log
+  job-20260925T004201/job-074 pid 9757    timeout 120 bun test src/packages/color-diff-napi/src/__tests__/color-diff.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_color-diff-napi_src___tests___color-diff_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_color-diff-napi_src___tests___color-diff_test_ts.log
+  job-20260925T004201/job-075 pid 9860    timeout 120 bun test src/packages/command-runtime/src/__tests__/api.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___api_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___api_test_ts.log
+  job-20260925T004201/job-076 pid 9879    timeout 120 bun test src/packages/command-runtime/src/__tests__/command.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___command_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___command_test_ts.log
+  job-20260925T004201/job-077 pid 10216   timeout 120 bun test src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___createMovedToPluginCommand_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___createMovedToPluginCommand_test_ts.log
+  job-20260925T004201/job-078 pid 10487   timeout 120 bun test src/packages/command-runtime/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___errors_test_ts.log
+  job-20260925T004201/job-079 pid 10506   timeout 120 bun test src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___portedCommandsSmoke_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___portedCommandsSmoke_test_ts.log
+  job-20260925T004201/job-080 pid 10557   timeout 120 bun test src/packages/command-runtime/src/__tests__/skillHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___skillHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___skillHelpers_test_ts.log
+  job-20260925T004201/job-081 pid 10576   timeout 120 bun test src/packages/command-runtime/src/__tests__/types.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___types_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___types_test_ts.log
+  job-20260925T004201/job-082 pid 10595   timeout 120 bun test src/packages/command-runtime/src/__tests__/ultrareviewEnabled.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___ultrareviewEnabled_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src___tests___ultrareviewEnabled_test_ts.log
+  job-20260925T004201/job-083 pid 10614   timeout 120 bun test src/packages/command-runtime/src/commands/pause-memory/__tests__/pauseMemory.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_pause-memory___tests___pauseMemory_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_pause-memory___tests___pauseMemory_test_ts.log
+  job-20260925T004201/job-084 pid 10664   timeout 120 bun test src/packages/command-runtime/src/commands/powerup/__tests__/lessons.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_powerup___tests___lessons_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_powerup___tests___lessons_test_ts.log
+  job-20260925T004201/job-085 pid 10683   timeout 120 bun test src/packages/command-runtime/src/commands/powerup/__tests__/powerup-screen.test.tsx > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_powerup___tests___powerup-screen_test_tsx.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_powerup___tests___powerup-screen_test_tsx.log
+  job-20260925T004201/job-086 pid 10702   timeout 120 bun test src/packages/command-runtime/src/commands/powerup/__tests__/state.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_powerup___tests___state_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_commands_powerup___tests___state_test_ts.log
+  job-20260925T004201/job-087 pid 10721   timeout 120 bun test src/packages/command-runtime/src/skills/__tests__/dynamicSkills.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_skills___tests___dynamicSkills_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_command-runtime_src_skills___tests___dynamicSkills_test_ts.log
+  job-20260925T004201/job-088 pid 10785   timeout 120 bun test src/packages/config/__tests__/autoModeConfig.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___autoModeConfig_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___autoModeConfig_test_ts.log
+  job-20260925T004201/job-089 pid 10804   timeout 120 bun test src/packages/config/__tests__/config.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___config_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___config_test_ts.log
+  job-20260925T004201/job-090 pid 10823   timeout 120 bun test src/packages/config/__tests__/configMarkers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___configMarkers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___configMarkers_test_ts.log
+  job-20260925T004201/job-091 pid 10842   timeout 120 bun test src/packages/config/__tests__/getOrCreateUserID.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___getOrCreateUserID_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___getOrCreateUserID_test_ts.log
+  job-20260925T004201/job-092 pid 10904   timeout 120 bun test src/packages/config/__tests__/globalConfig.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___globalConfig_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___globalConfig_test_ts.log
+  job-20260925T004201/job-093 pid 10923   timeout 120 bun test src/packages/config/__tests__/inventory.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___inventory_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___inventory_test_ts.log
+  job-20260925T004201/job-094 pid 10942   timeout 120 bun test src/packages/config/__tests__/permissionPromptOptIn.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___permissionPromptOptIn_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___permissionPromptOptIn_test_ts.log
+  job-20260925T004201/job-095 pid 10961   timeout 120 bun test src/packages/config/__tests__/policySettingsOrigin.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___policySettingsOrigin_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___policySettingsOrigin_test_ts.log
+  job-20260925T004201/job-096 pid 11023   timeout 120 bun test src/packages/config/__tests__/settings.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___settings_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___settings_test_ts.log
+  job-20260925T004201/job-097 pid 11042   timeout 120 bun test src/packages/config/__tests__/settingsConstants.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___settingsConstants_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___settingsConstants_behavior_test_ts.log
+  job-20260925T004201/job-098 pid 11061   timeout 120 bun test src/packages/config/__tests__/settingsValidation.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___settingsValidation_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___settingsValidation_test_ts.log
+  job-20260925T004201/job-099 pid 11080   timeout 120 bun test src/packages/config/__tests__/sleep.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___sleep_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___sleep_test_ts.log
+  job-20260925T004201/job-100 pid 11135   timeout 120 bun test src/packages/config/__tests__/testImpact.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___testImpact_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___testImpact_test_ts.log
+  job-20260925T004201/job-101 pid 11154   timeout 120 bun test src/packages/config/__tests__/validationTips.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___validationTips_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config___tests___validationTips_test_ts.log
+  job-20260925T004201/job-102 pid 11173   timeout 120 bun test src/packages/config/plugin/__tests__/ineffectiveDisables.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config_plugin___tests___ineffectiveDisables_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_config_plugin___tests___ineffectiveDisables_test_ts.log
+  job-20260925T004201/job-103 pid 11192   timeout 120 bun test src/packages/context-compression/__tests__/compressToolResult.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_context-compression___tests___compressToolResult_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_context-compression___tests___compressToolResult_test_ts.log
+  job-20260925T004201/job-104 pid 11244   timeout 120 bun test src/packages/context-compression/__tests__/rtkFilters.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_context-compression___tests___rtkFilters_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_context-compression___tests___rtkFilters_test_ts.log
+  job-20260925T004201/job-105 pid 11263   timeout 120 bun test src/packages/daemon/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_daemon_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_daemon_src___tests___errors_test_ts.log
+  job-20260925T004201/job-106 pid 11282   timeout 120 bun test src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_headless-sdk_src___tests___sdkMemorySummary_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_headless-sdk_src___tests___sdkMemorySummary_test_ts.log
+  job-20260925T004201/job-107 pid 11301   timeout 120 bun test src/packages/local-observability/src/__tests__/errorHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___errorHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___errorHelpers_test_ts.log
+  job-20260925T004201/job-108 pid 11355   timeout 120 bun test src/packages/local-observability/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___errors_test_ts.log
+  job-20260925T004201/job-109 pid 11374   timeout 120 bun test src/packages/local-observability/src/__tests__/fileOperationAnalytics.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___fileOperationAnalytics_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___fileOperationAnalytics_test_ts.log
+  job-20260925T004201/job-110 pid 11393   timeout 120 bun test src/packages/local-observability/src/__tests__/logAuthEvent.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___logAuthEvent_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___logAuthEvent_behavior_test_ts.log
+  job-20260925T004201/job-111 pid 11412   timeout 120 bun test src/packages/local-observability/src/__tests__/structuredEvents.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___structuredEvents_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_local-observability_src___tests___structuredEvents_behavior_test_ts.log
+  job-20260925T004201/job-112 pid 11466   timeout 120 bun test src/packages/mcp-runtime/src/__tests__/channelNotification.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___channelNotification_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___channelNotification_test_ts.log
+  job-20260925T004201/job-113 pid 11485   timeout 120 bun test src/packages/mcp-runtime/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___errors_test_ts.log
+  job-20260925T004201/job-114 pid 11504   timeout 120 bun test src/packages/mcp-runtime/src/__tests__/reservedNames.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___reservedNames_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___reservedNames_test_ts.log
+  job-20260925T004201/job-115 pid 11523   timeout 120 bun test src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___utilsHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_mcp-runtime_src___tests___utilsHelpers_test_ts.log
+  job-20260925T004201/job-116 pid 11578   timeout 120 bun test src/packages/memory/src/__tests__/consolidationPrompt.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_memory_src___tests___consolidationPrompt_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_memory_src___tests___consolidationPrompt_test_ts.log
+  job-20260925T004201/job-117 pid 11597   timeout 120 bun test src/packages/memory/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_memory_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_memory_src___tests___errors_test_ts.log
+  job-20260925T004201/job-118 pid 11616   timeout 120 bun test src/packages/observability/__tests__/observability.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_observability___tests___observability_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_observability___tests___observability_test_ts.log
+  job-20260925T004201/job-119 pid 11635   timeout 120 bun test src/packages/observability/__tests__/transcriptShape.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_observability___tests___transcriptShape_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_observability___tests___transcriptShape_test_ts.log
+  job-20260925T004201/job-120 pid 11691   timeout 120 bun test src/packages/output/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_output_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_output_src___tests___errors_test_ts.log
+  job-20260925T004201/job-121 pid 11710   timeout 120 bun test src/packages/output/src/__tests__/formattersPublicSurface.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_output_src___tests___formattersPublicSurface_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_output_src___tests___formattersPublicSurface_test_ts.log
+  job-20260925T004201/job-122 pid 11729   timeout 120 bun test src/packages/permission/__tests__/PermissionUpdate.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___PermissionUpdate_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___PermissionUpdate_test_ts.log
+  job-20260925T004201/job-123 pid 11748   timeout 120 bun test src/packages/permission/__tests__/barrelAndTesting.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___barrelAndTesting_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___barrelAndTesting_test_ts.log
+  job-20260925T004201/job-124 pid 11823   timeout 120 bun test src/packages/permission/__tests__/filesystem.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___filesystem_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___filesystem_test_ts.log
+  job-20260925T004201/job-125 pid 11842   timeout 120 bun test src/packages/permission/__tests__/host.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___host_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___host_test_ts.log
+  job-20260925T004201/job-126 pid 11861   timeout 120 bun test src/packages/permission/__tests__/pathInAllowedWorkingPath.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___pathInAllowedWorkingPath_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___pathInAllowedWorkingPath_test_ts.log
+  job-20260925T004201/job-127 pid 11908   timeout 120 bun test src/packages/permission/__tests__/permissionPersistence.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionPersistence_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionPersistence_test_ts.log
+  job-20260925T004201/job-128 pid 11927   timeout 120 bun test src/packages/permission/__tests__/permissionSetup.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionSetup_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionSetup_test_ts.log
+  job-20260925T004201/job-129 pid 11946   timeout 120 bun test src/packages/permission/__tests__/permissionSetupAutoMode.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionSetupAutoMode_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionSetupAutoMode_test_ts.log
+  job-20260925T004201/job-130 pid 11965   timeout 120 bun test src/packages/permission/__tests__/permissionsLoader.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionsLoader_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___permissionsLoader_test_ts.log
+  job-20260925T004201/job-131 pid 12027   timeout 120 bun test src/packages/permission/__tests__/workspaceAndRename.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___workspaceAndRename_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission___tests___workspaceAndRename_test_ts.log
+  job-20260925T004201/job-132 pid 12057   timeout 120 bun test src/packages/permission/src/__tests__/classifierOperatorModel.contract.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___classifierOperatorModel_contract_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___classifierOperatorModel_contract_test_ts.log
+  job-20260925T004201/job-133 pid 12076   timeout 120 bun test src/packages/permission/src/__tests__/permissionErrors.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___permissionErrors_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___permissionErrors_behavior_test_ts.log
+  job-20260925T004201/job-134 pid 12095   timeout 120 bun test src/packages/permission/src/__tests__/permissionSchemas.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___permissionSchemas_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___permissionSchemas_behavior_test_ts.log
+  job-20260925T004201/job-135 pid 12114   timeout 120 bun test src/packages/permission/src/__tests__/permissionUpdatePure.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___permissionUpdatePure_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___permissionUpdatePure_test_ts.log
+  job-20260925T004201/job-136 pid 12174   timeout 120 bun test src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___sandboxWriteAllowlist_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_permission_src___tests___sandboxWriteAllowlist_test_ts.log
+  job-20260925T004201/job-137 pid 12193   timeout 120 bun test src/packages/provider/__tests__/adapters.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___adapters_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___adapters_test_ts.log
+  job-20260925T004201/job-138 pid 12212   timeout 120 bun test src/packages/provider/__tests__/authProviders.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___authProviders_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___authProviders_test_ts.log
+  job-20260925T004201/job-139 pid 12231   timeout 120 bun test src/packages/provider/__tests__/classifyAPIError.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___classifyAPIError_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___classifyAPIError_test_ts.log
+  job-20260925T004201/job-140 pid 12291   timeout 120 bun test src/packages/provider/__tests__/contextPipeline.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___contextPipeline_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___contextPipeline_test_ts.log
+  job-20260925T004201/job-141 pid 12310   timeout 120 bun test src/packages/provider/__tests__/contractsHostSmoke.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___contractsHostSmoke_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___contractsHostSmoke_test_ts.log
+  job-20260925T004201/job-142 pid 12329   timeout 120 bun test src/packages/provider/__tests__/cost.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___cost_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___cost_test_ts.log
+  job-20260925T004201/job-143 pid 12349   timeout 120 bun test src/packages/provider/__tests__/crossModelRead.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___crossModelRead_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___crossModelRead_test_ts.log
+  job-20260925T004201/job-144 pid 12403   timeout 120 bun test src/packages/provider/__tests__/errorMessageConstants.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___errorMessageConstants_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___errorMessageConstants_test_ts.log
+  job-20260925T004201/job-145 pid 12422   timeout 120 bun test src/packages/provider/__tests__/geminiClient.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiClient_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiClient_test_ts.log
+  job-20260925T004201/job-146 pid 12441   timeout 120 bun test src/packages/provider/__tests__/geminiConvertTools.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiConvertTools_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiConvertTools_test_ts.log
+  job-20260925T004201/job-147 pid 12460   timeout 120 bun test src/packages/provider/__tests__/geminiIndexImpl.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiIndexImpl_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiIndexImpl_test_ts.log
+  job-20260925T004201/job-148 pid 12514   timeout 120 bun test src/packages/provider/__tests__/geminiMessageParts.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiMessageParts_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiMessageParts_test_ts.log
+  job-20260925T004201/job-149 pid 12533   timeout 120 bun test src/packages/provider/__tests__/geminiSseParser.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiSseParser_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___geminiSseParser_test_ts.log
+  job-20260925T004201/job-150 pid 12552   timeout 120 bun test src/packages/provider/__tests__/openaiClient.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiClient_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiClient_test_ts.log
+  job-20260925T004201/job-151 pid 12572   timeout 120 bun test src/packages/provider/__tests__/openaiConvertTools.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiConvertTools_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiConvertTools_test_ts.log
+  job-20260925T004201/job-152 pid 12625   timeout 120 bun test src/packages/provider/__tests__/openaiConvertToolsSourcePinning.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiConvertToolsSourcePinning_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiConvertToolsSourcePinning_test_ts.log
+  job-20260925T004201/job-153 pid 12644   timeout 120 bun test src/packages/provider/__tests__/openaiIndexImpl.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiIndexImpl_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___openaiIndexImpl_test_ts.log
+  job-20260925T004201/job-154 pid 12663   timeout 120 bun test src/packages/provider/__tests__/provider.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___provider_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___provider_test_ts.log
+  job-20260925T004201/job-155 pid 12682   timeout 120 bun test src/packages/provider/__tests__/providerRouting.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___providerRouting_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___providerRouting_test_ts.log
+  job-20260925T004201/job-156 pid 12737   timeout 120 bun test src/packages/provider/__tests__/providerStreaming.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___providerStreaming_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider___tests___providerStreaming_test_ts.log
+  job-20260925T004201/job-157 pid 12756   timeout 120 bun test src/packages/provider/src/__tests__/anthropicClientTimeout.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___anthropicClientTimeout_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___anthropicClientTimeout_behavior_test_ts.log
+  job-20260925T004201/job-158 pid 12775   timeout 120 bun test src/packages/provider/src/__tests__/errorMessageConstants.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___errorMessageConstants_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___errorMessageConstants_behavior_test_ts.log
+  job-20260925T004201/job-159 pid 12794   timeout 120 bun test src/packages/provider/src/__tests__/errorUtils.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___errorUtils_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___errorUtils_test_ts.log
+  job-20260925T004201/job-160 pid 12840   timeout 120 bun test src/packages/provider/src/__tests__/formatCreditAmount.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___formatCreditAmount_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___formatCreditAmount_test_ts.log
+  job-20260925T004201/job-161 pid 12859   timeout 120 bun test src/packages/provider/src/__tests__/geminiConvertTools.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___geminiConvertTools_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___geminiConvertTools_test_ts.log
+  job-20260925T004201/job-162 pid 12878   timeout 120 bun test src/packages/provider/src/__tests__/integration.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___integration_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___integration_test_ts.log
+  job-20260925T004201/job-163 pid 12897   timeout 120 bun test src/packages/provider/src/__tests__/openaiConvertTools.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___openaiConvertTools_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___openaiConvertTools_test_ts.log
+  job-20260925T004201/job-164 pid 12952   timeout 120 bun test src/packages/provider/src/__tests__/providerRouting.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___providerRouting_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___providerRouting_test_ts.log
+  job-20260925T004201/job-165 pid 12971   timeout 120 bun test src/packages/provider/src/__tests__/publicSurface.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___publicSurface_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___publicSurface_test_ts.log
+  job-20260925T004201/job-166 pid 12990   timeout 120 bun test src/packages/provider/src/__tests__/sseParser.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___sseParser_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src___tests___sseParser_test_ts.log
+  job-20260925T004201/job-167 pid 13009   timeout 120 bun test src/packages/provider/src/oauth/__tests__/oauthErrorHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src_oauth___tests___oauthErrorHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_provider_src_oauth___tests___oauthErrorHelpers_test_ts.log
+  job-20260925T004201/job-168 pid 13066   timeout 120 bun test src/packages/repl/src/__tests__/fullscreenBgForced.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___fullscreenBgForced_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___fullscreenBgForced_test_ts.log
+  job-20260925T004201/job-169 pid 13085   timeout 120 bun test src/packages/repl/src/__tests__/inputModes.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___inputModes_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___inputModes_test_ts.log
+  job-20260925T004201/job-170 pid 13104   timeout 120 bun test src/packages/repl/src/__tests__/isHookEqual.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___isHookEqual_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___isHookEqual_test_ts.log
+  job-20260925T004201/job-171 pid 13123   timeout 120 bun test src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___managedSettingsSecurity_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_repl_src___tests___managedSettingsSecurity_test_ts.log
+  job-20260925T004201/job-172 pid 13177   timeout 120 bun test src/packages/ripgrep-napi/__tests__/native.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_ripgrep-napi___tests___native_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_ripgrep-napi___tests___native_test_ts.log
+  job-20260925T004201/job-173 pid 13196   timeout 120 bun test src/packages/server/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_server_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_server_src___tests___errors_test_ts.log
+  job-20260925T004201/job-174 pid 13215   timeout 120 bun test src/packages/shell/src/__test__/import.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_shell_src___test___import_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_shell_src___test___import_test_ts.log
+  job-20260925T004201/job-175 pid 13234   timeout 120 bun test src/packages/skills/__tests__/skills.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_skills___tests___skills_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_skills___tests___skills_test_ts.log
+  job-20260925T004201/job-176 pid 13291   timeout 120 bun test src/packages/stdin-napi/__tests__/native.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_stdin-napi___tests___native_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_stdin-napi___tests___native_test_ts.log
+  job-20260925T004201/job-177 pid 13310   timeout 120 bun test src/packages/storage/bin/__tests__/storage.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_bin___tests___storage_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_bin___tests___storage_test_ts.log
+  job-20260925T004201/job-178 pid 13329   timeout 120 bun test src/packages/storage/src/__tests__/cache-paths.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___cache-paths_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___cache-paths_test_ts.log
+  job-20260925T004201/job-179 pid 13348   timeout 120 bun test src/packages/storage/src/__tests__/conversationChain.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___conversationChain_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___conversationChain_test_ts.log
+  job-20260925T004201/job-180 pid 13428   timeout 120 bun test src/packages/storage/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___errors_test_ts.log
+  job-20260925T004201/job-181 pid 13447   timeout 120 bun test src/packages/storage/src/__tests__/fileRead.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___fileRead_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___fileRead_test_ts.log
+  job-20260925T004201/job-182 pid 13466   timeout 120 bun test src/packages/storage/src/__tests__/fileUtilities.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___fileUtilities_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___fileUtilities_behavior_test_ts.log
+  job-20260925T004201/job-183 pid 13524   timeout 120 bun test src/packages/storage/src/__tests__/getMemoryFiles.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___getMemoryFiles_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___getMemoryFiles_test_ts.log
+  job-20260925T004201/job-184 pid 13543   timeout 120 bun test src/packages/storage/src/__tests__/index.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___index_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___index_test_ts.log
+  job-20260925T004201/job-185 pid 13562   timeout 120 bun test src/packages/storage/src/__tests__/json.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___json_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___json_test_ts.log
+  job-20260925T004201/job-186 pid 13621   timeout 120 bun test src/packages/storage/src/__tests__/lockfile.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___lockfile_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___lockfile_behavior_test_ts.log
+  job-20260925T004201/job-187 pid 13640   timeout 120 bun test src/packages/storage/src/__tests__/projectPurge.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___projectPurge_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___projectPurge_test_ts.log
+  job-20260925T004201/job-188 pid 13659   timeout 120 bun test src/packages/storage/src/__tests__/secureStorage.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___secureStorage_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src___tests___secureStorage_test_ts.log
+  job-20260925T004201/job-189 pid 13678   timeout 120 bun test src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_filePersistence___tests___filePersistence_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_filePersistence___tests___filePersistence_test_ts.log
+  job-20260925T004201/job-190 pid 13735   timeout 120 bun test src/packages/storage/src/filePersistence/__tests__/types.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_filePersistence___tests___types_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_filePersistence___tests___types_test_ts.log
+  job-20260925T004201/job-191 pid 13754   timeout 120 bun test src/packages/storage/src/secureStorage/__tests__/index.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_secureStorage___tests___index_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_secureStorage___tests___index_test_ts.log
+  job-20260925T004201/job-192 pid 13773   timeout 120 bun test src/packages/storage/src/testing/__tests__/index.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_testing___tests___index_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_storage_src_testing___tests___index_test_ts.log
+  job-20260925T004201/job-193 pid 13817   timeout 120 bun test src/packages/swarm/__tests__/backendRegistry.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___backendRegistry_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___backendRegistry_test_ts.log
+  job-20260925T004201/job-194 pid 13836   timeout 120 bun test src/packages/swarm/__tests__/mailbox.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___mailbox_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___mailbox_test_ts.log
+  job-20260925T004201/job-195 pid 13855   timeout 120 bun test src/packages/swarm/__tests__/swarmPermissions.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___swarmPermissions_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___swarmPermissions_test_ts.log
+  job-20260925T004201/job-196 pid 13874   timeout 120 bun test src/packages/swarm/__tests__/teamDiscovery.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___teamDiscovery_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm___tests___teamDiscovery_test_ts.log
+  job-20260925T004201/job-197 pid 13948   timeout 120 bun test src/packages/swarm/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___errors_test_ts.log
+  job-20260925T004201/job-198 pid 13967   timeout 120 bun test src/packages/swarm/src/__tests__/isPaneBackend.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___isPaneBackend_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___isPaneBackend_test_ts.log
+  job-20260925T004201/job-199 pid 13986   timeout 120 bun test src/packages/swarm/src/__tests__/mailboxHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___mailboxHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___mailboxHelpers_test_ts.log
+  job-20260925T004201/job-200 pid 14040   timeout 120 bun test src/packages/swarm/src/__tests__/permissionFactories.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___permissionFactories_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___permissionFactories_test_ts.log
+  job-20260925T004201/job-201 pid 14059   timeout 120 bun test src/packages/swarm/src/__tests__/publicSurface.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___publicSurface_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___publicSurface_test_ts.log
+  job-20260925T004201/job-202 pid 14078   timeout 120 bun test src/packages/swarm/src/__tests__/shutdownAndPlanHelpers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___shutdownAndPlanHelpers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___shutdownAndPlanHelpers_test_ts.log
+  job-20260925T004201/job-203 pid 14097   timeout 120 bun test src/packages/swarm/src/__tests__/shutdownRequestDelivery.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___shutdownRequestDelivery_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___shutdownRequestDelivery_test_ts.log
+  job-20260925T004201/job-204 pid 14159   timeout 120 bun test src/packages/swarm/src/__tests__/teamSanitizers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___teamSanitizers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___teamSanitizers_test_ts.log
+  job-20260925T004201/job-205 pid 14178   timeout 120 bun test src/packages/swarm/src/__tests__/writeToMailboxDedup.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___writeToMailboxDedup_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___writeToMailboxDedup_test_ts.log
+  job-20260925T004201/job-206 pid 14197   timeout 120 bun test src/packages/swarm/src/__tests__/writeToMailboxIntegration.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___writeToMailboxIntegration_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src___tests___writeToMailboxIntegration_test_ts.log
+  job-20260925T004201/job-207 pid 14216   timeout 120 bun test src/packages/swarm/src/tasks/__tests__/InProcessTeammateTask.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src_tasks___tests___InProcessTeammateTask_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src_tasks___tests___InProcessTeammateTask_test_ts.log
+  job-20260925T004201/job-208 pid 14276   timeout 120 bun test src/packages/swarm/src/worktree/__tests__/parsers.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src_worktree___tests___parsers_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src_worktree___tests___parsers_test_ts.log
+  job-20260925T004201/job-209 pid 14295   timeout 120 bun test src/packages/swarm/src/worktree/__tests__/worktreeBranchAndSession.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src_worktree___tests___worktreeBranchAndSession_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_swarm_src_worktree___tests___worktreeBranchAndSession_test_ts.log
+  job-20260925T004201/job-210 pid 14314   timeout 120 bun test src/packages/teleport/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_teleport_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_teleport_src___tests___errors_test_ts.log
+  job-20260925T004201/job-211 pid 14333   timeout 120 bun test src/packages/tool-registry/src/__tests__/integration.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___integration_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___integration_test_ts.log
+  job-20260925T004201/job-212 pid 14391   timeout 120 bun test src/packages/tool-registry/src/__tests__/publicSurface.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___publicSurface_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___publicSurface_test_ts.log
+  job-20260925T004201/job-213 pid 14410   timeout 120 bun test src/packages/tool-registry/src/__tests__/registryCore.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___registryCore_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___registryCore_test_ts.log
+  job-20260925T004201/job-214 pid 14429   timeout 120 bun test src/packages/tool-registry/src/__tests__/rootModules.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___rootModules_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src___tests___rootModules_test_ts.log
+  job-20260925T004201/job-215 pid 14448   timeout 120 bun test src/packages/tool-registry/src/testing/__tests__/index.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_testing___tests___index_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_testing___tests___index_test_ts.log
+  job-20260925T004201/job-216 pid 14504   timeout 120 bun test src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_AgentTool___tests___agentDisplay_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_AgentTool___tests___agentDisplay_test_ts.log
+  job-20260925T004201/job-217 pid 14523   timeout 120 bun test src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_AgentTool___tests___agentToolUtils_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_AgentTool___tests___agentToolUtils_test_ts.log
+  job-20260925T004201/job-218 pid 14542   timeout 120 bun test src/packages/tool-registry/src/tools/AskUserQuestionTool/__tests__/notDeferred.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_AskUserQuestionTool___tests___notDeferred_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_AskUserQuestionTool___tests___notDeferred_test_ts.log
+  job-20260925T004201/job-219 pid 14561   timeout 120 bun test src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_BashTool___tests___detectBlockedSleepPattern_behavior_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_BashTool___tests___detectBlockedSleepPattern_behavior_test_ts.log
+  job-20260925T004201/job-220 pid 14623   timeout 120 bun test src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_BashTool___tests___pathExtractors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_BashTool___tests___pathExtractors_test_ts.log
+  job-20260925T004201/job-221 pid 14642   timeout 120 bun test src/packages/tool-registry/src/tools/LSPTool/__tests__/formatters.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_LSPTool___tests___formatters_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_LSPTool___tests___formatters_test_ts.log
+  job-20260925T004201/job-222 pid 14661   timeout 120 bun test src/packages/tool-registry/src/tools/MCPTool/__tests__/classifyForCollapse.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_MCPTool___tests___classifyForCollapse_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_MCPTool___tests___classifyForCollapse_test_ts.log
+  job-20260925T004201/job-223 pid 14707   timeout 120 bun test src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_PowerShellTool___tests___powershellSecurity_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_PowerShellTool___tests___powershellSecurity_test_ts.log
+  job-20260925T004201/job-224 pid 14726   timeout 120 bun test src/packages/tool-registry/src/tools/ScheduleCronTool/__tests__/cronPromptBuilders.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_ScheduleCronTool___tests___cronPromptBuilders_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_ScheduleCronTool___tests___cronPromptBuilders_test_ts.log
+  job-20260925T004201/job-225 pid 14745   timeout 120 bun test src/packages/tool-registry/src/tools/SendMessageTool/__tests__/promptBroadcastGuidance.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_SendMessageTool___tests___promptBroadcastGuidance_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_SendMessageTool___tests___promptBroadcastGuidance_test_ts.log
+  job-20260925T004201/job-226 pid 14764   timeout 120 bun test src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_ShareOnboardingGuideTool___tests___ShareOnboardingGuideTool_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_ShareOnboardingGuideTool___tests___ShareOnboardingGuideTool_test_ts.log
+  job-20260925T004201/job-227 pid 14822   timeout 120 bun test src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_WaitForMcpServersTool___tests___WaitForMcpServersTool_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_WaitForMcpServersTool___tests___WaitForMcpServersTool_test_ts.log
+  job-20260925T004201/job-228 pid 14841   timeout 120 bun test src/packages/tool-registry/src/tools/WebSearchTool/__tests__/adapterFactory.integration.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_WebSearchTool___tests___adapterFactory_integration_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_WebSearchTool___tests___adapterFactory_integration_test_ts.log
+  job-20260925T004201/job-229 pid 14860   timeout 120 bun test src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools___tests___sleepAndTestingPermission_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools___tests___sleepAndTestingPermission_test_ts.log
+  job-20260925T004201/job-230 pid 14879   timeout 120 bun test src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools___tests___todoWrite_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools___tests___todoWrite_test_ts.log
+  job-20260925T004201/job-231 pid 14939   timeout 120 bun test src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_registry___tests___ToolRegistry_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_registry___tests___ToolRegistry_test_ts.log
+  job-20260925T004201/job-232 pid 14958   timeout 120 bun test src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_registry_providers___tests___BuiltInToolsProvider_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_registry_providers___tests___BuiltInToolsProvider_test_ts.log
+  job-20260925T004201/job-233 pid 14977   timeout 120 bun test src/packages/tool-registry/src/tools/shared/__tests__/ensureTeamFile.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_shared___tests___ensureTeamFile_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tool-registry_src_tools_shared___tests___ensureTeamFile_test_ts.log
+  job-20260925T004201/job-234 pid 14996   timeout 120 bun test src/packages/tools/__tests__/planMode.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tools___tests___planMode_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tools___tests___planMode_test_ts.log
+  job-20260925T004201/job-235 pid 15056   timeout 120 bun test src/packages/tools/__tests__/skillTool.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tools___tests___skillTool_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tools___tests___skillTool_test_ts.log
+  job-20260925T004201/job-236 pid 15075   timeout 120 bun test src/packages/tools/__tests__/subagent.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tools___tests___subagent_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_tools___tests___subagent_test_ts.log
+  job-20260925T004201/job-237 pid 15111   timeout 120 bun test src/packages/updater/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_updater_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_updater_src___tests___errors_test_ts.log
+  job-20260925T004201/job-238 pid 15130   timeout 120 bun test src/packages/voice/src/__tests__/errors.test.ts > .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_voice_src___tests___errors_test_ts.log 2>&1; echo exit=$? >> .claude/workbench/copia-desde-ccnmt/lote-01/por-archivo/src_packages_voice_src___tests___errors_test_ts.log
+run-task-pool: lanzados 238 de 238; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260925T004201_job-001 -> OK (2 de 239)
+asentado: job-20260925T004201_job-002 -> OK (3 de 239)
+asentado: job-20260925T004201_job-003 -> OK (4 de 239)
+asentado: job-20260925T004201_job-004 -> OK (5 de 239)
+asentado: job-20260925T004201_job-005 -> OK (6 de 239)
+asentado: job-20260925T004201_job-006 -> OK (7 de 239)
+asentado: job-20260925T004201_job-007 -> OK (8 de 239)
+asentado: job-20260925T004201_job-008 -> OK (9 de 239)
+asentado: job-20260925T004201_job-009 -> OK (10 de 239)
+asentado: job-20260925T004201_job-010 -> OK (11 de 239)
+asentado: job-20260925T004201_job-011 -> OK (12 de 239)
+asentado: job-20260925T004201_job-012 -> OK (13 de 239)
+asentado: job-20260925T004201_job-013 -> OK (14 de 239)
+asentado: job-20260925T004201_job-014 -> OK (15 de 239)
+asentado: job-20260925T004201_job-015 -> OK (16 de 239)
+asentado: job-20260925T004201_job-016 -> OK (17 de 239)
+asentado: job-20260925T004201_job-017 -> OK (18 de 239)
+asentado: job-20260925T004201_job-018 -> OK (19 de 239)
+asentado: job-20260925T004201_job-019 -> OK (20 de 239)
+asentado: job-20260925T004201_job-020 -> OK (21 de 239)
+asentado: job-20260925T004201_job-021 -> OK (22 de 239)
+asentado: job-20260925T004201_job-022 -> OK (23 de 239)
+asentado: job-20260925T004201_job-023 -> OK (24 de 239)
+asentado: job-20260925T004201_job-024 -> OK (25 de 239)
+asentado: job-20260925T004201_job-025 -> OK (26 de 239)
+asentado: job-20260925T004201_job-026 -> OK (27 de 239)
+asentado: job-20260925T004201_job-027 -> OK (28 de 239)
+asentado: job-20260925T004201_job-028 -> OK (29 de 239)
+asentado: job-20260925T004201_job-029 -> OK (30 de 239)
+asentado: job-20260925T004201_job-030 -> OK (31 de 239)
+asentado: job-20260925T004201_job-031 -> OK (32 de 239)
+asentado: job-20260925T004201_job-032 -> OK (33 de 239)
+asentado: job-20260925T004201_job-033 -> OK (34 de 239)
+asentado: job-20260925T004201_job-034 -> OK (35 de 239)
+asentado: job-20260925T004201_job-035 -> OK (36 de 239)
+asentado: job-20260925T004201_job-036 -> OK (37 de 239)
+asentado: job-20260925T004201_job-037 -> OK (38 de 239)
+asentado: job-20260925T004201_job-038 -> OK (39 de 239)
+asentado: job-20260925T004201_job-039 -> OK (40 de 239)
+asentado: job-20260925T004201_job-040 -> OK (41 de 239)
+asentado: job-20260925T004201_job-041 -> OK (42 de 239)
+asentado: job-20260925T004201_job-042 -> OK (43 de 239)
+asentado: job-20260925T004201_job-043 -> OK (44 de 239)
+asentado: job-20260925T004201_job-044 -> OK (45 de 239)
+asentado: job-20260925T004201_job-045 -> OK (46 de 239)
+asentado: job-20260925T004201_job-046 -> OK (47 de 239)
+asentado: job-20260925T004201_job-047 -> OK (48 de 239)
+asentado: job-20260925T004201_job-048 -> OK (49 de 239)
+asentado: job-20260925T004201_job-049 -> OK (50 de 239)
+asentado: job-20260925T004201_job-050 -> OK (51 de 239)
+asentado: job-20260925T004201_job-051 -> OK (52 de 239)
+asentado: job-20260925T004201_job-052 -> OK (53 de 239)
+asentado: job-20260925T004201_job-053 -> OK (54 de 239)
+asentado: job-20260925T004201_job-054 -> OK (55 de 239)
+asentado: job-20260925T004201_job-055 -> OK (56 de 239)
+asentado: job-20260925T004201_job-056 -> OK (57 de 239)
+asentado: job-20260925T004201_job-057 -> OK (58 de 239)
+asentado: job-20260925T004201_job-058 -> OK (59 de 239)
+asentado: job-20260925T004201_job-059 -> OK (60 de 239)
+asentado: job-20260925T004201_job-060 -> OK (61 de 239)
+asentado: job-20260925T004201_job-061 -> OK (62 de 239)
+asentado: job-20260925T004201_job-062 -> OK (63 de 239)
+asentado: job-20260925T004201_job-063 -> OK (64 de 239)
+asentado: job-20260925T004201_job-064 -> OK (65 de 239)
+asentado: job-20260925T004201_job-065 -> OK (66 de 239)
+asentado: job-20260925T004201_job-066 -> OK (67 de 239)
+asentado: job-20260925T004201_job-067 -> OK (68 de 239)
+asentado: job-20260925T004201_job-068 -> OK (69 de 239)
+asentado: job-20260925T004201_job-069 -> OK (70 de 239)
+asentado: job-20260925T004201_job-070 -> OK (71 de 239)
+asentado: job-20260925T004201_job-071 -> OK (72 de 239)
+asentado: job-20260925T004201_job-072 -> OK (73 de 239)
+asentado: job-20260925T004201_job-073 -> OK (74 de 239)
+asentado: job-20260925T004201_job-074 -> OK (75 de 239)
+asentado: job-20260925T004201_job-075 -> OK (76 de 239)
+asentado: job-20260925T004201_job-076 -> OK (77 de 239)
+asentado: job-20260925T004201_job-077 -> OK (78 de 239)
+asentado: job-20260925T004201_job-078 -> OK (79 de 239)
+asentado: job-20260925T004201_job-079 -> OK (80 de 239)
+asentado: job-20260925T004201_job-080 -> OK (81 de 239)
+asentado: job-20260925T004201_job-081 -> OK (82 de 239)
+asentado: job-20260925T004201_job-082 -> OK (83 de 239)
+asentado: job-20260925T004201_job-083 -> OK (84 de 239)
+asentado: job-20260925T004201_job-084 -> OK (85 de 239)
+asentado: job-20260925T004201_job-085 -> OK (86 de 239)
+asentado: job-20260925T004201_job-086 -> OK (87 de 239)
+asentado: job-20260925T004201_job-087 -> OK (88 de 239)
+asentado: job-20260925T004201_job-088 -> OK (89 de 239)
+asentado: job-20260925T004201_job-089 -> OK (90 de 239)
+asentado: job-20260925T004201_job-090 -> OK (91 de 239)
+asentado: job-20260925T004201_job-091 -> OK (92 de 239)
+asentado: job-20260925T004201_job-092 -> OK (93 de 239)
+asentado: job-20260925T004201_job-093 -> OK (94 de 239)
+asentado: job-20260925T004201_job-094 -> OK (95 de 239)
+asentado: job-20260925T004201_job-095 -> OK (96 de 239)
+asentado: job-20260925T004201_job-096 -> OK (97 de 239)
+asentado: job-20260925T004201_job-097 -> OK (98 de 239)
+asentado: job-20260925T004201_job-098 -> OK (99 de 239)
+asentado: job-20260925T004201_job-099 -> OK (100 de 239)
+asentado: job-20260925T004201_job-100 -> OK (101 de 239)
+asentado: job-20260925T004201_job-101 -> OK (102 de 239)
+asentado: job-20260925T004201_job-102 -> OK (103 de 239)
+asentado: job-20260925T004201_job-103 -> OK (104 de 239)
+asentado: job-20260925T004201_job-104 -> OK (105 de 239)
+asentado: job-20260925T004201_job-105 -> OK (106 de 239)
+asentado: job-20260925T004201_job-106 -> OK (107 de 239)
+asentado: job-20260925T004201_job-107 -> OK (108 de 239)
+asentado: job-20260925T004201_job-108 -> OK (109 de 239)
+asentado: job-20260925T004201_job-109 -> OK (110 de 239)
+asentado: job-20260925T004201_job-110 -> OK (111 de 239)
+asentado: job-20260925T004201_job-111 -> OK (112 de 239)
+asentado: job-20260925T004201_job-112 -> OK (113 de 239)
+asentado: job-20260925T004201_job-113 -> OK (114 de 239)
+asentado: job-20260925T004201_job-114 -> OK (115 de 239)
+asentado: job-20260925T004201_job-115 -> OK (116 de 239)
+asentado: job-20260925T004201_job-116 -> OK (117 de 239)
+asentado: job-20260925T004201_job-117 -> OK (118 de 239)
+asentado: job-20260925T004201_job-118 -> OK (119 de 239)
+asentado: job-20260925T004201_job-119 -> OK (120 de 239)
+asentado: job-20260925T004201_job-120 -> OK (121 de 239)
+asentado: job-20260925T004201_job-121 -> OK (122 de 239)
+asentado: job-20260925T004201_job-122 -> OK (123 de 239)
+asentado: job-20260925T004201_job-123 -> OK (124 de 239)
+asentado: job-20260925T004201_job-124 -> OK (125 de 239)
+asentado: job-20260925T004201_job-125 -> OK (126 de 239)
+asentado: job-20260925T004201_job-126 -> OK (127 de 239)
+asentado: job-20260925T004201_job-127 -> OK (128 de 239)
+asentado: job-20260925T004201_job-128 -> OK (129 de 239)
+asentado: job-20260925T004201_job-129 -> OK (130 de 239)
+asentado: job-20260925T004201_job-130 -> OK (131 de 239)
+asentado: job-20260925T004201_job-131 -> OK (132 de 239)
+asentado: job-20260925T004201_job-132 -> OK (133 de 239)
+asentado: job-20260925T004201_job-133 -> OK (134 de 239)
+asentado: job-20260925T004201_job-134 -> OK (135 de 239)
+asentado: job-20260925T004201_job-135 -> OK (136 de 239)
+asentado: job-20260925T004201_job-136 -> OK (137 de 239)
+asentado: job-20260925T004201_job-137 -> OK (138 de 239)
+asentado: job-20260925T004201_job-138 -> OK (139 de 239)
+asentado: job-20260925T004201_job-139 -> OK (140 de 239)
+asentado: job-20260925T004201_job-140 -> OK (141 de 239)
+asentado: job-20260925T004201_job-141 -> OK (142 de 239)
+asentado: job-20260925T004201_job-142 -> OK (143 de 239)
+asentado: job-20260925T004201_job-143 -> OK (144 de 239)
+asentado: job-20260925T004201_job-144 -> OK (145 de 239)
+asentado: job-20260925T004201_job-145 -> OK (146 de 239)
+asentado: job-20260925T004201_job-146 -> OK (147 de 239)
+asentado: job-20260925T004201_job-147 -> OK (148 de 239)
+asentado: job-20260925T004201_job-148 -> OK (149 de 239)
+asentado: job-20260925T004201_job-149 -> OK (150 de 239)
+asentado: job-20260925T004201_job-150 -> OK (151 de 239)
+asentado: job-20260925T004201_job-151 -> OK (152 de 239)
+asentado: job-20260925T004201_job-152 -> OK (153 de 239)
+asentado: job-20260925T004201_job-153 -> OK (154 de 239)
+asentado: job-20260925T004201_job-154 -> OK (155 de 239)
+asentado: job-20260925T004201_job-155 -> OK (156 de 239)
+asentado: job-20260925T004201_job-156 -> OK (157 de 239)
+asentado: job-20260925T004201_job-157 -> OK (158 de 239)
+asentado: job-20260925T004201_job-158 -> OK (159 de 239)
+asentado: job-20260925T004201_job-159 -> OK (160 de 239)
+asentado: job-20260925T004201_job-160 -> OK (161 de 239)
+asentado: job-20260925T004201_job-161 -> OK (162 de 239)
+asentado: job-20260925T004201_job-162 -> OK (163 de 239)
+asentado: job-20260925T004201_job-163 -> OK (164 de 239)
+asentado: job-20260925T004201_job-164 -> OK (165 de 239)
+asentado: job-20260925T004201_job-165 -> OK (166 de 239)
+asentado: job-20260925T004201_job-166 -> OK (167 de 239)
+asentado: job-20260925T004201_job-167 -> OK (168 de 239)
+asentado: job-20260925T004201_job-168 -> OK (169 de 239)
+asentado: job-20260925T004201_job-169 -> OK (170 de 239)
+asentado: job-20260925T004201_job-170 -> OK (171 de 239)
+asentado: job-20260925T004201_job-171 -> OK (172 de 239)
+asentado: job-20260925T004201_job-172 -> OK (173 de 239)
+asentado: job-20260925T004201_job-173 -> OK (174 de 239)
+asentado: job-20260925T004201_job-174 -> OK (175 de 239)
+asentado: job-20260925T004201_job-175 -> OK (176 de 239)
+asentado: job-20260925T004201_job-176 -> OK (177 de 239)
+asentado: job-20260925T004201_job-177 -> OK (178 de 239)
+asentado: job-20260925T004201_job-178 -> OK (179 de 239)
+asentado: job-20260925T004201_job-179 -> OK (180 de 239)
+asentado: job-20260925T004201_job-180 -> OK (181 de 239)
+asentado: job-20260925T004201_job-181 -> OK (182 de 239)
+asentado: job-20260925T004201_job-182 -> OK (183 de 239)
+asentado: job-20260925T004201_job-183 -> OK (184 de 239)
+asentado: job-20260925T004201_job-184 -> OK (185 de 239)
+asentado: job-20260925T004201_job-185 -> OK (186 de 239)
+asentado: job-20260925T004201_job-186 -> OK (187 de 239)
+asentado: job-20260925T004201_job-187 -> OK (188 de 239)
+asentado: job-20260925T004201_job-188 -> OK (189 de 239)
+asentado: job-20260925T004201_job-189 -> OK (190 de 239)
+asentado: job-20260925T004201_job-190 -> OK (191 de 239)
+asentado: job-20260925T004201_job-191 -> OK (192 de 239)
+asentado: job-20260925T004201_job-192 -> OK (193 de 239)
+asentado: job-20260925T004201_job-193 -> OK (194 de 239)
+asentado: job-20260925T004201_job-194 -> OK (195 de 239)
+asentado: job-20260925T004201_job-195 -> OK (196 de 239)
+asentado: job-20260925T004201_job-196 -> OK (197 de 239)
+asentado: job-20260925T004201_job-197 -> OK (198 de 239)
+asentado: job-20260925T004201_job-198 -> OK (199 de 239)
+asentado: job-20260925T004201_job-199 -> OK (200 de 239)
+asentado: job-20260925T004201_job-200 -> OK (201 de 239)
+asentado: job-20260925T004201_job-201 -> OK (202 de 239)
+asentado: job-20260925T004201_job-202 -> OK (203 de 239)
+asentado: job-20260925T004201_job-203 -> OK (204 de 239)
+asentado: job-20260925T004201_job-204 -> OK (205 de 239)
+asentado: job-20260925T004201_job-205 -> OK (206 de 239)
+asentado: job-20260925T004201_job-206 -> OK (207 de 239)
+asentado: job-20260925T004201_job-207 -> OK (208 de 239)
+asentado: job-20260925T004201_job-208 -> OK (209 de 239)
+asentado: job-20260925T004201_job-209 -> OK (210 de 239)
+asentado: job-20260925T004201_job-210 -> OK (211 de 239)
+asentado: job-20260925T004201_job-211 -> OK (212 de 239)
+asentado: job-20260925T004201_job-212 -> OK (213 de 239)
+asentado: job-20260925T004201_job-213 -> OK (214 de 239)
+asentado: job-20260925T004201_job-214 -> OK (215 de 239)
+asentado: job-20260925T004201_job-215 -> OK (216 de 239)
+asentado: job-20260925T004201_job-216 -> OK (217 de 239)
+asentado: job-20260925T004201_job-217 -> OK (218 de 239)
+asentado: job-20260925T004201_job-218 -> OK (219 de 239)
+asentado: job-20260925T004201_job-219 -> OK (220 de 239)
+asentado: job-20260925T004201_job-220 -> OK (221 de 239)
+asentado: job-20260925T004201_job-221 -> OK (222 de 239)
+asentado: job-20260925T004201_job-222 -> OK (223 de 239)
+asentado: job-20260925T004201_job-223 -> OK (224 de 239)
+asentado: job-20260925T004201_job-224 -> OK (225 de 239)
+asentado: job-20260925T004201_job-225 -> OK (226 de 239)
+asentado: job-20260925T004201_job-226 -> OK (227 de 239)
+asentado: job-20260925T004201_job-227 -> OK (228 de 239)
+asentado: job-20260925T004201_job-228 -> OK (229 de 239)
+asentado: job-20260925T004201_job-229 -> OK (230 de 239)
+asentado: job-20260925T004201_job-230 -> OK (231 de 239)
+asentado: job-20260925T004201_job-231 -> OK (232 de 239)
+asentado: job-20260925T004201_job-232 -> OK (233 de 239)
+asentado: job-20260925T004201_job-233 -> OK (234 de 239)
+asentado: job-20260925T004201_job-234 -> OK (235 de 239)
+asentado: job-20260925T004201_job-235 -> OK (236 de 239)
+asentado: job-20260925T004201_job-236 -> OK (237 de 239)
+asentado: job-20260925T004201_job-237 -> OK (238 de 239)
+asentado: job-20260925T004201_job-238 -> OK (239 de 239)
+== 239 trabajos asentados ==
+OLVIDADO job-20260925T004201
+       | (vacío — no emitió nada)
+OK     job-20260925T004201_job-001
+       | EXIT=0
+OK     job-20260925T004201_job-002
+       | EXIT=0
+OK     job-20260925T004201_job-003
+       | EXIT=0
+OK     job-20260925T004201_job-004
+       | EXIT=0
+OK     job-20260925T004201_job-005
+       | EXIT=0
+OK     job-20260925T004201_job-006
+       | EXIT=0
+OK     job-20260925T004201_job-007
+       | EXIT=0
+OK     job-20260925T004201_job-008
+       | EXIT=0
+OK     job-20260925T004201_job-009
+       | EXIT=0
+OK     job-20260925T004201_job-010
+       | EXIT=0
+OK     job-20260925T004201_job-011
+       | EXIT=0
+OK     job-20260925T004201_job-012
+       | EXIT=0
+OK     job-20260925T004201_job-013
+       | EXIT=0
+OK     job-20260925T004201_job-014
+       | EXIT=0
+OK     job-20260925T004201_job-015
+       | EXIT=0
+OK     job-20260925T004201_job-016
+       | EXIT=0
+OK     job-20260925T004201_job-017
+       | EXIT=0
+OK     job-20260925T004201_job-018
+       | EXIT=0
+OK     job-20260925T004201_job-019
+       | EXIT=0
+OK     job-20260925T004201_job-020
+       | EXIT=0
+OK     job-20260925T004201_job-021
+       | EXIT=0
+OK     job-20260925T004201_job-022
+       | EXIT=0
+OK     job-20260925T004201_job-023
+       | EXIT=0
+OK     job-20260925T004201_job-024
+       | EXIT=0
+OK     job-20260925T004201_job-025
+       | EXIT=0
+OK     job-20260925T004201_job-026
+       | EXIT=0
+OK     job-20260925T004201_job-027
+       | EXIT=0
+OK     job-20260925T004201_job-028
+       | EXIT=0
+OK     job-20260925T004201_job-029
+       | EXIT=0
+OK     job-20260925T004201_job-030
+       | EXIT=0
+OK     job-20260925T004201_job-031
+       | EXIT=0
+OK     job-20260925T004201_job-032
+       | EXIT=0
+OK     job-20260925T004201_job-033
+       | EXIT=0
+OK     job-20260925T004201_job-034
+       | EXIT=0
+OK     job-20260925T004201_job-035
+       | EXIT=0
+OK     job-20260925T004201_job-036
+       | EXIT=0
+OK     job-20260925T004201_job-037
+       | EXIT=0
+OK     job-20260925T004201_job-038
+       | EXIT=0
+OK     job-20260925T004201_job-039
+       | EXIT=0
+OK     job-20260925T004201_job-040
+       | EXIT=0
+OK     job-20260925T004201_job-041
+       | EXIT=0
+OK     job-20260925T004201_job-042
+       | EXIT=0
+OK     job-20260925T004201_job-043
+       | EXIT=0
+OK     job-20260925T004201_job-044
+       | EXIT=0
+OK     job-20260925T004201_job-045
+       | EXIT=0
+OK     job-20260925T004201_job-046
+       | EXIT=0
+OK     job-20260925T004201_job-047
+       | EXIT=0
+OK     job-20260925T004201_job-048
+       | EXIT=0
+OK     job-20260925T004201_job-049
+       | EXIT=0
+OK     job-20260925T004201_job-050
+       | EXIT=0
+OK     job-20260925T004201_job-051
+       | EXIT=0
+OK     job-20260925T004201_job-052
+       | EXIT=0
+OK     job-20260925T004201_job-053
+       | EXIT=0
+OK     job-20260925T004201_job-054
+       | EXIT=0
+OK     job-20260925T004201_job-055
+       | EXIT=0
+OK     job-20260925T004201_job-056
+       | EXIT=0
+OK     job-20260925T004201_job-057
+       | EXIT=0
+OK     job-20260925T004201_job-058
+       | EXIT=0
+OK     job-20260925T004201_job-059
+       | EXIT=0
+OK     job-20260925T004201_job-060
+       | EXIT=0
+OK     job-20260925T004201_job-061
+       | EXIT=0
+OK     job-20260925T004201_job-062
+       | EXIT=0
+OK     job-20260925T004201_job-063
+       | EXIT=0
+OK     job-20260925T004201_job-064
+       | EXIT=0
+OK     job-20260925T004201_job-065
+       | EXIT=0
+OK     job-20260925T004201_job-066
+       | EXIT=0
+OK     job-20260925T004201_job-067
+       | EXIT=0
+OK     job-20260925T004201_job-068
+       | EXIT=0
+OK     job-20260925T004201_job-069
+       | EXIT=0
+OK     job-20260925T004201_job-070
+       | EXIT=0
+OK     job-20260925T004201_job-071
+       | EXIT=0
+OK     job-20260925T004201_job-072
+       | EXIT=0
+OK     job-20260925T004201_job-073
+       | EXIT=0
+OK     job-20260925T004201_job-074
+       | EXIT=0
+OK     job-20260925T004201_job-075
+       | EXIT=0
+OK     job-20260925T004201_job-076
+       | EXIT=0
+OK     job-20260925T004201_job-077
+       | EXIT=0
+OK     job-20260925T004201_job-078
+       | EXIT=0
+OK     job-20260925T004201_job-079
+       | EXIT=0
+OK     job-20260925T004201_job-080
+       | EXIT=0
+OK     job-20260925T004201_job-081
+       | EXIT=0
+OK     job-20260925T004201_job-082
+       | EXIT=0
+OK     job-20260925T004201_job-083
+       | EXIT=0
+OK     job-20260925T004201_job-084
+       | EXIT=0
+OK     job-20260925T004201_job-085
+       | EXIT=0
+OK     job-20260925T004201_job-086
+       | EXIT=0
+OK     job-20260925T004201_job-087
+       | EXIT=0
+OK     job-20260925T004201_job-088
+       | EXIT=0
+OK     job-20260925T004201_job-089
+       | EXIT=0
+OK     job-20260925T004201_job-090
+       | EXIT=0
+OK     job-20260925T004201_job-091
+       | EXIT=0
+OK     job-20260925T004201_job-092
+       | EXIT=0
+OK     job-20260925T004201_job-093
+       | EXIT=0
+OK     job-20260925T004201_job-094
+       | EXIT=0
+OK     job-20260925T004201_job-095
+       | EXIT=0
+OK     job-20260925T004201_job-096
+       | EXIT=0
+OK     job-20260925T004201_job-097
+       | EXIT=0
+OK     job-20260925T004201_job-098
+       | EXIT=0
+OK     job-20260925T004201_job-099
+       | EXIT=0
+OK     job-20260925T004201_job-100
+       | EXIT=0
+OK     job-20260925T004201_job-101
+       | EXIT=0
+OK     job-20260925T004201_job-102
+       | EXIT=0
+OK     job-20260925T004201_job-103
+       | EXIT=0
+OK     job-20260925T004201_job-104
+       | EXIT=0
+OK     job-20260925T004201_job-105
+       | EXIT=0
+OK     job-20260925T004201_job-106
+       | EXIT=0
+OK     job-20260925T004201_job-107
+       | EXIT=0
+OK     job-20260925T004201_job-108
+       | EXIT=0
+OK     job-20260925T004201_job-109
+       | EXIT=0
+OK     job-20260925T004201_job-110
+       | EXIT=0
+OK     job-20260925T004201_job-111
+       | EXIT=0
+OK     job-20260925T004201_job-112
+       | EXIT=0
+OK     job-20260925T004201_job-113
+       | EXIT=0
+OK     job-20260925T004201_job-114
+       | EXIT=0
+OK     job-20260925T004201_job-115
+       | EXIT=0
+OK     job-20260925T004201_job-116
+       | EXIT=0
+OK     job-20260925T004201_job-117
+       | EXIT=0
+OK     job-20260925T004201_job-118
+       | EXIT=0
+OK     job-20260925T004201_job-119
+       | EXIT=0
+OK     job-20260925T004201_job-120
+       | EXIT=0
+OK     job-20260925T004201_job-121
+       | EXIT=0
+OK     job-20260925T004201_job-122
+       | EXIT=0
+OK     job-20260925T004201_job-123
+       | EXIT=0
+OK     job-20260925T004201_job-124
+       | EXIT=0
+OK     job-20260925T004201_job-125
+       | EXIT=0
+OK     job-20260925T004201_job-126
+       | EXIT=0
+OK     job-20260925T004201_job-127
+       | EXIT=0
+OK     job-20260925T004201_job-128
+       | EXIT=0
+OK     job-20260925T004201_job-129
+       | EXIT=0
+OK     job-20260925T004201_job-130
+       | EXIT=0
+OK     job-20260925T004201_job-131
+       | EXIT=0
+OK     job-20260925T004201_job-132
+       | EXIT=0
+OK     job-20260925T004201_job-133
+       | EXIT=0
+OK     job-20260925T004201_job-134
+       | EXIT=0
+OK     job-20260925T004201_job-135
+       | EXIT=0
+OK     job-20260925T004201_job-136
+       | EXIT=0
+OK     job-20260925T004201_job-137
+       | EXIT=0
+OK     job-20260925T004201_job-138
+       | EXIT=0
+OK     job-20260925T004201_job-139
+       | EXIT=0
+OK     job-20260925T004201_job-140
+       | EXIT=0
+OK     job-20260925T004201_job-141
+       | EXIT=0
+OK     job-20260925T004201_job-142
+       | EXIT=0
+OK     job-20260925T004201_job-143
+       | EXIT=0
+OK     job-20260925T004201_job-144
+       | EXIT=0
+OK     job-20260925T004201_job-145
+       | EXIT=0
+OK     job-20260925T004201_job-146
+       | EXIT=0
+OK     job-20260925T004201_job-147
+       | EXIT=0
+OK     job-20260925T004201_job-148
+       | EXIT=0
+OK     job-20260925T004201_job-149
+       | EXIT=0
+OK     job-20260925T004201_job-150
+       | EXIT=0
+OK     job-20260925T004201_job-151
+       | EXIT=0
+OK     job-20260925T004201_job-152
+       | EXIT=0
+OK     job-20260925T004201_job-153
+       | EXIT=0
+OK     job-20260925T004201_job-154
+       | EXIT=0
+OK     job-20260925T004201_job-155
+       | EXIT=0
+OK     job-20260925T004201_job-156
+       | EXIT=0
+OK     job-20260925T004201_job-157
+       | EXIT=0
+OK     job-20260925T004201_job-158
+       | EXIT=0
+OK     job-20260925T004201_job-159
+       | EXIT=0
+OK     job-20260925T004201_job-160
+       | EXIT=0
+OK     job-20260925T004201_job-161
+       | EXIT=0
+OK     job-20260925T004201_job-162
+       | EXIT=0
+OK     job-20260925T004201_job-163
+       | EXIT=0
+OK     job-20260925T004201_job-164
+       | EXIT=0
+OK     job-20260925T004201_job-165
+       | EXIT=0
+OK     job-20260925T004201_job-166
+       | EXIT=0
+OK     job-20260925T004201_job-167
+       | EXIT=0
+OK     job-20260925T004201_job-168
+       | EXIT=0
+OK     job-20260925T004201_job-169
+       | EXIT=0
+OK     job-20260925T004201_job-170
+       | EXIT=0
+OK     job-20260925T004201_job-171
+       | EXIT=0
+OK     job-20260925T004201_job-172
+       | EXIT=0
+OK     job-20260925T004201_job-173
+       | EXIT=0
+OK     job-20260925T004201_job-174
+       | EXIT=0
+OK     job-20260925T004201_job-175
+       | EXIT=0
+OK     job-20260925T004201_job-176
+       | EXIT=0
+OK     job-20260925T004201_job-177
+       | EXIT=0
+OK     job-20260925T004201_job-178
+       | EXIT=0
+OK     job-20260925T004201_job-179
+       | EXIT=0
+OK     job-20260925T004201_job-180
+       | EXIT=0
+OK     job-20260925T004201_job-181
+       | EXIT=0
+OK     job-20260925T004201_job-182
+       | EXIT=0
+OK     job-20260925T004201_job-183
+       | EXIT=0
+OK     job-20260925T004201_job-184
+       | EXIT=0
+OK     job-20260925T004201_job-185
+       | EXIT=0
+OK     job-20260925T004201_job-186
+       | EXIT=0
+OK     job-20260925T004201_job-187
+       | EXIT=0
+OK     job-20260925T004201_job-188
+       | EXIT=0
+OK     job-20260925T004201_job-189
+       | EXIT=0
+OK     job-20260925T004201_job-190
+       | EXIT=0
+OK     job-20260925T004201_job-191
+       | EXIT=0
+OK     job-20260925T004201_job-192
+       | EXIT=0
+OK     job-20260925T004201_job-193
+       | EXIT=0
+OK     job-20260925T004201_job-194
+       | EXIT=0
+OK     job-20260925T004201_job-195
+       | EXIT=0
+OK     job-20260925T004201_job-196
+       | EXIT=0
+OK     job-20260925T004201_job-197
+       | EXIT=0
+OK     job-20260925T004201_job-198
+       | EXIT=0
+OK     job-20260925T004201_job-199
+       | EXIT=0
+OK     job-20260925T004201_job-200
+       | EXIT=0
+OK     job-20260925T004201_job-201
+       | EXIT=0
+OK     job-20260925T004201_job-202
+       | EXIT=0
+OK     job-20260925T004201_job-203
+       | EXIT=0
+OK     job-20260925T004201_job-204
+       | EXIT=0
+OK     job-20260925T004201_job-205
+       | EXIT=0
+OK     job-20260925T004201_job-206
+       | EXIT=0
+OK     job-20260925T004201_job-207
+       | EXIT=0
+OK     job-20260925T004201_job-208
+       | EXIT=0
+OK     job-20260925T004201_job-209
+       | EXIT=0
+OK     job-20260925T004201_job-210
+       | EXIT=0
+OK     job-20260925T004201_job-211
+       | EXIT=0
+OK     job-20260925T004201_job-212
+       | EXIT=0
+OK     job-20260925T004201_job-213
+       | EXIT=0
+OK     job-20260925T004201_job-214
+       | EXIT=0
+OK     job-20260925T004201_job-215
+       | EXIT=0
+OK     job-20260925T004201_job-216
+       | EXIT=0
+OK     job-20260925T004201_job-217
+       | EXIT=0
+OK     job-20260925T004201_job-218
+       | EXIT=0
+OK     job-20260925T004201_job-219
+       | EXIT=0
+OK     job-20260925T004201_job-220
+       | EXIT=0
+OK     job-20260925T004201_job-221
+       | EXIT=0
+OK     job-20260925T004201_job-222
+       | EXIT=0
+OK     job-20260925T004201_job-223
+       | EXIT=0
+OK     job-20260925T004201_job-224
+       | EXIT=0
+OK     job-20260925T004201_job-225
+       | EXIT=0
+OK     job-20260925T004201_job-226
+       | EXIT=0
+OK     job-20260925T004201_job-227
+       | EXIT=0
+OK     job-20260925T004201_job-228
+       | EXIT=0
+OK     job-20260925T004201_job-229
+       | EXIT=0
+OK     job-20260925T004201_job-230
+       | EXIT=0
+OK     job-20260925T004201_job-231
+       | EXIT=0
+OK     job-20260925T004201_job-232
+       | EXIT=0
+OK     job-20260925T004201_job-233
+       | EXIT=0
+OK     job-20260925T004201_job-234
+       | EXIT=0
+OK     job-20260925T004201_job-235
+       | EXIT=0
+OK     job-20260925T004201_job-236
+       | EXIT=0
+OK     job-20260925T004201_job-237
+       | EXIT=0
+OK     job-20260925T004201_job-238
+       | EXIT=0
+__BG_EXIT__=0

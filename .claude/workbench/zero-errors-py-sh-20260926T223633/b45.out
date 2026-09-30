@@ -1,0 +1,730 @@
+run-task-pool: 54 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T002035
+  job-20260927T002035/job-001 pid 13558   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/corpus/test_archive_build_corpus.py
+  job-20260927T002035/job-002 pid 13586   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/corpus/test_archive_extract.py
+  job-20260927T002035/job-003 pid 13631   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/corpus/test_censar_scripts.py
+  job-20260927T002035/job-004 pid 13652   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/corpus/test_list_corpus_builds.py
+  job-20260927T002035/job-005 pid 13682   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_agent_dispatch.py
+  job-20260927T002035/job-006 pid 13747   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_awk_substr_target.py
+  job-20260927T002035/job-007 pid 13761   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_bare_awk.py
+  job-20260927T002035/job-008 pid 13775   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_client_background.py
+  job-20260927T002035/job-009 pid 13789   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_code_language.py
+  job-20260927T002035/job-010 pid 13807   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_dedicated_tool_usage.py
+  job-20260927T002035/job-011 pid 13821   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_ephemeral_citation.py
+  job-20260927T002035/job-012 pid 13839   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_foreground_long_command.py
+  job-20260927T002035/job-013 pid 13857   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_gawk_opportunity.py
+tr: read error: No such process
+  job-20260927T002035/job-014 pid 13871   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_git_grep_opportunity.py
+  job-20260927T002035/job-015 pid 13887   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_irreversible_operation.py
+  job-20260927T002035/job-016 pid 13901   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_literal_replacement.py
+  job-20260927T002035/job-017 pid 13915   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_parallel_opportunity.py
+  job-20260927T002035/job-018 pid 13929   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_self_matching_pgrep.py
+  job-20260927T002035/job-019 pid 13943   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_stdin_reading_interpreter.py
+  job-20260927T002035/job-020 pid 13957   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_temp_home_write.py
+  job-20260927T002035/job-021 pid 13971   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_topic_duplication.py
+  job-20260927T002035/job-022 pid 13989   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_unbounded_traversal.py
+  job-20260927T002035/job-023 pid 14007   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_detect_unbounded_wait.py
+  job-20260927T002035/job-024 pid 14021   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_error_log.py
+  job-20260927T002035/job-025 pid 14040   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_flow_selection.py
+  job-20260927T002035/job-026 pid 14065   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_pretooluse_dispatch.py
+  job-20260927T002035/job-027 pid 14143   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/hooks/test_stop_gate.py
+  job-20260927T002035/job-028 pid 14165   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/repo/test_gitlink_bump.py
+  job-20260927T002035/job-029 pid 14547   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/transcript/test_closing.py
+  job-20260927T002035/job-030 pid 14600   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_balanced_block.py
+  job-20260927T002035/job-031 pid 14646   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_clasificar_agentes.py
+  job-20260927T002035/job-032 pid 14693   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_derive_submodule.py
+  job-20260927T002035/job-033 pid 14711   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_document_root_default.py
+  job-20260927T002035/job-034 pid 14732   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_final_message_closing.py
+  job-20260927T002035/job-035 pid 14750   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_measure_delta.py
+  job-20260927T002035/job-036 pid 14764   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_payload_sin_transcript.py
+  job-20260927T002035/job-037 pid 14780   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_readonly_connection.py
+  job-20260927T002035/job-038 pid 14798   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_register_session.py
+  job-20260927T002035/job-039 pid 14816   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_store_dir_default.py
+  job-20260927T002035/job-040 pid 14834   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_table_census.py
+  job-20260927T002035/job-041 pid 14852   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/agents/test_usage_census_deviation.py
+  job-20260927T002035/job-042 pid 14870   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/cache/test_work_cache.py
+  job-20260927T002035/job-043 pid 14888   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/measurement/test_distribution.py
+  job-20260927T002035/job-044 pid 14902   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/measurement/test_rejection_sampling.py
+  job-20260927T002035/job-045 pid 14920   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/measurement/test_rejection_sampling_brief.py
+  job-20260927T002035/job-046 pid 14938   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/measurement/test_residual_structure.py
+  job-20260927T002035/job-047 pid 15079   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/measurement/test_speculative_speedup.py
+  job-20260927T002035/job-048 pid 15360   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/task/test_board_sync.py
+  job-20260927T002035/job-049 pid 15401   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/task/test_census_open_tasks.py
+  job-20260927T002035/job-050 pid 15584   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/task/test_layer_axis.py
+  job-20260927T002035/job-051 pid 15605   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/task/test_task_ids.py
+  job-20260927T002035/job-052 pid 15765   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/task/test_task_source_citas.py
+  job-20260927T002035/job-053 pid 15783   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/task/test_vecinos_de_tarea.py
+  job-20260927T002035/job-054 pid 15833   cd /home/user/thyrox && PYTHONPATH=src timeout 600 .venv/bin/python tests/typescript/test_emit_declarations.py
+run-task-pool: lanzados 54 de 54; esperando en PRIMER PLANO (timeout 700s)
+asentado: job-20260927T002035_job-001 -> OK (2 de 55)
+asentado: job-20260927T002035_job-002 -> OK (3 de 55)
+asentado: job-20260927T002035_job-003 -> OK (4 de 55)
+asentado: job-20260927T002035_job-004 -> OK (5 de 55)
+asentado: job-20260927T002035_job-005 -> OK (6 de 55)
+asentado: job-20260927T002035_job-006 -> OK (7 de 55)
+asentado: job-20260927T002035_job-007 -> OK (8 de 55)
+asentado: job-20260927T002035_job-008 -> OK (9 de 55)
+asentado: job-20260927T002035_job-009 -> OK (10 de 55)
+asentado: job-20260927T002035_job-010 -> OK (11 de 55)
+asentado: job-20260927T002035_job-011 -> OK (12 de 55)
+asentado: job-20260927T002035_job-012 -> OK (13 de 55)
+asentado: job-20260927T002035_job-013 -> OK (14 de 55)
+asentado: job-20260927T002035_job-014 -> OK (15 de 55)
+asentado: job-20260927T002035_job-015 -> OK (16 de 55)
+asentado: job-20260927T002035_job-016 -> OK (17 de 55)
+asentado: job-20260927T002035_job-017 -> OK (18 de 55)
+asentado: job-20260927T002035_job-018 -> OK (19 de 55)
+asentado: job-20260927T002035_job-019 -> OK (20 de 55)
+asentado: job-20260927T002035_job-020 -> OK (21 de 55)
+asentado: job-20260927T002035_job-021 -> OK (22 de 55)
+asentado: job-20260927T002035_job-022 -> OK (23 de 55)
+asentado: job-20260927T002035_job-023 -> OK (24 de 55)
+asentado: job-20260927T002035_job-024 -> OK (25 de 55)
+asentado: job-20260927T002035_job-025 -> OK (26 de 55)
+asentado: job-20260927T002035_job-026 -> OK (27 de 55)
+asentado: job-20260927T002035_job-027 -> OK (28 de 55)
+asentado: job-20260927T002035_job-028 -> OK (29 de 55)
+asentado: job-20260927T002035_job-029 -> OK (30 de 55)
+asentado: job-20260927T002035_job-030 -> OK (31 de 55)
+asentado: job-20260927T002035_job-031 -> OK (32 de 55)
+asentado: job-20260927T002035_job-032 -> OK (33 de 55)
+asentado: job-20260927T002035_job-033 -> OK (34 de 55)
+asentado: job-20260927T002035_job-034 -> OK (35 de 55)
+asentado: job-20260927T002035_job-035 -> OK (36 de 55)
+asentado: job-20260927T002035_job-036 -> OK (37 de 55)
+asentado: job-20260927T002035_job-037 -> OK (38 de 55)
+asentado: job-20260927T002035_job-038 -> OK (39 de 55)
+asentado: job-20260927T002035_job-039 -> OK (40 de 55)
+asentado: job-20260927T002035_job-040 -> OK (41 de 55)
+asentado: job-20260927T002035_job-041 -> OK (42 de 55)
+asentado: job-20260927T002035_job-042 -> OK (43 de 55)
+asentado: job-20260927T002035_job-043 -> OK (44 de 55)
+asentado: job-20260927T002035_job-044 -> OK (45 de 55)
+asentado: job-20260927T002035_job-045 -> OK (46 de 55)
+asentado: job-20260927T002035_job-046 -> OK (47 de 55)
+asentado: job-20260927T002035_job-047 -> OK (48 de 55)
+asentado: job-20260927T002035_job-048 -> OK (49 de 55)
+asentado: job-20260927T002035_job-050 -> OK (50 de 55)
+asentado: job-20260927T002035_job-051 -> OK (51 de 55)
+asentado: job-20260927T002035_job-052 -> OK (52 de 55)
+asentado: job-20260927T002035_job-053 -> OK (53 de 55)
+asentado: job-20260927T002035_job-054 -> OK (54 de 55)
+asentado: job-20260927T002035_job-049 -> OK (50 de 55)
+== 55 trabajos asentados ==
+OLVIDADO job-20260927T002035
+       | (vacío — no emitió nada)
+OK     job-20260927T002035_job-001
+       |   ok    la variante no consume un hueco de los N
+       |   ok    y se archiva con su nombre literal, no con el de su base
+       | == 3. idempotente: con keep >= builds no hay nada que archivar ==
+       |   ok    nada que archivar
+       |   ok    y todo se conserva
+       | == 4. no se declara archivado sin verificar la integridad ==
+       |   OMITIDO  7z ausente — el guion rehusa, no publica un cero
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 18644 KB (18 MB) · pared 0.06s
+OK     job-20260927T002035_job-002
+       | test_14_the_target_is_created_if_it_does_not_exist (__main__.TestRealWalk.test_14_the_target_is_created_if_it_does_not_exist) ... skipped 'SIN SUJETO: no hay extractor de 7z en este contenedor'
+       | test_15_a_zip_opens_without_an_external_extractor (__main__.TestZipAndTarWithoutBinary.test_15_a_zip_opens_without_an_external_extractor) ... ok
+       | test_16_a_zip_with_traversal_is_refused_WHOLE (__main__.TestZipAndTarWithoutBinary.test_16_a_zip_with_traversal_is_refused_WHOLE)
+       | CONTROL POSITIVO del confinamiento por la via real, no por la ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 18 tests in 0.108s
+       | 
+       | OK (skipped=3)
+       | EXIT=0
+       memoria pico: 16156 KB (16 MB) · pared 0.18s
+OK     job-20260927T002035_job-003
+       |   ok   CONTROL — docs/ queda fuera del universo, como declara su Ciega a
+       |   ok   CONTROL — __pycache__ nunca es un guion
+       | == la clase se deriva del citante también con la ruta anidada ==
+       |   ok   gates/check_something.py citado desde docs → gate-de-reporte
+       |   ok   deep_tool.py sin citante → huerfano (el instrumento sí puede fallar)
+       | == el baseline de huérfanos apunta a un archivo que EXISTE en el repo real ==
+       |   ok   BASELINE existe: .claude/baselines/scripts_huerfanos_baseline.txt
+       | 
+       | resultado: 10 ok, 0 fallas
+       | EXIT=0
+       memoria pico: 27288 KB (27 MB) · pared 0.19s
+OK     job-20260927T002035_job-004
+       |   ok    nombra 9.9.3 sin listar src en su fila
+       |   ok    no lista a notas-sueltas
+       | == 4. CONTROL DE ANULACIÓN: sin detect_markers, todo parece completo ==
+       |   ok    anulado: 9.9.2 (solo volcado) aparenta TODOS los marcadores
+       |   ok    anulado: la aserción original del bloque 1 ahora es FALSA
+       | == 5. restaurado, 9.9.2 vuelve a mostrar solo sus dos marcadores ==
+       |   ok    9.9.2 vuelve a la forma correcta
+       | 
+       | 18 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13444 KB (13 MB) · pared 0.10s
+OK     job-20260927T002035_job-005
+       | ok   test_stays_silent_on_a_payload_without_prompt
+       | ok   test_stays_silent_when_the_work_needs_judgment
+       | ok   test_suggests_the_headless_pool_for_judgment_over_many_items
+       | ok   test_the_judgment_half_carries_its_own_weight
+       | ok   test_the_notice_states_the_measured_cost_asymmetry
+       | ok   test_the_real_captured_payload_stays_silent
+       | ok   test_warns_when_the_dispatched_work_is_a_suite
+       | 
+       | 11 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 11764 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-006
+       |   ok    nombra gensub
+       |   ok    nombra la regla
+       | == 5. anulación: cada mitad de juicio hace caer exactamente sus casos ==
+       |   ok    sin el ancla de awk cae sólo el texto
+       |   ok    sin excluir el método .sub cae sólo python
+       |   ok    sin saltar literales /regex/ cae sólo regex
+       |   ok    sin saltar cadenas cae sólo cadena
+       | 
+       | 18 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11640 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-007
+       |   ok    como argumento de grep
+       |   ok    la variable declarada
+       | == 3. el aviso nombra la salida ==
+       |   ok    nombra gawk
+       |   ok    nombra THYROX_TOOLCHAIN_AWK_BIN
+       | == 4. anulado el ancla de posición de comando, caen EXACTAMENTE los de prosa ==
+       |   ok    caen cadena y grep, no gawk
+       | 
+       | 11 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11572 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-008
+       | == 4. el aviso nombra los tres ensambladores ==
+       |   ok    nombra thyrox-bg start
+       |   ok    nombra register
+       |   ok    nombra run-task-pool
+       |   ok    nombra wait-jobs
+       | == 5. anulado el descuento del ensamblador, cae EXACTAMENTE ese caso ==
+       |   ok    cae el de thyrox-bg y ninguno más
+       | 
+       | 12 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11528 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-009
+       | ok   test_stays_silent_on_extensions_other_gates_already_cover
+       | ok   test_stays_silent_on_forbidden_form_inside_a_string_literal
+       | ok   test_stays_silent_on_forbidden_form_marked_as_a_citation
+       | ok   test_stays_silent_on_other_tools_and_empty_payload
+       | ok   test_warns_on_forbidden_form_in_a_comment
+       | ok   test_warns_on_real_shell_file_of_this_repo
+       | ok   test_warns_on_spanish_identifier_in_typescript
+       | 
+       | 8 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 613136 KB (599 MB) · pared 3.86s
+OK     job-20260927T002035_job-010
+       | ok   test_stays_silent_on_sqlite_store
+       | ok   test_stays_silent_without_file_path
+       | ok   test_the_binary_exception_carries_its_own_weight
+       | ok   test_the_eof_exception_carries_its_own_weight
+       | ok   test_warns_on_edit_of_plain_text
+       | ok   test_warns_on_read_of_plain_text
+       | ok   test_warns_on_write_of_plain_text
+       | 
+       | 13 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 11292 KB (11 MB) · pared 0.04s
+OK     job-20260927T002035_job-011
+       |   ok    test_stays_silent_when_the_durable_citation_is_present_too
+       |   ok    test_stays_silent_without_a_task_word_present
+       |   ok    test_stays_silent_without_command_or_content
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_the_evidence_path_anchor_carries_its_own_weight
+       |   ok    test_the_word_anchor_carries_its_own_weight
+       |   ok    test_warns_on_a_bare_board_ordinal_in_a_commit_message
+       |   ok    test_warns_on_board_hash_form
+       | resumen: 0 fallo(s)
+       | EXIT=0
+       memoria pico: 16000 KB (16 MB) · pared 0.07s
+OK     job-20260927T002035_job-012
+       |   ok    test_names_every_family_the_command_invokes
+       |   ok    test_stays_silent_on_short_commands
+       |   ok    test_stays_silent_when_the_command_already_uses_the_assembler
+       |   ok    test_stays_silent_without_a_command
+       |   ok    test_the_background_discount_carries_its_own_weight
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_warns_on_the_bare_suite
+       | resumen: 0 fallo(s)
+       | EXIT=0
+       memoria pico: 16000 KB (16 MB) · pared 0.07s
+OK     job-20260927T002035_job-013
+       | == 3. anulación: cada mitad de juicio hace caer exactamente sus casos ==
+       |   ok    sin el ancla de awk cae sólo sort-mv
+       |   ok    sin exigir que el mv vuelva a la entrada cae sólo mv-otro
+       |   ok    sin excluir gensub cae sólo gensub-grupo
+       |   ok    sin exigir escritura cae sólo py-imprime
+       |   ok    sin el descuento multilínea cae sólo py-dotall
+       |   ok    sin excluir gawk de -i inplace cae sólo gawk-inplace
+       | 
+       | 23 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11532 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-014
+       |   ok    git grep ya es la forma
+       |   ok    git log --all -S
+       |   ok    git log -G sin rango
+       |   ok    git log -S con rango acotado
+       |   ok    git log sin -S ni -G
+       |   ok    git log -S dentro de un heredoc
+       |   ok    grep -r dentro de un heredoc
+       |   ok    tras el heredoc, un comando real sí avisa
+       | test_detect_git_grep_opportunity: 13 casos — 13 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 12480 KB (12 MB) · pared 0.04s
+OK     job-20260927T002035_job-015
+       | ok   test_ignores_a_heredoc_body_written_to_a_file
+       | ok   test_ignores_tools_other_than_bash
+       | ok   test_measures_each_segment_of_a_compound_command
+       | ok   test_sees_a_command_after_the_heredoc_marker_on_the_same_line
+       | ok   test_stays_silent_on_removing_a_scratch_path
+       | ok   test_stays_silent_when_drop_is_only_searched_for
+       | ok   test_the_notice_names_what_it_would_destroy
+       | 
+       | 12 caso(s); 0 fallo(s)
+       | EXIT=0
+       memoria pico: 10820 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-016
+       |   ok    un heredoc de Python sin write_text calla
+       |   ok    sed -i con una clase de caracteres calla
+       |   ok    perl -i con un grupo y cuantificador calla
+       |   ok    perl -i anclado a la línea calla
+       |   ok    un re.sub de Python no es .replace: calla
+       |   ok    bin/replace_literal no se avisa a sí mismo
+       |   ok    otro programa calla
+       |   ok    el aviso nombra la herramienta
+       | test_detect_literal_replacement: 13 aserciones — 13 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 11636 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-017
+       |   ok    un bucle que modifica un archivo común calla
+       |   ok    un bucle que modifica un archivo por elemento avisa
+       |   ok    tres elementos citados con espacios son una lista corta
+       |   ok    un bucle dentro de un heredoc calla
+       |   ok    tras el heredoc, un bucle real avisa
+       |   ok    otra herramienta no se mira
+       |   ok    sólo mira Bash
+       |   ok    el aviso nombra parallel y su -k (orden de salida)
+       | test_detect_parallel_opportunity: 20 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11616 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-018
+       |   ok    y nombra la clase de corchete como salida minima
+       | == 8b. el corchete no basta si el resto del comando casa el patron ==
+       |   ok    avisa sobre el episodio de la ola 6
+       |   ok    calla si la palabra aparece pero el patron entero no casa
+       | == 9. anulada la excepcion del corchete, cae EXACTAMENTE ese caso ==
+       |   ok    cae el del corchete y ninguno mas
+       |   ok    y restaurada, vuelve a callar
+       | 
+       | 17 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11716 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-019
+       |   ok    nombra el programa que no esta instalado
+       |   ok    calla con la variable entre comillas: vacia es un error, no stdin
+       |   ok    calla con ${F:?}: vacia aborta
+       |   ok    calla con una asignacion literal
+       |   ok    calla con otro archivo literal
+       |   ok    calla si la entrada llega por tubo
+       |   ok    calla ante $F/ruta: nunca queda vacia
+       | 
+       | 26 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 12196 KB (12 MB) · pared 0.04s
+OK     job-20260927T002035_job-020
+       |   ok    sin /tmp no hay nada que decir
+       | == 5. el aviso nombra los tres hogares ==
+       |   ok    nombra THYROX_WORKBENCH_DIR
+       |   ok    nombra THYROX_CACHE_DIR
+       |   ok    nombra THYROX_BACKGROUND_LOG_DIR
+       | == 6. anulado el filtro de escritura, caen EXACTAMENTE los de lectura ==
+       |   ok    caen los tres de lectura y ninguno más
+       | 
+       | 15 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11680 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-021
+       |   ok    test_detect_stays_silent_without_candidate_tokens
+       |   ok    test_detect_stays_silent_without_content
+       |   ok    test_excludes_the_initiative_being_written_into
+       |   ok    test_finds_a_duplicate_identifier_in_another_initiative
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_the_frequency_cap_carries_its_own_weight
+       |   ok    test_the_path_anchor_reuses_detect_finding_layer_pattern
+       |   ok    test_the_underscore_anchor_carries_its_own_weight
+       | resumen: 0 fallo(s)
+       | EXIT=0
+       memoria pico: 16196 KB (16 MB) · pared 0.08s
+OK     job-20260927T002035_job-022
+       |   ok    test_the_timeout_discount_carries_its_own_weight
+       |   ok    test_warns_on_a_symlink_follower_over_a_LIGHT_root
+       |   ok    test_warns_on_an_unbounded_find_over_a_heavy_root
+       |   ok    test_warns_on_an_unbounded_xargs_fed_by_find
+       |   ok    test_warns_on_the_real_runaway_command
+       |   ok    test_warns_on_the_shell_recursive_expansion_that_feeds_awk
+       |   ok    test_warns_when_the_root_comes_from_the_provider_variable
+       |   ok    test_warns_when_the_same_shape_points_at_a_heavy_root
+       | resumen: 0 fallo(s)
+       | EXIT=0
+       memoria pico: 16084 KB (16 MB) · pared 0.08s
+OK     job-20260927T002035_job-023
+       |   ok    no avisa sobre un bucle de proceso
+       |   ok    ni sobre un for
+       | === 6. ANULACION — si no distinguiera, 1 y 2 darian lo mismo ===
+       |   ok    acotado y sin acotar NO coinciden
+       | === 7. el aviso NOMBRA el remedio ===
+       |   ok    nombra la marca de salida
+       |   ok    y un mecanismo del arbol
+       | 
+       | OK=11 FAILED=0
+       | EXIT=0
+       memoria pico: 10880 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-024
+       |   ok    sin comando tras -- devuelve 2
+       |   ok    propaga el returncode del comando
+       |   ok    127 cuando el proceso no pudo lanzarse
+       | 
+       | 8. El CLI, invocado como lo haría un hook de shell
+       |   ok    reemite el stdout del comando
+       |   ok    y sale con su código
+       | 
+       | resultado: 32 de 32 aserciones en verde
+       | EXIT=0
+       memoria pico: 15768 KB (15 MB) · pared 1.60s
+OK     job-20260927T002035_job-025
+       |   ok    con el mapa dentro
+       | == 13. main con directorio ausente: {} y el motivo en stderr, nunca rompe ==
+       |   ok    exit 0 — un hook no rompe el turno
+       |   ok    stdout es {}
+       |   ok    stderr nombra el directorio
+       | == 14. el recorrido por descripción es estable ==
+       |   ok    siempre el mismo, y es el primero alfabético
+       | 
+       | 24 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13232 KB (13 MB) · pared 0.12s
+OK     job-20260927T002035_job-026
+       |   ok    y el de los momentos de gensub e -i inplace
+       |   ok    y carga sin faltantes
+       |   ok    el despacho real devuelve su aviso
+       |   ok    detect_parallel_opportunity esta en la lista
+       |   ok    detect_git_grep_opportunity esta en la lista
+       |   ok    el despacho real avisa del pickaxe
+       |   ok    el despacho real avisa del bucle en serie
+       | 
+       | 32 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 16568 KB (16 MB) · pared 0.09s
+OK     job-20260927T002035_job-027
+       |   ok    12.4 una ruta ausente no se resuelve
+       |   ok    12.5 con interprete SI hay veredicto, y bloquea
+       |   ok    12.6 y no avisa de motor irresoluble
+       | stop_gate: el motor 'bash' no se resuelve — sin veredicto
+       |   ok    12-bis.1 anulado, 12.5 cae: no hay veredicto
+       |   ok    12-bis.2 y 12.4 SOBREVIVE a la anulacion
+       |   ok    12-bis.3 restaurado, vuelve a resolver por PATH
+       | 
+       | 57 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15316 KB (15 MB) · pared 0.35s
+OK     job-20260927T002035_job-028
+       |   ok   la referencia coincide y aun asi hay DIVERGENCIA
+       |   ok   porque el arbol del padre es el que diverge
+       |   ok   una referencia que no es clon es AUSENTE, no verde
+       |   ok   sin superproyecto el veredicto es AUSENTE, no verde
+       |   ok   la ausencia sale 2, ni 0 ni 1
+       |   ok   la ausencia NO se declara publicada
+       |   ok   la ausencia nombra su razon
+       | 
+       | 16 aprobada(s) · 0 fallida(s) (alcance medido: gitlink_bump.py)
+       | EXIT=0
+       memoria pico: 27488 KB (27 MB) · pared 0.66s
+OK     job-20260927T002035_job-029
+       |   ok    el ultimo mensaje no declara cierre
+       |   ok    la regla publica el de un mensaje ANTERIOR
+       |   ok    y el registro lo DECLARA en vez de esconderlo
+       | == 3. un transcript sin mensajes assistant no se inventa un cierre ==
+       |   ok    sin cierre, y el denominador en 0
+       | == 4. un transcript ausente REHUSA, no publica un cierre vacio ==
+       |   ok    rehusa con TranscriptNotFound
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13928 KB (14 MB) · pared 0.04s
+OK     job-20260927T002035_job-030
+       |   ok    y contiene el ancla
+       |   ok    es el registro de la asignacion, no el archivo entero
+       | == 2. la forma `return{`: REHUSA en vez de devolver el vecino ==
+       |   ok    rehusa
+       | == 3. el ancla ausente sigue rehusando (no se rompio lo que ya iba) ==
+       |   ok    ancla inexistente
+       |   ok    bloque que no cierra
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11448 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-031
+       | == 2. el fallback nunca devuelve None ==
+       |   ok    fallback da working/idle
+       |   ok    fallback declara su procedencia
+       |   ok    texto vacío no revienta
+       | 
+       | == 3. cobertura sobre el corpus REAL (informativo, no falla) ==
+       |   decididos por patrón: 2 de 206 (1.0%)  [mtime (heurística)]
+       | 
+       | resultado: 27 ok, 0 fallas
+       | EXIT=0
+       memoria pico: 41272 KB (40 MB) · pared 0.52s
+OK     job-20260927T002035_job-032
+       | 
+       | == 5. el valor y su procedencia viajan juntos ==
+       |   ok    procedencia de «Cerrar H-SERVER-16»
+       |   ok    procedencia de «Cerrar H-UI-07»
+       |   ok    procedencia de «Tocar src/addons/sale»
+       |   ok    procedencia de «Sin senal alguna»
+       |   ok    sin declaracion devuelve el hueco, no una capa adivinada
+       | 
+       | resultado: 20 de 20 aserciones en verde
+       | EXIT=0
+       memoria pico: 19216 KB (19 MB) · pared 0.38s
+OK     job-20260927T002035_job-033
+       | == 2. sin bandera, se DERIVA del consumidor ya nombrado en --repo ==
+       |   ok    --repo docs resuelve al arbol de docs
+       | == 3. --claude-dir tambien lo determina ==
+       |   ok    el padre de .claude es la raiz
+       | == 4. corrido DESDE el proveedor ya no compone thyrox/source ==
+       |   ok    no rehusa por ruta inexistente
+       |   ok    y no nombra el arbol del proveedor
+       | 
+       | 5 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 26696 KB (26 MB) · pared 0.28s
+OK     job-20260927T002035_job-034
+       | == 5. CONTROL CRUZADO: el destilador y el extractor coinciden ==
+       |   ok    [final parcial] el cierre crudo coincide
+       |   ok    [final parcial] la regla coincide
+       |   ok    [final parcial] el denominador coincide
+       |   ok    [final reconciliado] el cierre crudo coincide
+       |   ok    [final reconciliado] la regla coincide
+       |   ok    [final reconciliado] el denominador coincide
+       | 
+       | 14 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 16196 KB (16 MB) · pared 0.06s
+OK     job-20260927T002035_job-035
+       |   ok    nombra lo ganado
+       |   ok    y lo perdido
+       |   ok    sin cambios, nada ganado ni perdido (control)
+       | == C. El destino del log es PARÁMETRO, no `docs` ==
+       |   ok    sin destino declarado, rehúsa en vez de inventarlo
+       |   ok    con destino, compone la ruta del log
+       |   ok    y crea el directorio si falta
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13248 KB (13 MB) · pared 0.04s
+OK     job-20260927T002035_job-036
+       | == 4. lo ausente no se inventa ==
+       |   ok    sin effort no hay clave effort
+       |   ok    sin mensaje, longitud 0 declarada
+       | == 5. se guarda hook_event_name: es EL discriminador que faltaba ==
+       |   ok    hook_event_name
+       |   ok    tambien con transcript
+       |   ok    y nada mas con transcript
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13736 KB (13 MB) · pared 0.04s
+OK     job-20260927T002035_job-037
+       | == 3. la conexion RECHAZA escribir ==
+       |   ok    SQLite rechaza el INSERT
+       | == 4. el censo enrutado: rehusa sobre un store ausente ==
+       |   ok    exit 2 — no midio, no publica conteo
+       |   ok    el mensaje nombra el store ausente
+       |   ok    el censo no fabrico el store
+       |   ok    el censo no fabrico ni el hogar
+       | 
+       | 9 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 21176 KB (21 MB) · pared 0.10s
+OK     job-20260927T002035_job-038
+       |   ok    con la clave vacía, el vacío viene del origen
+       |   ok    sin la clave, está ausente
+       | == E. equiv_cost con los cocientes del tier del modelo (catálogo 2.1.282) ==
+       |   ok    Opus 5.5: la lectura de caché pesa 0.05× (10 + 125 + 50 + 100)
+       |   ok    y el perfil declara el tier con que se ponderó
+       |   ok    Sonnet 5 (tier 2/10): mismos cocientes que la fórmula fija (10 + 125 + 100 + 100)
+       |   ok    fuera del catálogo: la fórmula fija, declarada como tal
+       | 
+       | 17 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15148 KB (15 MB) · pared 0.04s
+OK     job-20260927T002035_job-039
+       | test_2_el_destino_sin_banderas_es_el_hogar (__main__.TestParserDefault.test_2_el_destino_sin_banderas_es_el_hogar) ... ok
+       | test_3_el_destino_sin_banderas_no_cae_en_ningun_clon (__main__.TestParserDefault.test_3_el_destino_sin_banderas_no_cae_en_ningun_clon) ... ok
+       | test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+       | El par que impide arreglar un eje rompiendo el otro. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 9 tests in 0.017s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 22392 KB (22 MB) · pared 0.10s
+OK     job-20260927T002035_job-040
+       | == 3. varias columnas: se devuelven TODAS, no la primera ==
+       |   ok    created_at y updated_at
+       | == 4. una tabla sin fecha lo dice, no falla ==
+       |   ok    lista vacia
+       | == 5. la ultima escritura sale del MAXIMO de todas ==
+       |   ok    gana el mayor entre las dos columnas
+       |   ok    sin columna de fecha devuelve None
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 19492 KB (19 MB) · pared 0.05s
+OK     job-20260927T002035_job-041
+       | == 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==
+       |   ok    el bloque nombra su unidad
+       |   ok    y NO mezcla dinero en el mismo bloque
+       | == 5. publica equiv_cost, que es la unidad de coste que SE CITA ==
+       |   ok    el estable publica la desviacion de su equiv_cost
+       |   ok    el erratico publica la suya, un orden mayor
+       |   ok    misma media de equiv_cost: tampoco ahi discrimina
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 21528 KB (21 MB) · pared 0.10s
+OK     job-20260927T002035_job-042
+       |   ok   barrido incompleto: no dejo archivo
+       |   ok   barrido completo: si persiste
+       |   ok   otra huella: el indice entero se rechaza
+       |   ok   misma huella: el indice se reusa entero
+       |   ok   el archivo que desaparece sale del indice
+       |   ok   y el otro sigue dentro
+       |   ok   has_changes: un salto transitorio no es un cambio
+       |   ok   has_changes: un alta si lo es
+       | test_work_cache: 23 aserciones — 23 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 18100 KB (18 MB) · pared 0.06s
+OK     job-20260927T002035_job-043
+       | == 2. un peso por valor, o tampoco hay distribucion ==
+       |   ok    NotADistribution
+       | == 3. un peso negativo: la suma podria dar 1 y aun asi no serlo ==
+       |   ok    NotADistribution pese a sumar 1
+       | == 4. una MUESTRA no es una distribucion: se declara al convertirla ==
+       |   ok    cinco pesos de 1/5
+       |   ok    los valores viajan intactos
+       | 
+       | 5 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 11352 KB (11 MB) · pared 0.03s
+OK     job-20260927T002035_job-044
+       | 
+       | == 6. el residuo REHUSA cuando no hay masa que repartir ==
+       |   ok    pedirlo con p == q levanta ValueError
+       | 
+       | == 7. el modulo NO escribe — medido por CONDUCTA, no por docstring ==
+       |   ok    el sujeto no intenta ninguna escritura
+       |   ok    y el tracer publica su alcance medido
+       | 
+       | resultado: 23 de 23 aserciones en verde
+       | EXIT=0
+       memoria pico: 16224 KB (16 MB) · pared 1.14s
+OK     job-20260927T002035_job-045
+       | numpy 2.4.6 · n = 300000 · seed = 21
+       |   ok    el brief reproduce sus digitos con numpy
+       |   ok    nuestro muestreador con el flujo de numpy da los mismos digitos
+       | 
+       | 2 casos: 2 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 35044 KB (34 MB) · pared 4.67s
+OK     job-20260927T002035_job-046
+       |   ok   rehusa con mas rezagos que puntos
+       |   ok   rehusa una serie de residuos demasiado corta
+       |   ok   el ajuste lineal sobre el sujeto real deja estructura
+       |   ok   aun con un R2 mediocre, el Q lo supera con holgura
+       |   ok   dos series con R2 casi igual dan veredictos OPUESTOS
+       |   ok   la de residuos en rampa es la estructurada
+       |   ok   y la de residuos sin memoria no lo es
+       | 
+       | 17 aprobada(s) · 0 fallida(s) (alcance medido: residual_structure.py)
+       | EXIT=0
+       memoria pico: 160144 KB (156 MB) · pared 2.07s
+OK     job-20260927T002035_job-047
+       |   ok    el muestreador real acepta esa fraccion
+       |   ok    con p == q se acepta siempre
+       |   ok    con alpha 1 cada llamada produce gamma + 1 tokens
+       |   ok    con alpha 0 cada llamada produce solo el token de correccion
+       |   ok    tokens por llamada del brief con gamma 4
+       |   ok    la formula coincide con la simulacion del mecanismo
+       |   ok    un alpha fuera de [0, 1] rehusa
+       |   ok    gamma menor que 1 rehusa
+       | test_speculative_speedup: 9 aserciones — 9 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 9952 KB (10 MB) · pared 0.77s
+OK     job-20260927T002035_job-048
+       | 100 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 17728 KB (17 MB) · pared 0.48s
+OK     job-20260927T002035_job-049
+       | 30 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 57508 KB (56 MB) · pared 33.38s
+OK     job-20260927T002035_job-050
+       | test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+       | Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+       | test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+       | CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 0.058s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 23092 KB (23 MB) · pared 0.12s
+OK     job-20260927T002035_job-051
+       | El store del mapa se declara, no se deriva por aritmetica
+       | 71 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 16680 KB (16 MB) · pared 0.60s
+OK     job-20260927T002035_job-052
+       | 13 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 17104 KB (17 MB) · pared 0.30s
+OK     job-20260927T002035_job-053
+       |   ok    main(#1, status=pending) excluye #3 (completed, filtrado por --status)
+       |   ok    main(#1, status=todos) sale con exit 0
+       |   ok    main(#1, status=todos) SI incluye #3
+       |   ok    main(--check-graph, k=2) sale con exit 0 (contrato OK)
+       |   ok    main(--check-graph, k=2) reporta el contrato OK
+       | vecinos-de-tarea: 4 tareas · vocabulario 16 términos · algoritmo brute (entrada dispersa)
+       |   ok    main con id inexistente lanza SystemExit
+       | 
+       | resultado: 44 de 44 aserciones en verde
+       | EXIT=0
+       memoria pico: 18164 KB (18 MB) · pared 0.06s
+OK     job-20260927T002035_job-054
+       |   ok   NO escribe dist/
+       |   ok   NO toca el manifiesto
+       |   ok   retira su proyecto temporal
+       |   ok   [local] el propio cuenta SOLO el error del paquete
+       |   ok   [local] y el hermano se le atribuye a el
+       |   ok   [root] el propio cuenta SOLO el error del paquete
+       |   ok   [root] y el hermano se le atribuye a el
+       | 
+       | test_emit_declarations: 47 ok, 0 falla
+       | EXIT=0
+       memoria pico: 149356 KB (146 MB) · pared 9.84s

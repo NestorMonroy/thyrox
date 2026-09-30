@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+listo
+listo
+listo, integré lo del hijo
+listo, integré lo del hijo
+segui el procedimiento del skill
+(was r0000001, now newshort)
+
+ 368 pass
+ 1 todo
+ 0 fail
+ 712 expect() calls
+Ran 369 tests across 34 files. [82.00s]
+EXIT=0

@@ -1,0 +1,28 @@
+== 1: sin mirar las cabeceras de reenvío
+(fail) a request through a reverse proxy is refused as not local [0.46ms]
+ 13 pass
+ 1 fail
+== 2: sin mirar el Host
+(fail) a non-loopback Host is refused even from a loopback peer [0.54ms]
+ 13 pass
+ 1 fail
+== 3: un par desconocido cuenta como local
+(fail) a remote or unknown peer is refused: the guard fails closed [0.60ms]
+ 13 pass
+ 1 fail
+== 4: sin capturar el error de la ruta
+(fail) a thrown error answers 500 with a sanitized message [0.66ms]
+ 13 pass
+ 1 fail
+== 5: sin distinguir 405
+(fail) an unknown path is 404 and a known path with another method is 405 with Allow [1.05ms]
+ 13 pass
+ 1 fail
+== 6: parámetros sin decodificar
+(fail) path parameters are decoded [0.88ms]
+ 13 pass
+ 1 fail
+== restaurado
+?? src/packages/mitm/src/api/
+ 14 pass
+ 0 fail

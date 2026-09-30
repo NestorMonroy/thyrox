@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 --memfree 2G --timeout 600 --dir /home/user/thyrox/.claude/workbench/registrar-tres-gates-20260923T235458/logs --prefix reg /home/user/thyrox/.claude/workbench/registrar-tres-gates-20260923T235458/comandos.txt", "started_at": "2026-09-23T23:54:58+00:00"}

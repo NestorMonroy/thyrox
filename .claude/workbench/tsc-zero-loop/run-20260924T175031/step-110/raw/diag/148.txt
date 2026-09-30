@@ -1,0 +1,2 @@
+src/packages/permission/src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx(431,26): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'AskUserQuestionTimeout | undefined'.
+  Type 'number' is not assignable to type 'AskUserQuestionTimeout | undefined'.

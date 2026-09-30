@@ -1,0 +1,46 @@
+src/packages/agent/internal/queryDeps.ts(79,37): error TS2339: Property 'microcompactMessages' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/queryDeps.ts:69-89 ---
+     69      rapidRefillBreakerTripped?: boolean
+     70      consecutiveRapidRefills?: number
+     71    }>
+     72    uuid: () => string
+     73  }
+     74  
+     75  export function productionDeps(): QueryDeps {
+     76    return {
+     77      callModel: queryModelWithStreaming,
+     78      microcompact: async (messages, toolUseContext, querySource) =>
+     79>       (await getAgentHostBindings().microcompactMessages?.(
+     80          messages,
+     81          toolUseContext,
+     82          querySource,
+     83        )) ?? { messages },
+     84      autocompact: async (
+     85        messages,
+     86        toolUseContext,
+     87        cacheSafeParams,
+     88        querySource,
+     89        tracking,
+src/packages/agent/internal/queryDeps.ts(92,37): error TS2339: Property 'autoCompactIfNeeded' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/queryDeps.ts:82-102 ---
+     82          querySource,
+     83        )) ?? { messages },
+     84      autocompact: async (
+     85        messages,
+     86        toolUseContext,
+     87        cacheSafeParams,
+     88        querySource,
+     89        tracking,
+     90        snipTokensFreed,
+     91      ) =>
+     92>       (await getAgentHostBindings().autoCompactIfNeeded?.(
+     93          messages,
+     94          toolUseContext,
+     95          cacheSafeParams,
+     96          querySource,
+     97          tracking,
+     98          snipTokensFreed,
+     99        )) ?? { wasCompacted: false },
+    100      uuid: randomUUID,
+    101    }
+    102  }

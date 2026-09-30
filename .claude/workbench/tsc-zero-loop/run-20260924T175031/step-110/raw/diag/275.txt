@@ -1,0 +1,1 @@
+src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts(38,15): error TS2339: Property 'getCoordinatorAgents' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir")'.

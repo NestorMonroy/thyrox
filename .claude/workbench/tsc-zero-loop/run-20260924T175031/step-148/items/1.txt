@@ -1,0 +1,4 @@
+Módulo: src/packages/agent/types/hooks.ts
+Miembros que faltan: promptRequestSchema
+
+src/packages/agent/hooks.ts(27): error TS2724: '"./types/hooks.js"' has no exported member named 'promptRequestSchema'. Did you mean 'PromptRequest'?

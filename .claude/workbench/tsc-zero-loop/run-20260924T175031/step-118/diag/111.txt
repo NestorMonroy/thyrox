@@ -1,0 +1,23 @@
+src/packages/config/settings/inventory.ts(160,44): error TS2538: Type 'undefined' cannot be used as an index type.
+  --- código src/packages/config/settings/inventory.ts:150-170 ---
+    150    return DIFERIDAS[key]?.motivo
+    151  }
+    152  
+    153  /** Qué tendría que existir para que esta clave entre. Sin esto, «a futuro» no significa nada. */
+    154  export function deferredCondition(key: string): string | undefined {
+    155    return DIFERIDAS[key]?.condicion
+    156  }
+    157  
+    158  export function keysByStatus(): Record<KeyStatus, string[]> {
+    159    const out: Record<KeyStatus, string[]> = { consumida: [], declarada: [], diferida: [] }
+    160>   for (const k of CLIENT_SETTING_KEYS) out[KEY_STATUS[k]].push(k)
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,

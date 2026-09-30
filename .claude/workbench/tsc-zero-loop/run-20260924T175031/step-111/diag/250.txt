@@ -1,0 +1,23 @@
+src/packages/repl/src/screens/Doctor.tsx(147,20): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/screens/Doctor.tsx:137-157 ---
+    137            fetchDistTags = getNpmDistTags
+    138          }
+    139          return fetchDistTags().catch(() => ({ latest: null, stable: null }))
+    140        }),
+    141      [],
+    142    )
+    143    const autoUpdatesChannel =
+    144      getInitialSettings()?.autoUpdatesChannel ?? 'latest'
+    145  
+    146    const errorsExcludingMcp = validationErrors.filter(
+    147>     error => error.mcpErrorMetadata === undefined,
+    148    )
+    149  
+    150    const envValidationErrors = useMemo(() => {
+    151      const envVars = [
+    152        {
+    153          name: 'BASH_MAX_OUTPUT_LENGTH',
+    154          default: BASH_MAX_OUTPUT_DEFAULT,
+    155          upperLimit: BASH_MAX_OUTPUT_UPPER_LIMIT,
+    156        },
+    157        {

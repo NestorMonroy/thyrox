@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/agents/test-register-agent-session.sh

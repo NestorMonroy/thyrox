@@ -1,0 +1,7 @@
+test_work_cache:
+  (el modulo aun no existe: No module named 'cache')
+  FALLA las 14 piezas del porte estan presentes
+       esperado: 14
+       obtenido: 0
+test_work_cache: 1 aserciones — 0 ok, 1 falla(s)
+EXIT=1

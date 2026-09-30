@@ -1,0 +1,49 @@
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2919-2939 ---
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929>         onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2937          const entries = apiMetricsRef.current;
+   2938  
+   2939          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/repl/src/screens/REPLView.tsx(3033,36): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3023-3043 ---
+   3023        // Returns null if already running — no separate check-then-set.
+   3024        const thisGeneration = queryGuard.tryStart();
+   3025        if (thisGeneration === null) {
+   3026          logEvent('tengu_concurrent_onquery_detected', {});
+   3027  
+   3028          // Extract and enqueue user message text, skipping meta messages
+   3029          // (e.g. expanded skill content, tick prompts) that should not be
+   3030          // replayed as user-visible text.
+   3031          newMessages
+   3032            .filter((m): m is UserMessage => m.type === 'user' && !m.isMeta)
+   3033>           .map(_ => getContentText(_.message.content))
+   3034            .filter(_ => _ !== null)
+   3035            .forEach((msg, i) => {
+   3036              enqueue({ value: msg, mode: 'prompt' });
+   3037              if (i === 0) {
+   3038                logEvent('tengu_concurrent_onquery_enqueued', {});
+   3039              }
+   3040            });
+   3041          return;
+   3042        }
+   3043  
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.

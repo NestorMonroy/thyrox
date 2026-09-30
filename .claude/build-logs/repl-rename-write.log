@@ -1,0 +1,487 @@
+src/packages/repl/src/promptSuggestion.tsx:257 [plantilla] `[SUGGESTION MODE: Suggest what the user might naturally type next into Claude Code.]
+
+FIRST: Look at the user's recent messages and original request.
+
+Your job is to predict what THEY would type - not what you think they should do.
+
+THE TEST: Would they think "I was just about to type that"?
+
+EXAMPLES:
+User asked "fix the bug and run tests", bug is fixed → "run the tests"
+After code written → "try it out"
+Claude offers options → suggest the one the user would likely pick, based on conversation
+Claude asks to continue → "yes" or "go ahead"
+Task complete, obvious follow-up → "commit this" or "push it"
+After error or misunderstanding → silence (let them assess/correct)
+
+Be specific: "run the tests" beats "continue".
+
+NEVER SUGGEST:
+- Evaluative ("looks good", "thanks")
+- Questions ("what about...?")
+- Claude-voice ("Let me...", "I'll...", "Here's...")
+- New ideas they didn't ask about
+- Multiple sentences
+
+Stay silent if the next step isn't obvious from what the user said.
+
+Format: 2-12 words, match the user's style. Or nothing.
+
+Reply with ONLY the suggestion, no quotes or explanation.`  =>  `[SUGGESTION MODE: Suggest what the user might naturally type next into ${PRODUCT_NAME}.]
+
+FIRST: Look at the user's recent messages and original request.
+
+Your job is to predict what THEY would type - not what you think they should do.
+
+THE TEST: Would they think "I was just about to type that"?
+
+EXAMPLES:
+User asked "fix the bug and run tests", bug is fixed → "run the tests"
+After code written → "try it out"
+${PRODUCT_NAME} offers options → suggest the one the user would likely pick, based on conversation
+${PRODUCT_NAME} asks to continue → "yes" or "go ahead"
+Task complete, obvious follow-up → "commit this" or "push it"
+After error or misunderstanding → silence (let them assess/correct)
+
+Be specific: "run the tests" beats "continue".
+
+NEVER SUGGEST:
+- Evaluative ("looks good", "thanks")
+- Questions ("what about...?")
+- ${PRODUCT_NAME}-voice ("Let me...", "I'll...", "Here's...")
+- New ideas they didn't ask about
+- Multiple sentences
+
+Stay silent if the next step isn't obvious from what the user said.
+
+Format: 2-12 words, match the user's style. Or nothing.
+
+Reply with ONLY the suggestion, no quotes or explanation.`
+src/packages/repl/src/commands/mobile/index.ts:7 [cadena] 'Show QR code to download the Claude mobile app'  =>  `Show QR code to download the ${PRODUCT_NAME} mobile app`
+src/packages/repl/src/commands/install-slack-app/index.ts:6 [cadena] 'Install the Claude Slack app'  =>  `Install the ${PRODUCT_NAME} Slack app`
+src/packages/repl/src/commands/passes/index.ts:13 [cadena] 'Share a free week of Claude Code with friends and earn extra usage'  =>  `Share a free week of ${PRODUCT_NAME} with friends and earn extra usage`
+src/packages/repl/src/commands/passes/index.ts:15 [cadena] 'Share a free week of Claude Code with friends'  =>  `Share a free week of ${PRODUCT_NAME} with friends`
+src/packages/repl/src/notifier.ts:44 [cadena] 'Claude Code'  =>  `${PRODUCT_NAME}`
+src/packages/repl/src/hooksConfigManager.ts:89 [cadena] 'Input to command is JSON with original user prompt text.\nExit code 0 - stdout shown to Claude\nExit code 2 - block processing, erase original prompt, and show stderr to user only\nOther exit codes - show stderr to user only'  =>  `Input to command is JSON with original user prompt text.\nExit code 0 - stdout shown to ${PRODUCT_NAME}\nExit code 2 - block processing, erase original prompt, and show stderr to user only\nOther exit codes - show stderr to user only`
+src/packages/repl/src/hooksConfigManager.ts:94 [cadena] 'Input to command is JSON with expansion_type, command_name, command_args, command_source, and original prompt.\nExit code 0 - stdout shown to Claude\nExit code 2 - block expansion and show stderr to user only\nOther exit codes - show stderr to user only'  =>  `Input to command is JSON with expansion_type, command_name, command_args, command_source, and original prompt.\nExit code 0 - stdout shown to ${PRODUCT_NAME}\nExit code 2 - block expansion and show stderr to user only\nOther exit codes - show stderr to user only`
+src/packages/repl/src/hooksConfigManager.ts:103 [cadena] 'Input to command is JSON with session start source.\nExit code 0 - stdout shown to Claude\nBlocking errors are ignored\nOther exit codes - show stderr to user only'  =>  `Input to command is JSON with session start source.\nExit code 0 - stdout shown to ${PRODUCT_NAME}\nBlocking errors are ignored\nOther exit codes - show stderr to user only`
+src/packages/repl/src/hooksConfigManager.ts:110 [cadena] 'Right before Claude concludes its response'  =>  `Right before ${PRODUCT_NAME} concludes its response`
+src/packages/repl/src/hooksConfigManager.ts:189 [cadena] 'Input to command is JSON with trigger (init or maintenance).\nExit code 0 - stdout shown to Claude\nBlocking errors are ignored\nOther exit codes - show stderr to user only'  =>  `Input to command is JSON with trigger (init or maintenance).\nExit code 0 - stdout shown to ${PRODUCT_NAME}\nBlocking errors are ignored\nOther exit codes - show stderr to user only`
+src/packages/repl/src/hooksConfigManager.ts:244 [cadena] 'When an instruction file (CLAUDE.md or rule) is loaded'  =>  'When an instruction file (THYROX.md or rule) is loaded'
+src/packages/repl/src/hooksConfigManager.ts:246 [cadena] 'Input to command is JSON with file_path, memory_type (User, Project, Local, Managed), load_reason (session_start, nested_traversal, path_glob_match, include, compact), globs (optional — the paths: frontmatter patterns that matched), trigger_file_path (optional — the file Claude touched that caused the load), and parent_file_path (optional — the file that @-included this one).\nExit code 0 - command completes successfully\nOther exit codes - show stderr to user only\nThis hook is observability-only and does not support blocking.'  =>  `Input to command is JSON with file_path, memory_type (User, Project, Local, Managed), load_reason (session_start, nested_traversal, path_glob_match, include, compact), globs (optional — the paths: frontmatter patterns that matched), trigger_file_path (optional — the file ${PRODUCT_NAME} touched that caused the load), and parent_file_path (optional — the file that @-included this one).\nExit code 0 - command completes successfully\nOther exit codes - show stderr to user only\nThis hook is observability-only and does not support blocking.`
+src/packages/repl/src/processUserInput/processSlashCommand.tsx:735 [plantilla] `This skill can only be invoked by Claude, not directly by users. Ask Claude to use the "${  =>  `This skill can only be invoked by ${PRODUCT_NAME}, not directly by users. Ask ${PRODUCT_NAME} to use the "${
+src/packages/repl/src/doctorDiagnostic.ts:623 [cadena] 'Checked-in CLAUDE.md contains substantial instructions that appear derivable from the repository'  =>  'Checked-in THYROX.md contains substantial instructions that appear derivable from the repository'
+src/packages/repl/src/ultraplan.ts:131 [plantilla] `Ultraplan approved — executing in Claude Code on the web. Follow along at: ${  =>  `Ultraplan approved — executing in ${PRODUCT_NAME} on the web. Follow along at: ${
+src/packages/repl/src/ultraplan.ts:197 [plantilla] }Starting Claude Code on the web…`  =>  }Starting ${PRODUCT_NAME} on the web…`
+src/packages/repl/src/ultraplan.ts:201 [plantilla] } ultraplan · Monitor progress in Claude Code on the web ${  =>  } ultraplan · Monitor progress in ${PRODUCT_NAME} on the web ${
+src/packages/repl/src/ultraplan.ts:295 [cadena] '(Opus). Runs in Claude Code on the web. When the plan is ready,'  =>  `(Opus). Runs in ${PRODUCT_NAME} on the web. When the plan is ready,`
+src/packages/repl/src/ultraplan.ts:469 [plantilla] `~10–30 min · Claude Code on the web drafts an advanced plan you can edit and approve. See ${  =>  `~10–30 min · ${PRODUCT_NAME} on the web drafts an advanced plan you can edit and approve. See ${
+src/packages/repl/src/commands/doctor/index.ts:7 [cadena] 'Diagnose and verify your Claude Code installation and settings'  =>  `Diagnose and verify your ${PRODUCT_NAME} installation and settings`
+src/packages/repl/src/keybindings/schema.ts:252 [cadena] 'Claude Code keybindings configuration. Customize keyboard shortcuts by context.'  =>  `${PRODUCT_NAME} keybindings configuration. Customize keyboard shortcuts by context.`
+src/packages/repl/src/commands/desktop/index.ts:17 [cadena] 'Continue the current session in Claude Desktop'  =>  `Continue the current session in ${PRODUCT_NAME} Desktop`
+src/packages/repl/src/commands/stickers/index.ts:6 [cadena] 'Order Claude Code stickers'  =>  `Order ${PRODUCT_NAME} stickers`
+src/packages/repl/src/commands/statusline.tsx:7 [cadena] "Set up Claude Code's status line UI"  =>  `Set up ${PRODUCT_NAME}'s status line UI`
+src/packages/repl/src/commands/stats/index.ts:6 [cadena] 'Show your Claude Code usage statistics and activity'  =>  `Show your ${PRODUCT_NAME} usage statistics and activity`
+src/packages/repl/src/tips/tipRegistry.ts:117 [plantilla] `Start with small features or bug fixes, tell Claude to propose a plan, and verify its suggested edits`  =>  `Start with small features or bug fixes, tell ${PRODUCT_NAME} to propose a plan, and verify its suggested edits`
+src/packages/repl/src/tips/tipRegistry.ts:164 [cadena] 'Use git worktrees to run multiple Claude sessions in parallel.'  =>  `Use git worktrees to run multiple ${PRODUCT_NAME} sessions in parallel.`
+src/packages/repl/src/tips/tipRegistry.ts:179 [cadena] 'Running multiple Claude sessions? Use /color and /rename to tell them apart at a glance.'  =>  `Running multiple ${PRODUCT_NAME} sessions? Use /color and /rename to tell them apart at a glance.`
+src/packages/repl/src/tips/tipRegistry.ts:237 [cadena] 'Use /memory to view and manage Claude memory'  =>  `Use /memory to view and manage ${PRODUCT_NAME} memory`
+src/packages/repl/src/tips/tipRegistry.ts:276 [cadena] 'Hit Enter to queue up additional messages while Claude is working.'  =>  `Hit Enter to queue up additional messages while ${PRODUCT_NAME} is working.`
+src/packages/repl/src/tips/tipRegistry.ts:286 [cadena] 'Send messages to Claude while it works to steer Claude in real-time'  =>  `Send messages to ${PRODUCT_NAME} while it works to steer ${PRODUCT_NAME} in real-time`
+src/packages/repl/src/tips/tipRegistry.ts:293 [cadena] 'Ask Claude to create a todo list when working on complex tasks to track progress and remain on track'  =>  `Ask ${PRODUCT_NAME} to create a todo list when working on complex tasks to track progress and remain on track`
+src/packages/repl/src/tips/tipRegistry.ts:326 [cadena] 'Connect Claude to your IDE · /ide'  =>  `Connect ${PRODUCT_NAME} to your IDE · /ide`
+src/packages/repl/src/tips/tipRegistry.ts:352 [cadena] 'Run /install-slack-app to use Claude in Slack'  =>  `Run /install-slack-app to use ${PRODUCT_NAME} in Slack`
+src/packages/repl/src/tips/tipRegistry.ts:376 [cadena] 'Paste images into Claude Code using control+v (not cmd+v!)'  =>  `Paste images into ${PRODUCT_NAME} using control+v (not cmd+v!)`
+src/packages/repl/src/tips/tipRegistry.ts:460 [cadena] 'Run Claude Code locally or remotely using the Claude desktop app: clau.de/desktop'  =>  `Run ${PRODUCT_NAME} locally or remotely using the ${PRODUCT_NAME} desktop app: clau.de/desktop`
+src/packages/repl/src/tips/tipRegistry.ts:468 [plantilla] `Continue your session in Claude Code Desktop with ${  =>  `Continue your session in ${PRODUCT_NAME} Desktop with ${
+src/packages/repl/src/tips/tipRegistry.ts:489 [cadena] '/mobile to use Claude Code from the Claude app on your phone'  =>  `/mobile to use ${PRODUCT_NAME} from the ${PRODUCT_NAME} app on your phone`
+src/packages/repl/src/tips/tipRegistry.ts:496 [plantilla] } twice to activate Plan Mode and plan with Claude Opus.`  =>  } twice to activate Plan Mode and plan with Opus.`
+src/packages/repl/src/tips/tipRegistry.ts:544 [plantilla] } for better one-shot answers. Claude thinks it through first.`  =>  } for better one-shot answers. ${PRODUCT_NAME} thinks it through first.`
+src/packages/repl/src/tips/tipRegistry.ts:573 [plantilla] `For big tasks, tell Claude to ${  =>  `For big tasks, tell ${PRODUCT_NAME} to ${
+src/packages/repl/src/tips/tipRegistry.ts:574 [plantilla] } and Claude sends a team. Each one digs deep so nothing gets missed.`  =>  } and ${PRODUCT_NAME} sends a team. Each one digs deep so nothing gets missed.`
+src/packages/repl/src/tips/tipRegistry.ts:616 [plantilla] `Share Claude Code and earn ${  =>  `Share ${PRODUCT_NAME} and earn ${
+src/packages/repl/src/tips/tipRegistry.ts:649 [cadena] '[ANT-ONLY] Use "IMPORTANT:" prefix for must-follow CLAUDE.md rules'  =>  '[ANT-ONLY] Use "IMPORTANT:" prefix for must-follow THYROX.md rules'
+src/packages/repl/src/uiHelpers/statusNoticeDefinitions.tsx:97 [jsx] instead of Claude account
+          subscription token. Either unset   =>  instead of {PRODUCT_NAME} account
+          subscription token. Either unset 
+src/packages/repl/src/screens/REPLView.tsx:1111 [cadena] 'Claude Code'  =>  `${PRODUCT_NAME}`
+src/packages/repl/src/screens/REPLView.tsx:4138 [plantilla] } CLAUDE.md/rules files:\n${  =>  } THYROX.md/rules files:\n${
+src/packages/repl/src/screens/REPLView.tsx:4140 [cadena] 'No CLAUDE.md/rules files found'  =>  'No THYROX.md/rules files found'
+src/packages/repl/src/screens/REPLView.tsx:4316 [cadena] 'Claude is waiting for your input'  =>  `${PRODUCT_NAME} is waiting for your input`
+src/packages/repl/src/screens/Doctor.tsx:243 [cadena] 'Claude Code diagnostics dismissed'  =>  `${PRODUCT_NAME} diagnostics dismissed`
+src/packages/repl/src/diagnostics/doctorContextWarnings.ts:57 [plantilla] `Large CLAUDE.md file detected (${  =>  `Large THYROX.md file detected (${
+src/packages/repl/src/diagnostics/doctorContextWarnings.ts:58 [plantilla] } large CLAUDE.md files detected (each > ${  =>  } large THYROX.md files detected (each > ${
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:60 [cadena] '/Applications/Claude.app'  =>  `/Applications/${PRODUCT_NAME}.app`
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:95 [cadena] '/Applications/Claude.app/Contents/Info.plist'  =>  `/Applications/${PRODUCT_NAME}.app/Contents/Info.plist`
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:219 [cadena] 'Claude Desktop is not installed. Install it from https://claude.ai/download'  =>  `${PRODUCT_NAME} Desktop is not installed. Install it from https://claude.ai/download`
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:230 [cadena] 'Failed to open Claude Desktop. Please try opening it manually.'  =>  `Failed to open ${PRODUCT_NAME} Desktop. Please try opening it manually.`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:18 [plantilla] } - Claude Desktop integration only works on macOS and WSL.`  =>  } - ${PRODUCT_NAME} Desktop integration only works on macOS and WSL.`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:27 [cadena] 'Claude'  =>  `${PRODUCT_NAME}`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:40 [plantilla] }/AppData/Roaming/Claude/claude_desktop_config.json`  =>  }/AppData/Roaming/${PRODUCT_NAME}/claude_desktop_config.json`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:75 [cadena] 'Claude'  =>  `${PRODUCT_NAME}`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:94 [cadena] 'Could not find Claude Desktop config file in Windows. Make sure Claude Desktop is installed on Windows.'  =>  `Could not find ${PRODUCT_NAME} Desktop config file in Windows. Make sure ${PRODUCT_NAME} Desktop is installed on Windows.`
+src/packages/repl/src/diagnostics/claudeDesktop.ts:103 [cadena] 'Unsupported platform - Claude Desktop integration only works on macOS and WSL.'  =>  `Unsupported platform - ${PRODUCT_NAME} Desktop integration only works on macOS and WSL.`
+src/packages/repl/src/localInstaller.ts:121 [plantilla] `Failed to install Claude CLI package: ${  =>  `Failed to install ${PRODUCT_NAME} CLI package: ${
+src/packages/repl/src/hooks/useReplBridge.tsx:739 [cadena] 'Please upgrade to the latest version of the Claude mobile app to see your Remote Control sessions.'  =>  `Please upgrade to the latest version of the ${PRODUCT_NAME} mobile app to see your Remote Control sessions.`
+src/packages/repl/src/screens/repl/useSuspendResumeHandlers.ts:23 [plantilla] `\nClaude Code has been suspended. Run \`fg\` to bring Claude Code back.\nNote: ctrl + z now suspends Claude Code, ctrl + _ undoes input.\n`  =>  `\nClaude Code has been suspended. Run \`fg\` to bring ${PRODUCT_NAME} back.\nNote: ctrl + z now suspends ${PRODUCT_NAME}, ctrl + _ undoes input.\n`
+src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:31 [jsx] Use your existing Claude   =>  Use your existing {PRODUCT_NAME} 
+src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:31 [jsx] plan with Claude Code
+            =>  plan with {PRODUCT_NAME}
+          
+src/packages/repl/src/screens/agentFleet/components/FleetBanner.tsx:50 [jsx] Claude Code  =>  {PRODUCT_NAME}
+src/packages/repl/src/hooks/useChromeExtensionNotification.tsx:31 [jsx] Claude in Chrome requires a claude.ai subscription
+            =>  {PRODUCT_NAME} in Chrome requires a claude.ai subscription
+          
+src/packages/repl/src/hooks/useChromeExtensionNotification.tsx:59 [plantilla] `Claude in Chrome enabled · /chrome`  =>  `${PRODUCT_NAME} in Chrome enabled · /chrome`
+src/packages/repl/src/deepLink/banner.ts:64 [cadena] ' — CLAUDE.md may be stale'  =>  ' — THYROX.md may be stale'
+src/packages/repl/src/deepLink/registerProtocol.ts:34 [cadena] 'Claude Code URL Handler'  =>  `${PRODUCT_NAME} URL Handler`
+src/packages/repl/src/deepLink/registerProtocol.ts:36 [cadena] 'Claude Code URL Handler.app'  =>  `${PRODUCT_NAME} URL Handler.app`
+src/packages/repl/src/deepLink/registerProtocol.ts:98 [plantilla] }</string>
+  <key>CFBundleExecutable</key>
+  <string>claude</string>
+  <key>CFBundleVersion</key>
+  <string>1.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>LSBackgroundOnly</key>
+  <true/>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>Claude Code Deep Link</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>${  =>  }</string>
+  <key>CFBundleExecutable</key>
+  <string>claude</string>
+  <key>CFBundleVersion</key>
+  <string>1.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>LSBackgroundOnly</key>
+  <true/>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>${PRODUCT_NAME} Deep Link</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>${
+src/packages/repl/src/deepLink/registerProtocol.ts:149 [plantilla] }:// deep links for Claude Code
+${  =>  }:// deep links for ${PRODUCT_NAME}
+${
+src/packages/repl/src/hooksSettings.ts:153 [cadena] 'Built-in hooks (registered internally by Claude Code)'  =>  `Built-in hooks (registered internally by ${PRODUCT_NAME})`
+src/packages/repl/src/components/LogSelector.tsx:1101 [jsx] Claude found these results:
+              =>  {PRODUCT_NAME} found these results:
+            
+src/packages/repl/src/components/LogSelector.tsx:1144 [jsx] Search deeply using Claude →
+                =>  Search deeply using {PRODUCT_NAME} →
+              
+src/packages/repl/src/components/LogSelector.tsx:1260 [jsx] Searching with Claude…  =>  Searching with {PRODUCT_NAME}…
+src/packages/repl/src/components/memory/MemoryFileSelector.tsx:131 [cadena] 'Saved in ~/.claude/CLAUDE.md'  =>  'Saved in ~/.claude/THYROX.md'
+src/packages/repl/src/components/memory/MemoryFileSelector.tsx:137 [plantilla] } ./CLAUDE.md`  =>  } ./THYROX.md`
+src/packages/repl/src/components/hooks/ViewHookMode.tsx:76 [jsx] To modify or remove this hook, edit settings.json directly or ask
+          Claude to help.
+          =>  To modify or remove this hook, edit settings.json directly or ask
+          {PRODUCT_NAME} to help.
+        
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx:69 [jsx] To add hooks, edit settings.json directly or ask Claude.
+            =>  To add hooks, edit settings.json directly or ask {PRODUCT_NAME}.
+          
+src/packages/repl/src/components/HelpV2/HelpV2.tsx:111 [plantilla] `Claude Code v${  =>  `${PRODUCT_NAME} v${
+src/packages/repl/src/components/ClaudeInChromeOnboarding.tsx:35 [cadena] "Claude in Chrome (Beta)"  =>  {`${PRODUCT_NAME} in Chrome (Beta)`}
+src/packages/repl/src/components/ClaudeInChromeOnboarding.tsx:41 [jsx] Claude in Chrome works with the Chrome extension to let you control
+          your browser directly from Claude Code. You can navigate websites,
+          fill forms, capture screenshots, record GIFs, and debug with console
+          logs and network requests.
+            =>  {PRODUCT_NAME} in Chrome works with the Chrome extension to let you control
+          your browser directly from {PRODUCT_NAME}. You can navigate websites,
+          fill forms, capture screenshots, record GIFs, and debug with console
+          logs and network requests.
+          
+src/packages/repl/src/components/ClaudeInChromeOnboarding.tsx:56 [jsx] Site-level permissions are inherited from the Chrome extension. Manage
+          permissions in the Chrome extension settings to control which sites
+          Claude can browse, click, and type on
+            =>  Site-level permissions are inherited from the Chrome extension. Manage
+          permissions in the Chrome extension settings to control which sites
+          {PRODUCT_NAME} can browse, click, and type on
+          
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:239 [jsx] To re-enable hooks, remove &quot;disableAllHooks&quot; from
+              settings.json or ask Claude.
+              =>  To re-enable hooks, remove &quot;disableAllHooks&quot; from
+              settings.json or ask {PRODUCT_NAME}.
+            
+src/packages/repl/src/components/HelpV2/General.tsx:10 [jsx] Claude understands your codebase, makes edits with your permission,
+          and executes commands — right from your terminal.
+          =>  {PRODUCT_NAME} understands your codebase, makes edits with your permission,
+          and executes commands — right from your terminal.
+        
+src/packages/repl/src/components/hooks/SelectHookMode.tsx:53 [jsx] To add hooks, edit settings.json directly or ask Claude.
+            =>  To add hooks, edit settings.json directly or ask {PRODUCT_NAME}.
+          
+src/packages/repl/src/components/Spinner.tsx:330 [cadena] "Use /btw to ask a quick side question without interrupting Claude's current work"  =>  `Use /btw to ask a quick side question without interrupting ${PRODUCT_NAME}'s current work`
+src/packages/repl/src/components/hooks/SelectEventMode.tsx:56 [jsx] This menu is read-only. To add or modify hooks, edit
+            settings.json directly or ask Claude.  =>  This menu is read-only. To add or modify hooks, edit
+            settings.json directly or ask {PRODUCT_NAME}.
+src/packages/repl/src/components/WorkflowMultiselectDialog.tsx:21 [cadena] '@Claude Code - Tag @claude in issues and PR comments'  =>  `@${PRODUCT_NAME} - Tag @claude in issues and PR comments`
+src/packages/repl/src/components/WorkflowMultiselectDialog.tsx:25 [cadena] 'Claude Code Review - Automated code review on new PRs'  =>  `${PRODUCT_NAME} Review - Automated code review on new PRs`
+src/packages/repl/src/components/ThemePicker.tsx:170 [cadena] '+  console.log("Hello, Claude!");'  =>  `+  console.log("Hello, ${PRODUCT_NAME}!");`
+src/packages/repl/src/components/agents/AgentDetail.tsx:76 [jsx] (tells Claude when to use this agent):
+          =>  (tells {PRODUCT_NAME} when to use this agent):
+        
+src/packages/repl/src/components/ThinkingToggle.tsx:32 [cadena] 'Claude will think before responding'  =>  `${PRODUCT_NAME} will think before responding`
+src/packages/repl/src/components/ThinkingToggle.tsx:37 [cadena] 'Claude will respond without extended thinking'  =>  `${PRODUCT_NAME} will respond without extended thinking`
+src/packages/repl/src/components/agents/generateAgent.ts:26 [plantilla] `You are an elite AI agent architect specializing in crafting high-performance agent configurations. Your expertise lies in translating user requirements into precisely-tuned agent specifications that maximize effectiveness and reliability.
+
+**Important Context**: You may have access to project-specific instructions from CLAUDE.md files and other context that may include coding standards, project structure, and custom requirements. Consider this context when creating agents to ensure they align with the project's established patterns and practices.
+
+When a user describes what they want an agent to do, you will:
+
+1. **Extract Core Intent**: Identify the fundamental purpose, key responsibilities, and success criteria for the agent. Look for both explicit requirements and implicit needs. Consider any project-specific context from CLAUDE.md files. For agents that are meant to review code, you should assume that the user is asking to review recently written code and not the whole codebase, unless the user has explicitly instructed you otherwise.
+
+2. **Design Expert Persona**: Create a compelling expert identity that embodies deep domain knowledge relevant to the task. The persona should inspire confidence and guide the agent's decision-making approach.
+
+3. **Architect Comprehensive Instructions**: Develop a system prompt that:
+   - Establishes clear behavioral boundaries and operational parameters
+   - Provides specific methodologies and best practices for task execution
+   - Anticipates edge cases and provides guidance for handling them
+   - Incorporates any specific requirements or preferences mentioned by the user
+   - Defines output format expectations when relevant
+   - Aligns with project-specific coding standards and patterns from CLAUDE.md
+
+4. **Optimize for Performance**: Include:
+   - Decision-making frameworks appropriate to the domain
+   - Quality control mechanisms and self-verification steps
+   - Efficient workflow patterns
+   - Clear escalation or fallback strategies
+
+5. **Create Identifier**: Design a concise, descriptive identifier that:
+   - Uses lowercase letters, numbers, and hyphens only
+   - Is typically 2-4 words joined by hyphens
+   - Clearly indicates the agent's primary function
+   - Is memorable and easy to type
+   - Avoids generic terms like "helper" or "assistant"
+
+6 **Example agent descriptions**:
+  - in the 'whenToUse' field of the JSON object, you should include examples of when this agent should be used.
+  - examples should be of the form:
+    - <example>
+      Context: The user is creating a test-runner agent that should be called after a logical chunk of code is written.
+      user: "Please write a function that checks if a number is prime"
+      assistant: "Here is the relevant function: "
+      <function call omitted for brevity only for this example>
+      <commentary>
+      Since a significant piece of code was written, use the ${  =>  `You are an elite AI agent architect specializing in crafting high-performance agent configurations. Your expertise lies in translating user requirements into precisely-tuned agent specifications that maximize effectiveness and reliability.
+
+**Important Context**: You may have access to project-specific instructions from THYROX.md files and other context that may include coding standards, project structure, and custom requirements. Consider this context when creating agents to ensure they align with the project's established patterns and practices.
+
+When a user describes what they want an agent to do, you will:
+
+1. **Extract Core Intent**: Identify the fundamental purpose, key responsibilities, and success criteria for the agent. Look for both explicit requirements and implicit needs. Consider any project-specific context from THYROX.md files. For agents that are meant to review code, you should assume that the user is asking to review recently written code and not the whole codebase, unless the user has explicitly instructed you otherwise.
+
+2. **Design Expert Persona**: Create a compelling expert identity that embodies deep domain knowledge relevant to the task. The persona should inspire confidence and guide the agent's decision-making approach.
+
+3. **Architect Comprehensive Instructions**: Develop a system prompt that:
+   - Establishes clear behavioral boundaries and operational parameters
+   - Provides specific methodologies and best practices for task execution
+   - Anticipates edge cases and provides guidance for handling them
+   - Incorporates any specific requirements or preferences mentioned by the user
+   - Defines output format expectations when relevant
+   - Aligns with project-specific coding standards and patterns from THYROX.md
+
+4. **Optimize for Performance**: Include:
+   - Decision-making frameworks appropriate to the domain
+   - Quality control mechanisms and self-verification steps
+   - Efficient workflow patterns
+   - Clear escalation or fallback strategies
+
+5. **Create Identifier**: Design a concise, descriptive identifier that:
+   - Uses lowercase letters, numbers, and hyphens only
+   - Is typically 2-4 words joined by hyphens
+   - Clearly indicates the agent's primary function
+   - Is memorable and easy to type
+   - Avoids generic terms like "helper" or "assistant"
+
+6 **Example agent descriptions**:
+  - in the 'whenToUse' field of the JSON object, you should include examples of when this agent should be used.
+  - examples should be of the form:
+    - <example>
+      Context: The user is creating a test-runner agent that should be called after a logical chunk of code is written.
+      user: "Please write a function that checks if a number is prime"
+      assistant: "Here is the relevant function: "
+      <function call omitted for brevity only for this example>
+      <commentary>
+      Since a significant piece of code was written, use the ${
+src/packages/repl/src/components/sandbox/SandboxOverridesTab.tsx:118 [jsx] When a command fails due to sandbox restrictions, Claude can retry
+          with dangerouslyDisableSandbox to run outside the sandbox (falling
+          back to default permissions).
+          =>  When a command fails due to sandbox restrictions, {PRODUCT_NAME} can retry
+          with dangerouslyDisableSandbox to run outside the sandbox (falling
+          back to default permissions).
+        
+src/packages/repl/src/components/agents/AgentsList.tsx:252 [jsx] No agents found. Create specialized subagents that Claude can
+            delegate to.
+            =>  No agents found. Create specialized subagents that {PRODUCT_NAME} can
+            delegate to.
+          
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:46 [cadena] 'Ultraplan sends your task to Claude Code on the web for deep exploration. '  =>  `Ultraplan sends your task to ${PRODUCT_NAME} on the web for deep exploration. `
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:47 [cadena] 'Claude will research, draft a detailed plan, and return it here for your review '  =>  `${PRODUCT_NAME} will research, draft a detailed plan, and return it here for your review `
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:49 [cadena] 'Your prompt → Claude Code on the web → Plan review → Implementation'  =>  `Your prompt → ${PRODUCT_NAME} on the web → Plan review → Implementation`
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:110 [cadena] 'Disable remote control and launch in Claude Code on the web'  =>  `Disable remote control and launch in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:111 [cadena] 'launch in Claude Code on the web'  =>  `launch in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:138 [jsx] For more information on Claude Code on the web:   =>  For more information on {PRODUCT_NAME} on the web: 
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx:13 [cadena] 'Generate with Claude (recommended)'  =>  `Generate with ${PRODUCT_NAME} (recommended)`
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:46 [cadena] "Description (tell Claude when to use this agent)"  =>  {`Description (tell ${PRODUCT_NAME} when to use this agent)`}
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:67 [jsx] When should Claude use this agent?  =>  When should {PRODUCT_NAME} use this agent?
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:86 [cadena] 'Open in Claude Code Desktop'  =>  `Open in ${PRODUCT_NAME} Desktop`
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:92 [cadena] "Try Claude Code Desktop"  =>  {`Try ${PRODUCT_NAME} Desktop`}
+src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:96 [jsx] Same Claude Code with visual diffs, live app preview, parallel
+            sessions, and more.
+            =>  Same {PRODUCT_NAME} with visual diffs, live app preview, parallel
+            sessions, and more.
+          
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx:110 [jsx] (tells Claude when to use this agent):
+            =>  (tells {PRODUCT_NAME} when to use this agent):
+          
+src/packages/repl/src/components/PromptInput/PromptInput.tsx:1078 [cadena] 'This prompt will launch an ultraplan session in Claude Code on the web'  =>  `This prompt will launch an ultraplan session in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/PromptInput/PromptInput.tsx:1091 [cadena] 'Run /ultrareview after Claude finishes to review these changes in the cloud'  =>  `Run /ultrareview after ${PRODUCT_NAME} finishes to review these changes in the cloud`
+src/packages/repl/src/components/PromptInput/PromptInput.tsx:1102 [cadena] 'This prompt will steer Claude into autonomous workflow mode'  =>  `This prompt will steer ${PRODUCT_NAME} into autonomous workflow mode`
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:96 [cadena] 'Login method pre-selected: Subscription Plan (Claude Pro/Max)'  =>  `Login method pre-selected: Subscription Plan (${PRODUCT_NAME} Pro/Max)`
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:347 [cadena] 'Claude Account'  =>  `${PRODUCT_NAME} Account`
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:353 [cadena] 'Claude Code login successful'  =>  `${PRODUCT_NAME} login successful`
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:725 [plantilla] `Claude Code can be used with your Claude subscription or billed based on API usage through your Console account.`  =>  `${PRODUCT_NAME} can be used with your ${PRODUCT_NAME} subscription or billed based on API usage through your Console account.`
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:736 [jsx] Claude account with subscription ·  =>  {PRODUCT_NAME} account with subscription ·
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:1710 [jsx] Claude Code supports Amazon Bedrock, Microsoft Foundry, and Vertex
+              AI. Set the required environment variables, then restart Claude
+              Code.
+              =>  {PRODUCT_NAME} supports Amazon Bedrock, Microsoft Foundry, and Vertex
+              AI. Set the required environment variables, then restart {PRODUCT_NAME}
+              Code.
+            
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx:1797 [jsx] Creating API key for Claude Code…  =>  Creating API key for {PRODUCT_NAME}…
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:53 [cadena] 'Review the plan in Claude Code on the web'  =>  `Review the plan in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:163 [jsx] This will terminate the Claude Code on the web session.
+            =>  This will terminate the {PRODUCT_NAME} on the web session.
+          
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:219 [cadena] 'Review in Claude Code on the web'  =>  `Review in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:383 [cadena] 'Open in Claude Code on the web'  =>  `Open in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx:387 [cadena] 'Open in Claude Code on the web'  =>  `Open in ${PRODUCT_NAME} on the web`
+src/packages/repl/src/components/BypassPermissionsModeDialog.tsx:44 [cadena] "WARNING: Claude Code running in Bypass Permissions mode"  =>  {`WARNING: ${PRODUCT_NAME} running in Bypass Permissions mode`}
+src/packages/repl/src/components/BypassPermissionsModeDialog.tsx:50 [jsx] In Bypass Permissions mode, Claude Code will not ask for your approval
+          before running potentially dangerous commands.
+            =>  In Bypass Permissions mode, {PRODUCT_NAME} will not ask for your approval
+          before running potentially dangerous commands.
+          
+src/packages/repl/src/components/PromptInput/IssueFlagBanner.tsx:22 [jsx] Something off with Claude?
+          =>  Something off with {PRODUCT_NAME}?
+        
+src/packages/repl/src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx:72 [cadena] 'No, exit Claude Code'  =>  `No, exit ${PRODUCT_NAME}`
+src/packages/repl/src/components/DesktopHandoff.tsx:72 [cadena] 'Claude Desktop is not installed.'  =>  `${PRODUCT_NAME} Desktop is not installed.`
+src/packages/repl/src/components/DesktopHandoff.tsx:79 [plantilla] `Claude Desktop needs to be updated (found v${  =>  `${PRODUCT_NAME} Desktop needs to be updated (found v${
+src/packages/repl/src/components/DesktopHandoff.tsx:94 [cadena] 'Failed to open Claude Desktop'  =>  `Failed to open ${PRODUCT_NAME} Desktop`
+src/packages/repl/src/components/DesktopHandoff.tsx:105 [cadena] 'Session transferred to Claude Desktop'  =>  `Session transferred to ${PRODUCT_NAME} Desktop`
+src/packages/repl/src/components/DesktopHandoff.tsx:141 [cadena] 'Checking for Claude Desktop…'  =>  `Checking for ${PRODUCT_NAME} Desktop…`
+src/packages/repl/src/components/DesktopHandoff.tsx:143 [cadena] 'Opening Claude Desktop…'  =>  `Opening ${PRODUCT_NAME} Desktop…`
+src/packages/repl/src/components/DesktopHandoff.tsx:144 [cadena] 'Opening in Claude Desktop…'  =>  `Opening in ${PRODUCT_NAME} Desktop…`
+src/packages/repl/src/components/InterruptedByUser.tsx:8 [jsx] · What should Claude do instead?  =>  · What should {PRODUCT_NAME} do instead?
+src/packages/repl/src/components/ModelPicker.tsx:269 [cadena] 'Switch between Claude models. Applies to this session and future Claude Code sessions. For other/previous model names, specify with --model.'  =>  `Switch between ${PRODUCT_NAME} models. Applies to this session and future ${PRODUCT_NAME} sessions. For other/previous model names, specify with --model.`
+src/packages/repl/src/components/AutoModeOptInDialog.tsx:9 [cadena] "Auto mode lets Claude handle permission prompts automatically — Claude checks each tool call for risky actions and prompt injection before executing. Actions Claude identifies as safe are executed, while actions Claude identifies as risky are blocked and Claude may try a different approach. Ideal for long-running tasks. Sessions are slightly more expensive. Claude can make mistakes that allow harmful commands to run, it's recommended to only use in isolated environments. Shift+Tab to change mode."  =>  `Auto mode lets ${PRODUCT_NAME} handle permission prompts automatically — ${PRODUCT_NAME} checks each tool call for risky actions and prompt injection before executing. Actions ${PRODUCT_NAME} identifies as safe are executed, while actions ${PRODUCT_NAME} identifies as risky are blocked and ${PRODUCT_NAME} may try a different approach. Ideal for long-running tasks. Sessions are slightly more expensive. ${PRODUCT_NAME} can make mistakes that allow harmful commands to run, it's recommended to only use in isolated environments. Shift+Tab to change mode.`
+src/packages/repl/src/components/mcp/MCPSettings.tsx:174 [cadena] 'Claude Code'  =>  `${PRODUCT_NAME}`
+src/packages/repl/src/components/grove/Grove.tsx:59 [jsx] You can help improve Claude   =>  You can help improve {PRODUCT_NAME} 
+src/packages/repl/src/components/grove/Grove.tsx:105 [jsx] Help improve Claude  =>  Help improve {PRODUCT_NAME}
+src/packages/repl/src/components/grove/Grove.tsx:116 [jsx] Turning ON the improve Claude setting extends data retention from 30
+            days to 5 years. Turning it OFF keeps the default 30-day data
+            retention. Delete data anytime.
+            =>  Turning ON the improve {PRODUCT_NAME} setting extends data retention from 30
+            days to 5 years. Turning it OFF keeps the default 30-day data
+            retention. Delete data anytime.
+          
+src/packages/repl/src/components/grove/Grove.tsx:231 [cadena] 'Accept terms · Help improve Claude: OFF (for emails with your domain)'  =>  `Accept terms · Help improve ${PRODUCT_NAME}: OFF (for emails with your domain)`
+src/packages/repl/src/components/grove/Grove.tsx:237 [cadena] 'Accept terms · Help improve Claude: ON'  =>  `Accept terms · Help improve ${PRODUCT_NAME}: ON`
+src/packages/repl/src/components/grove/Grove.tsx:241 [cadena] 'Accept terms · Help improve Claude: OFF'  =>  `Accept terms · Help improve ${PRODUCT_NAME}: OFF`
+src/packages/repl/src/components/grove/Grove.tsx:367 [jsx] Help improve Claude  =>  Help improve {PRODUCT_NAME}
+src/packages/repl/src/components/OutputStylePicker.tsx:16 [cadena] 'Claude completes coding tasks efficiently and provides concise responses'  =>  `${PRODUCT_NAME} completes coding tasks efficiently and provides concise responses`
+src/packages/repl/src/components/OutputStylePicker.tsx:78 [jsx] This changes how Claude Code communicates with you
+            =>  This changes how {PRODUCT_NAME} communicates with you
+          
+src/packages/repl/src/components/ResumeTask.tsx:138 [jsx] Loading Claude Code sessions…  =>  Loading {PRODUCT_NAME} sessions…
+src/packages/repl/src/components/ResumeTask.tsx:141 [cadena] 'Fetching your Claude Code sessions…'  =>  `Fetching your ${PRODUCT_NAME} sessions…`
+src/packages/repl/src/components/ResumeTask.tsx:151 [jsx] Error loading Claude Code sessions
+          =>  Error loading {PRODUCT_NAME} sessions
+        
+src/packages/repl/src/components/ResumeTask.tsx:168 [jsx] No Claude Code sessions found
+            =>  No {PRODUCT_NAME} sessions found
+          
+src/packages/repl/src/components/ResumeTask.tsx:324 [jsx] Teleport requires a Claude account  =>  Teleport requires a {PRODUCT_NAME} account
+src/packages/repl/src/components/ResumeTask.tsx:326 [jsx] and select &quot;Claude account with
+            subscription&quot;
+            =>  and select &quot;{PRODUCT_NAME} account with
+            subscription&quot;
+          
+src/packages/repl/src/components/ResumeTask.tsx:335 [jsx] Sorry, Claude encountered an error  =>  Sorry, {PRODUCT_NAME} encountered an error
+src/packages/repl/src/components/ResumeTask.tsx:342 [jsx] Sorry, Claude Code encountered an error  =>  Sorry, {PRODUCT_NAME} encountered an error
+src/packages/repl/src/components/RemoteCallout.tsx:54 [jsx] Remote Control lets you access this CLI session from the web
+            (claude.ai/code) or the Claude app, so you can pick up where you
+            left off on any device.
+            =>  Remote Control lets you access this CLI session from the web
+            (claude.ai/code) or the {PRODUCT_NAME} app, so you can pick up where you
+            left off on any device.
+          
+src/packages/repl/src/components/mcp/ElicitationDialog.tsx:287 [cadena] 'Claude Code needs your input'  =>  `${PRODUCT_NAME} needs your input`
+src/packages/repl/src/components/mcp/ElicitationDialog.tsx:1311 [cadena] 'Claude Code needs your input'  =>  `${PRODUCT_NAME} needs your input`
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:144 [cadena] 'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.'  =>  `Authentication successful, but server still requires authentication. You may need to manually restart ${PRODUCT_NAME}.`
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:148 [cadena] 'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.'  =>  `Authentication successful, but server reconnection failed. You may need to manually restart ${PRODUCT_NAME} for the changes to take effect.`
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:394 [cadena] 'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.'  =>  `Authentication successful, but server still requires authentication. You may need to manually restart ${PRODUCT_NAME}.`
+src/packages/repl/src/components/mcp/MCPRemoteServerMenu.tsx:400 [cadena] 'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.'  =>  `Authentication successful, but server reconnection failed. You may need to manually restart ${PRODUCT_NAME} for the changes to take effect.`
+src/packages/repl/src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx:14 [jsx] User rejected Claude&apos;s plan:  =>  User rejected {PRODUCT_NAME}&apos;s plan:
+src/packages/repl/src/components/MCPServerDesktopImportDialog.tsx:90 [cadena] "Import MCP Servers from Claude Desktop"  =>  {`Import MCP Servers from ${PRODUCT_NAME} Desktop`}
+src/packages/repl/src/components/MCPServerDesktopImportDialog.tsx:91 [plantilla] } in Claude Desktop.`  =>  } in ${PRODUCT_NAME} Desktop.`
+src/packages/repl/src/components/Stats.tsx:99 [jsx] Loading your Claude Code stats…  =>  Loading your {PRODUCT_NAME} stats…
+src/packages/repl/src/components/Stats.tsx:212 [jsx] No stats available yet. Start using Claude Code!
+          =>  No stats available yet. Start using {PRODUCT_NAME}!
+        
+src/packages/repl/src/components/TeleportError.tsx:117 [cadena] "Log in to Claude"  =>  {`Log in to ${PRODUCT_NAME}`}
+src/packages/repl/src/components/TeleportError.tsx:119 [jsx] Teleport requires a Claude.ai account.  =>  Teleport requires a {PRODUCT_NAME}.ai account.
+src/packages/repl/src/components/TeleportError.tsx:121 [jsx] Your Claude Pro/Max subscription will be used by Claude Code.
+              =>  Your {PRODUCT_NAME} Pro/Max subscription will be used by {PRODUCT_NAME}.
+            
+src/packages/repl/src/components/TeleportError.tsx:126 [cadena] 'Login with Claude account'  =>  `Login with ${PRODUCT_NAME} account`
+src/packages/repl/src/components/LogoV2/feedConfigs.tsx:66 [plantilla] `Share Claude Code and earn ${  =>  `Share ${PRODUCT_NAME} and earn ${
+src/packages/repl/src/components/LogoV2/feedConfigs.tsx:67 [cadena] 'Share Claude Code with friends'  =>  `Share ${PRODUCT_NAME} with friends`
+src/packages/repl/src/components/IdeOnboardingDialog.tsx:50 [jsx] Welcome to Claude Code for   =>  Welcome to {PRODUCT_NAME} for 
+src/packages/repl/src/components/IdeOnboardingDialog.tsx:64 [jsx] • Claude has context of   =>  • {PRODUCT_NAME} has context of 
+src/packages/repl/src/components/IdeOnboardingDialog.tsx:68 [jsx] • Review Claude Code&apos;s changes  =>  • Review {PRODUCT_NAME}&apos;s changes
+src/packages/repl/src/components/LogoV2/WelcomeV2.tsx:9 [cadena] 'Welcome to Claude Code'  =>  `Welcome to ${PRODUCT_NAME}`
+src/packages/repl/src/components/LogoV2/CondensedLogo.tsx:59 [cadena] 'Claude Code v'  =>  `${PRODUCT_NAME} v`
+src/packages/repl/src/components/LogoV2/CondensedLogo.tsx:93 [jsx] Claude Code  =>  {PRODUCT_NAME}
+src/packages/repl/src/components/TeleportRepoMismatchDialog.tsx:78 [jsx] Open Claude Code in   =>  Open {PRODUCT_NAME} in 
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx:128 [jsx] Experimental · inbound messages will be pushed into this session, this
+        carries prompt injection risks. Restart Claude Code without   =>  Experimental · inbound messages will be pushed into this session, this
+        carries prompt injection risks. Restart {PRODUCT_NAME} without 
+src/packages/repl/src/components/Passes/Passes.tsx:220 [plantilla] `Share a free week of Claude Code with friends. If they love it and subscribe, you'll get ${  =>  `Share a free week of ${PRODUCT_NAME} with friends. If they love it and subscribe, you'll get ${
+src/packages/repl/src/components/Passes/Passes.tsx:221 [cadena] 'Share a free week of Claude Code with friends. '  =>  `Share a free week of ${PRODUCT_NAME} with friends. `
+src/packages/repl/src/components/LogoV2/GuestPassesUpsell.tsx:69 [plantilla] `Share Claude Code and earn ${  =>  `Share ${PRODUCT_NAME} and earn ${
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:181 [plantilla] } d (press prefix twice - Claude uses ${  =>  } d (press prefix twice - ${PRODUCT_NAME} uses ${
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:228 [cadena] 'Claude Code'  =>  `${PRODUCT_NAME}`
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:229 [cadena] ' Claude Code '  =>  ` ${PRODUCT_NAME} `
+src/packages/repl/src/components/LogoV2/LogoV2.tsx:392 [plantilla] } d (press prefix twice - Claude uses ${  =>  } d (press prefix twice - ${PRODUCT_NAME} uses ${
+src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx:54 [cadena] "Allow external CLAUDE.md file imports?"  =>  "Allow external THYROX.md file imports?"
+src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx:61 [jsx] This project&apos;s CLAUDE.md imports files outside the current working
+        directory. Never allow this for third-party repositories.
+        =>  This project&apos;s THYROX.md imports files outside the current working
+        directory. Never allow this for third-party repositories.
+      
+src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx:78 [jsx] Important: Only use Claude Code with files you trust. Accessing
+        untrusted files may pose security risks  =>  Important: Only use {PRODUCT_NAME} with files you trust. Accessing
+        untrusted files may pose security risks
+src/packages/repl/src/components/Settings/Config.tsx:800 [cadena] 'Notify when Claude decides'  =>  `Notify when ${PRODUCT_NAME} decides`
+src/packages/repl/src/components/Settings/Config.tsx:1005 [cadena] 'Claude in Chrome enabled by default'  =>  `${PRODUCT_NAME} in Chrome enabled by default`
+src/packages/repl/src/components/Settings/Config.tsx:1130 [cadena] 'External CLAUDE.md includes'  =>  'External THYROX.md includes'
+src/packages/repl/src/components/Settings/Config.tsx:1343 [plantilla] } Claude-decision notifications`  =>  } ${PRODUCT_NAME}-decision notifications`
+src/packages/repl/src/components/Onboarding.tsx:117 [jsx] Claude can make mistakes  =>  {PRODUCT_NAME} can make mistakes
+src/packages/repl/src/components/Onboarding.tsx:119 [jsx] You should always review Claude&apos;s responses, especially when
+                =>  You should always review {PRODUCT_NAME}&apos;s responses, especially when
+              
+src/packages/repl/src/components/Onboarding.tsx:181 [jsx] Use Claude Code&apos;s terminal setup?  =>  Use {PRODUCT_NAME}&apos;s terminal setup?

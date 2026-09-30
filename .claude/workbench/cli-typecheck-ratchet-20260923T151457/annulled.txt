@@ -1,0 +1,67 @@
+  ok   limpio sale 0
+  ok   limpio publica OK
+  ok   codigo roto sale 1 con --strict
+  ok   codigo roto se publica como codigo roto
+  ok   workspace sin enlazar rehusa con exit 2
+  ok   workspace sin enlazar se publica como tal
+  ok   workspace sin enlazar nombra el paquete
+  ok   workspace sin enlazar declara que no hay veredicto
+  ok   modulo sin hermano en el arbol sigue siendo codigo roto
+  ok   modulo sin hermano sale 1 con --strict
+  FALLO baseline igual al conteo: no crece, sale 0
+       esperado: 0
+       obtenido: 1
+  FALLO baseline igual declara que no crece
+       esperado: declara
+       obtenido: check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+index.ts(2,14): error TS2322: Type 'string' is not assignable to type 'number'.
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+index.ts(2,14): error TS2322: Type 'string' is not assignable to type 'number'.
+
+check-cli-typecheck: el paquete no compila.
+
+  El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja el
+  gate en verde midiendo otra cosa.
+
+      cd src/packages/cli && bun run typecheck && bun run typecheck:tests
+check-cli-typecheck: proyectos medidos: 2 de 2
+  ok   conteo sobre el baseline sale 1
+  FALLO conteo sobre el baseline nombra las dos cifras
+       esperado: nombra
+       obtenido: check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+index.ts(2,14): error TS2322: Type 'string' is not assignable to type 'number'.
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+index.ts(2,14): error TS2322: Type 'string' is not assignable to type 'number'.
+
+check-cli-typecheck: el paquete no compila.
+
+  El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja el
+  gate en verde midiendo otra cosa.
+
+      cd src/packages/cli && bun run typecheck && bun run typecheck:tests
+check-cli-typecheck: proyectos medidos: 2 de 2
+  FALLO conteo bajo el baseline sale 0
+       esperado: 0
+       obtenido: 1
+  FALLO conteo bajo el baseline pide bajarlo
+       esperado: pide
+       obtenido: check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+index.ts(2,14): error TS2322: Type 'string' is not assignable to type 'number'.
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+index.ts(2,14): error TS2322: Type 'string' is not assignable to type 'number'.
+
+check-cli-typecheck: el paquete no compila.
+
+  El arreglo es el tipo, no el bypass. Un `as any` que tape el error deja el
+  gate en verde midiendo otra cosa.
+
+      cd src/packages/cli && bun run typecheck && bun run typecheck:tests
+check-cli-typecheck: proyectos medidos: 2 de 2
+
+11 ok, 5 fallo(s)

@@ -1,0 +1,6 @@
+Specialize the mcp_set_servers result in run-streaming
+
+Sixteenth step of the agent-compiler loop, accepted-net 3196 -> 3188.
+The runtime handleMcpSetServers API is opaque by design (V7 10.2 Cut
+5): the caller specializes the result. run-streaming read it as
+unknown; it now casts to the McpSetServersResult of the cli handler.

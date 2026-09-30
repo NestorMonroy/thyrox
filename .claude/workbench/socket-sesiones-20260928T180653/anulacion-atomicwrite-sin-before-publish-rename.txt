@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+260 | 
+261 |   test('beforePublish que rehúsa antes del rename: nada se publica y no queda temporal', async () => {
+262 |     const target = join(dir, 'k.json')
+263 |     writeFileSync(target, 'viejo')
+264 |     const failure = await writeFileAtomicWithMode(target, 'nuevo', { beforePublish: () => false }).catch(e => e)
+265 |     expect(failure).toBeInstanceOf(PublishRefusedError)
+                          ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class PublishRefusedError extends Error]
+Received value: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:265:21)
+(fail) opciones completas de Jne > beforePublish que rehúsa antes del rename: nada se publica y no queda temporal [1.10ms]
+274 |     const answers = [true, true, false]
+275 |     const failure = await writeFileAtomicWithMode(target, 'nuevo', {
+276 |       renameFn: async () => { throw errno('EXDEV') },
+277 |       beforePublish: () => answers.shift() ?? false,
+278 |     }).catch(e => e)
+279 |     expect(failure).toBeInstanceOf(PublishRefusedError)
+                          ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class PublishRefusedError extends Error]
+Received value: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:279:21)
+(fail) opciones completas de Jne > beforePublish que rehúsa dentro del brazo in situ retira el destino vacío que acaba de crear [2.66ms]
+
+ 25 pass
+ 2 fail
+ 67 expect() calls
+Ran 27 tests across 1 file. [173.00ms]

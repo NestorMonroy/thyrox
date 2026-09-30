@@ -1,0 +1,1 @@
+{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"cat > /home/user/thyrox/.claude/workbench/new-session-check-20260929T010424/outputs/session-start-payload.json; echo '{}'"}]}]}}

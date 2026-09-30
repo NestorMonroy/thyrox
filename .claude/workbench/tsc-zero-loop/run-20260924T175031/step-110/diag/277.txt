@@ -1,0 +1,132 @@
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83,7): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:73-93 ---
+     73      // so observability sees WHY the resume failed. ant uH() expands to
+     74      // tengu_feature_bad with feature_name + error_code.
+     75      logEvent('tengu_feature_bad', {
+     76        feature_name: 'subagent_launch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     77        error_code: 'subagent_resume_transcript_missing' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83>       filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88      resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+  Property 'type' is missing in type 'Message' but required in type 'AnyMessage'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83,32): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/agent/loop/types").Message[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:73-93 ---
+     73      // so observability sees WHY the resume failed. ant uH() expands to
+     74      // tengu_feature_bad with feature_name + error_code.
+     75      logEvent('tengu_feature_bad', {
+     76        feature_name: 'subagent_launch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     77        error_code: 'subagent_resume_transcript_missing' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83>       filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88      resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+  Type 'import("/home/user/thyrox-medicion/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/agent/loop/types").Message'.
+    Type 'UserMessage' is missing the following properties from type 'Message': role, content
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(88,5): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:78-98 ---
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83        filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88>     resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+     94      ? await fsp.stat(meta.worktreePath).then(
+     95          s => (s.isDirectory() ? meta.worktreePath : undefined),
+     96          () => {
+     97            logForDebugging(
+     98              `Resumed worktree ${meta.worktreePath} no longer exists; falling back to parent cwd`,
+  Type 'AnyMessage' is not assignable to type 'Message'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(186,7): error TS2322: Type 'AnyMessage' is not assignable to type 'Message'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:176-196 ---
+    176      ...appState.toolPermissionContext,
+    177      mode: selectedAgent.permissionMode ?? 'acceptEdits',
+    178    }
+    179    const workerTools = isResumedFork
+    180      ? toolUseContext.options.tools
+    181      : assembleToolPool(workerPermissionContext, appState.mcp.tools)
+    182  
+    183    const runAgentParams: Parameters<typeof runAgent>[0] = {
+    184      agentDefinition: selectedAgent,
+    185      promptMessages: [
+    186>       ...resumedMessages,
+    187        createUserMessage({ content: prompt }),
+    188      ],
+    189      toolUseContext,
+    190      canUseTool,
+    191      isAsync: true,
+    192      querySource: getQuerySourceForAgent(
+    193        selectedAgent.agentType,
+    194        isBuiltInAgent(selectedAgent),
+    195      ),
+    196      model: undefined,
+  Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'MessageType'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(187,7): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:177-197 ---
+    177      mode: selectedAgent.permissionMode ?? 'acceptEdits',
+    178    }
+    179    const workerTools = isResumedFork
+    180      ? toolUseContext.options.tools
+    181      : assembleToolPool(workerPermissionContext, appState.mcp.tools)
+    182  
+    183    const runAgentParams: Parameters<typeof runAgent>[0] = {
+    184      agentDefinition: selectedAgent,
+    185      promptMessages: [
+    186        ...resumedMessages,
+    187>       createUserMessage({ content: prompt }),
+    188      ],
+    189      toolUseContext,
+    190      canUseTool,
+    191      isAsync: true,
+    192      querySource: getQuerySourceForAgent(
+    193        selectedAgent.agentType,
+    194        isBuiltInAgent(selectedAgent),
+    195      ),
+    196      model: undefined,
+    197      // Fork resume: pass parent's system prompt (cache-identical prefix).
+  Type 'AnyMessage' is not assignable to type 'Message'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.

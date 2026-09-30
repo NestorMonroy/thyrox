@@ -1,0 +1,1 @@
+function Vvt(e,n){switch(e){case"userSettings":return ue(ve());case"policySettings":return ue(n.cwd);case"projectSettings":return ue(n.projectConfigDir??n.cwd);case"localSettings":{if(n.projectConfigDir!==void 0)return ue(n.projectConfigDir);return Aq(n.cwd,n.canonicalGitRoot)}case"flagSettings":return n.flagPath?Tm(ue(n.flagPath)):ue(n.cwd)}}

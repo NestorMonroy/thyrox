@@ -1,0 +1,297 @@
+bun test v1.3.11 (af24e281)
+
+tests/package/exports.test.ts:
+162 |   test('cada modulo .ts de src/ resuelve a si mismo por el mapa', () => {
+163 |     const exports = manifest().exports as Record<string, string>
+164 |     const sinCubrir = sourceModules().filter(
+165 |       (m) => resolveSubpath(exports, subpathFor(m)) !== './' + m,
+166 |     )
+167 |     expect(sinCubrir).toEqual([])
+                            ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/agent/compaction/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/exports.test.ts:167:23)
+(fail) 2 — el mapa esta completo y su forma se deriva > cada modulo .ts de src/ resuelve a si mismo por el mapa [52.34ms]
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/integ-MntBvu/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/integ-psUiaS/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+fatal: not a git repository (or any of the parent directories): .git
+
+src/packages/permission/__tests__/barrelAndTesting.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/packages/permission/__tests__/workspaceAndRename.test.ts:
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Unexpected identifier "lo"
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at generateSessionName (/home/user/thyrox/src/packages/permission/src/commands/rename/generateSessionName.ts:75:22)
+
+listo
+listo
+listo, integré lo del hijo
+listo, integré lo del hijo
+segui el procedimiento del skill
+
+src/packages/shell/bin/__tests__/shell.test.ts:
+shell heredoc: falta el comando a analizar (un posicional, o --stdin). NO se emite veredicto sin entrada — adivinar aquí es exactamente lo que este CLI existe para evitar.
+léxico (containsHeredoc, ciego a comillas): no
+extraídos: 0
+comando procesado (placeholders): "echo hi"
+restauración (string completo, informativa — ver docstring del módulo): coincide con el original
+{
+  "contieneLexico": true,
+  "extraidos": 1,
+  "detalle": [
+    {
+      "delimitador": "EOF",
+      "citado": false,
+      "dash": false,
+      "cuerpo": "\nx\nEOF",
+      "cuerpoBytes": 6
+    }
+  ],
+  "comandoProcesado": "cat __HEREDOC_0_ca2bdfbb3e5c585a__",
+  "restauracionIngenua": "cat <<EOF\nx\nEOF",
+  "restauracionCoincide": true
+}
+shell quote: no hay ningún argumento que citar. NO se emite veredicto — una cadena vacía por defecto sería adivinar, no analizar.
+'echo hi'
+{"args":["--json"],"quoted":"--json"}
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 0. NO se emite veredicto.
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 1. NO se emite veredicto.
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 3. NO se emite veredicto.
+bash -c 'echo $HOME'
+shell fig: exige exactamente 1 argumento (el nombre de comando); recibidos 0. NO se emite veredicto.
+git: sin especificación — rechazado por la validación de entrada de loadFigSpec, o el import de @withfig/autocomplete falló (el paquete no está instalado en este árbol; verificado).
+{"command":"git","spec":null}
+shell stdin-peek: --timeout-ms exige un entero positivo; recibido "0". NO se emite veredicto.
+shell stdin-peek: --timeout-ms exige un entero positivo; recibido "ni-un-numero". NO se emite veredicto.
+shell stdin-peek: no reconoce "sobra". NO se emite veredicto.
+{"simulaGha":false,"removidas":[],"agregadas":[]}
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+shell: «no-existe» no es un subcomando. NO se despacha una acción por defecto.
+
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts:
+=== @thyrox/<name> derivados de app-host/src ===
+ - agent
+ - cli
+ - command-runtime
+ - config
+ - local-observability
+ - mcp-runtime
+ - memory
+ - output
+ - permission
+ - provider
+ - repl
+ - shell
+ - storage
+ - swarm
+ - voice
+size: 15
+
+src/packages/storage/src/__tests__/agentMetadata.test.ts:
+listRemoteAgentMetadata: skipping remote-agent-task-corrupto.meta.json: SyntaxError: JSON Parse error: Expected '}'
+
+src/packages/storage/src/__tests__/sessionStart.test.ts:
+Skipping plugin hooks - allowManagedHooksOnly is enabled
+Warning: Failed to load plugin hooks. SessionStart hooks from plugins will not execute. Error: ETIMEDOUT. This appears to be a network issue. Check your internet connection and try again.
+Warning: Failed to load plugin hooks. Setup hooks from plugins will not execute. Error: boom
+
+src/packages/storage/src/__tests__/sessionEnvironment.test.ts:
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment not yet supported on Windows
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from CLAUDE_ENV_FILE: /tmp/session-environment-QYykB1/env-padre.sh (20 chars)
+Session environment loaded from 3 hook file(s)
+Session environment script ready (63 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+Session environment script ready (14 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 2 hook file(s)
+Session environment script ready (26 chars total)
+Invalidating session environment cache
+
+src/packages/storage/src/__tests__/fileEncoding.test.ts:
+detectFileEncoding failed for expected reason: ENOENT
+49 |     // Fuerza que readSync lance un error sin `code` — no matchea ningun
+50 |     // caso de isFsInaccessible, asi que toma la rama logError().
+51 |     const fake = {
+52 |       ...NodeFsOperations,
+53 |       readSync(): never {
+54 |         throw new Error('boom sin code')
+                       ^
+error: boom sin code
+      at readSync (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:54:19)
+      at detectEncodingForResolvedPath (/home/user/thyrox/src/packages/storage/src/fileRead.ts:31:55)
+      at detectFileEncoding (/home/user/thyrox/src/packages/storage/src/fileEncoding.ts:61:12)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:60:12)
+
+
+src/packages/storage/src/__tests__/imageResizerCompression.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/packages/storage/src/__tests__/plans.test.ts:
+Plan file missing during resume: /tmp/plans-uxiIiM/plans/slug-recuperado-snap.md. Attempting recovery.
+Plan recovered from file snapshot, 16 chars
+Plan file missing during resume: /tmp/plans-bkea42/plans/slug-recuperado-tooluse.md. Attempting recovery.
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/plans-SuMQvp/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/plans-2g0cjb/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/plans-fQsvHj/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts:
+[file-persistence] Persistence aborted before processing
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+[file-persistence] No files found in outputs directory
+[file-persistence] No modified files to persist
+[file-persistence] Found 10001 modified files since turn start (scanned 10001 total)
+[file-persistence] Found 10001 modified files
+[file-persistence] File count limit exceeded: 10001 > 10000
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] File persistence failed: Error: la Files API esta caida
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+
+src/packages/storage/src/filePersistence/__tests__/outputsScanner.test.ts:
+[file-persistence] No files found in outputs directory
+[file-persistence] Found 1 modified files since turn start (scanned 2 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+
+src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+ 8581 pass
+ 5 skip
+ 7 todo
+ 1 fail
+ 18382 expect() calls
+Ran 8594 tests across 545 files. [55.93s]
+__BG_EXIT__=1

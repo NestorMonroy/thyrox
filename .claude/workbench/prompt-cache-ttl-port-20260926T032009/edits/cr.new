@@ -1,0 +1,13 @@
+def close_registration(bench: Path, run: Path) -> list[str]:
+    """El cierre del paso (`step_close`) declarado con `--after-ok` a su
+    pipeline: no lanza nada ahora; `dispatch` lo corre si el pipeline asienta
+    con 0, y lo cancela nombrándolo si no. Así el informe, el commit, el
+    trinquete y el push no dependen de que alguien se acuerde."""
+    command = (f"cd {shlex.quote(str(THYROX))} && env PYTHONPATH={shlex.quote(str(THYROX / 'src'))} "
+               f"{shlex.quote(sys.executable)} src/verify/step_close.py --bench {shlex.quote(str(bench))} "
+               f"--run {shlex.quote(str(run))}")
+    return ["bash", "bin/wait-jobs", "register", f"{bench.name}-close", str(bench / "close.log"),
+            "--after-ok", f"{bench.name}-pipeline", "--run", command]
+
+
+def cmd_modules_launch(args) -> int:

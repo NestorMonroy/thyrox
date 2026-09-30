@@ -1,0 +1,122 @@
+F401 [*] `pathlib.Path` imported but unused
+  --> src/task/agrupar_tareas_por_familia.py:27:21
+   |
+25 | import sqlite3
+26 | import sys
+27 | from pathlib import Path
+   |                     ^^^^
+28 |
+29 | from paths import reach  # noqa: E402
+   |
+help: Remove unused import: `pathlib.Path`
+
+F841 Local variable `src` is assigned to but never used
+  --> src/verify/check_gitattributes.py:85:5
+   |
+83 |             f"        NO se emite un conteo: un 0 aquí sería un verde falso."
+84 |         )
+85 |     src = str(path.parent.parent)          # …/thyrox/src
+   |     ^^^
+86 |     from verify import gitattributes
+87 |     return gitattributes
+   |
+help: Remove assignment to unused variable `src`
+
+F841 Local variable `src` is assigned to but never used
+  --> src/verify/check_hook_script_token.py:85:5
+   |
+83 |             f"        NO se emite un conteo: un 0 aquí sería un verde falso."
+84 |         )
+85 |     src = str(path.parent.parent)          # …/thyrox/src
+   |     ^^^
+86 |     from verify import hook_script_token
+87 |     return hook_script_token
+   |
+help: Remove assignment to unused variable `src`
+
+F401 [*] `verify.check_identifier_language.corpus_available` imported but unused
+  --> src/verify/check_manifest_language.py:35:5
+   |
+34 | from verify.check_identifier_language import (  # noqa: E402
+35 |     corpus_available,
+   |     ^^^^^^^^^^^^^^^^
+36 |     refuse_without_corpus,
+37 |     spanish_words_in,
+   |
+help: Remove unused import: `verify.check_identifier_language.corpus_available`
+
+F401 `workbench.paths.evidence_dir` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> src/verify/check_provider_evidence.py:54:29
+   |
+52 | try:
+53 |     from workbench.paths import (  # noqa: E402
+54 |         WorkbenchHomeError, evidence_dir, state_dir, workbench_dir,
+   |                             ^^^^^^^^^^^^
+55 |     )
+56 |     from paths.reach import ConsumerUnknownError  # noqa: E402
+   |
+help: Remove unused import: `workbench.paths.evidence_dir`
+
+F841 Local variable `src` is assigned to but never used
+  --> src/verify/check_script_deprecated.py:77:5
+   |
+75 |             f"        NO se emite un conteo: un 0 aquí sería un verde falso."
+76 |         )
+77 |     src = str(path.parent.parent)          # …/thyrox/src
+   |     ^^^
+78 |     from verify import script_deprecated
+79 |     return script_deprecated
+   |
+help: Remove assignment to unused variable `src`
+
+F811 [*] Redefinition of unused `os` from line 158
+   --> src/verify/check_vocabulario_prosa.py:158:8
+    |
+156 | import gzip
+157 | import json
+158 | import os
+    |        -- previous definition of `os` here
+159 | import pathlib
+160 | import os
+    |        ^^ `os` redefined here
+161 | import re
+162 | import subprocess
+    |
+help: Remove definition: `os`
+
+F841 [*] Local variable `e` is assigned to but never used
+   --> src/verify/detect_broken_references.py:318:29
+    |
+317 |             return target
+318 |         except Exception as e:
+    |                             ^
+319 |             return None
+    |
+help: Remove assignment to unused variable `e`
+
+F401 [*] `sys` imported but unused
+   --> src/verify/member_port.py:293:12
+    |
+291 |     """
+292 |     import argparse
+293 |     import sys
+    |            ^^^
+294 |     parser = argparse.ArgumentParser(description="porte de un módulo por miembros")
+295 |     parser.add_argument("command", choices=("assemble", "plan"))
+    |
+help: Remove unused import: `sys`
+
+F401 [*] `os` imported but unused
+  --> src/verify/runner.py:36:8
+   |
+34 | import dataclasses
+35 | import json
+36 | import os
+   |        ^^
+37 | import pathlib
+38 | import subprocess
+   |
+help: Remove unused import: `os`
+
+Found 10 errors.
+[*] 6 fixable with the `--fix` option (3 hidden fixes can be enabled with the `--unsafe-fixes` option).

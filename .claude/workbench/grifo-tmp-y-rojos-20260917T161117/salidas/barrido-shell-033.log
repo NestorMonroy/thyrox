@@ -1,0 +1,2 @@
+VERDE tests/lib/test-reach-sh.sh
+EXIT=0

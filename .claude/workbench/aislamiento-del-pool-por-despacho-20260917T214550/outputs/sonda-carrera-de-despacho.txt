@@ -1,0 +1,6 @@
+vuelta 1: directorios=1 trabajos_en_ledger=1  [cifras-20260917T215950 ]
+vuelta 2: directorios=1 trabajos_en_ledger=1  [cifras-20260917T215954 ]
+vuelta 3: directorios=1 trabajos_en_ledger=1  [cifras-20260917T215958 ]
+vuelta 4: directorios=1 trabajos_en_ledger=1  [cifras-20260917T220003 ]
+vuelta 5: directorios=1 trabajos_en_ledger=1  [cifras-20260917T220007 ]
+colisiones de nombre de despacho: 5 de 5

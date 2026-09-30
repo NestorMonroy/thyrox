@@ -1,0 +1,11 @@
+replace_all=0
+file=""
+for arg in "$@"; do
+    case "$arg" in
+        --all) replace_all=1 ;;
+        -h|--help) gawk 'FNR>=2 && /^#/ {sub(/^# ?/, ""); print} FNR>2 && !/^#/ {exit}' "$0"; exit 0 ;;
+        *) file="$arg" ;;
+    esac
+done
+
+refuse() { echo "replace_literal: NO se pudo medir — $1. No se emite conteo." >&2; exit 2; }

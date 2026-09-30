@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_schedule.py
++++ b/src/verify/tsc_schedule.py
+@@ -101,7 +101,7 @@
+     samples: dict[str, dict[str, float]] = {}
+     for proposer in sorted({c.proposer for c in candidates}):
+         a, b = posterior(*counts.get(proposer, (0, 0)), epsilon, alpha0)
+-        theta = rng.betavariate(max(a, MIN_SHAPE), max(b, MIN_SHAPE))
++        theta = a / (a + b) if a + b else alpha0
+         samples[proposer] = {"a": a, "b": b, "theta": theta}
+     ranked = sorted(candidates,
+                     key=lambda c: (-samples[c.proposer]["theta"] * c.targets, c.proposal_id))

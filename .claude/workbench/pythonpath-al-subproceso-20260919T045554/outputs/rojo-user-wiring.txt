@@ -1,0 +1,99 @@
+== 1. la declaracion existe y tiene la forma del settings del cliente ==
+  ok    es un settings con hooks
+  ok    declara sus eventos, todos y solo ellos
+== 2. el control VE una ruta que no existe ==
+  ok    nombra el comando roto
+  ok    cita la ruta
+  ok    cita su evento
+== 3. un comando cuyo archivo SI existe no se reporta ==
+  ok    sin rotos
+== 4. lo declarado en thyrox no apunta a ninguna ruta ausente ==
+  ok    la declaracion propia esta sana
+== 5. sin cableado que medir REHUSA, no publica un cero ==
+  ok    exit 2
+  ok    no emite conteo
+  ok    nombra la variable con que declararlo
+== 6. instalar es una FUSION: sustituye lo propio y conserva lo ajeno ==
+  ok    conserva permissions verbatim
+  ok    sustituye advisorModel
+  ok    sustituye hooks por lo declarado
+  ok    el acta nombra lo conservado
+== 7. respalda ANTES de escribir, y el respaldo es del contenido viejo ==
+  ok    pidio el respaldo una vez
+  ok    respaldo el archivo vivo
+  ok    el destino lleva el sello
+== 8. si el respaldo NO aterriza, el archivo vivo queda INTACTO ==
+  ok    lanza WiringRefused
+  ok    no escribio nada
+== 9. lo declarado con una ruta ausente NO se instala ==
+  ok    rehusa antes de tocar nada
+  ok    ni siquiera pidio el respaldo
+== 10. el adaptador real deja el respaldo en disco (nohup + ledger) ==
+  ok    el respaldo aterrizo
+  ok    con el contenido de la fuente
+== 11. un trabajo ajeno DETENIDO no toma de rehen al respaldo ==
+  ok    el ledger compartido lo clasifica DETENIDO
+  ok    el respaldo aterrizo igual
+  ok    y NO espero al timeout (< 15 s)
+  ok    pero REPORTA al atascado, no lo esconde
+== 12. TODO ejecutable declarado vive en el PRODUCTOR ==
+  ok    todo comando declarado nombra su ejecutable
+  ok    ninguno ejecuta desde el consumidor
+  ok    y todos existen
+== 13. la deriva entre lo DECLARADO y lo INSTALADO ==
+  ok    dos cableados identicos no derivan
+  ok    un comando cambiado se reporta en su evento
+  ok    cita el lado vivo
+  ok    cita el lado declarado
+  ok    un evento declarado y no instalado se reporta
+  ok    y no inventa un lado vivo
+  ok    stub y llamada directa se reportan como deriva (ciega al destino)
+
+14. main publica la deriva sin tocar su codigo de salida
+  ok    14.1 sin deriva lo dice, no calla
+  ok    14.2 con deriva nombra el evento
+  ok    14.3 el codigo de salida NO cambia por la deriva
+  ok    14.4 y sigue publicando el conteo de rotos
+
+== 15. la clave de la cache se mide por VALOR, no por escritura ==
+  ok    15.1 mismo advisor -> delta vacio
+  ok    15.2 otro advisor -> delta lo nombra
+  ok    15.3 hooks distintos, advisor igual -> delta vacio
+  ok    15.4 rehusa ante cambio de valor, y NOMBRA el campo
+  ok    15.5 y deja el archivo intacto
+  ok    15.6 hooks-solo procede sin permiso
+  ok    15.7 y declara el delta vacio en el acta
+  ok    15.8 conservando lo ajeno
+  ok    15.9 la segunda instalacion no escribe
+  ok    15.10 ni pide respaldo
+== 15-bis. CONTROL DE ANULACION: se retira el campo de la clave ==
+  ok    15-bis.1 anulado, la negativa de 15.4 desaparece
+  ok    15-bis.2 y la idempotencia de 15.9 SOBREVIVE
+  ok    15-bis.3 restaurado, la constante vuelve a su valor
+== 16. el destino del store en el CUERPO del hook, no en su cableado ==
+  ok    16.1 el control positivo real da DOS incumplidores
+  ok    16.2 y los separa por forma
+  ok    16.3 el override sin default NO se reporta
+  ok    16.4 mencionar el directorio no es declararlo destino
+== 16-bis. CONTROL DE ANULACION: se retira la bandera del destino ==
+  ok    16-bis.1 anulado, los dos incumplidores dejan de verse
+  ok    16-bis.2 y el cuerpo sano SOBREVIVE en verde
+  ok    16-bis.3 restaurado, la constante vuelve a su valor
+== 17. el objetivo RELATIVO, que el control no veia ==
+  ok    17.1 el relativo se resuelve contra el cwd declarado
+  ok    17.2 y entra al universo como roto
+  ok    17.3 el mismo comando desde el cwd correcto NO se reporta
+  ok    17.4 el prefijo `~/` usa la casa, no el cwd
+  ok    17.5 un prefijo cuya raiz el entorno no declara REHUSA
+  ok    17.6 el interprete no se confunde con el objetivo
+== 17-bis. CONTROL DE ANULACION: se retira la rama relativa ==
+  ok    17-bis.1 anulado el sufijo, el relativo SIGUE viendose (lleva `/`)
+  ok    17-bis.2 anulados los prefijos, `~/` deja de resolver a la casa
+  ok    17-bis.3 y el interprete sano SOBREVIVE en None
+  ok    17-bis.4 restaurado, el sufijo vuelve a casar un `.ts`
+  ok    17-bis.5 con la version vieja, 17.1 CAE
+  ok    17-bis.6 y 17.2 CAE: el comando roto sale del universo
+  ok    17-bis.7 restaurada, vuelve a verlo
+
+74 ok, 0 fallos
+EXIT=0

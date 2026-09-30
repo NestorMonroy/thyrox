@@ -1,0 +1,11 @@
+ 42 pass
+ 0 fail
+Ran 42 tests across 4 files. [3.71s]
+src/commands/mitm-commands.ts(59,40): error TS2322: Type 'import("/home/user/thyrox/node_modules/@thyrox/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/node_modules/@thyrox/mitm/src/inspector/buffer").TrafficBuffer'.
+  Types have separate declarations of a private property 'buffer'.
+BUILD_TSC_EXIT=2
+__tests__/mitmCommands.test.ts(11,37): error TS2305: Module '"@thyrox/mitm/manager"' has no exported member 'getInspectorIngest'.
+src/commands/mitm-commands.ts(59,40): error TS2322: Type 'import("/home/user/thyrox/node_modules/@thyrox/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/node_modules/@thyrox/mitm/src/inspector/buffer").TrafficBuffer'.
+  Types have separate declarations of a private property 'buffer'.
+TEST_TSC_EXIT=2
+__BG_EXIT__=0

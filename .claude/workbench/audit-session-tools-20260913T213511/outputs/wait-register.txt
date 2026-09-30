@@ -1,0 +1,1 @@
+registrado: audit-worker -> /workspace/kaupamex/thyrox/.claude/workbench/audit-session-tools-20260913T213511/outputs/barrier-worker.log (pid=9820)

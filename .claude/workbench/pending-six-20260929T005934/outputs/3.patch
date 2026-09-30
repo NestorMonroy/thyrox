@@ -1,0 +1,139 @@
+diff --git a/src/packages/agent/__tests__/effortVocabulary.test.ts b/src/packages/agent/__tests__/effortVocabulary.test.ts
+new file mode 100644
+index 00000000..2e461e2b
+--- /dev/null
++++ b/src/packages/agent/__tests__/effortVocabulary.test.ts
+@@ -0,0 +1,60 @@
++// Suite del vocabulario de esfuerzo — TDD: se escribe antes de unificarlo.
++//
++// El vocabulario vive HOY (antes de este porte) en tres sitios: `effort.ts`
++// (`EFFORT_LEVELS`, 6 niveles con `none`), `schema.ts` (`EFFORT_LEVELS`, 5
++// niveles sin `none`, para el `effort:` del frontmatter) y `models.ts` (el
++// tipo `EffortLevel`, 5 niveles sin `none`, para `default_effort` y
++// `effort_cost_index`). Esta suite mide que quede UNA sola constante base —
++// en `effort.ts`— y que las otras dos DERIVEN de ella, no la copien: el
++// control de identidad (`toBe`, no `toEqual`) es lo que distingue derivar de
++// copiar, igual que ya hace `contract.test.ts` para `schema.ts`/`types.ts`.
++import { describe, expect, test } from 'bun:test'
++import { EFFORT_LEVELS, NAMED_EFFORT_LEVELS } from '../effort.ts'
++import { AgentJsonSchema, EFFORT_LEVELS as EFFORT_FROM_SCHEMA } from '../schema.ts'
++import { effortCostIndex, MODELS } from '../models.ts'
++
++describe('la base vive en effort.ts', () => {
++  test('EFFORT_LEVELS es el vocabulario de 6 niveles, con none primero', () => {
++    expect([...EFFORT_LEVELS]).toEqual(['none', 'low', 'medium', 'high', 'xhigh', 'max'])
++  })
++
++  test('NAMED_EFFORT_LEVELS es el subconjunto sin none, mismo orden', () => {
++    expect([...NAMED_EFFORT_LEVELS]).toEqual(['low', 'medium', 'high', 'xhigh', 'max'])
++  })
++})
++
++describe('schema.ts DERIVA, no copia', () => {
++  test('su EFFORT_LEVELS es el MISMO arreglo que NAMED_EFFORT_LEVELS de effort.ts', () => {
++    // La igualdad por valor pasaría con dos listas iguales escritas dos veces;
++    // la identidad sólo pasa si es la misma referencia re-exportada.
++    expect(EFFORT_FROM_SCHEMA).toBe(NAMED_EFFORT_LEVELS)
++  })
++
++  test('sigue rechazando el frontmatter con effort:none (comportamiento sin cambio)', () => {
++    const result = AgentJsonSchema.safeParse({
++      description: 'x', prompt: 'y', effort: 'none',
++    })
++    expect(result.success).toBe(false)
++  })
++
++  test('sigue aceptando los cinco niveles nombrados (comportamiento sin cambio)', () => {
++    for (const level of NAMED_EFFORT_LEVELS) {
++      const result = AgentJsonSchema.safeParse({ description: 'x', prompt: 'y', effort: level })
++      expect(result.success).toBe(true)
++    }
++  })
++})
++
++describe('models.ts CONSUME el tipo derivado, sin redeclarar el literal', () => {
++  test('effortCostIndex acepta los cinco niveles nombrados del catálogo real', () => {
++    const [modelId, record] = Object.entries(MODELS).find(
++      ([, r]) => r.effort_cost_index !== undefined,
++    ) ?? []
++    expect(modelId).toBeDefined()
++    for (const level of NAMED_EFFORT_LEVELS) {
++      // No debe lanzar y debe devolver number|null para cada nivel del vocabulario base.
++      expect(typeof effortCostIndex(modelId as string, level)).not.toBe('undefined')
++    }
++    expect(record).toBeDefined()
++  })
++})
+diff --git a/src/packages/agent/effort.ts b/src/packages/agent/effort.ts
+index 2bf98b71..b1ab30ea 100644
+--- a/src/packages/agent/effort.ts
++++ b/src/packages/agent/effort.ts
+@@ -51,10 +51,12 @@
+  * de la cadena corta antes de llegar a ese eslabón. Se sustituye por
+  * `undefined` — el mismo valor que "no hay default para este modelo".
+  *
+- * NO confundir con `EFFORT_LEVELS` de `./schema.ts`: ése es el enum de 5
+- * niveles (sin `none`) que valida el campo `effort:` del frontmatter de un
+- * agente — otro dominio, otra fuente de verdad. Éste es el de 6 niveles que
+- * gobierna la resolución de esfuerzo de la sesión/modelo.
++ * `EFFORT_LEVELS` es la ÚNICA fuente de verdad del vocabulario: 6 niveles,
++ * con `none` primero. `NAMED_EFFORT_LEVELS` deriva de ella, por posición, el
++ * subconjunto de 5 que `./schema.ts` re-exporta tal cual para validar el
++ * campo `effort:` del frontmatter, y que `./models.ts` re-exporta como tipo
++ * para `default_effort`/`effort_cost_index` — ninguno de los dos declara su
++ * propia lista.
+  */
+ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+ import { isProSubscriber } from '@thyrox/provider/authAlias.js'
+@@ -73,6 +75,16 @@ export const EFFORT_LEVELS = [
+ export type EffortLevel = (typeof EFFORT_LEVELS)[number]
+ export type EffortValue = EffortLevel | number
+ 
++// El subconjunto persistible/nombrado, sin 'none' — el vocabulario que
++// `schema.ts` valida en el frontmatter y que `models.ts` usa para
++// `default_effort`/`effort_cost_index`. Se deriva por POSICIÓN ('none' es
++// siempre el primero) en vez de filtrar: la destructuración de un tuple
++// `as const` conserva el tipo literal-tupla que `z.enum` exige, y `.filter`
++// lo degradaría a un arreglo suelto.
++const [, ...NAMED_EFFORT_LEVELS] = EFFORT_LEVELS
++export { NAMED_EFFORT_LEVELS }
++export type NamedEffortLevel = (typeof NAMED_EFFORT_LEVELS)[number]
++
+ export function isEffortLevel(value: string): value is EffortLevel {
+   return (EFFORT_LEVELS as readonly string[]).includes(value)
+ }
+diff --git a/src/packages/agent/models.ts b/src/packages/agent/models.ts
+index 0d99afbe..2fafeca6 100644
+--- a/src/packages/agent/models.ts
++++ b/src/packages/agent/models.ts
+@@ -35,7 +35,10 @@ export type PricingTier = {
+   web_search: number
+ }
+ 
+-export type EffortLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max'
++// Re-exportado, no declarado: el subconjunto de 5 niveles (sin `none`) sale
++// de `effort.ts`, donde vive la base de 6 — no se repite el literal aquí.
++export type { NamedEffortLevel as EffortLevel } from './effort.ts'
++import type { NamedEffortLevel as EffortLevel } from './effort.ts'
+ 
+ export type ModelRecord = {
+   id: string
+diff --git a/src/packages/agent/schema.ts b/src/packages/agent/schema.ts
+index 0abe3f48..39430e10 100644
+--- a/src/packages/agent/schema.ts
++++ b/src/packages/agent/schema.ts
+@@ -11,8 +11,12 @@
+ // este objeto — validar con otra cosa sería reimplementar su semántica.
+ import { z } from 'zod'
+ 
+-/** Los niveles nombrados de `effort`. La fuente admite además un entero. */
+-export const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'] as const
++// Los niveles nombrados de `effort` (la fuente admite además un entero) —
++// re-exportados, no declarados: la base de 6 niveles vive en `effort.ts`, y
++// dos listas iguales serían dos fuentes de verdad que nadie sincroniza
++// (calibration-verified-numbers.md).
++export { NAMED_EFFORT_LEVELS as EFFORT_LEVELS } from './effort.ts'
++import { NAMED_EFFORT_LEVELS as EFFORT_LEVELS } from './effort.ts'
+ 
+ /** `memory:le(["user","project","local"])` en el bloque delimitado. */
+ export const MEMORY_SCOPES = ['user', 'project', 'local'] as const

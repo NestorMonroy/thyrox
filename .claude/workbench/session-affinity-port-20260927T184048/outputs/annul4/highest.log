@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: prioridad > el respaldo sólo recibe el nivel de prioridad más alto disponible [0.57ms]
+ 59 pass
+ 1 fail

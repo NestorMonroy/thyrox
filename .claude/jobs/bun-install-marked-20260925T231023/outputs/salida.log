@@ -1,0 +1,8 @@
+Resolving dependencies
+Resolved, downloaded and extracted [61]
+Saved lockfile
+
+Checked 668 installs across 607 packages (no changes) [3.36s]
+ bun.lock | 1 +
+ 1 file changed, 1 insertion(+)
+__BG_EXIT__=0

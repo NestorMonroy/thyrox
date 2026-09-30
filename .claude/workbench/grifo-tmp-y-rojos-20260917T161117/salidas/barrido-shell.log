@@ -1,0 +1,272 @@
+run-task-pool: 87 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/workbench/grifo-tmp-y-rojos-20260917T161117/salidas
+  barrido-shell-001 pid 7816    bash tests/agents/test-agent-store-auto-recall-limit.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-auto-recall-limit.sh" || echo "ROJO tests/agents/test-agent-store-auto-recall-limit.sh"
+  barrido-shell-002 pid 7842    bash tests/agents/test-agent-store-buscar-tareas.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-buscar-tareas.sh" || echo "ROJO tests/agents/test-agent-store-buscar-tareas.sh"
+  barrido-shell-003 pid 7872    bash tests/agents/test-agent-store-clasificar-documentos.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-clasificar-documentos.sh" || echo "ROJO tests/agents/test-agent-store-clasificar-documentos.sh"
+  barrido-shell-004 pid 7901    bash tests/agents/test-agent-store-compara-antes-de-escribir.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-compara-antes-de-escribir.sh" || echo "ROJO tests/agents/test-agent-store-compara-antes-de-escribir.sh"
+  barrido-shell-005 pid 8084    bash tests/agents/test-agent-store-fecha-apertura.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-fecha-apertura.sh" || echo "ROJO tests/agents/test-agent-store-fecha-apertura.sh"
+  barrido-shell-006 pid 8111    bash tests/agents/test-agent-store-fecha-documento.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-fecha-documento.sh" || echo "ROJO tests/agents/test-agent-store-fecha-documento.sh"
+  barrido-shell-007 pid 8321    bash tests/agents/test-agent-store-fts-degradation.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-fts-degradation.sh" || echo "ROJO tests/agents/test-agent-store-fts-degradation.sh"
+  barrido-shell-008 pid 8348    bash tests/agents/test-agent-store-reassignment-guard.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-reassignment-guard.sh" || echo "ROJO tests/agents/test-agent-store-reassignment-guard.sh"
+  barrido-shell-009 pid 8489    bash tests/agents/test-agent-store-render-tablero.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-render-tablero.sh" || echo "ROJO tests/agents/test-agent-store-render-tablero.sh"
+  barrido-shell-010 pid 8515    bash tests/agents/test-agent-store-sessions.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-sessions.sh" || echo "ROJO tests/agents/test-agent-store-sessions.sh"
+  barrido-shell-011 pid 8538    bash tests/agents/test-agent-store-tareas.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-tareas.sh" || echo "ROJO tests/agents/test-agent-store-tareas.sh"
+  barrido-shell-012 pid 8687    bash tests/agents/test-agent-store-transcript-path.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-transcript-path.sh" || echo "ROJO tests/agents/test-agent-store-transcript-path.sh"
+  barrido-shell-013 pid 8708    bash tests/agents/test-agent-store-type-source.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-type-source.sh" || echo "ROJO tests/agents/test-agent-store-type-source.sh"
+  barrido-shell-014 pid 8906    bash tests/agents/test-agent-store-usage-columns.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-usage-columns.sh" || echo "ROJO tests/agents/test-agent-store-usage-columns.sh"
+  barrido-shell-015 pid 8932    bash tests/agents/test-agent-store-usage-source.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-agent-store-usage-source.sh" || echo "ROJO tests/agents/test-agent-store-usage-source.sh"
+  barrido-shell-016 pid 8957    bash tests/agents/test-carrete-store.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-carrete-store.sh" || echo "ROJO tests/agents/test-carrete-store.sh"
+  barrido-shell-017 pid 9121    bash tests/agents/test-costo-agente.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-costo-agente.sh" || echo "ROJO tests/agents/test-costo-agente.sh"
+  barrido-shell-018 pid 9149    bash tests/agents/test-merge-sqlite-union.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-merge-sqlite-union.sh" || echo "ROJO tests/agents/test-merge-sqlite-union.sh"
+  barrido-shell-019 pid 9573    bash tests/agents/test-model-catalog.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-model-catalog.sh" || echo "ROJO tests/agents/test-model-catalog.sh"
+  barrido-shell-020 pid 9600    bash tests/agents/test-reconciliar-agentes.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-reconciliar-agentes.sh" || echo "ROJO tests/agents/test-reconciliar-agentes.sh"
+  barrido-shell-021 pid 9960    bash tests/agents/test-reconciliar-store-completar.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-reconciliar-store-completar.sh" || echo "ROJO tests/agents/test-reconciliar-store-completar.sh"
+  barrido-shell-022 pid 9993    bash tests/agents/test-reconciliar-store-journal.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-reconciliar-store-journal.sh" || echo "ROJO tests/agents/test-reconciliar-store-journal.sh"
+  barrido-shell-023 pid 10215   bash tests/agents/test-reconciliar-store-status.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-reconciliar-store-status.sh" || echo "ROJO tests/agents/test-reconciliar-store-status.sh"
+  barrido-shell-024 pid 10242   bash tests/agents/test-register-agent-session.sh >/dev/null 2>&1 && echo "VERDE tests/agents/test-register-agent-session.sh" || echo "ROJO tests/agents/test-register-agent-session.sh"
+  barrido-shell-025 pid 10270   bash tests/corpus/test-censo-sobres-mensaje.sh >/dev/null 2>&1 && echo "VERDE tests/corpus/test-censo-sobres-mensaje.sh" || echo "ROJO tests/corpus/test-censo-sobres-mensaje.sh"
+  barrido-shell-026 pid 10420   bash tests/corpus/test-find-reference-home.sh >/dev/null 2>&1 && echo "VERDE tests/corpus/test-find-reference-home.sh" || echo "ROJO tests/corpus/test-find-reference-home.sh"
+  barrido-shell-027 pid 10546   bash tests/corpus/test-markdown-to-rst.sh >/dev/null 2>&1 && echo "VERDE tests/corpus/test-markdown-to-rst.sh" || echo "ROJO tests/corpus/test-markdown-to-rst.sh"
+  barrido-shell-028 pid 10572   bash tests/graph/test-graph-metrics.sh >/dev/null 2>&1 && echo "VERDE tests/graph/test-graph-metrics.sh" || echo "ROJO tests/graph/test-graph-metrics.sh"
+  barrido-shell-029 pid 10715   bash tests/hooks/test-bridge-hooks.sh >/dev/null 2>&1 && echo "VERDE tests/hooks/test-bridge-hooks.sh" || echo "ROJO tests/hooks/test-bridge-hooks.sh"
+  barrido-shell-030 pid 10809   bash tests/hooks/test-hook-error-log.sh >/dev/null 2>&1 && echo "VERDE tests/hooks/test-hook-error-log.sh" || echo "ROJO tests/hooks/test-hook-error-log.sh"
+  barrido-shell-031 pid 10935   bash tests/lib/test-assert-sh.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-assert-sh.sh" || echo "ROJO tests/lib/test-assert-sh.sh"
+  barrido-shell-032 pid 11025   bash tests/lib/test-fixture-sh.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-fixture-sh.sh" || echo "ROJO tests/lib/test-fixture-sh.sh"
+  barrido-shell-033 pid 11145   bash tests/lib/test-reach-sh.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-reach-sh.sh" || echo "ROJO tests/lib/test-reach-sh.sh"
+  barrido-shell-034 pid 11267   bash tests/lib/test-script-deprecated.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-script-deprecated.sh" || echo "ROJO tests/lib/test-script-deprecated.sh"
+  barrido-shell-035 pid 11491   bash tests/lib/test-toolchain-parallel.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-toolchain-parallel.sh" || echo "ROJO tests/lib/test-toolchain-parallel.sh"
+  barrido-shell-036 pid 11567   bash tests/lib/test-toolchain-sh.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-toolchain-sh.sh" || echo "ROJO tests/lib/test-toolchain-sh.sh"
+  barrido-shell-037 pid 11631   bash tests/lib/test-workbench-sh.sh >/dev/null 2>&1 && echo "VERDE tests/lib/test-workbench-sh.sh" || echo "ROJO tests/lib/test-workbench-sh.sh"
+  barrido-shell-038 pid 11656   bash tests/repo/test-disk-headroom.sh >/dev/null 2>&1 && echo "VERDE tests/repo/test-disk-headroom.sh" || echo "ROJO tests/repo/test-disk-headroom.sh"
+  barrido-shell-039 pid 11949   bash tests/repo/test-disk-usage.sh >/dev/null 2>&1 && echo "VERDE tests/repo/test-disk-usage.sh" || echo "ROJO tests/repo/test-disk-usage.sh"
+  barrido-shell-040 pid 11972   bash tests/repo/test-fixture-leak.sh >/dev/null 2>&1 && echo "VERDE tests/repo/test-fixture-leak.sh" || echo "ROJO tests/repo/test-fixture-leak.sh"
+  barrido-shell-041 pid 12013   bash tests/session/test-arranque-de-clon.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-arranque-de-clon.sh" || echo "ROJO tests/session/test-arranque-de-clon.sh"
+  barrido-shell-042 pid 12176   bash tests/session/test-bg-familia.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-bg-familia.sh" || echo "ROJO tests/session/test-bg-familia.sh"
+  barrido-shell-043 pid 12458   bash tests/session/test-contrato-de-escotilla.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-contrato-de-escotilla.sh" || echo "ROJO tests/session/test-contrato-de-escotilla.sh"
+  barrido-shell-044 pid 12484   bash tests/session/test-evidencia-varada.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-evidencia-varada.sh" || echo "ROJO tests/session/test-evidencia-varada.sh"
+  barrido-shell-045 pid 12680   bash tests/session/test-instalar-config-usuario.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-instalar-config-usuario.sh" || echo "ROJO tests/session/test-instalar-config-usuario.sh"
+  barrido-shell-046 pid 13174   bash tests/session/test-medir-disparo-de-hooks.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-medir-disparo-de-hooks.sh" || echo "ROJO tests/session/test-medir-disparo-de-hooks.sh"
+  barrido-shell-047 pid 13246   bash tests/session/test-process-group.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-process-group.sh" || echo "ROJO tests/session/test-process-group.sh"
+  barrido-shell-048 pid 13558   bash tests/session/test-record-environment.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-record-environment.sh" || echo "ROJO tests/session/test-record-environment.sh"
+  barrido-shell-049 pid 13704   bash tests/session/test-run-task-pool-alcance.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-run-task-pool-alcance.sh" || echo "ROJO tests/session/test-run-task-pool-alcance.sh"
+  barrido-shell-050 pid 13937   bash tests/session/test-run-task-pool.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-run-task-pool.sh" || echo "ROJO tests/session/test-run-task-pool.sh"
+  barrido-shell-051 pid 14098   bash tests/session/test-sincronizar-settings-local.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-sincronizar-settings-local.sh" || echo "ROJO tests/session/test-sincronizar-settings-local.sh"
+  barrido-shell-052 pid 14265   bash tests/session/test-tmpdir-faucet.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-tmpdir-faucet.sh" || echo "ROJO tests/session/test-tmpdir-faucet.sh"
+  barrido-shell-053 pid 14556   bash tests/session/test-wait-jobs-dependencia.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-wait-jobs-dependencia.sh" || echo "ROJO tests/session/test-wait-jobs-dependencia.sh"
+  barrido-shell-054 pid 15371   bash tests/session/test-wait-jobs.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-wait-jobs.sh" || echo "ROJO tests/session/test-wait-jobs.sh"
+  barrido-shell-055 pid 16392   bash tests/session/test-write-env-repara-clon-desplazado.sh >/dev/null 2>&1 && echo "VERDE tests/session/test-write-env-repara-clon-desplazado.sh" || echo "ROJO tests/session/test-write-env-repara-clon-desplazado.sh"
+  barrido-shell-056 pid 17031   bash tests/skills/test-check-skill-artifacts.sh >/dev/null 2>&1 && echo "VERDE tests/skills/test-check-skill-artifacts.sh" || echo "ROJO tests/skills/test-check-skill-artifacts.sh"
+  barrido-shell-057 pid 17715   bash tests/task/test-closure-graph.sh >/dev/null 2>&1 && echo "VERDE tests/task/test-closure-graph.sh" || echo "ROJO tests/task/test-closure-graph.sh"
+  barrido-shell-058 pid 17740   bash tests/task/test-implementation-order.sh >/dev/null 2>&1 && echo "VERDE tests/task/test-implementation-order.sh" || echo "ROJO tests/task/test-implementation-order.sh"
+  barrido-shell-059 pid 18059   bash tests/task/test-refresh-board.sh >/dev/null 2>&1 && echo "VERDE tests/task/test-refresh-board.sh" || echo "ROJO tests/task/test-refresh-board.sh"
+  barrido-shell-060 pid 18079   bash tests/verify/test-agent-artifacts.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-agent-artifacts.sh" || echo "ROJO tests/verify/test-agent-artifacts.sh"
+  barrido-shell-061 pid 18270   bash tests/verify/test-assert-no-writes.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-assert-no-writes.sh" || echo "ROJO tests/verify/test-assert-no-writes.sh"
+  barrido-shell-062 pid 18292   bash tests/verify/test-audit-timing.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-audit-timing.sh" || echo "ROJO tests/verify/test-audit-timing.sh"
+  barrido-shell-063 pid 18326   bash tests/verify/test-cifra-de-artefacto-vivo.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-cifra-de-artefacto-vivo.sh" || echo "ROJO tests/verify/test-cifra-de-artefacto-vivo.sh"
+  barrido-shell-064 pid 18855   bash tests/verify/test-cli-typecheck.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-cli-typecheck.sh" || echo "ROJO tests/verify/test-cli-typecheck.sh"
+  barrido-shell-065 pid 18961   bash tests/verify/test-coordinator-sin-worktree.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-coordinator-sin-worktree.sh" || echo "ROJO tests/verify/test-coordinator-sin-worktree.sh"
+  barrido-shell-066 pid 19046   bash tests/verify/test-corpus-al-dia.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-corpus-al-dia.sh" || echo "ROJO tests/verify/test-corpus-al-dia.sh"
+  barrido-shell-067 pid 19199   bash tests/verify/test-destino-del-reporte.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-destino-del-reporte.sh" || echo "ROJO tests/verify/test-destino-del-reporte.sh"
+  barrido-shell-068 pid 19526   bash tests/verify/test-eventos-hook.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-eventos-hook.sh" || echo "ROJO tests/verify/test-eventos-hook.sh"
+  barrido-shell-069 pid 19550   bash tests/verify/test-evidence-tracked.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-evidence-tracked.sh" || echo "ROJO tests/verify/test-evidence-tracked.sh"
+  barrido-shell-070 pid 19774   bash tests/verify/test-generator-determinism.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-generator-determinism.sh" || echo "ROJO tests/verify/test-generator-determinism.sh"
+  barrido-shell-071 pid 19856   bash tests/verify/test-gitattributes.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-gitattributes.sh" || echo "ROJO tests/verify/test-gitattributes.sh"
+  barrido-shell-072 pid 19879   bash tests/verify/test-githooks-activos.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-githooks-activos.sh" || echo "ROJO tests/verify/test-githooks-activos.sh"
+  barrido-shell-073 pid 20112   bash tests/verify/test-hallazgo-submodulo-baseline.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-hallazgo-submodulo-baseline.sh" || echo "ROJO tests/verify/test-hallazgo-submodulo-baseline.sh"
+  barrido-shell-074 pid 20135   bash tests/verify/test-hook-script-token.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-hook-script-token.sh" || echo "ROJO tests/verify/test-hook-script-token.sh"
+  barrido-shell-075 pid 20164   bash tests/verify/test-hooks-timeout.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-hooks-timeout.sh" || echo "ROJO tests/verify/test-hooks-timeout.sh"
+  barrido-shell-076 pid 20302   bash tests/verify/test-ids-entre-ramas.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-ids-entre-ramas.sh" || echo "ROJO tests/verify/test-ids-entre-ramas.sh"
+  barrido-shell-077 pid 20334   bash tests/verify/test-mutante-en-staging.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-mutante-en-staging.sh" || echo "ROJO tests/verify/test-mutante-en-staging.sh"
+  barrido-shell-078 pid 20662   bash tests/verify/test-pre-commit-docs.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-pre-commit-docs.sh" || echo "ROJO tests/verify/test-pre-commit-docs.sh"
+  barrido-shell-079 pid 20689   bash tests/verify/test-premise-drift.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-premise-drift.sh" || echo "ROJO tests/verify/test-premise-drift.sh"
+  barrido-shell-080 pid 20784   bash tests/verify/test-script-naming.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-script-naming.sh" || echo "ROJO tests/verify/test-script-naming.sh"
+  barrido-shell-081 pid 21663   bash tests/verify/test-suite-discrimina.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-suite-discrimina.sh" || echo "ROJO tests/verify/test-suite-discrimina.sh"
+  barrido-shell-082 pid 21844   bash tests/verify/test-unreachable-rules.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-unreachable-rules.sh" || echo "ROJO tests/verify/test-unreachable-rules.sh"
+  barrido-shell-083 pid 21946   bash tests/verify/test-veredicto-de-gate.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-veredicto-de-gate.sh" || echo "ROJO tests/verify/test-veredicto-de-gate.sh"
+  barrido-shell-084 pid 22571   bash tests/verify/test-verificar-premisa.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-verificar-premisa.sh" || echo "ROJO tests/verify/test-verificar-premisa.sh"
+  barrido-shell-085 pid 22823   bash tests/verify/test-verify-task-store.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-verify-task-store.sh" || echo "ROJO tests/verify/test-verify-task-store.sh"
+  barrido-shell-086 pid 23050   bash tests/verify/test-vocabulario-baseline-resolucion.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-vocabulario-baseline-resolucion.sh" || echo "ROJO tests/verify/test-vocabulario-baseline-resolucion.sh"
+  barrido-shell-087 pid 23358   bash tests/verify/test-vocabulario-prosa.sh >/dev/null 2>&1 && echo "VERDE tests/verify/test-vocabulario-prosa.sh" || echo "ROJO tests/verify/test-vocabulario-prosa.sh"
+run-task-pool: lanzados 87 de 87; esperando en PRIMER PLANO (timeout 300s)
+== 88 trabajos asentados ==
+OLVIDADO barrido-shell
+       | (vacío — no emitió nada)
+OK     barrido-shell-001
+       | (vacío — no emitió nada)
+OK     barrido-shell-002
+       | (vacío — no emitió nada)
+OK     barrido-shell-003
+       | (vacío — no emitió nada)
+OK     barrido-shell-004
+       | (vacío — no emitió nada)
+OK     barrido-shell-005
+       | (vacío — no emitió nada)
+OK     barrido-shell-006
+       | (vacío — no emitió nada)
+OK     barrido-shell-007
+       | (vacío — no emitió nada)
+OK     barrido-shell-008
+       | (vacío — no emitió nada)
+OK     barrido-shell-009
+       | (vacío — no emitió nada)
+OK     barrido-shell-010
+       | (vacío — no emitió nada)
+OK     barrido-shell-011
+       | (vacío — no emitió nada)
+OK     barrido-shell-012
+       | (vacío — no emitió nada)
+OK     barrido-shell-013
+       | (vacío — no emitió nada)
+OK     barrido-shell-014
+       | (vacío — no emitió nada)
+OK     barrido-shell-015
+       | (vacío — no emitió nada)
+OK     barrido-shell-016
+       | (vacío — no emitió nada)
+OK     barrido-shell-017
+       | (vacío — no emitió nada)
+OK     barrido-shell-018
+       | (vacío — no emitió nada)
+OK     barrido-shell-019
+       | (vacío — no emitió nada)
+OK     barrido-shell-020
+       | (vacío — no emitió nada)
+OK     barrido-shell-021
+       | (vacío — no emitió nada)
+OK     barrido-shell-022
+       | (vacío — no emitió nada)
+OK     barrido-shell-023
+       | (vacío — no emitió nada)
+OK     barrido-shell-024
+       | (vacío — no emitió nada)
+OK     barrido-shell-025
+       | (vacío — no emitió nada)
+OK     barrido-shell-026
+       | (vacío — no emitió nada)
+OK     barrido-shell-027
+       | (vacío — no emitió nada)
+OK     barrido-shell-028
+       | (vacío — no emitió nada)
+OK     barrido-shell-029
+       | (vacío — no emitió nada)
+OK     barrido-shell-030
+       | (vacío — no emitió nada)
+OK     barrido-shell-031
+       | (vacío — no emitió nada)
+OK     barrido-shell-032
+       | (vacío — no emitió nada)
+OK     barrido-shell-033
+       | (vacío — no emitió nada)
+OK     barrido-shell-034
+       | (vacío — no emitió nada)
+OK     barrido-shell-035
+       | (vacío — no emitió nada)
+OK     barrido-shell-036
+       | (vacío — no emitió nada)
+OK     barrido-shell-037
+       | (vacío — no emitió nada)
+OK     barrido-shell-038
+       | (vacío — no emitió nada)
+OK     barrido-shell-039
+       | (vacío — no emitió nada)
+OK     barrido-shell-040
+       | (vacío — no emitió nada)
+OK     barrido-shell-041
+       | (vacío — no emitió nada)
+OK     barrido-shell-042
+       | (vacío — no emitió nada)
+OK     barrido-shell-043
+       | (vacío — no emitió nada)
+OK     barrido-shell-044
+       | (vacío — no emitió nada)
+OK     barrido-shell-045
+       | (vacío — no emitió nada)
+OK     barrido-shell-046
+       | (vacío — no emitió nada)
+OK     barrido-shell-047
+       | (vacío — no emitió nada)
+OK     barrido-shell-048
+       | (vacío — no emitió nada)
+OK     barrido-shell-049
+       | (vacío — no emitió nada)
+OK     barrido-shell-050
+       | (vacío — no emitió nada)
+OK     barrido-shell-051
+       | (vacío — no emitió nada)
+OK     barrido-shell-052
+       | (vacío — no emitió nada)
+OK     barrido-shell-053
+       | (vacío — no emitió nada)
+OK     barrido-shell-054
+       | (vacío — no emitió nada)
+OK     barrido-shell-055
+       | (vacío — no emitió nada)
+OK     barrido-shell-056
+       | (vacío — no emitió nada)
+OK     barrido-shell-057
+       | (vacío — no emitió nada)
+OK     barrido-shell-058
+       | (vacío — no emitió nada)
+OK     barrido-shell-059
+       | (vacío — no emitió nada)
+OK     barrido-shell-060
+       | (vacío — no emitió nada)
+OK     barrido-shell-061
+       | (vacío — no emitió nada)
+OK     barrido-shell-062
+       | (vacío — no emitió nada)
+OK     barrido-shell-063
+       | (vacío — no emitió nada)
+OK     barrido-shell-064
+       | (vacío — no emitió nada)
+OK     barrido-shell-065
+       | (vacío — no emitió nada)
+OK     barrido-shell-066
+       | (vacío — no emitió nada)
+OK     barrido-shell-067
+       | (vacío — no emitió nada)
+OK     barrido-shell-068
+       | (vacío — no emitió nada)
+OK     barrido-shell-069
+       | (vacío — no emitió nada)
+OK     barrido-shell-070
+       | (vacío — no emitió nada)
+OK     barrido-shell-071
+       | (vacío — no emitió nada)
+OK     barrido-shell-072
+       | (vacío — no emitió nada)
+OK     barrido-shell-073
+       | (vacío — no emitió nada)
+OK     barrido-shell-074
+       | (vacío — no emitió nada)
+OK     barrido-shell-075
+       | (vacío — no emitió nada)
+OK     barrido-shell-076
+       | (vacío — no emitió nada)
+OK     barrido-shell-077
+       | (vacío — no emitió nada)
+OK     barrido-shell-078
+       | (vacío — no emitió nada)
+OK     barrido-shell-079
+       | (vacío — no emitió nada)
+OK     barrido-shell-080
+       | (vacío — no emitió nada)
+OLVIDADO barrido-shell-081
+       | (vacío — no emitió nada)
+OK     barrido-shell-082
+       | (vacío — no emitió nada)
+OK     barrido-shell-083
+       | VERDE tests/verify/test-veredicto-de-gate.sh
+       | EXIT=0
+OK     barrido-shell-084
+       | VERDE tests/verify/test-verificar-premisa.sh
+       | EXIT=0
+OK     barrido-shell-085
+       | VERDE tests/verify/test-verify-task-store.sh
+       | EXIT=0
+OK     barrido-shell-086
+       | VERDE tests/verify/test-vocabulario-baseline-resolucion.sh
+       | EXIT=0
+OK     barrido-shell-087
+       | ROJO tests/verify/test-vocabulario-prosa.sh
+       | EXIT=0
+EXIT=0

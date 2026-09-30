@@ -1,0 +1,18 @@
+base	2 pass, 0 fail	—
+byte-cap	2 pass, 0 fail	—
+abort-not-retryable	2 pass, 0 fail	—
+undici-family	2 pass, 0 fail	—
+responses-completed-marker	2 pass, 0 fail	—
+toolcalls-not-terminal	2 pass, 0 fail	—
+overlap-trim	2 pass, 0 fail	—
+restart-reject	2 pass, 0 fail	—
+inflight-gate	2 pass, 0 fail	—
+empty-stop-needs-reasoning	2 pass, 0 fail	—
+order-fix-gate	2 pass, 0 fail	—
+reopen-discard	1 pass, 1 fail	watchdog abort re-enters early recovery once and finalizes once
+cancel-no-reopen	2 pass, 0 fail	—
+watchdog-ignored	0 pass, 2 fail	watchdog abort re-enters early recovery once and finalizes once | post-commit watchdog abort never performs an unsafe full replay
+empty-prefill-appends	2 pass, 0 fail	—
+responses-envelope	2 pass, 0 fail	—
+finalize-once	2 pass, 0 fail	—
+terminal-marker-preserves	1 pass, 1 fail	watchdog abort re-enters early recovery once and finalizes once

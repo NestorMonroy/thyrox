@@ -1,0 +1,20 @@
+# La cascara retirada: que contenia, medido antes de retirarla
+
+$ sqlite3 cascara.sqlite3 'select name, (select count(*) ...) ...'
+  agent_sessions               0
+  documents                    0
+  findings_fts                 0
+  findings_fts_config          1
+  findings_fts_data            2
+  findings_fts_docsize         0
+  findings_fts_idx             0
+  findings_history             0
+  sqlite_sequence              0
+  tasks                        0
+  TOTAL                        3
+
+# El store real del proveedor, mismo instante
+  filas totales: 16512
+  agent_sessions               1745
+  tasks                        1801
+  findings                     (ausente: no such table: findings)

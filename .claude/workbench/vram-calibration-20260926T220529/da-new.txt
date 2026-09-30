@@ -1,0 +1,7 @@
+# El piso de VRAM por ítem, parámetro del consumidor: lo mínimo que pide cada
+# ítem aunque el historial diga menos, y lo que pide mientras el historial no
+# esté calibrado. Sin piso, un historial sin calibrar pide la GPU entera.
+VRAM_FLOOR_MIB="${HEADLESS_POOL_VRAM_MIN_MIB:-0}"
+[[ "$VRAM_FLOOR_MIB" =~ ^[0-9]+$ ]] || rehusa "HEADLESS_POOL_VRAM_MIN_MIB va en MiB enteros, no: $VRAM_FLOOR_MIB"
+DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
+             --gpu-interval "$HP_GPU_INTERVAL" --vram-floor-mib "$VRAM_FLOOR_MIB")

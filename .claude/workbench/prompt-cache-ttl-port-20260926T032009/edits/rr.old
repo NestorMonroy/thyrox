@@ -1,0 +1,2 @@
+export function resolveRequestCacheTtl(inputs: RequestCacheTtlInputs): { ttl: CacheTtl; why: string } {
+  const decided = decidedTtl(inputs.declared, inputs.model, inputs.expectedGapMinutes)

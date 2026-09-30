@@ -1,0 +1,9 @@
+== 55: codebuddy rechazo se lee
+   (src/accounts/refresh/providers/codebuddyCnRefresh.ts)
+(fail) CodeBuddy CN > no token, a refusal, a non-zero code, no access token or the network give null [0.53ms]
+ 21 pass
+ 1 fail
+== restaurado
+ 22 pass
+ 0 fail
+__BG_EXIT__=0

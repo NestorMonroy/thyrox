@@ -1,0 +1,29 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/forkedAgent.ts(566,41): error TS2345: Argument of type '{ [x: string]: unknown; inputTokens?: number; outputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; input_tokens: number; cache_creation_input_tokens: number; ... 8 more ...; cache_deleted_input_tokens?: number; }' is not assignable to parameter of type 'BetaUsage'.
+  --- código src/packages/agent/forkedAgent.ts:556-576 ---
+    556      })) {
+    557        // Extract real usage from message_delta stream events (final usage per API call)
+    558        if (message.type === 'stream_event' && 'event' in message) {
+    559          const streamMsg = message as typeof message & {
+    560            event?: { type?: string; usage?: unknown }
+    561          }
+    562          if (
+    563            streamMsg.event?.type === 'message_delta' &&
+    564            streamMsg.event.usage
+    565          ) {
+    566>           const turnUsage = updateUsage({ ...EMPTY_USAGE }, streamMsg.event.usage)
+    567            totalUsage = accumulateUsage(totalUsage, turnUsage)
+    568          }
+    569          continue
+    570        }
+    571        if (message.type === 'stream_request_start') {
+    572          continue
+    573        }
+    574  
+    575        logForDebugging(
+    576          `Forked agent [${forkLabel}] received message: type=${message.type}`,
+  Type '{ [x: string]: unknown; inputTokens?: number | undefined; outputTokens?: number | undefined; cacheReadInputTokens?: number | undefined; cacheCreationInputTokens?: number | undefined; input_tokens: number; ... 9 more ...; cache_deleted_input_tokens?: number | undefined; }' is missing the following properties from type 'BetaUsage': fallback_credit, output_tokens_details

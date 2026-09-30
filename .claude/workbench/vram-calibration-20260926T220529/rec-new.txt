@@ -1,0 +1,15 @@
+    row = {
+        "items_measured": len(measures),
+        "max_wall_s": max(wall for _, wall in measures),
+        "min_wall_s": min(wall for _, wall in measures),
+        "peak_kb": max(kb for kb, _ in measures),
+    }
+    vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
+    if vram:
+        row["peak_vram_mib"] = max(vram)
+    # La cobertura de la medida de VRAM: los ítems con `.time` cuyo `.gpu` del
+    # mismo número es una MEDIDA. Sin ella un pico 0 no distingue «ningún ítem
+    # usó GPU» de «a la mitad no se les midió» (H-THYROX-192).
+    row["items_gpu_measured"] = sum(
+        1 for t in Path(out_dir).glob("*.time")
+        if _last_measure(t) and _gpu_peak(t.with_suffix(".gpu")) is not None)

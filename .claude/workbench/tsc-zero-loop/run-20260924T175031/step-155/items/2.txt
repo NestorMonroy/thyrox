@@ -1,0 +1,53 @@
+src/packages/agent/QueryEngine.ts(797,9): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/QueryEngine.ts:787-807 ---
+    787                  : String(event.error ?? 'Agent core execution failed'),
+    788              ],
+    789            }
+    790            return
+    791          }
+    792  
+    793          continue
+    794        }
+    795  
+    796        if (event.type === 'compaction') {
+    797>         this.mutableMessages = fromCoreMessages(event.after)
+    798          messages.splice(0, messages.length, ...this.mutableMessages)
+    799  
+    800          const compactBoundary = createCompactBoundaryMessage(
+    801            'auto',
+    802            0,
+    803            this.mutableMessages.at(-1)?.uuid,
+    804          )
+    805          this.mutableMessages.push(compactBoundary)
+    806          messages.push(compactBoundary)
+    807  
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+src/packages/agent/QueryEngine.ts(822,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+  --- código src/packages/agent/QueryEngine.ts:812-832 ---
+    812          yield {
+    813            type: 'system',
+    814            subtype: 'compact_boundary' as const,
+    815            session_id: getSessionId(),
+    816            uuid: compactBoundary.uuid,
+    817            compact_metadata: toSDKCompactMetadata(compactBoundary.compactMetadata),
+    818          }
+    819          continue
+    820        }
+    821  
+    822>       const message = fromAgentEvent(event)
+    823        if (!message) {
+    824          continue
+    825        }
+    826  
+    827        // Record assistant, user, and compact boundary messages
+    828        if (
+    829          message.type === 'assistant' ||
+    830          message.type === 'user' ||
+    831          (message.type === 'system' && message.subtype === 'compact_boundary')
+    832        ) {
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.

@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2371-2391 ---
+   2371            });
+   2372            return currentQueue;
+   2373          });
+   2374        }, setToolUseConfirmQueue);
+   2375      },
+   2376      [setAppState, setToolUseConfirmQueue],
+   2377    );
+   2378  
+   2379    // Register the leader's setToolPermissionContext for in-process teammates
+   2380    useEffect(() => {
+   2381>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2382      return () => unregisterLeaderSetToolPermissionContext();
+   2383    }, [setToolPermissionContext]);
+   2384  
+   2385    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2386  
+   2387    const requestPrompt = useCallback(
+   2388      (title: string, toolInputSummary?: string | null) =>
+   2389        (request: PromptRequest): Promise<PromptResponse> =>
+   2390          new Promise<PromptResponse>((resolve, reject) => {
+   2391            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2610,9): error TS7006: Parameter 'm' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2600-2620 ---
+   2600          if (
+   2601            m.type === 'attachment' &&
+   2602            m.attachment.type === 'queued_command' &&
+   2603            m.attachment.commandMode === 'task-notification' &&
+   2604            typeof m.attachment.prompt === 'string'
+   2605          ) {
+   2606            existingPrompts.add(m.attachment.prompt);
+   2607          }
+   2608        }
+   2609        const uniqueNotifications = notificationMessages.filter(
+   2610>         m =>
+   2611            m.attachment.type === 'queued_command' &&
+   2612            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2613        );
+   2614  
+   2615        startBackgroundSession({
+   2616          messages: [...messagesRef.current, ...uniqueNotifications],
+   2617          queryParams: {
+   2618            systemPrompt,
+   2619            userContext,
+   2620            systemContext,

@@ -1,0 +1,25 @@
+  ok   evidencia  source/gestion/pm/docs/iniciativas/x/hallazgos/hallazgo-H-
+  ok   evidencia  source/gestion/pm/docs/audits/registro.rst
+  ok   evidencia  source/gestion/pm/docs/lecciones-aprendidas/l.rst
+  ok   evidencia  source/gestion/pm/docs/iniciativas/x/progreso-x.rst
+  ok   evidencia  source/gestion/pm/docs/iniciativas/x/analisis-x.rst
+  ok   evidencia  .claude/eventos/banco-20260101T000000/nota.md
+  ok   evidencia  _archived/.claude/scripts/viejo.sh
+  ok   viva       source/normativa/estandares/catalogo-de-scripts.rst
+  ok   viva       .claude/rules/git.md
+  ok   viva       src/verify/registry.py
+  ok   viva       .githooks/pre-commit
+  ok   cuenta 1 cita viva
+  ok   y 1 en evidencia
+  ok   y declara su denominador
+  ok   el informe marca cual reapuntar
+  ok   anulada la clasificacion, la evidencia se cuenta como viva
+  ok   y restaurada, vuelve a discriminar
+  ok   un directorio sin .git rehusa
+  ok   y dice que no emite conteo
+  ok   sin ningun clon alcanzable, rehusa
+  ok   y lo llama verde falso
+  ok   --verify sale 0 sin citas vivas
+
+22 aprobada(s) · 0 fallida(s) (alcance medido: citations.py)
+EXIT=0

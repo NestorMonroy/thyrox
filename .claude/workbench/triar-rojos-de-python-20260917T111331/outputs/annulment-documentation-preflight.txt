@@ -1,0 +1,31 @@
+test_accepts_the_materialized_checkout_and_returns_head (__main__.TestAssertCheckout.test_accepts_the_materialized_checkout_and_returns_head) ... ok
+test_refuses_a_directory_inside_another_checkout (__main__.TestAssertCheckout.test_refuses_a_directory_inside_another_checkout) ... ok
+test_routes_each_object_by_what_it_is (__main__.TestDestination.test_routes_each_object_by_what_it_is) ... ok
+test_does_not_call_a_single_generic_token_an_antecedent (__main__.TestFindCandidates.test_does_not_call_a_single_generic_token_an_antecedent) ... ok
+test_empty_topic_refuses_instead_of_publishing_zero (__main__.TestFindCandidates.test_empty_topic_refuses_instead_of_publishing_zero) ... ok
+test_searches_both_governance_areas_by_meaningful_tokens (__main__.TestFindCandidates.test_searches_both_governance_areas_by_meaningful_tokens) ... ok
+test_finding_refuses_an_id_reported_as_used (__main__.TestValidateFindingId.test_finding_refuses_an_id_reported_as_used) ... FAIL
+test_finding_requires_a_well_formed_available_id (__main__.TestValidateFindingId.test_finding_requires_a_well_formed_available_id) ... ERROR
+
+======================================================================
+ERROR: test_finding_requires_a_well_formed_available_id (__main__.TestValidateFindingId.test_finding_requires_a_well_formed_available_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_documentation_preflight.py", line 140, in test_finding_requires_a_well_formed_available_id
+    self.assertEqual(calls[0][-3:], ["--disponible", "docs", "1266"])
+                     ~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+FAIL: test_finding_refuses_an_id_reported_as_used (__main__.TestValidateFindingId.test_finding_refuses_an_id_reported_as_used)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_documentation_preflight.py", line 147, in test_finding_refuses_an_id_reported_as_used
+    with self.assertRaisesRegex(PreflightError, "OCUPADO"):
+AssertionError: PreflightError not raised
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.204s
+
+FAILED (failures=1, errors=1)
+exit=1

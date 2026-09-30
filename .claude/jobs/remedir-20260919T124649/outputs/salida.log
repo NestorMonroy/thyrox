@@ -1,0 +1,29 @@
+########## tests/verify/test-suite-discrimina.sh ##########
+  ok    un ledger heredado en .json se sigue leyendo
+== 21. --solo IGNORA el cursor: es una peticion explicita ==
+  ok    la SEGUNDA corrida de --solo vuelve a juzgar
+  ok    sin --solo, ese mismo candidato si se salta
+
+43 ok, 0 fallos
+## exit=0
+########## tests/corpus/test-markdown-to-rst.sh ##########
+  OMITIDO: /home/user/thyrox/source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/recommended-practice-ccsd-650.0-m-3/modelo-funcional.rst ausente — el control positivo no se pudo correr
+test-markdown-to-rst: 30 aserciones OK, 0 fallidas
+## exit=0
+########## tests/agents/test-agent-store-render-tablero.sh ##########
+  ok    un store sin tareas sale 0
+== 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+  ok    cambiar el subject mueve la firma
+  ok    sin tocar nada la firma es estable
+
+16 ok, 2 fallos
+## exit=1
+########## tests/verify/test-script-naming.sh ##########
+  ok   sin lexico el eje de identificadores sale con 2
+  ok   y nombra el lexico que le falta
+  ok   el reporte de identificadores declara el alcance
+  FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [652]
+
+29 ok · 2 falla(s)
+## exit=1
+__BG_EXIT__=0

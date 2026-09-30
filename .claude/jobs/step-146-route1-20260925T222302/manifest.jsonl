@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c eval \"$(bash bin/commit_identity env </dev/null)\"; bash bin/tsc_zero_loop --root . --loop-dir .claude/workbench/tsc-zero-loop/run-20260924T175031/step-146/route1 --max-steps 3 --seed 146 -- bin/tsc_proposers -- bunx tsc --noEmit -p tsconfig.json --pretty false", "started_at": "2026-09-25T22:23:02+00:00"}

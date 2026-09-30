@@ -1,0 +1,3 @@
+pairs-upper-ignored	s/\&\& !named.has(name))$/)/
+pairs-any-variable	s/.filter(name => AWS_CREDENTIAL_VARIABLES.includes(name) \&\& /.filter(name => /
+pairs-index-zero	s/\${index + 1}_/${index}_/

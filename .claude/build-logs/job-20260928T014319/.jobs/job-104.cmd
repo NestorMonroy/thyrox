@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/verify/test_unsized_writer_pipe.py

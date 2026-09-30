@@ -1,0 +1,537 @@
+diff --git a/src/packages/binary/__tests__/canonical.test.ts b/src/packages/binary/__tests__/canonical.test.ts
+index 64bfbb03..7b0eda8f 100644
+--- a/src/packages/binary/__tests__/canonical.test.ts
++++ b/src/packages/binary/__tests__/canonical.test.ts
+@@ -1,12 +1,15 @@
+ /**
+  * La versión canónica de la referencia: contra ella se mide la paridad, y no
+- * cambia porque el ejecutable vivo se actualice.
++ * cambia porque el ejecutable vivo se actualice ni porque se extraiga una
++ * build más reciente.
+  */
+ import { describe, expect, test } from 'bun:test'
+-import { existsSync } from 'node:fs'
++import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+-import { CANONICAL_REFERENCE_VERSION, canonicalRoot } from '../src/canonical.ts'
++import { CANONICAL_REFERENCE_VERSION, canonicalRoot, resolveReadRoot } from '../src/canonical.ts'
++import { corpusVersion } from '../src/freshness.ts'
+ 
+ describe('versión canónica de la referencia', () => {
+   test('está declarada como una versión N.N.N', () => {
+@@ -24,3 +27,26 @@ describe('versión canónica de la referencia', () => {
+     expect(existsSync(join(corpus, CANONICAL_REFERENCE_VERSION, 'MANIFEST.tsv'))).toBe(true)
+   })
+ })
++
++describe('resolveReadRoot — la raíz por defecto de symbol/literal/references/declarations', () => {
++  test('un --root explícito manda sobre la canónica', () => {
++    expect(resolveReadRoot('/otro/root', '/corpus')).toBe('/otro/root')
++  })
++
++  test('sin --root, la raíz es la canónica aunque exista una build más reciente extraída', () => {
++    const raiz = mkdtempSync(join(tmpdir(), 'canonical-'))
++    const masReciente = '9.9.9'
++    for (const v of [CANONICAL_REFERENCE_VERSION, masReciente]) {
++      mkdirSync(join(raiz, v, 'bunfs-root'), { recursive: true })
++      writeFileSync(join(raiz, v, 'MANIFEST.tsv'), 'archivo\tbytes\ttipo\tsha256\n')
++    }
++    // Control de que el escenario mide lo que dice: la build más reciente NO
++    // es la canónica, así que si `resolveReadRoot` la devolviera por error
++    // esta aserción de preparación ya lo dejaría ver.
++    expect(corpusVersion(raiz)).toBe(masReciente)
++    expect(corpusVersion(raiz)).not.toBe(CANONICAL_REFERENCE_VERSION)
++
++    expect(resolveReadRoot('', raiz)).toBe(canonicalRoot(raiz))
++    expect(resolveReadRoot('', raiz)).not.toContain(masReciente)
++  })
++})
+diff --git a/src/packages/binary/__tests__/corpus.test.ts b/src/packages/binary/__tests__/corpus.test.ts
+index 1e026d7d..c8b5e4d2 100644
+--- a/src/packages/binary/__tests__/corpus.test.ts
++++ b/src/packages/binary/__tests__/corpus.test.ts
+@@ -21,7 +21,7 @@ import { findSection } from '../src/elf.ts'
+ import { BUNFS_PREFIX, SECTION_HEADER, deriveVersion, readModuleTable } from '../src/bunfs.ts'
+ import { buildGraph, importsOf } from '../src/graph.ts'
+ import { corpusVersion, freshness } from '../src/freshness.ts'
+-import { README, STRINGS, extractStrings, renderReadme, writeCorpus } from '../src/corpus.ts'
++import { PROVENANCE, README, STRINGS, extractStrings, renderReadme, writeCorpus } from '../src/corpus.ts'
+ 
+ const BINARY = '/opt/claude-code/bin/claude'
+ const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null
+@@ -216,3 +216,61 @@ describe('el corpus trae su volcado de cadenas y su README', () => {
+     expect(existsSync(join(r.root, STRINGS))).toBe(false)
+   })
+ })
++
++describe('procedencia de la extracción — PROVENANCE.tsv y su DIFF contra una base', () => {
++  function readTsv(path: string): Record<string, string> {
++    return Object.fromEntries(readFileSync(path, 'utf8').trim().split('\n').map(l => l.split('\t')))
++  }
++
++  test.if(tabla !== null)('sin opciones no escribe PROVENANCE.tsv', () => {
++    // El proposito: sin sha256 ni fecha medidos, inventar el archivo seria
++    // publicar una procedencia que nadie midio (evidencia-antes-de-afirmar).
++    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
++    const r = writeCorpus(raiz, '9.9.6', tabla!.payload, tabla!.table.entries.slice(0, 2))
++    expect(existsSync(join(r.root, PROVENANCE))).toBe(false)
++  })
++
++  test.if(tabla !== null)('con opciones escribe PROVENANCE.tsv con sha256, fecha, archivos y bytes', () => {
++    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
++    const r = writeCorpus(raiz, '9.9.5', tabla!.payload, tabla!.table.entries.slice(0, 2), undefined, {
++      executableSha256: 'deadbeef',
++      extractedAt: '2026-09-29T00:00:00.000Z',
++    })
++    const provenance = readTsv(join(r.root, PROVENANCE))
++    expect(provenance.version).toBe('9.9.5')
++    expect(provenance.executable_sha256).toBe('deadbeef')
++    expect(provenance.extracted_at).toBe('2026-09-29T00:00:00.000Z')
++    expect(provenance.files).toBe(String(r.files))
++    expect(provenance.bytes).toBe(String(r.bytes))
++    expect(provenance.base_version).toBeUndefined()
++  })
++
++  test.if(tabla !== null)('con --base compara contra el MANIFEST anterior y deja DIFF-<base>.tsv', () => {
++    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
++    const base = writeCorpus(raiz, '1.0.0', tabla!.payload, tabla!.table.entries.slice(0, 3))
++    // Una entrada retirada (indice 0), dos que se conservan igual (1 y 2) y
++    // una nueva (indice 3): control de que el escenario ejercita added Y removed.
++    const next = [tabla!.table.entries[1]!, tabla!.table.entries[2]!, tabla!.table.entries[3]!]
++    const r = writeCorpus(raiz, '2.0.0', tabla!.payload, next, undefined, {
++      executableSha256: 'cafe',
++      extractedAt: '2026-09-29T00:00:00.000Z',
++      base: { version: '1.0.0', manifestPath: join(base.root, 'MANIFEST.tsv') },
++    })
++    const provenance = readTsv(join(r.root, PROVENANCE))
++    expect(provenance.base_version).toBe('1.0.0')
++    expect(Number(provenance.added)).toBe(1)
++    expect(Number(provenance.removed)).toBe(1)
++    expect(Number(provenance.unchanged)).toBe(2)
++
++    const diffPath = join(r.root, 'DIFF-1.0.0.tsv')
++    const diffRows = readFileSync(diffPath, 'utf8').trim().split('\n')
++    expect(diffRows[0]).toBe('estado\truta\tbytes_antes\tbytes_despues')
++    expect(diffRows.filter(l => l.startsWith('added\t'))).toHaveLength(1)
++    expect(diffRows.filter(l => l.startsWith('removed\t'))).toHaveLength(1)
++    // Los `unchanged` no aparecen en el diff: solo lo que difiere.
++    expect(diffRows).toHaveLength(3)
++
++    // El proposito: la base es evidencia inmutable de una extraccion previa.
++    expect(existsSync(join(base.root, 'DIFF-1.0.0.tsv'))).toBe(false)
++  })
++})
+diff --git a/src/packages/binary/__tests__/corpusDiff.test.ts b/src/packages/binary/__tests__/corpusDiff.test.ts
+new file mode 100644
+index 00000000..cb548a48
+--- /dev/null
++++ b/src/packages/binary/__tests__/corpusDiff.test.ts
+@@ -0,0 +1,84 @@
++/**
++ * `diffManifests`: compara dos `MANIFEST.tsv` por ruta y sha256. Es la pieza
++ * que `writeCorpus` usa para declarar la procedencia de una extracción
++ * contra su base — aquí se prueba sola, sin escribir ningún corpus.
++ */
++import { describe, expect, test } from 'bun:test'
++import { diffManifests, parseManifest } from '../src/corpusDiff.ts'
++
++const HEADER = 'archivo\tbytes\ttipo\tsha256'
++
++function manifest(filas: [string, number, string, string][]): string {
++  return [HEADER, ...filas.map(f => f.join('\t'))].join('\n') + '\n'
++}
++
++describe('parseManifest', () => {
++  test('lee cada fila tras la cabecera', () => {
++    const texto = manifest([['a.js', 10, 'texto', 'sha-a'], ['b.js', 20, 'binario', 'sha-b']])
++    expect(parseManifest(texto)).toEqual([
++      { path: 'a.js', bytes: 10, type: 'texto', sha256: 'sha-a' },
++      { path: 'b.js', bytes: 20, type: 'binario', sha256: 'sha-b' },
++    ])
++  })
++
++  test('solo la cabecera da una lista vacía', () => {
++    expect(parseManifest(`${HEADER}\n`)).toEqual([])
++  })
++
++  test('texto vacío da una lista vacía', () => {
++    expect(parseManifest('')).toEqual([])
++  })
++})
++
++describe('diffManifests', () => {
++  const base = manifest([
++    ['a.js', 10, 'texto', 'sha-a'],
++    ['b.js', 20, 'texto', 'sha-b'],
++    ['c.js', 30, 'texto', 'sha-c'],
++  ])
++
++  test('una ruta solo en next es added', () => {
++    const next = manifest([['a.js', 10, 'texto', 'sha-a'], ['d.js', 40, 'texto', 'sha-d']])
++    const diff = diffManifests(base, next)
++    expect(diff.added).toEqual([{ path: 'd.js', bytes: 40, type: 'texto', sha256: 'sha-d' }])
++  })
++
++  test('una ruta solo en base es removed', () => {
++    const next = manifest([['a.js', 10, 'texto', 'sha-a']])
++    const diff = diffManifests(base, next)
++    expect(diff.removed.map(e => e.path).sort()).toEqual(['b.js', 'c.js'])
++  })
++
++  test('misma ruta y distinto sha256 es changed, con el antes y el después', () => {
++    const next = manifest([
++      ['a.js', 10, 'texto', 'sha-a'],
++      ['b.js', 25, 'texto', 'sha-b2'],
++      ['c.js', 30, 'texto', 'sha-c'],
++    ])
++    const diff = diffManifests(base, next)
++    expect(diff.changed).toEqual([{
++      path: 'b.js',
++      before: { path: 'b.js', bytes: 20, type: 'texto', sha256: 'sha-b' },
++      after: { path: 'b.js', bytes: 25, type: 'texto', sha256: 'sha-b2' },
++    }])
++  })
++
++  test('misma ruta y mismo sha256 es unchanged', () => {
++    const diff = diffManifests(base, base)
++    expect(diff.unchanged.map(e => e.path).sort()).toEqual(['a.js', 'b.js', 'c.js'])
++    expect(diff.added).toEqual([])
++    expect(diff.removed).toEqual([])
++    expect(diff.changed).toEqual([])
++  })
++
++  // CONTROL: sin distinguir por sha256 —solo por ruta— un archivo con el
++  // mismo nombre y contenido distinto pasaría por `unchanged`. Retirar la
++  // comparación de sha256 (declarar todo lo que comparte ruta como
++  // `unchanged`) tumba esta prueba y la de arriba.
++  test('control — comparar solo por ruta confundiría changed con unchanged', () => {
++    const next = manifest([['b.js', 25, 'texto', 'sha-b2']])
++    const diff = diffManifests(manifest([['b.js', 20, 'texto', 'sha-b']]), next)
++    expect(diff.changed).toHaveLength(1)
++    expect(diff.unchanged).toHaveLength(0)
++  })
++})
+diff --git a/src/packages/binary/bin/binary.ts b/src/packages/binary/bin/binary.ts
+index 9874f919..b3c622f1 100755
+--- a/src/packages/binary/bin/binary.ts
++++ b/src/packages/binary/bin/binary.ts
+@@ -4,7 +4,10 @@
+  *
+  * Subcomandos:
+  *   info                 version declarada, secciones, tamano de la tabla
+- *   extract [--out R]    escribe el corpus en <R>/<version>/ con MANIFEST
++ *   extract [--out R] [--base V]
++ *                        escribe el corpus en <R>/<version>/ con MANIFEST y
++ *                        PROVENANCE.tsv (sha256, fecha); con --base V compara
++ *                        contra <R>/V/MANIFEST.tsv y deja DIFF-V.tsv
+  *   graph [--json]       grafo de imports entre modulos
+  *   freshness [--root R] compara el corpus con el ejecutable vivo
+  *   reflow <mod> [--out F] [--root R]
+@@ -31,11 +34,13 @@
+  * cifra.
+  */
+ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
++import { join } from 'node:path'
+ import { BUNFS_PREFIX, deriveVersion, readModuleTable } from '../src/bunfs.ts'
+ import { locatePayload } from '../src/payload.ts'
+ import { buildGraph } from '../src/graph.ts'
+-import { writeCorpus } from '../src/corpus.ts'
+-import { corpusVersion, freshness } from '../src/freshness.ts'
++import { MANIFEST, writeCorpus } from '../src/corpus.ts'
++import { freshness } from '../src/freshness.ts'
++import { resolveReadRoot } from '../src/canonical.ts'
+ import { reflow } from '../src/reflow.ts'
+ import { resolveSymbol, scanReferences } from '../src/symbol.ts'
+ import { scanLiteral } from '../src/declaration.ts'
+@@ -95,9 +100,19 @@ if (command === 'info') {
+ } else if (command === 'extract') {
+   const { bytes, payload, version, table } = open(argv)
+   const root = option(argv, '--out', DEFAULT_CORPUS)
+-  const r = writeCorpus(root, version, payload, table.entries, bytes)
++  const baseVersion = option(argv, '--base', '')
++  let base: { version: string; manifestPath: string } | undefined
++  if (baseVersion) {
++    const manifestPath = join(root, baseVersion, MANIFEST)
++    if (!existsSync(manifestPath)) guard(`--base ${baseVersion}: no existe ${manifestPath}`)
++    base = { version: baseVersion, manifestPath }
++  }
++  const executableSha256 = new Bun.CryptoHasher('sha256').update(bytes).digest('hex')
++  const extractedAt = new Date().toISOString()
++  const r = writeCorpus(root, version, payload, table.entries, bytes, { executableSha256, extractedAt, base })
+   console.log(`escrito ${r.files} archivo(s), ${r.bytes} B en ${r.root}`)
+   console.log(`(alcance medido: ${r.files} de ${table.entries.length} entradas de la tabla)`)
++  console.log(`procedencia: sha256=${executableSha256} extraido=${extractedAt}${base ? ` base=${base.version}` : ''} — ver ${join(r.root, 'PROVENANCE.tsv')}`)
+ } else if (command === 'graph') {
+   const { payload, table, version } = open(argv)
+   const g = buildGraph(payload, table.entries)
+@@ -139,14 +154,14 @@ if (command === 'info') {
+   if (destination) writeFileSync(destination, output)
+   else process.stdout.write(output)
+ } else if (command === 'symbol') {
+-  // Sin `--root`, la build más reciente del corpus: un literal fijo dejaba de
+-  // ser la última en cuanto se extraía otra.
+-  const latest = corpusVersion(DEFAULT_CORPUS)
+-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
++  // Sin `--root`, la raíz canónica: la build más reciente extraída no es el
++  // defecto — cambiar contra qué se lee es una decisión explícita, no el
++  // efecto lateral de haber extraído otra build.
++  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
+   const [chunk, ...rest] = argv.slice(1)
+   const names = rest.filter((x, i) => !x.startsWith('--') && rest[i - 1] !== '--root')
+   if (!chunk || names.length === 0) guard('uso: symbol <chunk> <nombre>... [--root R]')
++  if (!existsSync(root)) guard(`no existe el corpus en ${root}; use --root`)
+   if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
+   let missing = 0
+   for (const name of names) {
+@@ -161,9 +176,8 @@ if (command === 'info') {
+ } else if (command === 'literal') {
+   // La pregunta con la que empieza una extracción: qué declaraciones llevan
+   // este literal. Su salida alimenta a `symbol <chunk> <nombre>`.
+-  const latest = corpusVersion(DEFAULT_CORPUS)
+-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
++  // Sin `--root`, la raíz canónica — no la build más reciente extraída.
++  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
+   const literal = argv[1]
+   if (!literal || literal.startsWith('--')) guard('uso: literal <texto> [--root R]')
+   if (!existsSync(root)) guard(`no existe ${root}`)
+@@ -174,11 +188,11 @@ if (command === 'info') {
+ } else if (command === 'references') {
+   // La dirección que `symbol` no recorre: de la definición a sus usos, con el
+   // miembro que cada uso llama. Es el flujo de un mecanismo, no sus literales.
+-  const latest = corpusVersion(DEFAULT_CORPUS)
+-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
++  // Sin `--root`, la raíz canónica — no la build más reciente extraída.
++  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
+   const [chunk, name] = argv.slice(1)
+   if (!chunk || !name || name.startsWith('--')) guard('uso: references <chunk> <nombre> [--root R]')
++  if (!existsSync(root)) guard(`no existe el corpus en ${root}; use --root`)
+   if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
+   const scan = scanReferences(root, chunk, name)
+   for (const r of scan.references) console.log(`${r.file} ${r.kind} ${r.binding ?? '-'} ${r.member ? '.' + r.member : '-'} @${r.start}`)
+@@ -187,11 +201,11 @@ if (command === 'info') {
+   process.exit(scan.references.length > 0 ? 0 : 1)
+ } else if (command === 'declarations') {
+   // La pregunta anterior a portar un subsistema: qué contiene el chunk entero.
+-  const latest = corpusVersion(DEFAULT_CORPUS)
+-  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+-  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
++  // Sin `--root`, la raíz canónica — no la build más reciente extraída.
++  const root = resolveReadRoot(option(argv, '--root', ''), DEFAULT_CORPUS)
+   const chunk = argv[1]
+   if (!chunk || chunk.startsWith('--')) guard('uso: declarations <chunk> [--root R]')
++  if (!existsSync(root)) guard(`no existe el corpus en ${root}; use --root`)
+   if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
+   const declarations = listTopLevelDeclarations(readFileSync(`${root}/${chunk}`, 'utf8'))
+   for (const d of declarations) {
+diff --git a/src/packages/binary/src/canonical.ts b/src/packages/binary/src/canonical.ts
+index 921220dc..17ec0213 100644
+--- a/src/packages/binary/src/canonical.ts
++++ b/src/packages/binary/src/canonical.ts
+@@ -15,3 +15,14 @@ export const CANONICAL_REFERENCE_VERSION = '2.1.283'
+ export function canonicalRoot(corpusDir: string): string {
+   return join(corpusDir, CANONICAL_REFERENCE_VERSION, 'bunfs-root')
+ }
++
++/**
++ * La raíz efectiva para los comandos de lectura de un chunk (`symbol`,
++ * `literal`, `references`, `declarations`): la que declara `--root`, y si no
++ * se declara, la canónica — nunca la versión más reciente extraída. Extraer
++ * una build nueva no puede, por sí sola, mover contra qué se lee por
++ * defecto: eso es lo que `canonicalRoot` ya declara.
++ */
++export function resolveReadRoot(explicitRoot: string, corpusDir: string): string {
++  return explicitRoot !== '' ? explicitRoot : canonicalRoot(corpusDir)
++}
+diff --git a/src/packages/binary/src/corpus.ts b/src/packages/binary/src/corpus.ts
+index f551d0ee..f6beebb7 100644
+--- a/src/packages/binary/src/corpus.ts
++++ b/src/packages/binary/src/corpus.ts
+@@ -11,9 +11,10 @@
+  * lo que hace verificable la extraccion: cualquiera la repite sobre el mismo
+  * binario y compara, sin confiar en este codigo.
+  */
+-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
++import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
+ import { BUNFS_PREFIX, BUNFS_ROOT_DIR, type ModuleEntry } from './bunfs.ts'
++import { diffManifests, type ManifestDiff } from './corpusDiff.ts'
+ 
+ /** El archivo que declara que una build esta extraida. Lo comparte `freshness`. */
+ export const MANIFEST = 'MANIFEST.tsv'
+@@ -21,6 +22,8 @@ export const MANIFEST = 'MANIFEST.tsv'
+ export const STRINGS = 'claude_strings.txt'
+ /** La descripcion del corpus, derivada del MANIFEST y del volcado. */
+ export const README = 'README.md'
++/** La procedencia de una extraccion: sha256 del ejecutable, fecha y su diff contra una base. */
++export const PROVENANCE = 'PROVENANCE.tsv'
+ /** Longitud minima de una cadena: la de `strings -n 4`, con que se citan todas. */
+ const MIN_STRING = 4
+ 
+@@ -108,40 +111,95 @@ function safeTarget(base: string, name: string): string {
+   return destino
+ }
+ 
++/** La procedencia declarada al escribir un corpus: de dónde salió, y contra qué base se compara. */
++export type WriteCorpusOptions = {
++  executableSha256: string
++  extractedAt: string
++  base?: { version: string; manifestPath: string }
++}
++
+ export function writeCorpus(
+   root: string,
+   version: string,
+   payload: Buffer,
+   entries: ModuleEntry[],
+   binary?: Buffer,
++  options?: WriteCorpusOptions,
+ ): CorpusResult {
+-  const base = join(root, version)
++  const dest = join(root, version)
+   // El discriminador es el MANIFEST, el mismo que usa `corpusVersion`. Con la
+   // existencia del directorio, un `2.1.258/` que solo trae prosa quedaba a la
+   // vez «sin corpus» para el gate e «intocable» para la escritura.
+-  if (existsSync(join(base, MANIFEST))) throw new Error(`version ya extraida: ${base}`)
++  if (existsSync(join(dest, MANIFEST))) throw new Error(`version ya extraida: ${dest}`)
+ 
+   const filas: string[] = ['archivo\tbytes\ttipo\tsha256']
+   let total = 0
+ 
+   for (const e of entries) {
+-    const destino = safeTarget(base, e.name)
++    const destino = safeTarget(dest, e.name)
+     const datos = payload.subarray(e.offset, e.offset + e.length)
+     mkdirSync(dirname(destino), { recursive: true })
+     writeFileSync(destino, datos)
+     const sha = new Bun.CryptoHasher('sha256').update(datos).digest('hex')
+-    filas.push([relative(base, destino), datos.length, measureType(datos), sha].join('\t'))
++    filas.push([relative(dest, destino), datos.length, measureType(datos), sha].join('\t'))
+     total += datos.length
+   }
+ 
+-  writeFileSync(join(base, MANIFEST), filas.join('\n') + '\n')
++  const manifestText = filas.join('\n') + '\n'
++  writeFileSync(join(dest, MANIFEST), manifestText)
+   if (binary) {
+     // El volcado y el README son parte del corpus: una build sin ellos queda
+     // a medias y alguien los termina a mano (medido en 2.1.282).
+     const cadenas = extractStrings(binary)
+-    writeFileSync(join(base, STRINGS), cadenas)
++    writeFileSync(join(dest, STRINGS), cadenas)
+     const lineas = cadenas ? cadenas.split('\n').length - 1 : 0
+-    writeFileSync(join(base, README), renderReadme(version, entries.length, total, lineas))
++    writeFileSync(join(dest, README), renderReadme(version, entries.length, total, lineas))
++  }
++  if (options) writeProvenance(dest, version, entries.length, total, manifestText, options)
++  return { root: dest, files: entries.length, bytes: total }
++}
++
++/**
++ * Deja `PROVENANCE.tsv` con el sha256 del ejecutable y la fecha de
++ * extraccion; con `options.base`, ademas compara contra el MANIFEST de esa
++ * version y deja `DIFF-<base>.tsv` — nunca escribe en el directorio de la
++ * base, solo lo lee.
++ */
++function writeProvenance(
++  dest: string,
++  version: string,
++  files: number,
++  bytes: number,
++  manifestText: string,
++  options: WriteCorpusOptions,
++): void {
++  const filas: [string, string][] = [
++    ['version', version],
++    ['executable_sha256', options.executableSha256],
++    ['extracted_at', options.extractedAt],
++    ['files', String(files)],
++    ['bytes', String(bytes)],
++  ]
++  if (options.base) {
++    const baseText = readFileSync(options.base.manifestPath, 'utf8')
++    const diff = diffManifests(baseText, manifestText)
++    filas.push(
++      ['base_version', options.base.version],
++      ['added', String(diff.added.length)],
++      ['removed', String(diff.removed.length)],
++      ['changed', String(diff.changed.length)],
++      ['unchanged', String(diff.unchanged.length)],
++    )
++    writeDiffFile(dest, options.base.version, diff)
+   }
+-  return { root: base, files: entries.length, bytes: total }
++  writeFileSync(join(dest, PROVENANCE), filas.map(f => f.join('\t')).join('\n') + '\n')
++}
++
++/** Una fila por archivo que difiere entre la base y esta extraccion. Los `unchanged` no se listan. */
++function writeDiffFile(dest: string, baseVersion: string, diff: ManifestDiff): void {
++  const filas: string[] = ['estado\truta\tbytes_antes\tbytes_despues']
++  for (const e of diff.added) filas.push(['added', e.path, '', String(e.bytes)].join('\t'))
++  for (const e of diff.removed) filas.push(['removed', e.path, String(e.bytes), ''].join('\t'))
++  for (const c of diff.changed) filas.push(['changed', c.path, String(c.before.bytes), String(c.after.bytes)].join('\t'))
++  writeFileSync(join(dest, `DIFF-${baseVersion}.tsv`), filas.join('\n') + '\n')
+ }
+diff --git a/src/packages/binary/src/corpusDiff.ts b/src/packages/binary/src/corpusDiff.ts
+new file mode 100644
+index 00000000..83aafda4
+--- /dev/null
++++ b/src/packages/binary/src/corpusDiff.ts
+@@ -0,0 +1,53 @@
++/**
++ * Diferencia entre dos `MANIFEST.tsv` de corpus, por ruta y por sha256.
++ *
++ * Compara EXTRACCIONES ya escritas, no bytes en disco: las dos entradas de
++ * cada lado salen de parsear el texto del manifiesto, nunca de releer los
++ * archivos que describe. Un archivo con la misma ruta y el mismo sha256 en
++ * las dos builds es `unchanged`; con la misma ruta y otro sha256, `changed`.
++ */
++
++export type ManifestEntry = { path: string; bytes: number; type: string; sha256: string }
++
++export type ManifestChange = { path: string; before: ManifestEntry; after: ManifestEntry }
++
++export type ManifestDiff = {
++  added: ManifestEntry[]
++  removed: ManifestEntry[]
++  changed: ManifestChange[]
++  unchanged: ManifestEntry[]
++}
++
++/** Parsea un `MANIFEST.tsv` (cabecera `archivo\tbytes\ttipo\tsha256`), sin releer disco. */
++export function parseManifest(text: string): ManifestEntry[] {
++  const [, ...filas] = text.trim() ? text.trim().split('\n') : []
++  return filas.map(fila => {
++    const [path, bytes, type, sha256] = fila.split('\t')
++    return { path: path!, bytes: Number(bytes), type: type!, sha256: sha256! }
++  })
++}
++
++/**
++ * Compara `baseText` contra `nextText` por ruta. Una ruta que solo esta en
++ * `nextText` es `added`; que solo esta en `baseText`, `removed`; presente en
++ * las dos, `changed` o `unchanged` segun coincida el sha256.
++ */
++export function diffManifests(baseText: string, nextText: string): ManifestDiff {
++  const base = new Map(parseManifest(baseText).map(e => [e.path, e]))
++  const next = new Map(parseManifest(nextText).map(e => [e.path, e]))
++
++  const added: ManifestEntry[] = []
++  const changed: ManifestChange[] = []
++  const unchanged: ManifestEntry[] = []
++  for (const [path, after] of next) {
++    const before = base.get(path)
++    if (!before) { added.push(after); continue }
++    if (before.sha256 === after.sha256) unchanged.push(after)
++    else changed.push({ path, before, after })
++  }
++
++  const removed: ManifestEntry[] = []
++  for (const [path, before] of base) if (!next.has(path)) removed.push(before)
++
++  return { added, removed, changed, unchanged }
++}

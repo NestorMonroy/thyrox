@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > .claude/workbench/copia-desde-ccnmt/lote-03/confirma-tras-pruebas.log 2>&1; bun src/verify/message_shape_audit.ts > .claude/workbench/copia-desde-ccnmt/lote-03/shape-tras-pruebas.log 2>&1; true", "started_at": "2026-09-25T01:39:11+00:00"}

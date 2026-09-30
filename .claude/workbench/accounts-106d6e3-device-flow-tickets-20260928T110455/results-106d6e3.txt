@@ -1,0 +1,18 @@
+== 1: otra caducidad -> 1
+== 2: un token corto -> 1
+== 3: el token en base64 -> 1
+== 4: la caducidad no inclusiva -> 3
+== 5: sin podar al crear -> 1
+== 6: sin la conexión destino -> 1
+== 7: peek sin caducidad -> 0
+== 8: cualquier proveedor reclama -> 1
+== 9: se reclama dos veces -> 2
+== 10: reclamar no marca -> 2
+== 11: completar sin resultado -> 1
+== 12: completar sin estado -> 1
+== 13: liberar cualquier estado -> 1
+== 14: sin liberar -> 1
+== 15: el estado sin resultado -> 1
+== 16: sin expirado -> 2
+== 17: tickets compartidos -> 2
+== restaurado -> 0

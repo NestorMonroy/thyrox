@@ -1,0 +1,6 @@
+/** Los chunks del propio ejecutable viven bajo `/$bunfs/root/`. */
+function isCorpusSpecifier(specifier: string): boolean {
+  return specifier.startsWith('/$bunfs/root/')
+}
+
+/** `"/$bunfs/root/chunk-x.js"` → `chunk-x.js`, relativo a la raíz del corpus. */

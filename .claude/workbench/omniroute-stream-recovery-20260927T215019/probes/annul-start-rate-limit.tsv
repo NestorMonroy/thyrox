@@ -1,0 +1,2 @@
+oauth-skip	/if (config.providerTraits?.\[upstream.provider\]?.authType === 'oauth') continue/d
+not-built	s/rateLimit: config.rateLimit \&\& protectApiKeyCredentials(new RateLimitManager(config.rateLimit), config),/rateLimit: undefined,/

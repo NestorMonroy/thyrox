@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+202 |     queueing.queued()
+203 |     deps.log(`[uds-messaging] Routed user message to queue (priority=${priority}): ${withholdTokenText(value, ROUTED_PREVIEW_CHARS)}`)
+204 |     deps.state.onEnqueue?.()
+205 |     recordCorrespondent(prompt, deps)
+206 |   } finally {
+207 |     queueing[Symbol.dispose]()
+          ^
+TypeError: undefined is not an object (evaluating 'queueing[Symbol.dispose]')
+      at deliverPeerUserMessage (/home/user/thyrox/src/packages/local-observability/src/uds/inboxDelivery.ts:207:5)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:137:11)
+(fail) deliverPeerUserMessage (ze) > un hook que consume el mensaje lo saca de la cola [0.54ms]
+
+ 15 pass
+ 1 fail
+ 37 expect() calls
+Ran 16 tests across 1 file. [65.00ms]

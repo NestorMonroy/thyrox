@@ -1,0 +1,26 @@
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/tools/ScheduleCronTool/__tests__/cronPromptBuilders.test.ts:
+28 | 
+29 |   test('durable=false: NO durable mentions, session-only language', () => {
+30 |     const r = buildCronCreateDescription(false)
+31 |     expect(r).not.toContain('durable: true')
+32 |     expect(r).not.toContain('scheduled_tasks.json')
+33 |     expect(r).toContain('this Claude session')
+                   ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "this Claude session"
+Received: "Schedule a prompt to run at a future time within this thyrox session — either recurring on a cron schedule, or once at a specific time."
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/tools/ScheduleCronTool/__tests__/cronPromptBuilders.test.ts:33:15)
+(fail) buildCronCreateDescription > durable=false: NO durable mentions, session-only language [0.23ms]
+
+ 1421 pass
+ 1 fail
+ 3251 expect() calls
+Ran 1422 tests across 86 files. [8.81s]
+EXIT=1

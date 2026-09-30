@@ -1,0 +1,7 @@
+src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts
+src/packages/command-runtime/src/__tests__/skillHelpers.test.ts
+src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts

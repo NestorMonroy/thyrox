@@ -1,0 +1,24 @@
+src/packages/command-runtime/bin/command.ts(278,57): error TS2345: Argument of type '{}' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/command-runtime/bin/command.ts:268-288 ---
+    268        getPromptWhileMarketplaceIsPrivate: async () => [
+    269          { type: 'text', text: '(delegado — marketplace ya público: sin mensaje de instalación)' },
+    270        ],
+    271      })
+    272      if (cmd.type !== 'prompt' || !cmd.getPromptForCommand) {
+    273        guard('createMovedToPluginCommand no devolvió un prompt command (no debería pasar)')
+    274      }
+    275      // USER_TYPE se lee DENTRO de getPromptForCommand — restaurar antes de
+    276      // llamarlo deshace el --ant que acabamos de fijar (bug propio, atrapado
+    277      // por el test "instrucciones de instalación" antes de cablearse).
+    278>     const bloques = await cmd.getPromptForCommand(args, {})
+    279      if (previoUserType === undefined) delete process.env.USER_TYPE
+    280      else process.env.USER_TYPE = previoUserType
+    281      for (const b of bloques) {
+    282        if ('text' in b) console.log(b.text)
+    283      }
+    284      return 0
+    285    }
+    286  
+    287    if (orden === 'fork-slug') {
+    288      const directiva = rest.join(' ')
+  Type '{}' is missing the following properties from type 'ToolUseContext': options, abortController, readFileState, getAppState, and 6 more.

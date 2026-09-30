@@ -1,0 +1,47 @@
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts:626:    await executeSessionEndHooks(reason, {
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-627-      ...options,
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-628-      signal: AbortSignal.timeout(sessionEndTimeoutMs),
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-629-      timeoutMs: sessionEndTimeoutMs,
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-630-    })
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-631-  } catch {
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-632-    // Ignora excepciones del hook SessionEnd (incluido AbortError por timeout)
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-633-  }
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-634-
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-635-  // Registra el rendimiento de arranque antes de que el apagado de
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-636-  // analytics vacíe/cancele timers
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-637-  try {
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-638-    profileReport()
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-639-  } catch {
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-640-    // Ignora errores de profiling durante el apagado
+--
+src/packages/repl/src/screens/REPLView.tsx:1791:        await executeSessionEndHooks('resume', {
+src/packages/repl/src/screens/REPLView.tsx-1792-          getAppState: () => store.getState(),
+src/packages/repl/src/screens/REPLView.tsx-1793-          setAppState,
+src/packages/repl/src/screens/REPLView.tsx-1794-          signal: AbortSignal.timeout(sessionEndTimeoutMs),
+src/packages/repl/src/screens/REPLView.tsx-1795-          timeoutMs: sessionEndTimeoutMs,
+src/packages/repl/src/screens/REPLView.tsx-1796-        });
+src/packages/repl/src/screens/REPLView.tsx-1797-
+src/packages/repl/src/screens/REPLView.tsx-1798-        // Process session start hooks for resume
+src/packages/repl/src/screens/REPLView.tsx-1799-        const hookMessages = await processSessionStartHooks('resume', {
+src/packages/repl/src/screens/REPLView.tsx-1800-          sessionId,
+src/packages/repl/src/screens/REPLView.tsx-1801-          agentType: mainThreadAgentDefinition?.agentType,
+src/packages/repl/src/screens/REPLView.tsx-1802-          model: mainLoopModel,
+src/packages/repl/src/screens/REPLView.tsx-1803-        });
+src/packages/repl/src/screens/REPLView.tsx-1804-
+src/packages/repl/src/screens/REPLView.tsx-1805-        // Append hook messages to the conversation
+--
+src/packages/command-runtime/src/commands/clear/conversation.ts:70:  await executeSessionEndHooks('clear', {
+src/packages/command-runtime/src/commands/clear/conversation.ts-71-    getAppState,
+src/packages/command-runtime/src/commands/clear/conversation.ts-72-    setAppState,
+src/packages/command-runtime/src/commands/clear/conversation.ts-73-    signal: AbortSignal.timeout(sessionEndTimeoutMs),
+src/packages/command-runtime/src/commands/clear/conversation.ts-74-    timeoutMs: sessionEndTimeoutMs,
+src/packages/command-runtime/src/commands/clear/conversation.ts-75-  })
+src/packages/command-runtime/src/commands/clear/conversation.ts-76-
+src/packages/command-runtime/src/commands/clear/conversation.ts-77-  // Signal to inference that this conversation's cache can be evicted.
+src/packages/command-runtime/src/commands/clear/conversation.ts-78-  const lastRequestId = getLastMainRequestId()
+src/packages/command-runtime/src/commands/clear/conversation.ts-79-  if (lastRequestId) {
+src/packages/command-runtime/src/commands/clear/conversation.ts-80-    logEvent('tengu_cache_eviction_hint', {
+src/packages/command-runtime/src/commands/clear/conversation.ts-81-      scope:
+src/packages/command-runtime/src/commands/clear/conversation.ts-82-        'conversation_clear' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+src/packages/command-runtime/src/commands/clear/conversation.ts-83-      last_request_id:
+src/packages/command-runtime/src/commands/clear/conversation.ts-84-        lastRequestId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

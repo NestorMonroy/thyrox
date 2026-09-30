@@ -1,0 +1,5 @@
+root: 128
+check-cli-typecheck: tsconfig.json baja: 102 bajo un baseline de 124 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: tsconfig.tests.json baja: 102 bajo un baseline de 124 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: proyectos medidos: 2 de 2
+__BG_EXIT__=0

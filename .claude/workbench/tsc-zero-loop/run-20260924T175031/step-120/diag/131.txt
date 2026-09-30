@@ -1,0 +1,18 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(6,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:1-16 ---
+      1  // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+      2  import React, { useMemo } from 'react'
+      3  import { Ansi, Box, Text } from '@anthropic/ink'
+      4  import { FilePathLink } from '../FilePathLink.js'
+      5  import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
+      6> import type { Attachment } from '@thyrox/agent/attachments.js'
+      7  import { isBgAgentPanelEnabled } from '../tasks/taskStatusUtils.js'
+      8  import type { NullRenderingAttachmentType } from './nullRenderingAttachments.js'
+      9  import { useAppState } from '../../appStateHooks.js'
+     10  import { getDisplayPath } from '@thyrox/storage/file.js'
+     11  import { formatFileSize } from '@thyrox/output/formatters'
+     12  import { MessageResponse } from '../MessageResponse.js'
+     13  import { basename, sep } from 'path'
+     14  import { UserTextMessage } from './UserTextMessage.js'
+     15  import { DiagnosticsDisplay } from '../DiagnosticsDisplay.js'
+     16  import { getContentText } from '@thyrox/agent/messages.js'

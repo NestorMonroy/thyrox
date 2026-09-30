@@ -1,0 +1,5 @@
+src/packages/tool-registry/src/services/toolExecution.ts(1398,28): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+  Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/tool-registry/src/services/toolExecution.ts(1405,11): error TS2345: Argument of type 'ContentBlockParam[]' is not assignable to parameter of type 'readonly ContentBlockParam[]'.
+  Type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+    Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name

@@ -1,0 +1,15 @@
+bypass-disabled	s/if (!this.isEnabled(credentialId)) return task()/void 0/
+anthropic-names	s/provider === 'anthropic' || provider === 'claude' ? ANTHROPIC_HEADERS : STANDARD_HEADERS/STANDARD_HEADERS/
+retire-on-429	s/if (limiter) this.retire(key, limiter, new RateLimitedByUpstreamError(parseResetTime(read(names.retryAfter)) || DEFAULT_RETRY_AFTER_MS))/void limiter/
+over-limit	s/if (read(STANDARD_HEADERS.overLimit) === 'yes') {/if (false) {/
+low-remaining	s/if (remaining < limit \* LOW_REMAINING) {/if (false) {/
+high-remaining	s/} else if (remaining > limit \* HIGH_REMAINING) {/} else if (false) {/
+minute-margin	s/Math.floor(60_000 \/ limit) - MIN_TIME_MARGIN_MS/Math.floor(60_000 \/ limit)/
+body-retry	s/if (retryAfterMs \&\& retryAfterMs > 0) {/if (false) {/
+cap-only-429	/    if (status !== 429) return$/d
+cap-floor	s/return { ...settings, minTime: Math.max(settings.minTime, this.minTimeFloor()) }/return settings/
+cap-reapplied	/if (learned?.capRequests \&\& learned.capWindowMs) {/s/learned?.capRequests/false \&\& learned?.capRequests/
+model-scope	s/MODEL_SCOPED_PROVIDERS.has(provider) \&\& model/false/
+disable-forgets	/if (entry.credentialId === credentialId) this.learned.delete(key)/d
+record-merges	s/this.learned.set(key, { ...previous, ...values, provider, credentialId, lastUpdated: Date.now() })/this.learned.set(key, { ...values, provider, credentialId, lastUpdated: Date.now() })/
+queue-defaults	s/reservoir: rpm,$/reservoir: null,/

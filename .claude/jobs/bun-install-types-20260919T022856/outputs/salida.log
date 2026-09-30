@@ -1,0 +1,11 @@
+[0.07ms] ".env"
+bun install v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [10]
+Saved lockfile
+
++ @types/picomatch@4.0.3
++ @types/react-reconciler@0.33.0
+
+4 packages installed [172.00ms]
+__BG_EXIT__=0

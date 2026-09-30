@@ -1,0 +1,311 @@
+Patrón: settings-passthrough-key-collapses-to-empty-object
+Señal del verificador: TS(7053|2339):.*'\{\}'
+Arreglo genérico: `SettingsSchema` termina en `.passthrough()`, así que una clave 'diferida' (documentada en inventory.ts pero ausente del `z.object({...})`) no tiene tipo propio y su lectura colapsa a `{}`. No se completa el esquema desde el archivo consumidor (eso es otro archivo) ni se silencia con `any`: se afirma, en el punto de lectura, el tipo concreto que la clave documenta (p. ej. `as string[] | undefined`), que es una aserción pura sin efecto en runtime.
+Ya aplicado en: src/packages/repl/src/components/LogoV2/LogoV2.tsx
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts, src/packages/agent/query.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/config/plugin/marketplaceManager.ts, src/packages/repl/src/components/Message.tsx
+
+src/packages/agent/hooks.ts(2530,38): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/hooks.ts:2520-2540 ---
+   2520   * para evitar construir hook inputs por cada archivo de instrucciones cuando no hay
+   2521   * ningún hook configurado.
+   2522   *
+   2523   * Comprueba tanto los hooks de settings-file (getHooksConfigFromSnapshot) como los
+   2524   * hooks registrados (plugin hooks + SDK callback hooks vía registerHookCallbacks).
+   2525   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2526   * internos y no se comprueban.
+   2527   */
+   2528  export function hasInstructionsLoadedHook(): boolean {
+   2529    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2530>   if (snapshotHooks && snapshotHooks.length > 0) return true
+   2531    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2532    if (registeredHooks && registeredHooks.length > 0) return true
+   2533    return false
+   2534  }
+   2535  /**
+   2536   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2537   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')
+   2538   * @param matcher El patrón del matcher - puede ser:
+   2539   *   - Cadena simple para coincidencia exacta (p.ej. 'Write')
+   2540   *   - Lista separada por pipes para varias coincidencias exactas (p.ej. 'Write|Edit')
+
+src/packages/agent/query.ts(386,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:376-396 ---
+    376      const microcompactResult = await deps.microcompact(
+    377        messagesForQuery,
+    378        toolUseContext,
+    379        querySource,
+    380      )
+    381      messagesForQuery = microcompactResult.messages
+    382      // For cached microcompact (cache editing), defer boundary message until after
+    383      // the API response so we can use actual cache_deleted_input_tokens.
+    384      // Gated behind feature() so the string is eliminated from external builds.
+    385      const pendingCacheEdits = feature('CACHED_MICROCOMPACT')
+    386>       ? microcompactResult.compactionInfo?.pendingCacheEdits
+    387        : undefined
+    388      queryCheckpoint('query_microcompact_end')
+    389  
+    390      // Project the collapsed context view and maybe commit more collapses.
+    391      // Runs BEFORE autocompact so that if collapse gets us under the
+    392      // autocompact threshold, autocompact is a no-op and we keep granular
+    393      // context instead of a single summary.
+    394      //
+    395      // Nothing is yielded — the collapsed view is a read-time projection
+    396      // over the REPL's full history. Summary messages live in the collapse
+src/packages/agent/query.ts(448,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:438-458 ---
+    438      // The compactor already logged + emitted telemetry; we don't yield a
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448>         preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+src/packages/agent/query.ts(449,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:439-459 ---
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449>         postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+src/packages/agent/query.ts(450,9): error TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:440-460 ---
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450>         truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+src/packages/agent/query.ts(451,9): error TS2339: Property 'compactionUsage' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:441-461 ---
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451>         compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+src/packages/agent/query.ts(457,28): error TS2339: Property 'summaryMessages' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:447-467 ---
+    447        const {
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457>           compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+src/packages/agent/query.ts(458,28): error TS2339: Property 'attachments' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:448-468 ---
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458>           compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+    468            compactionUsage?.cache_creation_input_tokens ?? 0,
+src/packages/agent/query.ts(459,28): error TS2339: Property 'hookResults' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:449-469 ---
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459>           compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+    468            compactionUsage?.cache_creation_input_tokens ?? 0,
+    469          compactionTotalTokens: compactionUsage
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,29): error TS2339: Property 'content' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+
+src/packages/config/plugin/marketplaceManager.ts(1994,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/config/plugin/marketplaceManager.ts:1984-2004 ---
+   1984      const settings = getSettingsForSource(source)
+   1985      if (!settings) continue
+   1986  
+   1987      let needsUpdate = false
+   1988      const updates: {
+   1989        extraKnownMarketplaces?: typeof settings.extraKnownMarketplaces
+   1990        enabledPlugins?: typeof settings.enabledPlugins
+   1991      } = {}
+   1992  
+   1993      // Remove from extraKnownMarketplaces if present
+   1994>     if (settings.extraKnownMarketplaces?.[name]) {
+   1995        const updatedMarketplaces: Partial<
+   1996          SettingsJson['extraKnownMarketplaces']
+   1997        > = { ...settings.extraKnownMarketplaces }
+   1998        // Use undefined values (NOT delete) to signal key removal via mergeWith
+   1999        updatedMarketplaces[name] = undefined
+   2000        updates.extraKnownMarketplaces =
+   2001          updatedMarketplaces as SettingsJson['extraKnownMarketplaces']
+   2002        needsUpdate = true
+   2003      }
+   2004  
+  No index signature with a parameter of type 'string' was found on type '{}'.
+
+src/packages/repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/Message.tsx:148-168 ---
+    148        }
+    149        // Precompute the imageIndex prop for each content block. The previous
+    150        // version incremented a counter inside the .map() callback, which
+    151        // React Compiler bails on ("UpdateExpression to variables captured
+    152        // within lambdas"). A plain for loop keeps the mutation out of a
+    153        // closure so the compiler can memoize MessageImpl.
+    154        const imageIndices: number[] = []
+    155        let imagePosition = 0
+    156        for (const param of message.message.content) {
+    157          if (param.type === 'image') {
+    158>           const id = message.imagePasteIds?.[imagePosition]
+    159            imagePosition++
+    160            imageIndices.push(id ?? imagePosition)
+    161          } else {
+    162            imageIndices.push(imagePosition)
+    163          }
+    164        }
+    165        // Check if this message is the latest bash output - if so, wrap content
+    166        // with provider so OutputLine can show full output via context
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+  No index signature with a parameter of type 'number' was found on type '{}'.

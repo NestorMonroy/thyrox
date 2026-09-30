@@ -1,0 +1,2 @@
+    text="$(cat "$1"; printf x)"; text="${text%x}"
+    printf '%s' "${text%$'\n'}"

@@ -1,0 +1,4 @@
+python3 -c 'import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)' >/dev/null 2>&1 \
+  || rehusa "falta PyTorch con CUDA"
+TIME_BIN="${HEADLESS_POOL_TIME:-/usr/bin/time}"
+[[ "$("$TIME_BIN" --version 2>&1)" == *"GNU Time"* ]] || rehusa "falta GNU Time ($TIME_BIN)"

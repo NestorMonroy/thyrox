@@ -1,0 +1,74 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(149,31): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:139-159 ---
+    139    }
+    140  
+    141    return results
+    142  }
+    143  
+    144  function extractSnippet(block: string): string | undefined {
+    145    // 1. Try <p class="b_lineclamp...">
+    146    const lineclampRegex = /<p[^>]*class="b_lineclamp[^"]*"[^>]*>([\s\S]*?)<\/p>/i
+    147    let match = lineclampRegex.exec(block)
+    148    if (match) {
+    149>     return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    150    }
+    151  
+    152    // 2. Try <p> inside b_caption
+    153    const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
+    154    match = captionPRegex.exec(block)
+    155    if (match) {
+    156      return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    157    }
+    158  
+    159    // 3. Fallback: any text inside b_caption <div>
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(156,31): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:146-166 ---
+    146    const lineclampRegex = /<p[^>]*class="b_lineclamp[^"]*"[^>]*>([\s\S]*?)<\/p>/i
+    147    let match = lineclampRegex.exec(block)
+    148    if (match) {
+    149      return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    150    }
+    151  
+    152    // 2. Try <p> inside b_caption
+    153    const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
+    154    match = captionPRegex.exec(block)
+    155    if (match) {
+    156>     return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    157    }
+    158  
+    159    // 3. Fallback: any text inside b_caption <div>
+    160    const fallbackRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+    161    const fallbackMatch = fallbackRegex.exec(block)
+    162    if (fallbackMatch) {
+    163      const text = fallbackMatch[1].replace(/<[^>]+>/g, '').trim()
+    164      if (text) return decodeHtmlEntities(text)
+    165    }
+    166  
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(163,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:153-173 ---
+    153    const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
+    154    match = captionPRegex.exec(block)
+    155    if (match) {
+    156      return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    157    }
+    158  
+    159    // 3. Fallback: any text inside b_caption <div>
+    160    const fallbackRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+    161    const fallbackMatch = fallbackRegex.exec(block)
+    162    if (fallbackMatch) {
+    163>     const text = fallbackMatch[1].replace(/<[^>]+>/g, '').trim()
+    164      if (text) return decodeHtmlEntities(text)
+    165    }
+    166  
+    167    return undefined
+    168  }
+    169  
+    170  export const decodeHtmlEntities = he.decode
+    171  
+    172  /**
+    173   * Resolve a Bing redirect URL to the actual target URL.

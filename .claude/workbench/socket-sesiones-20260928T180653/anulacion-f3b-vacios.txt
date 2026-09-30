@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+73 |     expect(await pidDomainFor('linux', readers)).toBe('linux:abc:pid:[4026531836]')
+74 |     expect(await pidDomainFor('wsl', readers)).toBe('linux:abc:pid:[4026531836]')
+75 |   })
+76 | 
+77 |   test('lo que no se puede leer queda vacío; otras plataformas usan su propia forma', async () => {
+78 |     const failing = { readMachineId: async () => { throw new Error('x') }, readPidNamespace: async () => { throw new Error('x') }, hostname: () => 'Host' }
+                                                                  ^
+error: x
+      at readMachineId (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:78:62)
+      at pidDomainFor (/home/user/thyrox/src/packages/local-observability/src/uds/processIdentity.ts:90:13)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:79:18)
+(fail) pidDomainFor (_Lo) > lo que no se puede leer queda vacío; otras plataformas usan su propia forma [0.31ms]
+
+ 9 pass
+ 1 fail
+ 24 expect() calls
+Ran 10 tests across 1 file. [83.00ms]

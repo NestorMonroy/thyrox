@@ -1,0 +1,22 @@
+     1	tests/corpus/test_censo_contraparte.py|EXIT=1 | FALLO con la declaración completa --strict vuelve a 0
+     2	tests/hooks/test-bridge-hooks.sh|EXIT=1 | FALLO las dos copias divergentes se puentean
+     3	tests/lib/test-node-resolution.sh|EXIT=1 | 
+     4	tests/lib/test-reach-pythonpath.sh|EXIT=1 | FALLO 1 guion(es) de produccion invocan un modulo que no podran importar:
+     5	tests/lib/test-reach-sh.sh|EXIT=1 | FALLO THYROX_ENV_FILE ignorado: '/home/user/thyrox'
+     6	tests/lib/test-toolchain-sh.sh|EXIT=1 | FALLO esperaba 'uv run --project <ruta de api>', dio ''
+     7	tests/lib/test-workbench-sh.sh|EXIT=1 | FALLO sin runs devuelve 1, no una ruta inventada
+     8	tests/session/test_generate_bin.py|EXIT=1 | ok   los 2 modulos de paquete rehusan con ImportError
+     9	tests/session/test_session_restart.py|EXIT=1 | FALLO y la rama del HEAD
+    10	tests/task/test-implementation-order.sh|EXIT=1 | FALLO y publica su denominador
+    11	tests/verify/test-cross-model-read.sh|EXIT=1 | 
+    12	tests/verify/test-eventos-hook.sh|EXIT=1 | 
+    13	tests/verify/test-gitattributes.sh|EXIT=1 | FALLO: 6b. el repo ausente se nombra
+    14	tests/verify/test-hook-script-token.sh|EXIT=1 | 
+    15	tests/verify/test-premise-drift.sh|EXIT=1 | FAIL exit 2 y sin conteo
+    16	tests/verify/test-script-naming.sh|EXIT=1 | 
+    17	tests/verify/test-verificar-premisa.sh|EXIT=1 | FALLO el proveedor entra en PATH_ROOTS
+    18	tests/verify/test_package_root_resolution.sh|EXIT=1 | FALLO cli-typecheck mide los dos proyectos del paquete
+    19	tests/verify/test_path_arithmetic.py|EXIT=1 | FALLO son EXACTAMENTE los del baseline declarado, ninguno mas
+    20	tests/verify/test_pre_commit_hook.py|EXIT=1 | AssertionError: 1 != 0
+    21	tests/verify/test_runner.py|EXIT=1 | AssertionError: Lists differ: ['check_bench_untracked.py', 'check_meta_timestamps.py', 'check_rst_toctree
+    22	tests/verify/test_script_naming_scope.py|EXIT=1 | FAIL el eje de identificadores no reporta el banco: 265 != 0

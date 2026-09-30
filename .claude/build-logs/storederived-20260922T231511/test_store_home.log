@@ -1,0 +1,22 @@
+test_1_la_mitad_python_resuelve_al_proveedor (__main__.TestHogarUnico.test_1_la_mitad_python_resuelve_al_proveedor)
+Falla si `agent_store_path` vuelve a componer la ruta del consumidor. ... ok
+test_2_la_mitad_TS_resuelve_al_proveedor (__main__.TestHogarUnico.test_2_la_mitad_TS_resuelve_al_proveedor)
+Falla si `storePath()` vuelve a caer en `docsRoot()`. ... ok
+test_3_las_dos_mitades_coinciden (__main__.TestHogarUnico.test_3_las_dos_mitades_coinciden)
+Falla si divergen. Es el defecto de H-DOCS-1237 en su forma pura: ... ok
+test_4_ningun_modulo_de_src_compone_la_ruta_del_STORE_en_el_silo (__main__.TestHogarUnico.test_4_ningun_modulo_de_src_compone_la_ruta_del_STORE_en_el_silo)
+Falla en cuanto alguien vuelva a componer la ruta del store del silo. ... ok
+test_5_las_cinco_tablas_existen_en_el_hogar (__main__.TestHogarUnico.test_5_las_cinco_tablas_existen_en_el_hogar)
+Falla si la fusion dejo el hogar incompleto. No mide CUANTAS filas ... ok
+test_6_las_cinco_tablas_tienen_filas_en_el_hogar (__main__.TestHogarUnico.test_6_las_cinco_tablas_tienen_filas_en_el_hogar)
+Falla si una tabla del hogar quedo VACIA. ... ok
+test_7_toda_tarea_del_hogar_tiene_cita_durable (__main__.TestHogarUnico.test_7_toda_tarea_del_hogar_tiene_cita_durable)
+Falla si una fila de `tasks` nace sin `citation_id`. ... ok
+test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar (__main__.TestHogarUnico.test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar)
+SONDA DE CONDUCTA: invoca el hook real y mira donde aterriza la fila. ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.716s
+
+OK
+EXIT=0

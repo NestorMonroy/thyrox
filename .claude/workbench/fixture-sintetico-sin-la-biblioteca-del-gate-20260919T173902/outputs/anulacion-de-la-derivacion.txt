@@ -1,0 +1,60 @@
+CONTROL DE ANULACION — TASK-THYROX-0235
+=======================================================================
+Que se anula: el bucle que DERIVA del gate las bibliotecas que sourcea
+y las copia al arbol sintetico.
+
+    for g in "$T"/src/verify/*.sh; do   ->   for g in ; do
+
+Lo que tiene que caer: EXACTAMENTE los dos casos que dependen de que el
+gate llegue a resolver una ruta. Los otros dos tienen otra causa
+(TASK-THYROX-0236) y no se pueden mover con esto.
+
+--- con la derivacion ANULADA -----------------------------------------
+  FALLO agent-artifacts resuelve su paquete dentro del árbol
+  FALLO cli-typecheck mide los dos proyectos del paquete
+  FALLO cli-typecheck sale 0 sobre el arbol limpio
+  FALLO la variable gana sobre la resolución por árbol
+  test-package-root-resolution: 1 ok, 4 falla
+
+--- restaurada --------------------------------------------------------
+  test-package-root-resolution: 3 ok, 2 falla
+
+--- lectura -----------------------------------------------------------
+Caen y se recuperan DOS, y son los dos correctos:
+
+  agent-artifacts resuelve su paquete    FALLO -> ok
+  la variable gana sobre la resolucion   FALLO -> ok
+
+Los dos de cli-typecheck NO se mueven en ninguna direccion, que es la
+prueba de que su causa es otra. Sin este contraste, un arreglo que
+tocara las cuatro seria indistinguible de uno que arregla dos y tapa
+las otras dos.
+
+--- por que el FALLO era una conclusion sobre lo no medido -------------
+El gate moria en la linea del `source`:
+
+  src/verify/check-agent-artifacts.sh: line 83:
+  /tmp/tmp.XXXX/src/lib/node_resolution.sh: No such file or directory
+
+exit 1, ANTES de componer ninguna ruta de paquete. El caso leia esa
+ausencia de mensaje como «resolvio otra ruta» — que es afirmar sobre un
+fenomeno que el instrumento nunca alcanzo a producir.
+
+Con la biblioteca presente, el gate llega hasta su guarda de zod y ahi
+SI nombra la ruta que resolvio:
+
+  ERROR — no hay `node_modules/zod` en la cadena de resolución de
+  /tmp/tmp.XXXX/src/packages/agent.          -> propia
+  /tmp/tmp.XXXX/ajeno/agent                  -> declarada
+
+--- por que se DERIVA y no se transcribe ------------------------------
+Una linea `cp src/lib/node_resolution.sh` aqui seria una segunda fuente
+de verdad. El dia que un gate sourcee otra biblioteca, la lista se
+queda atras y el caso vuelve a publicar «otra» sin que nadie toque este
+archivo — que es exactamente como llego a estar roto. El fixture lee
+las lineas `source "$RAIZ/..."` del gate que acaba de copiar, y rehusa
+con exit 2 si alguna no existe en el arbol real.
+
+Metrica: casos ok/FALLO de la suite, con y sin el bucle de derivacion.
+Ciega a: si la biblioteca copiada esta al dia — el fixture comprueba
+que EXISTE, no que sea la misma version que el gate espera.

@@ -1,0 +1,13 @@
+
+tests/integration/cli-arguments.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../packages/cli/src/entry/commander.js' from '/home/user/thyrox/tests/integration/cli-arguments.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [112.00ms]

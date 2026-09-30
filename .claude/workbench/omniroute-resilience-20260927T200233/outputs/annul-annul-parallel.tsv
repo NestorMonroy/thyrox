@@ -1,0 +1,6 @@
+base	7 pass, 0 fail	—
+shadowlinks	3 pass, 4 fail	la variante cae SOLO en double | la variante de Python cae SOLO en double | el aborto cuenta como fallo y lo nombra | la variante de shell cae SOLO en double
+shadowplace	3 pass, 4 fail	la variante cae SOLO en double | la variante de Python cae SOLO en double | el aborto cuenta como fallo y lo nombra | la variante de shell cae SOLO en double
+pyrunner	4 pass, 3 fail	la base de Python pasa entera | la variante de Python cae SOLO en double | el aborto cuenta como fallo y lo nombra
+fallanames	5 pass, 2 fail	la variante de Python cae SOLO en double | la variante de shell cae SOLO en double
+abort	6 pass, 1 fail	el aborto cuenta como fallo y lo nombra

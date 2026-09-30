@@ -1,0 +1,9 @@
+{
+  "id": "101",
+  "subject": "Gate para la afirmación de procedencia y la cifra sin comando",
+  "description": "ID: TASK-API-0047\n\nSucesor declarado de ERR-031, ERR-032 y ERR-033. Los tres cierran con DESCONOCIDO porque su control no es evidente:\n\nERR-031 — distinguir una atribución de procedencia MEDIDA de una INVENTADA: las dos son prosa afirmativa junto a una cifra correcta («es de V8», «vendorizado», «de LSP»). Condición de cierre: un patrón que reconozca la afirmación de origen junto a un conteo y exija su cita de contexto.\n\nERR-032 — distinguir «tres, contados» de «tres, recordados» exige saber si hubo comando, y el documento no lo declara. Lo mecanizable es más estrecho: exigir que toda cifra en un artefacto de análisis cite su comando. Es decisión de gobierno, no un check.\n\nERR-033 — un gate que detecte «se citó /tmp» es mecanizable sobre los .rst pero NO ve el caso real: no cité /tmp en el documento, cité las cifras medidas contra él. La ruta efímera no aparecía en el artefacto.\n\nLos tres comparten forma: el defecto está en la PROCEDENCIA de una afirmación, y la procedencia no deja huella sintáctica. Decidir si hay control posible, o declarar que no lo hay y por qué.",
+  "activeForm": "Decidiendo el gate de procedencia",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

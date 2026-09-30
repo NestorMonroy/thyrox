@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx(13,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx:3-23 ---
+      3  import { useKeybinding } from '@anthropic/ink/keybindings'
+      4  import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+      5  import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
+      6  import { useWizard } from '../../../wizard/index.js'
+      7  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+      8  import { ColorPicker } from '../../ColorPicker.js'
+      9  import type { AgentWizardData } from '../types.js'
+     10  
+     11  export function ColorStep(): ReactNode {
+     12    const { goNext, goBack, updateWizardData, wizardData } =
+     13>     useWizard<AgentWizardData>()
+     14  
+     15    // Handle escape key - ColorPicker handles its own escape internally
+     16    useKeybinding('confirm:no', goBack, { context: 'Confirmation' })
+     17  
+     18    const handleConfirm = (color?: string): void => {
+     19      updateWizardData({
+     20        selectedColor: color,
+     21        // Prepare final agent for confirmation
+     22        finalAgent: {
+     23          agentType: wizardData.agentType!,

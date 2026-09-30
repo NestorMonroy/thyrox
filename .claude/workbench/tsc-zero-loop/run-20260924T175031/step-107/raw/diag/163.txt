@@ -1,0 +1,38 @@
+patron: wrong-command-type-across-duplicate-packages
+senal_del_verificador: agent/command\"\)\.(Command|CommandBase|PromptCommand)[^\n]*command-runtime/src/types|command-runtime/src/types\"\)\.(Command|CommandBase|PromptCommand)[^\n]*agent/command
+fix_generico: Cuando un valor proviene de `getCommands`/`findCommand`/`AppState.mcp.commands` (todos tipados contra el `Command` de `@thyrox/command-runtime/runtime`), pero la función local que lo produce o consume declara su tipo contra el `Command` de `@thyrox/agent/command.js` — un módulo paralelo y estructuralmente parecido pero nominalmente distinto —, se importa el `Command` correcto de `command-runtime/runtime` (con alias si el archivo ya usa el otro en otro punto) y se re-tipa sólo la función cuyo valor realmente fluye por ahí. No se toca la función que sí depende genuinamente del tipo rico de `agent/command.js` (p. ej. la que pasa el comando a `prepareForkedCommandContext`/`runAgent`).
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(569,9): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]'.
+  Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").Command'.
+    Type 'CommandBase & PromptCommand' is not assignable to type 'Command'.
+      Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").CommandBase & import("/home/user/thyrox/src/packages/command-runtime/src/types").PromptCommand' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").CommandBase & import("/home/user/thyrox/src/packages/agent/command").PromptCommand'.
+        Type 'CommandBase & PromptCommand' is not assignable to type 'PromptCommand'.
+          Types of property 'source' are incompatible.
+            Type 'string' is not assignable to type '"userSettings" | "projectSettings" | "localSettings" | "plugin" | "bundled" | "mcp" | "flagSettings" | "policySettings" | "builtin"'.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(921,29): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
+  Type 'import("/home/user/thyrox/src/packages/agent/command").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command'.
+    Type 'CommandBase & LocalCommand' is not assignable to type 'Command'.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").CommandBase & LocalCommand' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").CommandBase & LocalCommand'.
+        Type 'CommandBase & LocalCommand' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule>' is not assignable to type 'Promise<import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule>'.
+              Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+                        Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(930,35): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
+  Type 'import("/home/user/thyrox/src/packages/agent/command").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command'.
+    Type 'CommandBase & LocalCommand' is not assignable to type 'Command'.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").CommandBase & LocalCommand' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").CommandBase & LocalCommand'.
+        Type 'CommandBase & LocalCommand' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule>' is not assignable to type 'Promise<import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule>'.
+              Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandModule' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+                        Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

@@ -1,0 +1,63 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+123 |       forSessionValue: null,
+124 |       overrideValue: 'claude-fable-5-1',
+125 |       restoredToExplicitOverride: true,
+126 |       fallbackModel: 'claude-opus-5',
+127 |     })
+128 |     expect(getMainLoopModelOverride()).toBe('claude-fable-5-1')
+                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "claude-fable-5-1"
+Received: "claude-opus-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:128:40)
+(fail) restoreRefusalFallbackModel (mn) > con el modelo de respaldo vigente devuelve el previo y lo fija [0.30ms]
+131 | 
+132 |   test('sin override previo no es una restauración explícita', () => {
+133 |     latchRefusalFallbackModel(latch({ previousOverride: undefined }))
+134 |     setMainLoopModelOverride('claude-opus-5')
+135 |     expect(restoreRefusalFallbackModel()?.restoredToExplicitOverride).toBe(false)
+136 |     expect(getMainLoopModelOverride()).toBeUndefined()
+                                             ^
+error: expect(received).toBeUndefined()
+
+Received: "claude-opus-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:136:40)
+(fail) restoreRefusalFallbackModel (mn) > sin override previo no es una restauración explícita [0.14ms]
+159 |     setMainLoopModelOverride('claude-opus-5')
+160 |     switchSession(id('otra'), 'resume')
+161 |     expect(seen).toHaveLength(1)
+162 |     expect(seen[0]).toEqual([id('otra'), 'resume', expect.objectContaining({ fallbackModel: 'claude-opus-5', overrideValue: 'claude-fable-5-1' })])
+163 |     expect(hasRefusalFallbackOccurred()).toBe(false)
+164 |     expect(getMainLoopModelOverride()).toBe('claude-fable-5-1')
+                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "claude-fable-5-1"
+Received: "claude-opus-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:164:40)
+(fail) el tercer argumento de la señal de sesión (fn) > switchSession a otra sesión olvida el rechazo y pasa la restauración [0.25ms]
+188 |     latchRefusalFallbackModel(latch())
+189 |     setMainLoopModelOverride('claude-opus-5')
+190 |     const next = regenerateSessionId()
+191 |     expect(seen).toEqual([[next, 'clear', expect.objectContaining({ restoredToExplicitOverride: true })]])
+192 |     expect(isRefusalFallbackHeaderArmed()).toBe(false)
+193 |     expect(getMainLoopModelOverride()).toBe('claude-fable-5-1')
+                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "claude-fable-5-1"
+Received: "claude-opus-5"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:193:40)
+(fail) el tercer argumento de la señal de sesión (fn) > regenerateSessionId olvida, restaura y avisa clear con la restauración [0.16ms]
+
+ 22 pass
+ 4 fail
+ 53 expect() calls
+Ran 26 tests across 2 files. [71.00ms]

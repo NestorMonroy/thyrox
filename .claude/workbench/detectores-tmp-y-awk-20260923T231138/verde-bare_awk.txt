@@ -1,0 +1,18 @@
+== 1. los comandos de la sesión, verbatim ==
+  ok    avisa sobre awk tras un pipe
+  ok    avisa sobre awk al inicio del comando
+  ok    y tras ;
+== 2. EL QUE DISCRIMINA: awk que no es invocación -> silencio ==
+  ok    gawk
+  ok    mawk explícito
+  ok    la palabra dentro de una cadena
+  ok    como argumento de grep
+  ok    la variable declarada
+== 3. el aviso nombra la salida ==
+  ok    nombra gawk
+  ok    nombra THYROX_TOOLCHAIN_AWK_BIN
+== 4. anulado el ancla de posición de comando, caen EXACTAMENTE los de prosa ==
+  ok    caen cadena y grep, no gawk
+
+11 ok, 0 fallos
+rc=0

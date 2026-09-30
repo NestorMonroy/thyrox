@@ -1,0 +1,9 @@
+asentado: emit-config -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     emit-config exit=0
+       | config: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | __BG_EXIT__=0
+       memoria pico: 559120 KB (546 MB) · pared 7.13s
+EXIT=0

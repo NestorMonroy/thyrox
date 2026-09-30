@@ -1,0 +1,18 @@
+== bg.sh start con hogar de logs AUSENTE ==
+PID=5422
+LOG=/home/user/thyrox/.claude/jobs/sonda-20260917T211829/outputs/salida.log
+RUN=/home/user/thyrox/.claude/jobs/sonda-20260917T211829
+exit=0
+
+== run-task-pool con hogar AUSENTE ==
+run-task-pool: 1 trabajo(s), anchura 1 (en serie), logs en /tmp/tmp.lxdkTtDmRA/ausente/logs2
+  job-001        pid 5444    echo uno
+run-task-pool: lanzados 1 de 1; esperando en PRIMER PLANO (timeout 1800s)
+== 2 trabajos asentados ==
+OLVIDADO job
+exit=0
+
+== cache_probe con cache AUSENTE ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/transcript/cache_probe.py", line 81, in <module>
+    from .thread import main_chain_of

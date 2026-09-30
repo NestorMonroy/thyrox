@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bun src/verify/checkStartupModuleBudget.ts --strict; echo budget_rc=$?; (cd src/packages/app-host && bun test src/startup/__tests__/startupProfilerReport.test.ts 2>&1 | tail -4); bash bin/check_package_typecheck --strict app-host cli 2>&1 | tail -3", "started_at": "2026-09-30T03:00:02+00:00"}

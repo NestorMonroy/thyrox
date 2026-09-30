@@ -1,0 +1,771 @@
+diff --git a/.env.example b/.env.example
+index 0fb2574d..8e0b8ee5 100644
+--- a/.env.example
++++ b/.env.example
+@@ -823,8 +823,6 @@ THYROX_CODE_DISABLE_ATTACHMENTS=
+ THYROX_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT=
+ THYROX_CODE_SIMPLE=
+ THYROX_CODE_VERIFY_PLAN=
+-# src/packages/agent/background/fleet/fleetStore.ts
+-THYROX_CONFIG_HOME=
+ # src/packages/agent/background/fleet/renameFleetJob.ts
+ THYROX_JOB_DIR=
+ # src/packages/agent/background/fleet/rvServer.ts
+diff --git a/src/packages/agent/background/fleet/__tests__/fleetStore.test.ts b/src/packages/agent/background/fleet/__tests__/fleetStore.test.ts
+index 16bbc6ed..a360c767 100644
+--- a/src/packages/agent/background/fleet/__tests__/fleetStore.test.ts
++++ b/src/packages/agent/background/fleet/__tests__/fleetStore.test.ts
+@@ -2,8 +2,8 @@
+  * Fleet-store I/O tests — write a state.json, read it back, mutate
+  * sort orders + pin set, verify cache invalidation.
+  *
+- * Uses THYROX_CONFIG_HOME to redirect the jobs root into a tmp dir per
+- * test so we don't touch the user's real ~/.claude.
++ * Uses THYROX_CONFIG_DIR to redirect the jobs root into a tmp dir per
++ * test so we don't touch the user's real ~/.thyrox.
+  */
+ 
+ import { promises as fs } from 'node:fs'
+@@ -52,17 +52,17 @@ function mockState(overrides: Partial<FleetJobState> = {}): FleetJobState {
+ 
+ beforeEach(async () => {
+   tmpRoot = await fs.mkdtemp(join(tmpdir(), 'ccb-fleet-test-'))
+-  process.env.THYROX_CONFIG_HOME = tmpRoot
++  process.env.THYROX_CONFIG_DIR = tmpRoot
+   clearAllCaches()
+ })
+ 
+ afterEach(async () => {
+-  delete process.env.THYROX_CONFIG_HOME
++  delete process.env.THYROX_CONFIG_DIR
+   await fs.rm(tmpRoot, { recursive: true, force: true })
+ })
+ 
+ describe('fleetStore', () => {
+-  test('getJobsRoot honours THYROX_CONFIG_HOME', () => {
++  test('getJobsRoot honours THYROX_CONFIG_DIR', () => {
+     expect(getJobsRoot()).toBe(join(tmpRoot, 'jobs'))
+   })
+ 
+diff --git a/src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts b/src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts
+index aecb64b9..56c454e5 100644
+--- a/src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts
++++ b/src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts
+@@ -157,8 +157,8 @@ describe('buildReplForkFlags', () => {
+ describe('preSeedReplBgJob', () => {
+   test('empty intent → blocked + needs="send a prompt to start"', async () => {
+     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
+-    const orig = process.env.THYROX_CONFIG_HOME
+-    process.env.THYROX_CONFIG_HOME = root
++    const orig = process.env.THYROX_CONFIG_DIR
++    process.env.THYROX_CONFIG_DIR = root
+     try {
+       const { short, jobDir } = await preSeedReplBgJob('abcdef0123456789', {
+         cwd: '/tmp/work',
+@@ -179,16 +179,16 @@ describe('preSeedReplBgJob', () => {
+       expect(state.sessionId).toBe('abcdef0123456789')
+       expect(state.cwd).toBe('/tmp/work')
+     } finally {
+-      if (orig === undefined) delete process.env.THYROX_CONFIG_HOME
+-      else process.env.THYROX_CONFIG_HOME = orig
++      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = orig
+       rmSync(root, { recursive: true, force: true })
+     }
+   })
+ 
+   test('non-empty intent → active, no needs', async () => {
+     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
+-    const orig = process.env.THYROX_CONFIG_HOME
+-    process.env.THYROX_CONFIG_HOME = root
++    const orig = process.env.THYROX_CONFIG_DIR
++    process.env.THYROX_CONFIG_DIR = root
+     try {
+       const { jobDir } = await preSeedReplBgJob('11112222deadbeef', {
+         cwd: '/tmp/work',
+@@ -204,8 +204,8 @@ describe('preSeedReplBgJob', () => {
+       expect(state.intent).toBe('fix the parser')
+       expect(state.detail).toBe('last assistant reply')
+     } finally {
+-      if (orig === undefined) delete process.env.THYROX_CONFIG_HOME
+-      else process.env.THYROX_CONFIG_HOME = orig
++      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = orig
+       rmSync(root, { recursive: true, force: true })
+     }
+   })
+@@ -218,8 +218,8 @@ describe('preSeedReplBgJob', () => {
+     // (ant V__) can rebuild `--resume <orig> --fork-session`. Without this the
+     // respawn booted a blank session — the "Welcome back, brand-new REPL" bug.
+     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
+-    const orig = process.env.THYROX_CONFIG_HOME
+-    process.env.THYROX_CONFIG_HOME = root
++    const orig = process.env.THYROX_CONFIG_DIR
++    process.env.THYROX_CONFIG_DIR = root
+     const ORIGINAL_SESSION = '35894943-c5e0-45a0-9484-f113daa5835b'
+     try {
+       const { jobDir } = await preSeedReplBgJob('b0649465deadbeef', {
+@@ -237,8 +237,8 @@ describe('preSeedReplBgJob', () => {
+       expect(state.sessionId).not.toBe(state.resumeSessionId)
+       expect(state.respawnFlags).toEqual(['--fork-session'])
+     } finally {
+-      if (orig === undefined) delete process.env.THYROX_CONFIG_HOME
+-      else process.env.THYROX_CONFIG_HOME = orig
++      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = orig
+       rmSync(root, { recursive: true, force: true })
+     }
+   })
+@@ -248,8 +248,8 @@ describe('preSeedReplBgJob', () => {
+     // — the row stays self-sufficient (sessionId only) and a respawn would fall
+     // through to a fresh worker, matching ant's no-transcript branch.
+     const root = mkdtempSync(join(tmpdir(), 'preseed-'))
+-    const orig = process.env.THYROX_CONFIG_HOME
+-    process.env.THYROX_CONFIG_HOME = root
++    const orig = process.env.THYROX_CONFIG_DIR
++    process.env.THYROX_CONFIG_DIR = root
+     try {
+       const { jobDir } = await preSeedReplBgJob('cafef00d12345678', {
+         cwd: '/tmp/work',
+@@ -260,8 +260,8 @@ describe('preSeedReplBgJob', () => {
+       expect(state.respawnFlags).toEqual([])
+       expect(state.resumeSessionId).toBeUndefined()
+     } finally {
+-      if (orig === undefined) delete process.env.THYROX_CONFIG_HOME
+-      else process.env.THYROX_CONFIG_HOME = orig
++      if (orig === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = orig
+       rmSync(root, { recursive: true, force: true })
+     }
+   })
+diff --git a/src/packages/agent/background/fleet/fleetStore.ts b/src/packages/agent/background/fleet/fleetStore.ts
+index 4e6093c1..517f5b44 100644
+--- a/src/packages/agent/background/fleet/fleetStore.ts
++++ b/src/packages/agent/background/fleet/fleetStore.ts
+@@ -24,9 +24,8 @@ import {
+   writeFileSync,
+ } from 'node:fs'
+ import { existsSync } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { basename, dirname, join } from 'node:path'
+-import { readEnv } from '@thyrox/config/env'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { logForDebugging } from '@thyrox/local-observability/debug.js'
+ import type {
+   FleetJob,
+@@ -41,8 +40,7 @@ const PINS_FILE = 'pins.json'
+ 
+ /** Source: ant b0(). */
+ export function getJobsRoot(): string {
+-  const root = readEnv('THYROX_CONFIG_HOME')
+-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
++  return join(getConfigHomeDir(), 'jobs')
+ }
+ 
+ /** Source: ant V4(short). */
+diff --git a/src/packages/cli/src/bg.ts b/src/packages/cli/src/bg.ts
+index e3baec5c..42232625 100644
+--- a/src/packages/cli/src/bg.ts
++++ b/src/packages/cli/src/bg.ts
+@@ -32,12 +32,12 @@ import {
+   statSync,
+   writeFileSync,
+ } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { join, resolve } from 'node:path'
+ import {
+   hasAutoModeOptIn,
+   hasSkipDangerousModePermissionPrompt,
+ } from '@thyrox/config/settings'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { splitBgArgs } from './bg/argParse.js'
+ import {
+   formatRelativeTime,
+@@ -96,10 +96,7 @@ interface JobMeta {
+ const JOB_SHORT_LENGTH = 8
+ 
+ function getJobsRoot(): string {
+-  // THYROX_CONFIG_HOME env override mirrors the rest of the CLI's
+-  // config-dir convention; default to ~/.claude.
+-  const root = process.env.THYROX_CONFIG_HOME
+-  return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
++  return resolve(getConfigHomeDir(), 'jobs')
+ }
+ 
+ function ensureJobsRoot(): string {
+diff --git a/src/packages/cli/src/bg/daemonAdapter.ts b/src/packages/cli/src/bg/daemonAdapter.ts
+index bff562f7..39429c34 100644
+--- a/src/packages/cli/src/bg/daemonAdapter.ts
++++ b/src/packages/cli/src/bg/daemonAdapter.ts
+@@ -18,6 +18,7 @@
+ 
+ import { spawn } from 'node:child_process'
+ 
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { logEvent } from '@thyrox/local-observability'
+ import {
+   daemonRequest,
+@@ -114,10 +115,9 @@ interface DaemonStateFile {
+  */
+ export async function readDaemonState(): Promise<DaemonStateFile | null> {
+   try {
+-    const { homedir } = await import('node:os')
+     const { join } = await import('node:path')
+     const { readFile } = await import('node:fs/promises')
+-    const path = join(homedir(), '.claude', 'daemon', 'state.json')
++    const path = join(getConfigHomeDir(), 'daemon', 'state.json')
+     const raw = await readFile(path, 'utf8')
+     return JSON.parse(raw) as DaemonStateFile
+   } catch {
+@@ -270,14 +270,13 @@ export async function ensureDaemonInteractive(): Promise<boolean> {
+     answer_never: String(answer === 'never'),
+   })
+   if (answer === 'yes') {
+-    const { homedir } = await import('node:os')
+     const { join } = await import('node:path')
+     const { installLaunchAgent, isLaunchAgentStale } = await import('@thyrox/daemon/launchAgent.js')
+     // ant 4639.js: detect stale plist (deleted binary path) before install.
+     if (await isLaunchAgentStale()) {
+       logEvent('tengu_bg_daemon_service_stale_exec', {})
+     }
+-    const ccbDir = join(homedir(), '.claude', 'daemon')
++    const ccbDir = join(getConfigHomeDir(), 'daemon')
+     const r = await installLaunchAgent({
+       jsonPath: join(ccbDir, 'state.json'),
+       logPath: join(ccbDir, 'daemon.log'),
+diff --git a/src/packages/cli/src/bg/fleetReplyHelpers.ts b/src/packages/cli/src/bg/fleetReplyHelpers.ts
+index 6749a8f3..7a04e9f6 100644
+--- a/src/packages/cli/src/bg/fleetReplyHelpers.ts
++++ b/src/packages/cli/src/bg/fleetReplyHelpers.ts
+@@ -20,10 +20,9 @@
+ 
+ import { existsSync } from 'node:fs'
+ import { connect } from 'node:net'
+-import { homedir } from 'node:os'
+ import { join } from 'node:path'
+ 
+-import { readEnv } from '@thyrox/config/env'
++import { getConfigHomeDir } from '@thyrox/config/env'
+ import { getJobDir, readJobState } from '@thyrox/agent/background/fleet/fleetStore.js'
+ 
+ import { spawnBgPty } from '../bg.js'
+@@ -88,7 +87,7 @@ export async function ptySockReply(short: string, text: string): Promise<boolean
+  * pre-seeds PromptInput → auto-submits on mount).
+  */
+ function historyDir(cwd: string): string {
+-  const root = readEnv('THYROX_CONFIG_HOME') ?? join(homedir(), '.claude')
++  const root = getConfigHomeDir()
+   // ant I2(): replace path separators with `-`.
+   const slug = cwd.replace(/[/\\]/g, '-').replace(/^-/, '-')
+   return join(root, 'projects', slug)
+diff --git a/src/packages/cli/src/bg/sparePool.ts b/src/packages/cli/src/bg/sparePool.ts
+index 48ce0268..762cfb05 100644
+--- a/src/packages/cli/src/bg/sparePool.ts
++++ b/src/packages/cli/src/bg/sparePool.ts
+@@ -52,7 +52,7 @@
+ import { connect } from 'node:net'
+ import { existsSync } from 'node:fs'
+ 
+-import { readEnv } from '@thyrox/config/env'
++import { getConfigHomeDir, readEnv } from '@thyrox/config/env'
+ import {
+   invalidateCache,
+   readJobState,
+@@ -294,9 +294,7 @@ export async function rewriteSpareState(
+   cwd: string,
+ ): Promise<void> {
+   const { join } = await import('node:path')
+-  const { homedir } = await import('node:os')
+-  const root = process.env.THYROX_CONFIG_HOME ?? join(homedir(), '.claude')
+-  const jobDir = join(root, 'jobs', short)
++  const jobDir = join(getConfigHomeDir(), 'jobs', short)
+   invalidateCache(jobDir)
+   const now = new Date().toISOString()
+   // Single-line label from intent, capped at 60 chars. Mirrors
+diff --git a/src/packages/cli/src/handlers/agentFleetAttach.ts b/src/packages/cli/src/handlers/agentFleetAttach.ts
+index f86ec26c..b4d75d81 100644
+--- a/src/packages/cli/src/handlers/agentFleetAttach.ts
++++ b/src/packages/cli/src/handlers/agentFleetAttach.ts
+@@ -44,9 +44,10 @@
+ 
+ import { existsSync, openSync, readSync, closeSync, statSync } from 'node:fs'
+ import { connect } from 'node:net'
+-import { homedir } from 'node:os'
+ import { join } from 'node:path'
+ 
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++
+ /**
+  * Source: ant 4774.js spare-ready loop uses 10s budget (`Date.now() + 10_000`).
+  * Worker boot path: bun-boot (~300ms with embedded files) + bundle eval
+@@ -185,8 +186,7 @@ export async function waitForWorkerFirstFrame(
+ }
+ 
+ function getJobsRoot(): string {
+-  const root = process.env.THYROX_CONFIG_HOME
+-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
++  return join(getConfigHomeDir(), 'jobs')
+ }
+ 
+ function getJobDir(short: string): string {
+@@ -372,7 +372,7 @@ function buildResumeArgsIfTranscriptExists(
+   sessionId: string,
+ ): readonly string[] {
+   try {
+-    const root = process.env.THYROX_CONFIG_HOME ?? join(homedir(), '.claude')
++    const root = getConfigHomeDir()
+     const projectsDir = join(root, 'projects')
+     const slug = cwd.replace(/[/\\]/g, '-').replace(/^-/, '-')
+     const transcript = join(projectsDir, slug, `${sessionId}.jsonl`)
+diff --git a/src/packages/cli/src/handlers/agentsFleet.ts b/src/packages/cli/src/handlers/agentsFleet.ts
+index e0cf3287..b4a02998 100644
+--- a/src/packages/cli/src/handlers/agentsFleet.ts
++++ b/src/packages/cli/src/handlers/agentsFleet.ts
+@@ -31,6 +31,7 @@ import { feature } from 'bun:bundle'
+ import { pinFd0Raw, unpinFd0Raw } from '@thyrox/stdin-napi'
+ 
+ import { stopCapturingEarlyInput } from '@thyrox/repl/earlyInput.js'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ 
+ import { agentsHandler as plainTextHandler } from './agents.js'
+ import { appendFleetCompletionPolicy } from '../bg/fleetCompletionPolicy.js'
+@@ -301,12 +302,8 @@ async function runFleetLoop(): Promise<void> {
+           // behaviour is identical: FleetView stays up showing "opening…" on the
+           // row until the worker is ready, then switches in a populated frame.
+           // eslint-disable-next-line @typescript-eslint/no-require-imports
+-          const os = require('node:os') as typeof import('node:os')
+-          // eslint-disable-next-line @typescript-eslint/no-require-imports
+           const path = require('node:path') as typeof import('node:path')
+-          const jobsRoot = process.env.THYROX_CONFIG_HOME
+-            ? path.join(process.env.THYROX_CONFIG_HOME, 'jobs')
+-            : path.join(os.homedir(), '.claude', 'jobs')
++          const jobsRoot = path.join(getConfigHomeDir(), 'jobs')
+           const ptySocketPath = path.join(jobsRoot, short, 'pty.sock')
+           // 10s budget matches fleetAttach's PTY_SOCK_WAIT_BUDGET_MS — the
+           // worker's first frame lands in ~415ms warm, up to ~3s cold disk.
+diff --git a/src/packages/command-runtime/src/skills/__tests__/skillPaths.behavior.test.ts b/src/packages/command-runtime/src/skills/__tests__/skillPaths.behavior.test.ts
+index 84bb845a..59086130 100644
+--- a/src/packages/command-runtime/src/skills/__tests__/skillPaths.behavior.test.ts
++++ b/src/packages/command-runtime/src/skills/__tests__/skillPaths.behavior.test.ts
+@@ -16,7 +16,7 @@ import { estimateSkillFrontmatterTokens, getSkillsPath } from '../loadSkillsDir.
+  */
+ describe('Skills path + token estimation invariants', () => {
+   describe('getSkillsPath', () => {
+-    test('userSettings → <THYROX_CONFIG_HOME>/<dir>', () => {
++    test('userSettings → <THYROX_CONFIG_DIR>/<dir>', () => {
+       // Pin the structural form by checking the relative tail; the
+       // absolute base is tested by integration tests.
+       const path = getSkillsPath('userSettings', 'skills')
+diff --git a/src/packages/daemon/package.json b/src/packages/daemon/package.json
+index 757e177f..2e8048bd 100644
+--- a/src/packages/daemon/package.json
++++ b/src/packages/daemon/package.json
+@@ -68,6 +68,7 @@
+   },
+   "dependencies": {
+     "@anthropic-ai/sdk": "^0.124.0",
+-    "@thyrox/agent": "0.4.0"
++    "@thyrox/agent": "0.4.0",
++    "@thyrox/config": "0.1.0"
+   }
+ }
+diff --git a/src/packages/daemon/src/__tests__/bgAdopt.test.ts b/src/packages/daemon/src/__tests__/bgAdopt.test.ts
+index 1ad9dc54..8d08e4ef 100644
+--- a/src/packages/daemon/src/__tests__/bgAdopt.test.ts
++++ b/src/packages/daemon/src/__tests__/bgAdopt.test.ts
+@@ -11,16 +11,16 @@ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+ const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-bgadopt-test-'))
+-const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
++const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
+ 
+ beforeAll(() => {
+-  process.env.THYROX_CONFIG_HOME = ISOLATED_HOME
++  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
+ })
+ afterAll(() => {
+-  if (ORIGINAL_CONFIG_HOME === undefined) {
+-    delete process.env.THYROX_CONFIG_HOME
++  if (ORIGINAL_CONFIG_DIR === undefined) {
++    delete process.env.THYROX_CONFIG_DIR
+   } else {
+-    process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
++    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
+   }
+   rmSync(ISOLATED_HOME, { recursive: true, force: true })
+ })
+diff --git a/src/packages/daemon/src/__tests__/dispatchSpool.test.ts b/src/packages/daemon/src/__tests__/dispatchSpool.test.ts
+index 10c8c4ce..00ba3391 100644
+--- a/src/packages/daemon/src/__tests__/dispatchSpool.test.ts
++++ b/src/packages/daemon/src/__tests__/dispatchSpool.test.ts
+@@ -1,10 +1,10 @@
+ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { join } from 'node:path'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { drainSpool, ingestEnvelope, writeSpoolEnvelope } from '../dispatchSpool.js'
+ 
+-const SPOOL = join(homedir(), '.claude', 'daemon', 'dispatch')
++const SPOOL = join(getConfigHomeDir(), 'daemon', 'dispatch')
+ const REJECTED = join(SPOOL, 'rejected')
+ 
+ function clearSpool(): void {
+diff --git a/src/packages/daemon/src/__tests__/roster.test.ts b/src/packages/daemon/src/__tests__/roster.test.ts
+index c16999cf..cbe3b515 100644
+--- a/src/packages/daemon/src/__tests__/roster.test.ts
++++ b/src/packages/daemon/src/__tests__/roster.test.ts
+@@ -11,20 +11,20 @@ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+ // Isolate every roster test under a per-run tmpdir, NEVER touch the
+-// user's real ~/.claude/daemon. Done via THYROX_CONFIG_HOME, which is
+-// the same env var bgWorkerRegistry.getJobsRoot() respects.
++// user's real ~/.thyrox/daemon. Done via THYROX_CONFIG_DIR, which is
++// the same env var getConfigHomeDir() respects.
+ const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-roster-test-'))
+ const DAEMON_DIR = join(ISOLATED_HOME, 'daemon')
+-const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
++const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
+ 
+ beforeAll(() => {
+-  process.env.THYROX_CONFIG_HOME = ISOLATED_HOME
++  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
+ })
+ afterAll(() => {
+-  if (ORIGINAL_CONFIG_HOME === undefined) {
+-    delete process.env.THYROX_CONFIG_HOME
++  if (ORIGINAL_CONFIG_DIR === undefined) {
++    delete process.env.THYROX_CONFIG_DIR
+   } else {
+-    process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
++    process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
+   }
+   rmSync(ISOLATED_HOME, { recursive: true, force: true })
+ })
+diff --git a/src/packages/daemon/src/__tests__/rvChannel.test.ts b/src/packages/daemon/src/__tests__/rvChannel.test.ts
+index 4ff72600..48c8f5aa 100644
+--- a/src/packages/daemon/src/__tests__/rvChannel.test.ts
++++ b/src/packages/daemon/src/__tests__/rvChannel.test.ts
+@@ -33,18 +33,18 @@ import {
+ } from '@thyrox/agent/background/fleet/rvServer.js'
+ 
+ const ISOLATED_HOME = mkdtempSync(join(tmpdir(), 'ccb-rv-test-'))
+-const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
++const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
+ const ORIGINAL_RV_SOCK = process.env.THYROX_BG_RENDEZVOUS_SOCK
+ const ORIGINAL_JOB_DIR = process.env.THYROX_JOB_DIR
+ 
+ let sockSeq = 0
+ 
+ beforeAll(() => {
+-  process.env.THYROX_CONFIG_HOME = ISOLATED_HOME
++  process.env.THYROX_CONFIG_DIR = ISOLATED_HOME
+ })
+ afterAll(() => {
+-  if (ORIGINAL_CONFIG_HOME === undefined) delete process.env.THYROX_CONFIG_HOME
+-  else process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
++  if (ORIGINAL_CONFIG_DIR === undefined) delete process.env.THYROX_CONFIG_DIR
++  else process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
+   rmSync(ISOLATED_HOME, { recursive: true, force: true })
+ })
+ 
+diff --git a/src/packages/daemon/src/__tests__/socketPaths.test.ts b/src/packages/daemon/src/__tests__/socketPaths.test.ts
+new file mode 100644
+index 00000000..8f978ab1
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/socketPaths.test.ts
+@@ -0,0 +1,49 @@
++/**
++ * `getDaemonHomeDir` sigue `getConfigHomeDir()` (DEC-04), no la variable
++ * inventada `THYROX_CONFIG_HOME` ni un `homedir()/.claude` fijo.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { getDaemonHomeDir } from '../socketPaths.js'
++
++const ORIGINAL_CONFIG_DIR = process.env.THYROX_CONFIG_DIR
++const ORIGINAL_LEGACY_CONFIG_DIR = process.env.CLAUDE_CONFIG_DIR
++const ORIGINAL_CONFIG_HOME = process.env.THYROX_CONFIG_HOME
++
++afterEach(() => {
++  if (ORIGINAL_CONFIG_DIR === undefined) delete process.env.THYROX_CONFIG_DIR
++  else process.env.THYROX_CONFIG_DIR = ORIGINAL_CONFIG_DIR
++  if (ORIGINAL_LEGACY_CONFIG_DIR === undefined) delete process.env.CLAUDE_CONFIG_DIR
++  else process.env.CLAUDE_CONFIG_DIR = ORIGINAL_LEGACY_CONFIG_DIR
++  if (ORIGINAL_CONFIG_HOME === undefined) delete process.env.THYROX_CONFIG_HOME
++  else process.env.THYROX_CONFIG_HOME = ORIGINAL_CONFIG_HOME
++})
++
++describe('getDaemonHomeDir', () => {
++  test('queda debajo de THYROX_CONFIG_DIR', () => {
++    const root = mkdtempSync(join(tmpdir(), 'ccb-daemon-home-'))
++    try {
++      process.env.THYROX_CONFIG_DIR = root
++      expect(getDaemonHomeDir()).toBe(join(root, 'daemon'))
++    } finally {
++      delete process.env.THYROX_CONFIG_DIR
++      rmSync(root, { recursive: true, force: true })
++    }
++  })
++
++  test('THYROX_CONFIG_HOME ya no se sigue', () => {
++    const root = mkdtempSync(join(tmpdir(), 'ccb-daemon-home-legacy-'))
++    try {
++      delete process.env.THYROX_CONFIG_DIR
++      delete process.env.CLAUDE_CONFIG_DIR
++      process.env.THYROX_CONFIG_HOME = root
++      expect(getDaemonHomeDir()).not.toBe(join(root, 'daemon'))
++    } finally {
++      delete process.env.THYROX_CONFIG_HOME
++      rmSync(root, { recursive: true, force: true })
++    }
++  })
++})
+diff --git a/src/packages/daemon/src/bgDaemon.ts b/src/packages/daemon/src/bgDaemon.ts
+index c27e3a08..e16c71a8 100644
+--- a/src/packages/daemon/src/bgDaemon.ts
++++ b/src/packages/daemon/src/bgDaemon.ts
+@@ -27,8 +27,9 @@ import { connect } from 'node:net'
+ import { randomUUID } from 'node:crypto'
+ import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs'
+ import { dirname, join } from 'node:path'
+-import { homedir, platform as osPlatform, freemem } from 'node:os'
++import { platform as osPlatform, freemem } from 'node:os'
+ 
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { logEvent as logEventFn, spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
+ import { encodeCtrlFrame } from './internal/ptyFrame.js'
+ import { adoptFromRoster, adoptRunningPtyRecords } from './bgAdopt.js'
+@@ -188,7 +189,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+           const short = sessionId.slice(0, 8)
+           const cwd = process.cwd()
+           // Genera el repuesto vía la ruta spawnPtyHost existente de bg.ts.
+-          const jobDir = join(homedir(), '.claude', 'jobs', short)
++          const jobDir = join(getConfigHomeDir(), 'jobs', short)
+           mkdirSync(jobDir, { recursive: true })
+           const r = spawnPtyHost({
+             short,
+diff --git a/src/packages/daemon/src/bgWorkerRegistry.ts b/src/packages/daemon/src/bgWorkerRegistry.ts
+index 70292ea9..8349d6b0 100644
+--- a/src/packages/daemon/src/bgWorkerRegistry.ts
++++ b/src/packages/daemon/src/bgWorkerRegistry.ts
+@@ -12,9 +12,9 @@
+  */
+ 
+ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { join, resolve } from 'node:path'
+ 
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { isPidAlive } from '@thyrox/shell/genericProcessUtils.js'
+ export { isPidAlive }
+ 
+@@ -91,8 +91,7 @@ export const HEARTBEAT_POLL_MS = 5_000
+ export const STALLED_THRESHOLD_MS = 120_000
+ 
+ function getJobsRoot(): string {
+-  const root = process.env.THYROX_CONFIG_HOME
+-  return root ? resolve(root, 'jobs') : join(homedir(), '.claude', 'jobs')
++  return resolve(getConfigHomeDir(), 'jobs')
+ }
+ 
+ function getJobDir(short: string): string {
+diff --git a/src/packages/daemon/src/classifier/orchestrator.ts b/src/packages/daemon/src/classifier/orchestrator.ts
+index eca2b737..4ae71f15 100644
+--- a/src/packages/daemon/src/classifier/orchestrator.ts
++++ b/src/packages/daemon/src/classifier/orchestrator.ts
+@@ -17,6 +17,9 @@
+  * @dynamicRequire
+  */
+ 
++import { join } from 'node:path'
++
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { logEvent } from '@thyrox/local-observability'
+ import { readJobState } from '@thyrox/agent/background/fleet/fleetStore.js'
+ import { generateJobName } from '@thyrox/agent/background/fleet/generateJobName.js'
+@@ -256,9 +259,7 @@ async function runClassify(state: OrchestratorState): Promise<void> {
+   // The namer is fire-once per worker lifetime (via attempted Set in
+   // namer.ts), so spamming this branch is safe — it self-debounces.
+   if (result.source === 'llm') {
+-    const jobsRoot = process.env.THYROX_CONFIG_HOME
+-      ? `${process.env.THYROX_CONFIG_HOME}/jobs/${state.vm.short}`
+-      : `${process.env.HOME ?? ''}/.claude/jobs/${state.vm.short}`
++    const jobsRoot = join(getConfigHomeDir(), 'jobs', state.vm.short)
+     const fleetState = await readJobState(jobsRoot).catch(() => null)
+     const intent =
+       fleetState?.intent ?? state.intent ?? fleetState?.initialPrompt
+diff --git a/src/packages/daemon/src/classifier/stateFile.ts b/src/packages/daemon/src/classifier/stateFile.ts
+index 918f49de..adbd84b4 100644
+--- a/src/packages/daemon/src/classifier/stateFile.ts
++++ b/src/packages/daemon/src/classifier/stateFile.ts
+@@ -20,8 +20,8 @@
+  */
+ 
+ import { appendFileSync, mkdirSync } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { join } from 'node:path'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import {
+   getJobDir,
+   readJobStateSync,
+@@ -35,8 +35,7 @@ import type {
+ import type { WorkerState, WorkerStateFile, WorkerTempo } from './state.js'
+ 
+ function getJobsRoot(): string {
+-  const root = process.env.THYROX_CONFIG_HOME
+-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
++  return join(getConfigHomeDir(), 'jobs')
+ }
+ 
+ function getTimelinePath(short: string): string {
+diff --git a/src/packages/daemon/src/dispatchSpool.ts b/src/packages/daemon/src/dispatchSpool.ts
+index e1f081f2..db57c8ca 100644
+--- a/src/packages/daemon/src/dispatchSpool.ts
++++ b/src/packages/daemon/src/dispatchSpool.ts
+@@ -31,8 +31,9 @@ import {
+   unlinkSync,
+   watch,
+ } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { basename, join } from 'node:path'
++
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { logEvent } from '@thyrox/local-observability'
+ 
+ /** ant 5165.js DF3 — max age before a spool file is considered stale (24h). */
+@@ -52,7 +53,7 @@ export interface DispatchEnvelope {
+ }
+ 
+ function getSpoolDir(): string {
+-  return join(homedir(), '.claude', 'daemon', 'dispatch')
++  return join(getConfigHomeDir(), 'daemon', 'dispatch')
+ }
+ 
+ function getRejectedDir(): string {
+diff --git a/src/packages/daemon/src/internal/pendingCrossPackageDeps.ts b/src/packages/daemon/src/internal/pendingCrossPackageDeps.ts
+index e4555adb..af417940 100644
+--- a/src/packages/daemon/src/internal/pendingCrossPackageDeps.ts
++++ b/src/packages/daemon/src/internal/pendingCrossPackageDeps.ts
+@@ -66,9 +66,10 @@ export function setLogEventFn(
+  */
+ 
+ import { mkdirSync, readFileSync, writeFileSync, existsSync, promises as fsPromises } from 'node:fs'
+-import { homedir } from 'node:os'
+ import { join } from 'node:path'
+ 
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++
+ export type FleetJobStatus = 'working' | 'blocked' | 'done' | 'failed' | 'stopped'
+ export type FleetTempo = 'active' | 'blocked' | 'idle'
+ 
+@@ -121,8 +122,7 @@ const STATE_FILE = 'state.json'
+ 
+ /** Fiel a `ccnmt: fleetStore.ts:38-41` (ant `b0()`). */
+ function getJobsRoot(): string {
+-  const root = process.env.THYROX_CONFIG_HOME
+-  return root ? join(root, 'jobs') : join(homedir(), '.claude', 'jobs')
++  return join(getConfigHomeDir(), 'jobs')
+ }
+ 
+ /** Fiel a `ccnmt: fleetStore.ts:49-51` (ant `V4(short)`). */
+diff --git a/src/packages/daemon/src/main.ts b/src/packages/daemon/src/main.ts
+index 8a6e66c0..b91677bc 100644
+--- a/src/packages/daemon/src/main.ts
++++ b/src/packages/daemon/src/main.ts
+@@ -3,6 +3,7 @@ import { resolve } from 'path'
+ import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+ import { logEvent } from '@thyrox/local-observability'
+ import { PRODUCT_NAME } from '@thyrox/config/product'
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ 
+ /**
+  * Exit code used by workers for permanent (non-retryable) failures.
+@@ -121,11 +122,10 @@ export async function daemonMain(args: string[]): Promise<void> {
+ }
+ 
+ async function bgDaemonTailLog(): Promise<void> {
+-  const { homedir } = await import('node:os')
+   const { join } = await import('node:path')
+   const { existsSync } = await import('node:fs')
+   const today = new Date().toISOString().slice(0, 10)
+-  const logPath = join(homedir(), '.claude', 'telemetry', `events-${today}.jsonl`)
++  const logPath = join(getConfigHomeDir(), 'telemetry', `events-${today}.jsonl`)
+   if (!existsSync(logPath)) {
+     console.error(`bg daemon log: no events file at ${logPath}`)
+     console.error(`(set THYROX_CODE_LOCAL_TELEMETRY=1 + restart daemon to populate)`)
+@@ -182,10 +182,9 @@ async function bgDaemonStatus(asJson = false): Promise<void> {
+ async function daemonLaunchAgentVerb(
+   verb: 'install' | 'uninstall' | 'enable' | 'disable' | 'restart' | 'is-stale' | 'is-active',
+ ): Promise<void> {
+-  const { homedir } = await import('node:os')
+   const { join } = await import('node:path')
+   const la = await import('./launchAgent.js')
+-  const ccbDir = join(homedir(), '.claude', 'daemon')
++  const ccbDir = join(getConfigHomeDir(), 'daemon')
+   const opts = {
+     jsonPath: join(ccbDir, 'state.json'),
+     logPath: join(ccbDir, 'daemon.log'),
+diff --git a/src/packages/daemon/src/socketPaths.ts b/src/packages/daemon/src/socketPaths.ts
+index 0a0082b1..716feb17 100644
+--- a/src/packages/daemon/src/socketPaths.ts
++++ b/src/packages/daemon/src/socketPaths.ts
+@@ -19,9 +19,11 @@
+  */
+ 
+ import { createHash } from 'node:crypto'
+-import { homedir, tmpdir } from 'node:os'
++import { tmpdir } from 'node:os'
+ import { join, resolve } from 'node:path'
+ 
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++
+ /** Cached realpath-of-cwd hash for stability across sub-calls. */
+ let cachedRepoHash: string | undefined
+ 
+@@ -95,13 +97,11 @@ export function getClaimSocketPath(short: string): string {
+ }
+ 
+ /**
+- * ~/.claude/daemon directory for breadcrumb files. Respects
+- * THYROX_CONFIG_HOME for consistency with bgWorkerRegistry.getJobsRoot()
+- * and so unit tests can isolate by pointing the env var at a tmpdir.
++ * `<getConfigHomeDir()>/daemon` directory for breadcrumb files. Unit tests
++ * isolate by pointing `THYROX_CONFIG_DIR` at a tmpdir.
+  */
+ export function getDaemonHomeDir(): string {
+-  const root = process.env.THYROX_CONFIG_HOME
+-  return root ? join(root, 'daemon') : join(homedir(), '.claude', 'daemon')
++  return join(getConfigHomeDir(), 'daemon')
+ }
+ 
+ /** ~/.claude/daemon/pty-pids directory. */
+diff --git a/tests/smoke/bg-cycle-smoke.test.ts b/tests/smoke/bg-cycle-smoke.test.ts
+index 7d183f55..f25cbb9e 100644
+--- a/tests/smoke/bg-cycle-smoke.test.ts
++++ b/tests/smoke/bg-cycle-smoke.test.ts
+@@ -10,8 +10,8 @@
+  * detached path of bg.ts; the PTY path needs a live socket and is
+  * exercised by integration tests.
+  *
+- * Each test uses THYROX_CONFIG_HOME pointing at a per-test tmpdir so
+- * we don't pollute the user's real ~/.claude/jobs/.
++ * Each test uses THYROX_CONFIG_DIR pointing at a per-test tmpdir so
++ * we don't pollute the user's real ~/.thyrox/jobs/.
+  *
+  * Run: bun test tests/smoke/bg-cycle-smoke.test.ts
+  */
+@@ -53,7 +53,7 @@ async function runCli(
+           ...process.env,
+           NO_COLOR: '1',
+           FORCE_COLOR: '0',
+-          THYROX_CONFIG_HOME: ISOLATED_HOME,
++          THYROX_CONFIG_DIR: ISOLATED_HOME,
+         },
+         stdio: ['ignore', 'ignore', 'ignore'],
+         timeout: timeoutMs,

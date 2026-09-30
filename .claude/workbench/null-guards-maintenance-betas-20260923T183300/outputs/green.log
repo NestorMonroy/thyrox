@@ -1,0 +1,30 @@
+bun test v1.4.3-canary.1 (6d504dd98)
+
+tests/conformance/maintenance.test.ts:
+(pass) A.7.6 — memoria rancia > 1. nombra la que pasa la cota y NO la que no [7.65ms]
+(pass) A.7.6 — memoria rancia > 2. publica cuanto se pasa, no solo que se pasa [3.07ms]
+(pass) A.7.6 — skills invalidos > 3. un directorio sin SKILL.md es invalido, y se dice por que [3.45ms]
+(pass) A.7.6 — skills invalidos > 4. sin description, y con el name cambiado, tambien [2.35ms]
+(pass) A.7.6 — las DOS formas de frontmatter del arbol > 5. la cerca ```yml vale igual que los guiones: no es un defecto [1.26ms]
+(pass) A.7.6 — el estado del arbol real > 6. hoy no hay ninguna de las dos, y el conteo dice sobre que se midio [21.91ms]
+(pass) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 7. la memoria se busca en el segmento que el consumidor declara [2.18ms]
+(pass) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 8. los skills tambien, y el denominador lo dice [5.77ms]
+(pass) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 9. THYROX_RULES_DIR reapunta el hogar de las reglas, y se cita relativo [2.64ms]
+
+src/packages/provider/src/__tests__/betasAssembly.behavior.test.ts:
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getAllModelBetas > CLAUDE_CODE_20250219_BETA_HEADER added for non-Haiku models [0.13ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getAllModelBetas > OAUTH_BETA_HEADER added when isClaudeAISubscriber (subscriber gate) [0.07ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getAllModelBetas > CONTEXT_1M_BETA_HEADER gated on has1mContext(model) [0.08ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getAllModelBetas > INTERLEAVED_THINKING_BETA_HEADER respects DISABLE_INTERLEAVED_THINKING env [0.07ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getAllModelBetas > REDACT_THINKING_BETA_HEADER skipped when showThinkingSummaries=true [0.09ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getAllModelBetas > ANTHROPIC_BETAS env var splits on comma and trims (escape hatch) [0.23ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getMergedBetas > agentic-query injection skipped when CLAUDE_CODE_20250219 already present [0.07ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getMergedBetas > SDK-provided betas merged via sanitizeBetaHeaders (dedupe) [0.04ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > getMergedBetas > empty/missing SDK betas → returns baseBetas unchanged (no sanitize round-trip) [0.02ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > cache invalidation > clearBetasCaches clears all three memoized caches (ant CQ_) [0.12ms]
+(pass) betas.ts header assembly (ant ux/SQ_/CQ_) > cache invalidation > sanitizeBetaHeaders dedupes via Set + trims empty (ant) [0.04ms]
+
+ 20 pass
+ 0 fail
+ 30 expect() calls
+Ran 20 tests across 2 files. [126.00ms]

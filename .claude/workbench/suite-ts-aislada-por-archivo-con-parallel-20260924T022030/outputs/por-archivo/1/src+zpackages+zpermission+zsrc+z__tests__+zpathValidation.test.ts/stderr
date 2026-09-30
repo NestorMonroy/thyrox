@@ -1,0 +1,177 @@
+
+src/packages/permission/src/__tests__/pathValidation.test.ts:
+78 |   })
+79 | })
+80 | 
+81 | describe('isDangerousRemovalPath', () => {
+82 |   test('bare "*" is dangerous', () => {
+83 |     expect(isDangerousRemovalPath('*')).toBe(true)
+                ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("*")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:83:12)
+(fail) isDangerousRemovalPath > bare "*" is dangerous [0.40ms]
+81 | describe('isDangerousRemovalPath', () => {
+82 |   test('bare "*" is dangerous', () => {
+83 |     expect(isDangerousRemovalPath('*')).toBe(true)
+84 |   })
+85 |   test('"<path>/*" is dangerous (would remove all children)', () => {
+86 |     expect(isDangerousRemovalPath('/home/user/*')).toBe(true)
+                ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("/home/user/*")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:86:12)
+(fail) isDangerousRemovalPath > "<path>/*" is dangerous (would remove all children) [0.07ms]
+84 |   })
+85 |   test('"<path>/*" is dangerous (would remove all children)', () => {
+86 |     expect(isDangerousRemovalPath('/home/user/*')).toBe(true)
+87 |   })
+88 |   test('"/" is dangerous (root)', () => {
+89 |     expect(isDangerousRemovalPath('/')).toBe(true)
+                ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("/")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:89:12)
+(fail) isDangerousRemovalPath > "/" is dangerous (root) [0.02ms]
+87 |   })
+88 |   test('"/" is dangerous (root)', () => {
+89 |     expect(isDangerousRemovalPath('/')).toBe(true)
+90 |   })
+91 |   test('home directory itself is dangerous', () => {
+92 |     expect(isDangerousRemovalPath(HOME)).toBe(true)
+                ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath(HOME)', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:92:12)
+(fail) isDangerousRemovalPath > home directory itself is dangerous [0.02ms]
+90 |   })
+91 |   test('home directory itself is dangerous', () => {
+92 |     expect(isDangerousRemovalPath(HOME)).toBe(true)
+93 |   })
+94 |   test('home directory with trailing slash is dangerous', () => {
+95 |     expect(isDangerousRemovalPath(`${HOME}/`)).toBe(true)
+                ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath(`${HOME}/`)', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:95:12)
+(fail) isDangerousRemovalPath > home directory with trailing slash is dangerous [0.02ms]
+93 |   })
+94 |   test('home directory with trailing slash is dangerous', () => {
+95 |     expect(isDangerousRemovalPath(`${HOME}/`)).toBe(true)
+96 |   })
+97 |   test('direct child of root /usr is dangerous', () => {
+98 |     expect(isDangerousRemovalPath('/usr')).toBe(true)
+                ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("/usr")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:98:12)
+(fail) isDangerousRemovalPath > direct child of root /usr is dangerous [0.02ms]
+ 96 |   })
+ 97 |   test('direct child of root /usr is dangerous', () => {
+ 98 |     expect(isDangerousRemovalPath('/usr')).toBe(true)
+ 99 |   })
+100 |   test('direct child of root /tmp is dangerous', () => {
+101 |     expect(isDangerousRemovalPath('/tmp')).toBe(true)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("/tmp")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:101:12)
+(fail) isDangerousRemovalPath > direct child of root /tmp is dangerous [0.03ms]
+ 99 |   })
+100 |   test('direct child of root /tmp is dangerous', () => {
+101 |     expect(isDangerousRemovalPath('/tmp')).toBe(true)
+102 |   })
+103 |   test('grandchild /usr/local is NOT dangerous', () => {
+104 |     expect(isDangerousRemovalPath('/usr/local')).toBe(false)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("/usr/local")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:104:12)
+(fail) isDangerousRemovalPath > grandchild /usr/local is NOT dangerous [0.02ms]
+102 |   })
+103 |   test('grandchild /usr/local is NOT dangerous', () => {
+104 |     expect(isDangerousRemovalPath('/usr/local')).toBe(false)
+105 |   })
+106 |   test('grandchild /tmp/some-file is NOT dangerous', () => {
+107 |     expect(isDangerousRemovalPath('/tmp/myfile.txt')).toBe(false)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("/tmp/myfile.txt")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:107:12)
+(fail) isDangerousRemovalPath > grandchild /tmp/some-file is NOT dangerous [0.04ms]
+105 |   })
+106 |   test('grandchild /tmp/some-file is NOT dangerous', () => {
+107 |     expect(isDangerousRemovalPath('/tmp/myfile.txt')).toBe(false)
+108 |   })
+109 |   test('home/subdir is NOT dangerous', () => {
+110 |     expect(isDangerousRemovalPath(`${HOME}/code/project`)).toBe(false)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath(`${HOME}/code/project`)', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:110:12)
+(fail) isDangerousRemovalPath > home/subdir is NOT dangerous [0.02ms]
+108 |   })
+109 |   test('home/subdir is NOT dangerous', () => {
+110 |     expect(isDangerousRemovalPath(`${HOME}/code/project`)).toBe(false)
+111 |   })
+112 |   test('Windows drive root C:\\ is dangerous', () => {
+113 |     expect(isDangerousRemovalPath('C:\\')).toBe(true)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("C:\\")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:113:12)
+(fail) isDangerousRemovalPath > Windows drive root C:\ is dangerous [0.02ms]
+111 |   })
+112 |   test('Windows drive root C:\\ is dangerous', () => {
+113 |     expect(isDangerousRemovalPath('C:\\')).toBe(true)
+114 |   })
+115 |   test('Windows drive root C:/ is dangerous (forward slash form)', () => {
+116 |     expect(isDangerousRemovalPath('C:/')).toBe(true)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("C:/")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:116:12)
+(fail) isDangerousRemovalPath > Windows drive root C:/ is dangerous (forward slash form) [0.02ms]
+114 |   })
+115 |   test('Windows drive root C:/ is dangerous (forward slash form)', () => {
+116 |     expect(isDangerousRemovalPath('C:/')).toBe(true)
+117 |   })
+118 |   test('Windows drive direct child C:\\Windows is dangerous', () => {
+119 |     expect(isDangerousRemovalPath('C:\\Windows')).toBe(true)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("C:\\Windows")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:119:12)
+(fail) isDangerousRemovalPath > Windows drive direct child C:\Windows is dangerous [0.02ms]
+117 |   })
+118 |   test('Windows drive direct child C:\\Windows is dangerous', () => {
+119 |     expect(isDangerousRemovalPath('C:\\Windows')).toBe(true)
+120 |   })
+121 |   test('Windows drive grandchild C:\\Users\\me is NOT dangerous', () => {
+122 |     expect(isDangerousRemovalPath('C:\\Users\\me')).toBe(false)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("C:\\Users\\me")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:122:12)
+(fail) isDangerousRemovalPath > Windows drive grandchild C:\Users\me is NOT dangerous [0.02ms]
+122 |     expect(isDangerousRemovalPath('C:\\Users\\me')).toBe(false)
+123 |   })
+124 |   test('double-backslash collapses (security regression check)', () => {
+125 |     // PowerShell puede producir C:\\Windows; el colapso tiene que marcarlo
+126 |     // igualmente.
+127 |     expect(isDangerousRemovalPath('C:\\\\Windows')).toBe(true)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("C:\\\\Windows")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:127:12)
+(fail) isDangerousRemovalPath > double-backslash collapses (security regression check) [0.02ms]
+125 |     // PowerShell puede producir C:\\Windows; el colapso tiene que marcarlo
+126 |     // igualmente.
+127 |     expect(isDangerousRemovalPath('C:\\\\Windows')).toBe(true)
+128 |   })
+129 |   test('relative path that is not glob is not flagged', () => {
+130 |     expect(isDangerousRemovalPath('foo.txt')).toBe(false)
+                 ^
+TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("foo.txt")', 'isDangerousRemovalPath' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:130:12)
+(fail) isDangerousRemovalPath > relative path that is not glob is not flagged [0.02ms]
+131 |   })
+132 | })
+133 | 
+134 | describe('isPathInSandboxWriteAllowlist (sandbox disabled)', () => {
+135 |   test('returns false when sandboxing is off (mocked)', () => {
+136 |     expect(isPathInSandboxWriteAllowlist('/anywhere')).toBe(false)
+                 ^
+TypeError: isPathInSandboxWriteAllowlist is not a function. (In 'isPathInSandboxWriteAllowlist("/anywhere")', 'isPathInSandboxWriteAllowlist' is undefined)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/pathValidation.test.ts:136:12)
+(fail) isPathInSandboxWriteAllowlist (sandbox disabled) > returns false when sandboxing is off (mocked) [0.03ms]
+
+ 12 pass
+ 17 fail
+ 12 expect() calls
+Ran 29 tests across 1 file. [780.00ms]

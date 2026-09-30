@@ -1,0 +1,11 @@
+# Mitad ROJA — el gate hermano, persistida al producirse
+# fecha: 2026-09-19T16:02:08
+# comando: bash tests/verify/test-cross-model-read.sh
+
+FALLA archivo real del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules en la cadena: exit 2
+OK   guard sin node_modules: nombra lo que falta
+
+aserciones: 3 de 4 · fallos: 1
+exit=1

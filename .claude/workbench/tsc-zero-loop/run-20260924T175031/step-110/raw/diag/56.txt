@@ -1,0 +1,25 @@
+src/packages/app-host/src/state/__tests__/selectors.test.ts(42,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: InProcessTeammateTaskState | undefined): void', gave the following error.
+    Argument of type '{ id: string; status: string; type: string; }' is not assignable to parameter of type 'InProcessTeammateTaskState'.
+      Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+  Overload 2 of 2, '(expected: NoInfer<InProcessTeammateTaskState | undefined>): void', gave the following error.
+    Argument of type '{ id: string; status: string; type: string; }' is not assignable to parameter of type 'InProcessTeammateTaskState'.
+      Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/app-host/src/state/__tests__/selectors.test.ts(57,7): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: ActiveAgentForInput): void', gave the following error.
+    Type '{ id: string; status: string; type: string; }' is not assignable to type 'InProcessTeammateTaskState'.
+      Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+  Overload 2 of 2, '(expected: NoInfer<ActiveAgentForInput>): void', gave the following error.
+    Argument of type '{ type: "viewed"; task: { id: string; status: string; type: string; }; }' is not assignable to parameter of type 'ActiveAgentForInput'.
+      Types of property 'task' are incompatible.
+        Type '{ id: string; status: string; type: string; }' is not assignable to type 'InProcessTeammateTaskState'.
+          Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/app-host/src/state/__tests__/selectors.test.ts(64,7): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: ActiveAgentForInput): void', gave the following error.
+    Type '{ type: string; name: string; }' is not assignable to type 'LocalAgentTaskState'.
+      Type '{ type: string; name: string; }' is missing the following properties from type 'TaskStateBase': id, status, description, startTime, and 3 more.
+  Overload 2 of 2, '(expected: NoInfer<ActiveAgentForInput>): void', gave the following error.
+    Argument of type '{ type: "named_agent"; task: { type: string; name: string; }; }' is not assignable to parameter of type 'ActiveAgentForInput'.
+      Types of property 'task' are incompatible.
+        Type '{ type: string; name: string; }' is not assignable to type 'LocalAgentTaskState'.
+          Type '{ type: string; name: string; }' is missing the following properties from type 'TaskStateBase': id, status, description, startTime, and 3 more.

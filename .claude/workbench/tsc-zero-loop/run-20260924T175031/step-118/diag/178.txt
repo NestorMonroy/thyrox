@@ -1,0 +1,23 @@
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(21,32): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:11-31 ---
+     11  import * as React from 'react'
+     12  import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+     13  import type { HookEventMetadata } from '../../hooksConfigManager.js'
+     14  import { Box, Link, Text } from '@anthropic/ink'
+     15  import { plural } from '@thyrox/output/utils/stringUtils.js'
+     16  import { Select } from '../CustomSelect/select.js'
+     17  import { Dialog } from '@anthropic/ink'
+     18  
+     19  type Props = {
+     20    hookEventMetadata: Record<HookEvent, HookEventMetadata>
+     21>   hooksByEvent: Partial<Record<HookEvent, number>>
+     22    totalHooksCount: number
+     23    restrictedByPolicy: boolean
+     24    onSelectEvent: (event: HookEvent) => void
+     25    onCancel: () => void
+     26  }
+     27  
+     28  export function SelectEventMode({
+     29    hookEventMetadata,
+     30    hooksByEvent,
+     31    totalHooksCount,

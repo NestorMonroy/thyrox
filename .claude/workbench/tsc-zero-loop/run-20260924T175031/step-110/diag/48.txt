@@ -1,0 +1,49 @@
+src/packages/app-host/src/init.ts(201,13): error TS2322: Type '{ [x: string]: string | undefined; }' is not assignable to type 'Record<string, string>'.
+  --- código src/packages/app-host/src/init.ts:191-211 ---
+    191        const { migrateLegacyEnvToConnections } = require(
+    192          '@thyrox/provider/connections.js',
+    193        ) as typeof import('@thyrox/provider/connections.js')
+    194        // Lee de settings.env primero (persistente), cae a process.env.
+    195        // eslint-disable-next-line @typescript-eslint/no-require-imports
+    196        const { getSettings } = require(
+    197          '@thyrox/config/settings',
+    198        ) as typeof import('@thyrox/config/settings')
+    199        const settings = getSettings() ?? {}
+    200        const settingsEnv = (settings.env ?? {}) as Record<string, string>
+    201>       const merged: Record<string, string> = {
+    202          ...Object.fromEntries(
+    203            Object.entries(process.env).filter(
+    204              ([, v]): v is string => typeof v === 'string',
+    205            ),
+    206          ),
+    207          ...settingsEnv,
+    208        }
+    209        const { migrated, clearedModelType } =
+    210          migrateLegacyEnvToConnections(merged)
+    211        if (migrated.length > 0) {
+  'string' index signatures are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/app-host/src/init.ts(204,22): error TS1230: A type predicate cannot reference element 'v' in a binding pattern.
+  --- código src/packages/app-host/src/init.ts:194-214 ---
+    194        // Lee de settings.env primero (persistente), cae a process.env.
+    195        // eslint-disable-next-line @typescript-eslint/no-require-imports
+    196        const { getSettings } = require(
+    197          '@thyrox/config/settings',
+    198        ) as typeof import('@thyrox/config/settings')
+    199        const settings = getSettings() ?? {}
+    200        const settingsEnv = (settings.env ?? {}) as Record<string, string>
+    201        const merged: Record<string, string> = {
+    202          ...Object.fromEntries(
+    203            Object.entries(process.env).filter(
+    204>             ([, v]): v is string => typeof v === 'string',
+    205            ),
+    206          ),
+    207          ...settingsEnv,
+    208        }
+    209        const { migrated, clearedModelType } =
+    210          migrateLegacyEnvToConnections(merged)
+    211        if (migrated.length > 0) {
+    212          logForDebugging(
+    213            `[connections] migrated legacy env to connections: ${migrated.join(', ')}`,
+    214          )

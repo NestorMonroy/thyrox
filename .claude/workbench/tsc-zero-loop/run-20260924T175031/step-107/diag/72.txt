@@ -1,0 +1,29 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/hooks/useRemoteSession.ts(316,15): error TS2345: Argument of type 'StreamEvent' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/hooks/useRemoteSession.ts:306-326 ---
+    306              }
+    307            }
+    308  
+    309            setMessages(prev => [...prev, converted.message])
+    310            // Note: Don't stop loading on assistant messages - the agent may still be
+    311            // working (tool use loops). Loading stops only on session end or permission request.
+    312          } else if (converted.type === 'stream_event') {
+    313            // Process streaming events to update UI in real-time
+    314            if (setStreamingToolUses && setStreamMode) {
+    315              handleMessageFromStream(
+    316>               converted.event,
+    317                message => setMessages(prev => [...prev, message]),
+    318                () => {
+    319                  // No-op for response length - remote sessions don't track this
+    320                },
+    321                setStreamMode,
+    322                setStreamingToolUses,
+    323              )
+    324            } else {
+    325              logForDebugging(
+    326                `[useRemoteSession] Stream event received but streaming callbacks not provided`,
+  Type 'StreamEvent' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, uuid, timestamp

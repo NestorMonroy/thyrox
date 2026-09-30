@@ -1,0 +1,2 @@
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts(496,23): error TS2352: Conversion of type 'undefined' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts(496,47): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.

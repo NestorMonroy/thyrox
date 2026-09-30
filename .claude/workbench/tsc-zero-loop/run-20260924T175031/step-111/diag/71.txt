@@ -1,0 +1,69 @@
+src/packages/cli/src/setup/setup.ts(107,13): error TS2339: Property 'captureTeammateModeSnapshot' does not exist on type 'typeof import("/home/user/thyrox/src/packages/swarm/src/index")'.
+  --- código src/packages/cli/src/setup/setup.ts:97-117 ---
+     97        const m = await import('@thyrox/local-observability/uds/udsMessaging.js')
+     98        await m.startUdsMessaging(
+     99          messagingSocketPath ?? m.getDefaultUdsSocketPath(),
+    100          { isExplicit: messagingSocketPath !== undefined },
+    101        )
+    102      }
+    103    }
+    104  
+    105    // Teammate snapshot — SIMPLE-only gate (no escape hatch, swarm not used in bare)
+    106    if (!isBareMode() && isAgentSwarmsEnabled()) {
+    107>     const { captureTeammateModeSnapshot } = await import(
+    108        '@thyrox/swarm'
+    109      )
+    110      captureTeammateModeSnapshot()
+    111    }
+    112  
+    113    // Terminal backup restoration — interactive only. Print mode doesn't
+    114    // interact with terminal settings; the next interactive session will
+    115    // detect and restore any interrupted setup.
+    116    if (!getIsNonInteractiveSession()) {
+    117      // iTerm2 backup check only when swarms enabled
+src/packages/cli/src/setup/setup.ts(416,9): error TS18046: 'envDynamic.getIsDocker' is of type 'unknown'.
+  --- código src/packages/cli/src/setup/setup.ts:406-426 ---
+    406        // Skip for Desktop's local agent mode — same trust model as CCR/BYOC
+    407        // (trusted Anthropic-managed launcher intentionally pre-approving everything).
+    408        // Precedent: permissionSetup.ts:861, applySettingsChange.ts:55 (PR #19116)
+    409        process.env.CLAUDE_CODE_ENTRYPOINT !== 'local-agent' &&
+    410        // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+    411        // unconditionally to unlock mid-session bypass switching
+    412        process.env.CLAUDE_CODE_ENTRYPOINT !== 'claude-desktop'
+    413      ) {
+    414        // Only await if permission mode is set to bypass
+    415        const [isDocker, hasInternet] = await Promise.all([
+    416>         envDynamic.getIsDocker(),
+    417          env.hasInternetAccess(),
+    418        ])
+    419        const isBubblewrap = envDynamic.getIsBubblewrapSandbox()
+    420        const isSandbox = process.env.IS_SANDBOX === '1'
+    421        const isSandboxed = isDocker || isBubblewrap || isSandbox
+    422        if (!isSandboxed || hasInternet) {
+    423          console.error(
+    424            `--dangerously-skip-permissions can only be used in Docker/sandbox containers with no internet access but got Docker: ${isDocker}, Bubblewrap: ${isBubblewrap}, IS_SANDBOX: ${isSandbox}, hasInternet: ${hasInternet}`,
+    425          )
+    426          process.exit(1)
+src/packages/cli/src/setup/setup.ts(419,28): error TS18046: 'envDynamic.getIsBubblewrapSandbox' is of type 'unknown'.
+  --- código src/packages/cli/src/setup/setup.ts:409-429 ---
+    409        process.env.CLAUDE_CODE_ENTRYPOINT !== 'local-agent' &&
+    410        // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+    411        // unconditionally to unlock mid-session bypass switching
+    412        process.env.CLAUDE_CODE_ENTRYPOINT !== 'claude-desktop'
+    413      ) {
+    414        // Only await if permission mode is set to bypass
+    415        const [isDocker, hasInternet] = await Promise.all([
+    416          envDynamic.getIsDocker(),
+    417          env.hasInternetAccess(),
+    418        ])
+    419>       const isBubblewrap = envDynamic.getIsBubblewrapSandbox()
+    420        const isSandbox = process.env.IS_SANDBOX === '1'
+    421        const isSandboxed = isDocker || isBubblewrap || isSandbox
+    422        if (!isSandboxed || hasInternet) {
+    423          console.error(
+    424            `--dangerously-skip-permissions can only be used in Docker/sandbox containers with no internet access but got Docker: ${isDocker}, Bubblewrap: ${isBubblewrap}, IS_SANDBOX: ${isSandbox}, hasInternet: ${hasInternet}`,
+    425          )
+    426          process.exit(1)
+    427        }
+    428      }
+    429    }

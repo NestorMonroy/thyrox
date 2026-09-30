@@ -1,0 +1,8 @@
+agent_sessions           pk=[('agent_id', 'TEXT')] autoinc=False unique_idx=0
+cleared_tool_results     pk=[('session_id', 'TEXT'), ('tool_use_id', 'TEXT')] autoinc=False unique_idx=0
+documents                pk=[('path', 'TEXT')] autoinc=False unique_idx=0
+findings_fts             pk=[] autoinc=False unique_idx=0
+findings_history         pk=[('id', 'INTEGER')] autoinc=True unique_idx=1
+schema_migrations        pk=[('version', 'INTEGER')] autoinc=False unique_idx=0
+task_session_highwater   pk=[('session_id', 'TEXT')] autoinc=False unique_idx=0
+tasks                    pk=[('task_id', 'TEXT'), ('session_id', 'TEXT')] autoinc=False unique_idx=0

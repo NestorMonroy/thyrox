@@ -1,0 +1,1 @@
+bash tests/verify/test-commit-msg-citation.sh

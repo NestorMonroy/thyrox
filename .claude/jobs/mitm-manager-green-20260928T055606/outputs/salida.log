@@ -1,0 +1,8 @@
+(fail) arranca el servidor con el puerto, el modelo de certificado y la clave, y deja el PID [430.32ms]
+(fail) writeTargetsJson escribe lo que el servidor lee: cada host de cada destino [1.21ms]
+(fail) el DNS se comprueba contra los hosts del agente pedido [0.79ms]
+(fail) certExists mira el certificado del modelo activo: server.crt, o ca.crt con THYROX_MITM_ROOT_CA_ENABLED [0.61ms]
+ 29 pass
+ 4 fail
+Ran 33 tests across 7 files. [1.78s]
+__BG_EXIT__=0

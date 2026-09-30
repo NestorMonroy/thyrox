@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsTagClose.test.ts:
+27 |     expect(escapeTagClose(TAG, '＜/cross-session-message>')).toBe('<\\/cross-session-message>')
+28 |     expect(escapeTagClose(TAG, '<∕cross-session-message>')).toBe('<\\∕cross-session-message>')
+29 |   })
+30 | 
+31 |   test('un carácter invisible o un espacio entre las piezas no evita el escape', () => {
+32 |     expect(escapeTagClose(TAG, '</cross​-session-message>')).toBe('<\\/cross​-session-message>')
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "<\/cross​-session-message>"
+Received: "</cross​-session-message>"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsTagClose.test.ts:32:61)
+(fail) escapeTagClose (Qce) > un carácter invisible o un espacio entre las piezas no evita el escape [0.24ms]
+
+ 7 pass
+ 1 fail
+ 13 expect() calls
+Ran 8 tests across 1 file. [37.00ms]

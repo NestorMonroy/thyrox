@@ -1,0 +1,2 @@
+pool_history() { PYTHONPATH="$HP_HERE/..${PYTHONPATH:+:$PYTHONPATH}" python3 "$HP_HERE/pool_history.py" "$@"; }
+HISTORY="$(pool_history dir "$PROMPT")" || rehusa "no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)"

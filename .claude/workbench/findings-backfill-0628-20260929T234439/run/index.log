@@ -1,0 +1,38 @@
+H-THYROX-138: entrada añadida
+H-THYROX-139: entrada añadida
+H-THYROX-140: entrada añadida
+H-THYROX-141: entrada añadida
+H-THYROX-142: entrada añadida
+H-THYROX-143: entrada añadida
+H-THYROX-147: entrada añadida
+H-THYROX-148: entrada añadida
+H-THYROX-149: entrada añadida
+H-THYROX-150: entrada añadida
+H-THYROX-151: entrada añadida
+H-THYROX-152: entrada añadida
+H-THYROX-153: entrada añadida
+H-THYROX-169: entrada añadida
+H-THYROX-170: entrada añadida
+H-THYROX-171: entrada añadida
+H-THYROX-172: entrada añadida
+H-THYROX-173: entrada añadida
+H-THYROX-174: entrada añadida
+214 |   const existing = globSync(`hallazgo-${record.findingId}-*.rst`, { cwd: folder }).sort()[0]
+215 |   const document = existing ? join(folder, existing) : target
+216 |   const state = existsSync(document) && /^\s*:estado:\s*resuelto\b/im.test(readFileSync(document, 'utf8'))
+217 |     ? 'RESUELTO'
+218 |     : 'DOCUMENTADO'
+219 |   const before = readFileSync(indexFile, 'utf8')
+                       ^
+ENOENT: no such file or directory, open '/home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/index.rst'
+    path: "/home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/index.rst",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at addToInitiativeIndex (/home/user/thyrox/src/packages/finding/index.ts:219:18)
+      at /home/user/thyrox/src/packages/finding/bin/finding.ts:74:43
+      at loadAndEvaluateModule (2:1)
+
+Bun v1.3.11 (Linux x64)
+EXIT=1

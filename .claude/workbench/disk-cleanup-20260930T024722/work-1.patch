@@ -1,0 +1,43 @@
+diff --git a/src/session/item_worktree.sh b/src/session/item_worktree.sh
+index 07c3e9fa..0cd3caee 100755
+--- a/src/session/item_worktree.sh
++++ b/src/session/item_worktree.sh
+@@ -228,7 +228,13 @@ finalize() {
+         verdict=sin-cambios
+     elif [[ -z "$verify" ]]; then
+         verdict=sin-verificar
+-    elif (cd "$dir" && bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
++    # THYROX_ROOT/PYTHONPATH llegan aqui heredados del arbol principal (los
++    # exporta bin/headless-pool antes de invocar este script): un modulo que
++    # resuelve su codigo por THYROX_ROOT (src/task/task_ids.py via
++    # paths/reach.py) mediria entonces la copia vieja, no el parche del
++    # worktree. Se sustituyen, no se anteponen, para que el verify corra
++    # contra el mismo codigo que acaba de cambiar.
++    elif (cd "$dir" && THYROX_ROOT="$dir" PYTHONPATH="$dir/src" bash -c "$verify") > "$out/$n.verify.log" 2>&1; then
+         verdict=verificado
+     else
+         verdict=rechazado
+diff --git a/tests/session/test-headless-pool-worktree.sh b/tests/session/test-headless-pool-worktree.sh
+index c3e9cd60..a9d6b8f4 100644
+--- a/tests/session/test-headless-pool-worktree.sh
++++ b/tests/session/test-headless-pool-worktree.sh
+@@ -142,5 +142,19 @@ run="$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out10" | sha1sum | cut -c1-12)
+ check "sin directorio de la ejecución al terminar" "$(test -e "$run" && echo si || echo no)" "no"
+ check "sin candado de la ejecución al terminar" "$(test -e "$run.lock" && echo si || echo no)" "no"
+ 
++echo "caso 10 — el verify corre con THYROX_ROOT y PYTHONPATH del worktree del item, no del arbol principal"
++# El pool hereda THYROX_ROOT/PYTHONPATH del arbol principal, como los exporta
++# bin/headless-pool antes de invocar este mismo script; el defecto es que
++# `finalize` los deje pasar tal cual al verify, en vez de sustituirlos por
++# los del worktree del item.
++export THYROX_ROOT="$RAIZ" PYTHONPATH="$RAIZ/src"
++root_log="$F/out11-root.log"; pypath_log="$F/out11-pythonpath.log"
++printf '%s\n' 'write ok.txt' | pool --out "$F/out11" \
++  --verify "printf '%s\n' \"\$THYROX_ROOT\" > $root_log; printf '%s\n' \"\${PYTHONPATH%%:*}\" > $pypath_log"
++worktree_dir="$THYROX_POOL_WORKTREES_DIR/$(printf '%s' "$F/out11" | sha1sum | cut -c1-12)/1"
++check "THYROX_ROOT del verify apunta al worktree del item" "$(cat "$root_log")" "$worktree_dir"
++check "PYTHONPATH del verify apunta al worktree del item" "$(cat "$pypath_log")" "$worktree_dir/src"
++unset THYROX_ROOT PYTHONPATH
++
+ echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
+ [[ $failures -eq 0 ]]

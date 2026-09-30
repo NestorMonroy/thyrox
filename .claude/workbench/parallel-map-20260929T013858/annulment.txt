@@ -1,0 +1,5 @@
+base	15 pass, 0 fail	—
+width	14 pass, 1 fail	pasa -j con width_cap
+source	10 pass, 5 fail	exit 2 | nombra stdin | no invoca a parallel | exit 2 | no invoca a parallel
+order	13 pass, 2 fail	pasa -k | salida en orden
+validate	13 pass, 2 fail	--width 0 | --width no entera

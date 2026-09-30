@@ -1,0 +1,1 @@
+    if (!explicitId && metadata && METADATA_KEYS.lcpAffinitySession in metadata) return

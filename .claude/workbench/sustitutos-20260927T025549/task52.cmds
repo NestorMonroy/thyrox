@@ -1,0 +1,5 @@
+uv run --frozen python tests/paths/test_unprefixed_clone.py
+uv run --frozen python tests/agents/test_store_repo_path.py
+bash tests/lib/test-toolchain-consumer-env.sh
+cd src/packages/paths && bun test ../../../tests/paths/consumerEnvLayer.test.ts
+bash tests/session/test-wait-jobs-ledger-home.sh

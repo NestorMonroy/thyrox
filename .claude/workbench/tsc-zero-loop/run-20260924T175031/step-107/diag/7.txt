@@ -1,0 +1,24 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts(32,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts:22-38 ---
+     22  
+     23  /** Source: ant zi8. */
+     24  export function extractRepoCwd<T extends AgentLike | ResolvedAgent>(
+     25    query: string,
+     26    agentMap: Record<string, T>,
+     27    fleetAgents: readonly { name: string }[] = [],
+     28  ): T | undefined {
+     29    const seenAgentNames = new Set(fleetAgents.map(a => a.name.toLowerCase()))
+     30    const keys = Object.keys(agentMap)
+     31    for (const match of query.matchAll(AT_REF_RE)) {
+     32>     const name = match[1].toLowerCase()
+     33      if (seenAgentNames.has(name)) continue
+     34      const key = keys.find(k => k.toLowerCase() === name)
+     35      if (key !== undefined) return agentMap[key]
+     36    }
+     37    return undefined
+     38  }

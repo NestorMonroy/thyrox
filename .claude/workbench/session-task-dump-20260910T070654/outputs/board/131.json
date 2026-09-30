@@ -1,0 +1,9 @@
+{
+  "id": "131",
+  "subject": "Migrar los tres guiones con su propia REPOS_ROOT al mecanismo de alcance",
+  "description": "H-DOCS-1074: agent_store.py:101, check_gitattributes.py:42 y check_hook_script_token.py:56 computan el padre de los clones por su cuenta y componen el nombre del clon a mano (REPOS_ROOT / f\"kaupamex-{repo}\"). Ninguno importa reach_roots.\n\nEs el defecto que el mecanismo existe para impedir, y dos de los tres inventan además su propia variable de entorno (CHECK_GITATTRIBUTES_REPOS_ROOT, CHECK_HOOK_TOKEN_REPOS_ROOT) para lo que THYROX_REACH_ROOT ya nombra: H-DOCS-1071 un nivel más arriba.\n\nLa migración es mecánica —root(repo) ya compone el prefijo— pero toca tres gates vivos y necesita su control: cada uno debe seguir midiendo el mismo alcance antes y después.",
+  "activeForm": "Migrando los tres guiones al mecanismo de alcance",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,3 @@
+local-observability: emitio pese a 160 errores (136 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 160 error(es) que siguen vivos en su propio paquete

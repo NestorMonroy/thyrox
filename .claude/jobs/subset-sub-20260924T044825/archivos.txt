@@ -1,0 +1,13 @@
+src/packages/agent/__tests__/agentContextGuards.test.ts
+src/packages/agent/__tests__/handleStopHooks.test.ts
+src/packages/agent/__tests__/sdkCompatToolName.test.ts
+src/packages/agent/workflow/__tests__/engine.test.ts
+src/packages/tool-registry/src/__tests__/parseToolsFromFrontmatter.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts
+src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts
+tests/package/dependencies.test.ts
+tests/package/exports.test.ts
+tests/package/package_identity.test.ts
+tests/package/sibling_exports.test.ts
+tests/package/toolchain_versions.test.ts

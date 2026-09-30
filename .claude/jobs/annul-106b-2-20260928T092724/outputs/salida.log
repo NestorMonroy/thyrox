@@ -1,0 +1,3 @@
+.claude/workbench/accounts-106b-connection-store-20260928T092324/annul-106b.sh: line 9: syntax error near unexpected token `('
+.claude/workbench/accounts-106b-connection-store-20260928T092324/annul-106b.sh: line 9: `echo "== 7: las credenciales que no llegan se pierden"; annul "$F" "    for (const field of CREDENTIAL_FIELDS) if (!Object.hasOwn(data, field)) persisted[field] = stored[field]'
+__BG_EXIT__=2

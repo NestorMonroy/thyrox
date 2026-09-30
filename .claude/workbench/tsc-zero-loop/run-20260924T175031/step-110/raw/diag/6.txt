@@ -1,0 +1,1 @@
+src/packages/@ant/ink/src/theme/Tree.tsx(86,11): error TS2322: Type '"stretch"' is not assignable to type '"auto" | "flex-start" | "center" | "flex-end" | undefined'.

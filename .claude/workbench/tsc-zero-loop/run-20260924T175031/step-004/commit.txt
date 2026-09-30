@@ -1,0 +1,8 @@
+Give isTranscriptMessage the source guard signature
+
+Fourth step of the agent-compiler loop, accepted-net 3545 -> 3483.
+The guard declared `entry is PredicateEntry`, a type every member of
+Entry already satisfies, so the false branch narrowed to never and the
+sessionStorage loader could not read summary, custom-title or any other
+non-transcript entry. The source signature (Entry -> TranscriptMessage)
+excludes only transcript messages from the false branch.

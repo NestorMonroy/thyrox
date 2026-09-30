@@ -1,0 +1,49 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(636,41): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:626-646 ---
+    626      ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    627      eventData.plugin_name = (
+    628        isOfficial ? pluginManifest.name : 'third-party'
+    629      ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    630      if (isOfficial && pluginManifest.version) {
+    631        eventData.plugin_version =
+    632          pluginManifest.version as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
+    633      }
+    634      Object.assign(
+    635        eventData,
+    636>       buildPluginCommandTelemetryFields(returnedCommand.pluginInfo),
+    637      )
+    638    }
+    639  
+    640    logEvent('tengu_input_command', {
+    641      ...eventData,
+    642      invocation_trigger:
+    643        'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    644      ...(process.env.USER_TYPE === 'ant' && {
+    645        skill_name:
+    646          commandName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(855,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:845-865 ---
+    845                }
+    846                // Guard: if onDone fired during mod.call() (early-exit path
+    847                // that calls onDone then returns JSX), skip setToolJSX. This
+    848                // chain is fire-and-forget — the outer Promise resolves when
+    849                // onDone is called, so executeUserInput may have already run
+    850                // its setToolJSX({clearLocalJSX: true}) before we get here.
+    851                // Setting isLocalJSXCommand after clear leaves it stuck true,
+    852                // blocking useQueueProcessor and TextInput focus.
+    853                if (doneWasCalled) return
+    854                setToolJSX({
+    855>                 jsx,
+    856                  shouldHidePromptInput: true,
+    857                  showSpinner: false,
+    858                  isLocalJSXCommand: true,
+    859                  isImmediate: command.immediate === true,
+    860                })
+    861              })
+    862              .catch(e => {
+    863                // If load()/call() throws and onDone never fired, the outer
+    864                // Promise hangs forever, leaving queryGuard stuck in
+    865                // 'dispatching' and deadlocking the queue processor.

@@ -1,0 +1,20 @@
+Close the ./* wildcard of 29 package exports
+
+42 of 42 packages declared exports, but 29 kept ./* and ./*.js, which
+publish the whole tree: a new internal path resolved without touching
+the manifest, so the boundary lived in the file and not in the
+resolver. 3 544 of 7 754 name-based imports outside tests entered only
+through the wildcard.
+
+close_exports.py declares each consumed subpath (src and tests, static
+and dynamic imports, re-exports and mock.module) as an explicit key,
+substituting into the wildcard's own pattern with Node's precedence,
+and drops the wildcard: 743 keys. Six consumed subpaths have no target
+today and stay undeclared (feature-gated tools absent from the tree).
+
+Equivalence, measured: resolving 5 305 (specifier, importer) pairs with
+Bun's resolver gives the same file before and after for all of them;
+removing one added key changes exactly its 15 consumers. The cli tsc
+ratchet stays at 2407. From here a new deep import fails to resolve
+until its package declares it, and widening a surface is a visible
+package.json diff.

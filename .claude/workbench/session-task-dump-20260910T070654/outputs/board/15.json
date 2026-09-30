@@ -1,0 +1,11 @@
+{
+  "id": "15",
+  "subject": "Implementar las constantes de ruta documental en el harness (src/paths/docs.ts)",
+  "description": "Cierra la forma que analisis-destinos-de-escritura-de-los-skills.rst dejó abierta. Ver analisis-constantes-de-ruta-documental.rst.\n\nEspejo de `ccb: packages/permission/src/filesystem.ts` en su FORMA, no en su contenido: funciones, no literales; memoizadas sólo donde el valor debe ser estable en el proceso; compuestas (la hoja se construye desde su raíz); con su `Path format:` en el docstring; y con el predicado hermano `isUnderDocs` que normaliza antes de comparar. Sin el predicado, sustituir `{wp}` por una función sólo cambia dónde está escrito el literal.\n\nFirma propuesta (medida contra 270 iniciativas del árbol):\n- `docsRoot()` memoizada\n- `initiativeDir(sub, slug)`\n- `initiativeIndex(sub, slug)` → `index.rst`, la irregularidad explícita\n- `initiativeArtifact(sub, slug, tipo)` para los CUATRO únicos (alcance 226/8, decisiones 123/5, progreso 198/14, tareas 132/8 — tema = slug domina)\n- `initiativeAnalysis(sub, slug, tema?)` porque `analisis` es 98 con tema=slug contra **554** con tema propio: varios por iniciativa\n- `findingPath(sub, slug, id, corto)`\n- `submoduleBin(sub, cajon)` — los cuatro cajones existen en los cinco submódulos\n- `isUnderDocs(p)`\n\n**La constante produce la extensión; el llamador no la elige.** Es la mitad del defecto que una constante de sólo-prefijo no cierra: `source/` no acepta `.md`, así que la función no debe saber fabricarlo.\n\nTDD. Controles que deben poder fallar: pedir un `.md` no compila/lanza; una ruta fuera del árbol da `isUnderDocs` false; `docsRoot` memoizada devuelve lo mismo dos veces; `initiativeAnalysis` sin tema usa el slug.\n\nAbierto y registrado, no adivinado: **de dónde sale `docsRoot()`** (variable de entorno, descubrimiento del clon hermano, o ambos con precedencia) — el harness corre desde cualquiera de los cinco repos.",
+  "activeForm": "Implementando las constantes de ruta documental en el harness",
+  "status": "completed",
+  "blocks": [
+    "39"
+  ],
+  "blockedBy": []
+}

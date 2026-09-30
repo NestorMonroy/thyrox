@@ -1,0 +1,52 @@
+censo de escritores (alcance medido: 1505 archivo(s); raices src, bin)
+  agent_sessions           11 sentencia(s)
+      src/agents/agent_store.py:677
+      src/agents/agent_store.py:1159
+      src/agents/agent_store.py:1377
+      src/agents/backfill_agent_sessions.py:211
+      src/agents/reconcile_store.py:607
+      src/agents/reconcile_store.py:668
+      src/packages/observability/src/store.ts:180
+      src/packages/observability/src/store.ts:268
+      src/packages/observability/src/store.ts:292
+      src/store/agent_sessions.py:287
+      src/verify/verificar_persistencia.py:129
+  cleared_tool_results     1 sentencia(s)  [1 por nombre compuesto]
+      src/packages/observability/src/clearedResults.ts:142 (compuesto)
+  documents                1 sentencia(s)
+      src/agents/agent_store.py:2102
+  findings_fts             5 sentencia(s)
+      src/agents/agent_store.py:315
+      src/agents/agent_store.py:319
+      src/agents/agent_store.py:324
+      src/agents/agent_store.py:326
+      src/agents/agent_store.py:1065
+  findings_history         2 sentencia(s)
+      src/agents/agent_store.py:2872
+      src/corpus/backfill_findings_history.py:205
+  task                     1 sentencia(s)
+      src/packages/agent/loop/context/attachments.ts:70
+  task_highwater           1 sentencia(s)
+      src/packages/tools/src/tasks.ts:119
+  tasks                    17 sentencia(s)
+      src/agents/agent_store.py:1528
+      src/agents/agent_store.py:1530
+      src/agents/agent_store.py:1653
+      src/agents/agent_store.py:1876
+      src/agents/agent_store.py:2253
+      src/packages/tools/src/tasks.ts:132
+      src/packages/tools/src/tasks.ts:157
+      src/packages/tools/src/tasks.ts:186
+      src/packages/tools/src/tasks.ts:273
+      src/packages/tools/src/tasks.ts:400
+      src/packages/tools/src/tasks.ts:470
+      src/packages/tools/src/tasks.ts:473
+      src/task/board_sync.py:239
+      src/task/board_sync.py:371
+      src/task/task_ids.py:558
+      src/task/task_ids.py:639
+      src/task/task_ids.py:702
+  tasks_migrada            1 sentencia(s)
+      src/agents/agent_store.py:969
+
+tablas con filas y SIN escritor: 0

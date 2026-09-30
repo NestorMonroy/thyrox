@@ -1,0 +1,2 @@
+escenarios=20000 discrepancias=198
+P6: ours=true ref=false

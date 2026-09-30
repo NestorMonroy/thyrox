@@ -1,0 +1,18 @@
+Port the message lookups from 2.1.275
+
+The message list, the queued-commands prompt, and the Agent and Skill
+tool views import buildMessageLookups, buildSubagentLookups and
+EMPTY_LOOKUPS, which messages.ts did not have, so the suites reaching
+them failed at import.
+
+From 2.1.275: d6e indexes a subagent transcript and returns the tool
+uses still in flight; the full view follows how Bee feeds _ot, taking
+tool uses from the shown messages and results, first text blocks,
+server tool uses and resolved hooks from the normalized ones, with
+Qke counting progress per tool use without heartbeats. A server tool
+use left unresolved in a message that is no longer the last counts
+as resolved and errored. The incremental cache (Bee) and the
+advisor-refusal error cause are left pending.
+
+Annulment: dropping the orphan-server failure, the last-message
+exception or the heartbeat skip fails exactly its one case.

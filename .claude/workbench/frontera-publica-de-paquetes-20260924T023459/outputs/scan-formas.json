@@ -1,0 +1,37 @@
+{
+ "exports": [
+  "C",
+  "a",
+  "b",
+  "default",
+  "e",
+  "f",
+  "ns"
+ ],
+ "imports": [
+  {
+   "kind": "import-statement",
+   "path": "./x"
+  },
+  {
+   "kind": "import-statement",
+   "path": "./star"
+  },
+  {
+   "kind": "import-statement",
+   "path": "./nsmod"
+  },
+  {
+   "kind": "import-statement",
+   "path": "./y"
+  },
+  {
+   "kind": "import-statement",
+   "path": "./w"
+  },
+  {
+   "kind": "import-statement",
+   "path": "./v"
+  }
+ ]
+}

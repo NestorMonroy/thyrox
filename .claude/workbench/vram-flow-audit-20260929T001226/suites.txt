@@ -1,0 +1,7 @@
+test-gpu-admission-cli.sh
+test-gpu-hardware-refusal.sh
+test-pool-calibrate.sh
+test_gpu_monitor.py
+test_gpu_scenarios.py
+test_gpu_trace.py
+test_pool_history.py

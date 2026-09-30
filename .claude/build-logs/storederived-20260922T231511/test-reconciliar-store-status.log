@@ -1,0 +1,24 @@
+== 1. sintaxis ==
+  ok    reconcile_store.py parsea
+== 2. CON sidecar + cierre normal → completed ==
+  ok    la forma de la herramienta Agent que entregó
+== 3. CON sidecar + cortado → failed (la heurística SÍ aplica aquí) ==
+  ok    un agente de la herramienta Agent cortado sigue siendo failed
+== 4. SIN sidecar + cortado → running, NO failed (H-DOCS-181) ==
+  ok    el canal Workflow cortado NO se declara failed
+== 5. SIN sidecar + cierre normal → running tampoco se declara completed ==
+  ok    sin sidecar no se afirma desenlace en ninguna dirección
+== 6. transcript ilegible → running (contrato previo, sin regresión) ==
+  ok    un transcript que no parsea sigue sin afirmar desenlace
+== 6-bis. el guard de frescura gana sobre la firma del rol ==
+  ok    un transcript que acaba de crecer NO se cierra como failed
+  ok    el mismo transcript, ya en silencio, sí se cierra
+== 7. el discriminador es el sidecar, y se mide como tal ==
+  ok    _tiene_sidecar ve el .meta.json
+  ok    _tiene_sidecar es False cuando no está
+== 8. el ancla del store, que la mudanza a agents/ rompio ==
+  ok    store_db() sin --claude-dir resuelve a un archivo que existe
+  ok    el ancla es la raiz del proveedor, y sin scripts/ intermedio
+
+12 ok, 0 fallos
+EXIT=0

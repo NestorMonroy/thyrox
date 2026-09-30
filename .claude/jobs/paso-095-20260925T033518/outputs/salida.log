@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1787, "total_final": 1779, "tsc_runs": 1, "accepted": ["agent:agent:unzip-facade-real-contract"], "files_kept": ["src/packages/app-host/src/runtime/installPluginBindings.ts", "src/packages/config/plugin/_deps.ts"], "outcomes": {"agent:agent:unzip-facade-real-co__BG_EXIT__=0

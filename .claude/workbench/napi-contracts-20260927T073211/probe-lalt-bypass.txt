@@ -1,0 +1,4 @@
+alt+f4 -> alt+f4 true
+lalt+f4 -> lalt+f4 false
+ralt+f4 -> ralt+f4 false
+ctrl+lalt+delete -> ctrl+lalt+delete false

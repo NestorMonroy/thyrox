@@ -1,0 +1,27 @@
+=== 1. toctree_entries ===
+  ok    lee las entradas y no las opciones
+  ok    la prosa posterior no entra
+=== 2. el bloque literal NO aporta entradas ===
+  ok    una plantilla no declara toctree real
+=== 3. resolve: archivo, index y glob ===
+  ok    resuelve <nombre>.rst
+  ok    resuelve <dir>/index.rst
+  ok    no resuelve lo inexistente
+  ok    el glob alcanza los dos de dir/
+=== 4. audit: rota y huerfano son fenomenos distintos ===
+  ok    una entrada rota
+  ok    la rota nombra la entrada
+  ok    un huerfano
+  ok    alcanzables: index + vivo
+  ok    total: los tres
+=== 5. ANULACION — sin expandir :glob:, los hijos son huerfanos ===
+  ok    con expansion: cero huerfanos
+  ok    y cero entradas rotas
+  ok    anulacion: sin expandir, el hijo aparece como huerfano
+  ok    anulacion: y la entrada glob se reporta como rota
+=== 6. ANULACION — sin saltar el literal, la plantilla se marca rota ===
+  ok    con el salto: la plantilla no rompe nada
+  ok    anulacion: sin el salto, la entrada de la plantilla se marca rota
+  ok    anulacion: y nombra el hijo que solo existe al materializar
+
+OK=19 FAILED=0

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+108 |     const cwds: string[] = []
+109 |     const unsubscribe = onOriginalCwdChange(cwd => void cwds.push(cwd))
+110 |     setOriginalCwd('/x')
+111 |     unsubscribe()
+112 |     setOriginalCwd('/y')
+113 |     expect(cwds).toEqual(['/x'])
+                       ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "/x",
++   "/y",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:113:18)
+(fail) setOriginalCwd (oT) avisa del directorio normalizado > desuscribirse deja de recibir [0.76ms]
+
+ 7 pass
+ 1 fail
+ 12 expect() calls
+Ran 8 tests across 1 file. [164.00ms]

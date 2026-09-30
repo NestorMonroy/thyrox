@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/lib/test-reach-pythonpath.sh

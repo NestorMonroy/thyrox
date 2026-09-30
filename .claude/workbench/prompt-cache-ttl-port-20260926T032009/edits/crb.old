@@ -1,0 +1,3 @@
+    command = (f"cd {shlex.quote(str(THYROX))} && env PYTHONPATH={shlex.quote(str(THYROX / 'src'))} "
+               f"{shlex.quote(sys.executable)} src/verify/step_close.py --bench {shlex.quote(str(bench))} "
+               f"--run {shlex.quote(str(run))}")

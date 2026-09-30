@@ -1,0 +1,8 @@
+error: Cannot find module '../../../src/accounts/refresh/deprecatedProviders.ts' from '/home/user/thyrox/src/packages/provider/__tests__/accounts/refresh/refreshPolicy.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [44.00ms]

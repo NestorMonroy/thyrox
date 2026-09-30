@@ -1,0 +1,22 @@
+src/packages/repl/src/components/App.tsx(36,11): error TS2322: Type '{ children: ReactNode; initialState: AppState; store: AppStateStore | undefined; onChangeAppState: ({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void; }' is not assignable to type 'IntrinsicAttributes & { initialState: AppState; children: ReactNode; }'.
+  --- código src/packages/repl/src/components/App.tsx:26-44 ---
+     26    stats,
+     27    initialState,
+     28    store,
+     29    children,
+     30  }: Props): React.ReactNode {
+     31    return (
+     32      <FpsMetricsProvider getFpsMetrics={getFpsMetrics}>
+     33        <StatsProvider store={stats}>
+     34          <AppStateProvider
+     35            initialState={initialState}
+     36>           store={store}
+     37            onChangeAppState={onChangeAppState}
+     38          >
+     39            {children}
+     40          </AppStateProvider>
+     41        </StatsProvider>
+     42      </FpsMetricsProvider>
+     43    )
+     44  }
+  Property 'store' does not exist on type 'IntrinsicAttributes & { initialState: AppState; children: ReactNode; }'.

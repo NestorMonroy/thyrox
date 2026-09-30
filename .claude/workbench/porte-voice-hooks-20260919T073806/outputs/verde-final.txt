@@ -1,0 +1,18 @@
+=== VERIFICACION FINAL (tras corregir la plantilla)
+-- stubs en el paquete
+   ninguno
+-- residuo de specifier
+   ninguno
+-- sonda
+stubs restantes: 0 de 4
+-- suite del paquete
+ 27 pass
+ 0 fail
+-- suite de identidad de paquete
+ 5 pass
+ 0 fail
+-- paridad de exports contra la fuente, los cuatro archivos
+   hooks/useVoice.ts ausentes=[]
+   hooks/useVoiceIntegration.tsx ausentes=[]
+   hooks/useVoiceEnabled.ts ausentes=[]
+   voiceContext.tsx ausentes=[]

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check_package_typecheck --strict --jobs 2 agent provider config app-host", "started_at": "2026-09-29T02:09:25+00:00"}

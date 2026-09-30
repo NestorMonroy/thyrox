@@ -1,0 +1,13 @@
+Record why typing unread adapter aliases stalled
+
+Step 090 of the tsc-zero loop stalled: 1896 -> 1896.
+
+It pointed unknown aliases in cli/headless.ts, agent/sessionStores.ts
+and provider's legacyRuntimeSupport.ts at their real types, chosen
+from an inventory of stubs. None of the 91 targeted diagnostics read
+them, so none moved, and one TS2740 appeared; the change was
+reverted. The loop's memory had the same lesson from an earlier step
+and the proposal repeated it anyway.
+
+The reflection records the order that worked in 088 and 089: start
+from a diagnostic, follow it back to the unknown, then fix the alias.

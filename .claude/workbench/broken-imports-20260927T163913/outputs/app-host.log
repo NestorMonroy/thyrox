@@ -1,0 +1,5 @@
+87 | import { createStore } from './store.ts'
+              ^
+error: No matching export in "src/state/store.ts" for import "createStore"
+    at /home/user/thyrox/src/packages/app-host/src/state/AppState.tsx:87:10
+EXIT=1

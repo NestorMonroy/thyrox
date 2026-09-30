@@ -1,0 +1,27 @@
+{
+ "applied": [
+  "countToolCalls",
+  "createToolResultMessage",
+  "createToolUseMessage",
+  "ensureToolResultPairing",
+  "findLastCompactBoundaryIndex",
+  "getAutoModeInstructions",
+  "hasUnresolvedHooks",
+  "getPlanModeInstructions",
+  "getPlanModeInterviewInstructions",
+  "getPlanModeV2Instructions",
+  "getSiblingToolUseIDs",
+  "getTeammateMailbox",
+  "hasOnlyWhitespaceTextContent",
+  "isThinkingMessage",
+  "normalizeContentFromAPI",
+  "stripAdvisorBlocks",
+  "stripCrossConnectionThinkingBlocks",
+  "stripInvalidThinkingBlocks",
+  "__declarations__:types"
+ ],
+ "rejected": {},
+ "missing": [
+  "wrapCommandText"
+ ]
+}

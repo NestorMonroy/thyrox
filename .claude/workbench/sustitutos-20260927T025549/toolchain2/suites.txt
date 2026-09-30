@@ -1,0 +1,15 @@
+tests/lib/test-toolchain-degraded.sh
+tests/lib/test-toolchain-gawk.sh
+tests/lib/test-toolchain-gnu-time.sh
+tests/lib/test-toolchain-hunspell.sh
+tests/lib/test-toolchain-manifests.sh
+tests/lib/test-toolchain-parallel.sh
+tests/lib/test-toolchain-pdf-text.sh
+tests/lib/test-toolchain-poppler.sh
+tests/lib/test-toolchain-proxy.sh
+tests/lib/test-toolchain-sh.sh
+tests/lib/test-toolchain-texlive.sh
+tests/session/test-gnu-time-launchers.sh
+tests/session/test-run-task-pool-memfree.sh
+tests/verify/test-toolchain-ready.sh
+tests/lib/test-toolchain-consumer-env.sh

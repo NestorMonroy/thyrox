@@ -1,0 +1,32 @@
+transcripts de subagente en disco: 139
+
+== EL DISCRIMINADOR: la contabilidad del mensaje final ==
+fila dice       n    output_tokens    caracteres del cuerpo
+------------------------------------------------------------
+tool_use      109            1..10 465..8979 (mediana 2736)
+end_turn       29         24..3429  46..6614 (mediana 2804)
+
+Sin solape: el maximo del grupo `tool_use` es 10 y el minimo del
+grupo `end_turn` es 24. Un cuerpo de miles de caracteres no cabe
+en una cifra de un digito: esa contabilidad es un TALON, no un conteo.
+
+== NINGUNA linea del mensaje final trae `stop_reason` en el grupo acusado ==
+  tool_use   lineas=1 alguna-con-stop_reason=False: 84 · lineas=2 alguna-con-stop_reason=False: 25
+  end_turn   lineas=1 alguna-con-stop_reason=True: 21 · lineas=2 alguna-con-stop_reason=True: 8
+
+  No es que la ultima linea lo omita y otra lo traiga: el MENSAJE entero
+  carece del campo. Agrupar por `message.id` es lo que lo separa de la
+  hipotesis de forma, que trataba cada linea como un mensaje.
+
+== ALCANCE DEL TALON: cuantos mensajes, no solo el final ==
+  transcripts                 : 109
+  mensajes assistant con usage: 11835
+  con contabilidad de TALON   : 196 (1.66 %)
+    el mensaje FINAL          : 109
+    mensajes NO finales       : 87
+
+  Consecuencia para el costo, acotada: el talon subcuenta `output`, y
+  `output` es el 0.02 % del consumo de un subagente
+  (`calibration-verified-numbers.md`). El sesgo existe y es de segundo
+  orden; lo que NO se puede es corregirlo — el conteo real del mensaje
+  final no quedo escrito en ninguna parte.

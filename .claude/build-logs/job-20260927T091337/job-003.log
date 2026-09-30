@@ -1,0 +1,28 @@
+== 1. la reentrada se lee del JSON, no por subcadena ==
+  ok    true declarado
+  ok    false declarado
+  ok    clave ausente
+  ok    objeto vacío
+== 2. el espaciado no cambia el veredicto ==
+  ok    espaciado '{"stop_hook_active":true}'
+  ok    espaciado '{"stop_hook_active"  :   tru'
+  ok    espaciado '{\n "stop_hook_active": true\n'
+== 3. un payload roto NO se lee como reentrada ==
+  ok    no es JSON
+  ok    cadena vacía
+  ok    None
+  ok    JSON que no es objeto
+== 4. DISCRIMINA: la clave ANIDADA no es la reentrada del turno ==
+  ok    la clave vive un nivel abajo
+  ok    y el patrón del bash sí acierta ahí
+== 5. DISCRIMINA: el payload GRANDE y multilínea da el mismo veredicto ==
+  ok    supera los 2 MB
+  ok    y sigue siendo reentrada
+== 6. read_payload: stdin ilegible NO rompe el turno ==
+  ok    None se lee como objeto vacío
+  ok    basura se lee como objeto vacío
+  ok    un objeto se devuelve entero
+  ok    un no-objeto se descarta
+
+19 ok, 0 fallos
+EXIT=0

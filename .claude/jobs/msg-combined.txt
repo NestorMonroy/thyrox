@@ -1,0 +1,29 @@
+Wire refusal restore, UDS client and shared state
+
+App-host R-2d: 2.1.283 subscribes the refusal-fallback restore to the
+interactive store right after creating it and hooks the headless store
+to the same signal. Both wirings now exist; an annulment control that
+turns the REPL subscription into a no-op drops exactly its test.
+
+UDS C: the client and receipts module of chunk-qcy58j4w.js lands in
+udsClient.ts, with the live session registry and the peer loop guard
+it needs. The pool left type errors that its own verify did not run
+tsc for; fixed here: the former-name guard narrows to its checked
+shape, recordInPidDomain asks only for the fields it reads, the guard
+bucket receives the clock it calls, and RegistryStorage is re-exported
+for the client. THYROX_CODE_HARBOR_KITE_PACING_OFF is declared.
+
+ADR-THYROX-006 1.1.0, phases R1 and R2. The memory adapter serves a
+single proxy; the Redis one runs on Bun.RedisClient and passes the
+same contract against an ephemeral redis-server on a Unix socket.
+The toolchain gains thyrox_toolchain_require_redis, opt-in and
+re-checking the binary.
+
+openSharedStateStore picks Redis when THYROX_REDIS_URL is set and
+memory otherwise. When Redis fails mid-operation it degrades to
+memory once, with a warning, and stays there. Annulling that
+fallback drops exactly its two cases.
+
+The redis contract resolves redis-server through
+thyrox_toolchain_require_redis instead of PATH, so the opt-in and the
+binary re-check govern the test as they govern every consumer.

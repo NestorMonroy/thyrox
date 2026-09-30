@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --timeout 600 .claude/cache/subset2-cmds.txt", "started_at": "2026-09-28T01:43:19+00:00"}

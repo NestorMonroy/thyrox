@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+296 |     const { linkSync } = await import('node:fs')
+297 |     const target = join(dir, 'k.json')
+298 |     writeFileSync(target, 'viejo')
+299 |     linkSync(target, join(dir, 'otro-nombre'))
+300 |     const exdev = async () => { throw errno('EXDEV') }
+301 |     await expect(writeFileAtomicWithMode(target, 'nuevo', { renameFn: exdev, refuseHardLinks: true })).rejects.toMatchObject({ code: 'EMLINK' })
+                                                                                                                     ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:301:112)
+(fail) opciones completas de Jne > refuseHardLinks: el brazo in situ rehúsa un destino con otros nombres (EMLINK) [2.93ms]
+
+ 26 pass
+ 1 fail
+ 70 expect() calls
+Ran 27 tests across 1 file. [181.00ms]

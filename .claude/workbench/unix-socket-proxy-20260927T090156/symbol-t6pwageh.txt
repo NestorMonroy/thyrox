@@ -1,0 +1,36 @@
+==== bL: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js function bL [607471,610767)
+async function bL(e){let n=he("policySettings"),r=n?.forceLoginOrgUUID,s=r!==void 0||n?.forceLoginMethod!==void 0;if(a.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST){if(s)p("auth_force_login_org","managed_by_host_under_pin");return{valid:!0}}if(a.ANTHROPIC_UNIX_SOCKET){let P={api_provider:c(Pe()),auth_token_source:c(dc().source)};if(!Ll()&&s)p("auth_force_login_org","unix_socket_3p_under_pin",P);else if(Ll()&&r!==void 0)p("auth_force_login_org","unix_socket_ssh_under_pin",P);else if(xye())p("auth_force_login_org","unix_socket_unreadable_policy",P);else _("auth_force_login_org");return{valid:!0}}if(!Ll()){if(s&&eL())return{valid:!1,reason:"org_pin_api_key_conflict",message:D$e()?`Administrator policy requires a Cloud gateway sign-in on this machine; the
+Anthropic-issued credential configured here (ANTHROPIC_API_KEY,
+ANTHROPIC_AUTH_TOKEN, or apiKeyHelper) is not used.
+
+`+(dCe()?"Remove it, then start `claude` and sign in with /login.":"Remove it; this session's cloud provider (CLAUDE_CODE_USE_*) needs no sign-in."):`This machine's managed settings require a first-party login, but an
+Anthropic-issued credential (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN,
+or apiKeyHelper) is configured. A non-OAuth Anthropic credential
+cannot satisfy the org pin.
+
+Remove the credential and run: claude auth login
+
+If this is a third-party desktop session: forceLoginOrgUUID targets first-party OAuth and should be removed from managed-settings.json.`};return{valid:!0}}if(xye()){let P=fRe()[0];if(P){let M=P.errorClass==="unreadable",F=P.message.match(tL),L=cE.find((X)=>X===F?.[1]),B=M?ue(L)??y("other"):y("malformed");return await gn("auth_force_login_org","policy_unreadable_fail_close",{errno:B}),{valid:!1,reason:"managed_settings_invalid",policyUnreadable:!0,message:`Unable to read managed policy settings.
+This machine may require organization login enforcement, but the policy file failed to load.
+Contact your administrator.
+
+Detail: ${P.file?`${P.file}: ${P.message}`:P.message}`}}}if(r===void 0)return{valid:!0};let g=typeof r==="string"?[r]:r;if(g.length===0)return{valid:!1,reason:"managed_settings_invalid",message:`forceLoginOrgUUID in managed settings is set to an empty array.
+No organizations are permitted. This is almost certainly a misconfiguration.
+Contact your administrator.`};let h=g.length===1?`organization ${g[0]}`:`one of these organizations: ${g.join(", ")}`;await Fi({credentials:e});let S=un();if(!S)return{valid:!0};let{source:E}=dc(),w=E==="CLAUDE_CODE_OAUTH_TOKEN"||E==="CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",C=await Odt(S.accessToken);if(!C)return{valid:!1,reason:"org_verify_failed",message:h2o(h)};let T=C.organization_uuid;if(g.includes(T))return{valid:!0};if(w)return{valid:!1,reason:"org_pin_mismatch",message:`The ${E==="CLAUDE_CODE_OAUTH_TOKEN"?"CLAUDE_CODE_OAUTH_TOKEN":"CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR"} environment variable provides a token for a
+different organization than required by this machine's managed settings.
+
+Required: ${h}
+Token organization: ${T}
+
+Remove the environment variable or obtain a token for a permitted organization.`};return{valid:!1,reason:"org_pin_mismatch",message:`Your authentication token belongs to organization ${T},
+but this machine requires ${h}.
+
+Please log in with a permitted organization: claude auth login`}}
+==== gKn: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js function gKn [604084,604467)
+async function gKn(){if(Xr())return!1;if(a.ANTHROPIC_UNIX_SOCKET)return!!a.CLAUDE_CODE_OAUTH_TOKEN;if(ed())return!1;let e=!Gn(),r=(Vn()||{}).apiKeyHelper,s=xH(),g;try{g=(await fKn({skipRetrievingKeyFromApiKeyHelper:!0})).source}catch{return!1}let h=g==="ANTHROPIC_API_KEY"||g==="apiKeyHelper",S=s6("CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR"),E=(s||h)&&!pNt()||(r||S)&&!$n();return!(e||E)}
+==== Ll: 1 definicion(es) de nivel superior
+---- chunk-t6pwageh.js function Ll [552066,552433)
+function Ll(){if(Xr())return!1;if(a.ANTHROPIC_UNIX_SOCKET)return!!a.CLAUDE_CODE_OAUTH_TOKEN;if(ed())return!1;let e=!Gn(),r=(Vn()||{}).apiKeyHelper,s=xH(),g;try{g=pb({skipRetrievingKeyFromApiKeyHelper:!0}).source}catch{return!1}let h=g==="ANTHROPIC_API_KEY"||g==="apiKeyHelper",S=s6("CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR"),E=(s||h)&&!pNt()||(r||S)&&!$n();return!(e||E)}
+symbol: 3 de 3 nombre(s) resueltos

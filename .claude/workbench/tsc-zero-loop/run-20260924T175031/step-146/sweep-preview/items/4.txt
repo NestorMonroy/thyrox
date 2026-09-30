@@ -1,0 +1,63 @@
+Patrón: dead-type-not-used
+Señal del verificador: TS6196: '[^']+' is declared but never used
+Arreglo genérico: Un tipo o interfaz no exportado que nadie usa, muerto también en la fuente: se retira con dead-declarations, que resuelve el racimo hasta el punto fijo.
+Ya aplicado en: src/packages/agent/query.ts, src/packages/headless-sdk/src/sdkMemorySummary.ts, src/packages/mcp-runtime/src/client.ts, src/packages/repl/src/components/agents/types.ts, src/packages/storage/src/conversationChain.ts, tests/integration/cli-arguments.test.ts
+Archivos donde la señal sigue viva: src/packages/agent/messages.ts
+
+src/packages/agent/messages.ts(5061,6): error TS6196: 'ThinkingBlockType' is declared but never used.
+  --- código src/packages/agent/messages.ts:5051-5071 ---
+   5051  
+   5052  const PLAN_PHASE4_CAP = `### Phase 4: Final Plan
+   5053  Goal: Write your final plan to the plan file (the only file you can edit).
+   5054  - Do NOT write a Context, Background, or Overview section. The user just told you what they want.
+   5055  - Do NOT restate the user's request. Do NOT write prose paragraphs.
+   5056  - List the paths of files to be modified and what changes in each (one bullet per file)
+   5057  - Reference existing functions to reuse, with file:line
+   5058  - End with the single verification command
+   5059  - **Hard limit: 40 lines.** If the plan is longer, delete prose — not file paths.`
+   5060  
+   5061> type ThinkingBlockType =
+   5062    | ThinkingBlock
+   5063    | RedactedThinkingBlock
+   5064    | ThinkingBlockParam
+   5065    | RedactedThinkingBlockParam
+   5066    | BetaThinkingBlock
+   5067    | BetaRedactedThinkingBlock
+   5068  
+   5069  type ToolUseRequestMessage = NormalizedAssistantMessage & {
+   5070    message: { content: [ToolUseBlock] }
+   5071  }
+src/packages/agent/messages.ts(5069,6): error TS6196: 'ToolUseRequestMessage' is declared but never used.
+  --- código src/packages/agent/messages.ts:5059-5075 ---
+   5059  - **Hard limit: 40 lines.** If the plan is longer, delete prose — not file paths.`
+   5060  
+   5061  type ThinkingBlockType =
+   5062    | ThinkingBlock
+   5063    | RedactedThinkingBlock
+   5064    | ThinkingBlockParam
+   5065    | RedactedThinkingBlockParam
+   5066    | BetaThinkingBlock
+   5067    | BetaRedactedThinkingBlock
+   5068  
+   5069> type ToolUseRequestMessage = NormalizedAssistantMessage & {
+   5070    message: { content: [ToolUseBlock] }
+   5071  }
+   5072  
+   5073  type ToolUseResultMessage = NormalizedUserMessage & {
+   5074    message: { content: [ToolResultBlockParam] }
+   5075  }
+src/packages/agent/messages.ts(5073,6): error TS6196: 'ToolUseResultMessage' is declared but never used.
+  --- código src/packages/agent/messages.ts:5063-5075 ---
+   5063    | RedactedThinkingBlock
+   5064    | ThinkingBlockParam
+   5065    | RedactedThinkingBlockParam
+   5066    | BetaThinkingBlock
+   5067    | BetaRedactedThinkingBlock
+   5068  
+   5069  type ToolUseRequestMessage = NormalizedAssistantMessage & {
+   5070    message: { content: [ToolUseBlock] }
+   5071  }
+   5072  
+   5073> type ToolUseResultMessage = NormalizedUserMessage & {
+   5074    message: { content: [ToolResultBlockParam] }
+   5075  }

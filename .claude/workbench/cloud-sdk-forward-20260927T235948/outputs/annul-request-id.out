@@ -1,0 +1,5 @@
+(fail) createSelector > sin afinidad declarada, la estrategia tal cual [0.21ms]
+(fail) createSelector > con afinidad, la estrategia queda como respaldo del selector de sesión [0.26ms]
+(fail) upstreams de nube > el error del SDK lleva el identificador de la petición [6.50ms]
+ 18 pass
+ 3 fail

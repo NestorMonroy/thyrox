@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/attributionTexts.test.ts:
+26 |     expect(texts.pr).toBe(PR_FOOTER)
+27 |     expect(PR_FOOTER).toBe('\u{1F916} Generated with [Claude Code](https://claude.com/claude-code)')
+28 |   })
+29 | 
+30 |   test('settings.attribution sustituye campo por campo', () => {
+31 |     expect(buildAttributionTexts({ attribution: { commit: 'C' } }, 'M')).toEqual({ commit: 'C', pr: PR_FOOTER })
+                                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "commit": "C",
+-   "pr": "🤖 Generated with [Claude Code](https://claude.com/claude-code)",
++   "pr": "",
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/attributionTexts.test.ts:31:74)
+(fail) buildAttributionTexts > settings.attribution sustituye campo por campo [0.36ms]
+
+ 11 pass
+ 1 fail
+ 15 expect() calls
+Ran 12 tests across 1 file. [587.00ms]
+
+[exit=1]

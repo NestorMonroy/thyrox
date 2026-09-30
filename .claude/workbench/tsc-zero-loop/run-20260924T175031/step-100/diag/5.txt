@@ -1,0 +1,16 @@
+src/packages/repl/src/tips/tipRegistry.ts(81,11): error TS2339: Property 'bashTools' does not exist on type '{}'.
+src/packages/repl/src/tips/tipRegistry.ts(87,36): error TS2339: Property 'readFileState' does not exist on type '{}'.
+src/packages/repl/src/tips/tipRegistry.ts(88,41): error TS2339: Property 'readFileState' does not exist on type '{}'.
+src/packages/repl/src/tips/tipRegistry.ts(449,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(495,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(500,23): error TS7006: Parameter 'context' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(507,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(512,23): error TS7006: Parameter 'context' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(520,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(550,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(572,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(595,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(614,20): error TS7006: Parameter 'ctx' implicitly has an 'any' type.
+src/packages/repl/src/tips/tipRegistry.ts(671,54): error TS18046: '_' is of type 'unknown'.
+src/packages/repl/src/tips/tipRegistry.ts(674,44): error TS18046: '_' is of type 'unknown'.
+src/packages/repl/src/tips/tipRegistry.ts(674,53): error TS18046: '_' is of type 'unknown'.

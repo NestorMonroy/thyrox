@@ -1,0 +1,2 @@
+ROJO tests/session/test-instalar-config-usuario.sh
+EXIT=0

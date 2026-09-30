@@ -1,0 +1,10 @@
+== 12: un payload sin email casa con una cuenta sin email
+   (src/accounts/oauth/oauthPersistence.ts)
+(fail) persisting an OAuth result > matching: an email-less payload never matches, Codex needs its workspace or user, Claude its organization [0.52ms]
+ 15 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/oauth/
+ 16 pass
+ 0 fail
+__BG_EXIT__=0

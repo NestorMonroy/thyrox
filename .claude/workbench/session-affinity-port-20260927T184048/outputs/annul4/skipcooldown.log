@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: onResult > un fallo de la petición, no de la credencial, conserva la vinculación [0.46ms]
+ 59 pass
+ 1 fail

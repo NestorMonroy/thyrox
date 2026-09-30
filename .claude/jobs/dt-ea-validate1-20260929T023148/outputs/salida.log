@@ -1,0 +1,6 @@
+  app-host: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+pass=312 fail=0 errors=0 crashes=0 files=34 failed=0
+typecheck=0 suite=0
+__BG_EXIT__=0

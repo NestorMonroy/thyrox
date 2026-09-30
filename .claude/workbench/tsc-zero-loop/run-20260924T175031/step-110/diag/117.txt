@@ -1,0 +1,70 @@
+src/packages/config/plugin/mcpbHandler.ts(424,5): error TS2322: Type 'string[]' is not assignable to type 'Record<string, string>'.
+  --- código src/packages/config/plugin/mcpbHandler.ts:414-434 ---
+    414    manifest: McpbManifest,
+    415    extractedPath: string,
+    416    userConfig: UserConfigValues = {},
+    417  ): Promise<McpServerConfig> {
+    418    // Lazy import: @anthropic-ai/mcpb barrel pulls in zod v3 schemas (~700KB of
+    419    // bound closures). See dxt/helpers.ts for details.
+    420    const { getMcpConfigForManifest } = await import('@anthropic-ai/mcpb')
+    421    const mcpConfig = await getMcpConfigForManifest({
+    422      manifest,
+    423      extensionPath: extractedPath,
+    424>     systemDirs: getSystemDirectories(),
+    425      userConfig,
+    426      pathSeparator: '/',
+    427    })
+    428  
+    429    if (!mcpConfig) {
+    430      const error = new Error(
+    431        `Failed to generate MCP server configuration from manifest "${manifest.name}"`,
+    432      )
+    433      logError(error)
+    434      throw error
+  Index signature for type 'string' is missing in type 'string[]'.
+src/packages/config/plugin/mcpbHandler.ts(674,39): error TS2551: Property 'mtimeMs' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'. Did you mean 'mtime'?
+  --- código src/packages/config/plugin/mcpbHandler.ts:664-684 ---
+    664            { level: 'error' },
+    665          )
+    666        }
+    667        return true
+    668      }
+    669  
+    670      const cachedTime = new Date(metadata.cachedAt).getTime()
+    671      // Floor to match the ms precision of cachedAt (ISO string). Sub-ms
+    672      // precision on mtimeMs would make a freshly-cached file appear "newer"
+    673      // than its own cache timestamp when both happen in the same millisecond.
+    674>     const fileTime = Math.floor(stats.mtimeMs)
+    675  
+    676      if (fileTime > cachedTime) {
+    677        logForDebugging(
+    678          `MCPB file modified: ${new Date(fileTime)} > ${new Date(cachedTime)}`,
+    679        )
+    680        return true
+    681      }
+    682    }
+    683  
+    684    // For URLs, we'll re-check on explicit update (handled elsewhere)
+src/packages/config/plugin/mcpbHandler.ts(869,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, number>'.
+  --- código src/packages/config/plugin/mcpbHandler.ts:859-879 ---
+    859    if (!manifest.server) {
+    860      const error = new Error(
+    861        `MCPB manifest for "${manifest.name}" does not define a server configuration`,
+    862      )
+    863      logError(error)
+    864      throw error
+    865    }
+    866  
+    867    // Extract to cache directory
+    868    const extractPath = join(cacheDir, contentHash)
+    869>   await extractMcpbContents(unzipped, extractPath, modes, onProgress)
+    870  
+    871    // Check for user_config requirement
+    872    if (manifest.user_config && Object.keys(manifest.user_config).length > 0) {
+    873      // Server name from DXT manifest
+    874      const serverName = manifest.name
+    875  
+    876      // Try to load existing config from settings.json or use provided config
+    877      const savedConfig = loadMcpServerUserConfig(pluginId, serverName)
+    878      const userConfig = providedUserConfig || savedConfig || {}
+    879  

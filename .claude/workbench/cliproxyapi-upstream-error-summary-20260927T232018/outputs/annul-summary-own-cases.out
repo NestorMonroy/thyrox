@@ -1,0 +1,21 @@
+base	134 pass, 0 fail	—
+no-json	131 pass, 3 fail	casos propios > el resumen de un JSON es código y mensaje | casos propios > un prefijo corto antes del JSON no impide leerlo | casos propios > sin objeto error, el código y el mensaje de la raíz
+no-prefix-json	133 pass, 1 fail	casos propios > un prefijo corto antes del JSON no impide leerlo
+no-code-join	132 pass, 2 fail	casos propios > el resumen de un JSON es código y mensaje | casos propios > sin objeto error, el código y el mensaje de la raíz
+no-root-fallback	133 pass, 1 fail	casos propios > sin objeto error, el código y el mensaje de la raíz
+no-truncate	131 pass, 3 fail	paquete auth > long connector string bounded to 256 runes | manejadores > long connector string bounded to 256 runes | manejadores > long utf-8 text truncated to 256 runes
+no-scheme-auth	128 pass, 6 fail	paquete auth > unstructured socks5 proxy auth redacted | paquete auth > uri userinfo redacted | paquete auth > protocol relative uri userinfo redacted | manejadores > unstructured socks5 proxy auth redacted | manejadores > uri userinfo redacted | manejadores > protocol relative uri userinfo redacted
+no-query	133 pass, 1 fail	casos propios > la clave de consulta se corta en su propio valor
+no-connector	132 pass, 2 fail	paquete auth > uppercase connector between paths preserved | manejadores > uppercase connector between paths preserved
+no-before-colon	128 pass, 6 fail	paquete auth > leaf filename with space redacted | paquete auth > multiple paths with leaf filename spaces redacted | paquete auth > unquoted path with colon space in leaf component redacted | manejadores > leaf filename with space redacted | manejadores > multiple paths with leaf filename spaces redacted | manejadores > unquoted path with colon space in leaf component redacted
+no-unix	130 pass, 4 fail	paquete auth > workspace unix path redacted | paquete auth > uppercase connector between paths preserved | manejadores > workspace unix path redacted | manejadores > uppercase connector between paths preserved
+no-file-ext	133 pass, 1 fail	casos propios > una ruta con extensión tras una comilla invertida sin cerrar
+no-windows	130 pass, 4 fail	paquete auth > windows path with spaces redacted | paquete auth > windows path redacted | manejadores > windows path with spaces redacted | manejadores > windows path redacted
+no-cookie	130 pass, 4 fail	paquete auth > cookie header redacted | paquete auth > set-cookie header redacted | manejadores > cookie header redacted | manejadores > set-cookie header redacted
+no-auth-header	125 pass, 9 fail	paquete auth > authorization header with bearer redacted | paquete auth > authorization header with basic redacted | paquete auth > authorization header with custom scheme redacted | paquete auth > authorization header with comma separated parameters redacted | paquete auth > authorization header with digest parameters redacted | manejadores > authorization header with bearer and topsecret redacted | manejadores > authorization header with custom scheme redacted | manejadores > authorization header with comma separated parameters redacted | manejadores > authorization header with digest parameters redacted
+no-sk	133 pass, 1 fail	casos propios > una clave sk- en medio del texto
+no-bearer	133 pass, 1 fail	manejadores > bearer token redacted
+no-invalid-token	133 pass, 1 fail	casos propios > un token inválido nombrado
+no-natural	129 pass, 5 fail	paquete auth > natural language password is redacted | paquete auth > incorrect api key provided redacted | manejadores > natural language password is redacted | manejadores > incorrect api key provided redacted | casos propios > un token inválido nombrado
+no-key-value	125 pass, 9 fail	paquete auth > single quoted key kv redacted | paquete auth > aws secret access key redacted | paquete auth > service key kv redacted | paquete auth > openai key kv redacted | manejadores > single quoted key kv redacted | manejadores > aws secret access key redacted | manejadores > service key kv redacted | manejadores > openai key kv redacted | casos propios > la clave de consulta se corta en su propio valor
+js-space	132 pass, 2 fail	casos propios > el espacio no ASCII no abre una ruta, como en RE2 | casos propios > ni cierra el prefijo del error

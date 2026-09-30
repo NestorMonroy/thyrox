@@ -1,0 +1,1 @@
+function er(t){let e=[];for(let r of t.split("/")){if(r===""||r===".")continue;if(r===".."){e.pop();continue}if(e.push(r),C(e))return"/"+e.join("/")}return null}

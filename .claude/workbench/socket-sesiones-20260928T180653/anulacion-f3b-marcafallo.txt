@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+100 |     now += 4999
+101 |     await cache.get(11)
+102 |     now += 1
+103 |     await cache.get(11)
+104 |     await cache.get(11, { skipCache: true })
+105 |     expect(reads).toEqual([10, 10, 11, 11, 11])
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -5,3 +5,3 @@
+    11,
+-   11,
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:105:19)
+(fail) StartTokenCache (nc) > un acierto dura 60 s y un fallo 5 s; skipCache siempre vuelve a leer [0.52ms]
+
+ 9 pass
+ 1 fail
+ 27 expect() calls
+Ran 10 tests across 1 file. [80.00ms]

@@ -1,0 +1,12 @@
+  ok    la adquisicion existe
+  ok    sin opt-in rehusa nombrando THYROX_INSTALL_POSTGRES_TEST_DB
+  ok    con opt-in provisiona y sale 0
+  ok    exporta THYROX_TEST_POSTGRES_URL con la URL provisionada
+  ok    imprime la línea para el .env por stdout
+  ok    el SQL crea o altera el rol y crea la base sólo si falta
+  ok    una URL declarada que conecta se usa sin provisionar
+  FALLO el administrador mentiroso dio exit 0; se leyó su exit en vez de conectar: 'THYROX_TEST_POSTGRES_URL=postgres://thyrox_test:***@127.0.0.1:5432/thyrox_test'
+  ok    una URL declarada que no conecta rehúsa sin provisionar encima
+  ok    el rechazo no imprime la contraseña de la URL declarada
+
+10 casos: 9 ok, 1 fallos

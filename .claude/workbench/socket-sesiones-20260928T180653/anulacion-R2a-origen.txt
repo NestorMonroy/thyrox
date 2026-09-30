@@ -1,0 +1,48 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+69 |     const { deps, events } = harness({ hasRemoteControlChannel: () => true })
+70 |     reportFastModeToggle(true, true, deps)
+71 |     reportFastModeToggle(undefined, false, deps)
+72 |     reportFastModeToggle(false, true, deps)
+73 |     reportFastModeToggle(true, false, deps)
+74 |     expect(events).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -14,3 +14,3 @@
+        "remote": true,
+-       "source": "model_switch_downgrade",
++       "source": "model_switch_restore",
+      },
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:74:20)
+(fail) reportFastModeToggle (sA) > avisa sólo si el modo rápido cambió, con su origen [1.57ms]
+116 |   test('un cambio de modo rápido se avisa', () => {
+117 |     const { deps, events } = harness()
+118 |     const app = store({ mainLoopModel: 'a', mainLoopModelForSession: null, fastMode: true })
+119 |     applyRefusalFallbackRestore(restore({ appStateModel: 'b', overrideValue: 'b' }), app.setAppState, deps)
+120 |     expect(app.get().fastMode).toBe(false)
+121 |     expect(events).toEqual([['tengu_fast_mode_toggled', { enabled: false, source: 'model_switch_downgrade', remote: false }]])
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -6,3 +6,3 @@
+        "remote": false,
+-       "source": "model_switch_downgrade",
++       "source": "model_switch_restore",
+      },
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:121:20)
+(fail) applyRefusalFallbackRestore (wt) > un cambio de modo rápido se avisa [1.24ms]
+
+ 9 pass
+ 2 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [67.00ms]

@@ -1,0 +1,13 @@
+== 11: el código de cline sin decodificar la URL
+   (src/accounts/oauth/flows/clineFlow.ts)
+(fail) cline > the tokens come inside the code, unpadded and URL-encoded [1.06ms]
+ 9 pass
+ 1 fail
+== restaurado
+?? src/packages/provider/src/accounts/oauth/flows/clineFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/importedTokenFlows.ts
+?? src/packages/provider/src/accounts/oauth/flows/kilocodeFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/qoderFlow.ts
+ 10 pass
+ 0 fail
+__BG_EXIT__=0

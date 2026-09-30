@@ -1,0 +1,3 @@
+  ok    compone la ruta dentro del run
+environment: line 3: THYROX_OK: unbound variable
+EXIT=1

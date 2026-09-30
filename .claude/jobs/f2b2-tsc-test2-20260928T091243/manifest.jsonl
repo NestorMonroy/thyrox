@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc -p tsconfig.test.json --noEmit 2>&1 | tail -5; echo TEST=${PIPESTATUS[0]}; bun test __tests__/proxyTranslatorsRequestAntigravityToOpenAI.test.ts 2>&1 | tail -2", "started_at": "2026-09-28T09:12:43+00:00"}

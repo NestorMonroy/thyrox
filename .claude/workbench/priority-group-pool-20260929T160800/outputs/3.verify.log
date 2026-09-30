@@ -1,0 +1,18 @@
+  ok    python3 sobre un módulo con envoltorio avisa
+  ok    el aviso nombra bin/check_rst_sintaxis
+  ok    uv run python3 también avisa
+  ok    python (sin 3) también avisa
+  ok    un módulo de biblioteca sin bin/ correspondiente calla
+  ok    una ruta que no lleva src/ calla
+  ok    el mismo comando dentro de un heredoc no se ejecuta: calla
+  ok    bin/check_rst_sintaxis por su envoltorio ya no lleva src/…py: calla
+  ok    otro programa calla
+test_detect_library_path_invocation: 9 aserciones — 9 ok, 0 falla(s)
+  ok    la validación a mano recomienda bin/check_rst_sintaxis
+  ok    la recomendación NO cita python3 .../check_rst_sintaxis.py
+  ok    el propio gate invocado a mano no se avisa a sí mismo
+  ok    el `;` antes de un eco de éxito avisa del verde falso
+  ok    un `&&` antes del eco no avisa del verde falso
+  ok    otro programa calla
+test_detect_rst_validation: 6 aserciones — 6 ok, 0 falla(s)
+VERIFY OK

@@ -1,0 +1,6 @@
+test_packages_home: 47 paquete(s) medido(s), 5 fuera de src/packages
+  FALLA src/coordination
+  FALLA src/paths
+  FALLA src/store
+  FALLA src/task
+  FALLA src/workbench

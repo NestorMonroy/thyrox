@@ -1,0 +1,21 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.282
+import{Tko,cAo}from"/$bunfs/root/chunk-wbbthbh9.js";import{YS}from"/$bunfs/root/chunk-1g1dfcph.js";import{a}from"/$bunfs/root/chunk-h56wjcte.js";import{The}from"/$bunfs/root/chunk-esvkqvk3.js";import{ui,ztn,zj}from"/$bunfs/root/chunk-ykn0b3m0.js";import{Id}from"/$bunfs/root/chunk-x8sh3mk0.js";import{hl}from"/$bunfs/root/chunk-w79qzrs6.js";import{wI}from"/$bunfs/root/chunk-jszey8hb.js";import{cMe}from"/$bunfs/root/chunk-p5y62fsx.js";import{dSo,uSo}from"/$bunfs/root/chunk-kwh1ar2p.js";import{Ma}from"/$bunfs/root/chunk-knbjr9tq.js";import{mt}from"/$bunfs/root/chunk-fk9byw2g.js";var SI="EnterWorktree";var wR="ReportFindings",qvr="Report code-review findings as a typed list so the host UI can render them. Use this only when the active code-review instructions tell you to report findings with this tool; otherwise follow whatever output format those instructions specify. When reporting a review's results, call it once with the verified findings ranked most-severe first (empty array if nothing survived verification) and do not also print the findings as text. When re-reporting after applying fixes (only if the apply instructions ask for it), set `outcome` on each finding to what actually happened.";var l=import.meta.require("/$bunfs/root/chunk-gbg0g1p5.js").BRIEF_TOOL_NAME,m=new Set([wR,Id,cMe]),u=`Fetches full schema definitions for deferred tools so they can be called.
+
+Deferred tools appear by name in <system-reminder> messages.`,p=" Until fetched, only the name is known \u2014 there is no parameter schema, so the tool cannot be invoked.",c=` Until fetched, only the name is known \u2014 there is no parameter schema, so calling the tool fails with InputValidationError. When any instruction, system reminder, or other tool's description names a deferred tool, fetch it with query "select:<name>" before calling it.`,d=` This tool takes a query, matches it against the deferred tool list, and returns the matched tools' complete JSONSchema definitions inside a <functions> block. Once a tool's schema appears in that result, it is callable exactly like any tool defined at the top of the prompt.
+
+Result format: each matched tool appears as one <function>{"description": "...", "name": "...", "parameters": {...}}</function> line inside the <functions> block \u2014 the same encoding as the tool list at the top of this prompt.
+
+Query forms:
+- "select:Read,Edit,Grep" \u2014 fetch these exact tools by name
+- "notebook jupyter" \u2014 keyword search, up to max_results best matches
+- "+slack send" \u2014 require "slack" in the name, rank by remaining terms`;function Ife(e){return Tko(e.name)??iEe(e)}function iEe(e){if(e.alwaysLoad===!0)return!1;if(h(e))return!1;if(ztn())return!1;if(e.isMcp===!0)return!0;if(uSo()&&YS(e,m))return!0;return e.shouldDefer===!0}function h(e){return i(e)||T(e)}function i(e){if(YS(e,dSo()))return!0;if(e.isMcp===!0)return!1;if(e.name===Ma)return!0;if(e.name===ui)return!0;if(e.name===mt){let t=import.meta.require("/$bunfs/root/chunk-7kg0wbnc.js");if(t.isForkSubagentEnabled())return!0}if(e.name===l)return!0;if(e.name===wI&&The())return!0;if(e.name===hl)return!0;return!1}function T(e){return e.isMcp!==!0&&e.name===SI&&a.CLAUDE_CODE_SESSION_KIND==="bg"}function ZQ(e,t,r,{toolSearchAbsent:s=!1,placements:o="hooks"}={}){let n=o==="hooks"?Tko(e.name):void 0;if(n!==void 0)return n;if(s){if(t===void 0)return!1}else if(t===void 0)return o==="hooks"?Ife(e):iEe(e);if(r!==void 0&&zj(r))return!1;if(i(e))return!1;return!t.has(e.name)}function Kvr(e){return e.name}function r$n(){return u+(cAo()?c:p)+d}
+export{SI,wR,qvr,Ife,iEe,ZQ,Kvr,r$n};

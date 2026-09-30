@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+118 |     const envelope = '<cross-session-message from="uds:/r.sock" from-session="s1">\nhola\n</cross-session-message>'
+119 |     await deliverPeerUserMessage({ type: 'user', message: { content: envelope } }, peer, deps)
+120 |     expect(enqueued[0]!.value).toBe(envelope)
+121 |     expect(enqueued[0]!.origin).toMatchObject({ fromSession: 's1', body: 'hola' })
+122 |     await deliverPeerUserMessage({ type: 'user', message: { content: 'x <agent-message>' } }, peer, deps)
+123 |     expect(enqueued[1]!.value).toBe('x <\\agent-message>')
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "x <\agent-message>"
+Received: "x <agent-message>"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:123:32)
+(fail) deliverPeerUserMessage (ze) > el texto se neutraliza, y los campos del sobre pasan al origen; el cuerpo sólo si el texto no cambió [2.10ms]
+
+ 15 pass
+ 1 fail
+ 38 expect() calls
+Ran 16 tests across 1 file. [60.00ms]

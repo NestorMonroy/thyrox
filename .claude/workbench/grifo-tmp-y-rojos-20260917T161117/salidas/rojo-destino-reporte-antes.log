@@ -1,0 +1,15 @@
+=== Caso 1: el guion parsea y expone destino_del_reporte ===
+  OK   importa y la funcion existe
+=== Caso 2: el destino cae bajo .claude/eventos/ del arbol del guion ===
+  FAIL fuera de .claude/eventos/: /home/user/thyrox/eventos/validar-referencias-20260917T174048/reference-validation-report.txt
+=== Caso 3 (EL QUE DISCRIMINA): el destino NO lo decide el CWD ===
+  OK   mismo hogar desde otro CWD: /home/user/thyrox/eventos
+=== Caso 4: el destino no es un nombre relativo pelado ===
+  OK   ruta absoluta
+=== Caso 5: REFERENCE_REPORT_PATH sustituye el default ===
+  OK   el override manda
+=== Caso 6: la raiz del repo NO conserva el reporte varado ===
+  OK   raiz limpia
+
+5 ok, 1 fallos (alcance medido: 6 aserciones sobre /home/user/thyrox/src/verify/detect_broken_references.py)
+EXIT=1

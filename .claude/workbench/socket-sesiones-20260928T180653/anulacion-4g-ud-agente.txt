@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+202 | 
+203 |   test('un teammate o una hija interactiva anidada no lo son', () => {
+204 |     setAmbientMarkerProbe(() => false)
+205 |     expect(ownsSessionRegistryRecord(host({ env: { THYROX_CODE_CHILD_SESSION: '1' } }))).toBe(false)
+206 |     setDynamicTeamContext({ agentId: 'a@e', agentName: 'a', teamName: '', planModeRequired: false })
+207 |     expect(ownsSessionRegistryRecord(host())).toBe(false)
+                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:207:47)
+(fail) ownsSessionRegistryRecord (ud) > un teammate o una hija interactiva anidada no lo son [0.30ms]
+
+ 20 pass
+ 1 fail
+ 43 expect() calls
+Ran 21 tests across 1 file. [135.00ms]

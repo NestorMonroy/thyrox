@@ -1,0 +1,10 @@
+0 tests/hooks/test_detect_unbounded_traversal.py
+0 tests/hooks/test_detect_irreversible_operation.py
+0 tests/hooks/test_detect_gawk_opportunity.py
+0 tests/hooks/test_detect_ephemeral_citation.py
+0 tests/hooks/test_detect_topic_duplication.py
+0 tests/hooks/test_pretooluse_dispatch.py
+0 tests/hooks/test_detect_foreground_long_command.py
+1 tests/session/test_user_wiring.py
+1 tests/session/test_generate_bin.py
+0 tests/verify/test-assert-no-writes.sh

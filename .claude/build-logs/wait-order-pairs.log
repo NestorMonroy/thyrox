@@ -1,0 +1,6 @@
+asentado: order-pairs -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     order-pairs exit=0
+       | __BG_EXIT__=0
+       memoria pico: 223148 KB (218 MB) · pared 12.26s
+EXIT=0

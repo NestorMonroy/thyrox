@@ -1,0 +1,54 @@
+# primera pasada
+== 1: nombre sin defecto -> 4
+== 2: prioridad cero -> 2
+== 3: prioridad decimal -> 1
+== 4: datos no objeto -> 1
+== 5: modelo sin recortar -> 1
+== 6: tipo sin fijar -> 3
+== 7: nombre de variable libre -> 1
+== 8: variable vacía aceptada -> 1
+== 9: variable sin recortar -> 4
+== 10: stdin vacío aceptado -> 1
+== 11: pregunta sin terminal -> 1
+== 12: sin prompt -> 1
+== 13: credencial por argumento -> 1
+== 14: posicional ingenuo -> 1
+== 15: sin credencial exigida -> 1
+== 16: no-credential pregunta -> 1
+== 17: ensayo escribe -> 1
+== 18: ensayo muestra secreto -> 1
+== 19: datos sin redactar -> 1
+== 20: add muestra secretos -> 1
+== 21: activo e inactivo -> 1
+== 22: edit prioridad libre -> 1
+== 23: edit sin cambios -> 1
+== 24: edit pregunta -> 2
+== 25: edit ensayo escribe -> 1
+== 26: inactivo ignorado -> 1
+== 27: existente no se salta -> 1
+== 28: identidad sensible a caja -> 1
+== 29: entrada sin proveedor -> 1
+== 30: archivo aporta id -> 1
+== 31: sigue tras error -> 1
+== 32: entrada sin credencial -> 1
+== 33: ensayo importa -> 1
+== 34: archivo vacío aceptado -> 1
+== 35: forma providers ignorada -> 1
+== 36: prompt con eco -> 2
+== 37: sin retroceso -> 1
+== 38: Ctrl-C aceptado -> 0
+== 39: oyente sin retirar -> 2
+== restaurado -> 0
+# la 38 con la salida cruda: la prueba colgaba (exit 124), no fallaba
+== 38: Ctrl-C aceptado
+   (src/commands/providers/secretPrompt.ts)
+exit=124
+== restaurado
+ 2 pass
+ 0 fail
+exit=0
+__BG_EXIT__=0
+# la 38 tras acotar la prueba con Promise.race
+== 38: Ctrl-C aceptado -> 1
+== restaurado -> 0
+39 de 39 discriminan. La 38 se leía como 0 fallos porque el resumen no distinguía una prueba colgada, cortada por timeout, de una que pasa; acotada, falla en 100 ms.

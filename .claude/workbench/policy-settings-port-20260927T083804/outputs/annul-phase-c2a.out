@@ -1,0 +1,28 @@
+base	13 pass, 0 fail	—
+trailers-bool-ignored	11 pass, 2 fail	el estado de los remolques de atribución (Zl) > commitTrailers booleano decide | la porción del padre (J2o) > remoteTools, remoteControl y atribución restrictivos
+trailers-empty-commit	12 pass, 1 fail	el estado de los remolques de atribución (Zl) > una plantilla de commit vacía los apaga; con plantilla quedan implícitos
+trailers-coauthored-ignored	12 pass, 1 fail	el estado de los remolques de atribución (Zl) > sin atribución decide includeCoAuthoredBy
+templates-pr-ignored	12 pass, 1 fail	el estado de los remolques de atribución (Zl) > una plantilla de commit vacía los apaga; con plantilla quedan implícitos
+exception-rule-kept	12 pass, 1 fail	la porción del padre (J2o) > permisos: deny y ask sin excepciones con «!», y las banderas que restringen
+exception-no-dot	12 pass, 1 fail	la porción del padre (J2o) > permisos: deny y ask sin excepciones con «!», y las banderas que restringen
+bypass-dropped	12 pass, 1 fail	la porción del padre (J2o) > permisos: deny y ask sin excepciones con «!», y las banderas que restringen
+block-reads-dropped	12 pass, 1 fail	la porción del padre (J2o) > permisos: deny y ask sin excepciones con «!», y las banderas que restringen
+allow-always	12 pass, 1 fail	la porción del padre (J2o) > permisos que permiten se callan si el administrador los restringe
+allow-ignores-domains	12 pass, 1 fail	la porción del padre (J2o) > permisos que permiten se callan si el administrador los restringe
+mask-keeps-hosts	12 pass, 1 fail	la porción del padre (J2o) > credenciales del sandbox: archivos a negar o enmascarar, variables negadas, sigv4 y pares AWS
+env-inject-kept	12 pass, 1 fail	la porción del padre (J2o) > credenciales del sandbox: archivos a negar o enmascarar, variables negadas, sigv4 y pares AWS
+sigv4-allow-kept	12 pass, 1 fail	la porción del padre (J2o) > credenciales del sandbox: archivos a negar o enmascarar, variables negadas, sigv4 y pares AWS
+pairs-dropped	12 pass, 1 fail	la porción del padre (J2o) > credenciales del sandbox: archivos a negar o enmascarar, variables negadas, sigv4 y pares AWS
+domains-ignore-admin	12 pass, 1 fail	la porción del padre (J2o) > sandbox: dominios y lecturas negadas viajan; los permitidos según el administrador
+reads-ignore-admin	12 pass, 1 fail	la porción del padre (J2o) > sandbox: dominios y lecturas negadas viajan; los permitidos según el administrador
+sandbox-restrictive-dropped	12 pass, 1 fail	la porción del padre (J2o) > sandbox: dominios y lecturas negadas viajan; los permitidos según el administrador
+flags-false-copied	12 pass, 1 fail	la porción del padre (J2o) > toma las banderas que restringen y deja las que aflojan
+skills-sync-dropped	12 pass, 1 fail	la porción del padre (J2o) > toma las banderas que restringen y deja las que aflojan
+unattended-dropped	12 pass, 1 fail	la porción del padre (J2o) > remoteTools, remoteControl y atribución restrictivos
+share-full-kept	12 pass, 1 fail	la porción del padre (J2o) > remoteTools, remoteControl y atribución restrictivos
+session-url-dropped	12 pass, 1 fail	la porción del padre (J2o) > remoteTools, remoteControl y atribución restrictivos
+strict-empty-kept	12 pass, 1 fail	la porción del padre (J2o) > las listas que niegan viajan; las que permiten, sólo si el administrador no las declara
+blocked-empty-kept	12 pass, 1 fail	la porción del padre (J2o) > las listas que niegan viajan; las que permiten, sólo si el administrador no las declara
+org-overrides-admin	12 pass, 1 fail	la porción del padre (J2o) > las listas que niegan viajan; las que permiten, sólo si el administrador no las declara
+allowlists-override-admin	12 pass, 1 fail	la porción del padre (J2o) > las listas que niegan viajan; las que permiten, sólo si el administrador no las declara
+match-prefix-kept	12 pass, 1 fail	la porción del padre (J2o) > toma las banderas que restringen y deja las que aflojan

@@ -1,0 +1,62 @@
+# 101 de 101 copiados — medido con el hueco, no con el veredicto del pool
+# 2026-09-18T15:36:58
+
+## El instrumento que NO se usó para contar, y por qué
+
+    $ grep -c '^OK' .claude/cache/perm_pool.log
+    101
+
+Esa cifra es correcta y NO prueba lo que la tarea pide. `OK` en la barrera
+significa **el trabajo asentó su marcador**, no `exit 0` — `wait-jobs.sh:133`
+lo declara: `if has_marker "$log" "$pattern"; then echo OK`. Medido en este
+mismo pool: dos trabajos salieron `EXIT=3` (la guarda «YA EXISTE, no se pisa»
+de los dos archivos que una sonda previa ya había copiado) y los dos figuran
+como `OK`.
+
+    $ grep -n -A2 'classifierDecision.ts|classifierStallTracking.ts' perm_pool.log
+    202:       | YA EXISTE, no se pisa: src/classifierDecision.ts
+    203-       | EXIT=3
+    205:       | YA EXISTE, no se pisa: src/classifierStallTracking.ts
+    206-       | EXIT=3
+
+Un pool de 101 copias que fallaran todas con `exit 2` («ORIGEN AUSENTE»)
+publicaría igualmente `101 OK`. Por eso el conteo sale del hueco re-medido.
+
+## El instrumento que SÍ decide: el hueco
+
+    $ (cd REF && find . -type f -not -path './node_modules/*' ...) | sort > perm_ref2.txt
+    $ (cd THY && find . -type f -not -path './node_modules/*' ...) | sort > perm_thy2.txt
+    referencia=139  nuestro=167
+    $ comm -23 perm_ref2.txt perm_thy2.txt | wc -l   # faltan
+    0
+    $ comm -13 perm_ref2.txt perm_thy2.txt | wc -l   # sobran
+    28
+
+139 de la referencia + 28 nuestros que ella no tiene = 167. **faltan = 0.**
+
+## El control de integridad, y discrimina en las DOS direcciones
+
+sha256 de los 139 archivos comunes, referencia contra puerto:
+
+    archivos comparados=139  distintos=38
+
+Los 38 distintos son **exactamente** los 38 que ya existían antes del pool
+(el común previo), ni uno más ni uno menos:
+
+    $ comm -12 perm_ref.txt perm_thy.txt > perm_comun_previo.txt   # 38
+    $ comm -23 perm_distintos.txt perm_comun_previo.txt            # distintos que NO son del común previo
+    (vacío)
+    $ comm -13 perm_distintos.txt perm_comun_previo.txt            # del común previo que SÍ son idénticos
+    (vacío)
+
+Eso es lo que hace al control un control y no un adorno: si la copia hubiera
+pisado un archivo ya adaptado, ese archivo habría salido **idéntico** a la
+referencia y aparecería en la segunda lista. Salió vacía. Y si alguna de las
+101 copias hubiera salido corrupta o truncada, aparecería en la primera.
+También vacía.
+
+*Metrica:* archivos regulares bajo cada raíz, excluyendo `node_modules` y
+`.git`; y sha256 por archivo del conjunto común.
+*Ciega a:* permisos y mtime (no los compara); a un archivo cuyo contenido sea
+idéntico por coincidencia y no por copia; y a si los 101 copiados **compilan**
+o **pasan** — eso es la fase siguiente, que el encargo difiere a propósito.

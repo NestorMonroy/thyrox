@@ -1,0 +1,17 @@
+== el corredor sabe decir qué va a correr ==
+  ok  `run.sh --list` enumera archivos en vez de rehusar
+== ninguna lengua queda fuera del alcance ==
+  ok  TypeScript: hay archivos de test en disco (957)
+  ok  TypeScript: los 957 archivos están en el alcance
+  ok  TypeScript (tsx): hay archivos de test en disco (2)
+  FALLA  TypeScript (tsx): los 2 archivos están en el alcance — faltan 2, p. ej. src/packages/@ant/ink/src/theme/__tests__/Tree.test.tsx
+  ok  Python: hay archivos de test en disco (222)
+  ok  Python: los 222 archivos están en el alcance
+  ok  shell: hay archivos de test en disco (109)
+  ok  shell: los 109 archivos están en el alcance
+== el corredor no promete más lenguas de las que invoca ==
+  ok  hay un solo mensaje de éxito (1)
+  ok  el mensaje de éxito dice «tres» — hay 3 lengua(s) en el alcance
+
+FALLA: 1 aserción(es) en rojo
+EXIT=1

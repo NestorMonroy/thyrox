@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+93 |     const { deps } = harness({ resolveFastMode: model => (seen.push(model), false) })
+94 |     const app = store({ mainLoopModel: null, mainLoopModelForSession: null, fastMode: false })
+95 |     applyRefusalFallbackRestore(restore(), app.setAppState, deps)
+96 |     applyRefusalFallbackRestore(restore({ overrideValue: undefined, forSessionValue: 'sesion' }), app.setAppState, deps)
+97 |     applyRefusalFallbackRestore(restore({ overrideValue: undefined, forSessionValue: null, appStateModel: 'estado' }), app.setAppState, deps)
+98 |     expect(seen).toEqual(['claude-opus-5', 'sesion', 'estado'])
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "claude-opus-5",
+-   "sesion",
++   "claude-opus-5",
+    "estado",
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:98:18)
+(fail) applyRefusalFallbackRestore (wt) > el modelo para resolver es override, luego el de sesión, luego el del estado [0.81ms]
+
+ 10 pass
+ 1 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [85.00ms]

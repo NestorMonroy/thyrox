@@ -1,0 +1,3 @@
+omitido LocalCommandCall (src/packages/command-runtime/src/runtime.ts): la fuente no lo exporta
+omitido AgentDefinition (src/packages/config/plugin/_deps.ts): la fuente no lo exporta
+copy_missing_symbols: 7 archivo(s), 16 símbolo(s) copiables, 2 omitido(s)

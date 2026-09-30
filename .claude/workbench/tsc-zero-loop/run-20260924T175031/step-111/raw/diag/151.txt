@@ -1,0 +1,7 @@
+src/packages/provider/src/gemini/convertMessages.ts(41,32): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/provider/src/gemini/convertMessages.ts(86,19): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/provider/src/gemini/convertMessages.ts(102,44): error TS2345: Argument of type 'ContentBlockParam | ContentBlock' is not assignable to parameter of type 'string | Record<string, unknown>'.
+  Type 'TextBlockParam' is not assignable to type 'string | Record<string, unknown>'.
+    Type 'TextBlockParam' is not assignable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type 'TextBlockParam'.
+src/packages/provider/src/gemini/convertMessages.ts(157,19): error TS18048: 'msg.message' is possibly 'undefined'.

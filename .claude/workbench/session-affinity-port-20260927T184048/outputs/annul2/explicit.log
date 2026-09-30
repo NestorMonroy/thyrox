@@ -1,0 +1,15 @@
+(fail) enrich: una sesión explícita no se deriva > cabecera de sesión de Messages [1.00ms]
+(fail) enrich: una sesión explícita no se deriva > valor válido en segunda posición de la cabecera [0.12ms]
+(fail) enrich: una sesión explícita no se deriva > afinidad de OpenCode [0.07ms]
+(fail) enrich: una sesión explícita no se deriva > conversación de Responses como objeto [0.47ms]
+(fail) enrich: una sesión explícita no se deriva > conversación de Responses como texto [0.49ms]
+(fail) enrich: una sesión explícita no se deriva > user_id en el metadata [0.22ms]
+(fail) enrich: una sesión explícita no se deriva > sesión heredada de Messages más larga que 256 [0.10ms]
+(fail) enrich: una sesión explícita no se deriva > user_id JSON sin sesión dentro [0.10ms]
+(fail) enrich: una sesión explícita no se deriva > session_id en el cuerpo [0.13ms]
+(fail) enrich: una sesión explícita no se deriva > una cabecera explícita retira la identidad derivada vieja [0.07ms]
+(fail) enrich: una sesión explícita no se deriva > sessionId en la petición anidada [0.13ms]
+(fail) enrich: una sesión explícita no se deriva > subagente en la petición anidada [0.09ms]
+(fail) enrich: resultados > la sesión explícita gana a la de ejecución, que se conserva [0.15ms]
+ 19 pass
+ 13 fail

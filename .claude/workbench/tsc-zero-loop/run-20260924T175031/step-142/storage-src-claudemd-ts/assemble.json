@@ -1,0 +1,24 @@
+{
+ "applied": [
+  "consumeNextEagerLoadReason",
+  "extractIncludePathsFromTokens",
+  "getAllMemoryFilePaths",
+  "getConditionalRulesForCwdLevelDirectory",
+  "getManagedAndUserConditionalRules",
+  "safelyReadMemoryFileAsync",
+  "isClaudeMdExcluded",
+  "isInstructionsMemoryType",
+  "parseFrontmatterPaths",
+  "parseMemoryFileContent",
+  "processMemoryFile",
+  "processConditionedMdRules",
+  "processMdRules",
+  "resolveExcludePatterns",
+  "stripHtmlCommentsFromTokens",
+  "__declarations__:types"
+ ],
+ "rejected": {},
+ "missing": [
+  "getMemoryFilesForNestedDirectory"
+ ]
+}

@@ -1,0 +1,1552 @@
+diff --git a/src/agents/merge_sqlite_union.py b/src/agents/merge_sqlite_union.py
+index 5a52a376..e842a516 100644
+--- a/src/agents/merge_sqlite_union.py
++++ b/src/agents/merge_sqlite_union.py
+@@ -1,162 +1,472 @@
+ #!/usr/bin/env python3
+-"""merge_sqlite_union.py — driver de merge de union para una base SQLite versionada.
+-
+-``agent_store.sqlite3`` es binario y esta versionado, y dos sesiones que corren
+-a la vez le anaden filas distintas. Sin driver, git husmea el archivo como
+-binario, avisa ``Cannot merge binary files`` y deja conflicto: el arbol se queda
+-con **nuestro** lado y las filas del otro desaparecen sin que nadie las nombre.
+-
+-Medido en un laboratorio de tres commits (base + una fila por rama), con
+-``* text=auto`` y sin driver::
+-
+-    CONFLICT (content): Merge conflict in store.sqlite3
+-    filas: ['a', 'base']          # la fila 'b' del otro lado no esta
+-
+-Este driver hace la union: cada tabla recibe las filas del otro lado que su
+-clave primaria todavia no tenga.
++"""merge_sqlite_union.py — driver de merge de tres vías para una base SQLite versionada.
++
++``agent_store.sqlite3`` es binario y está versionado, y dos sesiones que
++corren a la vez le añaden filas distintas. Sin driver, git husmea el archivo
++como binario, avisa ``Cannot merge binary files`` y deja conflicto: el árbol
++se queda con **nuestro** lado y las filas del otro desaparecen sin que nadie
++las nombre.
++
++Contrato: `.claude/workbench/datos-d4-inventario-20260929T221846/README.md`
++§10. La propiedad no es «determinista» sino **sin pérdida silenciosa**: si el
++merge puede probar qué cambio aplicar, lo aplica; si los dos lados cambiaron
++de forma incompatible, no inventa ganador — declara CONFLICTO y conserva las
++dos versiones.
++
++Un contador de ``revision`` local NO decide entre copias que evolucionaron en
++paralelo (el contraejemplo de §10: base rev 11, nuestro rev 13, suyo rev 12 —
++``13 > 12`` no prueba que nuestro lado incluya el cambio del otro). Lo que
++decide es el ancestro común que git ya entrega como ``argv[1]``, comparado por
++``domain_hash`` (``store_field_classes.py``): igual al de la base es «sin
++cambio»; distinto es «cambió»; dos lados que cambiaron a hashes distintos es
++conflicto, sin importar su ``revision``.
+ 
+ Uso — git lo invoca con los tres estados del archivo::
+ 
+     merge_sqlite_union.py <ancestro> <nuestro> <suyo>
+ 
+-``<nuestro>`` es a la vez entrada y **destino**: git toma de ahi el resultado.
+-El ancestro no se usa para decidir (la union no lo necesita) y se recibe porque
+-el contrato de ``merge.<driver>.driver`` lo entrega.
++``<nuestro>`` es a la vez entrada y **destino**: git toma de ahí el resultado.
+ 
+-Se instala en el clon con ``bash scripts/install-hooks.sh`` — la definicion vive
+-en ``.git/config``, que no se versiona, y el atributo ``merge=`` que lo invoca
+-en ``.gitattributes``, que si. Sin la mitad de ``.git/config`` git no falla:
+-vuelve al comportamiento binario de arriba, que es seguro y con perdida.
++## Qué decide, y qué no
+ 
+-## Que decide, y que NO decide
++Decide, fila por fila, emparejada por la identidad que ``store_field_classes``
++declara para su tabla: idéntica, insertada, actualizada, borrada o en
++conflicto. Un conflicto deja la tabla principal como estaba en nuestro lado
++(no inventa ganador) y registra las tres versiones —base, nuestro, suyo— en la
++tabla ``merge_conflicts`` para que se resuelvan a mano; el driver sale con
++código distinto de cero para que git marque el conflicto.
+ 
+-Decide **la union de filas nuevas**. Ante una clave primaria que los dos lados
+-modificaron, conserva la nuestra y lo **informa por stderr** con su conteo: una
+-union silenciosa sobre filas divergentes seria el mismo defecto que el conflicto
+-binario, sin el aviso. La politica de esa colision —quien gana, o si debe
+-conflictuar— es una decision de producto y vive en la tarea **#436**; este
+-guion es el mecanismo que esa decision necesita para poder aplicarse.
++Aborta (exit 1, git marca conflicto) cuando el merge no está definido:
+ 
+-Aborta (exit 1, git marca conflicto) cuando la union no esta definida:
++- una tabla no tiene declarada su clasificación de campos
++  (``store_field_classes.UnknownTableError``) — no se adivina;
++- una tabla existe en más de un lado con **columnas distintas** — hubo un
++  cambio de esquema, y mezclar filas entre esquemas divergentes corrompe.
+ 
+-- una tabla existe en los dos lados con **columnas distintas** — hubo un cambio
+-  de esquema, y mezclar filas entre esquemas divergentes corrompe;
+-- una tabla no tiene clave primaria — sin ella ``INSERT OR IGNORE`` no puede
+-  distinguir una fila repetida de una nueva, y la union duplicaria.
++El índice FTS5 (``findings_fts`` y sus tablas sombra) no se une fila a fila:
++se regenera con ``rebuild`` a partir de su tabla de contenido, ya unida.
+ 
+-*Metrica:* filas insertadas y filas omitidas por clave ya presente.
+-*Ciega a:* si las filas omitidas eran iguales o divergentes — para eso hace
+-falta comparar contenido, que es lo que #436 debe decidir.
++*Métrica:* por tabla, cuántas filas cayeron en cada uno de los cinco
++desenlaces (idéntica, insertada, actualizada, borrada, conflicto).
++*Ciega a:* si el contenido en conflicto debía resolverse a favor de un lado
++por una regla de dominio — esa decisión es de quien lee ``merge_conflicts``,
++no de este driver.
+ """
+ 
++from __future__ import annotations
++
++import json
+ import sqlite3
+ import sys
++from dataclasses import dataclass, field
++from datetime import datetime, timezone
++from enum import Enum
++from pathlib import Path
+ 
+-#: Tablas que SQLite gestiona por su cuenta; unirlas corromperia el archivo.
+-TABLAS_INTERNAS_PREFIJO = "sqlite_"
++# git invoca este archivo directo ("python3 merge_sqlite_union.py %O %A %B",
++# ver install-hooks.sh), sin PYTHONPATH=src: sin esto, "agents" no resuelve.
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
++
++from agents.store_field_classes import FieldClasses, UnknownTableError, domain_hash, field_classes  # noqa: E402
++
++#: Tablas que SQLite gestiona por su cuenta; unirlas corrompería el archivo.
++INTERNAL_TABLE_PREFIX = "sqlite_"
+ 
+ #: Sufijos de las tablas sombra que FTS5 crea junto a cada tabla virtual.
+-#: No se unen fila a fila: son el indice, y se regeneran con 'rebuild'.
+-SUFIJOS_SOMBRA_FTS = ("_data", "_idx", "_docsize", "_config", "_content")
++#: No se unen fila a fila: son el índice, y se regeneran con 'rebuild'.
++FTS_SHADOW_SUFFIXES = ("_data", "_idx", "_docsize", "_config", "_content")
++
++#: Dónde queda un conflicto: las tres versiones, recuperables a mano.
++CONFLICTS_TABLE = "merge_conflicts"
++
++CONFLICTS_TABLE_DDL = f"""
++CREATE TABLE IF NOT EXISTS {CONFLICTS_TABLE} (
++    table_name    TEXT NOT NULL,
++    identity_json TEXT NOT NULL,
++    base_json     TEXT,
++    ours_json     TEXT,
++    theirs_json   TEXT,
++    detected_at   TEXT NOT NULL
++)
++"""
++
++#: Nombres de esquema con los que se ATTACHan las tres copias en la conexión
++#: de trabajo. ``main`` es la propia base destino (nuestro lado).
++OURS_SCHEMA = "main"
++BASE_SCHEMA = "base"
++THEIRS_SCHEMA = "theirs"
++
+ 
++class Outcome(Enum):
++    """Los cinco desenlaces posibles de una fila, por identidad (§10)."""
+ 
+-def tablas_virtuales(conexion, esquema):
+-    """Las tablas virtuales del esquema — FTS5 y compania.
++    IDENTICAL = "identical"
++    INSERTED = "inserted"
++    UPDATED = "updated"
++    DELETED = "deleted"
++    CONFLICT = "conflict"
+ 
+-    El store real declara ``findings_fts``, y sin esta distincion el driver la
+-    trataba como tabla normal: no tiene clave primaria, asi que abortaba el
+-    merge entero. Medido al probar contra el esquema de verdad, no supuesto.
++
++@dataclass(frozen=True)
++class Decision:
++    """El desenlace de una fila y, si aplica, qué lado aporta su contenido."""
++
++    outcome: Outcome
++    #: "ours", "theirs" o None (sin fila resultante: DELETED, o CONFLICT sin
++    #: fila propia). Nunca se usa para escribir directamente: lo resuelve
++    #: ``resolve_target_row`` contra las filas reales.
++    source: str | None
++
++
++def decide_row(base_hash: str | None, ours_hash: str | None, theirs_hash: str | None) -> Decision:
++    """La fila de la tabla de decisión de §10 que corresponde a estos hashes.
++
++    ``None`` representa ausencia de la fila en ese lado (borrada, o nunca
++    existió). Puro: no toca la base de datos, así que cada rama se prueba con
++    literales, sin fixtures de sqlite.
+     """
+-    filas = conexion.execute(
+-        f"SELECT name, sql FROM {esquema}.sqlite_master WHERE type = 'table'"
+-    ).fetchall()
+-    return [n for n, sql in filas if (sql or "").lstrip().upper().startswith("CREATE VIRTUAL")]
++    if base_hash is None:
++        return _decide_new_row(ours_hash, theirs_hash)
++    return _decide_existing_row(base_hash, ours_hash, theirs_hash)
+ 
+ 
+-def tablas(conexion, esquema):
+-    """Las tablas que SI se unen fila a fila."""
+-    filas = conexion.execute(
+-        f"SELECT name FROM {esquema}.sqlite_master WHERE type = 'table'"
+-    ).fetchall()
+-    virtuales = set(tablas_virtuales(conexion, esquema))
+-    sombras = {f"{v}{sufijo}" for v in virtuales for sufijo in SUFIJOS_SOMBRA_FTS}
+-    return [n for (n,) in filas
+-            if not n.startswith(TABLAS_INTERNAS_PREFIJO)
+-            and n not in virtuales
+-            and n not in sombras]
++def _decide_new_row(ours_hash: str | None, theirs_hash: str | None) -> Decision:
++    if ours_hash is None:
++        return Decision(Outcome.INSERTED, "theirs")
++    if theirs_hash is None:
++        return Decision(Outcome.INSERTED, "ours")
++    if ours_hash == theirs_hash:
++        return Decision(Outcome.INSERTED, "ours")
++    return Decision(Outcome.CONFLICT, "ours")
+ 
+ 
+-def columnas(conexion, esquema, tabla):
+-    return [fila[1] for fila in conexion.execute(f'PRAGMA {esquema}.table_info("{tabla}")')]
++def _decide_existing_row(base_hash: str, ours_hash: str | None, theirs_hash: str | None) -> Decision:
++    ours_changed = ours_hash != base_hash
++    theirs_changed = theirs_hash != base_hash
+ 
++    if not ours_changed and not theirs_changed:
++        return Decision(Outcome.IDENTICAL, "ours")
++    if ours_changed and not theirs_changed:
++        return _decide_one_sided_change(ours_hash, "ours")
++    if theirs_changed and not ours_changed:
++        return _decide_one_sided_change(theirs_hash, "theirs")
++    return _decide_both_sides_changed(ours_hash, theirs_hash)
+ 
+-def tiene_clave_primaria(conexion, esquema, tabla):
+-    return any(fila[5] for fila in conexion.execute(f'PRAGMA {esquema}.table_info("{tabla}")'))
+ 
++def _decide_one_sided_change(changed_hash: str | None, side: str) -> Decision:
++    if changed_hash is None:
++        return Decision(Outcome.DELETED, None)
++    return Decision(Outcome.UPDATED, side)
+ 
+-def unir(destino, origen):
+-    """Une ``origen`` dentro de ``destino``. Devuelve (insertadas, omitidas)."""
+-    conexion = sqlite3.connect(destino)
+-    conexion.execute("ATTACH DATABASE ? AS suyo", (origen,))
+ 
+-    nuestras = set(tablas(conexion, "main"))
+-    suyas = tablas(conexion, "suyo")
++def _decide_both_sides_changed(ours_hash: str | None, theirs_hash: str | None) -> Decision:
++    if ours_hash is None and theirs_hash is None:
++        return Decision(Outcome.DELETED, None)
++    if ours_hash is None or theirs_hash is None:
++        return Decision(Outcome.CONFLICT, "ours" if ours_hash is not None else None)
++    if ours_hash == theirs_hash:
++        return Decision(Outcome.UPDATED, "ours")
++    return Decision(Outcome.CONFLICT, "ours")
+ 
+-    insertadas = omitidas = 0
+-    for tabla in suyas:
+-        if tabla not in nuestras:
+-            # Tabla que solo el otro lado tiene: se crea con su propio DDL.
+-            (ddl,) = conexion.execute(
+-                "SELECT sql FROM suyo.sqlite_master WHERE type='table' AND name=?",
+-                (tabla,),
+-            ).fetchone()
+-            conexion.execute(ddl)
+-        elif columnas(conexion, "main", tabla) != columnas(conexion, "suyo", tabla):
+-            conexion.close()
+-            raise SystemExit(
+-                f"merge_sqlite_union: la tabla {tabla!r} tiene columnas distintas en "
+-                f"cada lado — hubo cambio de esquema y la union no esta definida. "
+-                f"Se deja el conflicto para que lo resuelva una persona."
+-            )
+ 
+-        if not tiene_clave_primaria(conexion, "suyo", tabla):
+-            conexion.close()
+-            raise SystemExit(
+-                f"merge_sqlite_union: la tabla {tabla!r} no declara clave primaria — "
+-                f"sin ella la union no distingue fila repetida de fila nueva."
+-            )
++def resolve_target_row(decision: Decision, ours_row, theirs_row):
++    """El contenido que debe quedar en la tabla principal tras la decisión.
++
++    Un CONFLICTO nunca reescribe la tabla principal: su ``source`` es
++    "ours" (o None si nuestro lado ya no tenía la fila) precisamente para
++    dejarla como está — el conflicto se registra aparte, no se resuelve aquí.
++    """
++    if decision.source == "ours":
++        return ours_row
++    if decision.source == "theirs":
++        return theirs_row
++    return None
++
++
++def virtual_tables(connection: sqlite3.Connection, schema: str) -> list[str]:
++    """Las tablas virtuales del esquema — FTS5 y compañía."""
++    rows = connection.execute(
++        f"SELECT name, sql FROM {schema}.sqlite_master WHERE type = 'table'"
++    ).fetchall()
++    return [name for name, sql in rows if (sql or "").lstrip().upper().startswith("CREATE VIRTUAL")]
++
++
++def real_tables(connection: sqlite3.Connection, schema: str) -> list[str]:
++    """Las tablas que sí se unen fila a fila: ni internas, ni FTS, ni el log de conflictos."""
++    rows = connection.execute(
++        f"SELECT name FROM {schema}.sqlite_master WHERE type = 'table'"
++    ).fetchall()
++    virtual = set(virtual_tables(connection, schema))
++    shadows = {f"{name}{suffix}" for name in virtual for suffix in FTS_SHADOW_SUFFIXES}
++    return [
++        name for (name,) in rows
++        if not name.startswith(INTERNAL_TABLE_PREFIX)
++        and name not in virtual
++        and name not in shadows
++        and name != CONFLICTS_TABLE
++    ]
+ 
+-        antes = conexion.execute(f'SELECT count(*) FROM main."{tabla}"').fetchone()[0]
+-        candidatas = conexion.execute(f'SELECT count(*) FROM suyo."{tabla}"').fetchone()[0]
+-        conexion.execute(f'INSERT OR IGNORE INTO main."{tabla}" SELECT * FROM suyo."{tabla}"')
+-        despues = conexion.execute(f'SELECT count(*) FROM main."{tabla}"').fetchone()[0]
+ 
+-        insertadas += despues - antes
+-        omitidas += candidatas - (despues - antes)
++def table_exists(connection: sqlite3.Connection, schema: str, table: str) -> bool:
++    return connection.execute(
++        f"SELECT 1 FROM {schema}.sqlite_master WHERE type = 'table' AND name = ?", (table,)
++    ).fetchone() is not None
+ 
+-    # El indice de texto se REGENERA, no se une: sus tablas sombra son
+-    # estructura interna de FTS5 y copiarlas fila a fila la corrompe.
+-    for virtual in tablas_virtuales(conexion, "main"):
+-        conexion.execute(f'INSERT INTO main."{virtual}"("{virtual}") VALUES (\'rebuild\')')
+ 
+-    conexion.commit()
+-    conexion.close()
+-    return insertadas, omitidas
++def table_columns(connection: sqlite3.Connection, schema: str, table: str) -> list[str]:
++    return [row[1] for row in connection.execute(f'PRAGMA {schema}.table_info("{table}")')]
+ 
+ 
+-def main(argv):
++def table_ddl(connection: sqlite3.Connection, schema: str, table: str) -> str:
++    (ddl,) = connection.execute(
++        f"SELECT sql FROM {schema}.sqlite_master WHERE type = 'table' AND name = ?", (table,)
++    ).fetchone()
++    return ddl
++
++
++def local_sequence_column(connection: sqlite3.Connection, schema: str, table: str, identity_fields: tuple[str, ...]) -> str | None:
++    """La columna INTEGER PRIMARY KEY que SQLite autonumera, si no es identidad.
++
++    ``findings_history.id`` es la forma real: un AUTOINCREMENT local que dos
++    bases independientes reparten desde 1, así que el mismo entero no
++    significa la misma fila en las dos. Copiar su valor al insertar
++    colisionaría con una fila ajena que llegó primero a ese número — se omite
++    y SQLite asigna uno nuevo. Una columna que SÍ es la identidad declarada
++    (``schema_migrations.version``) no entra aquí: ese entero sí viaja con
++    significado.
++    """
++    primary_key_columns = [
++        (row[1], row[2]) for row in connection.execute(f'PRAGMA {schema}.table_info("{table}")') if row[5]
++    ]
++    if len(primary_key_columns) != 1:
++        return None
++    name, declared_type = primary_key_columns[0]
++    if name in identity_fields or (declared_type or "").strip().upper() != "INTEGER":
++        return None
++    return name
++
++
++def validate_matching_columns(connection: sqlite3.Connection, table: str, schemas_with_table: list[str]) -> list[str]:
++    """Las columnas de ``table``, si coinciden en todo lado que la tiene.
++
++    Columnas distintas entre dos lados significan un cambio de esquema, y
++    mezclar filas de esquemas divergentes corrompe: el merge no está
++    definido y el driver aborta en vez de adivinar.
++    """
++    reference_schema = schemas_with_table[0]
++    columns = table_columns(connection, reference_schema, table)
++    for schema in schemas_with_table[1:]:
++        if table_columns(connection, schema, table) != columns:
++            raise SystemExit(
++                f"merge_sqlite_union: la tabla {table!r} tiene columnas distintas en "
++                f"cada lado — hubo cambio de esquema y el merge no está definido. "
++                f"Se deja el conflicto para que lo resuelva una persona."
++            )
++    return columns
++
++
++def fetch_rows(
++    connection: sqlite3.Connection, schema: str, table: str, columns: list[str], identity_fields: tuple[str, ...]
++) -> dict[tuple, dict]:
++    """Las filas de ``table`` en ``schema``, indexadas por su identidad de dominio."""
++    column_list = ", ".join(f'"{column}"' for column in columns)
++    rows = {}
++    for values in connection.execute(f'SELECT {column_list} FROM {schema}."{table}"'):
++        row = dict(zip(columns, values))
++        identity = tuple(row[field_name] for field_name in identity_fields)
++        rows[identity] = row
++    return rows
++
++
++def hash_or_none(table: str, row: dict | None) -> str | None:
++    return domain_hash(table, row) if row is not None else None
++
++
++def insert_row(
++    connection: sqlite3.Connection, table: str, columns: list[str], row: dict, sequence_column: str | None
++) -> None:
++    insertable = [column for column in columns if column != sequence_column]
++    column_list = ", ".join(f'"{column}"' for column in insertable)
++    placeholders = ", ".join("?" for _ in insertable)
++    connection.execute(
++        f'INSERT INTO {OURS_SCHEMA}."{table}" ({column_list}) VALUES ({placeholders})',
++        [row[column] for column in insertable],
++    )
++
++
++def update_row(
++    connection: sqlite3.Connection,
++    table: str,
++    columns: list[str],
++    identity_fields: tuple[str, ...],
++    row: dict,
++    sequence_column: str | None,
++) -> None:
++    excluded = set(identity_fields) | {sequence_column}
++    updatable = [column for column in columns if column not in excluded]
++    assignments = ", ".join(f'"{column}" = ?' for column in updatable)
++    where_clause = " AND ".join(f'"{field_name}" = ?' for field_name in identity_fields)
++    values = [row[column] for column in updatable] + [row[field_name] for field_name in identity_fields]
++    connection.execute(f'UPDATE {OURS_SCHEMA}."{table}" SET {assignments} WHERE {where_clause}', values)
++
++
++def delete_row(connection: sqlite3.Connection, table: str, identity_fields: tuple[str, ...], identity: tuple) -> None:
++    where_clause = " AND ".join(f'"{field_name}" = ?' for field_name in identity_fields)
++    connection.execute(f'DELETE FROM {OURS_SCHEMA}."{table}" WHERE {where_clause}', list(identity))
++
++
++def apply_target_row(
++    connection: sqlite3.Connection,
++    table: str,
++    columns: list[str],
++    identity_fields: tuple[str, ...],
++    identity: tuple,
++    current_row: dict | None,
++    target_row: dict | None,
++    sequence_column: str | None,
++) -> None:
++    """Deja la tabla principal como ``target_row`` exige, sin tocarla si ya lo está."""
++    if target_row is None:
++        if current_row is not None:
++            delete_row(connection, table, identity_fields, identity)
++        return
++    if current_row is None:
++        insert_row(connection, table, columns, target_row, sequence_column)
++        return
++    if target_row != current_row:
++        update_row(connection, table, columns, identity_fields, target_row, sequence_column)
++
++
++def record_conflict(
++    connection: sqlite3.Connection,
++    table: str,
++    identity_fields: tuple[str, ...],
++    identity: tuple,
++    base_row: dict | None,
++    ours_row: dict | None,
++    theirs_row: dict | None,
++) -> None:
++    """Deja las tres versiones recuperables en ``merge_conflicts``, sin descartar ninguna."""
++    identity_json = json.dumps(dict(zip(identity_fields, identity)), sort_keys=True)
++    connection.execute(
++        f"INSERT INTO {CONFLICTS_TABLE} "
++        "(table_name, identity_json, base_json, ours_json, theirs_json, detected_at) "
++        "VALUES (?, ?, ?, ?, ?, ?)",
++        (
++            table,
++            identity_json,
++            json.dumps(base_row, sort_keys=True) if base_row is not None else None,
++            json.dumps(ours_row, sort_keys=True) if ours_row is not None else None,
++            json.dumps(theirs_row, sort_keys=True) if theirs_row is not None else None,
++            datetime.now(timezone.utc).isoformat(),
++        ),
++    )
++
++
++@dataclass
++class TableReport:
++    """El conteo por desenlace de una tabla, y la identidad de cada conflicto."""
++
++    table: str
++    counts: dict[Outcome, int] = field(default_factory=lambda: {outcome: 0 for outcome in Outcome})
++    conflict_identities: list[dict] = field(default_factory=list)
++
++    def record(self, decision: Decision, identity_fields: tuple[str, ...], identity: tuple) -> None:
++        self.counts[decision.outcome] += 1
++        if decision.outcome is Outcome.CONFLICT:
++            self.conflict_identities.append(dict(zip(identity_fields, identity)))
++
++
++def merge_table(connection: sqlite3.Connection, table: str) -> TableReport:
++    """Fusiona una tabla real de tres vías y devuelve su informe."""
++    try:
++        classes: FieldClasses = field_classes(table)
++    except UnknownTableError as error:
++        raise SystemExit(
++            f"merge_sqlite_union: la tabla {table!r} no tiene declarada su clasificación "
++            f"de campos en store_field_classes.py — el merge no adivina, se aborta."
++        ) from error
++
++    schemas_with_table = [
++        schema for schema in (BASE_SCHEMA, OURS_SCHEMA, THEIRS_SCHEMA)
++        if table_exists(connection, schema, table)
++    ]
++    columns = validate_matching_columns(connection, table, schemas_with_table)
++
++    if not table_exists(connection, OURS_SCHEMA, table) and table_exists(connection, THEIRS_SCHEMA, table):
++        connection.execute(table_ddl(connection, THEIRS_SCHEMA, table))
++
++    sequence_column = local_sequence_column(connection, OURS_SCHEMA, table, classes.identity)
++
++    base_rows = fetch_rows(connection, BASE_SCHEMA, table, columns, classes.identity) \
++        if BASE_SCHEMA in schemas_with_table else {}
++    ours_rows = fetch_rows(connection, OURS_SCHEMA, table, columns, classes.identity) \
++        if table_exists(connection, OURS_SCHEMA, table) else {}
++    theirs_rows = fetch_rows(connection, THEIRS_SCHEMA, table, columns, classes.identity) \
++        if THEIRS_SCHEMA in schemas_with_table else {}
++
++    report = TableReport(table)
++    all_identities = set(base_rows) | set(ours_rows) | set(theirs_rows)
++    for identity in sorted(all_identities):
++        base_row, ours_row, theirs_row = base_rows.get(identity), ours_rows.get(identity), theirs_rows.get(identity)
++        decision = decide_row(
++            hash_or_none(table, base_row), hash_or_none(table, ours_row), hash_or_none(table, theirs_row)
++        )
++        target_row = resolve_target_row(decision, ours_row, theirs_row)
++        apply_target_row(connection, table, columns, classes.identity, identity, ours_row, target_row, sequence_column)
++        report.record(decision, classes.identity, identity)
++        if decision.outcome is Outcome.CONFLICT:
++            record_conflict(connection, table, classes.identity, identity, base_row, ours_row, theirs_row)
++
++    return report
++
++
++def rebuild_fts_indexes(connection: sqlite3.Connection) -> None:
++    """El índice de texto se REGENERA, no se une: sus tablas sombra son estructura interna."""
++    for virtual in virtual_tables(connection, OURS_SCHEMA):
++        connection.execute(f'INSERT INTO {OURS_SCHEMA}."{virtual}"("{virtual}") VALUES (\'rebuild\')')
++
++
++def merge_databases(ancestor_path: str, ours_path: str, theirs_path: str) -> list[TableReport]:
++    """Fusiona ``theirs`` y ``ancestor`` dentro de ``ours``. Devuelve el informe por tabla."""
++    connection = sqlite3.connect(ours_path)
++    connection.execute(f"ATTACH DATABASE ? AS {BASE_SCHEMA}", (ancestor_path,))
++    connection.execute(f"ATTACH DATABASE ? AS {THEIRS_SCHEMA}", (theirs_path,))
++    connection.execute(CONFLICTS_TABLE_DDL)
++
++    tables = sorted(
++        set(real_tables(connection, BASE_SCHEMA))
++        | set(real_tables(connection, OURS_SCHEMA))
++        | set(real_tables(connection, THEIRS_SCHEMA))
++    )
++    reports = [merge_table(connection, table) for table in tables]
++
++    rebuild_fts_indexes(connection)
++    connection.commit()
++    connection.close()
++    return reports
++
++
++def print_report(reports: list[TableReport]) -> int:
++    """Escribe el informe por tabla a stderr. Devuelve el total de conflictos."""
++    total_conflicts = 0
++    for report in reports:
++        counts = ", ".join(f"{outcome.value}={report.counts[outcome]}" for outcome in Outcome)
++        print(f"merge_sqlite_union: {report.table}: {counts}", file=sys.stderr)
++        for identity in report.conflict_identities:
++            print(f"merge_sqlite_union: {report.table}: conflicto en {identity}", file=sys.stderr)
++        total_conflicts += report.counts[Outcome.CONFLICT]
++    return total_conflicts
++
++
++def main(argv: list[str]) -> int:
+     if len(argv) != 4:
+         raise SystemExit(f"uso: {argv[0]} <ancestro> <nuestro> <suyo>")
+ 
+-    _ancestro, nuestro, suyo = argv[1:4]
+-    insertadas, omitidas = unir(nuestro, suyo)
+-
+-    print(f"merge_sqlite_union: {insertadas} fila(s) unidas", file=sys.stderr)
+-    if omitidas:
+-        # No es ruido: es la mitad que el driver NO decide (ver #436).
+-        print(f"merge_sqlite_union: {omitidas} fila(s) del otro lado omitidas por "
+-              f"clave ya presente — se conservo la nuestra", file=sys.stderr)
+-    return 0
++    ancestor_path, ours_path, theirs_path = argv[1:4]
++    reports = merge_databases(ancestor_path, ours_path, theirs_path)
++    total_conflicts = print_report(reports)
++    return 1 if total_conflicts else 0
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/src/agents/store_field_classes.py b/src/agents/store_field_classes.py
+new file mode 100644
+index 00000000..702c3559
+--- /dev/null
++++ b/src/agents/store_field_classes.py
+@@ -0,0 +1,139 @@
++#!/usr/bin/env python3
++"""store_field_classes.py — las tres clases de campo de cada tabla del store compartido.
++
++``agent_store.sqlite3`` viaja entre sesiones como archivo versionado (§3 del
++banco de inventario D4), y su merge de tres vías necesita, por cada fila, un
++hash que distinga «mismo contenido» de «contenido divergente» sin que un
++metadato de contabilidad —una `revision` que sube sola, un `updated_at` que
++cambia aunque el contenido no— lo ensucie.
++
++Contrato: `.claude/workbench/datos-d4-inventario-20260929T221846/README.md`
++§10. Tres clases, declaradas por tabla:
++
++- **identity** — la clave global que empareja una fila entre las tres copias.
++  No entra en el hash: es lo que decide qué fila es «la misma», no lo que la
++  fila afirma. `findings_history` usa ``finding_id``, nunca su ``id``
++  ``AUTOINCREMENT`` local — ese entero no viaja con significado entre bases.
++- **domain** — lo que la fila afirma (estado, cuerpo, severidad…). Es lo
++  único que entra en `domain_hash`.
++- **bookkeeping** — `revision`, `updated_at` y los metadatos de migración o de
++  merge. Se excluyen a propósito: si entraran, dos ediciones idénticas con
++  distinto reloj de escritura darían un conflicto falso.
++
++Una tabla sin declaración no se adivina: `field_classes` y `domain_hash`
++levantan `UnknownTableError`, y quien orquesta el merge lo convierte en un
++aborto explícito.
++"""
++
++from __future__ import annotations
++
++import hashlib
++import json
++from dataclasses import dataclass
++from typing import Mapping
++
++
++class UnknownTableError(LookupError):
++    """La tabla no tiene declarada su clasificación de campos."""
++
++
++@dataclass(frozen=True)
++class FieldClasses:
++    """Las tres clases de campo de una tabla, ya declaradas."""
++
++    identity: tuple[str, ...]
++    domain: tuple[str, ...]
++    bookkeeping: tuple[str, ...]
++
++
++#: Nombres de contabilidad que se repiten igual en toda tabla mutable: una
++#: revisión lógica y la marca de última escritura. Nunca describen lo que la
++#: fila afirma, sólo cuándo o cuántas veces se escribió.
++_REVISION_AND_TIMESTAMP = ("revision", "updated_at")
++
++TABLE_FIELD_CLASSES: Mapping[str, FieldClasses] = {
++    "agent_sessions": FieldClasses(
++        identity=("agent_id",),
++        domain=(
++            "subagent_type", "session_id", "status", "output_key",
++            "started_at", "timeout_at", "model", "description", "turns",
++            "input_tokens", "cache_creation_tokens", "cache_read_tokens",
++            "output_tokens", "equiv_cost", "spawn_depth", "source",
++            "tool_use_id", "metadata_json", "duration_s", "tool_uses_total",
++            "tool_uses_json", "prompt", "retention_level", "model_alias",
++            "effort", "client_version", "service_tier", "api_error_status",
++            "api_error_detail", "rate_limit_type", "stop_reason",
++            "compactions", "dropped_tokens", "outcome_source",
++            "usage_source", "type_source", "last_stop_reason",
++        ),
++        bookkeeping=_REVISION_AND_TIMESTAMP,
++    ),
++    "findings_history": FieldClasses(
++        identity=("finding_id",),
++        domain=(
++            "submodule", "initiative", "finding_type", "severity",
++            "summary", "content", "source_ref", "metadata_json",
++            "session_id", "created_at",
++        ),
++        # ``id`` es el AUTOINCREMENT local: no es identidad (esa es
++        # finding_id) ni contenido, así que cae en contabilidad.
++        bookkeeping=("id",) + _REVISION_AND_TIMESTAMP,
++    ),
++    "documents": FieldClasses(
++        identity=("path",),
++        domain=(
++            "updated_at_source", "declared_at", "commit_at", "section",
++            "series", "retention_years",
++        ),
++        bookkeeping=_REVISION_AND_TIMESTAMP,
++    ),
++    "cleared_tool_results": FieldClasses(
++        identity=("session_id", "tool_use_id"),
++        domain=("tool", "input_json", "content_sha256", "content_chars", "cleared_at"),
++        bookkeeping=(),
++    ),
++    "tasks": FieldClasses(
++        identity=("session_id", "task_id"),
++        domain=(
++            "subject", "description", "status", "active_form", "owner",
++            "blocks_json", "blocked_by_json", "source", "metadata_json",
++            "created_at", "submodule", "submodule_source", "opened_at",
++            "opened_at_source", "citation_id", "board_ordinal",
++            "layer_citation_id",
++        ),
++        bookkeeping=_REVISION_AND_TIMESTAMP,
++    ),
++    "task_session_highwater": FieldClasses(
++        identity=("session_id",),
++        domain=("next_task_id",),
++        bookkeeping=(),
++    ),
++    "schema_migrations": FieldClasses(
++        identity=("version",),
++        domain=("name",),
++        # applied_at es exactamente un updated_at de migración: cuándo se
++        # aplicó, no qué se aplicó.
++        bookkeeping=("applied_at",),
++    ),
++}
++
++
++def field_classes(table: str) -> FieldClasses:
++    """La clasificación declarada de ``table``, o el aborto explícito."""
++    try:
++        return TABLE_FIELD_CLASSES[table]
++    except KeyError as error:
++        raise UnknownTableError(table) from error
++
++
++def domain_hash(table: str, row: Mapping[str, object]) -> str:
++    """sha256 del JSON canónico de los campos de dominio de ``row``.
++
++    Un campo de dominio ausente en ``row`` (columna añadida después de que
++    esta fila existiera) se trata como ``None``: participa igual en el hash,
++    pero no revienta el merge por una migración de esquema legítima.
++    """
++    classes = field_classes(table)
++    canonical = {field: row.get(field) for field in classes.domain}
++    payload = json.dumps(canonical, sort_keys=True, separators=(",", ":"))
++    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+diff --git a/tests/agents/test-merge-sqlite-union.sh b/tests/agents/test-merge-sqlite-union.sh
+index 5830491c..41acbc63 100644
+--- a/tests/agents/test-merge-sqlite-union.sh
++++ b/tests/agents/test-merge-sqlite-union.sh
+@@ -1,37 +1,39 @@
+ #!/bin/bash
+ # =============================================================================
+-# test-merge-sqlite-union.sh — pruebas de merge_sqlite_union.py
++# test-merge-sqlite-union.sh — pruebas de merge_sqlite_union.py contra git real
+ # =============================================================================
+ # Estatico salvo por git: arma repositorios de laboratorio bajo un temporal y
+-# ejerce un merge real. No toca ninguno de los cinco repos.
++# ejerce un merge real, con el driver registrado en `.git/config` como lo hace
++# `install-hooks.sh` en produccion. Los casos finos de la tabla de decision
++# (hash puro, contraejemplo de revision, control de anulacion con la
++# contabilidad dentro del hash) ya estan en `test_merge_sqlite_union.py`, con
++# `pytest` — mas rapido y sin necesitar un repo de git por caso. Lo que esta
++# suite mide es la MITAD que sólo se ve con git de por medio: que el codigo de
++# salida del driver marca el conflicto, que el archivo que queda en el arbol
++# es recuperable (no una eleccion arbitraria), y que lo que ya funcionaba
++# (FTS5 con rebuild, abortar ante esquema divergente o tabla no declarada)
++# sigue funcionando.
+ #
+-# El caso 2 es el CONTROL ANULADO, y aqui no hay que fabricarlo: el control
+-# anulado es EL ESTADO ANTERIOR — el mismo laboratorio sin registrar el driver.
+-# Ese es el defecto que #742 cierra, y su forma es exacta: conflicto, y la fila
+-# del otro lado desaparece. Sin este caso, un verde en el caso 1 no distingue
+-# «el driver une» de «el merge no tenia nada que unir».
++# La raiz de ESTE arbol se calcula desde la propia ubicacion del script, no
++# desde `THYROX_ROOT`: esta suite corre dentro de un worktree de pool
++# (`headless-pool --isolation worktree`), y `THYROX_ROOT` puede declarar otro
++# checkout. Medido al escribir esta suite: con `THYROX_ROOT` heredado del
++# entorno, `thyrox_root()` resolvia al checkout principal y esta prueba
++# habria ejercido el driver de OTRO arbol, no el que esta suite acompaña.
+ #
+-# Uso:  bash tests/legacy/test-merge-sqlite-union.sh
++# Uso:  bash tests/agents/test-merge-sqlite-union.sh
+ # =============================================================================
+ set -uo pipefail
+ 
+-# Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
+-# y la RUTA a su declaracion. Los dos literales que el ultimo recurso
+-# necesita van tras constantes que el entorno tambien fija: cablearlos le
+-# quitaria al consumidor la decision de donde van las cosas.
+-_thyrox_root="${THYROX_ROOT:-}"
+-if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}" ]]; then
+-    _thyrox_root="$(sed -n 's/^[[:space:]]*THYROX_ROOT[[:space:]]*=[[:space:]]*//p' \
+-        "$THYROX_ENV_FILE" | tail -1 | tr -d '"'"'"'')"
++HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++DOCS_ROOT="$HERE"
++while [[ "$DOCS_ROOT" != "/" && ! -f "$DOCS_ROOT/src/paths/reach.py" ]]; do
++    DOCS_ROOT="$(dirname "$DOCS_ROOT")"
++done
++if [[ ! -f "$DOCS_ROOT/src/paths/reach.py" ]]; then
++    echo "test-merge-sqlite-union: no se halló la raíz de thyrox ascendiendo desde $HERE" >&2
++    exit 2
+ fi
+-if [[ -z "$_thyrox_root" ]]; then
+-    _thyrox_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+-    while [[ "$_thyrox_root" != "/" && ! -f "$_thyrox_root/${THYROX_LOCATOR:-src/paths/reach.py}" ]]; do
+-        _thyrox_root="$(dirname "$_thyrox_root")"
+-    done
+-fi
+-source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
+-DOCS_ROOT="$(thyrox_root)" || exit 2
+ DRIVER="$DOCS_ROOT/src/agents/merge_sqlite_union.py"
+ OK=0
+ FALLOS=0
+@@ -48,152 +50,244 @@ comprobar() {  # comprobar <descripcion> <esperado> <obtenido>
+     fi
+ }
+ 
+-# laboratorio <nombre> <con-driver:si|no> <ddl> -> imprime la ruta del repo
++# lab_repo <nombre> -> imprime la ruta del repo
+ #
+-# Construye tres commits: una fila comun, una fila solo nuestra y una fila solo
+-# del otro lado. Es la forma minima en que dos sesiones divergen sobre el store.
+-laboratorio() {
+-    local nombre="$1" con_driver="$2" ddl="${3:-create table t(id text primary key, v text)}"
++# Un repo de git de laboratorio con el driver registrado, `.gitattributes`
++# declarado y un `store.sqlite3` con `agent_sessions` — la tabla real que
++# store_field_classes.py declara, con su identidad `agent_id`. Una tabla
++# ad-hoc sin declarar abortaría el merge por diseño (ver caso 4 más abajo),
++# así que el laboratorio usa una tabla de verdad.
++lab_repo() {
++    local nombre="$1"
+     local repo="$TMP/$nombre"
+     mkdir -p "$repo"
+     git -C "$repo" init -q
+     git -C "$repo" config user.email prueba@kaupamex
+     git -C "$repo" config user.name prueba
+-
+     printf '* text=auto\nstore.sqlite3 merge=sqlite-union\n' > "$repo/.gitattributes"
+-    if [[ "$con_driver" == "si" ]]; then
+-        git -C "$repo" config merge.sqlite-union.name "union de filas para una base SQLite"
+-        git -C "$repo" config merge.sqlite-union.driver "python3 $DRIVER %O %A %B"
+-    fi
+-
+-    fila "$repo" "$ddl" base 0
+-    git -C "$repo" add -A && git -C "$repo" commit -qm "Seed"
+-
+-    git -C "$repo" checkout -qb otra
+-    fila "$repo" "" b 1
+-    git -C "$repo" commit -qam "Add b"
+-
+-    git -C "$repo" checkout -q -    # vuelve a la rama inicial, se llame como se llame
+-    fila "$repo" "" a 1
+-    git -C "$repo" commit -qam "Add a"
+-
++    git -C "$repo" config merge.sqlite-union.name "merge de tres vias para una base SQLite"
++    git -C "$repo" config merge.sqlite-union.driver "python3 $DRIVER %O %A %B"
+     echo "$repo"
+ }
+ 
+-fila() {  # fila <repo> <ddl-o-vacio> <id> <v>
+-    python3 - "$1/store.sqlite3" "$2" "$3" "$4" <<'PY'
++seed_session() {  # seed_session <repo> <status> <revision>
++    python3 - "$1/store.sqlite3" "$2" "$3" <<'PY'
+ import sqlite3, sys
+-destino, ddl, ident, valor = sys.argv[1:5]
++destino, status, revision = sys.argv[1], sys.argv[2], sys.argv[3]
+ conexion = sqlite3.connect(destino)
+-if ddl:
+-    conexion.execute(ddl)
+-conexion.execute("INSERT INTO t VALUES (?, ?)", (ident, valor))
++conexion.execute(
++    "CREATE TABLE IF NOT EXISTS agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, "
++    "session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
++)
++conexion.execute(
++    "INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', ?, 't0', 't0', ?) "
++    "ON CONFLICT(agent_id) DO UPDATE SET status = excluded.status, revision = excluded.revision",
++    (status, revision),
++)
+ conexion.commit()
+ PY
+ }
+ 
+-filas() {  # filas <repo> -> los ids, ordenados y separados por coma
++session_status() {  # session_status <repo> -> "status,revision"
+     python3 -c "
+ import sqlite3, sys
+-print(','.join(sorted(r[0] for r in sqlite3.connect(sys.argv[1]).execute('select id from t'))))
++row = sqlite3.connect(sys.argv[1]).execute('select status, revision from agent_sessions').fetchone()
++print(f'{row[0]},{row[1]}')
+ " "$1/store.sqlite3"
+ }
+ 
++conflict_count() {  # conflict_count <repo> -> filas en merge_conflicts
++    python3 -c "
++import sqlite3, sys
++print(sqlite3.connect(sys.argv[1]).execute('select count(*) from merge_conflicts').fetchone()[0])
++" "$1/store.sqlite3" 2>/dev/null || echo 0
++}
++
+ # --- Caso 0: el driver existe y valida sus argumentos ----------------------
+ comprobar "0a. el driver existe" "si" \
+     "$([[ -f "$DRIVER" ]] && echo si || echo no)"
+ comprobar "0b. sin los tres argumentos, aborta" "1" \
+     "$(python3 "$DRIVER" solo-uno >/dev/null 2>&1; echo $?)"
+ 
+-# --- Caso 1: CON driver, el merge une y no conflictua ----------------------
+-CON="$(laboratorio con-driver si)"
+-SALIDA_CON="$(git -C "$CON" merge otra 2>&1)"
+-comprobar "1a. el merge no deja conflicto" "no" \
+-    "$(grep -q CONFLICT <<<"$SALIDA_CON" && echo si || echo no)"
+-comprobar "1b. las tres filas sobreviven" "a,b,base" "$(filas "$CON")"
+-
+-# --- Caso 2: CONTROL ANULADO — el mismo laboratorio SIN registrar el driver -
+-# Es el estado anterior a #742, no un incumplidor fabricado.
+-SIN="$(laboratorio sin-driver no)"
+-SALIDA_SIN="$(git -C "$SIN" merge otra 2>&1)"
+-comprobar "2a. sin driver, el merge SI conflictua" "si" \
+-    "$(grep -q CONFLICT <<<"$SALIDA_SIN" && echo si || echo no)"
+-comprobar "2b. sin driver, la fila del otro lado se pierde" "a,base" "$(filas "$SIN")"
+-comprobar "2c. el driver es quien discrimina: 3 filas contra 2" "3 2" \
+-    "$(awk -F, '{print NF}' <<<"$(filas "$CON")") $(awk -F, '{print NF}' <<<"$(filas "$SIN")")"
+-
+-# --- Caso 3: la colision de clave se informa, no se traga ------------------
+-# Los dos lados escriben la MISMA clave con valor distinto. El driver conserva
+-# la nuestra — y lo dice. Es la mitad que #436 debe decidir; lo que este caso
+-# fija es que no ocurra en silencio.
+-COL="$TMP/colision"
++# --- Caso 1 (§10, caso obligatorio 1): el contraejemplo de la revisión -----
++# base rev 11 running; nuestro rev 13 completed; suyo rev 12 cancelled.
++# `max(revision)` diría "gana nuestro" (13 > 12); el contrato exige CONFLICTO
++# porque nuestro lado nunca vio la edición del otro.
++REV="$(lab_repo revision-counterexample)"
++seed_session "$REV" running 11
++git -C "$REV" add -A && git -C "$REV" commit -qm base
++
++git -C "$REV" checkout -qb otra
++seed_session "$REV" cancelled 12
++git -C "$REV" commit -qam "suyo: cancelled rev 12"
++
++git -C "$REV" checkout -q -
++seed_session "$REV" completed 13
++git -C "$REV" commit -qam "nuestro: completed rev 13"
++
++SALIDA_REV="$(git -C "$REV" merge otra 2>&1)"
++CODIGO_REV=$?
++comprobar "1a. max(revision) NO es el criterio: git marca CONFLICT" "si" \
++    "$(grep -q CONFLICT <<<"$SALIDA_REV" && echo si || echo no)"
++comprobar "1b. el merge de git sale con codigo distinto de 0" "si" \
++    "$([[ "$CODIGO_REV" -ne 0 ]] && echo si || echo no)"
++comprobar "1c. el driver clasifico la fila como conflicto, no como 'gana nuestro'" "si" \
++    "$(grep -q 'conflict=1' <<<"$SALIDA_REV" && echo si || echo no)"
++comprobar "1d. las dos versiones quedan recuperables en merge_conflicts" "1" \
++    "$(conflict_count "$REV")"
++
++# --- Control de anulación del caso 1: SIN ancestro, cae el contraejemplo ---
++# El mismo par (nuestro rev 13, suyo rev 12) pero comparado sin base común
++# (tratada como vacía): ya no hay "misma fila editada dos veces sin verse" —
++# lo que hay es "dos lados insertan contenido distinto bajo la misma
++# identidad", otra rama de la tabla de decisión. Sigue dando CONFLICTO, pero
++# la ANULACION mide que decide_row toma la rama de fila NUEVA, no la de
++# edición sobre una base conocida — ver test_merge_sqlite_union.py, que lo
++# prueba directo contra decide_row() sin pasar por git.
++SIN_BASE="$TMP/sin-ancestro"
++mkdir -p "$SIN_BASE"
++python3 - "$SIN_BASE" <<'PY'
++import sqlite3, sys
++raiz = sys.argv[1]
++sqlite3.connect(f"{raiz}/ancestro.sqlite3").close()   # base vacia: sin la tabla siquiera
++for nombre, status, revision in (("nuestro", "completed", 13), ("suyo", "cancelled", 12)):
++    conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
++    conexion.execute(
++        "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, "
++        "session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
++    )
++    conexion.execute("INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', ?, 't0', 't0', ?)", (status, revision))
++    conexion.commit()
++PY
++SALIDA_SIN_BASE="$(python3 "$DRIVER" "$SIN_BASE/ancestro.sqlite3" "$SIN_BASE/nuestro.sqlite3" "$SIN_BASE/suyo.sqlite3" 2>&1)"
++comprobar "1e. control de anulación: sin ancestro, sigue habiendo conflicto (por otra rama)" "si" \
++    "$(grep -q 'conflict=1' <<<"$SALIDA_SIN_BASE" && echo si || echo no)"
++
++# --- Caso 2 (§10, caso obligatorio 2): misma modificación, contabilidad
++# distinta -> SIN conflicto ----------------------------------------------
++MOD="$(lab_repo same-modification)"
++seed_session "$MOD" running 11
++git -C "$MOD" add -A && git -C "$MOD" commit -qm base
++
++git -C "$MOD" checkout -qb otra
++seed_session "$MOD" completed 15
++git -C "$MOD" commit -qam "suyo: completed rev 15"
++
++git -C "$MOD" checkout -q -
++seed_session "$MOD" completed 12
++git -C "$MOD" commit -qam "nuestro: completed rev 12"
++
++SALIDA_MOD="$(git -C "$MOD" merge otra 2>&1)"
++comprobar "2a. misma modificación con revision/updated_at distintos: sin conflicto" "no" \
++    "$(grep -q CONFLICT <<<"$SALIDA_MOD" && echo si || echo no)"
++comprobar "2b. el contenido de dominio queda unificado" "completed,12" "$(session_status "$MOD")"
++
++# --- Caso 3 (§4/§10, ya en verde): la colisión de un id local ya no se
++# pierde — findings_history se empareja por finding_id ---------------------
++COL="$TMP/findings-collision"
+ mkdir -p "$COL"
+ python3 - "$COL" <<'PY'
+ import sqlite3, sys
+ raiz = sys.argv[1]
+-for nombre, valor in (("ancestro", "0"), ("nuestro", "1"), ("suyo", "2")):
++ddl = (
++    "CREATE TABLE findings_history (id INTEGER PRIMARY KEY AUTOINCREMENT, finding_id TEXT NOT NULL UNIQUE, "
++    "submodule TEXT NOT NULL, initiative TEXT NOT NULL, finding_type TEXT NOT NULL DEFAULT 'finding', "
++    "severity TEXT, summary TEXT NOT NULL, content TEXT NOT NULL, source_ref TEXT, metadata_json TEXT, "
++    "session_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
++)
++sqlite3.connect(f"{raiz}/ancestro.sqlite3").execute(ddl)
++for nombre, finding_id in (("nuestro", "H-OURS-1"), ("suyo", "H-THEIRS-1")):
+     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
+-    conexion.execute("CREATE TABLE t(id text primary key, v text)")
+-    conexion.execute("INSERT INTO t VALUES ('k', ?)", (valor,))
++    conexion.execute(ddl)
++    # El mismo `id` AUTOINCREMENT local (1) en los dos lados: es la colisión
++    # que §4 midió que la unión antigua perdía en silencio.
++    conexion.execute(
++        "INSERT INTO findings_history (id, finding_id, submodule, initiative, summary, content, "
++        "created_at, updated_at) VALUES (1, ?, 'thyrox', 'd4-a', 'r', 'c', 't0', 't0')",
++        (finding_id,),
++    )
+     conexion.commit()
+ PY
+-AVISO="$(python3 "$DRIVER" "$COL/ancestro.sqlite3" "$COL/nuestro.sqlite3" "$COL/suyo.sqlite3" 2>&1)"
+-comprobar "3a. la omision por clave presente se informa" "si" \
+-    "$(grep -q 'omitidas por clave ya presente' <<<"$AVISO" && echo si || echo no)"
+-comprobar "3b. se conserva nuestro valor" "1" \
++python3 "$DRIVER" "$COL/ancestro.sqlite3" "$COL/nuestro.sqlite3" "$COL/suyo.sqlite3" >/dev/null 2>&1
++comprobar "3a. los dos hallazgos con id local igual conviven (finding_id como identidad)" "2" \
+     "$(python3 -c "
+ import sqlite3, sys
+-print(sqlite3.connect(sys.argv[1]).execute(\"select v from t where id='k'\").fetchone()[0])
++print(sqlite3.connect(sys.argv[1]).execute('select count(*) from findings_history').fetchone()[0])
+ " "$COL/nuestro.sqlite3")"
+ 
+-# --- Caso 4: la union NO esta definida -> aborta, no adivina ---------------
++# --- Caso 4 (§10, caso obligatorio 4): borrado contra cambio -> CONFLICTO --
++DEL="$TMP/delete-vs-change"
++mkdir -p "$DEL"
++python3 - "$DEL" <<'PY'
++import sqlite3, sys
++raiz = sys.argv[1]
++ddl = (
++    "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, session_id TEXT, "
++    "status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
++)
++conexion = sqlite3.connect(f"{raiz}/ancestro.sqlite3")
++conexion.execute(ddl)
++conexion.execute("INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', 'running', 't0', 't0', 11)")
++conexion.commit()
++
++conexion = sqlite3.connect(f"{raiz}/nuestro.sqlite3")
++conexion.execute(ddl)   # nuestro lado borró la fila: la tabla queda vacía
++conexion.commit()
++
++conexion = sqlite3.connect(f"{raiz}/suyo.sqlite3")
++conexion.execute(ddl)
++conexion.execute("INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', 'completed', 't0', 't0', 12)")
++conexion.commit()
++PY
++SALIDA_DEL="$(python3 "$DRIVER" "$DEL/ancestro.sqlite3" "$DEL/nuestro.sqlite3" "$DEL/suyo.sqlite3" 2>&1)"
++comprobar "4a. borrado de un lado contra cambio del otro: CONFLICTO" "si" \
++    "$(grep -q 'conflict=1' <<<"$SALIDA_DEL" && echo si || echo no)"
++comprobar "4b. y el driver sale distinto de 0" "1" \
++    "$(python3 "$DRIVER" "$DEL/ancestro.sqlite3" "$DEL/nuestro.sqlite3" "$DEL/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
++
++# --- Conserva lo que hoy funciona: columnas distintas o tabla sin declarar -
+ ESQ="$TMP/esquema"
+ mkdir -p "$ESQ"
+ python3 - "$ESQ" <<'PY'
+ import sqlite3, sys
+ raiz = sys.argv[1]
+-for nombre, ddl in (
+-    ("ancestro", "CREATE TABLE t(id text primary key, v text)"),
+-    ("nuestro",  "CREATE TABLE t(id text primary key, v text)"),
+-    ("suyo",     "CREATE TABLE t(id text primary key, v text, extra text)"),
+-):
++base_ddl = "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
++otro_ddl = base_ddl[:-1] + ", extra TEXT)"
++for nombre, ddl in (("ancestro", base_ddl), ("nuestro", base_ddl), ("suyo", otro_ddl)):
+     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
+     conexion.execute(ddl)
+     conexion.commit()
+ PY
+-# La salida se captura ANTES de greppearla: con `set -o pipefail`, un
+-# `driver | grep -q` hereda el exit 1 del driver y el `&&` de despues nunca
+-# corre — el caso daria "no" con el mensaje correcto delante.
+ SALIDA_ESQ="$(python3 "$DRIVER" "$ESQ/ancestro.sqlite3" "$ESQ/nuestro.sqlite3" "$ESQ/suyo.sqlite3" 2>&1)"
+-comprobar "4a. columnas distintas: aborta con exit 1" "1" \
++comprobar "5a. columnas distintas: aborta con exit 1" "1" \
+     "$(python3 "$DRIVER" "$ESQ/ancestro.sqlite3" "$ESQ/nuestro.sqlite3" "$ESQ/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
+-comprobar "4b. y nombra la tabla y el motivo" "si" \
++comprobar "5b. y nombra la tabla y el motivo" "si" \
+     "$(grep -q "columnas distintas" <<<"$SALIDA_ESQ" && echo si || echo no)"
+ 
+-SPK="$TMP/sin-clave"
+-mkdir -p "$SPK"
+-python3 - "$SPK" <<'PY'
++SND="$TMP/sin-declarar"
++mkdir -p "$SND"
++python3 - "$SND" <<'PY'
+ import sqlite3, sys
+ raiz = sys.argv[1]
+ for nombre in ("ancestro", "nuestro", "suyo"):
+     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
+-    conexion.execute("CREATE TABLE t(v text)")   # sin clave primaria
++    conexion.execute("CREATE TABLE tabla_no_declarada (id TEXT PRIMARY KEY, v TEXT)")
+     conexion.commit()
+ PY
+-comprobar "4c. tabla sin clave primaria: aborta con exit 1" "1" \
+-    "$(python3 "$DRIVER" "$SPK/ancestro.sqlite3" "$SPK/nuestro.sqlite3" "$SPK/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
+-
+-# --- Caso 5: POSITIVO REAL — el esquema del store de verdad ----------------
+-# No lo inventa la prueba: se copia agent_store.sqlite3 y se le anade una fila
+-# por lado en su tabla mas poblada.
+-# El store NO vive bajo `.claude/`: su hogar se decidio en TASK-DOCS-0435 y la
+-# cascara del proveedor se retiro en TASK-THYROX-0153. La ruta se PIDE al
+-# localizador en vez de componerse a mano — componerla es como esta linea quedo
+-# apuntando a un archivo que ya no existe, y el caso 5 dejo de medir en silencio
+-# (el AVISO salia, pero nadie lo leyo como rojo hasta que el corredor lo alcanzo).
+-STORE="$(cd "$DOCS_ROOT" && PYTHONPATH=src python3 -c 'from paths import reach; print(reach.agent_store_path())')"
++SALIDA_SND="$(python3 "$DRIVER" "$SND/ancestro.sqlite3" "$SND/nuestro.sqlite3" "$SND/suyo.sqlite3" 2>&1)"
++comprobar "5c. tabla sin declarar en store_field_classes: aborta con exit 1" "1" \
++    "$(python3 "$DRIVER" "$SND/ancestro.sqlite3" "$SND/nuestro.sqlite3" "$SND/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
++comprobar "5d. y lo dice, en vez de adivinar" "si" \
++    "$(grep -q "no tiene declarada su clasificación" <<<"$SALIDA_SND" && echo si || echo no)"
++
++# --- POSITIVO REAL: el esquema del store de verdad -------------------------
++# No lo inventa la prueba: se copia agent_store.sqlite3 de ESTE árbol (nunca
++# se escribe el original) y se le añade una tarea nueva por lado — la clave
++# real es (session_id, task_id), y dos sesiones distintas es exactamente el
++# caso que el driver existe para unir.
++STORE="$DOCS_ROOT/agent-results/agent_store.sqlite3"
+ if [[ ! -f "$STORE" ]]; then
+-    printf 'AVISO: no existe %s — el caso 5 no midio nada\n' "$STORE" >&2
++    printf 'AVISO: no existe %s — el caso real no midió nada\n' "$STORE" >&2
+     FALLOS=$((FALLOS + 1))
+ else
+     REAL="$TMP/real"
+@@ -208,8 +302,6 @@ print(sqlite3.connect(sys.argv[1]).execute('select count(*) from tasks').fetchon
+     python3 - "$REAL" <<'PY'
+ import sqlite3, sys
+ raiz = sys.argv[1]
+-# Una tarea nueva por lado. La clave primaria real es (session_id, task_id):
+-# dos sesiones distintas es exactamente el caso que el driver existe para unir.
+ for nombre in ("nuestro", "suyo"):
+     conexion = sqlite3.connect(f"{raiz}/{nombre}.sqlite3")
+     conexion.execute(
+@@ -219,20 +311,20 @@ for nombre in ("nuestro", "suyo"):
+     )
+     conexion.commit()
+ PY
+-    python3 "$DRIVER" "$REAL/ancestro.sqlite3" "$REAL/nuestro.sqlite3" "$REAL/suyo.sqlite3" >/dev/null 2>&1
++    SALIDA_REAL="$(python3 "$DRIVER" "$REAL/ancestro.sqlite3" "$REAL/nuestro.sqlite3" "$REAL/suyo.sqlite3" 2>&1)"
+     DESPUES="$(python3 -c "
+ import sqlite3, sys
+ print(sqlite3.connect(sys.argv[1]).execute('select count(*) from tasks').fetchone()[0])
+ " "$REAL/nuestro.sqlite3")"
+-    comprobar "5a. sobre el esquema real, las dos filas nuevas conviven ($ANTES -> +2)" \
++    comprobar "6a. sobre el esquema real, las dos tareas nuevas conviven ($ANTES -> +2)" \
+         "$((ANTES + 2))" "$DESPUES"
++    comprobar "6b. el merge sobre el esquema real no rompe (exit 0, sin conflicto)" "0" \
++        "$(python3 "$DRIVER" "$REAL/ancestro.sqlite3" "$REAL/nuestro.sqlite3" "$REAL/suyo.sqlite3" >/dev/null 2>&1; echo $?)"
+ 
+-    # 5b. El indice FTS5 del store es una tabla VIRTUAL sin clave primaria. La
+-    # primera version del driver la trataba como tabla normal y abortaba el
+-    # merge entero — lo destapo este mismo caso contra el esquema de verdad, no
+-    # un insumo fabricado. Ahora se regenera, y esta asercion mide que quedo
+-    # consistente con su tabla de contenido.
+-    comprobar "5b. el indice FTS queda consistente con su tabla de contenido" "si" \
++    # El índice FTS5 del store es una tabla VIRTUAL sin identidad propia: se
++    # regenera con 'rebuild', no se une fila a fila. Esto ya funcionaba antes
++    # de este contrato y el rediseño no lo puede romper.
++    comprobar "6c. el índice FTS queda consistente con su tabla de contenido" "si" \
+         "$(python3 -c "
+ import sqlite3, sys
+ conexion = sqlite3.connect(sys.argv[1])
+diff --git a/tests/agents/test_merge_sqlite_union.py b/tests/agents/test_merge_sqlite_union.py
+new file mode 100644
+index 00000000..911af9a9
+--- /dev/null
++++ b/tests/agents/test_merge_sqlite_union.py
+@@ -0,0 +1,290 @@
++#!/usr/bin/env python3
++"""Merge de tres vías con conflictos explícitos (TASK-THYROX-0626).
++
++Contrato: `.claude/workbench/datos-d4-inventario-20260929T221846/README.md`
++§10 — tabla de decisión por fila, emparejada por identidad y comparada por
++``domain_hash`` contra el ancestro. La igualdad de ``revision`` NO decide: lo
++que decide es si el contenido de dominio cambió respecto de la base.
++
++Cada caso nombra la fila de la tabla de decisión que ejerce. ``decide_row``
++sólo ve hashes — la elección de qué lado gana el CONTENIDO real (cuando hay
++que escribirlo) es responsabilidad de ``resolve_target_row``, probada aparte.
++"""
++from __future__ import annotations
++
++import sqlite3
++import sys
++from pathlib import Path
++
++ROOT = Path(__file__).resolve()
++while ROOT != ROOT.parent and not (ROOT / "src/paths/reach.py").exists():
++    ROOT = ROOT.parent
++sys.path.insert(0, str(ROOT / "src"))
++
++import pytest
++
++from agents.merge_sqlite_union import (  # noqa: E402
++    Decision,
++    Outcome,
++    decide_row,
++    resolve_target_row,
++)
++from agents.store_field_classes import domain_hash  # noqa: E402
++
++
++def _hash(status: str) -> str:
++    return domain_hash("tasks", {"task_id": "t1", "session_id": "s1", "status": status})
++
++
++# --- Tabla de decisión de §10, sobre hashes puros --------------------------
++
++def test_unchanged_on_both_sides_is_identical():
++    h = _hash("pending")
++    assert decide_row(h, h, h) == Decision(Outcome.IDENTICAL, "ours")
++
++
++def test_only_ours_changed_wins_without_conflict():
++    base, ours = _hash("pending"), _hash("completed")
++    assert decide_row(base, ours, base) == Decision(Outcome.UPDATED, "ours")
++
++
++def test_only_theirs_changed_wins_without_conflict():
++    base, theirs = _hash("pending"), _hash("completed")
++    assert decide_row(base, base, theirs) == Decision(Outcome.UPDATED, "theirs")
++
++
++def test_same_modification_on_both_sides_is_not_a_conflict():
++    base, edited = _hash("pending"), _hash("completed")
++    assert decide_row(base, edited, edited).outcome is Outcome.UPDATED
++
++
++def test_divergent_modification_is_a_conflict():
++    base = _hash("pending")
++    ours = _hash("completed")
++    theirs = _hash("cancelled")
++    assert decide_row(base, ours, theirs).outcome is Outcome.CONFLICT
++
++
++def test_only_one_side_inserts():
++    h = _hash("pending")
++    assert decide_row(None, h, None) == Decision(Outcome.INSERTED, "ours")
++    assert decide_row(None, None, h) == Decision(Outcome.INSERTED, "theirs")
++
++
++def test_both_insert_same_content_once():
++    h = _hash("pending")
++    assert decide_row(None, h, h).outcome is Outcome.INSERTED
++
++
++def test_both_insert_divergent_content_is_a_conflict():
++    assert decide_row(None, _hash("pending"), _hash("completed")).outcome is Outcome.CONFLICT
++
++
++def test_delete_against_no_change_deletes():
++    base = _hash("pending")
++    assert decide_row(base, None, base).outcome is Outcome.DELETED
++    assert decide_row(base, base, None).outcome is Outcome.DELETED
++
++
++def test_both_delete_is_deleted_without_conflict():
++    base = _hash("pending")
++    assert decide_row(base, None, None).outcome is Outcome.DELETED
++
++
++def test_delete_against_change_is_a_conflict():
++    base = _hash("pending")
++    changed = _hash("completed")
++    assert decide_row(base, None, changed).outcome is Outcome.CONFLICT
++    assert decide_row(base, changed, None).outcome is Outcome.CONFLICT
++
++
++# --- resolve_target_row: qué contenido aterriza en la tabla principal ------
++
++def test_resolve_target_row_picks_the_declared_source():
++    assert resolve_target_row(Decision(Outcome.UPDATED, "theirs"), "fila-nuestra", "fila-suya") == "fila-suya"
++    assert resolve_target_row(Decision(Outcome.INSERTED, "ours"), "fila-nuestra", "fila-suya") == "fila-nuestra"
++
++
++def test_resolve_target_row_of_deleted_is_none():
++    assert resolve_target_row(Decision(Outcome.DELETED, None), "fila-nuestra", "fila-suya") is None
++
++
++def test_resolve_target_row_of_conflict_keeps_ours_untouched():
++    # El conflicto no reescribe la tabla principal: la fila que ya tiene
++    # nuestro lado se queda, y el conflicto se registra aparte.
++    assert resolve_target_row(Decision(Outcome.CONFLICT, "ours"), "fila-nuestra", "fila-suya") == "fila-nuestra"
++
++
++# --- El contraejemplo de la revisión, contra el driver real ----------------
++#
++# base rev 11 (running); nuestro rev 13 completed (dos ediciones); suyo rev 12
++# cancelled. Un `max(revision)` diría «gana nuestro»: 13 > 12. El contrato
++# exige CONFLICTO porque A nunca vio la edición de B.
++
++def _make_store(path: Path, status: str, revision: int) -> None:
++    connection = sqlite3.connect(path)
++    connection.execute(
++        "CREATE TABLE agent_sessions (agent_id TEXT PRIMARY KEY, subagent_type TEXT, "
++        "session_id TEXT, status TEXT, started_at TEXT, updated_at TEXT, revision INTEGER)"
++    )
++    connection.execute(
++        "INSERT INTO agent_sessions VALUES ('a1', 'x', 's1', ?, '2026-01-01T00:00:00Z', ?, ?)",
++        (status, f"2026-01-0{revision}T00:00:00Z", revision),
++    )
++    connection.commit()
++    connection.close()
++
++
++@pytest.fixture
++def three_way(tmp_path):
++    ancestor, ours, theirs = tmp_path / "base.sqlite3", tmp_path / "ours.sqlite3", tmp_path / "theirs.sqlite3"
++    yield ancestor, ours, theirs
++
++
++def test_revision_counterexample_is_a_conflict_not_a_max_revision_pick(three_way):
++    from agents.merge_sqlite_union import merge_databases
++
++    ancestor, ours, theirs = three_way
++    _make_store(ancestor, "running", 11)
++    _make_store(ours, "completed", 13)
++    _make_store(theirs, "cancelled", 12)
++
++    reports = merge_databases(str(ancestor), str(ours), str(theirs))
++    report = next(r for r in reports if r.table == "agent_sessions")
++    assert report.counts[Outcome.CONFLICT] == 1
++
++    row = sqlite3.connect(ours).execute(
++        "SELECT status FROM agent_sessions WHERE agent_id = 'a1'"
++    ).fetchone()
++    assert row[0] == "completed"
++
++
++def test_revision_counterexample_control_without_ancestor(tmp_path):
++    """Control de anulación: sin ancestro (base vacía), el caso 1 cae.
++
++    Tratada la base como vacía, las dos filas parecen inserciones nuevas de
++    contenido distinto bajo la misma identidad: sigue siendo CONFLICTO, pero
++    por la rama de inserción, no por la de "revisión editó dos veces sin que
++    el otro lo viera" — que es justo lo que este control retira.
++    """
++    from agents.merge_sqlite_union import merge_databases
++
++    empty_ancestor = tmp_path / "vacio.sqlite3"
++    sqlite3.connect(empty_ancestor).close()
++    ours, theirs = tmp_path / "ours.sqlite3", tmp_path / "theirs.sqlite3"
++    _make_store(ours, "completed", 13)
++    _make_store(theirs, "cancelled", 12)
++
++    reports = merge_databases(str(empty_ancestor), str(ours), str(theirs))
++    report = next(r for r in reports if r.table == "agent_sessions")
++    assert report.counts[Outcome.CONFLICT] == 1
++
++
++def test_same_modification_different_bookkeeping_has_no_conflict(three_way):
++    """Caso 2 de §10: misma modificación, contabilidad distinta -> sin conflicto."""
++    from agents.merge_sqlite_union import merge_databases
++
++    ancestor, ours, theirs = three_way
++    _make_store(ancestor, "running", 11)
++    _make_store(ours, "completed", 12)
++    _make_store(theirs, "completed", 15)
++
++    reports = merge_databases(str(ancestor), str(ours), str(theirs))
++    report = next(r for r in reports if r.table == "agent_sessions")
++    assert report.counts[Outcome.CONFLICT] == 0
++    assert report.counts[Outcome.UPDATED] == 1
++
++
++def test_same_modification_control_with_bookkeeping_inside_hash_conflicts(three_way, monkeypatch):
++    """Control de anulación: con la contabilidad dentro del hash, cae el caso 2.
++
++    Se anula la mitad de juicio metiendo ``revision`` y ``updated_at`` en el
++    dominio de ``agent_sessions``; con los mismos datos del caso 2 (misma
++    modificación, contabilidad distinta) el resultado pasa a CONFLICTO.
++    """
++    from agents import store_field_classes
++    from agents.merge_sqlite_union import merge_databases
++
++    ancestor, ours, theirs = three_way
++    _make_store(ancestor, "running", 11)
++    _make_store(ours, "completed", 12)
++    _make_store(theirs, "completed", 15)
++
++    classes = store_field_classes.TABLE_FIELD_CLASSES["agent_sessions"]
++    poisoned = store_field_classes.FieldClasses(
++        identity=classes.identity,
++        domain=classes.domain + classes.bookkeeping,
++        bookkeeping=(),
++    )
++    monkeypatch.setitem(store_field_classes.TABLE_FIELD_CLASSES, "agent_sessions", poisoned)
++
++    reports = merge_databases(str(ancestor), str(ours), str(theirs))
++    report = next(r for r in reports if r.table == "agent_sessions")
++    assert report.counts[Outcome.CONFLICT] == 1
++
++
++def test_unknown_table_aborts_instead_of_guessing(tmp_path):
++    from agents.merge_sqlite_union import merge_databases
++
++    ancestor, ours, theirs = tmp_path / "a.sqlite3", tmp_path / "o.sqlite3", tmp_path / "t.sqlite3"
++    for path in (ancestor, ours, theirs):
++        connection = sqlite3.connect(path)
++        connection.execute("CREATE TABLE tabla_no_declarada (id TEXT PRIMARY KEY, v TEXT)")
++        connection.commit()
++        connection.close()
++
++    with pytest.raises(SystemExit):
++        merge_databases(str(ancestor), str(ours), str(theirs))
++
++
++def test_findings_history_local_id_collision_does_not_lose_a_row(tmp_path):
++    """Caso de §4, ahora en verde: dos hallazgos nuevos con el MISMO ``id``
++    AUTOINCREMENT local (asignado por bases independientes) conviven, porque
++    la identidad real es ``finding_id``. La unión antigua perdía uno en
++    silencio (§4 del banco de inventario); aquí los dos sobreviven."""
++    from agents.merge_sqlite_union import merge_databases
++
++    ancestor, ours, theirs = tmp_path / "a.sqlite3", tmp_path / "o.sqlite3", tmp_path / "t.sqlite3"
++    ddl = (
++        "CREATE TABLE findings_history (id INTEGER PRIMARY KEY AUTOINCREMENT, "
++        "finding_id TEXT NOT NULL UNIQUE, submodule TEXT NOT NULL, initiative TEXT NOT NULL, "
++        "finding_type TEXT NOT NULL DEFAULT 'finding', severity TEXT, summary TEXT NOT NULL, "
++        "content TEXT NOT NULL, source_ref TEXT, metadata_json TEXT, session_id TEXT, "
++        "created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
++    )
++    sqlite3.connect(ancestor).execute(ddl)
++    for path, finding_id in ((ours, "H-OURS-1"), (theirs, "H-THEIRS-1")):
++        connection = sqlite3.connect(path)
++        connection.execute(ddl)
++        connection.execute(
++            "INSERT INTO findings_history (id, finding_id, submodule, initiative, summary, "
++            "content, created_at, updated_at) VALUES (1, ?, 'thyrox', 'd4-a', 'r', 'c', 't0', 't0')",
++            (finding_id,),
++        )
++        connection.commit()
++
++    merge_databases(str(ancestor), str(ours), str(theirs))
++
++    rows = sqlite3.connect(ours).execute("SELECT finding_id FROM findings_history").fetchall()
++    assert {r[0] for r in rows} == {"H-OURS-1", "H-THEIRS-1"}
++
++
++def test_conflict_keeps_both_versions_recoverable(three_way):
++    from agents.merge_sqlite_union import merge_databases
++
++    ancestor, ours, theirs = three_way
++    _make_store(ancestor, "running", 11)
++    _make_store(ours, "completed", 13)
++    _make_store(theirs, "cancelled", 12)
++
++    merge_databases(str(ancestor), str(ours), str(theirs))
++
++    connection = sqlite3.connect(ours)
++    rows = connection.execute(
++        "SELECT table_name, ours_json, theirs_json FROM merge_conflicts"
++    ).fetchall()
++    assert len(rows) == 1
++    table_name, ours_json, theirs_json = rows[0]
++    assert table_name == "agent_sessions"
++    assert "completed" in ours_json
++    assert "cancelled" in theirs_json
+diff --git a/tests/agents/test_store_field_classes.py b/tests/agents/test_store_field_classes.py
+new file mode 100644
+index 00000000..ade00191
+--- /dev/null
++++ b/tests/agents/test_store_field_classes.py
+@@ -0,0 +1,73 @@
++#!/usr/bin/env python3
++"""Clasificación de campos por tabla del store compartido (TASK-THYROX-0626).
++
++Contrato: `.claude/workbench/datos-d4-inventario-20260929T221846/README.md`
++§10 — tres clases de campo por tabla (identidad, contenido de dominio,
++contabilidad) y `domain_hash` como sha256 del JSON canónico del contenido de
++dominio. La contabilidad (``revision``, ``updated_at``, metadatos de
++migración y de merge) queda siempre fuera del hash; una tabla sin
++declaración no se adivina.
++"""
++from __future__ import annotations
++
++import sys
++from pathlib import Path
++
++ROOT = Path(__file__).resolve()
++while ROOT != ROOT.parent and not (ROOT / "src/paths/reach.py").exists():
++    ROOT = ROOT.parent
++sys.path.insert(0, str(ROOT / "src"))
++
++import pytest
++
++from agents.store_field_classes import (  # noqa: E402
++    TABLE_FIELD_CLASSES,
++    UnknownTableError,
++    domain_hash,
++    field_classes,
++)
++
++
++def test_declared_table_exposes_its_three_field_classes():
++    classes = field_classes("tasks")
++    assert classes.identity == ("session_id", "task_id")
++    assert "status" in classes.domain
++    assert "updated_at" in classes.bookkeeping
++
++
++def test_undeclared_table_raises_instead_of_guessing():
++    with pytest.raises(UnknownTableError):
++        field_classes("tabla_inexistente")
++
++
++def test_findings_history_identity_is_finding_id_not_the_local_autoincrement():
++    classes = field_classes("findings_history")
++    assert classes.identity == ("finding_id",)
++    assert "id" not in classes.identity
++    assert "id" not in classes.domain
++
++
++def test_bookkeeping_fields_are_excluded_from_every_table_domain():
++    for table in TABLE_FIELD_CLASSES:
++        classes = field_classes(table)
++        assert not set(classes.bookkeeping) & set(classes.domain)
++        assert not set(classes.identity) & set(classes.domain)
++
++
++def test_domain_hash_ignores_bookkeeping_differences():
++    row_a = {"task_id": "t1", "session_id": "s1", "status": "completed",
++              "revision": 12, "updated_at": "2026-01-01T00:00:00Z"}
++    row_b = {"task_id": "t1", "session_id": "s1", "status": "completed",
++              "revision": 99, "updated_at": "2099-12-31T23:59:59Z"}
++    assert domain_hash("tasks", row_a) == domain_hash("tasks", row_b)
++
++
++def test_domain_hash_changes_with_domain_content():
++    row_running = {"task_id": "t1", "session_id": "s1", "status": "pending"}
++    row_done = {"task_id": "t1", "session_id": "s1", "status": "completed"}
++    assert domain_hash("tasks", row_running) != domain_hash("tasks", row_done)
++
++
++def test_domain_hash_of_undeclared_table_raises():
++    with pytest.raises(UnknownTableError):
++        domain_hash("tabla_inexistente", {"x": 1})

@@ -1,0 +1,52 @@
+open-sse/services/errorClassifier.ts	397 archivos	45856 líneas
+  2517	open-sse/services/accountFallback.ts
+  1802	src/lib/db/core.ts
+  1544	src/shared/constants/providers/apikey/gateways.ts
+  1201	src/lib/db/migrationRunner.ts
+  835	open-sse/config/providers/shared.ts
+  777	src/shared/utils/circuitBreaker.ts
+  755	open-sse/services/notionWebModels.ts
+  738	open-sse/config/providers/registry/lmarena/directModels.ts
+  687	src/lib/db/healthCheck.ts
+  652	open-sse/services/errorClassifier.ts
+  631	src/lib/db/domainState.ts
+  630	open-sse/config/glmProvider.ts
+open-sse/services/streamRecovery.ts	312 archivos	20746 líneas
+  1004	open-sse/services/streamRecovery.ts
+  835	open-sse/config/providers/shared.ts
+  755	open-sse/services/notionWebModels.ts
+  738	open-sse/config/providers/registry/lmarena/directModels.ts
+  630	open-sse/config/glmProvider.ts
+  556	open-sse/config/providers/index.ts
+  441	open-sse/config/anthropicHeaders.ts
+  407	open-sse/config/constants.ts
+  369	open-sse/config/providers/registry/opencode/go/index.ts
+  351	open-sse/config/providerRegistry.ts
+  309	open-sse/services/conolModels.ts
+  288	open-sse/config/providers/registry/cursor/index.ts
+open-sse/services/rateLimitManager.ts	554 archivos	86396 líneas
+  2517	open-sse/services/accountFallback.ts
+  1802	src/lib/db/core.ts
+  1720	open-sse/executors/base.ts
+  1584	open-sse/executors/codex.ts
+  1544	src/shared/constants/providers/apikey/gateways.ts
+  1383	open-sse/utils/proxyFetch.ts
+  1325	open-sse/services/rateLimitManager.ts
+  1321	open-sse/vendor/codex-chatgpt-web/bridge.ts
+  1219	open-sse/utils/error.ts
+  1201	src/lib/db/migrationRunner.ts
+  1181	open-sse/services/claudeCodeCompatible.ts
+  1095	src/lib/modelCapabilities.ts
+open-sse/services/accountFallback.ts	396 archivos	45204 líneas
+  2517	open-sse/services/accountFallback.ts
+  1802	src/lib/db/core.ts
+  1544	src/shared/constants/providers/apikey/gateways.ts
+  1201	src/lib/db/migrationRunner.ts
+  835	open-sse/config/providers/shared.ts
+  777	src/shared/utils/circuitBreaker.ts
+  755	open-sse/services/notionWebModels.ts
+  738	open-sse/config/providers/registry/lmarena/directModels.ts
+  687	src/lib/db/healthCheck.ts
+  631	src/lib/db/domainState.ts
+  630	open-sse/config/glmProvider.ts
+  582	src/shared/constants/providers/apikey/regional.ts

@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+126 |   })
+127 | 
+128 |   test('THYROX_CODE_SESSION_NAME da el nombre de lanzamiento, saneado', async () => {
+129 |     env.THYROX_CODE_SESSION_NAME = '  Mi\u0007 sesión  '
+130 |     await registerSession(undefined, deps())
+131 |     expect(record().name).toBe('Mi  sesión')
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: "Mi  sesión"
+Received: "Mi sesión"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:131:27)
+(fail) registerSession (nD) > THYROX_CODE_SESSION_NAME da el nombre de lanzamiento, saneado [1.19ms]
+134 |   })
+135 | 
+136 |   test('un nombre de lanzamiento que se sanea a vacío cae al derivado', async () => {
+137 |     env.THYROX_CODE_SESSION_NAME = '\u0007'
+138 |     await registerSession(undefined, deps())
+139 |     expect(record().name).toBe('app-s1')
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: "app-s1"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:139:27)
+(fail) registerSession (nD) > un nombre de lanzamiento que se sanea a vacío cae al derivado [0.77ms]
+
+ 21 pass
+ 2 fail
+ 83 expect() calls
+Ran 23 tests across 1 file. [183.00ms]

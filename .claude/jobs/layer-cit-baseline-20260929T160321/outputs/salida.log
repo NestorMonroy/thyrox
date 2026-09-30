@@ -1,0 +1,15 @@
+== tests/hooks/test_task_lifecycle.py
+  ok    `--capa` (el nombre viejo) ya no se acepta (exit 2)
+  ok    `--layer` (el nombre nuevo) sale 0
+
+resultado: 16 de 17 aserciones en verde
+== tests/verify/test_pre_commit_hook.py
+----------------------------------------------------------------------
+Ran 12 tests in 60.801s
+
+FAILED (failures=6)
+== commit-msg
+  ok    el mensaje queda intacto
+
+resultado: 12 de 13 aserciones en verde
+__BG_EXIT__=0

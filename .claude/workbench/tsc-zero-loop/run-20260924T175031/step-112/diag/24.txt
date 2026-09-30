@@ -1,0 +1,46 @@
+src/packages/agent/commands/security-review.ts(218,9): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/commands/security-review.ts:208-228 ---
+    208  
+    209      // Parse allowed tools from frontmatter
+    210      const allowedTools = parseSlashCommandToolsFromFrontmatter(
+    211        parsed.frontmatter['allowed-tools'],
+    212      )
+    213  
+    214      // Execute bash commands in the prompt
+    215      const processedContent = await executeShellCommandsInPrompt(
+    216        parsed.content,
+    217        {
+    218>         ...context,
+    219          getAppState() {
+    220            const appState = context.getAppState()
+    221            return {
+    222              ...appState,
+    223              toolPermissionContext: {
+    224                ...appState.toolPermissionContext,
+    225                alwaysAllowRules: {
+    226                  ...appState.toolPermissionContext.alwaysAllowRules,
+    227                  command: allowedTools,
+    228                },
+src/packages/agent/commands/security-review.ts(220,28): error TS18046: 'context' is of type 'unknown'.
+  --- código src/packages/agent/commands/security-review.ts:210-230 ---
+    210      const allowedTools = parseSlashCommandToolsFromFrontmatter(
+    211        parsed.frontmatter['allowed-tools'],
+    212      )
+    213  
+    214      // Execute bash commands in the prompt
+    215      const processedContent = await executeShellCommandsInPrompt(
+    216        parsed.content,
+    217        {
+    218          ...context,
+    219          getAppState() {
+    220>           const appState = context.getAppState()
+    221            return {
+    222              ...appState,
+    223              toolPermissionContext: {
+    224                ...appState.toolPermissionContext,
+    225                alwaysAllowRules: {
+    226                  ...appState.toolPermissionContext.alwaysAllowRules,
+    227                  command: allowedTools,
+    228                },
+    229              },
+    230            }

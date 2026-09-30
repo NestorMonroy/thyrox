@@ -1,0 +1,4 @@
+src/packages/permission/src/__tests__/pathSafety.test.ts(59,14): error TS2339: Property 'message' does not exist on type 'PathSafetyResult'.
+  Property 'message' does not exist on type '{ safe: true; }'.
+src/packages/permission/src/__tests__/pathSafety.test.ts(80,14): error TS2339: Property 'circuitBreaker' does not exist on type 'PathSafetyResult'.
+  Property 'circuitBreaker' does not exist on type '{ safe: true; }'.

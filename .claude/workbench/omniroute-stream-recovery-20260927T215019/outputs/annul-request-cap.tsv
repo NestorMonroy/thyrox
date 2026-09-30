@@ -1,0 +1,6 @@
+base	11 pass, 0 fail	—
+usage-verb	10 pass, 1 fail	parseRequestCapFromBody ignores bodies without a request cap
+min-requests	9 pass, 2 fail	parseRequestCapFromBody ignores bodies without a request cap | isValidRequestCap bounds what the restore path accepts
+min-window	10 pass, 1 fail	isValidRequestCap bounds what the restore path accepts
+max-window	10 pass, 1 fail	isValidRequestCap bounds what the restore path accepts
+rpm-form	10 pass, 1 fail	parseRequestCapFromBody reads hard request caps from 429 bodies

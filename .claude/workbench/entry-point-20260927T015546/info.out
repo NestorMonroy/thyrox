@@ -1,0 +1,6 @@
+ejecutable  /opt/claude-code/bin/claude
+version     2.1.283   (declarada por el payload, no por --version)
+seccion     .bun en 88952832, 152543753 B
+tabla       2371 entradas, paso 52, 123292 B
+contenido   45403377 B
+por tipo    .js 2139 · .zst 133 · .md 65 · .txt 26 · .asset 3 · .node 2 · .mjs 2 · (sin) 1

@@ -1,0 +1,1 @@
+  if (node.kind === 'number') return node.raw

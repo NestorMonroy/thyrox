@@ -1,0 +1,12 @@
+Serve /v1/models and complete the model catalog
+
+The local proxy now answers GET /v1/models with the models the operator
+declares and, when auto_include_builtin_models is set, every catalog
+family some upstream can serve, in the order the reference gateway uses.
+
+Building that list exposed a stale catalog: thyrox knew 13 families and
+the 2.1.283 executable declares 18. sonnet5, opus5, opus55, fable5 and
+fable51 are added with the ids from their provider_ids, and a test pins
+the catalog to the executable's key map.
+
+Each rule of the list has its annulment control.

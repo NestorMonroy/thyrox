@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+357 |   test('gfn: /proc/self tiene que ser este pid y /proc tener al menos 16 pids', async () => {
+358 |     expect(await probeRegistrySweepPermitted(permission({ readlink: async () => '1' }))).toBe(false)
+359 |     expect(await probeRegistrySweepPermitted(permission({ readlink: async () => Promise.reject(new Error('x')) }))).toBe(false)
+360 |     expect(await probeRegistrySweepPermitted(permission({ readdirNames: async () => ['1', '2', 'self'] }))).toBe(false)
+361 |     const fewPids = Array.from({ length: 15 }, (_, index) => String(index + 1)).concat(['self', 'net', 'sys', 'bus'])
+362 |     expect(await probeRegistrySweepPermitted(permission({ readdirNames: async () => fewPids }))).toBe(false)
+                                                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:362:98)
+(fail) probeRegistrySweepPermitted > gfn: /proc/self tiene que ser este pid y /proc tener al menos 16 pids [0.74ms]
+
+ 28 pass
+ 1 fail
+ 82 expect() calls
+Ran 29 tests across 1 file. [243.00ms]

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash .claude/workbench/mitm-f7j-cli-20260928T083025/annul-f7j3.sh > .claude/workbench/mitm-f7j-cli-20260928T083025/results-f7j3.txt 2>&1; cat .claude/workbench/mitm-f7j-cli-20260928T083025/results-f7j3.txt", "started_at": "2026-09-28T08:47:52+00:00"}

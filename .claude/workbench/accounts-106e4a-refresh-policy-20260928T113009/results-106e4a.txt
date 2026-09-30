@@ -1,0 +1,28 @@
+# primera medición
+== 1: buffer de 10 min -> 1
+== 2: agy sin margen propio -> 1
+== 3: kiro con margen de Google -> 1
+== 4: sin anulación por conexión -> 1
+== 5: anulación infinita -> 1
+== 6: anulación cero -> 1
+== 7: anulación de texto -> 0
+== 8: heredadas cuentan -> 1
+== 9: destino gemini-cli -> 2
+== 10: sin aviso de retiro -> 1
+== 11: sin razón en el resultado -> 1
+== 12: código de retiro genérico -> 1
+== 13: la URL de token gana -> 1
+== 14: sin refresh token se manda -> 1
+== 15: sin client_id -> 1
+== 16: sin client_secret -> 1
+== 17: client_id vacío se manda -> 1
+== 18: sin clasificar -> 1
+== 19: la red lanza -> 1
+== 20: sin refresh rotado -> 1
+== 21: sin cabeceras de formulario -> 1
+== 22: el guardado no viaja -> 1
+== 23: gemini sin proyecto -> 1
+== 24: antigravity con clave -> 1
+== 25: codex con refresh -> 1
+== 26: proveedor desconocido pasa -> 1
+== restaurado -> 0

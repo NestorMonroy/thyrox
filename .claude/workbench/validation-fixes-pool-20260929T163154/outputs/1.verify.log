@@ -1,0 +1,5 @@
+test_detect_library_path_invocation: 14 aserciones — 14 ok, 0 falla(s)
+test_detect_rst_validation: 6 aserciones — 6 ok, 0 falla(s)
+36 ok, 0 fallos
+test_shell_text: 12 aserciones — 12 ok, 0 falla(s)
+VERIFY OK

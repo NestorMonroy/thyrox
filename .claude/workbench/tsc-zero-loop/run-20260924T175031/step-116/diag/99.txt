@@ -1,0 +1,46 @@
+src/packages/mcp-runtime/src/config.ts(1441,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1431-1451 ---
+   1431        `MCP config read error for ${filePath} (scope=${scope}): ${error}`,
+   1432        { level: 'error' },
+   1433      )
+   1434      return {
+   1435        config: null,
+   1436        errors: [
+   1437          {
+   1438            file: filePath,
+   1439            path: '',
+   1440            message: `Failed to read file: ${error}`,
+   1441>           suggestion: 'Check file permissions and ensure the file exists',
+   1442            mcpErrorMetadata: {
+   1443              scope,
+   1444              severity: 'fatal',
+   1445            },
+   1446          },
+   1447        ],
+   1448      }
+   1449    }
+   1450  
+   1451    const parsedJson = safeParseJSON(configContent)
+src/packages/mcp-runtime/src/config.ts(1465,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1455-1475 ---
+   1455        `MCP config is not valid JSON: ${filePath} (scope=${scope}, length=${configContent.length}, first100=${jsonStringify(configContent.slice(0, 100))})`,
+   1456        { level: 'error' },
+   1457      )
+   1458      return {
+   1459        config: null,
+   1460        errors: [
+   1461          {
+   1462            file: filePath,
+   1463            path: '',
+   1464            message: `MCP config is not a valid JSON`,
+   1465>           suggestion: 'Fix the JSON syntax errors in the file',
+   1466            mcpErrorMetadata: {
+   1467              scope,
+   1468              severity: 'fatal',
+   1469            },
+   1470          },
+   1471        ],
+   1472      }
+   1473    }
+   1474  
+   1475    return parseMcpConfig({

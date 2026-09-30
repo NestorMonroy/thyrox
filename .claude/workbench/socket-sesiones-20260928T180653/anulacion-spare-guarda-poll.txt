@@ -1,0 +1,26 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSpareSession.test.ts:
+120 |     startSpareClaimPoll(undefined, deps())
+121 |     expect(SPARE_CLAIM_POLL_MS).toBe(1000)
+122 |     expect(scheduled).toHaveLength(1)
+123 |     expect(scheduled[0]!.ms).toBe(1000)
+124 |     expect(scheduled[0]!.unrefed).toBe(true)
+125 |     expect(state.spareClaimPoll).toBe(scheduled[0] as unknown as ReturnType<typeof setInterval>)
+                                       ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  callback: [Function],
+  ms: 1000,
+  unrefed: true,
+}
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSpareSession.test.ts:125:34)
+(fail) el sondeo de reclamo (iD, sD) > startSpareClaimPoll programa cada segundo, sin retener el proceso [2.54ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [124.00ms]

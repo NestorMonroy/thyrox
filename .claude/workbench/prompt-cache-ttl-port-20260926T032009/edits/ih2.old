@@ -1,0 +1,3 @@
+    parts = command.split()
+    if not parts:
+        return None

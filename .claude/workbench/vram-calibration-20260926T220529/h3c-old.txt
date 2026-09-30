@@ -1,0 +1,2 @@
+# 2. Dos pools a la vez, sin GNU Time: no se toca el historial entre medio.
+for p in a b; do printf 'item-%s\n' "$p" | HEADLESS_POOL_TIME=/no-existe pool "$p" > "$OUT/pool-$p.salida" 2>&1 & done

@@ -1,0 +1,25 @@
+== mapa de normalizacion (nombre plano -> nombre @ant), leido de los manifiestos:
+   @thyrox/ink                            -> @anthropic/ink
+   @thyrox/computer-use-mcp               -> @ant/computer-use-mcp
+   @thyrox/computer-use-input             -> @ant/computer-use-input
+   @thyrox/computer-use-swift             -> @ant/computer-use-swift
+   @thyrox/claude-for-chrome-mcp          -> @ant/claude-for-chrome-mcp
+
+== diff por par, con el alcance NORMALIZADO (si 0, el plano no aporta nada):
+
+  ink: comunes=165 solo_plano=0 solo_ant=0 difieren_tras_normalizar=1
+     DIFIERE:          package.json
+
+  computer-use-mcp: comunes=50 solo_plano=0 solo_ant=0 difieren_tras_normalizar=1
+     DIFIERE:          package.json
+
+  computer-use-input: comunes=7 solo_plano=0 solo_ant=0 difieren_tras_normalizar=1
+     DIFIERE:          package.json
+
+  computer-use-swift: comunes=7 solo_plano=0 solo_ant=0 difieren_tras_normalizar=1
+     DIFIERE:          package.json
+
+  claude-for-chrome-mcp: comunes=10 solo_plano=0 solo_ant=0 difieren_tras_normalizar=1
+     DIFIERE:          package.json
+
+== contenido que el plano aporta y el @ant no tiene: 5

@@ -1,0 +1,54 @@
+# El control de la traducción, construido ANTES de la primera edición
+# 2026-09-18T15:42:56
+
+La promesa que la fase 2 hace es «sólo se movieron comentarios». Un control
+que no puede fallar no la respalda, así que se prueba por anulación antes de
+tocar nada.
+
+## El instrumento, y por qué NO es una expresión regular
+
+    probes/only_comments_changed.mjs  — ts.transpileModule con removeComments
+
+Un clasificador de comentarios por expresión regular es ciego a lo que más
+importa aquí: un `//` dentro de un template literal y el texto de un elemento
+JSX **no son comentarios**, y el censo de densidad (que sí usa expresión
+regular) los contaría como tales. El compilador los separa por construcción.
+
+## Verde sobre los copiados sin tocar
+
+    $ node probes/only_comments_changed.mjs $(cat perm_ts_copiados.txt)
+    archivos comparados=97  divergentes=0
+
+97 de los 101, porque cuatro no son TypeScript: `README.md` y los tres
+`src/yolo-classifier-prompts/*.txt`.
+
+## Anulación A — cambiar SÓLO un comentario: sigue verde
+
+Linea 10 de `src/classifierStallTracking.ts`, dentro de un bloque `/** */`:
+
+     /**
+    - * Thinking config for classifier calls. The classifier wants short text-only
+    + * COMENTARIO TRADUCIDO DE PRUEBA, el codigo no se toca.
+       * responses — API thinking blocks are ignored by extractTextContent() ...
+
+    archivos comparados=1  divergentes=0     exit=0
+
+## Anulación B — cambiar UN token de código: se pone rojo
+
+    -export const CLASSIFIER_STAGE1_TIMEOUT_MS = 30000
+    +export const CLASSIFIER_STAGE1_TIMEOUT_MS = 999
+
+    DIVERGE  src/classifierStallTracking.ts
+    archivos comparados=1  divergentes=1     exit=1
+
+Las dos anulaciones juntas son lo que hace al control un control: distingue
+el cambio que la fase autoriza del que no. Una sola de ellas no bastaría —
+un instrumento que siempre dijera verde pasaría la A, y uno que siempre
+dijera rojo pasaría la B.
+
+*Metrica:* salida de `ts.transpileModule` con `removeComments: true`,
+comparada byte a byte entre la referencia y el puerto.
+*Ciega a:* un cambio de comentario que altere el SIGNIFICADO sin alterar el
+código —traducir mal sigue dando verde—; a la fidelidad de la traducción,
+que ningún instrumento mecánico juzga; y a los cuatro archivos que no son
+TypeScript, que quedan fuera de su universo.

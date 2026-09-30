@@ -1,0 +1,17 @@
+src/packages/agent/hooks/execAgentHook.ts(172,9): error TS2322: Type '(tool: Tool, input: Record<string, unknown>, context: ToolUseContext, assistantMessage: AssistantMessage, toolUseID: string) => Promise<...>' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/agent/hooks/execAgentHook.ts(173,9): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/agent/hooks/execAgentHook.ts(178,11): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/agent/hooks/execAgentHook.ts(250,13): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+src/packages/agent/hooks/execAgentHook.ts(266,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+src/packages/agent/hooks/execAgentHook.ts(277,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+src/packages/agent/hooks/execAgentHook.ts(295,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+src/packages/agent/hooks/execAgentHook.ts(311,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+src/packages/agent/hooks/execAgentHook.ts(327,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.

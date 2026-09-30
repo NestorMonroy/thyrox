@@ -1,0 +1,47 @@
+src/packages/config/plugin/loadPluginHooks.ts(206,25): error TS2345: Argument of type 'Partial<Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:196-216 ---
+    196    const survivors: Partial<Record<HookEvent, PluginHookMatcher[]>> = {}
+    197    for (const [event, matchers] of Object.entries(current)) {
+    198      const kept = matchers.filter(
+    199        (m: { pluginRoot: string }): m is PluginHookMatcher =>
+    200          'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
+    201      )
+    202      if (kept.length > 0) survivors[event as HookEvent] = kept
+    203    }
+    204  
+    205    clearRegisteredPluginHooks()
+    206>   registerHookCallbacks(survivors)
+    207  }
+    208  
+    209  /**
+    210   * Reset hot reload subscription state. Only for testing.
+    211   */
+    212  export function resetHotReloadState(): void {
+    213    hotReloadSubscribed = false
+    214    lastPluginSettingsSnapshot = undefined
+    215  }
+    216  
+  Type 'Partial<Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.
+src/packages/config/plugin/loadPluginHooks.ts(243,38): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:233-253 ---
+    233  export function getPluginAffectingSettingsSnapshot(): string {
+    234    const merged = getSettings()
+    235    const policy = getSettingsForSource('policySettings')
+    236    // Key-sort the two Record fields so insertion order doesn't flap the hash.
+    237    // Array fields (strictKnownMarketplaces, blockedMarketplaces) have
+    238    // schema-stable order.
+    239    const sortKeys = <T extends Record<string, unknown>>(o: T | undefined) =>
+    240      o ? Object.fromEntries(Object.entries(o).sort()) : {}
+    241    return jsonStringify({
+    242      enabledPlugins: sortKeys(merged.enabledPlugins),
+    243>     extraKnownMarketplaces: sortKeys(merged.extraKnownMarketplaces),
+    244      strictKnownMarketplaces: policy?.strictKnownMarketplaces ?? [],
+    245      blockedMarketplaces: policy?.blockedMarketplaces ?? [],
+    246    })
+    247  }
+    248  
+    249  /**
+    250   * Set up hot reload for plugin hooks when remote settings change.
+    251   * When policySettings changes (e.g., from remote managed settings),
+    252   * compares the plugin-affecting settings snapshot and only reloads if it
+    253   * actually changed.

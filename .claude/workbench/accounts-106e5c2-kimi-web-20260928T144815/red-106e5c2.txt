@@ -1,0 +1,15 @@
+-------------------------------
+
+
+__tests__/accounts/refresh/health/kimiWebHealthCheck.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../../../src/accounts/refresh/health/kimiWebHealthCheck.ts' from '/home/user/thyrox/src/packages/provider/__tests__/accounts/refresh/health/kimiWebHealthCheck.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 2 fail
+ 2 errors
+Ran 2 tests across 2 files. [67.00ms]

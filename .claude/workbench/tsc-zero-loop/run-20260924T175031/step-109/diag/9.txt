@@ -1,0 +1,55 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+patron: spread-of-never-typed-test-double
+senal_del_verificador: TS2698: Spread types may only be created from object types
+fix_generico: Un doble de prueba declarado como `const x = {...} as never` no se puede esparcir directamente (`{ ...x, extra }`): `never` no es un tipo objeto para el spread. Se castea la variable a un tipo objeto concreto (p. ej. `Record<string, unknown>`) sólo en el punto del spread, dejando el `as never` exterior para el literal combinado que viaja como argumento.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/commands/commit.ts(70,9): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/commands/commit.ts:60-80 ---
+     60    description: 'Create a git commit',
+     61    allowedTools: ALLOWED_TOOLS,
+     62    contentLength: 0, // Dynamic content
+     63    progressMessage: 'creating commit',
+     64    source: 'builtin',
+     65    async getPromptForCommand(_args, context) {
+     66      const promptContent = getPromptContent()
+     67      const finalContent = await executeShellCommandsInPrompt(
+     68        promptContent,
+     69        {
+     70>         ...context,
+     71          getAppState() {
+     72            const appState = context.getAppState()
+     73            return {
+     74              ...appState,
+     75              toolPermissionContext: {
+     76                ...appState.toolPermissionContext,
+     77                alwaysAllowRules: {
+     78                  ...appState.toolPermissionContext.alwaysAllowRules,
+     79                  command: ALLOWED_TOOLS,
+     80                },
+src/packages/agent/commands/commit.ts(72,28): error TS18046: 'context' is of type 'unknown'.
+  --- código src/packages/agent/commands/commit.ts:62-82 ---
+     62    contentLength: 0, // Dynamic content
+     63    progressMessage: 'creating commit',
+     64    source: 'builtin',
+     65    async getPromptForCommand(_args, context) {
+     66      const promptContent = getPromptContent()
+     67      const finalContent = await executeShellCommandsInPrompt(
+     68        promptContent,
+     69        {
+     70          ...context,
+     71          getAppState() {
+     72>           const appState = context.getAppState()
+     73            return {
+     74              ...appState,
+     75              toolPermissionContext: {
+     76                ...appState.toolPermissionContext,
+     77                alwaysAllowRules: {
+     78                  ...appState.toolPermissionContext.alwaysAllowRules,
+     79                  command: ALLOWED_TOOLS,
+     80                },
+     81              },
+     82            }

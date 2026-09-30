@@ -1,0 +1,46 @@
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(30,3): error TS6133: 'onCancel' is declared but its value is never read.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:20-40 ---
+     20    tools: Tools
+     21    existingAgents: AgentDefinition[]
+     22    onComplete: (message: string) => void
+     23    onCancel: () => void
+     24  }
+     25  
+     26  export function CreateAgentWizard({
+     27    tools,
+     28    existingAgents,
+     29    onComplete,
+     30>   onCancel,
+     31  }: Props): ReactNode {
+     32    // Create step components with props
+     33    const steps: ComponentType[] = [
+     34      LocationStep, // 0
+     35      MethodStep, // 1
+     36      GenerateStep, // 2
+     37      () => <TypeStep existingAgents={existingAgents} />, // 3
+     38      PromptStep, // 4
+     39      DescriptionStep, // 5
+     40      () => <ToolsStep tools={tools} />, // 6
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(33,9): error TS6133: 'steps' is declared but its value is never read.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:23-43 ---
+     23    onCancel: () => void
+     24  }
+     25  
+     26  export function CreateAgentWizard({
+     27    tools,
+     28    existingAgents,
+     29    onComplete,
+     30    onCancel,
+     31  }: Props): ReactNode {
+     32    // Create step components with props
+     33>   const steps: ComponentType[] = [
+     34      LocationStep, // 0
+     35      MethodStep, // 1
+     36      GenerateStep, // 2
+     37      () => <TypeStep existingAgents={existingAgents} />, // 3
+     38      PromptStep, // 4
+     39      DescriptionStep, // 5
+     40      () => <ToolsStep tools={tools} />, // 6
+     41      ModelStep, // 7
+     42      ColorStep, // 8
+     43      // MemoryStep is conditionally included based on GrowthBook gate

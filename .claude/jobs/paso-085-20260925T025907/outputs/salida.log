@@ -1,0 +1,5 @@
+ 0 fail
+ 30 expect() calls
+Ran 20 tests across 1 file. [458.00ms]
+{"status": "progress", "total_before": 1974, "total_final": 1964, "tsc_runs": 1, "accepted": ["agent:agent:typed-stream-event"], "files_kept": ["src/packages/agent/createDeps.ts"], "outcomes": {"agent:agent:typed-stream-event": "accepted-net"}}
+__BG_EXIT__=0

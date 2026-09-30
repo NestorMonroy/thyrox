@@ -1,0 +1,1 @@
+bash -c 'cd src/packages/agent && bunx tsc --noEmit -p tsconfig.build.json'

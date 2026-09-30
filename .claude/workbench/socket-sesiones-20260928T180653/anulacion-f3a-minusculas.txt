@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAuthTokens.test.ts:
+71 | 
+72 | describe('canonicalSocketAddress (Iv) e inboxKeyFileName (J, Q)', () => {
+73 |   test('una ruta se resuelve; un pipe se escribe en minúsculas bajo \\\\.\\pipe\\', () => {
+74 |     expect(canonicalSocketAddress('/run/./b//1.sock')).toBe('/run/b/1.sock')
+75 |     expect(canonicalSocketAddress('/run/a/../b/1.sock')).toBeUndefined()
+76 |     expect(canonicalSocketAddress('\\\\?\\pipe\\LOCAL\\Inbox')).toBe('\\\\.\\pipe\\local\\inbox')
+                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "\\.\pipe\local\inbox"
+Received: "\\.\pipe\LOCAL\Inbox"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAuthTokens.test.ts:76:65)
+(fail) canonicalSocketAddress (Iv) e inboxKeyFileName (J, Q) > una ruta se resuelve; un pipe se escribe en minúsculas bajo \\.\pipe\ [0.52ms]
+
+ 8 pass
+ 1 fail
+ 28 expect() calls
+Ran 9 tests across 1 file. [43.00ms]

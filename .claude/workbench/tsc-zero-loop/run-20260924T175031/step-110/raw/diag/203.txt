@@ -1,0 +1,2 @@
+src/packages/repl/src/components/Settings/questionTimeoutSetting.ts(19,49): error TS2322: Type '"never" | "5m" | "60s" | "10m"' is not assignable to type 'number | undefined'.
+  Type 'string' is not assignable to type 'number'.
