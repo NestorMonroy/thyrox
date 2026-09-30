@@ -53,3 +53,31 @@ entrada la fija esa tarea. Te pertenecen `src/packages/daemon/src/bgDaemon.ts`,
 los archivos que el cableado exija crear bajo `src/packages/daemon/src/` (no
 `podman/podmanWorkerManager.ts`) y sus pruebas en
 `src/packages/daemon/src/__tests__/`.
+
+## Ítem 3 — TASK-THYROX-0657: el rechazo del proxy nombra la vía del store
+
+Contexto medido en `.claude/workbench/credential-store-import-20260930T172522/`.
+`thyrox providers add anthropic --credential-env <VAR>` ya guarda una clave
+cifrada en el store de conexiones, y `resolveCredential` la lee
+(`src/packages/cli/__tests__/providersAnthropicCredential.test.ts`). Pero
+`src/packages/provider/bin/credentialProxy.ts`, al rehusar sin credencial,
+sólo nombra las cuatro variables de entorno. El rechazo debe nombrar también
+la vía del store: `bash bin/cli providers add anthropic --credential-env
+<VAR>`, o sin `--credential-env` para el prompt oculto. El mensaje no cambia
+de forma: sigue saliendo con 2, sin escuchar. Y el `README.md` de la raíz, en
+su checklist de un clon nuevo, nombra esa vía como la forma de dar al pool
+una credencial propia. Te pertenecen `src/packages/provider/bin/credentialProxy.ts`,
+`src/packages/provider/__tests__/credentialProxyProcess.test.ts` y
+`README.md`.
+
+## Ítem 4 — TASK-THYROX-0658: `providers add --dry-run` no escribe
+
+Medido: con `THYROX_PROVIDERS_DATA_DIR` apuntando a un directorio vacío,
+`bin/cli providers add anthropic --credential-env X --dry-run` sale 0 con
+`dry-run: would add claude/claude` y deja creado `connections.sqlite3`. El
+store se abre con `openConnectionStore()` (`providers-commands.ts:69`), que lo
+crea. Un ensayo no escribe: con `--dry-run` el verbo no debe crear el
+archivo, y la prueba lo comprueba sobre un directorio vacío. Te pertenecen
+`src/packages/cli/src/commands/providers-commands.ts`,
+`src/packages/cli/src/commands/providers/writeVerbs.ts` y
+`src/packages/cli/__tests__/providersWriteVerbs.test.ts`.
