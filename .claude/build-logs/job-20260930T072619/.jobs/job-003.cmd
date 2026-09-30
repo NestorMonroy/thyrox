@@ -1,0 +1,1 @@
+(cd src/packages/cli && bun test __tests__/printDelegation.test.ts)

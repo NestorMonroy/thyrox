@@ -1,0 +1,1 @@
+{"items_measured": 30, "max_wall_s": 559.41, "min_wall_s": 53.29, "peak_kb": 3841324, "median_kb": 282448, "p90_kb": 1025296, "recorded_at": "2026-09-30T07:23:56Z", "template_digest": "0dfe996a3f677d8284d839cfffd9af7899aa26b083e1ce06f753c033a17c6234", "runner": "/home/user/thyrox/bin/cli", "item_model": "claude-fable-5-1", "items_gpu_measured": 0}
