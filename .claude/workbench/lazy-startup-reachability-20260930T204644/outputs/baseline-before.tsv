@@ -1,0 +1,3 @@
+--version	exit=0	conexiones=0	podman=0	primera_linea=0.1.0 (thyrox)
+--help	exit=0	conexiones=0	podman=0	primera_linea=thyrox — el bucle de agente, nativo
+-p --help	exit=2	conexiones=0	podman=0	primera_linea=thyrox -p: la bandera --help no se admite. Se admiten: -p, --print, --no-session
