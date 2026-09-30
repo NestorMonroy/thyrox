@@ -32,8 +32,8 @@ kaupamex-docs: vive sólo en el store y en ese banco.
 |---|---|---|
 | 1 · ejecutable | lo que se compila y lo que lleva dentro | P0–P7 |
 | 2 · clon e instalación | githooks, `.env` que gobierna, hogares | P8, P10, P11 |
-| 3 · infraestructura gestionada | PostgreSQL + pgvector (persistente, puede ser externo), Redis (compartido/efímero), Ollama (inferencia de larga vida), Podman como runtime; su dueño es el bootstrap de infraestructura (ADR-007 Regla 4, ADR-008 §Ámbito de vida) | **nueva, P12** |
-| 4 · servicios de thyrox | daemon, proxy local, fuentes de credencial, pool | **nueva, P13** |
+| 3 · infraestructura gestionada | PostgreSQL + pgvector (persistente, puede ser externo), Redis (compartido/efímero), Ollama (inferencia de larga vida), Podman como runtime; su dueño es el bootstrap de infraestructura (ADR-007 Regla 4, ADR-008 §Ámbito de vida) | **P12, TASK-THYROX-0676** |
+| 4 · servicios de thyrox | daemon, proxy local, fuentes de credencial, pool | **P13, TASK-THYROX-0677** |
 
 ### La capa 3 en concreto, con lo que ya está medido
 
@@ -63,3 +63,6 @@ declarará y verificará los servicios que esos hogares acompañan.
 *Ciega a:* servicios que se arrancan sin envoltorio con nombre de servicio
 (p. ej. el daemon, que se lanza por `bin/cli`), y dependencias de un
 consumidor (kaupamex-*).
+
+La serie no tiene documento de gobierno en kaupamex-docs; escribirlo, con las
+cuatro capas y la decisión que espera cada una, es **TASK-THYROX-0678**.
