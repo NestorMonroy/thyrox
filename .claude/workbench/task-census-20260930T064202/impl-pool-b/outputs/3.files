@@ -1,0 +1,13 @@
+.claude/workbench/task-thyrox-0497-anthropic-provider-id-20260930T075231/README.md
+src/packages/cli/__tests__/providersAnthropicCredential.test.ts
+src/packages/cli/__tests__/providersCommands.test.ts
+src/packages/cli/__tests__/providersLoginVerb.test.ts
+src/packages/cli/__tests__/providersTestVerbs.test.ts
+src/packages/cli/__tests__/providersWriteVerbs.test.ts
+src/packages/cli/src/commands/providers/connectionPayload.ts
+src/packages/cli/src/commands/providers/connectionSelector.ts
+src/packages/cli/src/commands/providers/loginVerb.ts
+src/packages/cli/src/commands/providers/oauthLogin.ts
+src/packages/cli/src/commands/providers/providerId.ts
+src/packages/cli/src/commands/providers/testVerbs.ts
+src/packages/cli/src/commands/providers/writeVerbs.ts
