@@ -1,0 +1,539 @@
+diff --git a/src/session/gpu_backend.py b/src/session/gpu_backend.py
+new file mode 100644
+index 000000000..e2a35c95b
+--- /dev/null
++++ b/src/session/gpu_backend.py
+@@ -0,0 +1,256 @@
++"""La GPU como capacidad opcional del anfitrión: el puerto de telemetría y la sonda.
++
++Dos observaciones distintas (ADR-007 1.6.1):
++
++- ``hardware-inventory`` responde «¿hay evidencia física de GPU?»;
++- ``GpuMemoryBackend`` responde «¿puedo observar su memoria?».
++
++La capa de capacidad (``probe_capability``) las combina:
++
++    evidencia de hardware   backend          estado
++    ninguna                 ninguno usable   absent
++    presente o partial      ninguno usable   unavailable
++    cualquiera              usable           available (la telemetría decide)
++
++y sólo con telemetría ``available`` una lectura concreta da ``Measured`` o un
++``Unmeasured`` de estado ``error``. La ausencia de backend no es una
++implementación medible: se representa con ``None``, no con un backend que
++devuelva ceros, y ``Unmeasured`` no tiene atributo de cantidad. Así el tipo no
++permite que ``absent``, ``unavailable`` o ``error`` se lean como ``measured(0)``.
++
++El requisito de GPU es propiedad declarada del trabajo (``none``, ``optional``,
++``required``); ``plan_route`` decide la ruta ANTES de ejecutar y nunca
++convierte ``required`` en ``optional``.
++
++Este módulo y la sonda de hardware son los únicos del árbol de producción que
++nombran el binario de NVIDIA; el resto trabaja con estado, memoria libre y uso
++por proceso (``tests/session/test_gpu_backend.py``, caso de superficie).
++
++Métrica: ``memory.free`` y ``used_memory`` por PID que publica el binario de
++NVIDIA, y el veredicto de ``hardware-inventory``.
++Ciega a: una GPU que otro backend (ROCm, Metal) sí podría observar —sin
++implementación aquí, cuenta como ``unavailable`` si hay evidencia física—, y a
++los PIDs que el binario no lista (espacio de PID no compartido).
++"""
++from __future__ import annotations
++
++import subprocess
++from collections.abc import Callable, Collection, Sequence
++from dataclasses import dataclass
++from enum import Enum
++from pathlib import Path
++from typing import Protocol
++
++#: El binario que habla con el driver de NVIDIA, y la opción que lo declara.
++DEFAULT_BINARY = "nvidia-smi"
++BINARY_OPTION = "--nvidia-smi"
++QUERY_TIMEOUT_S = 10
++APPS_QUERY = ["--query-compute-apps=pid,used_memory", "--format=csv,noheader,nounits"]
++UTILIZATION_QUERY = ["--query-gpu=index,utilization.gpu", "--format=csv,noheader,nounits"]
++FREE_QUERY = ["--query-gpu=index,memory.free", "--format=csv,noheader,nounits"]
++
++#: La sonda de hardware del árbol, hermana de este módulo.
++DEFAULT_INVENTORY = Path(__file__).resolve().parents[2] / "bin" / "hardware-inventory"
++INVENTORY_TIMEOUT_S = 60
++
++MEASURED = "measured"
++ABSENT = "absent"
++UNAVAILABLE = "unavailable"
++AVAILABLE = "available"
++ERROR = "error"
++
++
++class GpuReadFailed(Exception):
++    """El backend no pudo dar la lectura pedida: no hay cifra que publicar."""
++
++
++class EvidenceUnavailable(Exception):
++    """El inventario de hardware no emitió un veredicto fiable."""
++
++
++class GpuMemoryBackend(Protocol):
++    """El puerto de telemetría de memoria de GPU. Las lecturas lanzan
++    ``GpuReadFailed`` cuando no pueden medir; nunca devuelven un cero por
++    defecto."""
++
++    def available(self) -> bool: ...
++
++    def free_memory_mib(self) -> int: ...
++
++    def usage_by_pid(self, pids: Collection[int]) -> dict[int, int]: ...
++
++    def utilization_pct(self) -> int: ...
++
++    def identity(self) -> str: ...
++
++
++class NvidiaSmiBackend:
++    """El backend de NVIDIA: consulta su binario por CSV."""
++
++    def __init__(self, binary: str = DEFAULT_BINARY):
++        self.binary = binary
++
++    def _query(self, args: list[str]) -> list[list[str]]:
++        try:
++            done = subprocess.run([self.binary, *args], capture_output=True, text=True, timeout=QUERY_TIMEOUT_S)
++        except (OSError, subprocess.TimeoutExpired) as error:
++            raise GpuReadFailed(f"{DEFAULT_BINARY} no responde ({self.binary}): {error}") from error
++        if done.returncode != 0:
++            cause = done.stderr.strip() or f"exit {done.returncode}"
++            raise GpuReadFailed(f"{DEFAULT_BINARY} no responde ({self.binary}): {cause}")
++        return [[cell.strip() for cell in line.split(",")] for line in done.stdout.splitlines() if line.strip()]
++
++    def available(self) -> bool:
++        try:
++            self._query(FREE_QUERY)
++        except GpuReadFailed:
++            return False
++        return True
++
++    def free_memory_mib(self) -> int:
++        """La VRAM libre de la GPU con MÁS espacio: un ítem corre en una GPU y
++        no se reparte, así que la suma prometería un sitio que no existe."""
++        rows = self._query(FREE_QUERY)
++        if not rows:
++            raise GpuReadFailed(f"{self.binary} no listó ninguna GPU")
++        return max(int(float(mib)) for _index, mib, *_ in rows)
++
++    def listed_usage(self) -> dict[int, int]:
++        """La VRAM de TODOS los procesos que el binario lista, por PID del anfitrión."""
++        return {int(pid): int(float(mib)) for pid, mib, *_ in self._query(APPS_QUERY)}
++
++    def usage_by_pid(self, pids: Collection[int]) -> dict[int, int]:
++        wanted = set(pids)
++        return {pid: mib for pid, mib in self.listed_usage().items() if pid in wanted}
++
++    def utilization_pct(self) -> int:
++        """El uso máximo entre las GPUs: el binario lo da por GPU, no por proceso."""
++        return max((int(float(pct)) for _index, pct, *_ in self._query(UTILIZATION_QUERY)), default=0)
++
++    def identity(self) -> str:
++        return f"{DEFAULT_BINARY}:{self.binary}"
++
++
++def usable_backend(backend: GpuMemoryBackend) -> GpuMemoryBackend | None:
++    """El backend si da telemetría; ``None`` —«no hay backend»— si no."""
++    return backend if backend.available() else None
++
++
++class HardwareEvidence(Enum):
++    """El veredicto de ``hardware-inventory``."""
++    NONE = "none"
++    PARTIAL = "partial"
++    USABLE = "nvidia-usable"
++
++
++#: El código de salida con que ``hardware-inventory`` publica cada veredicto.
++INVENTORY_EXIT_CODES = {HardwareEvidence.USABLE: 0, HardwareEvidence.NONE: 1, HardwareEvidence.PARTIAL: 3}
++
++
++def parse_verdict(stdout: str) -> HardwareEvidence:
++    for line in stdout.splitlines():
++        fields = line.split("\t")
++        if fields[0] == "verdict" and len(fields) > 1:
++            try:
++                return HardwareEvidence(fields[1])
++            except ValueError as error:
++                raise EvidenceUnavailable(f"veredicto desconocido: {fields[1]!r}") from error
++    raise EvidenceUnavailable("el inventario no emitió línea verdict")
++
++
++def read_inventory(command: Sequence[str]) -> HardwareEvidence:
++    """Corre el inventario y exige que su veredicto y su código de salida
++    coincidan: si discrepan, ninguno es fiable."""
++    try:
++        done = subprocess.run(list(command), capture_output=True, text=True, timeout=INVENTORY_TIMEOUT_S)
++    except (OSError, subprocess.TimeoutExpired) as error:
++        raise EvidenceUnavailable(f"hardware-inventory no corrió: {error}") from error
++    evidence = parse_verdict(done.stdout)
++    if INVENTORY_EXIT_CODES[evidence] != done.returncode:
++        raise EvidenceUnavailable(f"hardware-inventory da {evidence.value!r} con exit {done.returncode}")
++    return evidence
++
++
++def inventory_evidence(command: Sequence[str] = (str(DEFAULT_INVENTORY),)) -> Callable[[], HardwareEvidence]:
++    """La evidencia como consulta diferida: sólo se paga si el backend falla."""
++    return lambda: read_inventory(command)
++
++
++@dataclass(frozen=True)
++class Capability:
++    """Qué se puede observar de la GPU. ``telemetry`` existe sólo en ``available``."""
++    state: str
++    reason: str
++    telemetry: GpuMemoryBackend | None = None
++
++
++def probe_capability(backend: GpuMemoryBackend | None,
++                     evidence: Callable[[], HardwareEvidence]) -> Capability:
++    """Combina las dos observaciones. Con backend usable la telemetría decide y
++    el inventario no se consulta; sin él, la evidencia física separa
++    ``absent`` de ``unavailable``, y un inventario sin veredicto es ``error``."""
++    telemetry = usable_backend(backend) if backend is not None else None
++    if telemetry is not None:
++        return Capability(AVAILABLE, f"telemetría de {telemetry.identity()}", telemetry)
++    try:
++        found = evidence()
++    except EvidenceUnavailable as error:
++        return Capability(ERROR, f"sin telemetría y sin evidencia de hardware: {error}")
++    if found is HardwareEvidence.NONE:
++        return Capability(ABSENT, "sin evidencia física de GPU ni backend")
++    return Capability(UNAVAILABLE, f"hardware {found.value} sin backend que observe su memoria")
++
++
++@dataclass(frozen=True)
++class Measured:
++    """Una lectura hecha: el cero incluido es una medida."""
++    mib: int
++    state: str = MEASURED
++
++
++@dataclass(frozen=True)
++class Unmeasured:
++    """No hubo lectura: ``absent``, ``unavailable`` o ``error``, con su causa."""
++    state: str
++    reason: str
++
++
++def measure_free(capability: Capability) -> Measured | Unmeasured:
++    """La VRAM libre, en dos etapas: sin telemetría devuelve el estado de la
++    capacidad; con ella, la lectura o ``error``."""
++    if capability.telemetry is None:
++        return Unmeasured(capability.state, capability.reason)
++    try:
++        return Measured(capability.telemetry.free_memory_mib())
++    except GpuReadFailed as error:
++        return Unmeasured(ERROR, str(error))
++
++
++def free_mib_or_none(measure: Measured | Unmeasured) -> int | None:
++    """La VRAM libre como dimensión de anchura: ``None`` quita la dimensión en
++    ``pool_history.derive``, que es lo que una lectura ausente significa."""
++    return measure.mib if isinstance(measure, Measured) else None
++
++
++class GpuRequirement(Enum):
++    """Lo que el trabajo declara que necesita de la GPU."""
++    NONE = "none"
++    OPTIONAL = "optional"
++    REQUIRED = "required"
++
++
++class Route(Enum):
++    """Por dónde corre el trabajo, decidido antes de ejecutarlo."""
++    CPU = "cpu"
++    GPU = "gpu"
++    REFUSE = "refuse"
++
++
++def plan_route(requirement: GpuRequirement, telemetry: GpuMemoryBackend | None) -> Route:
++    """``none`` no usa la GPU; ``optional`` va a la GPU sólo con telemetría;
++    ``required`` sin ella rehúsa. Nunca se rebaja ``required``."""
++    if requirement is GpuRequirement.NONE:
++        return Route.CPU
++    if telemetry is not None:
++        return Route.GPU
++    return Route.CPU if requirement is GpuRequirement.OPTIONAL else Route.REFUSE
+diff --git a/tests/session/test_gpu_backend.py b/tests/session/test_gpu_backend.py
+new file mode 100644
+index 000000000..d5f4f2684
+--- /dev/null
++++ b/tests/session/test_gpu_backend.py
+@@ -0,0 +1,271 @@
++"""La GPU como capacidad opcional: el puerto de telemetría y la sonda de capacidad.
++
++Dos observaciones distintas (ADR-007 1.6.1): ``hardware-inventory`` responde
++«¿hay evidencia física de GPU?» y ``GpuMemoryBackend`` responde «¿puedo
++observar su memoria?». La capa de capacidad las combina y ninguna ausencia de
++backend produce una cantidad: ``measured(0)``, ``absent``, ``unavailable`` y
++``error`` son disjuntos.
++
++Todo lo que no es el backend NVIDIA se prueba con backends falsos en Python,
++sin simular el binario. El backend NVIDIA se prueba contra un ejecutable falso
++porque su responsabilidad ES hablar con ese binario.
++
++Invariantes de la fuente de verdad (TASK-THYROX-0691) que cubre este guion:
++1, 2, 3, 4, 5, 8, 11 y la de superficie (punto 7 / corrección 3).
++"""
++from __future__ import annotations
++
++import os
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "src"))
++from agents import model_catalog  # noqa: E402
++from session import gpu_backend as gb  # noqa: E402
++from session import gpu_monitor as gm  # noqa: E402
++from session import pool_history as ph  # noqa: E402
++
++OK = FAILED = 0
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}"); OK += 1
++    else:
++        print(f"  FALLA {label}: esperado {expected!r}, obtenido {obtained!r}"); FAILED += 1
++
++
++class FakeBackend:
++    """Un backend con memoria declarada: ``free`` ``None`` falla al leerla."""
++
++    def __init__(self, free: int | None = 5000, usage: dict[int, int] | None = None,
++                 usable: bool = True, utilization: int = 0):
++        self.free = free
++        self.usage = usage or {}
++        self.usable = usable
++        self.utilization = utilization
++
++    def available(self) -> bool:
++        return self.usable
++
++    def free_memory_mib(self) -> int:
++        if self.free is None:
++            raise gb.GpuReadFailed("lectura simulada fallida")
++        return self.free
++
++    def usage_by_pid(self, pids) -> dict[int, int]:
++        return {pid: mib for pid, mib in self.usage.items() if pid in set(pids)}
++
++    def utilization_pct(self) -> int:
++        return self.utilization
++
++    def identity(self) -> str:
++        return "fake"
++
++
++class CountingEvidence:
++    """Evidencia de hardware declarada que cuenta cuántas veces se consultó."""
++
++    def __init__(self, evidence: gb.HardwareEvidence | None):
++        self.evidence = evidence
++        self.calls = 0
++
++    def __call__(self) -> gb.HardwareEvidence:
++        self.calls += 1
++        if self.evidence is None:
++            raise gb.EvidenceUnavailable("inventario simulado sin veredicto")
++        return self.evidence
++
++
++class StaticMembers:
++    """Una fuente de miembros que vive ``rounds`` lecturas con PIDs fijos."""
++
++    def __init__(self, pids: set[int], rounds: int):
++        self.pids = pids
++        self.rounds = rounds
++
++    def current_members(self) -> set[int] | None:
++        self.rounds -= 1
++        return set(self.pids) if self.rounds >= 0 else None
++
++
++def fake_binary(directory: Path) -> Path:
++    smi = directory / "nvidia-smi"
++    smi.write_text("#!/usr/bin/env bash\n"
++                   'case "$*" in\n'
++                   '  *--query-compute-apps=pid,used_memory*) echo "4242, 300"; echo "4343, 5000" ;;\n'
++                   '  *--query-gpu=index,utilization.gpu*)    echo "0, 91"; echo "1, 12" ;;\n'
++                   '  *--query-gpu=index,memory.free*)        echo "0, 6000"; echo "1, 11000" ;;\n'
++                   '  *) exit 9 ;;\nesac\n')
++    smi.chmod(0o755)
++    return smi
++
++
++def fake_inventory(directory: Path, name: str, verdict: str, code: int) -> list[str]:
++    script = directory / name
++    script.write_text(f"#!/usr/bin/env bash\nprintf 'signal\\tpci_nvidia\\tabsent\\t-\\n'\n"
++                      f"printf 'verdict\\t{verdict}\\tmissing=-\\n'\nexit {code}\n")
++    script.chmod(0o755)
++    return [str(script)]
++
++
++def request(ledger: Path, need: int = 3000, timeout_s: float = 0.2) -> gm.AdmissionRequest:
++    return gm.AdmissionRequest(need, ledger, os.getpid(), timeout_s, 0.05)
++
++
++with tempfile.TemporaryDirectory() as raw:
++    tmp = Path(raw)
++
++    print("== 1. el backend NVIDIA habla con su binario ==")
++    nvidia = gb.NvidiaSmiBackend(str(fake_binary(tmp)))
++    check("disponible con el binario que responde", True, nvidia.available())
++    check("libre: la GPU con más espacio, no la suma", 11000, nvidia.free_memory_mib())
++    check("uso sólo de los PIDs pedidos", {4242: 300}, nvidia.usage_by_pid({4242, 1}))
++    check("uso pico entre GPUs", 91, nvidia.utilization_pct())
++    check("la identidad nombra el binario", True, str(tmp) in nvidia.identity())
++    missing = gb.NvidiaSmiBackend(str(tmp / "no-existe"))
++    check("sin binario: no disponible", False, missing.available())
++    try:
++        missing.free_memory_mib()
++        outcome = "devolvió una cantidad"
++    except gb.GpuReadFailed as error:
++        outcome = "no responde" in str(error)
++    check("sin binario, la lectura lanza con la causa y no da cifra", True, outcome)
++
++    print("== 2. la capacidad combina evidencia de hardware y backend ==")
++    evidence = CountingEvidence(gb.HardwareEvidence.NONE)
++    capability = gb.probe_capability(None, evidence)
++    check("ninguna evidencia, ningún backend: absent", gb.ABSENT, capability.state)
++    check("absent no lleva telemetría", None, capability.telemetry)
++    check("partial sin backend usable: unavailable", gb.UNAVAILABLE,
++          gb.probe_capability(FakeBackend(usable=False), CountingEvidence(gb.HardwareEvidence.PARTIAL)).state)
++    check("GPU usable en el inventario sin backend: unavailable", gb.UNAVAILABLE,
++          gb.probe_capability(None, CountingEvidence(gb.HardwareEvidence.USABLE)).state)
++    check("inventario sin veredicto y sin backend: error", gb.ERROR,
++          gb.probe_capability(None, CountingEvidence(None)).state)
++    lazy = CountingEvidence(gb.HardwareEvidence.NONE)
++    check("backend usable sin evidencia física: la telemetría decide", gb.AVAILABLE,
++          gb.probe_capability(FakeBackend(), lazy).state)
++    check("con backend usable no se consulta el inventario", 0, lazy.calls)
++
++    print("== 3. partial + backend usable: capacidad y medida son dos etapas ==")
++    partial = CountingEvidence(gb.HardwareEvidence.PARTIAL)
++    good = gb.probe_capability(FakeBackend(free=4000), partial)
++    check("etapa 1 — partial con backend usable: telemetría available", gb.AVAILABLE, good.state)
++    check("etapa 2 — lectura válida: measured", gb.Measured(4000), gb.measure_free(good))
++    failing = gb.probe_capability(FakeBackend(free=None), partial)
++    check("etapa 2 — lectura que falla: error, sin cifra", gb.ERROR, gb.measure_free(failing).state)
++
++    print("== 4. ninguna ausencia es un cero (invariantes 2, 5 y 11) ==")
++    absent = gb.measure_free(capability)
++    check("sin backend la medida es el estado absent", gb.Unmeasured(gb.ABSENT, absent.reason), absent)
++    check("y no es measured(0)", False, absent == gb.Measured(0))
++    unavailable = gb.measure_free(gb.probe_capability(None, CountingEvidence(gb.HardwareEvidence.PARTIAL)))
++    states = {gb.measure_free(gb.probe_capability(FakeBackend(free=0), lazy)).state,
++              absent.state, unavailable.state, gb.measure_free(failing).state}
++    check("measured, absent, unavailable y error son cuatro estados", 4, len(states))
++    check("un estado sin medida no tiene atributo de cantidad", False, hasattr(absent, "mib"))
++
++    print("== 5. el inventario es evidencia; su código y su veredicto tienen que coincidir ==")
++    check("nvidia-usable, exit 0", gb.HardwareEvidence.USABLE,
++          gb.read_inventory(fake_inventory(tmp, "inv-usable", "nvidia-usable", 0)))
++    check("none, exit 1", gb.HardwareEvidence.NONE, gb.read_inventory(fake_inventory(tmp, "inv-none", "none", 1)))
++    check("partial, exit 3", gb.HardwareEvidence.PARTIAL,
++          gb.read_inventory(fake_inventory(tmp, "inv-partial", "partial", 3)))
++    for name, verdict, code in (("inv-refused", "none", 2), ("inv-contradiction", "none", 3)):
++        try:
++            gb.read_inventory(fake_inventory(tmp, name, verdict, code))
++            outcome = "evidencia"
++        except gb.EvidenceUnavailable:
++            outcome = "sin evidencia"
++        check(f"rehúsa o se contradice: sin evidencia ({name})", "sin evidencia", outcome)
++
++    print("== 6. la ruta se decide ANTES de ejecutar, por el requisito declarado ==")
++    table = {(gb.GpuRequirement.NONE, True): gb.Route.CPU, (gb.GpuRequirement.NONE, False): gb.Route.CPU,
++             (gb.GpuRequirement.OPTIONAL, True): gb.Route.GPU, (gb.GpuRequirement.OPTIONAL, False): gb.Route.CPU,
++             (gb.GpuRequirement.REQUIRED, True): gb.Route.GPU, (gb.GpuRequirement.REQUIRED, False): gb.Route.REFUSE}
++    for (requirement, usable), route in table.items():
++        check(f"{requirement.value} con backend={usable}: {route.value}", route,
++              gb.plan_route(requirement, FakeBackend() if usable else None))
++
++    print("== 7. la admisión por requisito (invariantes 3 y 4) ==")
++    ledger = tmp / "ledgers" / "vram.json"
++    check("required sin backend: exit 2", gm.EXIT_ABSENT,
++          gm.admission_exit_code(gb.GpuRequirement.REQUIRED, request(ledger), None))
++    check("y no se escribe reserva", False, ledger.parent.exists())
++    check("none con backend: entra sin tocar el registro", gm.EXIT_ADMITTED,
++          gm.admission_exit_code(gb.GpuRequirement.NONE, request(ledger), FakeBackend(free=0)))
++    check("none: el registro sigue sin existir", False, ledger.parent.exists())
++    check("optional sin backend: ruta CPU declarada", gm.EXIT_CPU_ROUTE,
++          gm.admission_exit_code(gb.GpuRequirement.OPTIONAL, request(ledger), None))
++    check("optional sin backend: sin reserva", False, ledger.parent.exists())
++    check("optional con backend y sitio: reserva", gm.EXIT_ADMITTED,
++          gm.admission_exit_code(gb.GpuRequirement.OPTIONAL, request(ledger), FakeBackend(free=5000)))
++    check("y la reserva está en el registro", {str(os.getpid()): 3000}, gm.VramLedger(ledger).live())
++    gm.release(ledger, os.getpid())
++    check("optional con backend sin sitio: ruta CPU, no espera eterna", gm.EXIT_CPU_ROUTE,
++          gm.admission_exit_code(gb.GpuRequirement.OPTIONAL, request(ledger), FakeBackend(free=100)))
++    check("required con backend sin sitio: vence el plazo", gm.EXIT_TIMEOUT,
++          gm.admission_exit_code(gb.GpuRequirement.REQUIRED, request(ledger), FakeBackend(free=100)))
++
++    print("== 8. la VRAM se atribuye por PIDs del anfitrión (invariante 8) ==")
++    # El backend lista PIDs del anfitrión. Dentro del contenedor el trabajo es
++    # el PID 7; en el anfitrión es 5001, y el 7 del anfitrión es otro proceso.
++    backend = FakeBackend(usage={5001: 700, 7: 5000})
++    capable = gb.probe_capability(backend, CountingEvidence(gb.HardwareEvidence.USABLE))
++    out = tmp / "8.gpu"
++    summary = gm.watch(StaticMembers({5001}, 2), out, capable, interval_s=0.01)
++    check("con los PIDs del anfitrión: 700", 700, summary.peak_mib if summary else None)
++    check("con los del espacio del contenedor saldría otra cifra", 5000,
++          sum(backend.usage_by_pid({1, 7}).values()))
++
++    print("== 9. watch sin telemetría: estado explícito en el .gpu ==")
++    out = tmp / "9a.gpu"
++    check("absent: sin resumen", None, gm.watch(StaticMembers({1}, 1), out, capability, interval_s=0.01))
++    check("absent: sin archivo", False, out.exists())
++    out = tmp / "9b.gpu"
++    gm.watch(StaticMembers({1}, 1), out, gb.probe_capability(None, CountingEvidence(gb.HardwareEvidence.PARTIAL)),
++             interval_s=0.01)
++    check("unavailable: el archivo lo declara", gb.UNAVAILABLE, gm.read_gpu_file(out).state)
++    check("y no lleva resumen", None, gm.read_gpu_file(out).summary)
++
++    print("== 10. el historial no guarda unavailable como 0 ==")
++    run = tmp / "run"
++    run.mkdir()
++    (run / "1.time").write_text("1000 1.0 0.00 0.00\n")
++    (run / "1.gpu").write_text("unavailable GPU sin telemetría\n")
++    (run / "1.closed").write_text('{"item": "1", "generation": 1, "artifacts": {}}')
++    row = ph.record(tmp / "history", run)
++    check("sin pico de VRAM en la fila", False, row is not None and "peak_vram_mib" in row)
++    check("el ítem no cuenta como medido en VRAM", 0, row["items_gpu_measured"] if row else None)
++
++    print("== 11. sin telemetría la anchura no se reduce (invariante 1) ==")
++    decision = ph.derive(tmp / "history", "claude-sonnet-5", model_catalog.require_catalog(),
++                         free_vram_mib=gb.free_mib_or_none(absent), available_ram_kb=10_000_000)
++    check("sin tope de VRAM", None, decision.vram_cap)
++    check("ni petición de VRAM", None, decision.vram_need_mib)
++    check("el tope es sólo el de RAM", decision.ram_cap, decision.width_cap)
++
++print("== 12. superficie: nvidia-smi sólo en los archivos permitidos ==")
++ALLOWED = {
++    "src/session/gpu_backend.py",            # el backend NVIDIA
++    "src/session/hardware-inventory.sh",     # la sonda de hardware
++    "src/session/gpu_trace.py",              # arnés de nivel 2: registra el binario real
++    "src/verify/step_report.py",             # fuera de la superficie escaneada; se lista por si entra
++    "src/session/headless-pool.sh",          # ítem B: el shell aún nombra su variable de configuración
++}
++SCANNED = ("src/session", "src/lib", "src/packages", "bin")
++SKIPPED = ("__tests__", "/dist/", "node_modules", "/tests/")
++listed = subprocess.run(["git", "grep", "-l", "--untracked", "nvidia-smi", "--", *SCANNED],
++                        cwd=ROOT, capture_output=True, text=True)
++found = {path for path in listed.stdout.split()
++         if path.endswith((".py", ".sh", ".ts")) or path.startswith("bin/")}
++found = {path for path in found if not any(skip in f"/{path}" for skip in SKIPPED)}
++check("cada archivo que nombra nvidia-smi está en la lista", set(), found - ALLOWED)
++
++print(f"\ntest_gpu_backend: {OK} ok, {FAILED} falla(s)")
++raise SystemExit(1 if FAILED else 0)

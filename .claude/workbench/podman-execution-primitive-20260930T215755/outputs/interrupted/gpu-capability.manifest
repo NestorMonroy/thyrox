@@ -1,0 +1,17 @@
+predecessor_run: .thyrox/runtime/pool/94feedb1722c-20260930T224748-9387
+predecessor_item: 1
+worktree: .thyrox/pool-worktrees/94feedb1722c/1
+base_commit: b39dfda00e2f503b2f5f7377f8650bb1f09a3867
+patch: .claude/workbench/podman-execution-primitive-20260930T215755/outputs/interrupted/gpu-capability.patch
+patch_sha256: 6235536ac66efe6e6e0aa932f04063e0823aa7e7b69c8bf5442de0ae82014fbe
+cause: OOM killer 2026-09-30T23:02:58 (dmesg: Killed process 18913 node)
+## git status --short
+?? src/session/gpu_backend.py
+?? tests/session/test_gpu_backend.py
+## git diff --name-only HEAD
+## git ls-files --others --exclude-standard
+src/session/gpu_backend.py
+tests/session/test_gpu_backend.py
+## archivos del patch
+src/session/gpu_backend.py
+tests/session/test_gpu_backend.py
