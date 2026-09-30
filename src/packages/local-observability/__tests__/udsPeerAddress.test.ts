@@ -6,6 +6,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import {
+  MAX_BARE_ADDRESS_LENGTH,
   REPLY_ACROSS_DEFAULT_DIRS,
   bridgeAddress,
   compareSocketAddresses,
@@ -149,5 +150,15 @@ describe('a quién se puede responder', () => {
     expect(mayReplyTo('/tmp/cc-socks/2.sock', '/run/a/1.sock')).toBe(false)
     expect(mayReplyTo('/tmp/cc-socks/2.sock', '/run/a/1.sock', [REPLY_ACROSS_DEFAULT_DIRS])).toBe(true)
     expect(mayReplyTo('/tmp/cc-socks-5/2.sock', '/run/a/1.sock', [REPLY_ACROSS_DEFAULT_DIRS], [6])).toBe(false)
+  })
+})
+
+describe('MAX_BARE_ADDRESS_LENGTH (JFr)', () => {
+  test('es el tope que exporta la referencia', () => {
+    expect(MAX_BARE_ADDRESS_LENGTH).toBe(300)
+  })
+  test('una dirección desnuda de exactamente el tope pasa; una más larga, no', () => {
+    expect(isBareAddress('a'.repeat(MAX_BARE_ADDRESS_LENGTH))).toBe(true)
+    expect(isBareAddress('a'.repeat(MAX_BARE_ADDRESS_LENGTH + 1))).toBe(false)
   })
 })

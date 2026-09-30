@@ -1,0 +1,16 @@
+
+ 636 pass
+ 0 fail
+ 1125 expect() calls
+Ran 636 tests across 38 files. [2.24s]
+
+ 785 pass
+ 0 fail
+ 1947 expect() calls
+Ran 785 tests across 52 files. [2.26s]
+check-package-typecheck: 2 provider(s) reconstruido(s) por viejos: local-observability, swarm
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  swarm: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+__BG_EXIT__=0

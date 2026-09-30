@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/swarm && bun test 2>&1 | tail -5; cd ../local-observability && bun test __tests__/uds 2>&1 | tail -5; cd /home/user/thyrox && bash bin/check_package_typecheck swarm local-observability 2>&1 | tail -6", "started_at": "2026-09-30T03:52:54+00:00"}

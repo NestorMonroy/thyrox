@@ -1,0 +1,21 @@
+file:line	símbolo	veredicto	prueba
+src/packages/agent/attachments.ts:2852	u$n (chunk-csayct82.js, equivalente de getSkillListingAttachments)	portada	src/packages/agent/__tests__/attachments.skillListing.test.ts
+src/packages/agent/messages.ts:3169	no localizado — 0 hits de HISTORY_SNIP, isSnipRuntimeEnabled, y de la etiqueta \n[id: en todo el corpus; feature('HISTORY_SNIP') ya está documentada en pendingCrossPackageDeps.ts:1806-1811 como ausente de builds externos	desconocido	sin cambio
+src/packages/agent/tokenEstimation.ts:173	withTokenCountVCR (mismo archivo) — ya es el noop de producción, sin rama	fiel	sin cambio
+src/packages/ink/src/core/ink.tsx:368	uPe.constructor (chunk-j3kxae8b.js) — createContainer sin injectIntoDevTools; guard 'development' inerte también bajo bun test (NODE_ENV=test)	fiel	sin cambio
+src/packages/ink/src/core/reconciler.ts:31	mismo guard que ink.tsx:368 (import de devtools.js), inerte bajo NODE_ENV=test	fiel	sin cambio
+src/packages/ink/src/core/reconciler.ts:33	comentario dentro del guard de la línea 31 — no es una rama propia	fiel	sin cambio
+src/packages/ink/src/core/reconciler.ts:289	resetAfterCommit (dentro de Zre, chunk-j3kxae8b.js) — llama onComputeLayout/onRender sin condición	portada	src/packages/ink/src/core/__tests__/reconciler.commit.test.ts
+src/packages/provider/src/authAlias.ts:276	pb (chunk-t6pwageh.js) — if(Le(!1)) con Le=isEnvTruthy: siempre falso en producción	portada	src/packages/provider/src/__tests__/authAlias.ciOrTest.test.ts
+src/packages/provider/src/context.ts:38	bMn (chunk-csayct82.js, equivalente de getGitStatus) — sin chequeo de entorno al inicio	portada	src/packages/provider/src/__tests__/context.getGitStatus.test.ts
+src/packages/provider/src/legacy/api.ts:584	Jze (chunk-csayct82.js) — va directo a comprobar longitud del contexto	portada	src/packages/provider/src/__tests__/legacyApi.prependUserContext.test.ts
+src/packages/provider/src/vcr.ts:29	no localizado — 0 hits de "Anthropic API fixture missing" ni de la ruta fixtures/*.json en el corpus; shouldUseVCR/withVCR no se llama desde ningún otro módulo de src/	desconocido	sin cambio
+src/packages/shell/src/Shell.ts:135	Ist (chunk-csayct82.js) — emite tengu_shell_set_cwd sin condición, sólo con try/catch	portada	src/packages/shell/src/__tests__/Shell.setCwdTelemetry.test.ts
+src/packages/shell/src/bash/commands.ts:483	no localizado — 0 hits de command_injection_detected ni de npm start => none en el corpus; es un ejemplo dentro del policy_spec de la detección de prefijo legacy, ausente igual que legacy/prefix.ts	desconocido	sin cambio
+src/packages/shell/src/exec.ts:382	Ist (chunk-csayct82.js, comparte función con Shell.ts) — emite tengu_shell_set_cwd sin condición	portada	src/packages/shell/src/__tests__/exec.setCwdTelemetry.test.ts
+src/packages/shell/src/legacy/prefix.ts:182	no localizado — 0 hits de "Pre-flight check is taking longer than expected", tengu_cork_m4q ni isHelpCommand en el corpus	desconocido	sin cambio
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:146	R0n (chunk-csayct82.js, equivalente de getSimpleCommandPrefix) — usa S0.has(nombre) igual que SAFE_ENV_VARS	fiel	sin cambio
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:312	Rpo (chunk-csayct82.js, fallback de heredoc) — usa S0.has(nombre) igual que SAFE_ENV_VARS	fiel	sin cambio
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:382	S0 (chunk-csayct82.js) — Set idéntico, incluye 'NODE_ENV' en la misma posición (tras RUST_LOG, antes de PYTHONUNBUFFERED)	fiel	sin cambio
+src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts:550	mIn (chunk-csayct82.js) — sort(a,b)=>{let d=b[1]-a[1]; if(d===0) return localeCompare; return d} sin rama por entorno	portada	src/packages/tool-registry/src/tools/GrepTool/__tests__/GrepTool.sortOrder.test.ts
+src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts:305	no localizado el ensamblador exacto; confirmado por ausencia total de "TestingPermissionTool" en el corpus — herramienta de prueba deliberada y autodocumentada (sleepAndTestingPermission.test.ts caso 7: "SÓLO se habilita bajo NODE_ENV=test" es el contrato, no un accidente)	fiel	sin cambio
