@@ -1,0 +1,1071 @@
+diff --git a/bin/documentation_publisher b/bin/documentation_publisher
+new file mode 100755
+index 000000000..1590d2f48
+--- /dev/null
++++ b/bin/documentation_publisher
+@@ -0,0 +1,27 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
++export THYROX_ROOT
++INTERPRETER="$THYROX_ROOT/.venv/bin/python"
++if [ ! -x "$INTERPRETER" ]; then
++  RESCUE="$(command -v "${THYROX_PYTHON_FALLBACK:-python3}" 2>/dev/null)"
++  if [ -n "$RESCUE" ] && "$RESCUE" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
++    echo "bin/documentation_publisher: sin entorno del proveedor; corre con $RESCUE." >&2
++    echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
++    INTERPRETER="$RESCUE"
++  else
++    LIB="$THYROX_ROOT/src/lib/toolchain.sh"
++    if [ -r "$LIB" ]; then
++      # shellcheck source=/dev/null
++      source "$LIB"
++      thyrox_toolchain_degraded_notice \
++        "las herramientas Python de bin/, documentation_publisher entre ellas" \
++        "cd \"$THYROX_ROOT\" && uv sync" >&2
++    fi
++    echo "bin/documentation_publisher: falta el entorno del proveedor en $INTERPRETER." >&2
++    echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
++    exit 1
++  fi
++fi
++export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
++exec "$INTERPRETER" "$THYROX_ROOT/src/session/documentation_publisher.py" "$@"
+diff --git a/src/session/document_intent.py b/src/session/document_intent.py
+new file mode 100644
+index 000000000..501e6303c
+--- /dev/null
++++ b/src/session/document_intent.py
+@@ -0,0 +1,205 @@
++"""La intención documental de un ítem de pool: qué documento publicar y sobre qué base.
++
++Un ítem que quiere que su trabajo llegue a la documentación del consumidor no
++escribe allí: deja en su runtime dos artefactos —``<n>.intent.json``, esta
++intención, y el cuerpo RST que nombra en ``body_artifact``— y
++``pool_lifecycle`` los publica con el resto, con su ``sha256`` en
++``<n>.closed``. Quien los consume es ``documentation_publisher``, y sólo
++cuando el ítem está CERRADO y la intención pertenece a esa misma ejecución y
++generación: una intención de una generación anterior describe un trabajo que
++otra generación ya superó.
++
++Campos
++------
++``consumer``            la raíz de ``reach`` donde vive la documentación
++                        (``docs``), nunca una ruta;
++``initiative``          el slug de la iniciativa, que tiene que existir en su
++                        sitio (``docs.initiative_placement``);
++``document_kind``       una de ``DOCUMENT_KINDS``; el nombre del objetivo la
++                        lleva como prefijo;
++``target``              ruta RELATIVA al consumidor, bajo
++                        ``source/gestion/pm/<raíz>/iniciativas/<slug>/`` y
++                        con extensión ``.rst`` —nunca Markdown—;
++``expected_blob``       el id de blob de git que el objetivo tenía cuando el
++                        ítem lo leyó (``git rev-parse HEAD:<target>``), o
++                        ``null`` si el ítem espera crearlo;
++``body_artifact``       el artefacto del ítem con el documento entero, que
++                        abre con ``.. meta::`` como todo ``.rst`` de gestión;
++``source_run``, ``source_item``, ``source_generation``, ``source_snapshot``
++                        la procedencia, que el pool le da al ítem por entorno
++                        (``RUN_ID_VAR``, ``ITEM_VAR``, ``GENERATION_VAR``,
++                        ``SNAPSHOT_VAR``) y que se compara con ``<n>.closed``.
++
++*Métrica:* las claves y valores de la intención contra el manifiesto
++``<n>.closed`` y contra la forma canónica de ruta de ``initiative_placement``.
++*Ciega a:* si el cuerpo es un documento válido; eso lo miden los gates del
++consumidor, que el publicador invoca y no duplica.
++"""
++from __future__ import annotations
++
++import json
++from dataclasses import asdict, dataclass
++from pathlib import Path, PurePosixPath
++
++from docs.initiative_placement import submodule_of
++from session import pool_lifecycle as lifecycle
++
++INTENT_SUFFIX = ".intent.json"
++#: Lo que el pool exporta al ítem para que escriba su intención sin conocer el runtime.
++INTENT_PATH_VAR = "THYROX_POOL_DOCUMENT_INTENT"
++RUN_ID_VAR = "THYROX_POOL_RUN_ID"
++ITEM_VAR = "THYROX_POOL_ITEM"
++GENERATION_VAR = "THYROX_POOL_ITEM_GENERATION"
++SNAPSHOT_VAR = "THYROX_POOL_ITEM_SNAPSHOT"
++#: Las clases de documento de una iniciativa, por el prefijo con que se nombran.
++DOCUMENT_KINDS = frozenset({"hallazgo", "analisis", "decision", "progreso"})
++RST_SUFFIX = ".rst"
++#: Todo ``.rst`` de gestión del consumidor abre con su bloque de metadatos.
++META_DIRECTIVE = ".. meta::"
++REQUIRED_KEYS = ("consumer", "initiative", "document_kind", "target", "expected_blob",
++                 "body_artifact", "source_run", "source_item", "source_generation")
++
++
++class IntentError(Exception):
++    """La intención no se puede leer, o no describe un documento publicable."""
++
++
++class StaleIntentError(IntentError):
++    """La intención pertenece a otra ejecución o generación del ítem."""
++
++
++@dataclass(frozen=True)
++class DocumentIntent:
++    consumer: str
++    initiative: str
++    document_kind: str
++    target: str
++    expected_blob: str | None
++    body_artifact: str
++    source_run: str
++    source_item: str
++    source_generation: int
++    source_snapshot: str | None = None
++
++    @property
++    def submodule(self) -> str:
++        """La raíz ``pm/<raíz>`` del objetivo; ``validate_intent`` garantiza que existe."""
++        return str(submodule_of(Path(self.target), self.initiative))
++
++    def to_json(self) -> dict[str, object]:
++        return asdict(self)
++
++
++def intent_name(item: str) -> str:
++    return f"{item}{INTENT_SUFFIX}"
++
++
++def parse_intent(data: dict) -> DocumentIntent:
++    """Una intención desde su JSON; rehúsa nombrando la clave que falta."""
++    missing = [key for key in REQUIRED_KEYS if key not in data]
++    if missing:
++        raise IntentError(f"la intención no declara {', '.join(missing)}")
++    return DocumentIntent(
++        consumer=str(data["consumer"]), initiative=str(data["initiative"]),
++        document_kind=str(data["document_kind"]), target=str(data["target"]),
++        expected_blob=None if data["expected_blob"] is None else str(data["expected_blob"]),
++        body_artifact=str(data["body_artifact"]), source_run=str(data["source_run"]),
++        source_item=str(data["source_item"]), source_generation=int(data["source_generation"]),
++        source_snapshot=None if data.get("source_snapshot") is None else str(data["source_snapshot"]))
++
++
++def _is_kind_prefixed(intent: DocumentIntent) -> bool:
++    return PurePosixPath(intent.target).name.startswith(f"{intent.document_kind}-")
++
++
++def _is_inside_initiative(intent: DocumentIntent) -> bool:
++    return submodule_of(Path(intent.target), intent.initiative) is not None
++
++
++def validate_intent(intent: DocumentIntent) -> None:
++    """Rehúsa lo que la estructura del consumidor no admite."""
++    if intent.document_kind not in DOCUMENT_KINDS:
++        raise IntentError(f"clase de documento desconocida: {intent.document_kind!r}; "
++                          f"las admitidas son {sorted(DOCUMENT_KINDS)}")
++    if PurePosixPath(intent.target).is_absolute():
++        raise IntentError(f"el objetivo va relativo al consumidor, no absoluto: {intent.target}")
++    if not intent.target.endswith(RST_SUFFIX):
++        raise IntentError(f"el objetivo tiene que ser {RST_SUFFIX}, nunca otro formato: {intent.target}")
++    if not _is_inside_initiative(intent):
++        raise IntentError(f"el objetivo no está bajo source/gestion/pm/<raíz>/iniciativas/"
++                          f"{intent.initiative}/: {intent.target}")
++    if not _is_kind_prefixed(intent):
++        raise IntentError(f"el nombre del objetivo no lleva su clase como prefijo "
++                          f"({intent.document_kind}-): {intent.target}")
++
++
++def validate_body(body: str) -> None:
++    if not body.lstrip().startswith(META_DIRECTIVE):
++        raise IntentError(f"el cuerpo no abre con {META_DIRECTIVE!r}, como todo .rst de gestión")
++
++
++def _assert_same_provenance(intent: DocumentIntent, manifest: dict, item: str) -> None:
++    """La intención describe ESTE cierre: misma ejecución, mismo ítem, misma generación."""
++    declared = (intent.source_run, intent.source_item, intent.source_generation)
++    closed = (str(manifest["run_id"]), item, int(manifest["generation"]))
++    if declared != closed:
++        raise StaleIntentError(
++            f"la intención del ítem {item} declara (run, ítem, generación) {declared}, "
++            f"pero <n>.closed dice {closed}: no se publica un trabajo superado")
++
++
++def _assert_closed_coherent(out_dir: Path, item: str) -> dict:
++    manifest = lifecycle.read_closed(out_dir, item)
++    if manifest is None:
++        raise IntentError(f"el ítem {item} no tiene {lifecycle.CLOSED_SUFFIX} en {out_dir}")
++    problems = lifecycle.verify_closed(out_dir, item)
++    if problems:
++        raise IntentError(f"el cierre del ítem {item} no es coherente: {'; '.join(problems)}")
++    return manifest
++
++
++def read_intent(out_dir: Path, item: str) -> tuple[DocumentIntent, dict]:
++    """La intención de un ítem CERRADO y coherente, con su manifiesto.
++
++    Se lee sólo lo que ``<n>.closed`` enumera con el ``sha256`` que tiene en
++    disco; la intención y el cuerpo que no figuren allí no existen para el
++    publicador.
++    """
++    manifest = _assert_closed_coherent(out_dir, item)
++    artifacts = manifest["artifacts"]
++    name = intent_name(item)
++    if name not in artifacts:
++        raise IntentError(f"el ítem {item} cerró sin {name}: no declara intención documental")
++    try:
++        data = json.loads((out_dir / name).read_text(encoding="utf-8"))
++    except json.JSONDecodeError as error:
++        raise IntentError(f"{name} no es JSON: {error}") from None
++    intent = parse_intent(data)
++    validate_intent(intent)
++    _assert_same_provenance(intent, manifest, item)
++    if intent.body_artifact not in artifacts:
++        raise IntentError(f"el cuerpo {intent.body_artifact} no figura en el cierre del ítem {item}")
++    return intent, manifest
++
++
++def read_body(out_dir: Path, intent: DocumentIntent) -> str:
++    body = (out_dir / intent.body_artifact).read_text(encoding="utf-8")
++    validate_body(body)
++    return body
++
++
++def write_intent(path: Path, intent: DocumentIntent) -> None:
++    """Escribe la intención; el ítem la valida aquí, antes de cerrar, no al publicar."""
++    validate_intent(intent)
++    path.write_text(json.dumps(intent.to_json(), sort_keys=True) + "\n", encoding="utf-8")
++
++
++def provenance_from_environment(env: dict[str, str]) -> dict[str, object]:
++    """La procedencia que el pool exporta al ítem; rehúsa nombrando la variable ausente."""
++    missing = [var for var in (RUN_ID_VAR, ITEM_VAR, GENERATION_VAR) if not env.get(var)]
++    if missing:
++        raise IntentError(f"el entorno del ítem no declara {', '.join(missing)}: "
++                          "sin procedencia la intención no se puede cotejar con su cierre")
++    return {"source_run": env[RUN_ID_VAR], "source_item": env[ITEM_VAR],
++            "source_generation": int(env[GENERATION_VAR]),
++            "source_snapshot": env.get(SNAPSHOT_VAR) or None}
+diff --git a/src/session/documentation_publisher.py b/src/session/documentation_publisher.py
+new file mode 100644
+index 000000000..763969dbc
+--- /dev/null
++++ b/src/session/documentation_publisher.py
+@@ -0,0 +1,396 @@
++"""El publicador de documentación: de un ítem CERRADO del pool a un commit en el consumidor.
++
++Es un consumidor de ``<n>.closed`` y nada más: no forma parte del ciclo de
++vida del ítem ni del daemon. Lee la intención documental que el ítem dejó
++(``document_intent``), y sólo si el cierre es coherente y la intención es de
++esa misma generación; un fallo aquí deja el ítem exactamente como estaba,
++porque este módulo no escribe nunca en la salida del pool salvo su propio
++resultado, ``<n>.published``.
++
++El recorrido, bajo el candado del archivo objetivo
++--------------------------------------------------
++1. Resolver el consumidor por ``reach`` (``THYROX_CONSUMER`` /
++   ``THYROX_REACH_ROOT(S)``): la documentación no tiene variable propia.
++2. Comprobar que la iniciativa está en su sitio (``initiative_placement``),
++   que es el mismo instrumento con que ``scaffold_initiative`` decide dónde
++   crearla; aquí no se crea ninguna.
++3. Tomar el candado del objetivo (``shared_lock``), en el runtime y no en el
++   árbol del consumidor, que ``git status`` vería.
++4. Un worktree temporal del consumidor desde la punta de la rama del
++   publicador —o de ``HEAD`` si aún no existe—, retirado siempre.
++5. La concurrencia optimista mira el BLOB del objetivo en esa base, no la
++   punta del repositorio: otro archivo que cambió no es un conflicto; el
++   objetivo que cambió sí, y se rehúsa sin escribir.
++6. Escribir el cuerpo tal cual lo cerró el ítem y correr los gates del
++   consumidor por sus envoltorios de ``bin/`` —``check_rst_sintaxis``,
++   ``check_vocabulario_prosa``, ``check-artefactos-minimos``— y después el
++   ``pre-commit`` del propio consumidor, activado con ``core.hooksPath`` en
++   el commit. Ninguno se reimplementa; un rojo de cualquiera rehúsa.
++7. Commit por pathspec con la identidad declarada, y avance de la rama del
++   publicador por comparar-e-intercambiar (``update-ref`` con valor previo):
++   si otro objetivo la movió entre la base y el avance, se reintenta desde
++   la base nueva, con el blob comprobado otra vez.
++
++Cómo lo hace la referencia
++--------------------------
++El ejecutable crea sus worktrees con ``worktree add --detach <dir> <base>``
++y los retira con ``worktree remove --force`` (``chunk-rbjwg9yh.js:29``,
++``chunk-csayct82.js:988``); se porta igual. Su concurrencia optimista sobre
++archivos compara ``mtime`` y tamaño (``lastReadFileStats``,
++``chunk-t6pwageh.js:61``); aquí se diverge a propósito y se compara el id de
++blob, porque el objetivo es contenido versionado y su ``mtime`` cambia con
++cada checkout.
++
++*Métrica:* el blob del objetivo en la base, los códigos de salida de los
++gates y del commit, y el resultado del ``update-ref`` condicional.
++*Ciega a:* un cambio del objetivo en la rama principal del consumidor que
++nadie llevó a la rama del publicador; la base es la rama del publicador
++desde que existe.
++"""
++from __future__ import annotations
++
++import argparse
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import time
++from collections.abc import Iterator
++from contextlib import contextmanager
++from dataclasses import asdict, dataclass
++from pathlib import Path, PurePosixPath
++
++from docs import initiative_placement as placement
++from paths import reach
++from session import document_intent as intents
++from session import pool_lifecycle as lifecycle
++from session import shared_lock
++from verify.commit_identity import IdentityUndeclared, declared_identities
++
++PUBLISHER_BRANCH = "docs-publisher"
++PUBLISHED_SUFFIX = ".published"
++#: Reintentos cuando OTRO objetivo avanzó la rama entre la base y el ``update-ref``.
++MAX_PUBLISH_ATTEMPTS = 3
++#: El valor previo con que ``update-ref`` exige que la rama aún no exista.
++ZERO_OID = "0" * 40
++HOOKS_DIR = ".githooks"
++PRE_COMMIT_HOOK = "pre-commit"
++LOCKS_DIR = Path("docs-publisher") / "locks"
++#: Los gates del consumidor, por su envoltorio de ``bin/`` y en este orden.
++GATE_NAMES = ("check_rst_sintaxis", "check_vocabulario_prosa", "check-artefactos-minimos")
++EXIT_OK = 0
++EXIT_UNMEASURED = 2
++EXIT_REFUSED = lifecycle.EXIT_REJECTED
++
++
++class PublisherError(Exception):
++    """No se pudo medir: el consumidor, su iniciativa o su hook no están donde deben."""
++
++
++class PublishRefused(Exception):
++    """La publicación no procede; el ítem cerrado queda como estaba."""
++
++
++class PlacementError(PublishRefused):
++    """La iniciativa no existe en la raíz que la intención nombra."""
++
++
++class BlobConflictError(PublishRefused):
++    """El objetivo ya no es el que el ítem leyó."""
++
++
++class GateFailedError(PublishRefused):
++    """Un gate del consumidor salió rojo sobre el documento."""
++
++
++class CommitRefusedError(PublishRefused):
++    """El commit no se hizo: el pre-commit del consumidor lo rehusó, o git."""
++
++
++class BranchMovedError(PublishRefused):
++    """La rama del publicador avanzó más veces de las que se reintenta."""
++
++
++@dataclass(frozen=True)
++class PublishResult:
++    item: str
++    generation: int
++    run_id: str
++    consumer: str
++    target: str
++    branch: str
++    commit: str
++    blob_before: str | None
++    blob_after: str
++    published_at: str
++
++    def to_json(self) -> dict[str, object]:
++        return asdict(self)
++
++
++def _git(repo: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, env=env)
++
++
++def consumer_root_of(intent: intents.DocumentIntent) -> Path:
++    """La raíz del consumidor por ``reach``; tiene que ser un árbol de trabajo de git."""
++    try:
++        root = reach.root(intent.consumer)
++    except (KeyError, reach.ReachRootError) as error:
++        raise PublisherError(f"no se resuelve el consumidor {intent.consumer!r}: {error}") from None
++    if _git(root, "rev-parse", "--is-inside-work-tree").returncode != 0:
++        raise PublisherError(f"el consumidor {intent.consumer!r} en {root} no es un árbol de trabajo de git")
++    return root
++
++
++def assert_initiative_in_place(consumer: Path, intent: intents.DocumentIntent) -> None:
++    """La iniciativa existe bajo la raíz que el objetivo nombra; no se crea ninguna."""
++    try:
++        survey = placement.survey_initiative(consumer, intent.initiative)
++        verdict = placement.decide_placement(survey, intent.submodule)
++    except (placement.ManagementRootError, placement.SurveyTruncatedError) as error:
++        raise PublisherError(f"no se pudo ubicar la iniciativa {intent.initiative}: {error}") from None
++    if verdict.verdict == placement.IN_PLACE:
++        return
++    located = ", ".join(hit.path.as_posix() for hit in verdict.hits) or "en ninguna raíz"
++    raise PlacementError(f"la iniciativa {intent.initiative} no está bajo pm/{intent.submodule}/ "
++                         f"({verdict.verdict}: {located}); el publicador no la crea")
++
++
++def lock_target(consumer: Path, target: str) -> Path:
++    """La clave del candado de un objetivo, en el runtime para no ensuciar el consumidor."""
++    key = hashlib.sha1(str((consumer / target).resolve()).encode()).hexdigest()
++    locks = lifecycle.runtime_root() / LOCKS_DIR
++    locks.mkdir(parents=True, exist_ok=True)
++    return locks / key
++
++
++def base_commit(consumer: Path, branch: str) -> tuple[str, bool]:
++    """La punta de la rama del publicador y si existe; sin ella, ``HEAD`` del consumidor."""
++    tip = _git(consumer, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
++    if tip.returncode == 0:
++        return tip.stdout.strip(), True
++    return _git(consumer, "rev-parse", "HEAD").stdout.strip(), False
++
++
++def assert_branch_not_checked_out(consumer: Path, branch: str) -> None:
++    """Avanzar una rama que algún worktree tiene activa desalinearía ese worktree."""
++    listing = _git(consumer, "worktree", "list", "--porcelain").stdout.splitlines()
++    if f"branch refs/heads/{branch}" in listing:
++        raise PublisherError(f"la rama {branch} está activa en un worktree del consumidor; "
++                             "el publicador no la mueve por debajo de un checkout")
++
++
++@contextmanager
++def temporary_worktree(consumer: Path, base: str) -> Iterator[Path]:
++    """Un worktree desprendido desde ``base``; se retira siempre, también si algo falla."""
++    directory = Path(tempfile.mkdtemp(prefix="docs-publisher-"))
++    added = _git(consumer, "worktree", "add", "-q", "--detach", str(directory), base)
++    if added.returncode != 0:
++        shutil.rmtree(directory, ignore_errors=True)
++        raise PublisherError(f"no se pudo crear el worktree temporal: {added.stderr.strip()}")
++    try:
++        yield directory
++    finally:
++        removed = _git(consumer, "worktree", "remove", "--force", str(directory))
++        if removed.returncode != 0:
++            shutil.rmtree(directory, ignore_errors=True)
++            _git(consumer, "worktree", "prune")
++
++
++def blob_at(worktree: Path, revision: str, target: str) -> str | None:
++    """El id de blob del objetivo en una revisión, o ``None`` si allí no existe."""
++    found = _git(worktree, "rev-parse", "--verify", "--quiet", f"{revision}:{target}")
++    return found.stdout.strip() if found.returncode == 0 else None
++
++
++def assert_expected_blob(intent: intents.DocumentIntent, current: str | None) -> None:
++    if current != intent.expected_blob:
++        raise BlobConflictError(f"el objetivo {intent.target} tiene el blob {current or 'ausente'} "
++                                f"y la intención esperaba {intent.expected_blob or 'ausente'}")
++
++
++def write_document(worktree: Path, target: str, body: str) -> Path:
++    path = worktree / target
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(body, encoding="utf-8")
++    return path
++
++
++def gate_commands(bin_dir: Path, document: Path) -> list[list[str]]:
++    """Cada gate por su envoltorio; los de archivo reciben el documento, el de iniciativas no."""
++    per_file = [str(bin_dir / name) for name in GATE_NAMES[:2]]
++    return ([["bash", wrapper, "--strict", str(document)] for wrapper in per_file]
++            + [["bash", str(bin_dir / GATE_NAMES[2]), "--strict"]])
++
++
++def run_gates(bin_dir: Path, worktree: Path, document: Path) -> None:
++    for command in gate_commands(bin_dir, document):
++        done = subprocess.run(command, cwd=worktree, capture_output=True, text=True)
++        if done.returncode != 0:
++            raise GateFailedError(f"{Path(command[1]).name} salió {done.returncode} sobre "
++                                  f"{document.relative_to(worktree)}:\n{done.stdout}{done.stderr}")
++
++
++def commit_environment(consumer: Path) -> dict[str, str]:
++    """El entorno del commit con la identidad que el consumidor declara; sin declaración, el de git."""
++    env = dict(os.environ)
++    try:
++        identities = declared_identities(start=consumer)
++    except IdentityUndeclared:
++        return env
++    for role, prefix in (("author", "GIT_AUTHOR"), ("committer", "GIT_COMMITTER")):
++        env[f"{prefix}_NAME"], env[f"{prefix}_EMAIL"] = identities[role]
++    return env
++
++
++def commit_message(intent: intents.DocumentIntent, blob_before: str | None) -> str:
++    stem = PurePosixPath(intent.target).stem
++    return (f"Publish {intent.document_kind} to {intent.initiative}\n\n"
++            f"Document {stem} written by pool run {intent.source_run}, item "
++            f"{intent.source_item}, generation {intent.source_generation}"
++            f"{', snapshot ' + intent.source_snapshot if intent.source_snapshot else ''}.\n"
++            f"Target {intent.target}; previous blob {blob_before or 'none'}.\n")
++
++
++def commit_document(worktree: Path, target: str, message: str, env: dict[str, str]) -> str:
++    """Commit por pathspec con los hooks del consumidor activos; devuelve su sha."""
++    hooks = worktree / HOOKS_DIR
++    if not (hooks / PRE_COMMIT_HOOK).is_file():
++        raise PublisherError(f"el consumidor no trae {HOOKS_DIR}/{PRE_COMMIT_HOOK}: "
++                             "sin su gate no se emite ningún commit")
++    _git(worktree, "add", "--", target)
++    done = _git(worktree, "-c", f"core.hooksPath={hooks}", "commit", "-q", "-m", message,
++                "--", target, env=env)
++    if done.returncode != 0:
++        raise CommitRefusedError(f"el commit de {target} se rehusó (exit {done.returncode}):\n"
++                                 f"{done.stdout}{done.stderr}")
++    return _git(worktree, "rev-parse", "HEAD").stdout.strip()
++
++
++def advance_branch(consumer: Path, branch: str, new: str, base: str, existed: bool) -> bool:
++    """Comparar-e-intercambiar sobre la rama: sólo avanza si sigue en ``base``."""
++    previous = base if existed else ZERO_OID
++    done = _git(consumer, "update-ref", "-m", f"docs-publisher: {new}", f"refs/heads/{branch}",
++                new, previous)
++    return done.returncode == 0
++
++
++def read_published(out_dir: Path, item: str) -> dict | None:
++    path = out_dir / f"{item}{PUBLISHED_SUFFIX}"
++    if not path.is_file():
++        return None
++    return json.loads(path.read_text(encoding="utf-8"))
++
++
++def write_published(out_dir: Path, result: PublishResult) -> None:
++    shared_lock.write_atomic(out_dir / f"{result.item}{PUBLISHED_SUFFIX}",
++                             json.dumps(result.to_json(), sort_keys=True) + "\n")
++
++
++class DocumentationPublisher:
++    """Publica la intención documental de UN ítem cerrado en el consumidor."""
++
++    def __init__(self, out_dir: Path, item: str, *, bin_dir: Path | None = None,
++                 branch: str = PUBLISHER_BRANCH):
++        self.out_dir = Path(out_dir)
++        self.item = item
++        self.bin_dir = Path(bin_dir) if bin_dir else reach.thyrox_root() / "bin"
++        self.branch = branch
++
++    def publish(self) -> PublishResult:
++        intent, manifest = intents.read_intent(self.out_dir, self.item)
++        generation = int(manifest["generation"])
++        previous = read_published(self.out_dir, self.item)
++        if previous is not None and int(previous["generation"]) == generation:
++            return PublishResult(**previous)
++        consumer = consumer_root_of(intent)
++        assert_initiative_in_place(consumer, intent)
++        assert_branch_not_checked_out(consumer, self.branch)
++        body = intents.read_body(self.out_dir, intent)
++        with shared_lock.held(lock_target(consumer, intent.target),
++                              run_id=str(manifest["run_id"]), step_id=f"item {self.item}"):
++            result = self._publish_locked(consumer, intent, generation, body)
++        write_published(self.out_dir, result)
++        return result
++
++    def _publish_locked(self, consumer: Path, intent: intents.DocumentIntent, generation: int,
++                        body: str) -> PublishResult:
++        for _attempt in range(MAX_PUBLISH_ATTEMPTS):
++            base, existed = base_commit(consumer, self.branch)
++            with temporary_worktree(consumer, base) as worktree:
++                blob_before = blob_at(worktree, base, intent.target)
++                assert_expected_blob(intent, blob_before)
++                document = write_document(worktree, intent.target, body)
++                run_gates(self.bin_dir, worktree, document)
++                commit = commit_document(worktree, intent.target,
++                                         commit_message(intent, blob_before), commit_environment(consumer))
++                if advance_branch(consumer, self.branch, commit, base, existed):
++                    return PublishResult(
++                        item=self.item, generation=generation, run_id=intent.source_run,
++                        consumer=intent.consumer, target=intent.target, branch=self.branch,
++                        commit=commit, blob_before=blob_before,
++                        blob_after=str(blob_at(worktree, commit, intent.target)),
++                        published_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
++        raise BranchMovedError(f"la rama {self.branch} avanzó {MAX_PUBLISH_ATTEMPTS} veces mientras "
++                               f"se publicaba {intent.target}; se rehúsa sin escribir")
++
++
++def _write_intent_command(args: argparse.Namespace) -> int:
++    """La cara del ítem: compone su intención con la procedencia que el pool le exportó."""
++    try:
++        provenance = intents.provenance_from_environment(dict(os.environ))
++        intent = intents.DocumentIntent(
++            consumer=args.consumer, initiative=args.initiative, document_kind=args.kind,
++            target=args.target, expected_blob=args.expected_blob, body_artifact=args.body_artifact,
++            source_run=str(provenance["source_run"]), source_item=str(provenance["source_item"]),
++            source_generation=int(str(provenance["source_generation"])),
++            source_snapshot=None if provenance["source_snapshot"] is None else str(provenance["source_snapshot"]))
++        intents.write_intent(args.path, intent)
++    except intents.IntentError as error:
++        print(f"documentation_publisher: no se escribió la intención — {error}", file=sys.stderr)
++        return EXIT_UNMEASURED
++    return EXIT_OK
++
++
++def _publish_command(args: argparse.Namespace) -> int:
++    publisher = DocumentationPublisher(args.out_dir, args.item, bin_dir=args.bin, branch=args.branch)
++    try:
++        result = publisher.publish()
++    except (intents.IntentError, PublishRefused, shared_lock.LockHeld) as error:
++        print(f"documentation_publisher: REHÚSA — {error}", file=sys.stderr)
++        return EXIT_REFUSED
++    except PublisherError as error:
++        print(f"documentation_publisher: {error}", file=sys.stderr)
++        return EXIT_UNMEASURED
++    print(result.commit)
++    return EXIT_OK
++
++
++def main(argv: list[str] | None = None) -> int:
++    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
++    sub = parser.add_subparsers(dest="command", required=True)
++    p = sub.add_parser("publish", help="publica la intención de un ítem cerrado e imprime el commit")
++    p.add_argument("out_dir", type=Path)
++    p.add_argument("item")
++    p.add_argument("--bin", type=Path, help="el bin/ con los envoltorios de los gates (por defecto el de thyrox)")
++    p.add_argument("--branch", default=PUBLISHER_BRANCH, help="la rama del consumidor que avanza")
++    p = sub.add_parser("write-intent", help="escribe la intención de un ítem con la procedencia del entorno")
++    p.add_argument("path", type=Path)
++    p.add_argument("--consumer", required=True)
++    p.add_argument("--initiative", required=True)
++    p.add_argument("--kind", required=True, choices=sorted(intents.DOCUMENT_KINDS))
++    p.add_argument("--target", required=True)
++    p.add_argument("--body-artifact", required=True)
++    p.add_argument("--expected-blob", default=None)
++    args = parser.parse_args(argv)
++    if args.command == "write-intent":
++        return _write_intent_command(args)
++    return _publish_command(args)
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index a226175ed..47b8cbb36 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -463,6 +463,13 @@ _headless_item_run() {
+       | (cd "$workdir" || exit 1
+          # Los trabajos que lance un item aislado, su ledger y su archivo van a
+          # la salida del item: ni al arbol ni al parche.
++         # La intención documental (`document_intent.py`): el ítem la escribe
++         # donde el pool le dice, con la procedencia que el pool le da, y
++         # `pool_lifecycle` la publica con el resto de sus artefactos. Quien
++         # la consume es `documentation_publisher`, fuera del pool.
++         export THYROX_POOL_DOCUMENT_INTENT="$HP_LIVE/$n.intent.json" \
++                THYROX_POOL_RUN_ID="${HP_LIVE##*/}" THYROX_POOL_ITEM="$n" \
++                THYROX_POOL_ITEM_GENERATION="$HP_ITEM_GENERATION"
+          if [[ "$HP_ISOLATION" == worktree ]]; then
+              # >>> item-root
+              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
+diff --git a/tests/session/test_documentation_publisher.py b/tests/session/test_documentation_publisher.py
+new file mode 100644
+index 000000000..f143058ee
+--- /dev/null
++++ b/tests/session/test_documentation_publisher.py
+@@ -0,0 +1,401 @@
++"""Pruebas de ``session.documentation_publisher`` y ``session.document_intent``.
++
++Cada caso levanta un consumidor sintético —un repositorio git con la forma de
++``kaupamex-docs``: ``.claude/``, ``.githooks/pre-commit`` y
++``source/gestion/pm/<raíz>/iniciativas/<slug>/``—, un ``bin/`` falso cuyos
++tres gates registran cada invocación, y una salida de pool cerrada con el
++propio ``pool_lifecycle``. Todo vive en un temporal; el runtime y los
++candados también (``THYROX_RUNTIME_DIR``).
++
++Controles de anulación
++----------------------
++- Sin la comparación de procedencia (``_assert_same_provenance``), una
++  intención de otra generación se publica: cae exactamente el caso 3.
++- Sin la comparación del blob (``assert_expected_blob``), un objetivo que
++  cambió se pisa: caen exactamente las aserciones de conflicto del caso 4.
++- Sin ``core.hooksPath`` en el commit, el pre-commit del consumidor no corre:
++  caen las aserciones del registro del hook (caso 1) y el rechazo del caso 6.
++- Sin ``verify_closed`` en la lectura de la intención, un artefacto alterado
++  tras el cierre se publica: cae exactamente el caso 2b.
++"""
++from __future__ import annotations
++
++import json
++import os
++import shutil
++import stat
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "src"))
++
++from session import document_intent as di  # noqa: E402
++from session import documentation_publisher as dp  # noqa: E402
++from session import pool_lifecycle as lc  # noqa: E402
++from session import shared_lock  # noqa: E402
++
++OK = 0
++FAILED = 0
++
++SLUG = "actualizar-agentic-ai-thyrox"
++SUBMODULE = "thyrox"
++INITIATIVE_DIR = Path("source/gestion/pm") / SUBMODULE / "iniciativas" / SLUG
++TARGET = (INITIATIVE_DIR / "hallazgos" / "hallazgo-H-THYROX-900-prueba.rst").as_posix()
++BODY = (".. meta::\n   :fecha_creacion: 2026-09-30T00:00:00\n   :autor: Equipo Kaupamex\n"
++        "   :estado: documentado\n   :submodulo: thyrox\n   :iniciativa: " + SLUG + "\n\n"
++        ".. _h-thyrox-900:\n\nH-THYROX-900 — Prueba\n=====================\n\nCuerpo.\n")
++HOOK_LOG_VAR = "PUBLISHER_TEST_HOOK_LOG"
++HOOK_EXIT_VAR = "PUBLISHER_TEST_HOOK_EXIT"
++GATE_LOG_VAR = "PUBLISHER_TEST_GATE_LOG"
++GATE_EXIT_VAR = "PUBLISHER_TEST_GATE_EXIT"
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}")
++        OK += 1
++    else:
++        print(f"  FALLO {label}\n        esperado=[{expected}] obtenido=[{obtained}]")
++        FAILED += 1
++
++
++def raises(error: type[Exception], call) -> bool:
++    """``True`` sólo si ``call`` levanta exactamente ``error``; otra excepción cuenta como fallo."""
++    try:
++        call()
++    except error:
++        return True
++    except Exception as other:  # noqa: BLE001 — la aserción nombra la excepción que sí llegó
++        print(f"        levantó {type(other).__name__}: {str(other)[:120]}")
++        return False
++    return False
++
++
++def git(repo: Path, *args: str) -> str:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True,
++                          check=True).stdout.strip()
++
++
++def executable(path: Path, text: str) -> None:
++    path.parent.mkdir(parents=True, exist_ok=True)
++    path.write_text(text, encoding="utf-8")
++    path.chmod(path.stat().st_mode | stat.S_IXUSR)
++
++
++def make_consumer(base: Path) -> Path:
++    """Un ``kaupamex-docs`` sintético: git, ``.claude``, hook y una iniciativa en su sitio."""
++    consumer = base / "kaupamex-docs"
++    consumer.mkdir()
++    git(consumer, "init", "-q", "-b", "main")
++    git(consumer, "config", "user.name", "Fixture")
++    git(consumer, "config", "user.email", "fixture@example.invalid")
++    (consumer / ".claude").mkdir()
++    (consumer / ".claude" / "keep").write_text("", encoding="utf-8")
++    executable(consumer / ".githooks" / "pre-commit",
++               "#!/usr/bin/env bash\n"
++               f'printf "pre-commit %s\\n" "$(git diff --cached --name-only)" >> "${HOOK_LOG_VAR}"\n'
++               f'exit "${{{HOOK_EXIT_VAR}:-0}}"\n')
++    initiative = consumer / INITIATIVE_DIR
++    (initiative / "hallazgos").mkdir(parents=True)
++    (initiative / "index.rst").write_text(
++        ".. meta::\n   :estado: en-ejecucion\n\nIniciativa\n==========\n", encoding="utf-8")
++    (initiative / "hallazgos" / "index.rst").write_text("Hallazgos\n=========\n", encoding="utf-8")
++    (consumer / "otro.rst").write_text("otro\n", encoding="utf-8")
++    git(consumer, "add", "-A")
++    git(consumer, "commit", "-q", "-m", "Initial")
++    return consumer
++
++
++def make_bin(base: Path) -> Path:
++    """Los tres gates como dobles: registran ``nombre argumentos`` y salen según el entorno."""
++    bin_dir = base / "bin"
++    for name in ("check_rst_sintaxis", "check_vocabulario_prosa", "check-artefactos-minimos"):
++        executable(bin_dir / name,
++                   "#!/usr/bin/env bash\n"
++                   f'printf "%s %s\\n" "$(basename "$0")" "$*" >> "${GATE_LOG_VAR}"\n'
++                   f'exit "${{{GATE_EXIT_VAR}:-0}}"\n')
++    return bin_dir
++
++
++def close_item(out: Path, item: str, *, intent: dict, body: str = BODY,
++               run_id: str | None = None) -> dict:
++    """Cierra un ítem con ``pool_lifecycle`` y devuelve su manifiesto.
++
++    Las claves de procedencia que falten en ``intent`` se rellenan con las del
++    ítem que se está cerrando; las presentes ganan, para poder declarar una
++    generación o una ejecución ajena.
++    """
++    live = lc.open_run(out, os.getpid(), run_id=run_id or f"run-{item}")
++    state = lc.begin(live, out, item, owner_pid=os.getpid())
++    (live / f"{item}.json").write_text("{}\n", encoding="utf-8")
++    (live / f"{item}.document.rst").write_text(body, encoding="utf-8")
++    provenance = {"source_run": live.name, "source_item": item,
++                  "source_generation": state.generation, "source_snapshot": None}
++    (live / f"{item}{di.INTENT_SUFFIX}").write_text(
++        json.dumps({**provenance, **intent}) + "\n", encoding="utf-8")
++    return lc.publish(live, out, item, exit_code=0)
++
++
++def base_intent(**changes) -> dict:
++    intent = {"consumer": "docs", "initiative": SLUG, "document_kind": "hallazgo",
++              "target": TARGET, "expected_blob": None, "body_artifact": None}
++    intent.update(changes)
++    return intent
++
++
++def environment(base: Path, consumer: Path) -> None:
++    os.environ.update({
++        "THYROX_RUNTIME_DIR": str(base / "runtime"),
++        "THYROX_ENV_FILE": "/dev/null",
++        "THYROX_REACH_ROOTS": "docs",
++        "THYROX_CLONE_PREFIX": "kaupamex-",
++        "THYROX_REACH_DOCS": str(consumer),
++        "THYROX_COMMIT_AUTHOR": "Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>",
++        "THYROX_COMMIT_COMMITTER": "jcg-admin <169318663+jcg-admin@users.noreply.github.com>",
++        HOOK_LOG_VAR: str(base / "hook.log"),
++        GATE_LOG_VAR: str(base / "gate.log"),
++    })
++    os.environ.pop(HOOK_EXIT_VAR, None)
++    os.environ.pop(GATE_EXIT_VAR, None)
++
++
++def log_lines(base: Path, name: str) -> list[str]:
++    path = base / name
++    return path.read_text(encoding="utf-8").splitlines() if path.exists() else []
++
++
++def published(consumer: Path, branch: str = dp.PUBLISHER_BRANCH) -> list[str]:
++    """Los commits de la rama del publicador que ``main`` no tiene, del más nuevo al más viejo."""
++    if not branch_files(consumer, branch):
++        return []
++    return git(consumer, "rev-list", f"main..{branch}").splitlines()
++
++
++def branch_files(consumer: Path, branch: str = dp.PUBLISHER_BRANCH) -> list[str]:
++    if subprocess.run(["git", "-C", str(consumer), "rev-parse", "--verify", "--quiet",
++                       f"refs/heads/{branch}"], capture_output=True).returncode != 0:
++        return []
++    return git(consumer, "ls-tree", "-r", "--name-only", branch).splitlines()
++
++
++class Scene:
++    """Un escenario completo: consumidor, bin falso, salida y entorno."""
++
++    def __init__(self, base: Path):
++        self.base = base
++        self.consumer = make_consumer(base)
++        self.bin_dir = make_bin(base)
++        self.out = base / "out"
++        self.out.mkdir()
++        environment(base, self.consumer)
++
++    def publisher(self, item: str) -> dp.DocumentationPublisher:
++        return dp.DocumentationPublisher(self.out, item, bin_dir=self.bin_dir)
++
++    def cli(self, *args: str) -> subprocess.CompletedProcess:
++        return subprocess.run([sys.executable, str(ROOT / "src/session/documentation_publisher.py"),
++                               *args], capture_output=True, text=True,
++                              env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
++
++
++def main() -> int:
++    with tempfile.TemporaryDirectory() as scratch:
++        scene = Scene(Path(scratch))
++        print("caso 1: un ítem cerrado con intención válida se publica en la rama del publicador")
++        item = "1"
++        manifest = close_item(scene.out, item, intent=base_intent(body_artifact=f"{item}.document.rst"))
++        closed_before = (scene.out / f"{item}{lc.CLOSED_SUFFIX}").read_bytes()
++        result = scene.publisher(item).publish()
++        check("el commit queda en la rama del publicador", [result.commit],
++              published(scene.consumer))
++        check("... y la rama contiene el objetivo", True, TARGET in branch_files(scene.consumer))
++        check("... con el cuerpo del artefacto, verbatim", BODY,
++              git(scene.consumer, "show", f"{dp.PUBLISHER_BRANCH}:{TARGET}") + "\n")
++        check("la rama principal del consumidor no se mueve", "Initial",
++              git(scene.consumer, "log", "-1", "--format=%s", "main"))
++        check("el árbol de trabajo del consumidor queda limpio", "", git(scene.consumer, "status", "--porcelain"))
++        check("el worktree temporal se retiró", 1, len(git(scene.consumer, "worktree", "list").splitlines()))
++        gates = [line.split()[0] for line in log_lines(scene.base, "gate.log")]
++        check("los tres gates se invocan una vez cada uno, por su envoltorio",
++              ["check_rst_sintaxis", "check_vocabulario_prosa", "check-artefactos-minimos"], gates)
++        check("el pre-commit del consumidor corrió sobre el objetivo",
++              [f"pre-commit {TARGET}"], log_lines(scene.base, "hook.log"))
++        check("el author y el committer son los declarados",
++              "Nestor Monroy|jcg-admin",
++              git(scene.consumer, "log", "-1", "--format=%an|%cn", dp.PUBLISHER_BRANCH))
++        check("el mensaje cita la procedencia", True,
++              f"generation {manifest['generation']}" in git(scene.consumer, "log", "-1", "--format=%B", dp.PUBLISHER_BRANCH))
++        check("<n>.closed queda byte a byte igual", closed_before,
++              (scene.out / f"{item}{lc.CLOSED_SUFFIX}").read_bytes())
++        record = json.loads((scene.out / f"{item}{dp.PUBLISHED_SUFFIX}").read_text())
++        check("el resultado se publica junto al ítem", (result.commit, manifest["generation"], None),
++              (record["commit"], record["generation"], record["blob_before"]))
++        check("... y el resultado no es un artefacto de ítem para quien lee la salida",
++              None, lc.item_of_artifact(f"{item}{dp.PUBLISHED_SUFFIX}"))
++        again = scene.publisher(item).publish()
++        check("publicar de nuevo la misma generación no crea otro commit", result.commit, again.commit)
++        check("... ni vuelve a invocar los gates", 3, len(log_lines(scene.base, "gate.log")))
++
++        print("caso 2: sin <n>.closed válido no se lee ninguna intención")
++        before = len(published(scene.consumer))
++        check("un ítem sin cerrar se rehúsa", True,
++              raises(di.IntentError, lambda: scene.publisher("9").publish()))
++        item = "2"
++        close_item(scene.out, item, intent=base_intent(body_artifact=f"{item}.document.rst"))
++        (scene.out / f"{item}.document.rst").write_text(BODY + "\nAlterado tras el cierre.\n", encoding="utf-8")
++        check("2b: un artefacto alterado tras el cierre se rehúsa", True,
++              raises(di.IntentError, lambda: scene.publisher(item).publish()))
++        check("... y nada llega a la rama", before, len(published(scene.consumer)))
++
++        print("caso 3: una intención de otra generación o de otra ejecución se rehúsa")
++        item = "3"
++        close_item(scene.out, item, intent=base_intent(body_artifact=f"{item}.document.rst",
++                                                        source_generation=0))
++        check("generación rancia", True, raises(di.StaleIntentError, lambda: scene.publisher(item).publish()))
++        item = "3b"
++        close_item(scene.out, item, intent=base_intent(body_artifact=f"{item}.document.rst",
++                                                        source_run="otra-ejecucion"))
++        check("ejecución ajena", True, raises(di.StaleIntentError, lambda: scene.publisher(item).publish()))
++        check("... y ninguna de las dos toca el ítem cerrado", ([], []),
++              (lc.verify_closed(scene.out, "3"), lc.verify_closed(scene.out, "3b")))
++
++        print("caso 4: la concurrencia optimista mira el blob del objetivo, no la punta del repositorio")
++        before = len(published(scene.consumer))
++        blob_target = git(scene.consumer, "rev-parse", f"{dp.PUBLISHER_BRANCH}:{TARGET}")
++        item = "4"
++        close_item(scene.out, item, body=BODY + "\nSegunda versión.\n",
++                   intent=base_intent(body_artifact=f"{item}.document.rst", expected_blob=blob_target))
++        # Otro archivo cambia en la rama: no es conflicto.
++        wt = scene.base / "wt-other"
++        git(scene.consumer, "worktree", "add", "-q", wt.as_posix(), dp.PUBLISHER_BRANCH)
++        (wt / "otro.rst").write_text("otro cambió\n", encoding="utf-8")
++        git(wt, "commit", "-q", "-a", "-m", "Change another file")
++        git(scene.consumer, "worktree", "remove", "--force", wt.as_posix())
++        result = scene.publisher(item).publish()
++        check("con otro archivo cambiado, se publica sobre la punta nueva", "Change another file",
++              git(scene.consumer, "log", "-1", "--format=%s", f"{result.commit}~1"))
++        check("... y el blob previo es el esperado", blob_target, result.blob_before)
++        item = "4b"
++        close_item(scene.out, item, intent=base_intent(body_artifact=f"{item}.document.rst",
++                                                        expected_blob=blob_target))
++        check("el objetivo ya cambió: conflicto", True,
++              raises(dp.BlobConflictError, lambda: scene.publisher(item).publish()))
++        item = "4c"
++        close_item(scene.out, item, intent=base_intent(body_artifact=f"{item}.document.rst",
++                                                        expected_blob=None))
++        check("esperar que no exista cuando existe: conflicto", True,
++              raises(dp.BlobConflictError, lambda: scene.publisher(item).publish()))
++        check("un conflicto no deja commit ni resultado", (before + 2, False),
++              (len(published(scene.consumer)),
++               (scene.out / f"4b{dp.PUBLISHED_SUFFIX}").exists()))
++
++        print("caso 5: un gate rojo rehúsa sin commit y sin tocar el ítem")
++        before = len(published(scene.consumer))
++        item = "5"
++        close_item(scene.out, item, intent=base_intent(
++            target=(INITIATIVE_DIR / "hallazgos" / "hallazgo-H-THYROX-901-otro.rst").as_posix(),
++            body_artifact=f"{item}.document.rst"))
++        os.environ[GATE_EXIT_VAR] = "1"
++        closed_before = (scene.out / f"{item}{lc.CLOSED_SUFFIX}").read_bytes()
++        check("gate rojo", True, raises(dp.GateFailedError, lambda: scene.publisher(item).publish()))
++        os.environ.pop(GATE_EXIT_VAR)
++        check("... sin commit", before, len(published(scene.consumer)))
++        check("... con <n>.closed intacto y coherente", (closed_before, []),
++              ((scene.out / f"{item}{lc.CLOSED_SUFFIX}").read_bytes(), lc.verify_closed(scene.out, item)))
++        check("... y el worktree temporal retirado", 1, len(git(scene.consumer, "worktree", "list").splitlines()))
++
++        print("caso 6: el pre-commit del consumidor rehúsa el commit")
++        os.environ[HOOK_EXIT_VAR] = "1"
++        check("hook rojo", True, raises(dp.CommitRefusedError, lambda: scene.publisher(item).publish()))
++        os.environ.pop(HOOK_EXIT_VAR)
++        check("... sin commit", before, len(published(scene.consumer)))
++        result = scene.publisher(item).publish()
++        check("con el hook en verde, el mismo ítem se publica", before + 1,
++              len(published(scene.consumer)))
++
++        print("caso 7: el candado es por archivo objetivo")
++        before = len(published(scene.consumer))
++        item = "7"
++        close_item(scene.out, item, intent=base_intent(
++            target=(INITIATIVE_DIR / "hallazgos" / "hallazgo-H-THYROX-902-lock.rst").as_posix(),
++            body_artifact=f"{item}.document.rst"))
++        target_lock = dp.lock_target(scene.consumer, (INITIATIVE_DIR / "hallazgos" / "hallazgo-H-THYROX-902-lock.rst").as_posix())
++        held = shared_lock.acquire(target_lock)
++        try:
++            check("con el candado del objetivo tomado, se rehúsa", True,
++                  raises(shared_lock.LockHeld, lambda: scene.publisher(item).publish()))
++        finally:
++            held.release()
++        other_lock = dp.lock_target(scene.consumer, TARGET)
++        held = shared_lock.acquire(other_lock)
++        try:
++            check("el candado de OTRO objetivo no estorba", before + 1,
++                  len(git(scene.consumer, "rev-list", f"main..{scene.publisher(item).publish().commit}").splitlines()))
++        finally:
++            held.release()
++
++        print("caso 8: la intención se valida contra la estructura real")
++        for label, changes, error in (
++                ("objetivo fuera de la iniciativa", {"target": "source/gestion/pm/thyrox/suelto.rst"}, di.IntentError),
++                ("markdown nunca", {"target": (INITIATIVE_DIR / "hallazgos" / "hallazgo-x.md").as_posix()}, di.IntentError),
++                ("clase desconocida", {"document_kind": "poema"}, di.IntentError),
++                ("nombre que no lleva su clase", {"target": (INITIATIVE_DIR / "nota.rst").as_posix()}, di.IntentError),
++                ("cuerpo sin cabecera meta", {}, di.IntentError)):
++            item = f"8-{len(label)}"
++            body = "Sin meta\n" if label == "cuerpo sin cabecera meta" else BODY
++            close_item(scene.out, item, body=body,
++                       intent=base_intent(body_artifact=f"{item}.document.rst", **changes))
++            check(label, True, raises(error, lambda: scene.publisher(item).publish()))
++        item = "8-elsewhere"
++        close_item(scene.out, item, intent=base_intent(
++            target="source/gestion/pm/api/iniciativas/" + SLUG + "/hallazgos/hallazgo-H-API-1.rst",
++            body_artifact=f"{item}.document.rst"))
++        check("una iniciativa alojada en otra raíz se rehúsa nombrándola", True,
++              raises(dp.PlacementError, lambda: scene.publisher(item).publish()))
++
++        print("caso 9: la línea de órdenes")
++        item = "9a"
++        close_item(scene.out, item, intent=base_intent(
++            target=(INITIATIVE_DIR / "hallazgos" / "hallazgo-H-THYROX-903-cli.rst").as_posix(),
++            body_artifact=f"{item}.document.rst"))
++        done = scene.cli("publish", str(scene.out), item, "--bin", str(scene.bin_dir))
++        check("publica y sale 0 imprimiendo el commit", (0, True),
++              (done.returncode, done.stdout.strip() in git(scene.consumer, "rev-list", dp.PUBLISHER_BRANCH)))
++        done = scene.cli("publish", str(scene.out), "4b", "--bin", str(scene.bin_dir))
++        check("un conflicto sale con el código de rechazo", dp.EXIT_REFUSED, done.returncode)
++        done = scene.cli("publish", str(scene.out), "no-existe", "--bin", str(scene.bin_dir))
++        check("sin <n>.closed sale con el código de rechazo", dp.EXIT_REFUSED, done.returncode)
++        intent_path = scene.base / "intent.json"
++        done = subprocess.run(
++            [sys.executable, str(ROOT / "src/session/documentation_publisher.py"), "write-intent",
++             str(intent_path), "--consumer", "docs", "--initiative", SLUG, "--kind", "hallazgo",
++             "--target", TARGET, "--body-artifact", "7.document.rst", "--expected-blob", "abc"],
++            capture_output=True, text=True,
++            env={**os.environ, "PYTHONPATH": str(ROOT / "src"), di.RUN_ID_VAR: "run-x",
++                 di.ITEM_VAR: "7", di.GENERATION_VAR: "2", di.SNAPSHOT_VAR: "snap-1"})
++        written = json.loads(intent_path.read_text()) if intent_path.exists() else {}
++        check("write-intent toma la procedencia del entorno del ítem",
++              (0, "run-x", "7", 2, "snap-1", "abc"),
++              (done.returncode, written.get("source_run"), written.get("source_item"),
++               written.get("source_generation"), written.get("source_snapshot"), written.get("expected_blob")))
++        done = subprocess.run(
++            [sys.executable, str(ROOT / "src/session/documentation_publisher.py"), "write-intent",
++             str(intent_path), "--consumer", "docs", "--initiative", SLUG, "--kind", "hallazgo",
++             "--target", TARGET, "--body-artifact", "7.document.rst"],
++            capture_output=True, text=True,
++            env={k: v for k, v in {**os.environ, "PYTHONPATH": str(ROOT / "src")}.items()
++                 if k not in (di.RUN_ID_VAR, di.ITEM_VAR, di.GENERATION_VAR)})
++        check("... y sin ese entorno rehúsa nombrando la variable", (dp.EXIT_UNMEASURED, True),
++              (done.returncode, di.RUN_ID_VAR in done.stderr))
++        shutil.rmtree(scene.base / "runtime", ignore_errors=True)
++
++    print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
++    return 1 if FAILED else 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
