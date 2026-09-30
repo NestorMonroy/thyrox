@@ -10,6 +10,7 @@
 #   item_worktree.sh sweep    REPO OUT            -> retira los que queden
 #   item_worktree.sh sweep-orphans REPO           -> retira los de pools muertos
 #   item_worktree.sh lock-path REPO OUT           -> candado de la ejecución
+#   item_worktree.sh link-shared REPO DIR         -> enlaza node_modules, .venv…
 #
 # Veredictos: `fallido` (el ítem salió con error), `sin-cambios` (diff vacío),
 # `verificado` / `rechazado` (VERIFY salió 0 / con error, corrido en el
@@ -116,6 +117,134 @@ for prefix in $SPARSE_EXCLUDE; do
     fi
 done
 
+# Directorios que el checkout no trae y el verify necesita. Un worktree es un
+# checkout de git: `node_modules/`, `.venv/` y `dist/` están en `.gitignore` y
+# no llegan. Como el worktree vive DENTRO del árbol principal, la resolución de
+# Node asciende hasta el `node_modules` del principal y tipa contra el código
+# del principal, no del ítem (H-THYROX-287: «repl: 0 -> 28»); y `bin/*` sin
+# `.venv` cae al python del sistema avisando por stderr. Es el
+# `worktree.symlinkDirectories` de la referencia (2.1.283), con dos
+# diferencias: hay valor por defecto, porque sin él el verify mide el árbol
+# equivocado en silencio, y un enlace plano no basta para `node_modules` (ver
+# `shadow_dir`). Nombres relativos a la raíz del repositorio, separados por
+# espacios, con globs; vacío no enlaza nada; uno ausente se salta y se dice.
+DEFAULT_LINK_NAMES="node_modules .venv src/packages/*/node_modules"
+LINK_NAMES="${THYROX_ITEM_WORKTREE_LINK-$DEFAULT_LINK_NAMES}"
+# Palabras sin expandir: un glob de la lista se resuelve contra la raíz del
+# repositorio (`expand_link_pattern`), nunca contra el cwd de quien llama.
+read -r -a LINK_PATTERNS <<< "$LINK_NAMES"
+for name in "${LINK_PATTERNS[@]}"; do
+    if [[ "$name" == /* || "/$name/" == */../* ]]; then
+        echo "item_worktree: THYROX_ITEM_WORKTREE_LINK admite nombres relativos dentro del árbol, no: $name" >&2
+        exit 2
+    fi
+done
+# El archivo de exclusión del worktree. `node_modules/` con barra en
+# `.gitignore` ignora un directorio, no un enlace del mismo nombre: sin esto
+# `git add -A` de `finalize` metería los enlaces en el parche del ítem.
+# `info/exclude` no sirve porque es común a todos los worktrees.
+LINKS_EXCLUDE_FILE="pool-links-exclude"
+
+# ¿Es LINK un enlace que sale de ROOT hacia dentro de TOP? Es la forma del
+# enlace de workspace (`node_modules/@thyrox/x -> ../../src/packages/x`):
+# copiado tal cual al worktree seguiría resolviendo en el principal, porque el
+# sistema de archivos lo resuelve relativo al directorio REAL.
+escapes_into_repo() {
+    local link="$1" root="$2" top="$3" target
+    target="$(realpath -m "$link")" || return 1
+    [[ "$target" == "$top"/* && "$target" != "$root" && "$target" != "$root"/* ]]
+}
+
+# ¿Hay bajo DIR un enlace que sale de ROOT hacia dentro de TOP? Se baja por los
+# subdirectorios REALES: el enlace de workspace vive un nivel dentro, en el
+# directorio del ámbito (`node_modules/@thyrox/x`), no como hijo directo.
+has_escaping_links() {
+    local dir="$1" root="$2" top="$3" child
+    for child in "$dir"/* "$dir"/.[!.]*; do
+        if [[ -L "$child" ]]; then
+            escapes_into_repo "$child" "$root" "$top" && return 0
+        elif [[ -d "$child" ]]; then
+            has_escaping_links "$child" "$root" "$top" && return 0
+        fi
+    done
+    return 1
+}
+
+# La sombra de SRC en DST: cada hijo que es un enlace de workspace se vuelve a
+# enlazar a la misma ruta relativa DENTRO del worktree; un subdirectorio real
+# que contiene enlaces así (`@thyrox/`) se sombrea a su vez; todo lo demás se
+# enlaza a su ruta real en el principal.
+shadow_dir() {
+    local src="$1" dst="$2" root="$3" top="$4" worktree="$5" child name target
+    mkdir -p "$dst" || return 2
+    for child in "$src"/* "$src"/.[!.]*; do
+        [[ -e "$child" || -L "$child" ]] || continue
+        name="${child##*/}"
+        if [[ -L "$child" ]] && escapes_into_repo "$child" "$root" "$top"; then
+            target="$(realpath -m "$child")" || return 2
+            ln -s "$worktree/${target#"$top"/}" "$dst/$name" || return 2
+        elif [[ -d "$child" && ! -L "$child" ]] && has_escaping_links "$child" "$root" "$top"; then
+            shadow_dir "$child" "$dst/$name" "$root" "$top" "$worktree" || return 2
+        else
+            ln -s "$(realpath "$child")" "$dst/$name" || return 2
+        fi
+    done
+}
+
+# Un nombre: sombra si hace falta, enlace plano si no.
+link_shared_dir() {
+    local top="$1" worktree="$2" name="$3"
+    local src="$top/$name" dst="$worktree/$name"
+    [[ -e "$src" ]] || { echo "item_worktree: no se enlaza $name: no existe en el árbol principal" >&2; return 0; }
+    [[ -e "$dst" || -L "$dst" ]] && return 0
+    mkdir -p "${dst%/*}" || return 2
+    if [[ -d "$src" && ! -L "$src" ]] && has_escaping_links "$src" "$src" "$top"; then
+        shadow_dir "$src" "$dst" "$src" "$top" "$worktree"
+    else
+        ln -s "$src" "$dst"
+    fi
+}
+
+# Los enlaces quedan fuera del índice del worktree por un `core.excludesFile`
+# propio (`config --worktree`; `extensions.worktreeConfig` ya lo activa el
+# sparse-checkout, y aquí se activa si falta).
+exclude_links() {
+    local worktree="$1" gitdir file name
+    gitdir="$(git -C "$worktree" rev-parse --absolute-git-dir)" || return 2
+    file="$gitdir/$LINKS_EXCLUDE_FILE"
+    for name in "${@:2}"; do printf '/%s\n' "${name%/}"; done > "$file" || return 2
+    git -C "$worktree" config --get extensions.worktreeConfig >/dev/null \
+        || git -C "$worktree" config extensions.worktreeConfig true || return 2
+    git -C "$worktree" config --worktree core.excludesFile "$file"
+}
+
+# link-shared REPO DIR: enlaza en DIR los nombres de LINK_NAMES desde la raíz
+# de REPO. Idempotente: lo que ya está no se rehace.
+link_shared_dirs() {
+    local repo="$1" worktree="$2" top pattern name linked=()
+    [[ "${#LINK_PATTERNS[@]}" -gt 0 ]] || return 0
+    top="$(git -C "$repo" rev-parse --show-toplevel)" || return 2
+    for pattern in "${LINK_PATTERNS[@]}"; do
+        # Un nombre literal se enlaza aunque falte (y se dice); un glob sin
+        # coincidencias no nombra nada.
+        for name in $(expand_link_pattern "$top" "$pattern"); do
+            link_shared_dir "$top" "$worktree" "$name" || return 2
+            linked+=("$name")
+        done
+    done
+    [[ "${#linked[@]}" -gt 0 ]] || return 0
+    exclude_links "$worktree" "${linked[@]}"
+}
+
+expand_link_pattern() {
+    local top="$1" pattern="$2"
+    if [[ "$pattern" == *[*?]* ]]; then
+        (cd "$top" && compgen -G "$pattern")
+        return 0
+    fi
+    printf '%s\n' "$pattern"
+}
+
 # Patrones de sparse-checkout (modo no-cone): todo, menos cada hijo que los
 # prefijos excluidos tienen en HEAD. El hijo que contiene OUT —el banco del
 # propio pool— nunca se excluye: el verify del ítem llama a sus sondas por
@@ -218,6 +347,7 @@ prepare() {
         admit_disk "$repo" "$root" || exit $?
         add_worktree "$repo" "$dir" "$out" || exit 2
     ) 9> "$root/.admission.lock" || return $?
+    link_shared_dirs "$repo" "$dir" || return 2
     printf '%s\n' "$dir"
 }
 
@@ -411,6 +541,7 @@ case "${1:-}" in
     sweep) shift; sweep "$@" ;;
     sweep-orphans) shift; sweep_orphans "$@" ;;
     lock-path) shift; lock_path "$@" ;;
+    link-shared) shift; link_shared_dirs "$@" ;;
     checkout-bytes) shift; checkout_bytes "$@" ;;
-    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path|checkout-bytes …" >&2; exit 2 ;;
+    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path|link-shared|checkout-bytes …" >&2; exit 2 ;;
 esac
