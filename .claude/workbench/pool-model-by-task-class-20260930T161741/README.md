@@ -206,9 +206,14 @@ La respuesta de aquella sesión, contrastada con el código y el disco hoy:
    `run-task-pool.sh` no tiene hogar por defecto: lo resuelve
    `background.py --log-home` desde `THYROX_BACKGROUND_LOG_<CLONE>` o
    `THYROX_BACKGROUND_LOG_DIR`, y sin declaración **rehúsa** (medido hoy:
-   «NO se emite un hogar por defecto»; no hay `.env` en el árbol y la variable
-   no está en el proceso). Que haya `job-*` en `build-logs` sólo prueba que
-   alguna invocación lo declaró así. Además `build-logs` tiene hoy 127
+   «NO se emite un hogar por defecto»). **Corrección de esta misma sección:**
+   decía «no hay `.env` en el árbol», y es falso. Hay un `.env` (1057 bytes,
+   07:21 de hoy), pero no declara ninguna `THYROX_BACKGROUND_LOG_*` ni
+   `THYROX_CACHE_DIR`; el de la sesión analizada sí las declaraba
+   (`.env:17-18`). El `.env` está ignorado (`.gitignore:11`): el hogar de los
+   logs se decide en un archivo que cada contenedor tiene distinto y que
+   ningún commit registra. «La separación está en el código» es falso por
+   eso: está en un `.env` no versionado. Además `build-logs` tiene hoy 127
    entradas `job-*` y **218** que no lo son, escritas a mano (entre ellas
    `stash-guard`, `pool-d-integrate` y `rejected-reverify`, de esta sesión).
    «La separación está en el código, no la decidí yo» es falso para ese
@@ -229,3 +234,53 @@ La respuesta de aquella sesión, contrastada con el código y el disco hoy:
    aparece al asentar el trabajo.
 5. **`.claude/logs/` no existe y nada lo nombra.** Medido: 0 referencias
    fuera de bancos y trabajos. Es correcto que no exista; no es un hueco.
+
+## Sexto flujo analizado: la generación al tomar un ítem (`031ac98c3`) y los manifiestos de banco
+
+Lo correcto: el contrato «la recuperación toma el ítem y el dueño anterior
+queda anulado» se implementó en TDD:
+- rojo: la prueba falla porque `claim` no existe;
+- verde: 55 de 55;
+- anulación de la guarda: 51 de 55, y caen exactamente las cuatro
+  aserciones del rechazo;
+- el caso con el pool en curso: 22 de 26 antes, 26 de 26 después.
+
+Esta vez la regresión acumula su código de salida (`rc=1` si una suite
+falla), a diferencia de las anteriores.
+
+Lo que no se vio o se afirmó sin medir:
+
+1. **La guarda tiene una carrera.** `transition` lee y reescribe el estado
+   sin `_out_lock`, y `claim` escribe bajo él. La sonda
+   `probes/claim_transition_race.py` intercala `claim` entre la lectura y la
+   escritura: el dueño de la generación 1 **no** es rehusado y el estado
+   vuelve a la generación 1. El control sin intercalar sí lo rehúsa
+   (`probes/claim_transition_race.out`). H-THYROX-289, sucesor
+   TASK-THYROX-0651.
+2. **La guarda es opcional.** `generation=None` no se comprueba, así que un
+   actor que no presente su generación actúa sin control. El `blind_to` que
+   la sesión escribió para ese banco lo nombra («un dueño anterior que no
+   presente su generación»), pero no quedó como tarea.
+3. **El caso 4 declara abandonado un ítem cuyo dueño vive.** Lo hace con
+   `pool_lifecycle transition … ABANDONED_RECOVERABLE` por la línea de
+   órdenes, que no mira si el dueño vive; `reconcile` sí lo exige. El caso
+   prueba la guarda, y a la vez muestra que cualquier actor puede quitarle un
+   ítem vivo a su pool.
+4. **«La recuperación toma el ítem» no era cierto a las 20:20.** `claim`
+   existía, pero `recovery_controller` no lo llamaba. `claim_and_recover`
+   entró en `6de9bf071`, a las 23:40.
+5. **La regresión saltaba en silencio una suite con el nombre equivocado.**
+   Para `test-headless-pool-item-worktree-stash.sh` imprimía «no existe» y
+   seguía, sin marcar fallo. La sesión lo vio y corrió aparte la suite real
+   (19/19).
+6. **Se esperó en primer plano** (`timeout 100 tail --pid=…`), y el ejecutor
+   tuvo que mandarlo a segundo plano a mano.
+7. **Los manifiestos de cinco bancos se escribieron después, a mano.** El
+   mecanismo es `bin/manifest scaffold`, que la sesión identificó en el mismo
+   paso. Aun así, los cinco `manifest.jsonl` se escribieron con un heredoc de
+   Python horas después de correr los bancos. Su `question` es una
+   reconstrucción, no lo que se preguntó al lanzarlos, y nada en el archivo
+   lo distingue.
+8. **Los siete `.bak` de `.claude/cache/`**, que la sesión encontró y no
+   borró, hoy no existen: el glob `.claude/cache/*.bak` no coincide con nada.
+   Quién los retiró no está medido.
