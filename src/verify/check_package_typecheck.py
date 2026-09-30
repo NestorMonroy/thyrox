@@ -139,6 +139,9 @@ def workspace_providers(consumer: Path, index: dict) -> list:
 class RefreshReport:
     rebuilt: list = field(default_factory=list)
     failed: list = field(default_factory=list)
+    #: La ultima linea de salida de cada provider que no emitio. Sin ella un
+    #: tsc que agoto el plazo y uno con errores de tipo se publicaban igual.
+    failure_reasons: dict = field(default_factory=dict)
     #: Consumidores con algun provider que no emitio: no se tipan.
     blocked: set = field(default_factory=set)
 
@@ -165,10 +168,22 @@ def refresh_providers(consumers, root: Path, emit=emit_package, jobs: int = 1) -
             report.rebuilt.append(provider.name)
         else:
             report.failed.append(provider.name)
+            report.failure_reasons[provider.name] = failure_reason(result.output)
     failed = set(report.failed)
     report.blocked = {name for name, group in providers_of.items()
                       if failed & {p.name for p in group}}
     return report
+
+
+#: Longitud maxima del motivo publicado: la salida entera de tsc es el registro,
+#: no el aviso.
+FAILURE_REASON_MAX_CHARS = 200
+
+
+def failure_reason(output: str) -> str:
+    """La ultima linea no vacia de la salida del emisor, recortada."""
+    lines = [line.strip() for line in (output or "").splitlines() if line.strip()]
+    return lines[-1][:FAILURE_REASON_MAX_CHARS] if lines else "sin salida"
 
 
 def print_refresh(report: RefreshReport) -> None:
@@ -176,7 +191,8 @@ def print_refresh(report: RefreshReport) -> None:
         print(f"check-package-typecheck: {len(report.rebuilt)} provider(s) reconstruido(s) "
               f"por viejos: {', '.join(report.rebuilt)}")
     for name in report.failed:
-        print(f"  provider {name}: la reconstruccion no emitio", file=sys.stderr)
+        reason = report.failure_reasons.get(name, "sin salida")
+        print(f"  provider {name}: la reconstruccion no emitio: {reason}", file=sys.stderr)
     if report.blocked:
         print(f"  SIN TIPAR por un provider roto: {', '.join(sorted(report.blocked))}",
               file=sys.stderr)
