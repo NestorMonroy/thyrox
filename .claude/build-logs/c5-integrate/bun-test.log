@@ -1,0 +1,32 @@
+bun test v1.3.11 (af24e281)
+121 |         const cut = calls === 1
+122 |         const body = new ReadableStream<Uint8Array>({
+123 |           start(controller) {
+124 |             if (cut) {
+125 |               controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+126 |               controller.error(new Error('cortado'))
+                                         ^
+error: cortado
+      at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:126:36)
+      at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:122:22)
+
+__tests__/proxySdkForward.test.ts:
+176 |   test('el error de la copia del SDK que trae un cliente de nube se reconoce igual', async () => {
+177 |     // Cada SDK de nube instala su propia copia de `@anthropic-ai/sdk`: la
+178 |     // clase del error es otra, aunque la versión sea la misma.
+179 |     const nested = Bun.resolveSync('@anthropic-ai/sdk', Bun.resolveSync('@anthropic-ai/vertex-sdk', import.meta.dir))
+180 |     const { APIError: NestedApiError } = (await import(nested)) as typeof import('@anthropic-ai/sdk')
+181 |     expect(NestedApiError).not.toBe(APIError)
+                                     ^
+error: expect(received).not.toBe(expected)
+
+Expected: not [class APIError extends AnthropicError]
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/proxySdkForward.test.ts:181:32)
+(fail) errores del SDK > el error de la copia del SDK que trae un cliente de nube se reconoce igual [0.44ms]
+
+ 2132 pass
+ 1 fail
+ 3337 expect() calls
+Ran 2133 tests across 72 files. [6.84s]
+bun rc=1

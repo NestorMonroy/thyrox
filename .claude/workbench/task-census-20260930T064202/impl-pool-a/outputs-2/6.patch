@@ -1,0 +1,1316 @@
+diff --git a/.claude/workbench/task-thyrox-0284-stream-handler-20260930T083446/README.md b/.claude/workbench/task-thyrox-0284-stream-handler-20260930T083446/README.md
+new file mode 100644
+index 000000000..3a4f40282
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0284-stream-handler-20260930T083446/README.md
+@@ -0,0 +1,65 @@
++# TASK-THYROX-0284 — el manejador del stream al contrato de 2.1.281/2.1.283
++
++Referencia leída (sólo lectura): `/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/`.
++Cada símbolo se localizó con `grep -o`/`rg -o` sobre el chunk y la línea que se citan.
++
++## Símbolos consultados
++
++| Símbolo | Chunk:línea | Qué hace | Decisión |
++|---|---|---|---|
++| `hwr(e,n,r)` | chunk-csayct82.js:3563 | El manejador del stream: (item, opciones, contexto). Sólo items del stream; `message_start`/`message_stop`/bloques/deltas/`message_delta`. | Portado como `handleMessageFromStream(item, options, context)`. |
++| `KVe(e,n)` | chunk-csayct82.js:3563 (justo antes de `hwr`) | El despachador de quien llama: lápida, `tool_use_summary`, notificaciones…, `assistant` → `onStreamingThinking` y `displayTransform.entryLanded`, `onStreamingText(null)`, `onMessage`; si es del stream (`rnt`), delega en `hwr`. | Su parte de mensajes completos vive en el llamador (`REPLView.deliverCompleteMessage`); `rnt` ≙ `isStreamItem`. Los `onNotification`/`onExpandedView`/… no existen en thyrox: divergencia declarada. |
++| `aKe(e)` + `Fon=new Set(Hpe)`, `Hpe=["compact_progress","sdk_status","stream_mode"]` | chunk-csayct82.js:3563 | Un evento de compactación va a `onCompactEvent`. | Portado: `CompactEvent`, `COMPACT_EVENT_TYPES`. |
++| `$ie(e)` | chunk-csayct82.js:3563 | `ping` se ignora. | Portado (`isPingEvent`). |
++| `qnr=32768` | chunk-csayct82.js | Tope del JSON del bloque `tool_use` en curso. | `MAX_TOOL_USE_BLOCK_JSON_CHARS`. |
++| `znr=256` | chunk-csayct82.js | Tope de tool uses en curso. | `MAX_STREAMING_TOOL_USES`. |
++| `I3t=1e6` | chunk-csayct82.js | Tope del texto parcial; se recorta el delta. | `MAX_STREAMING_TEXT_CHARS`. |
++| `gwr(e)=ceil(e.length/4)` | chunk-csayct82.js | Estimador de tokens del thinking por texto. | `estimateTokensFromChars(charCount)` + `CHARS_PER_ESTIMATED_TOKEN=4`. |
++| `kZt(e)=round(e*0.75)` | chunk-csayct82.js | Caracteres de la firma que cuentan como pensamiento. | `SIGNATURE_CHARS_RATIO=0.75`. |
++| `Gnr(e)=e.usage?.output_tokens??null` | chunk-csayct82.js | Tokens de salida de `message_delta`; si faltan, `tengu_message_delta_usage_missing` con `is_subagent`. | Portado con el `context.isSubagent`. |
++| `Ee.with(xe,Ie)` / `Ee.length>=znr?Ee:[...Ee,Ie]` | chunk-csayct82.js:3563 | Sustitución por índice o alta acotada. | `withStreamingToolUse`. |
++| `YB=new w3t` (`load()`/`loaded()`) → chunk-0b726pf4.js: `U as onToolUseStart`, `W as onInputJsonDelta`, `G as onToolUseStop`, `N as resetAuthoringProgress` | chunk-csayct82.js + chunk-0b726pf4.js | La superficie L0 de autoría (workshop): módulo cargado perezosamente cuando `authoringProgressSurface===true`; acumula el JSON parcial por índice de bloque y pinta el spinner. | **Divergencia**: thyrox no tiene el módulo de workshop. La opción `authoringProgressSurface` lleva la interfaz (`AuthoringProgressSurface`) en vez de un booleano que dispare una carga global; el manejador la llama en los mismos cuatro puntos. |
++| `displayTransform: begin/delta/finalize/entryLanded` (`u3r`, chunk-et1gk3fs.js:36; cableado en chunk-de3xpxbw.js:206) | | Cola de transformación de lo que se muestra. | Tipo `DisplayTransform` y llamadas en `message_start`/`text_delta`/`message_stop`. **Divergencia**: el productor (`u3r`) no está portado; `REPLView` no lo declara. |
++| `{type:"response_length",op:"reset"|"add",delta}` (chunk-edhc0km7.js:11, chunk-csayct82.js:1835 `goe`) | | Evento propio del largo de la respuesta, emitido por la compactación y por `goe`. | Tipo `ResponseLengthEvent` + `onResponseLength`. **Divergencia**: en thyrox nadie lo emite aún (`git grep response_length -- src` → 0 antes de este cambio); el contrato lo acepta. |
++| `runAgent` (chunk-qrmg14b4.js:92: `ur={onSetStreamMode,onUpdateLength:(w)=>{Xt+=w/4},onApiMetrics:…}`, `hwr(w,ur,pr)`) | | Cómo un consumidor convierte las métricas tipadas: `thinking_progress` suma tokens; `thinking_signature` suma `ceil(chars/4)-Rt` si excede la cuenta del bloque; `content_block_start` la reinicia. | Portado en `REPLView.recordApiMetric` (con `×4` a caracteres, que es la unidad de `setResponseLength`). |
++| execAgentHook (chunk-csayct82.js:1881: `KVe(In,{onMessage:()=>{},onUpdateLength:()=>{},…})`) | | En 2.1.283 el hook agente ya no mueve el largo de la respuesta. | **Divergencia deliberada por el prompt**: thyrox sigue sumando `onUpdateLength` numérico a `setResponseLength`. |
++| `prt(w)=!!w.thinking?.trim()&&Foe(w)` en `KVe` | chunk-csayct82.js:3563 | Decide si el thinking aterrizado se muestra o se vacía. | `Foe` no medido; se conserva la conducta previa de thyrox (`thinkingAfterLanding` siempre lo conserva). Pendiente si alguien lo necesita. |
++| `case"fallback":return` / `advisor_tool_result` | chunk-csayct82.js:3563 | `fallback` no mueve el spinner; `advisor_tool_result` es bloque del servidor. | Portados. La rama `CONNECTOR_TEXT` de thyrox (ccnmt 2.1.88) se conserva: no está en 2.1.283 pero su bandera sigue viva en `provider`. |
++
++Métrica: presencia literal de cada símbolo en el chunk citado (`grep -o` sobre la línea).
++Ciega a: el binario 2.1.281 que nombra la tarea (no está en `_references/`; se leyó 2.1.283, y las diferencias entre los dos no se midieron).
++
++## Estado previo medido en este worktree
++
++- `git grep -c unparsedToolInput -- src` → `messages.ts:3` antes; **0** después.
++- `git grep -n 'handleMessageFromStream(' -- src` → 4 sitios (definición + 3 llamadores), todos migrados al objeto de opciones.
++- Ninguna suite nombraba el handler (`git grep -ln 'handleMessageFromStream\|StreamingToolUse' -- '**/__tests__/**'` → 0); ahora `src/packages/agent/__tests__/handleMessageFromStream.test.ts`.
++
++## Controles de anulación (cada uno: copia con `mktemp`, `sed` sobre la rama, `bun test`, restaurar y `cmp`)
++
++| Rama retirada | Cae | De 30 |
++|---|---|---|
++| a. tope de tool uses (`hasRoom = true`) | «al tope de tool uses no se anade» | 1 |
++| b. sustitución por índice (sin `current.with`) | «mismo indice sustituye en su posicion» | 1 |
++| c. tope de JSON del bloque | «JSON supera el tope se descarta» | 1 |
++| d. tope de texto (sin `isFull` ni `slice`) | «recorta el delta al tope de texto» | 1 |
++| e. salto del `ping` | «un ping no toca ningun callback» | 1 |
++| f. guarda de `ttftMs` | «sin ttftMs no emite la metrica start» | 1 |
++| g. estimador de thinking por texto (`null`) | «thinking_delta con texto estima ceil(chars/4)» | 1 |
++| h. identidad al vaciar en `message_start` | «conservando la identidad cuando ya estaban vacios» | 1 |
++| i. guarda de nombre de cadena | «tool_use sin nombre de cadena se descarta» | 1 |
++| j. reset de autoría en `message_stop` | «message_stop … reinicia la autoria» | 1 |
++
++Métrica: `(fail)` de `bun test` con la rama retirada, 29 pass / 1 fail en las diez; `cmp` contra la copia da idéntico al final.
++Ciega a: ramas que dos casos cubran a la vez (ninguna anulación tumbó más de uno, así que no se observó), y a los consumidores (`REPLView`, `useRemoteSession`, `execAgentHook`), que sólo el typecheck mide.
++
++## Typecheck y suites
++
++- `bun test __tests__/handleMessageFromStream.test.ts __tests__/contentTextHelpers.test.ts __tests__/createMessageHelpers.test.ts` (desde `src/packages/agent`): **78 pass, 0 fail** (30 nuevos + 48 existentes).
++- `bash bin/check_package_typecheck --strict --no-rebuild agent repl`: `agent: 0 propio(s)` (baseline 0). `repl: 28 propio(s) <- sube desde 0`.
++- **Los 28 de `repl` son del entorno del worktree, no del código, y está medido:** este worktree no tiene `node_modules` (`ls node_modules/@thyrox/` → no existe), así que `@thyrox/agent/messages.js` resuelve por `/home/user/thyrox/node_modules/@thyrox/agent -> /home/user/thyrox/src/packages/agent` — el árbol PRINCIPAL, cuyo `dist/messages.d.ts` (07:27, 0 ocurrencias de `isStreamItem`/`StreamHandlerOptions`, `handleMessageFromStream` posicional en su línea 669) no trae este cambio. Los 28 son exactamente eso: 8×TS2305 (los exports nuevos), 2×TS2554 («Expected 5-9 arguments») y 18 en cascada de `never` por `QueryEvent` sin resolver.
++- **Atribución:** con `bash bin/emit_declarations agent` (0 errores, `dist/messages.d.ts` de este worktree con los 4 símbolos) y un `tsconfig` temporal de `repl` que extiende `tsconfig.build.json` con `paths["@thyrox/agent/messages.js"] = ["../agent/dist/messages.d.ts"]`, `bunx tsc` da **0 errores en `src/` de `repl`** (temporal borrado después). Al integrar en el árbol principal y re-emitir `agent`, el gate de `repl` vuelve a su baseline sin tocar nada más.
++- `bin/check_lint_zero`: no aplica — no se tocó ningún `.py` ni `.sh`.
++
++Métrica: conteo de `error TS` por archivo en la salida de tsc, con y sin la ruta al `dist/` de este worktree.
++Ciega a: errores de `repl` que dependan de OTRO módulo de `agent` cambiado (sólo `messages.js` se redirigió; `tokens.ts` y `execAgentHook.ts` no exportan nada que `repl` importe de forma distinta).
+diff --git a/src/packages/agent/__tests__/handleMessageFromStream.test.ts b/src/packages/agent/__tests__/handleMessageFromStream.test.ts
+new file mode 100644
+index 000000000..45ffb04b6
+--- /dev/null
++++ b/src/packages/agent/__tests__/handleMessageFromStream.test.ts
+@@ -0,0 +1,314 @@
++import { describe, expect, test } from 'bun:test'
++import {
++  MAX_STREAMING_TEXT_CHARS,
++  MAX_STREAMING_TOOL_USES,
++  MAX_TOOL_USE_BLOCK_JSON_CHARS,
++  handleMessageFromStream,
++  isStreamItem,
++  type ApiMetricsEvent,
++  type StreamHandlerOptions,
++  type StreamItem,
++  type StreamingToolUse,
++} from '../messages.js'
++
++type Call = [name: string, payload: unknown]
++
++/**
++ * Graba cada callback del contrato en orden, y mantiene el estado que los
++ * reductores (`onStreamingToolUses`, `onStreamingText`) devuelven.
++ */
++function recorder(initial: { toolUses?: StreamingToolUse[]; text?: string | null } = {}) {
++  const calls: Call[] = []
++  const state = { toolUses: initial.toolUses ?? [], text: initial.text ?? null }
++  const options: StreamHandlerOptions = {
++    onSetStreamMode: mode => calls.push(['mode', mode]),
++    onApiMetrics: event => calls.push(['metrics', event]),
++    onUpdateLength: length => calls.push(['length', length]),
++    onStreamingToolUses: reduce => {
++      state.toolUses = reduce(state.toolUses)
++      calls.push(['toolUses', state.toolUses])
++    },
++    onStreamingText: reduce => {
++      state.text = reduce(state.text)
++      calls.push(['text', state.text])
++    },
++    onCompactEvent: event => calls.push(['compact', event]),
++    onResponseLength: event => calls.push(['responseLength', event]),
++    displayTransform: {
++      begin: messageId => calls.push(['begin', messageId]),
++      delta: text => calls.push(['delta', text]),
++      finalize: () => calls.push(['finalize', null]),
++      entryLanded: message => calls.push(['entryLanded', message]),
++    },
++    authoringProgressSurface: {
++      onToolUseStart: (index, toolName) => calls.push(['toolUseStart', [index, toolName]]),
++      onInputJsonDelta: (index, partialJson) => calls.push(['inputJsonDelta', [index, partialJson]]),
++      onToolUseStop: index => calls.push(['toolUseStop', index]),
++      resetAuthoringProgress: () => calls.push(['resetAuthoring', null]),
++    },
++  }
++  const names = () => calls.map(([name]) => name)
++  const metrics = () => calls.filter(([name]) => name === 'metrics').map(([, payload]) => payload as ApiMetricsEvent)
++  return { options, calls, state, names, metrics }
++}
++
++function streamEvent(event: Record<string, unknown>, ttftMs?: number): StreamItem {
++  return { type: 'stream_event', event: event as { type: string }, ...(ttftMs === undefined ? {} : { ttftMs }) }
++}
++
++function toolUseBlock(id: string, name: string | number = 'Bash') {
++  return { type: 'tool_use', id, name, input: {} }
++}
++
++function toolUseStart(index: number, block: Record<string, unknown>): StreamItem {
++  return streamEvent({ type: 'content_block_start', index, content_block: block })
++}
++
++describe('handleMessageFromStream — items que no son eventos del stream', () => {
++  test('stream_request_start pone el spinner en requesting y nada mas', () => {
++    const r = recorder()
++    handleMessageFromStream({ type: 'stream_request_start' }, r.options)
++    expect(r.calls).toEqual([['mode', 'requesting']])
++  })
++
++  test('response_length va integro a onResponseLength', () => {
++    const r = recorder()
++    const event = { type: 'response_length', op: 'add', delta: 12 } as const
++    handleMessageFromStream(event, r.options)
++    expect(r.calls).toEqual([['responseLength', event]])
++  })
++
++  test('un evento de compactacion va integro a onCompactEvent', () => {
++    const r = recorder()
++    const event = { type: 'stream_mode', mode: 'requesting' } as const
++    handleMessageFromStream(event, r.options)
++    expect(r.calls).toEqual([['compact', event]])
++  })
++
++  test('un ping no toca ningun callback', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'ping' }), r.options)
++    expect(r.calls).toEqual([])
++  })
++
++  test('sin opciones declaradas no falla', () => {
++    expect(() => handleMessageFromStream(streamEvent({ type: 'message_stop' }), {})).not.toThrow()
++  })
++})
++
++describe('handleMessageFromStream — un mensaje completo no se entrega desde aqui', () => {
++  test('isStreamItem separa los cuatro items del stream de los mensajes', () => {
++    expect(isStreamItem({ type: 'stream_request_start' })).toBe(true)
++    expect(isStreamItem(streamEvent({ type: 'ping' }))).toBe(true)
++    expect(isStreamItem({ type: 'response_length', op: 'reset' })).toBe(true)
++    expect(isStreamItem({ type: 'stream_mode', mode: 'thinking' })).toBe(true)
++    expect(isStreamItem({ type: 'assistant' })).toBe(false)
++    expect(isStreamItem({ type: 'tombstone' })).toBe(false)
++    expect(isStreamItem({ type: 'tool_use_summary' })).toBe(false)
++  })
++
++  test('el contrato no tiene onMessage ni onTombstone', () => {
++    const options: StreamHandlerOptions = {}
++    expect('onMessage' in options).toBe(false)
++    expect(Object.keys(recorder().options)).not.toContain('onMessage')
++    expect(Object.keys(recorder().options)).not.toContain('onTombstone')
++  })
++})
++
++describe('handleMessageFromStream — message_start', () => {
++  test('con ttftMs emite la metrica start con el id del mensaje', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'message_start', message: { id: 'msg_1' } }, 250), r.options)
++    expect(r.metrics()).toEqual([{ type: 'start', ttftMs: 250, messageId: 'msg_1' }])
++  })
++
++  test('sin ttftMs no emite la metrica start', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'message_start', message: { id: 'msg_1' } }), r.options)
++    expect(r.metrics()).toEqual([])
++  })
++
++  test('abre el displayTransform, reinicia la superficie de autoria y pasa a responding', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'message_start', message: { id: 'msg_1' } }), r.options)
++    expect(r.calls).toContainEqual(['begin', 'msg_1'])
++    expect(r.calls).toContainEqual(['resetAuthoring', null])
++    expect(r.calls.at(-1)).toEqual(['mode', 'responding'])
++  })
++
++  test('vacia los tool uses y el texto en curso conservando la identidad cuando ya estaban vacios', () => {
++    const emptyToolUses: StreamingToolUse[] = []
++    const r = recorder({ toolUses: emptyToolUses, text: null })
++    handleMessageFromStream(streamEvent({ type: 'message_start', message: { id: 'msg_1' } }), r.options)
++    expect(r.state.toolUses).toBe(emptyToolUses)
++    expect(r.state.text).toBeNull()
++
++    const full = recorder({ toolUses: [{ index: 0, contentBlock: toolUseBlock('t1') as never }], text: 'hola' })
++    handleMessageFromStream(streamEvent({ type: 'message_start', message: { id: 'msg_1' } }), full.options)
++    expect(full.state.toolUses).toEqual([])
++    expect(full.state.text).toBeNull()
++  })
++})
++
++describe('handleMessageFromStream — content_block_start', () => {
++  test('emite la metrica content_block_start y retira el texto en curso', () => {
++    const r = recorder({ text: 'parcial' })
++    handleMessageFromStream(streamEvent({ type: 'content_block_start', index: 0, content_block: { type: 'text' } }), r.options)
++    expect(r.metrics()).toEqual([{ type: 'content_block_start' }])
++    expect(r.state.text).toBeNull()
++    expect(r.calls.at(-1)).toEqual(['mode', 'responding'])
++  })
++
++  test('thinking y redacted_thinking ponen el spinner en thinking', () => {
++    for (const type of ['thinking', 'redacted_thinking']) {
++      const r = recorder()
++      handleMessageFromStream(streamEvent({ type: 'content_block_start', index: 0, content_block: { type } }), r.options)
++      expect(r.calls.at(-1)).toEqual(['mode', 'thinking'])
++    }
++  })
++
++  test('un bloque de herramienta del servidor pasa a tool-input; fallback no mueve el spinner', () => {
++    const server = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_start', index: 0, content_block: { type: 'web_search_tool_result' } }), server.options)
++    expect(server.calls.at(-1)).toEqual(['mode', 'tool-input'])
++
++    const fallback = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_start', index: 0, content_block: { type: 'fallback' } }), fallback.options)
++    expect(fallback.names()).not.toContain('mode')
++  })
++
++  test('tool_use: tool-input, se anade {index, contentBlock} sin JSON parcial y arranca la autoria', () => {
++    const r = recorder()
++    const block = toolUseBlock('t1', 'Read')
++    handleMessageFromStream(toolUseStart(2, block), r.options)
++    expect(r.calls).toContainEqual(['mode', 'tool-input'])
++    expect(r.state.toolUses).toEqual([{ index: 2, contentBlock: block }])
++    expect(Object.keys(r.state.toolUses[0]!)).toEqual(['index', 'contentBlock'])
++    expect(r.calls).toContainEqual(['toolUseStart', [2, 'Read']])
++  })
++
++  test('tool_use con el mismo indice sustituye en su posicion en vez de anadir', () => {
++    const first = toolUseBlock('t1')
++    const other = toolUseBlock('t2')
++    const r = recorder({ toolUses: [{ index: 0, contentBlock: first as never }, { index: 1, contentBlock: other as never }] })
++    const replacement = toolUseBlock('t1b')
++    handleMessageFromStream(toolUseStart(0, replacement), r.options)
++    expect(r.state.toolUses.map(toolUse => toolUse.contentBlock)).toEqual([replacement, other])
++  })
++
++  test('al tope de tool uses no se anade y la lista queda intacta', () => {
++    const atCap: StreamingToolUse[] = Array.from({ length: MAX_STREAMING_TOOL_USES }, (_, index) => ({
++      index,
++      contentBlock: toolUseBlock(`t${index}`) as never,
++    }))
++    const r = recorder({ toolUses: atCap })
++    handleMessageFromStream(toolUseStart(MAX_STREAMING_TOOL_USES, toolUseBlock('extra')), r.options)
++    expect(r.state.toolUses).toBe(atCap)
++    expect(r.state.toolUses).toHaveLength(MAX_STREAMING_TOOL_USES)
++  })
++
++  test('un bloque cuyo JSON supera el tope se descarta sin tocar la lista ni la autoria', () => {
++    const r = recorder()
++    const oversized = { ...toolUseBlock('t1'), input: { text: 'x'.repeat(MAX_TOOL_USE_BLOCK_JSON_CHARS) } }
++    handleMessageFromStream(toolUseStart(0, oversized), r.options)
++    expect(r.names()).not.toContain('toolUses')
++    expect(r.names()).not.toContain('toolUseStart')
++    expect(r.calls).toContainEqual(['mode', 'tool-input'])
++  })
++
++  test('un tool_use sin nombre de cadena se descarta', () => {
++    const r = recorder()
++    handleMessageFromStream(toolUseStart(0, toolUseBlock('t1', 7)), r.options)
++    expect(r.names()).not.toContain('toolUses')
++  })
++})
++
++describe('handleMessageFromStream — content_block_delta', () => {
++  test('text_delta: longitud numerica, texto acumulado y displayTransform.delta', () => {
++    const r = recorder({ text: 'ho' })
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'la' } }), r.options)
++    expect(r.calls).toContainEqual(['length', 2])
++    expect(r.state.text).toBe('hola')
++    expect(r.calls).toContainEqual(['delta', 'la'])
++  })
++
++  test('text_delta recorta el delta al tope de texto y no crece mas alla', () => {
++    const almostFull = 'a'.repeat(MAX_STREAMING_TEXT_CHARS - 3)
++    const r = recorder({ text: almostFull })
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'bcdefg' } }), r.options)
++    expect(r.state.text).toHaveLength(MAX_STREAMING_TEXT_CHARS)
++    expect(r.state.text!.endsWith('bcd')).toBe(true)
++
++    const full = recorder({ text: 'a'.repeat(MAX_STREAMING_TEXT_CHARS) })
++    const before = full.state.text
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'zzz' } }), full.options)
++    expect(full.state.text).toBe(before)
++    expect(full.calls).toContainEqual(['length', 3])
++  })
++
++  test('input_json_delta: longitud numerica y JSON parcial a la autoria, no a los tool uses', () => {
++    const r = recorder({ toolUses: [{ index: 1, contentBlock: toolUseBlock('t1') as never }] })
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"a"' } }), r.options)
++    expect(r.calls).toEqual([['length', 4], ['inputJsonDelta', [1, '{"a"']]])
++  })
++
++  test('thinking_delta con estimated_tokens lo reporta tal cual', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'thinking_delta', estimated_tokens: 9 } }), r.options)
++    expect(r.calls).toEqual([['metrics', { type: 'thinking_progress', estimatedTokensDelta: 9 }]])
++  })
++
++  test('thinking_delta con texto estima ceil(chars/4) y no cuenta para la longitud', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'thinking_delta', thinking: 'abcde' } }), r.options)
++    expect(r.calls).toEqual([['metrics', { type: 'thinking_progress', estimatedTokensDelta: 2 }]])
++
++    const empty = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'thinking_delta', thinking: '' } }), empty.options)
++    expect(empty.calls).toEqual([])
++  })
++
++  test('signature_delta reporta round(chars * 0.75) como thinking_signature', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'signature_delta', signature: 'x'.repeat(10) } }), r.options)
++    expect(r.calls).toEqual([['metrics', { type: 'thinking_signature', chars: 8 }]])
++  })
++
++  test('un delta desconocido no toca nada', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_delta', index: 0, delta: { type: 'citations_delta' } }), r.options)
++    expect(r.calls).toEqual([])
++  })
++})
++
++describe('handleMessageFromStream — cierre de bloque y de mensaje', () => {
++  test('content_block_stop cierra el bloque en la autoria', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'content_block_stop', index: 3 }), r.options)
++    expect(r.calls).toEqual([['toolUseStop', 3]])
++  })
++
++  test('message_delta con usage emite end con los tokens de salida; sin usage, solo responding', () => {
++    const withUsage = recorder()
++    handleMessageFromStream(streamEvent({ type: 'message_delta', usage: { output_tokens: 41 } }), withUsage.options)
++    expect(withUsage.calls).toEqual([['mode', 'responding'], ['metrics', { type: 'end', outputTokens: 41 }]])
++
++    const without = recorder()
++    handleMessageFromStream(streamEvent({ type: 'message_delta' }), without.options, { isSubagent: true })
++    expect(without.calls).toEqual([['mode', 'responding']])
++  })
++
++  test('message_stop finaliza el displayTransform, pasa a tool-use, vacia los tool uses y reinicia la autoria', () => {
++    const r = recorder({ toolUses: [{ index: 0, contentBlock: toolUseBlock('t1') as never }] })
++    handleMessageFromStream(streamEvent({ type: 'message_stop' }), r.options)
++    expect(r.names()).toEqual(['finalize', 'mode', 'toolUses', 'resetAuthoring'])
++    expect(r.calls[1]).toEqual(['mode', 'tool-use'])
++    expect(r.state.toolUses).toEqual([])
++  })
++
++  test('un evento desconocido deja el spinner en responding', () => {
++    const r = recorder()
++    handleMessageFromStream(streamEvent({ type: 'something_new' }), r.options)
++    expect(r.calls).toEqual([['mode', 'responding']])
++  })
++})
+diff --git a/src/packages/agent/hooks/execAgentHook.ts b/src/packages/agent/hooks/execAgentHook.ts
+index 8486c73f7..a3deb869b 100644
+--- a/src/packages/agent/hooks/execAgentHook.ts
++++ b/src/packages/agent/hooks/execAgentHook.ts
+@@ -8,20 +8,14 @@ import { type Tool, toolMatchesName } from '@thyrox/tool-registry/Tool.js'
+ import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
+ import { ALL_AGENT_DISALLOWED_TOOLS } from '@thyrox/tool-registry/runtime'
+ import { asAgentId } from '../idTypes'
+-import type {
+-  Message,
+-  RequestStartEvent,
+-  StreamEvent,
+-  TombstoneMessage,
+-  ToolUseSummaryMessage,
+-} from '../messageShapes'
++import type { Message } from '../messageShapes'
+ import { createAbortController } from '../abortController.js'
+ import { createAttachmentMessage } from '../attachments.js'
+ import { createCombinedAbortSignal } from '../combinedAbortSignal.js'
+ import { logForDebugging } from '@thyrox/local-observability/debug.js'
+ import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+ import type { HookResult } from '../hooks.js'
+-import { createUserMessage, handleMessageFromStream } from '../messages.js'
++import { createUserMessage, handleMessageFromStream, isStreamItem, type QueryEvent } from '../messages.js'
+ import { getSmallFastModel } from '@thyrox/provider/model.js'
+ import { hasPermissionsToUseTool } from '@thyrox/permission/permissions'
+ import { getAgentTranscriptPath, getTranscriptPath } from '@thyrox/storage/sessionStorage.js'
+@@ -37,20 +31,6 @@ import {
+ import { clearSessionHooks } from './sessionHooks.js'
+ import { PRODUCT_NAME } from '@thyrox/config/product'
+ 
+-/**
+- * El item que entrega `query()` viaja tipado con los alias sueltos de
+- * `internalTypes.ts` (frontera V7 §8), pero `handleMessageFromStream` exige
+- * la forma canónica de `messageShapes.ts`. Los dos describen el mismo objeto
+- * en tiempo de ejecución; esta unión declara esa forma canónica para el
+- * mensaje que entra a esa llamada.
+- */
+-type StreamedAgentItem =
+-  | Message
+-  | TombstoneMessage
+-  | StreamEvent
+-  | RequestStartEvent
+-  | ToolUseSummaryMessage
+-
+ /**
+  * Execute an agent-based hook using a multi-turn LLM query
+  */
+@@ -194,23 +174,18 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
+         toolUseContext: agentToolUseContext,
+         querySource: 'hook_agent',
+       })) {
+-        // Process stream events to update response length in the spinner
+-        handleMessageFromStream(
+-          message as StreamedAgentItem,
+-          () => {}, // onMessage - we handle messages below
+-          newContent =>
+-            toolUseContext.setResponseLength(
+-              length => length + newContent.length,
+-            ),
+-          toolUseContext.setStreamMode ?? (() => {}),
+-          () => {}, // onStreamingToolUses - not needed for hooks
+-        )
+-
+-        // Skip streaming events for further processing
+-        if (
+-          message.type === 'stream_event' ||
+-          message.type === 'stream_request_start'
+-        ) {
++        // El item que entrega `query()` viaja tipado con los alias sueltos de
++        // `internalTypes.ts` (frontera V7 §8); `QueryEvent` es la misma forma
++        // en su version canonica de `messages.ts`. Un item del stream solo
++        // mueve el largo de la respuesta y el spinner; los mensajes completos
++        // se procesan abajo.
++        const queryEvent = message as QueryEvent
++        if (isStreamItem(queryEvent)) {
++          handleMessageFromStream(queryEvent, {
++            onUpdateLength: charactersStreamed =>
++              toolUseContext.setResponseLength(length => length + charactersStreamed),
++            onSetStreamMode: toolUseContext.setStreamMode,
++          })
+           continue
+         }
+ 
+diff --git a/src/packages/agent/messages.ts b/src/packages/agent/messages.ts
+index 77d61a004..c48c0937c 100644
+--- a/src/packages/agent/messages.ts
++++ b/src/packages/agent/messages.ts
+@@ -2227,13 +2227,14 @@ export function reorderMessagesInUI<M>(messages: M[], syntheticStreamingToolUseM
+ }
+ 
+ /**
+- * Un tool use que el modelo esta emitiendo: su bloque de apertura y el JSON de
+- * entrada acumulado hasta ahora, todavia sin parsear.
++ * Un tool use que el modelo esta emitiendo: el indice de su bloque y el bloque
++ * de apertura. El JSON parcial de su entrada no se acumula aqui: viaja a la
++ * superficie de autoria (`AuthoringProgressSurface.onInputJsonDelta`), asi que
++ * la lista cambia al abrir un bloque y no en cada delta.
+  */
+ export type StreamingToolUse = {
+   index: number
+   contentBlock: BetaToolUseBlock
+-  unparsedToolInput: string
+ }
+ 
+ /** El bloque de pensamiento visible mientras se emite y despues de cerrarse. */
+@@ -2243,15 +2244,98 @@ export type StreamingThinking = {
+   streamingEndedAt?: number
+ }
+ 
+-type StreamedItem =
+-  | Message
+-  | TombstoneMessage
+-  | StreamEvent
+-  | RequestStartEvent
+-  | ToolUseSummaryMessage
++/** Cambio del largo de la respuesta que mide el spinner: reinicio o suma. */
++export type ResponseLengthEvent =
++  | { type: 'response_length'; op: 'reset' }
++  | { type: 'response_length'; op: 'add'; delta: number }
++
++/** Los eventos que la compactacion emite por el mismo canal que el stream. */
++export type CompactEvent = {
++  type: 'compact_progress' | 'sdk_status' | 'stream_mode'
++  [key: string]: unknown
++}
++
++const COMPACT_EVENT_TYPES: ReadonlySet<string> = new Set(['compact_progress', 'sdk_status', 'stream_mode'])
++
++/** Las metricas del API, una por momento del stream. */
++export type ApiMetricsEvent =
++  | { type: 'start'; ttftMs: number; messageId: string }
++  | { type: 'content_block_start' }
++  | { type: 'thinking_progress'; estimatedTokensDelta: number }
++  | { type: 'thinking_signature'; chars: number }
++  | { type: 'end'; outputTokens: number }
++
++/**
++ * La transformacion de lo que se muestra: abre con el id del mensaje, recibe
++ * cada delta de texto, cierra al parar y ve el mensaje completo al aterrizar.
++ */
++export type DisplayTransform = {
++  begin: (messageId: string) => void
++  delta: (text: string) => void
++  finalize: () => void
++  entryLanded: (message: AssistantMessage) => void
++}
++
++/**
++ * La superficie de progreso de autoria (L0): recibe cada tool use en curso, su
++ * JSON parcial y su cierre, y se reinicia por mensaje.
++ */
++export type AuthoringProgressSurface = {
++  onToolUseStart: (index: number, toolName: string) => void
++  onInputJsonDelta: (index: number, partialJson: string) => void
++  onToolUseStop: (index: number) => void
++  resetAuthoringProgress: () => void
++}
++
++/** Lo que el manejador del stream sabe llamar; todo es opcional. */
++export type StreamHandlerOptions = {
++  onSetStreamMode?: (mode: SpinnerMode) => void
++  onApiMetrics?: (event: ApiMetricsEvent) => void
++  onUpdateLength?: (charactersStreamed: number) => void
++  onStreamingToolUses?: (reduce: (current: StreamingToolUse[]) => StreamingToolUse[]) => void
++  onStreamingText?: (reduce: (current: string | null) => string | null) => void
++  onCompactEvent?: (event: CompactEvent) => void
++  onResponseLength?: (event: ResponseLengthEvent) => void
++  displayTransform?: DisplayTransform
++  authoringProgressSurface?: AuthoringProgressSurface
++}
++
++/** Quien corre el stream, para la telemetria que lo distingue. */
++export type StreamHandlerContext = {
++  isSubagent?: boolean
++}
++
++/** Los items del bucle que son del stream y no un mensaje completo. */
++export type StreamItem = RequestStartEvent | StreamEvent | ResponseLengthEvent | CompactEvent
++
++/** Todo lo que el bucle de consulta entrega: mensajes completos e items del stream. */
++export type QueryEvent = Message | TombstoneMessage | ToolUseSummaryMessage | StreamItem
++
++const STREAM_ITEM_TYPES: ReadonlySet<string> = new Set([
++  'stream_request_start',
++  'stream_event',
++  'response_length',
++  ...COMPACT_EVENT_TYPES,
++])
++
++/** Si el item va al manejador del stream; un mensaje completo lo entrega quien llama. */
++export function isStreamItem(item: { type: string }): item is StreamItem {
++  return STREAM_ITEM_TYPES.has(item.type)
++}
++
++/** Tope del JSON de un bloque `tool_use` que se retiene en curso. */
++export const MAX_TOOL_USE_BLOCK_JSON_CHARS = 32768
++/** Tope de tool uses en curso que se retienen. */
++export const MAX_STREAMING_TOOL_USES = 256
++/** Tope del texto parcial que se acumula para mostrarlo. */
++export const MAX_STREAMING_TEXT_CHARS = 1_000_000
++/** Caracteres por token en la estimacion del spinner. */
++export const CHARS_PER_ESTIMATED_TOKEN = 4
++/** Fraccion de los caracteres de una firma que cuenta como pensamiento. */
++const SIGNATURE_CHARS_RATIO = 0.75
+ 
+ /** Los bloques de herramienta del servidor: el spinner pasa a `tool-input`. */
+-const SERVER_TOOL_BLOCKS = new Set([
++const SERVER_TOOL_BLOCKS: ReadonlySet<string> = new Set([
+   'server_tool_use',
+   'web_search_tool_result',
+   'code_execution_tool_result',
+@@ -2262,154 +2346,253 @@ const SERVER_TOOL_BLOCKS = new Set([
+   'bash_code_execution_tool_result',
+   'text_editor_code_execution_tool_result',
+   'tool_search_tool_result',
++  'advisor_tool_result',
+   'compaction',
+ ])
+ 
+-type StreamEventPayload = {
++type StreamContentBlock = { type: string; [key: string]: unknown }
++
++type StreamDelta = {
+   type: string
+-  index?: number
+-  content_block?: { type: string; [key: string]: unknown }
+-  delta?: { type: string; text?: string; partial_json?: string; thinking?: string }
++  text?: string
++  partial_json?: string
++  thinking?: string
++  estimated_tokens?: number
++  signature?: string
+ }
+ 
+-type StreamCallbacks = {
+-  onMessage: (message: Message) => void
+-  onUpdateLength: (newContent: string) => void
+-  onSetStreamMode: (mode: SpinnerMode) => void
+-  onStreamingToolUses: (f: (current: StreamingToolUse[]) => StreamingToolUse[]) => void
+-  onTombstone?: (message: Message) => void
+-  onStreamingThinking?: (f: (current: StreamingThinking | null) => StreamingThinking | null) => void
+-  onApiMetrics?: (metrics: { ttftMs: number }) => void
+-  onStreamingText?: (f: (current: string | null) => string | null) => void
++type StreamEventPayload = {
++  type: string
++  index?: number
++  message?: { id: string }
++  usage?: { output_tokens?: number }
++  content_block?: StreamContentBlock
++  delta?: StreamDelta
+ }
+ 
+ /**
+- * Enruta cada elemento que llega del stream a la parte de la interfaz que lo
+- * pinta: los mensajes completos se entregan, los eventos de stream mueven el
+- * modo del spinner, el largo de la respuesta, el texto parcial y los tool uses
+- * en curso.
++ * Enruta cada item del stream a la parte de la interfaz que lo pinta: el modo
++ * del spinner, el largo de la respuesta, el texto parcial, los tool uses en
++ * curso, las metricas del API y las superficies de display y de autoria.
+  *
+- * Contrato de `ccnmt: packages/agent/messages.ts:3008-3179` (v2.1.88), que es
+- * el que llaman los consumidores de este arbol con argumentos posicionales. En
+- * 2.1.281 la funcion (`bcr`) solo recibe eventos de stream y trae su propio
+- * contrato; la migracion es una tarea aparte.
++ * Solo recibe items del stream; un mensaje completo lo entrega quien llama
++ * (`isStreamItem` separa los dos). Contrato de `hwr` en el binario 2.1.283
++ * (`chunk-csayct82.js`), con las opciones por objeto y el contexto aparte.
+  */
+ export function handleMessageFromStream(
+-  item: StreamedItem,
+-  onMessage: StreamCallbacks['onMessage'],
+-  onUpdateLength: StreamCallbacks['onUpdateLength'],
+-  onSetStreamMode: StreamCallbacks['onSetStreamMode'],
+-  onStreamingToolUses: StreamCallbacks['onStreamingToolUses'],
+-  onTombstone?: StreamCallbacks['onTombstone'],
+-  onStreamingThinking?: StreamCallbacks['onStreamingThinking'],
+-  onApiMetrics?: StreamCallbacks['onApiMetrics'],
+-  onStreamingText?: StreamCallbacks['onStreamingText'],
++  item: StreamItem,
++  options: StreamHandlerOptions,
++  context?: StreamHandlerContext,
+ ): void {
+-  const callbacks: StreamCallbacks = {
+-    onMessage, onUpdateLength, onSetStreamMode, onStreamingToolUses,
+-    onTombstone, onStreamingThinking, onApiMetrics, onStreamingText,
+-  }
+-  if (item.type === 'stream_request_start') {
+-    onSetStreamMode('requesting')
++  if (isCompactEvent(item)) {
++    options.onCompactEvent?.(item)
+     return
+   }
+-  if (item.type === 'stream_event') {
+-    handleStreamEvent(item as { event: StreamEventPayload; ttftMs?: number }, callbacks)
++  if (item.type === 'response_length') {
++    options.onResponseLength?.(item)
+     return
+   }
+-  deliverMessage(item, callbacks)
+-}
+-
+-/** Un mensaje completo: se entrega, salvo la lapida (retira) y el resumen de SDK. */
+-function deliverMessage(
+-  item: Message | TombstoneMessage | ToolUseSummaryMessage,
+-  cb: StreamCallbacks,
+-): void {
+-  if (item.type === 'tombstone') {
+-    cb.onTombstone?.(item.message)
++  if (item.type === 'stream_request_start') {
++    options.onSetStreamMode?.('requesting')
+     return
+   }
+-  if (item.type === 'tool_use_summary') return
+-  const message = item as Message
+-  if (message.type === 'assistant') {
+-    const content = message.message.content
+-    const thinking = Array.isArray(content)
+-      ? (content as readonly unknown[]).find((block): block is { type: 'thinking'; thinking: string } =>
+-          typeof block === 'object' && block !== null && (block as { type?: unknown }).type === 'thinking')
+-      : undefined
+-    if (thinking) {
+-      cb.onStreamingThinking?.(() => ({ thinking: thinking.thinking, isStreaming: false, streamingEndedAt: Date.now() }))
+-    }
+-  }
+-  // El texto parcial se retira en el mismo lote en que llega el mensaje final,
+-  // para que la vista pase de uno a otro sin hueco ni duplicado.
+-  cb.onStreamingText?.(() => null)
+-  cb.onMessage(message)
+-}
+-
+-function handleStreamEvent(item: { event: StreamEventPayload; ttftMs?: number }, cb: StreamCallbacks): void {
+-  const event = item.event
+-  if (event.type === 'message_start' && item.ttftMs != null) cb.onApiMetrics?.({ ttftMs: item.ttftMs })
++  const event = item.event as StreamEventPayload
++  if (isPingEvent(event)) return
+   switch (event.type) {
++    case 'message_start':
++      startMessage(event, item.ttftMs, options)
++      options.onSetStreamMode?.('responding')
++      return
+     case 'message_stop':
+-      cb.onSetStreamMode('tool-use')
+-      cb.onStreamingToolUses(() => [])
++      stopMessage(options)
+       return
+     case 'content_block_start':
+-      startContentBlock(event, cb)
++      startContentBlock(event, options)
+       return
+     case 'content_block_delta':
+-      applyContentDelta(event, cb)
++      applyContentDelta(event, options)
+       return
+     case 'content_block_stop':
++      options.authoringProgressSurface?.onToolUseStop(event.index ?? 0)
++      return
++    case 'message_delta':
++      reportMessageDelta(event, options, context)
+       return
+     default:
+-      // message_delta y cualquier evento desconocido: el modelo sigue respondiendo.
+-      cb.onSetStreamMode('responding')
++      // Cualquier evento desconocido: el modelo sigue respondiendo.
++      options.onSetStreamMode?.('responding')
+   }
+ }
+ 
+-function startContentBlock(event: StreamEventPayload, cb: StreamCallbacks): void {
+-  cb.onStreamingText?.(() => null)
++function isCompactEvent(item: StreamItem): item is CompactEvent {
++  return COMPACT_EVENT_TYPES.has(item.type)
++}
++
++function isPingEvent(event: StreamEventPayload): boolean {
++  return event.type === 'ping'
++}
++
++/**
++ * Arranca un mensaje: la metrica de primer token, el estado en curso vacio
++ * (conservando la identidad si ya lo estaba) y la apertura del display.
++ */
++function startMessage(event: StreamEventPayload, ttftMs: number | undefined, options: StreamHandlerOptions): void {
++  const messageId = event.message?.id ?? ''
++  if (ttftMs != null) options.onApiMetrics?.({ type: 'start', ttftMs, messageId })
++  options.onStreamingToolUses?.(current => (current.length > 0 ? [] : current))
++  options.authoringProgressSurface?.resetAuthoringProgress()
++  options.onStreamingText?.(current => (current !== null ? null : current))
++  options.displayTransform?.begin(messageId)
++}
++
++function stopMessage(options: StreamHandlerOptions): void {
++  options.displayTransform?.finalize()
++  options.onSetStreamMode?.('tool-use')
++  options.onStreamingToolUses?.(() => [])
++  options.authoringProgressSurface?.resetAuthoringProgress()
++}
++
++function startContentBlock(event: StreamEventPayload, options: StreamHandlerOptions): void {
++  options.onApiMetrics?.({ type: 'content_block_start' })
++  options.onStreamingText?.(() => null)
+   const block = event.content_block
+   if (!block) return
+   if (feature('CONNECTOR_TEXT') && isConnectorTextBlock(block)) {
+-    cb.onSetStreamMode('responding')
++    options.onSetStreamMode?.('responding')
+     return
+   }
+-  if (block.type === 'thinking' || block.type === 'redacted_thinking') {
+-    cb.onSetStreamMode('thinking')
+-  } else if (block.type === 'text') {
+-    cb.onSetStreamMode('responding')
+-  } else if (block.type === 'tool_use') {
+-    cb.onSetStreamMode('tool-input')
+-    const index = event.index ?? 0
+-    const contentBlock = block as unknown as BetaToolUseBlock
+-    cb.onStreamingToolUses(current => [...current, { index, contentBlock, unparsedToolInput: '' }])
+-  } else if (SERVER_TOOL_BLOCKS.has(block.type)) {
+-    cb.onSetStreamMode('tool-input')
++  if (isThinkingParam(block)) {
++    options.onSetStreamMode?.('thinking')
++    return
++  }
++  if (block.type === 'text') {
++    options.onSetStreamMode?.('responding')
++    return
+   }
++  if (block.type === 'tool_use') {
++    options.onSetStreamMode?.('tool-input')
++    startToolUse(event.index ?? 0, block, options)
++    return
++  }
++  if (SERVER_TOOL_BLOCKS.has(block.type)) options.onSetStreamMode?.('tool-input')
++}
++
++/** Retiene el tool use en curso si tiene nombre y cabe en el tope; si no, se descarta. */
++function startToolUse(index: number, block: StreamContentBlock, options: StreamHandlerOptions): void {
++  const toolName = block.name
++  if (typeof toolName !== 'string') return
++  if (!fitsToolUseBlockCap(block)) return
++  const contentBlock = block as unknown as BetaToolUseBlock
++  options.onStreamingToolUses?.(current => withStreamingToolUse(current, { index, contentBlock }))
++  options.authoringProgressSurface?.onToolUseStart(index, toolName)
++}
++
++function fitsToolUseBlockCap(block: StreamContentBlock): boolean {
++  try {
++    return JSON.stringify(block).length <= MAX_TOOL_USE_BLOCK_JSON_CHARS
++  } catch {
++    return false
++  }
++}
++
++/** Sustituye por indice si ya estaba; anade si hay sitio; al tope, la lista queda igual. */
++function withStreamingToolUse(current: StreamingToolUse[], toolUse: StreamingToolUse): StreamingToolUse[] {
++  const position = current.findIndex(candidate => candidate.index === toolUse.index)
++  if (position !== -1) return current.with(position, toolUse)
++  const hasRoom = current.length < MAX_STREAMING_TOOL_USES
++  return hasRoom ? [...current, toolUse] : current
+ }
+ 
+-function applyContentDelta(event: StreamEventPayload, cb: StreamCallbacks): void {
++function applyContentDelta(event: StreamEventPayload, options: StreamHandlerOptions): void {
+   const delta = event.delta
+   if (!delta) return
+-  if (delta.type === 'text_delta') {
+-    const text = delta.text ?? ''
+-    cb.onUpdateLength(text)
+-    cb.onStreamingText?.(current => (current ?? '') + text)
+-  } else if (delta.type === 'input_json_delta') {
+-    const json = delta.partial_json ?? ''
+-    cb.onUpdateLength(json)
+-    cb.onStreamingToolUses(current => {
+-      const target = current.find(toolUse => toolUse.index === event.index)
+-      if (!target) return current
+-      return [...current.filter(toolUse => toolUse !== target), { ...target, unparsedToolInput: target.unparsedToolInput + json }]
+-    })
+-  } else if (delta.type === 'thinking_delta') {
+-    cb.onUpdateLength(delta.thinking ?? '')
++  switch (delta.type) {
++    case 'text_delta':
++      applyTextDelta(delta.text ?? '', options)
++      return
++    case 'input_json_delta':
++      applyInputJsonDelta(event.index ?? 0, delta.partial_json ?? '', options)
++      return
++    case 'thinking_delta':
++      reportThinkingProgress(delta, options)
++      return
++    case 'signature_delta':
++      options.onApiMetrics?.({ type: 'thinking_signature', chars: signatureCharsAsThinking(delta.signature ?? '') })
++      return
++    default:
++      return
++  }
++}
++
++function applyTextDelta(text: string, options: StreamHandlerOptions): void {
++  options.onUpdateLength?.(text.length)
++  options.onStreamingText?.(current => appendWithinTextCap(current, text))
++  options.displayTransform?.delta(text)
++}
++
++/** Al llegar al tope el texto en curso deja de crecer: se recorta el delta, no se descarta lo acumulado. */
++function appendWithinTextCap(current: string | null, text: string): string | null {
++  const currentLength = current?.length ?? 0
++  const isFull = currentLength >= MAX_STREAMING_TEXT_CHARS
++  if (isFull) return current
++  return (current ?? '') + text.slice(0, MAX_STREAMING_TEXT_CHARS - currentLength)
++}
++
++function applyInputJsonDelta(index: number, partialJson: string, options: StreamHandlerOptions): void {
++  options.onUpdateLength?.(partialJson.length)
++  options.authoringProgressSurface?.onInputJsonDelta(index, partialJson)
++}
++
++function reportThinkingProgress(delta: StreamDelta, options: StreamHandlerOptions): void {
++  const estimatedTokensDelta = thinkingTokensDelta(delta)
++  if (estimatedTokensDelta === null) return
++  options.onApiMetrics?.({ type: 'thinking_progress', estimatedTokensDelta })
++}
++
++/**
++ * La estimacion del servidor si viene; si no, la del texto emitido. `null`
++ * cuando no hay ninguna: un delta vacio no es progreso y no se reporta.
++ */
++function thinkingTokensDelta(delta: StreamDelta): number | null {
++  if (typeof delta.estimated_tokens === 'number') return delta.estimated_tokens
++  const thinking = delta.thinking
++  const hasThinkingText = typeof thinking === 'string' && thinking.length > 0
++  return hasThinkingText ? estimateTokensFromChars(thinking.length) : null
++}
++
++/** Tokens estimados de un conteo de caracteres: cuatro por token, redondeando arriba. */
++export function estimateTokensFromChars(charCount: number): number {
++  return Math.ceil(charCount / CHARS_PER_ESTIMATED_TOKEN)
++}
++
++/**
++ * El pensamiento que la vista conserva cuando un mensaje del asistente
++ * aterriza: el de su bloque `thinking`, ya cerrado. `null` si no trae ninguno,
++ * que es el caso normal y no un fallo.
++ */
++export function thinkingAfterLanding(message: Message): StreamingThinking | null {
++  if (message.type !== 'assistant') return null
++  const content = message.message.content
++  if (!Array.isArray(content)) return null
++  const blocks = content as readonly { type?: unknown; thinking?: unknown }[]
++  const block = blocks.find(candidate => candidate.type === 'thinking')
++  if (!block || typeof block.thinking !== 'string') return null
++  return { thinking: block.thinking, isStreaming: false, streamingEndedAt: Date.now() }
++}
++
++function signatureCharsAsThinking(signature: string): number {
++  return Math.round(signature.length * SIGNATURE_CHARS_RATIO)
++}
++
++/** El cierre del mensaje trae los tokens de salida; si faltan, se registra, no se inventa un cero. */
++function reportMessageDelta(event: StreamEventPayload, options: StreamHandlerOptions, context: StreamHandlerContext | undefined): void {
++  options.onSetStreamMode?.('responding')
++  const outputTokens = event.usage?.output_tokens
++  if (typeof outputTokens === 'number') {
++    options.onApiMetrics?.({ type: 'end', outputTokens })
++    return
+   }
+-  // signature_delta no es salida del modelo: no cuenta para el largo.
++  logEvent('tengu_message_delta_usage_missing', { is_subagent: context?.isSubagent === true })
+ }
+ 
+ /**
+diff --git a/src/packages/agent/tokens.ts b/src/packages/agent/tokens.ts
+index 9c746541d..12659fa76 100644
+--- a/src/packages/agent/tokens.ts
++++ b/src/packages/agent/tokens.ts
+@@ -175,12 +175,12 @@ export function doesMostRecentAssistantMessageExceed200k(
+  * This is used when subagent streaming events are filtered out and we
+  * need to count content from completed messages instead.
+  *
+- * Counts the same content that handleMessageFromStream would count via deltas:
+- * - text (text_delta)
+- * - thinking (thinking_delta)
+- * - redacted_thinking data
+- * - tool_use input (input_json_delta)
+- * Note: signature_delta is excluded from streaming counts (not model output).
++ * Cuenta el mismo contenido que `handleMessageFromStream` mide en el stream:
++ * - text (text_delta, por `onUpdateLength` en caracteres)
++ * - thinking (thinking_delta, por la metrica `thinking_progress` en tokens
++ *   estimados, que el consumidor convierte a caracteres)
++ * - redacted_thinking data (su firma llega como `thinking_signature`)
++ * - tool_use input (input_json_delta, por `onUpdateLength` en caracteres)
+  */
+ export function getAssistantMessageContentLength(
+   message: AssistantMessage,
+diff --git a/src/packages/repl/src/components/Messages.tsx b/src/packages/repl/src/components/Messages.tsx
+index 67c315ed3..0828c5750 100644
+--- a/src/packages/repl/src/components/Messages.tsx
++++ b/src/packages/repl/src/components/Messages.tsx
+@@ -503,8 +503,9 @@ const MessagesImpl = ({
+     return null
+   }, [normalizedMessages])
+ 
+-  // streamingToolUses updates on every input_json_delta while normalizedMessages
+-  // stays stable — precompute the Set so the filter is O(k) not O(n×k) per chunk.
++  // streamingToolUses cambia al abrir cada bloque tool_use y al cerrar el
++  // mensaje, mientras normalizedMessages queda estable — el Set precomputado
++  // deja el filtro en O(k) y no en O(n×k) por cambio.
+   const normalizedToolUseIDs = useMemo(
+     () => new Set(normalizedMessages.flatMap(getToolUseIDs)),
+     [normalizedMessages],
+@@ -1036,7 +1037,7 @@ function expandKey(msg: RenderableMessage): string {
+ // Custom comparator to prevent unnecessary re-renders during streaming.
+ // Default React.memo does shallow comparison which fails when:
+ // 1. onOpenRateLimitOptions callback is recreated (doesn't affect render output)
+-// 2. streamingToolUses array is recreated on every delta, but only contentBlock matters for rendering
++// 2. streamingToolUses se recrea al abrir cada bloque tool_use (ya no en cada delta: el JSON parcial no vive en el), y solo contentBlock importa para pintar
+ // 3. streamingThinking changes on every delta - we DO want to re-render for this
+ function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
+   if (a.size !== b.size) return false
+diff --git a/src/packages/repl/src/hooks/useRemoteSession.ts b/src/packages/repl/src/hooks/useRemoteSession.ts
+index 750012637..b79b0348a 100644
+--- a/src/packages/repl/src/hooks/useRemoteSession.ts
++++ b/src/packages/repl/src/hooks/useRemoteSession.ts
+@@ -316,15 +316,11 @@ export function useRemoteSession({
+         } else if (converted.type === 'stream_event') {
+           // Process streaming events to update UI in real-time
+           if (setStreamingToolUses && setStreamMode) {
+-            handleMessageFromStream(
+-              converted.event as AgentStreamEvent,
+-              message => setMessages(prev => [...prev, message]),
+-              () => {
+-                // No-op for response length - remote sessions don't track this
+-              },
+-              setStreamMode,
+-              setStreamingToolUses,
+-            )
++            // El largo de la respuesta no se mide en remoto: no se declara.
++            handleMessageFromStream(converted.event as AgentStreamEvent, {
++              onSetStreamMode: setStreamMode,
++              onStreamingToolUses: setStreamingToolUses,
++            })
+           } else {
+             logForDebugging(
+               `[useRemoteSession] Stream event received but streaming callbacks not provided`,
+diff --git a/src/packages/repl/src/screens/REPLView.tsx b/src/packages/repl/src/screens/REPLView.tsx
+index 19eb71db2..3e1dcb99e 100644
+--- a/src/packages/repl/src/screens/REPLView.tsx
++++ b/src/packages/repl/src/screens/REPLView.tsx
+@@ -266,6 +266,14 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flag
+ import {
+   textForResubmit,
+   handleMessageFromStream,
++  isStreamItem,
++  thinkingAfterLanding,
++  estimateTokensFromChars,
++  CHARS_PER_ESTIMATED_TOKEN,
++  type ApiMetricsEvent,
++  type QueryEvent,
++  type StreamHandlerOptions,
++  type StreamItem,
+   type StreamingToolUse,
+   type StreamingThinking,
+   isCompactBoundaryMessage,
+@@ -2669,114 +2677,166 @@ export function REPL({
+     onBackgroundQuery: handleBackgroundQuery,
+   });
+ 
+-  const onQueryEvent = useCallback(
+-    (event: Parameters<typeof handleMessageFromStream>[0]) => {
+-      handleMessageFromStream(
+-        event,
+-        newMessage => {
+-          if (isCompactBoundaryMessage(newMessage)) {
+-            // Fullscreen: keep pre-compact messages for scrollback. query.ts
+-            // slices at the boundary for API calls, Messages.tsx skips the
+-            // boundary filter in fullscreen, and useLogMessages treats this
+-            // as an incremental append (first uuid unchanged). Cap at one
+-            // compact-interval of scrollback — normalizeMessages/applyGrouping
+-            // are O(n) per render, so drop everything before the previous
+-            // boundary to keep n bounded across multi-day sessions.
+-            if (isFullscreenEnvEnabled()) {
+-              setMessages(old => [
+-                ...getMessagesAfterCompactBoundary(old, {
+-                  includeSnipped: true,
+-                }),
+-                newMessage,
+-              ]);
+-            } else {
+-              setMessages(() => [newMessage]);
+-            }
+-            // Bump conversationId so Messages.tsx row keys change and
+-            // stale memoized rows remount with post-compact content.
+-            setConversationId(randomUUID());
+-            // Compaction succeeded — clear the context-blocked flag so ticks resume
+-            if (feature('PROACTIVE') || feature('KAIROS')) {
+-              proactiveModule?.setContextBlocked(false);
+-            }
+-          } else if (
+-            newMessage.type === 'progress' &&
++  /**
++   * Un mensaje completo que el bucle entrega: la lapida retira, el resumen de
++   * SDK se ignora y el resto entra al historial. La frontera de compactacion
++   * reemplaza; el progreso efimero sustituye al anterior del mismo tool.
++   */
++  const deliverCompleteMessage = useCallback(
++    (item: Exclude<QueryEvent, StreamItem>) => {
++      if (item.type === 'tombstone') {
++        const tombstonedMessage = item.message;
++        setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage));
++        void removeTranscriptMessage(tombstonedMessage.uuid);
++        return;
++      }
++      if (item.type === 'tool_use_summary') return;
++      const newMessage = item;
++      const landedThinking = thinkingAfterLanding(newMessage);
++      if (landedThinking) setStreamingThinking(landedThinking);
++      // El texto parcial se retira en el mismo lote en que llega el mensaje
++      // final, para que la vista pase de uno a otro sin hueco ni duplicado.
++      onStreamingText(() => null);
++      if (isCompactBoundaryMessage(newMessage)) {
++        // Fullscreen: keep pre-compact messages for scrollback. query.ts
++        // slices at the boundary for API calls, Messages.tsx skips the
++        // boundary filter in fullscreen, and useLogMessages treats this
++        // as an incremental append (first uuid unchanged). Cap at one
++        // compact-interval of scrollback — normalizeMessages/applyGrouping
++        // are O(n) per render, so drop everything before the previous
++        // boundary to keep n bounded across multi-day sessions.
++        if (isFullscreenEnvEnabled()) {
++          setMessages(old => [
++            ...getMessagesAfterCompactBoundary(old, {
++              includeSnipped: true,
++            }),
++            newMessage,
++          ]);
++        } else {
++          setMessages(() => [newMessage]);
++        }
++        // Bump conversationId so Messages.tsx row keys change and
++        // stale memoized rows remount with post-compact content.
++        setConversationId(randomUUID());
++        // Compaction succeeded — clear the context-blocked flag so ticks resume
++        if (feature('PROACTIVE') || feature('KAIROS')) {
++          proactiveModule?.setContextBlocked(false);
++        }
++      } else if (
++        newMessage.type === 'progress' &&
++        typeof newMessage.data === 'object' &&
++        newMessage.data !== null &&
++        'type' in newMessage.data &&
++        isEphemeralToolProgress(newMessage.data.type)
++      ) {
++        // Replace the previous ephemeral progress tick for the same tool
++        // call instead of appending. Sleep/Bash emit a tick per second and
++        // only the last one is rendered; appending blows up the messages
++        // array (13k+ observed) and the transcript (120MB of sleep_progress
++        // lines). useLogMessages tracks length, so same-length replacement
++        // also skips the transcript write.
++        // agent_progress / hook_progress / skill_progress are NOT ephemeral
++        // — each carries distinct state the UI needs (e.g. subagent tool
++        // history). Replacing those leaves the AgentTool UI stuck at
++        // "Initializing…" because it renders the full progress trail.
++        setMessages(oldMessages => {
++          const last = oldMessages.at(-1);
++          if (
++            last?.type === 'progress' &&
++            last.parentToolUseID === newMessage.parentToolUseID &&
++            last.data &&
++            typeof last.data === 'object' &&
++            'type' in last.data &&
++            newMessage.data &&
+             typeof newMessage.data === 'object' &&
+-            newMessage.data !== null &&
+             'type' in newMessage.data &&
+-            isEphemeralToolProgress(newMessage.data.type)
++            last.data.type === newMessage.data.type
+           ) {
+-            // Replace the previous ephemeral progress tick for the same tool
+-            // call instead of appending. Sleep/Bash emit a tick per second and
+-            // only the last one is rendered; appending blows up the messages
+-            // array (13k+ observed) and the transcript (120MB of sleep_progress
+-            // lines). useLogMessages tracks length, so same-length replacement
+-            // also skips the transcript write.
+-            // agent_progress / hook_progress / skill_progress are NOT ephemeral
+-            // — each carries distinct state the UI needs (e.g. subagent tool
+-            // history). Replacing those leaves the AgentTool UI stuck at
+-            // "Initializing…" because it renders the full progress trail.
+-            setMessages(oldMessages => {
+-              const last = oldMessages.at(-1);
+-              if (
+-                last?.type === 'progress' &&
+-                last.parentToolUseID === newMessage.parentToolUseID &&
+-                last.data &&
+-                typeof last.data === 'object' &&
+-                'type' in last.data &&
+-                newMessage.data &&
+-                typeof newMessage.data === 'object' &&
+-                'type' in newMessage.data &&
+-                last.data.type === newMessage.data.type
+-              ) {
+-                const copy = oldMessages.slice();
+-                copy[copy.length - 1] = newMessage;
+-                return copy;
+-              }
+-              return [...oldMessages, newMessage];
+-            });
+-          } else {
+-            setMessages(oldMessages => [...oldMessages, newMessage]);
++            const copy = oldMessages.slice();
++            copy[copy.length - 1] = newMessage;
++            return copy;
+           }
+-          // Block ticks on API errors to prevent tick → error → tick
+-          // runaway loops (e.g., auth failure, rate limit, blocking limit).
+-          // Cleared on compact boundary (above) or successful response (below).
+-          if (feature('PROACTIVE') || feature('KAIROS')) {
+-            if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
+-              proactiveModule?.setContextBlocked(true);
+-            } else if (newMessage.type === 'assistant') {
+-              proactiveModule?.setContextBlocked(false);
+-            }
+-          }
+-        },
+-        newContent => {
+-          // setResponseLength handles updating both responseLengthRef (for
+-          // spinner animation) and apiMetricsRef (endResponseLength/lastTokenTime
+-          // for OTPS). No separate metrics update needed here.
+-          setResponseLength(length => length + newContent.length);
+-        },
+-        setStreamMode,
+-        setStreamingToolUses,
+-        tombstonedMessage => {
+-          setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage));
+-          void removeTranscriptMessage(tombstonedMessage.uuid);
+-        },
+-        setStreamingThinking,
+-        metrics => {
++          return [...oldMessages, newMessage];
++        });
++      } else {
++        setMessages(oldMessages => [...oldMessages, newMessage]);
++      }
++      // Block ticks on API errors to prevent tick → error → tick
++      // runaway loops (e.g., auth failure, rate limit, blocking limit).
++      // Cleared on compact boundary (above) or successful response (below).
++      if (feature('PROACTIVE') || feature('KAIROS')) {
++        if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
++          proactiveModule?.setContextBlocked(true);
++        } else if (newMessage.type === 'assistant') {
++          proactiveModule?.setContextBlocked(false);
++        }
++      }
++    },
++    [setMessages, setStreamingThinking, onStreamingText],
++  );
++
++  // El pensamiento no pasa por onUpdateLength: llega como tokens estimados y
++  // se convierte a caracteres para el mismo largo que mide el spinner. La firma
++  // refina el bloque solo cuando estima mas que su texto (pensamiento
++  // redactado); content_block_start reinicia esa cuenta.
++  const thinkingBlockTokensRef = useRef(0);
++  const recordApiMetric = useCallback(
++    (event: ApiMetricsEvent) => {
++      switch (event.type) {
++        case 'start': {
+           const now = Date.now();
+           const baseline = responseLengthRef.current;
+           apiMetricsRef.current.push({
+-            ...metrics,
++            ttftMs: event.ttftMs,
+             firstTokenTime: now,
+             lastTokenTime: now,
+             responseLengthBaseline: baseline,
+             endResponseLength: baseline,
+           });
+-        },
+-        onStreamingText,
+-      );
++          return;
++        }
++        case 'content_block_start':
++          thinkingBlockTokensRef.current = 0;
++          return;
++        case 'thinking_progress':
++          thinkingBlockTokensRef.current += event.estimatedTokensDelta;
++          setResponseLength(length => length + event.estimatedTokensDelta * CHARS_PER_ESTIMATED_TOKEN);
++          return;
++        case 'thinking_signature': {
++          const signatureTokens = estimateTokensFromChars(event.chars);
++          const missingTokens = signatureTokens - thinkingBlockTokensRef.current;
++          if (missingTokens <= 0) return;
++          thinkingBlockTokensRef.current = signatureTokens;
++          setResponseLength(length => length + missingTokens * CHARS_PER_ESTIMATED_TOKEN);
++          return;
++        }
++      }
++    },
++    [setResponseLength],
++  );
++
++  const streamHandlerOptions = useMemo<StreamHandlerOptions>(
++    () => ({
++      onSetStreamMode: setStreamMode,
++      // setResponseLength actualiza responseLengthRef (animacion del spinner)
++      // y apiMetricsRef (endResponseLength/lastTokenTime para OTPS).
++      onUpdateLength: charactersStreamed => setResponseLength(length => length + charactersStreamed),
++      onStreamingToolUses: setStreamingToolUses,
++      onStreamingText,
++      onApiMetrics: recordApiMetric,
++    }),
++    [setStreamMode, setResponseLength, setStreamingToolUses, onStreamingText, recordApiMetric],
++  );
++
++  const onQueryEvent = useCallback(
++    (event: QueryEvent) => {
++      if (isStreamItem(event)) {
++        handleMessageFromStream(event, streamHandlerOptions);
++        return;
++      }
++      deliverCompleteMessage(event);
+     },
+-    [setMessages, setResponseLength, setStreamMode, setStreamingToolUses, setStreamingThinking, onStreamingText],
++    [streamHandlerOptions, deliverCompleteMessage],
+   );
+ 
+   const onQueryImpl = useCallback(

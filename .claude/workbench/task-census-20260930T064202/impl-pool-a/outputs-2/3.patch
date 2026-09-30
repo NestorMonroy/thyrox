@@ -1,0 +1,491 @@
+diff --git a/.claude/workbench/task-thyrox-0448-entrega-a-la-cola-20260930T081850/README.md b/.claude/workbench/task-thyrox-0448-entrega-a-la-cola-20260930T081850/README.md
+new file mode 100644
+index 000000000..064339221
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0448-entrega-a-la-cola-20260930T081850/README.md
+@@ -0,0 +1,94 @@
++# TASK-THYROX-0448 — entrega de un `user` de un par a la cola de la sesión
++
++Cómo resuelve 2.1.283 lo que este ítem cablea, medido sobre
++`/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/` con `rg -n -o`
++(sólo lectura), y qué se portó o se declaró divergencia en
++`src/packages/local-observability/src/uds/{inboxServer,inboxDelivery}.ts`.
++
++## Símbolos consultados
++
++| Símbolo | Chunk:línea | Qué hace | Decisión |
++|---|---|---|---|
++| `be(e,n,i,r,d)` | `chunk-yg53q7yp.js:11` | enruta por `type`; `user` → `await ze(e,n,i,r,d)` sin inyección | igual: `handleInboxMessage` llama `deps.deliverUserMessage`, y el default es `ze` |
++| `ze(e,n,i,r,d)` | `chunk-yg53q7yp.js:11` | valida, `C7e`/`nSe`/`kJr`, `Aot`, adjuntos con `nlt()`, `ce`, `zce`, arma `D={mode:"prompt",agentId:qe(),…,skipAttachments:!0}`, `fbt(D)!=="accept"` corta, `gE(D)` | ya portado (`deliverPeerUserMessage`); aquí se le dan sus deps reales |
++| `import{E2e,gE,Cgo,Aot}from"…chunk-csayct82.js"` | `chunk-yg53q7yp.js:11` | de dónde sale `gE` | — |
++| `gE=(...e)=>Eh().enqueue(...e)` | `chunk-csayct82.js:178` | delegación perezosa a `enqueue` del módulo de la cola | portado: `enqueue` de `@thyrox/agent/messageQueueManager.ts`, import estático (ver divergencia 3) |
++| `function Eh(){return PYe().queue}` | `chunk-csayct82.js:178` | el módulo de la cola, cargado al llamar | — |
++| `Pwr=(...e)=>Eh().enqueueReportingAdmission(...e)` | `chunk-csayct82.js:178` | la admisión (`admitForDelivery`) | fuera de alcance: `messageQueueManager.ts` no tiene `enqueueReportingAdmission` (`git grep` → 0); sigue inyectada en `InboundGateDeps` |
++| `qe()` | `chunk-nvht7ckf.js:11` | `p()?.sessionId` → `go(id)`; si no, `identity.mainAgentId(id)`: el id del agente actual | divergencia 1 (abajo) |
++| `fbt(e)` | `chunk-dv9ctjss.js:11` | `v(e,P(b(e)))`: veredicto de par + admitir/retener | portado ya como `gatePeerMessage`; aquí se cablea como `accept` |
++| `WOt=1048576` | `chunk-qcy58j4w.js:11` | tope de línea | ya portado (`LINE_LIMIT_CHARS`), no se toca |
++| `fj="cross-session-message"` | `chunk-fmsbxtrp.js:16` | el tag del sobre | ya portado (`ENVELOPE_TAG`), no se toca |
++
++*Métrica:* primera línea del chunk donde `rg -n -o` casa el patrón literal.
++*Ciega a:* los chunks son minificados de pocas líneas (11, 16, 178), así que
++la línea no localiza dentro de la línea; el offset de byte no se registró.
++
++## Lo que el prompt afirmaba y resultó distinto al medir
++
++1. **`QueuedCommand` sí tiene `agentId`, `origin` e `isMeta`**
++   (`src/packages/repl/src/textInputTypes.ts:369-423`: `origin?: MessageOrigin`,
++   `isMeta?: boolean`, `agentId?: AgentId`). El prompt decía que no. Lo que no
++   tiene es `skipAttachments`, y `uuid` es `UUID` de `crypto`, no `string`.
++   *Métrica:* `sed -n 364,423p` del archivo. *Ciega a:* nada; es el tipo.
++2. **El hilo principal en esta cola es `agentId === undefined`**, no un id:
++   `agent/runtime/queueProcessor.ts:61`, `agent/query.ts:1699`,
++   `cli/src/headless/sdk/session/run-streaming.ts:1302`. Portar `qe()` como
++   un id de texto dejaría el mensaje sin drenar por el hilo principal.
++   *Métrica:* `git grep -n 'agentId === undefined'` en esos tres archivos.
++   *Ciega a:* un drenaje que filtre por otro campo.
++3. **La entrega ya encolaba, pero fallaba en el árbol de pruebas por
++   `ConfigHostBindingsError`**: `processInboundPolicyReaders` lee settings por
++   `@thyrox/config`, que exige los bindings que el bootstrap instala. Medido
++   con una sonda y `DEBUG=1 --debug-to-stderr`: `Failed to process message:
++   ConfigHostBindingsError`. La prueba instala `InMemoryConfig().bindings`,
++   como `tests/unit/utils/messages.test.ts:41`.
++4. **Sin el lector del modo de permisos, todo mensaje de un par se
++   retiene** (`mode-unknown`): `wireCurrentModeGetter` tiene 0 llamadores de
++   producción (`git grep -n 'wireCurrentModeGetter(' -- src/packages
++   ':!*__tests__*'` → sólo su definición). La entrega queda cableada; que
++   llegue al turno depende de que el consumidor cablee ese lector. La prueba
++   segunda mide exactamente ese límite: cola vacía, `held` con el marco.
++
++## Divergencias declaradas en el porte
++
++1. **`qe()` → `MAIN_THREAD_AGENT_ID = ''` y `toQueuedCommand` omite
++   `agentId` para el hilo principal** (razón: hallazgo 2). Un subagente
++   conserva el suyo con `asAgentId`. El valor vacío es el que
++   `defaultInboundGateDeps` (`bind.ts:73`) ya devuelve; `bind.ts` no está en
++   este alcance, así que no se le hizo importar la constante.
++2. **`skipAttachments` se omite** en `toQueuedCommand`: no es campo de
++   `QueuedCommand` (`git grep skipAttachments -- src/packages` → sólo
++   `processUserInput.ts` y `handlePromptSubmit.tsx`, como opción).
++3. **`gE` es un import estático**, no `import.meta.require` al llamar. Se
++   midió que resuelve desde este paquete (`bun -e` con
++   `@thyrox/agent/messageQueueManager.js` → `enqueue function`) y que el ciclo
++   agent ↔ local-observability no rompe la carga (las 7 suites del paquete y
++   `systemInitUdsInbox.test.ts` de agent pasan).
++4. **`session.receive` corre contra `NO_MODULE_RUNTIME`** por defecto: el
++   runtime de módulos (`Ml`/`Vp`/`Xot`, serie MOD) no está portado
++   (`runSessionReceive` tiene 0 llamadores de producción). `hookSite` lo
++   inyecta cuando exista.
++5. **Los adjuntos sólo con `peerFileDeps` inyectadas**: el predicado `Mur`
++   vive en `@thyrox/permission`, que depende de este paquete
++   (`permission/package.json:308`); importarlo aquí sería un ciclo declarado
++   como prohibido en la cabecera de `peerFiles.ts`.
++6. **`Pwr`/`admitForDelivery` no se porta** (tabla de arriba).
++
++## Cifras de la sesión
++
++| Qué | Antes | Después |
++|---|---|---|
++| suites citadas por el prompt (5 archivos) | 61 pass / 0 fail | 65 pass / 0 fail (4 casos nuevos en `udsMessaging.test.ts`) |
++| 7 suites UDS del paquete + `systemInitUdsInbox` (agent) | — | 124 + 2 pass / 0 fail |
++| anulación A: `userMessageDelivery` devuelve un stub | — | caen exactamente 2 (las dos de extremo a extremo; las dos pasan por la entrega) |
++| anulación B: `agentId` siempre presente | — | caen exactamente 2 (las dos aserciones de `agentId` ausente) |
++| `check_package_typecheck --strict --no-rebuild local-observability` | — | 0 propios |
++| `check_identifier_language` (3 archivos) | — | OK |
++| `package_boundary --strict`, `check_product_word --strict` | — | 0 |
++
++*Métrica:* salida de `bun test` por archivo; conteo de `(fail)` bajo cada
++anulación con el archivo copiado por `mktemp`, revertido con
++`bin/replace_literal`, medido y restaurado (`cmp` confirmó la restauración).
++*Ciega a:* `check_package_typecheck --strict` CON rebuild de proveedores no
++terminó en 590 s dos veces (exit 143); el 0 es del modo `--no-rebuild`.
+diff --git a/src/packages/local-observability/__tests__/udsMessaging.test.ts b/src/packages/local-observability/__tests__/udsMessaging.test.ts
+index 99e1e797f..2f127670c 100644
+--- a/src/packages/local-observability/__tests__/udsMessaging.test.ts
++++ b/src/packages/local-observability/__tests__/udsMessaging.test.ts
+@@ -9,11 +9,16 @@
+  * —`state`—, así que la prueba mide justamente eso: que el accesor de este
+  * módulo alcanza el mismo estado que arranca el buzón, no una copia.
+  */
+-import { afterEach, describe, expect, test } from 'bun:test'
++import { afterEach, beforeAll, describe, expect, test } from 'bun:test'
+ import { mkdtempSync, rmSync } from 'node:fs'
++import { connect } from 'node:net'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
++import { getCommandQueue, resetCommandQueue } from '@thyrox/agent/messageQueueManager.js'
++import { installConfigHostBindings } from '@thyrox/config'
++import { InMemoryConfig } from '@thyrox/config/testing'
++
+ import {
+   getDefaultUdsSocketPath,
+   getUdsMessagingSocketPath,
+@@ -23,6 +28,8 @@ import {
+   type MessagingStop,
+ } from '../src/uds/udsMessaging.ts'
+ import { processInboxKeyDeps } from '../src/uds/inboxKeys.ts'
++import { MAIN_THREAD_AGENT_ID, toQueuedCommand, type QueuedPrompt } from '../src/uds/inboxDelivery.ts'
++import { formatEnvelope } from '../src/uds/peerEnvelope.ts'
+ import { resetIdleNotificationState } from '../src/uds/idleNotification.ts'
+ import { artifactYieldState } from '../src/uds/artifactReplyYield.ts'
+ import { messagingState } from '../src/uds/messagingState.ts'
+@@ -37,10 +44,14 @@ function tempSocketPath(): string {
+   return join(dir, 'session.sock')
+ }
+ 
++/** Lo que el bootstrap instala en producción: la política de entrada lee settings por `@thyrox/config`. */
++beforeAll(() => installConfigHostBindings(new InMemoryConfig().bindings))
++
+ afterEach(async () => {
+   for (const stop of stops.splice(0)) await stop().catch(() => {})
+   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
+   setOnEnqueue(undefined)
++  resetCommandQueue()
+   resetIdleNotificationState()
+   artifactYieldState().reset()
+   sessionNameState().reset()
+@@ -86,3 +97,95 @@ describe('setOnEnqueue (Mqo)', () => {
+     expect(udsMessagingStateForTesting.onEnqueue).toBeUndefined()
+   })
+ })
++
++/** Un marco `user` por el socket del buzón, tras la línea de auth; resuelve cuando `settled()` lo confirma o falla a los 2 s. */
++function sendUserFrame(socketPath: string, content: string, settled: () => boolean): Promise<void> {
++  const token = process.env.THYROX_CODE_MESSAGING_TOKEN
++  return new Promise<void>((resolve, reject) => {
++    const timeout = setTimeout(() => reject(new Error('el mensaje no se asentó a tiempo')), 2000)
++    const socket = connect({ path: socketPath }, () => {
++      socket.write(`${JSON.stringify({ type: 'auth', token })}\n`)
++      socket.write(`${JSON.stringify({ type: 'user', from: 'uds:/run/peer/7.sock', message: { role: 'user', content } })}\n`)
++    })
++    const poll = setInterval(() => {
++      if (!settled()) return
++      clearInterval(poll)
++      clearTimeout(timeout)
++      socket.end()
++      resolve()
++    }, 20)
++    socket.on('error', error => {
++      clearInterval(poll)
++      clearTimeout(timeout)
++      reject(error)
++    })
++  })
++}
++
++async function startDefaultInbox(): Promise<string> {
++  const socketPath = tempSocketPath()
++  const stop = await startUdsMessaging(socketPath, { isExplicit: true, requireAuth: true },
++    { inboxKeyDeps: { ...processInboxKeyDeps, sessionsDir: () => join(dirs.at(-1)!, 'sessions') } })
++  expect(stop).toBeDefined()
++  if (stop) stops.push(stop)
++  return socketPath
++}
++
++describe('entrega real a la cola de la sesión (ze → gE)', () => {
++  const envelope = formatEnvelope({ from: 'uds:/run/peer/7.sock', body: 'hola desde el par' })
++
++  test('sin deps de entrega, un marco user aterriza en getCommandQueue() como cross-session-message del hilo principal', async () => {
++    messagingState().inbound.getCurrentMode = () => ({ mode: 'default' })
++    let enqueueNotices = 0
++    setOnEnqueue(() => { enqueueNotices += 1 })
++    const socketPath = await startDefaultInbox()
++    await sendUserFrame(socketPath, envelope, () => getCommandQueue().length > 0)
++    const [command] = getCommandQueue()
++    expect(command).toMatchObject({ mode: 'prompt', value: envelope, skipSlashCommands: true, isMeta: true, priority: 'next' })
++    expect(command!.value).toStartWith('<cross-session-message from="uds:')
++    expect(command!.origin).toMatchObject({ kind: 'peer', from: 'uds:/run/peer/7.sock', body: 'hola desde el par' })
++    expect(command!.agentId).toBeUndefined()
++    expect(enqueueNotices).toBe(1)
++  })
++
++  test('sin el lector del modo de permisos cableado, el marco se retiene (mode-unknown) y la cola queda vacía', async () => {
++    const socketPath = await startDefaultInbox()
++    const inbound = messagingState().inbound
++    await sendUserFrame(socketPath, envelope, () => inbound.held.length > 0)
++    expect(getCommandQueue()).toEqual([])
++    expect(inbound.held[0]).toMatchObject({ value: envelope, origin: { kind: 'peer' } })
++  })
++})
++
++describe('toQueuedCommand: de la forma D de la referencia al QueuedCommand de este árbol', () => {
++  const prompt: QueuedPrompt = {
++    mode: 'prompt',
++    agentId: MAIN_THREAD_AGENT_ID,
++    value: 'hola',
++    uuid: '0f8fad5b-d9cb-469f-a165-70867728950e',
++    priority: 'now',
++    origin: { kind: 'peer', from: 'uds:/x.sock' },
++    skipSlashCommands: true,
++    isMeta: true,
++    skipAttachments: true,
++  }
++
++  test('el hilo principal va sin agentId, que es como lo filtra el drenaje', () => {
++    const command = toQueuedCommand(prompt)
++    expect(command).toEqual({
++      mode: 'prompt',
++      value: 'hola',
++      uuid: '0f8fad5b-d9cb-469f-a165-70867728950e',
++      priority: 'now',
++      origin: { kind: 'peer', from: 'uds:/x.sock' },
++      skipSlashCommands: true,
++      isMeta: true,
++    })
++    expect('agentId' in command).toBe(false)
++    expect('skipAttachments' in command).toBe(false)
++  })
++
++  test('un subagente conserva su agentId', () => {
++    expect(toQueuedCommand({ ...prompt, agentId: 'a0123456789abcdef' }).agentId).toBe('a0123456789abcdef')
++  })
++})
+diff --git a/src/packages/local-observability/src/uds/inboxDelivery.ts b/src/packages/local-observability/src/uds/inboxDelivery.ts
+index a4c735c84..2814e2605 100644
+--- a/src/packages/local-observability/src/uds/inboxDelivery.ts
++++ b/src/packages/local-observability/src/uds/inboxDelivery.ts
+@@ -15,8 +15,18 @@
+  * propia: la compuerta de rechazo, el recibo y la aceptación (`C7e`, `nSe`,
+  * `kJr`, `fbt`) son F4d; `session.receive` (`Aot`) es F4c-2d; los adjuntos
+  * (`nlt` y `chunk-yrfq0b3e.js`) son F4c-2e; el registro de correspondientes
+- * (`Wkr`) es F4c-2f; y la cola de la sesión (`gE`) se cablea en F6.
++ * (`Wkr`) es F4c-2f. La cola de la sesión (`gE`) es `enqueue` de
++ * `@thyrox/agent/messageQueueManager.ts` —medido en `chunk-csayct82.js`:
++ * `gE=(...e)=>Eh().enqueue(...e)`—; `inboxServer.ts` la cablea a través de
++ * `toQueuedCommand`, que traduce la forma `D` de la referencia al
++ * `QueuedCommand` de este árbol.
+  */
++import type { UUID } from 'node:crypto'
++
++import { asAgentId } from '@thyrox/agent/idTypes'
++import type { enqueue as enqueueSessionCommand } from '@thyrox/agent/messageQueueManager.js'
++
++import type { InboundRefuseCause } from './inboundGate.ts'
+ import type { PeerIdentity } from './inboxConnection.ts'
+ import { sessionIdMatches } from './inboxRouting.ts'
+ import type { InboxState } from './inboxState.ts'
+@@ -69,6 +79,43 @@ export type QueuedPrompt = {
+   skipAttachments: true
+ }
+ 
++/**
++ * El id con que `qe` nombra al hilo principal en este árbol: vacío, el mismo
++ * valor que `defaultInboundGateDeps` devuelve. La cola representa ese hilo
++ * SIN `agentId` —el drenaje filtra `cmd.agentId === undefined`
++ * (`agent/runtime/queueProcessor.ts`, `agent/query.ts`)—, así que un
++ * `agentId` de texto, aunque vacío, dejaría el mensaje sin drenar.
++ */
++export const MAIN_THREAD_AGENT_ID = ''
++
++/** Lo que la cola de la sesión acepta; se deriva de `enqueue` para no depender de `@thyrox/repl`. */
++export type SessionQueuedCommand = Parameters<typeof enqueueSessionCommand>[0]
++
++function isSubagent(agentId: string): boolean {
++  return agentId !== MAIN_THREAD_AGENT_ID
++}
++
++/**
++ * De `QueuedPrompt` (la forma `D` de la referencia) al `QueuedCommand` de
++ * este árbol. Dos divergencias, medidas: el hilo principal va sin `agentId`
++ * (ver `MAIN_THREAD_AGENT_ID`); y `skipAttachments` no es campo de
++ * `QueuedCommand` —es opción de `processUserInput`, `git grep
++ * skipAttachments -- src/packages`— y se omite. El `uuid` del par viaja tal
++ * cual, como en la referencia.
++ */
++export function toQueuedCommand(prompt: QueuedPrompt): SessionQueuedCommand {
++  return {
++    mode: prompt.mode,
++    value: prompt.value,
++    uuid: prompt.uuid as UUID,
++    priority: prompt.priority,
++    origin: prompt.origin,
++    skipSlashCommands: prompt.skipSlashCommands,
++    isMeta: prompt.isMeta,
++    ...(isSubagent(prompt.agentId) && { agentId: asAgentId(prompt.agentId) }),
++  }
++}
++
+ /** El recibo que la referencia arma para `sendPeerReceipt`: un prompt vacío con el origen. */
+ export type ReceiptEnvelope = { mode: 'prompt'; agentId: string; value: ''; origin: PeerOrigin }
+ 
+@@ -89,9 +136,9 @@ export interface PeerDeliveryDeps {
+   /** `t`: el registro de depuración, con nivel opcional. */
+   log: (message: string, level?: 'warn') => void
+   /** `C7e`: la causa si la política de entrada rechaza, o `undefined`. */
+-  refuseCause: () => string | undefined
++  refuseCause: () => InboundRefuseCause | undefined
+   /** `nSe`. */
+-  reportRefused: (reason: string, cause: string) => void
++  reportRefused: (reason: string, cause: InboundRefuseCause) => void
+   /** `kJr`. */
+   sendReceipt: (receipt: ReceiptEnvelope, status: 'refused') => void
+   /** `Aot`. */
+diff --git a/src/packages/local-observability/src/uds/inboxServer.ts b/src/packages/local-observability/src/uds/inboxServer.ts
+index e47553419..4697342b5 100644
+--- a/src/packages/local-observability/src/uds/inboxServer.ts
++++ b/src/packages/local-observability/src/uds/inboxServer.ts
+@@ -17,21 +17,37 @@
+  * El backend de storage que `mn` reparte a `publishInboxKey`/`closeInbox`
+  * (la `n` de la referencia) también es dependencia: es otra fase.
+  *
+- * `deliverUserMessage`, la entrega de un `user` (`ze` de `inboxDelivery.ts`),
+- * y las tres piezas de `InboxControlActionDeps` (`isSelfSent`,
+- * `findLiveSession`, `isDefinitelyUndelivered`) no tienen aún con qué
+- * cablearse a la cola real de la sesión ni al registro de sesiones vivas —
+- * eso es F6 y una fase de registro que este alcance no cubre —, así que
+- * `processMessagingStartDeps` los deja en un respaldo declarado: ningún
+- * mensaje de un par se pierde en silencio, pero tampoco llega a ningún sitio
+- * todavía.
++ * La entrega de un `user` (`ze` de `inboxDelivery.ts`) se compone aquí desde
++ * las dependencias resueltas del arranque, como en la referencia, donde `be`
++ * llama a `ze` y ésta lee del módulo: la cola es `enqueue` de
++ * `@thyrox/agent/messageQueueManager.ts` (`gE`), la compuerta es
++ * `gatePeerMessage` (`fbt`), el rechazo `currentRefuseCause`/`reportRefused`
++ * (`C7e`/`nSe`), el recibo `sendPeerReceipt` del estado (`kJr`), el id de
++ * sesión `getSessionId` (`Y`) y el correspondiente `noteCorrespondent`
++ * (`Wkr`). `deliverUserMessage` sólo se inyecta para anularla. Dos piezas de
++ * esa entrega siguen sin runtime en este árbol y llegan inyectadas: el
++ * runtime de módulos que ejecuta `session.receive` (`hookSite`; sin él nadie
++ * escucha y el texto pasa) y las dependencias de adjuntos (`peerFileDeps`;
++ * su predicado de ruta vive en `@thyrox/permission`, que depende de este
++ * paquete). Las tres piezas de `InboxControlActionDeps` (`isSelfSent`,
++ * `findLiveSession`, `isDefinitelyUndelivered`) siguen en respaldo
++ * declarado: son de la fase de registro de sesiones vivas.
++ *
++ * Frontera medida: el lector del modo de permisos (`wireCurrentModeGetter`)
++ * no tiene llamador de producción en este árbol, y sin él la compuerta
++ * retiene todo mensaje de un par con causa `mode-unknown`. La entrega está
++ * cableada; que llegue al turno depende de que el consumidor cablee ese
++ * lector.
+  */
++import { randomUUID } from 'node:crypto'
+ import { chmod, unlink } from 'node:fs/promises'
+ import { createServer, type Server } from 'node:net'
+ import { dirname, isAbsolute, resolve } from 'node:path'
+ 
++import { enqueue as enqueueSessionCommand } from '@thyrox/agent/messageQueueManager.js'
+ import { getPlatform } from '@thyrox/config/platform'
+ import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
++import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+ 
+ import { getErrnoCode, errorMessage } from '../errorHelpers.ts'
+ import { logForDebugging } from '../debug.ts'
+@@ -52,8 +68,17 @@ import { inboxControlActions } from './controlActions.ts'
+ import { type ArtifactReplyControlDeps, type ArtifactReplySender, setArtifactReplySender } from './artifactReplyYield.ts'
+ import { authRequiredByDefault, createInboxTokens } from './inboxAuth.ts'
+ import { handleInboxConnection, processConnectionDeps, type PeerIdentity } from './inboxConnection.ts'
+-import { type PeerOrigin, replyableTarget } from './inboxDelivery.ts'
+-import { currentModeClassForTelemetry, type InboundGateDeps, type PeerReceiptStatus, wireRecordCorrespondent, wireSendPeerReceipt } from './inboundGate.ts'
++import { deliverPeerUserMessage, type FileAttachmentHandler, type PeerDeliveryDeps, type PeerOrigin, replyableTarget, toQueuedCommand } from './inboxDelivery.ts'
++import {
++  currentModeClassForTelemetry,
++  currentRefuseCause,
++  gatePeerMessage,
++  type InboundGateDeps,
++  type PeerReceiptStatus,
++  reportRefused,
++  wireRecordCorrespondent,
++  wireSendPeerReceipt,
++} from './inboundGate.ts'
+ import { publishInboxKey, type InboxKeyDeps, type SessionKeyStorage } from './inboxKeys.ts'
+ import { removeActiveKeyFileSync, recordDegraded, type InboxState } from './inboxState.ts'
+ import { routeInboxMessage, type InboxRoutingDeps } from './inboxRouting.ts'
+@@ -63,8 +88,10 @@ import type { HeldPeerMessage } from './messagingState.ts'
+ import { messagingState } from './messagingState.ts'
+ import { udsAddress } from './peerAddress.ts'
+ import type { EnvelopeMode } from './peerEnvelope.ts'
++import { emitPeerFileReceiveTelemetry, injectPeerFilePrefix, isPeerFileTransferEnabled, materializeLocalPeerFiles, type PeerFileDeps } from './peerFiles.ts'
+ import { isRegistrySweepPermitted } from './registrySweep.ts'
+-import { sessionNameState } from './sessionNameState.ts'
++import { type HookSite, runSessionReceive } from './sessionReceive.ts'
++import { noteCorrespondent, sessionNameState } from './sessionNameState.ts'
+ import { canFallBackToPerUid, prepareSocketsDirectory, refusedComponentDetail, socketsDirHint, type SocketsDirDeps } from './socketsDir.ts'
+ import { hostUidForPeerDirs } from './uidNamespace.ts'
+ import { isUsableLocalSocketAddress, perUidFallbackSocketPath } from './socketPath.ts'
+@@ -99,8 +126,14 @@ type InboxMessage = Record<string, unknown> & { type: string }
+ export type MessagingStartDeps = {
+   state: InboxState
+   storage?: SessionKeyStorage
++  /** `Y`. */
+   sessionId: () => string
+-  deliverUserMessage: (message: InboxMessage, peer: PeerIdentity) => Promise<void>
++  /** Anula `ze`; por defecto, la entrega real a la cola de la sesión (`peerDeliveryDeps`). */
++  deliverUserMessage?: (message: InboxMessage, peer: PeerIdentity) => Promise<void>
++  /** `Ml`/`Vp`/`Xot`: el runtime de módulos que ejecuta `session.receive`; sin él, nadie escucha. */
++  hookSite?: HookSite
++  /** `nlt` y `chunk-yrfq0b3e.js`: sin ellas, los adjuntos se ignoran. */
++  peerFileDeps?: PeerFileDeps
+   isSelfSent: (peer: PeerIdentity) => Promise<boolean>
+   findLiveSession: ArtifactReplyControlDeps['findLiveSession']
+   isDefinitelyUndelivered: ArtifactReplyControlDeps['isDefinitelyUndelivered']
+@@ -127,10 +160,7 @@ export type MessagingStartDeps = {
+ export function processMessagingStartDeps(state: InboxState): MessagingStartDeps {
+   return {
+     state,
+-    sessionId: () => '',
+-    deliverUserMessage: async (_message, _peer) => {
+-      logForDebugging('[uds-messaging] deliverUserMessage no está cableado todavía (F6); mensaje descartado')
+-    },
++    sessionId: () => getSessionId(),
+     isSelfSent: async () => false,
+     findLiveSession: async () => undefined,
+     isDefinitelyUndelivered: () => false,
+@@ -144,6 +174,49 @@ export function processMessagingStartDeps(state: InboxState): MessagingStartDeps
+   }
+ }
+ 
++/** Sin runtime de módulos nadie escucha `session.receive`: la señal llega al núcleo tal cual. */
++const NO_MODULE_RUNTIME: HookSite = {
++  hasHandlers: () => false,
++  call: (_name, core) => event => core.run(event),
++  hookedBy: () => [],
++}
++
++/** `nlt` + `chunk-yrfq0b3e.js`: el manejador de adjuntos, sólo con la transferencia habilitada y sus dependencias presentes. */
++function peerFileAttachmentHandler(peerFileDeps: PeerFileDeps | undefined): FileAttachmentHandler | undefined {
++  if (peerFileDeps === undefined || !isPeerFileTransferEnabled()) return undefined
++  return {
++    materialize: attachments => materializeLocalPeerFiles(attachments, peerFileDeps),
++    injectPrefix: injectPeerFilePrefix,
++    emitTelemetry: emitPeerFileReceiveTelemetry,
++  }
++}
++
++/** Lo que `ze` lee del módulo en la referencia, resuelto desde las dependencias de ESTE arranque. */
++function peerDeliveryDeps(deps: MessagingStartDeps): PeerDeliveryDeps {
++  const gate = deps.inboundGateDeps
++  return {
++    state: deps.state,
++    sessionId: deps.sessionId,
++    log: (message, level) => (level === 'warn' ? logForDebugging(message, { level }) : logForDebugging(message)),
++    refuseCause: () => currentRefuseCause(gate),
++    reportRefused: (reason, cause) => reportRefused(reason, cause, gate),
++    sendReceipt: (receipt, status) => void gate.state.sendPeerReceipt?.(receipt, status),
++    receive: input => runSessionReceive(input, deps.hookSite ?? NO_MODULE_RUNTIME, message => logForDebugging(message)),
++    fileAttachments: peerFileAttachmentHandler(deps.peerFileDeps),
++    isSelfSent: deps.isSelfSent,
++    agentId: gate.agentId,
++    accept: prompt => gatePeerMessage(prompt, gate),
++    enqueue: prompt => enqueueSessionCommand(toQueuedCommand(prompt)),
++    noteCorrespondent,
++    randomUUID,
++  }
++}
++
++/** `ze`, salvo que el arranque la anule. */
++function userMessageDelivery(deps: MessagingStartDeps): NonNullable<MessagingStartDeps['deliverUserMessage']> {
++  return deps.deliverUserMessage ?? ((message, peer) => deliverPeerUserMessage(message, peer, peerDeliveryDeps(deps)))
++}
++
+ /** `hn`/`m9r`: borra la clave publicada al salir, registrado una sola vez por estado. */
+ const exitCleanupHandlers = new WeakMap<InboxState, () => void>()
+ function registerActiveKeyFileCleanupOnExit(state: InboxState): void {
+@@ -362,7 +435,7 @@ export async function startMessagingInbox(socketPathInput: string, options: Mess
+     state,
+     sessionId: deps.sessionId,
+     warn: message => logForDebugging(message, { level: 'warn' }),
+-    deliverUserMessage: deps.deliverUserMessage,
++    deliverUserMessage: userMessageDelivery(deps),
+     onRename: name => state.onRename?.(name),
+     controlActions,
+   }

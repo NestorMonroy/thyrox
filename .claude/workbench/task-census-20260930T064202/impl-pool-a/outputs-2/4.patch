@@ -1,0 +1,1351 @@
+diff --git a/.claude/workbench/task-thyrox-0600-listagents-20260930T082528/README.md b/.claude/workbench/task-thyrox-0600-listagents-20260930T082528/README.md
+new file mode 100644
+index 000000000..899daef87
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0600-listagents-20260930T082528/README.md
+@@ -0,0 +1,122 @@
++# TASK-THYROX-0600 — ListAgents (alias ListPeers) de 2.1.283
++
++Banco del ítem: qué se leyó en el ejecutable, qué se portó y qué se declaró
++como divergencia, y las mediciones que decidieron la prueba de dos `bin/cli`.
++
++Corpus: `_references/claude-code-bin/2.1.283/bunfs-root/` (sólo lectura,
++`rg`/`sed -n`/`grep -o`). Todos los chunks tienen la carga en la línea 11.
++
++## Símbolos consultados
++
++| Símbolo | Chunk | Qué hace | Decisión |
++|---|---|---|---|
++| `x` (ListAgentsTool) | chunk-8xzbdmg9.js:11 | `$t({name:Dl, aliases:[MTo], searchHint, backgrounding:"never", maxResultSizeChars:1e4, isEnabled(){return Ws()}, inputSchema {channel?,q?} max 256, outputSchema {listing}, isConcurrencySafe/isReadOnly true, call → Promise.all([listAllPeers, buildSubagentExtras]) → formatForModel})` | Portado como `ListAgentsTool.ts`. `backgrounding` no existe en `ToolDef`; `renderToolUseMessage → null` es el default de `buildTool`. |
++| `d`, `S`, `p` | chunk-8xzbdmg9.js:11 | esquemas (`Ze` = objeto estricto, `o().max(256)`) y tope 1e4 | Portados: `z.strictObject`, `MAX_FILTER_LENGTH`, `MAX_RESULT_SIZE_CHARS`. |
++| `eC` | chunk-0rzp9bzr.js | `e.teammateContext!==void 0 \|\| (e.agentContext && Tq(e.agentContext))`; `Tq` (chunk-t6pwageh) = `agentType==="subagent" && !isMainSession` | Divergencia: `ToolUseContext` no tiene `teammateContext` ni `agentContext`; `agentId !== undefined` (sólo se fija en subagentes). |
++| `Dl`, `MTo`, `Wxr`/`s`/`e` | chunk-g3tnnx4p.js:11 | `"ListAgents"`, `"ListPeers"`, descripción `s + e()` con `e()` → `""` | Portados en `prompt.ts`; `Claude` → `PRODUCT_NAME`; `lo` → `SEND_MESSAGE_TOOL_NAME`. |
++| `kor` (listAllPeers) | chunk-mk0qbzxv.js:11 | uds (`qRr`, `KOt` → localListFailed) + nube (`pDe`, filtrada por `rFt`/`IY`) + puente (`Ftn`/`Fkr`/`Utn`) + did (constante vacío); `VRr` sólo con `Nq()`; banderas de salida | Portado en `listAllPeers.ts`; remotos inyectados (`RemotePeerSources`), did no portado. |
++| `U` (self) | chunk-mk0qbzxv.js:11 | `DV()` + `tFt(kv()?.name)`; `token` con `wFe("session", KFr(sock))`, `socketToken` con el socket; `nameIsUserChosen = jkr() !== undefined` | `ownSessionInfo`; `KFr` = `Nq() ? sid:<Y()> : sock` (`Z="sid:"` medido). |
++| `Tor` (buildSubagentExtras) | chunk-mk0qbzxv.js:11 | `appState`, `teamFile` vía `iy` si `da(teamContext)`, `callerTeammateId` desde `teammateContext`, `self = U(n)` | `buildSubagentExtras`; `da`/`iy` inyectados desde `@thyrox/swarm` (`getTeamName`, `readTeamFileAsync`); `callerTeammateId` siempre `undefined`. |
++| `rFt`, `KFr`, `wFe`, `tFt`, `nLo`, `upt`, `Z` | chunk-5mcqvwzx.js:11 | `rFt`: alguna sesión uds con `pr(bridgeSessionId)===pr(id)`; `wFe` = `T(kind,addr).slice(0,M)` = `ownSessionRef`; `tFt` = `ownDisplayName`; `nLo` = `shouldUseOwnSocketRef` | `rFt` portado (`hasLocalSessionForBridge`); los demás ya existían. |
++| `Ve` | — | el id del candidato `main` | **No localizado** en chunk-5mcqvwzx ni en sus importaciones (`grep -c 'function Ve('` → 0). Divergencia: `getAgentId() ?? getSessionId()`. |
++| `Ws`, `Vee`, `$Mt` | chunk-fhcnpt13.js:11 | `Ws` ya portado (`isSessionMessagingEnabled`); `Vee(e)`: `flagsSettled===false && aa("tengu_cuddly_willow",true).source==="fallback" → false`, si no `x(...)`; `$Mt` = `"Cross-session messaging is not available in this session."` | `isProjectsHumanOriginEnabled` (nombre del barrel chunk-gn4b6awf.js: `Vee as isProjectsHumanOriginEnabled`, `$Mt as CROSS_SESSION_MESSAGING_DISABLED_MESSAGE`), `CROSS_SESSION_MESSAGING_UNAVAILABLE_MESSAGE`. `source==="fallback"` → `!(name in getAllGrowthBookFeatures())`. |
++| barrel | chunk-1csd5fav.js:11 | `export{Tor as buildSubagentExtras, oKo as formatForModel, Aor as formatForUser, kor as listAllPeers}` | En thyrox el barrel exportable no existe: ver «Bloqueo». |
++| registro del tool | chunk-3pfj38s1.js | `Ir=import.meta.require("chunk-8xzbdmg9.js").ListAgentsTool` **sin compuerta de feature** | `BuiltInToolsProvider` lo empuja siempre; `isEnabled` decide. |
++
++## Mediciones que decidieron el diseño
++
++1. **`@thyrox/local-observability` no exporta `listAgentsFormat.js` ni
++   `peerRefTable.js`** (ni podría exportar `listAllPeers.js`): desde
++   tool-registry, `import('@thyrox/local-observability/uds/listAgentsFormat.js')`
++   → `Cannot find module`; `liveSessionRegistry.js`, `peerFiles.js`,
++   `sessionRegistryState.js`, `sessionRename.js` sí resuelven. `package.json`
++   de ese paquete no es de este ítem. Primer intento: import relativo entre
++   paquetes desde la herramienta → `bunx tsc --noEmit -p tsconfig.build.json`
++   de tool-registry da **50 errores, todos TS6059** (`rootDir: src`). Forma
++   final: `peerFiles.ts` (exportado y del ítem) reexporta el núcleo —el papel
++   del barrel `chunk-1csd5fav.js`— y herramienta y suite importan
++   `@thyrox/local-observability/uds/peerFiles.js`. Con eso: local-observability
++   0 errores (emit incluido), tool-registry 0 errores.
++   *Métrica:* resolución de bun por subpath (6 subpaths) y conteo de
++   `error TS` de tsc por paquete. *Ciega a:* el gate
++   `bin/check_package_typecheck --strict`, que reconstruye los 30+ providers
++   del árbol y superó los 10 min sin veredicto; se detuvo y se midió con tsc
++   directo sobre el mismo `tsconfig.build.json` que ese gate usa.
++2. **`thyrox -p` arma sus herramientas con `@thyrox/tools/registry`**
++   (`runLoop.ts::loopSetup` → `CORE_TOOLS` + tasks + agent + skill), no con
++   `BuiltInToolsProvider`. Un `tool_use` grabado de `ListAgents` no llegaría
++   a la herramienta. La prueba de dos `bin/cli` la invoca desde el hijo Bash
++   de B, con el entorno de B. Tocar `runLoop.ts`/`tools/src/registry.ts`
++   queda fuera de la lista del ítem.
++3. **`feature('UDS_INBOX')` es falso al correr desde fuente**: un `bin/cli -p`
++   aislado registra `sessions/<pid>.json` **sin** `messagingSocketPath`
++   (medido: pid 6902, registro con `name`, `kind`, sin socket), y `qRr`
++   filtra `record.sock`. Con `BUN_OPTIONS=--feature=UDS_INBOX` (bun 1.3.11)
++   el registro trae `messagingSocketPath=/tmp/cc-socks/<pid>.sock`, el
++   socket existe y `liveNonSpareSessions()` desde otro proceso lo devuelve
++   en 0.56 s. *Métrica:* contenido del registro y `test -S`. *Ciega a:* el
++   binario compilado, donde la feature va fijada.
++4. **La referencia no imprime la dirección** en el listing (`V`: nombre,
++   `[ref]`, kind, status, edad): `uds:<socket>` se afirma sobre
++   `listAllPeers().peers[].address`, y el nombre del par sobre el listing.
++5. **`$!` de `f &` no es el pid de bun**: la función corre en un subshell y
++   `env → bash → bun` es su hijo; el registro es `sessions/<pid de bun>.json`.
++   Primera corrida: 3 fallos por eso; con `exec` en la función, 10/10.
++6. **En un worktree del pool `@thyrox/*` resuelve por `node_modules` del
++   árbol principal** (`readlink -f` → `/home/user/thyrox/src/packages/…`), así
++   que un import por paquete no ve los archivos del worktree. Para verificar
++   aquí se creó `node_modules/@thyrox/local-observability →
++   ../../src/packages/local-observability` en el worktree (`node_modules/`
++   está en `.gitignore`: 0 entradas en `git status`). Medido con ese enlace:
++   bun dedupe el symlink y la ruta real (`SessionRecordsUnreadableError` es
++   la misma clase por las dos vías), y `peerFiles.js` expone `Vee`.
++7. **`renderToolUseMessage` es obligatorio en `ToolDef`** (TS2345 «missing
++   … but required»), no un valor por omisión de `buildTool`: se porta el
++   `return null` de la referencia.
++
++## Resultados
++
++| Suite | Resultado |
++|---|---|
++| `bun test src/tools/ListAgentsTool/__tests__/ListAgentsTool.test.ts` (tool-registry) | 22 pass, 0 fail, 79 expect |
++| `bash tests/session/test-list-agents-two-cli.sh` | 10 aserciones, 0 fallos, 25.9 s |
++| existentes: `listAgentsFormat`, `peerRefTable`, `udsPeerFiles` (local-observability) | 52 pass, 0 fail (igual que la línea base) |
++| existentes: `BuiltInToolsProvider*.test.ts` | 7 pass, 0 fail |
++| `shellcheck` sobre el `.sh` (venv del árbol principal; el worktree no tiene entorno) | 0 hallazgos (1 SC2034 corregido) |
++| `bunx tsc -p tsconfig.build.json` (local-observability, con emit) | 0 errores |
++| `bunx tsc --noEmit -p tsconfig.build.json` (tool-registry) | 0 errores (tras portar `renderToolUseMessage`) |
++| `bash tests/session/test-list-agents-two-cli.sh`, segunda y tercera corrida | 10/10 en 25.9 s y 18.4 s |
++
++## Controles de anulación (suite de la herramienta, base 22/0)
++
++| Rama retirada | Caídas | Cuál |
++|---|---|---|
++| A1 `kor`: listar aunque la mensajería esté apagada | 2 | «mensajería apagada no consulta…»; «call … bajo HARBOR_KITE=0 devuelve el aviso» |
++| A2 `kor`: sin capturar `KOt` | 1 | «registro ilegible marca localListFailed» |
++| A3 `kor`: sin filtrar la nube (`rFt`/`IY`) | 1 | «sesiones en la nube entran salvo…» |
++| A4 `Dst`: cualquier indisponibilidad cuenta | 1 | «cloudListFailed sólo con timeout o fetch_failed» |
++| A5 `VRr`: sin exigir dirección estable | 1 | «ownEndpointShadowed se mide sólo…» |
++| B1 `KFr`: siempre el socket | 1 | «el token lleva el ref de la dirección estable» |
++| B2 `jkr`: sin comparar lo tecleado | 1 | «nameIsUserChosen» |
++| B3 `U`: sin exigir socket propio | 1 | «sin socket propio o con nombre reservado…» |
++| C1 `Tor`: leer el equipo aunque no haya | 1 | «lee el archivo de equipo sólo cuando hay nombre» |
++| D1 `Vee`: sin el corte por banderas sin asentar | 1 | «con las banderas sin asentar y sin declaración, no» |
++| E1 tool: `isEnabled` constante | 1 | «isEnabled es la compuerta Ws» |
++| F1 provider: sin registrar ListAgents | 1 | «BuiltInToolsProvider lo registra siempre» |
++
++Cada anulación se aplicó con `bin/replace_literal` sobre una copia
++`mktemp` y se restauró; `git status` al final sólo lista los archivos del
++ítem. La prueba de shell lleva su propio control (paso 3: `HARBOR_KITE=0` →
++0 pares y el aviso de apagado).
++
++## Bloqueo declarado
++
++`src/packages/local-observability/package.json` no exporta
++`./uds/listAllPeers.js` (ni `listAgentsFormat.js`/`peerRefTable.js`) y no es
++de este ítem. La entrega no lo necesita: el núcleo llega por el subpath
++exportado `uds/peerFiles.js`, que hace de barrel. Cuando ese `exports` entre,
++el bloque de reexportación de `peerFiles.ts` se retira y la herramienta y la
++suite importan `uds/listAllPeers.js`: una línea en cada archivo.
++
++Fuera de alcance y declarado: `runLoop.ts`/`@thyrox/tools/registry.ts` (para
++que `thyrox -p` ofrezca `ListAgents` al modelo) y `package.json`.
+diff --git a/src/packages/local-observability/src/uds/listAgentsFormat.ts b/src/packages/local-observability/src/uds/listAgentsFormat.ts
+index 8b57c53f0..658fda063 100644
+--- a/src/packages/local-observability/src/uds/listAgentsFormat.ts
++++ b/src/packages/local-observability/src/uds/listAgentsFormat.ts
+@@ -20,11 +20,10 @@
+  * importan los tipos del candidato.
+  *
+  * Lo que NO se porta, y por qué:
+- * - `U` (`chunk-7h1n9jsx.js`): sólo lo usa `clr`/`dlr`, el orquestador
+- *   asíncrono que arma `e`/`n` a partir del entorno del proceso — este ítem
+- *   excluye ambos explícitamente. Portarlo exigiría importar cuatro
+- *   singletons de proceso (`gq`, `Wv`, `dRr`, más `DUe`/`oWr` del otro
+- *   ítem) que ninguna función de este módulo necesita.
++ * - `U` (`chunk-7h1n9jsx.js`) y el orquestador `clr`/`dlr` que lo usa: los
++ *   porta `listAllPeers.ts` (`ownSessionInfo`, `listAllPeers` y
++ *   `buildSubagentExtras`, de `chunk-mk0qbzxv.js` de 2.1.283), con sus
++ *   singletons de proceso inyectados.
+  * - El parámetro `didWarnings` de `aYo` y la variable `A` (sesiones `did`)
+  *   que calculaba: ninguno de los dos se lee en el cuerpo original de
+  *   `aYo` — código muerto en la fuente, no portado aquí.
+@@ -99,7 +98,7 @@ const TMUX_PANE_NAME_PATTERN = /^[^\s/\\\p{Cc}\p{Cf}]{1,64}$/u
+ 
+ export interface ListAgentsTeammateContextEntry {
+   readonly name: string
+-  readonly agentType: string
++  readonly agentType?: string
+   readonly tmuxPaneId: string
+   readonly spawnedAt: number
+ }
+@@ -137,7 +136,7 @@ export interface ListAgentsAppState {
+ export interface TeamFileMember {
+   readonly agentId: string
+   readonly name: string
+-  readonly agentType: string
++  readonly agentType?: string
+   readonly joinedAt: number
+ }
+ 
+@@ -158,17 +157,25 @@ export interface FormerNameRecord {
+   readonly until: number
+ }
+ 
++/**
++ * `r` de `kor`: el registro de una sesión viva tal cual llega del registro
++ * (`LiveSessionRecord`); el formato lee estos campos, y la tabla de refs
++ * `sessionId`, `bridgeSessionId` y `statusUpdatedAt`.
++ */
+ export interface UdsSession {
+   readonly sock: string
+   readonly name?: string
+   readonly cwd: string
+-  readonly kind: string
+-  readonly status: string
++  readonly kind?: string | undefined
++  readonly status?: string | undefined
+   readonly hostSessionId?: string
+   readonly tmux?: string
+   readonly startedAt: number
+   readonly nameSource?: string
+   readonly formerNames?: readonly FormerNameRecord[]
++  readonly sessionId?: string | undefined
++  readonly bridgeSessionId?: string
++  readonly statusUpdatedAt?: number
+ }
+ 
+ export interface CloudSession {
+@@ -187,6 +194,8 @@ export interface BridgeSession {
+   readonly title?: string
+   readonly status?: string
+   readonly acceptsPeerMessages?: boolean
++  /** `updated_at` de la fila del puente; sin él, la tabla de refs no calcula `lastActive`. */
++  readonly updatedAt?: string
+   readonly environmentKind?: string
+   readonly connected?: boolean
+ }
+@@ -354,7 +363,7 @@ export type TeammateNameShadow = false | 'unreachable' | 'bare-only'
+ export interface TeammateEntry {
+   readonly teammateId: string
+   readonly name: string
+-  readonly agentType: string
++  readonly agentType: string | undefined
+   readonly status: string | undefined
+   readonly backend: TeammateBackend
+   readonly since: number
+diff --git a/src/packages/local-observability/src/uds/listAllPeers.ts b/src/packages/local-observability/src/uds/listAllPeers.ts
+new file mode 100644
+index 000000000..e43841bc1
+--- /dev/null
++++ b/src/packages/local-observability/src/uds/listAllPeers.ts
+@@ -0,0 +1,384 @@
++/**
++ * Los pares alcanzables desde esta sesión y el contexto propio con que se
++ * formatean: el cuerpo de la herramienta `ListAgents`. Porte de `kor`
++ * (`listAllPeers`), `U` (`ownSessionInfo`) y `Tor` (`buildSubagentExtras`)
++ * de `chunk-mk0qbzxv.js`, de `rFt` y `KFr` (`chunk-5mcqvwzx.js`) y del cuerpo
++ * de `call` de `chunk-8xzbdmg9.js` (`listAgentsForModel`), todos de 2.1.283.
++ * `chunk-1csd5fav.js` es el barrel que los reexporta junto a
++ * `formatForModel`/`formatForUser` (`listAgentsFormat.ts`).
++ *
++ * Lo que la referencia lee de singletons llega aquí inyectado
++ * (`PeerSources`, `OwnSessionDeps`, `SubagentExtrasDeps`), y las funciones
++ * `process*` arman la versión del proceso con lo ya portado: `qRr`, `VRr` y
++ * `DV` (`liveSessionRegistry.ts`), `Ws` (`peerFiles.ts`), `Nq` y `kv`
++ * (`sessionRegistryState.ts`), `Y` (`getSessionId`), `tFt`
++ * (`ownDisplayName`), `wFe` (`ownSessionRef`) y `pr`
++ * (`normalizeBridgeOrCloudId`).
++ *
++ * Divergencias declaradas, cada una porque su origen no tiene porte aquí:
++ * - Las fuentes remotas de `chunk-neeyxbak.js` —`cKe` (refresco de cuenta),
++ *   `Ftn`/`Fkr`/`Utn` (el paseo por el puente y su clave de identidad),
++ *   `pDe` (el listado en la nube), `JIt`/`QIt`/`Btn` (su caché) y `Dst`—
++ *   son `RemotePeerSources`. `unportedRemotePeerSources` da cero filas sin
++ *   fallo; un consumidor con puente o nube inyecta las suyas. El fallo por
++ *   clave de identidad (`l.identityKey !== null && !Utn(l)`) queda dentro
++ *   de `BridgeSessionWalk.failed`, que el paseo inyectado calcula.
++ * - `IY` (`chunk-0rzp9bzr.js`) compara con dos ids propios: el del puente
++ *   del REPL (`_3e()`) y el del entorno remoto (`Dae`). Aquí sólo el
++ *   segundo, `remoteEnvironmentBridgeTarget`; el primero no tiene accessor
++ *   en este paquete.
++ * - `iy` (`chunk-a84ya7ak.js`, el archivo de equipo) y `da`
++ *   (`chunk-jzycvw5e.js`, el nombre del equipo) viven en `@thyrox/swarm`,
++ *   que depende de este paquete: llegan por `SubagentExtrasDeps`.
++ * - `callerTeammateId` de `Tor` lee `e.teammateContext`, que el
++ *   `ToolUseContext` de este árbol no tiene: siempre `undefined`, y
++ *   `localTeammates` resuelve al llamador por su cuenta.
++ * - `jkr` (`userTypedCurrentName`, `sessionRename.ts`) exige un
++ *   `RenameContext` entero; `nameIsUserChosen` repite su criterio de dos
++ *   líneas sobre `kv` y `SessionNameState.userTypedName`.
++ * - `Ve()`, el id del candidato `main` de la tabla de refs, no aparece en
++ *   `chunk-5mcqvwzx.js` ni en sus importaciones: `processListAgentsDeps` usa
++ *   el id de agente del swarm o, sin él, el id de sesión.
++ * - Los pares `did` (`c`) eran una promesa constante vacía y
++ *   `didWarnings`/`didFocused` nunca se leen: no se portan.
++ * - `channel`/`q` de la entrada iban a `Ftn`: sin puerto, se aceptan y no se
++ *   leen, como su propia descripción dice («Not available in this build»).
++ */
++import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
++
++import type {
++  BridgeSession,
++  FormatContext,
++  ListAgentsAppState,
++  ListAgentsTeamContext,
++  OwnSessionInfo,
++  PeerEntry,
++  PeerRefDependencies,
++  TeamFile,
++  UdsSession,
++} from './listAgentsFormat.ts'
++import { formatForModel, ownDisplayName } from './listAgentsFormat.ts'
++import type { CloudSession } from './listAgentsFormat.ts'
++import {
++  SessionRecordsUnreadableError,
++  hasConflictingMessagingSocketOwner,
++  liveNonSpareSessions,
++  messagingSocketEnvOverride,
++  type LiveSessionRecord,
++} from './liveSessionRegistry.ts'
++import { isSessionMessagingEnabled } from './peerFiles.ts'
++import { remoteEnvironmentBridgeTarget } from './peerLoopGuard.ts'
++import {
++  buildPeerRefTable,
++  formatPeerWithRef,
++  normalizeBridgeOrCloudId,
++  ownSessionRef,
++  shouldUseOwnSocketRef,
++  type PeerBridgeSession,
++  type PeerRefTableDeps,
++  type PeerSessionRecord,
++} from './peerRefTable.ts'
++import { sessionNameState } from './sessionNameState.ts'
++import { registeredSessionName, stableAddressEnabled } from './sessionRegistryState.ts'
++
++/** `Z` de `chunk-5mcqvwzx.js`: el prefijo de la dirección estable de una sesión. */
++const STABLE_ADDRESS_PREFIX = 'sid:'
++/** `Dst`: los motivos de indisponibilidad de la nube que cuentan como fallo del listado. */
++const CLOUD_LIST_FAILURES: ReadonlySet<string> = new Set(['timeout', 'fetch_failed'])
++/** Las fuentes de nombre (`kv().source`) que `jkr` cuenta como elegidas por la persona. */
++const USER_CHOSEN_NAME_SOURCES: ReadonlySet<string> = new Set(['user', 'collision'])
++/** `wFe('session', …)`: la clase de candidato bajo la que se hashea la sesión propia. */
++const OWN_SESSION_CANDIDATE_KIND = 'session'
++
++// ---------------------------------------------------------------------------
++// Las fuentes de pares — `kor`
++// ---------------------------------------------------------------------------
++
++/** Lo local que `kor` consulta. */
++export interface LocalPeerSources {
++  /** `Ws`. */
++  messagingEnabled(): boolean
++  /** `qRr`. */
++  listLiveSessions(): Promise<LiveSessionRecord[]>
++  /** `VRr`. */
++  ownEndpointShadowed(): Promise<boolean>
++  /** `Nq`. */
++  stableAddressEnabled(): boolean
++}
++
++/** Lo que `pDe` devuelve. */
++export interface CloudSessionListing {
++  readonly sessions: readonly CloudSession[]
++  readonly unavailable?: string
++  readonly truncated?: boolean
++}
++
++/** Lo que `Ftn` + `Fkr` + `Utn` devuelven, ya filtrado. */
++export interface BridgeSessionWalk {
++  readonly sessions: readonly BridgeSession[]
++  readonly failed: boolean
++  readonly truncated?: boolean
++}
++
++/** Lo remoto que `kor` consulta. */
++export interface RemotePeerSources {
++  /** `pDe`. */
++  listCloudSessions(): Promise<CloudSessionListing>
++  /** `Ftn`, `Fkr` y `Utn`. */
++  walkBridgeSessions(): Promise<BridgeSessionWalk>
++  /** `IY`. */
++  isOwnBridgeSession(id: string): boolean
++}
++
++export interface PeerSources {
++  readonly local: LocalPeerSources
++  readonly remote: RemotePeerSources
++}
++
++/** Lo que `kor` devuelve: los pares y las banderas que el formato lee. */
++export interface ListAllPeersResult {
++  readonly peers: readonly PeerEntry[]
++  readonly bridgeWalkFailed: boolean
++  readonly cloudListFailed: boolean
++  readonly localListFailed: boolean
++  readonly ownEndpointShadowed: boolean
++  readonly messagingDisabled: boolean
++  readonly listTruncated: boolean
++}
++
++interface LocalSessionListing {
++  readonly sessions: readonly LiveSessionRecord[]
++  readonly failed: boolean
++}
++
++const NO_LOCAL_SESSIONS: LocalSessionListing = { sessions: [], failed: false }
++const NO_BRIDGE_SESSIONS: BridgeSessionWalk = { sessions: [], failed: false }
++
++/** `qRr().catch(...)`: un registro ilegible (`KOt`) es un fallo del listado local; cualquier otro error sube. */
++async function liveSessionsOrFailure(local: LocalPeerSources): Promise<LocalSessionListing> {
++  try {
++    return { sessions: await local.listLiveSessions(), failed: false }
++  } catch (error) {
++    if (error instanceof SessionRecordsUnreadableError) return { sessions: [], failed: true }
++    throw error
++  }
++}
++
++/** `rFt`: si alguna sesión uds ya representa la sesión de puente `bridgeId`. */
++function hasLocalSessionForBridge(sessions: readonly LiveSessionRecord[], bridgeId: string): boolean {
++  const normalized = normalizeBridgeOrCloudId(bridgeId)
++  return sessions.some(session => session.bridgeSessionId !== undefined && normalizeBridgeOrCloudId(session.bridgeSessionId) === normalized)
++}
++
++function isCloudListFailure(unavailable: string | undefined): boolean {
++  return unavailable !== undefined && CLOUD_LIST_FAILURES.has(unavailable)
++}
++
++/** `VRr` sólo se mide con la mensajería y la dirección estable activas, y su fallo cuenta como no. */
++function measureOwnEndpointShadowed(local: LocalPeerSources, messagingEnabled: boolean): Promise<boolean> {
++  if (!messagingEnabled || !local.stableAddressEnabled()) return Promise.resolve(false)
++  return local.ownEndpointShadowed().catch(() => false)
++}
++
++/** `kor`: los pares uds, de nube y de puente, con las banderas de lo que no se pudo listar. */
++export async function listAllPeers(sources: PeerSources = processPeerSources()): Promise<ListAllPeersResult> {
++  const messagingEnabled = sources.local.messagingEnabled()
++  const [local, bridge, cloud, ownEndpointShadowed] = await Promise.all([
++    messagingEnabled ? liveSessionsOrFailure(sources.local) : NO_LOCAL_SESSIONS,
++    messagingEnabled ? sources.remote.walkBridgeSessions() : NO_BRIDGE_SESSIONS,
++    sources.remote.listCloudSessions(),
++    measureOwnEndpointShadowed(sources.local, messagingEnabled),
++  ])
++  const udsPeers: PeerEntry[] = local.sessions.map(session => ({ transport: 'uds', address: `uds:${session.sock}`, session }))
++  const cloudPeers: PeerEntry[] = cloud.sessions
++    .filter(session => !hasLocalSessionForBridge(local.sessions, session.id) && !sources.remote.isOwnBridgeSession(session.id))
++    .map(session => ({ transport: 'cloud', address: undefined, session }))
++  const bridgePeers: PeerEntry[] = bridge.sessions.map(session => ({ transport: 'bridge', address: `bridge:${session.id}`, session }))
++  return {
++    peers: [...udsPeers, ...cloudPeers, ...bridgePeers],
++    bridgeWalkFailed: bridge.failed,
++    cloudListFailed: isCloudListFailure(cloud.unavailable),
++    localListFailed: local.failed,
++    ownEndpointShadowed,
++    messagingDisabled: !messagingEnabled,
++    listTruncated: cloud.truncated === true || bridge.truncated === true,
++  }
++}
++
++// ---------------------------------------------------------------------------
++// La sesión propia — `U`
++// ---------------------------------------------------------------------------
++
++/** Lo que `U` lee de singletons. */
++export interface OwnSessionDeps {
++  /** `DV`. */
++  ownMessagingSocket(): string | undefined
++  /** `kv`. */
++  registeredName(): { readonly name: string; readonly source: string } | undefined
++  /** `SessionNameState.userTypedName`, la mitad de `jkr` que no está en `kv`. */
++  userTypedName(): string | undefined
++  /** `Y`. */
++  ownSessionId(): string
++  /** `Nq`. */
++  stableAddressEnabled(): boolean
++}
++
++/** `KFr`: la dirección con que se hashea el ref propio — la estable si está activa, si no el socket. */
++function ownRefAddress(sock: string, deps: OwnSessionDeps): string {
++  return deps.stableAddressEnabled() ? `${STABLE_ADDRESS_PREFIX}${deps.ownSessionId()}` : sock
++}
++
++/** `jkr`: si el nombre registrado lo tecleó la persona y sigue siendo el que tecleó. */
++function isUserChosenName(deps: OwnSessionDeps): boolean {
++  const current = deps.registeredName()
++  return current !== undefined && USER_CHOSEN_NAME_SOURCES.has(current.source) && deps.userTypedName() === current.name
++}
++
++/** `U`: cómo se nombra esta sesión ante las demás, o `null` si no tiene socket ni nombre mostrable. */
++export function ownSessionInfo(callerIsSubagent: boolean, deps: OwnSessionDeps): OwnSessionInfo | null {
++  const sock = deps.ownMessagingSocket()
++  const name = ownDisplayName(deps.registeredName()?.name)
++  const hasSocket = sock !== undefined && sock !== ''
++  if (!hasSocket || name === null) return null
++  const tokenFor = (address: string): string => `${name} [${ownSessionRef(OWN_SESSION_CANDIDATE_KIND, address)}]`
++  return {
++    token: tokenFor(ownRefAddress(sock, deps)),
++    socketToken: tokenFor(sock),
++    sock,
++    callerIsSubagent,
++    nameIsUserChosen: isUserChosenName(deps),
++  }
++}
++
++// ---------------------------------------------------------------------------
++// El contexto del formato — `Tor`
++// ---------------------------------------------------------------------------
++
++/** Lo que `Tor` lee de fuera de `AppState`. */
++export interface SubagentExtrasDeps {
++  /** `da`. */
++  teamName(teamContext: ListAgentsTeamContext | undefined): string | undefined
++  /** `iy`. */
++  readTeamFile(teamName: string): Promise<TeamFile | null>
++  readonly own: OwnSessionDeps
++}
++
++/** `Tor`: el estado, el archivo de equipo (si hay equipo) y la sesión propia con que se formatea. */
++export async function buildSubagentExtras(appState: ListAgentsAppState, callerIsSubagent: boolean, deps: SubagentExtrasDeps): Promise<FormatContext> {
++  const teamName = deps.teamName(appState.teamContext)
++  return {
++    appState,
++    teamFile: teamName === undefined ? null : await deps.readTeamFile(teamName),
++    callerTeammateId: undefined,
++    self: ownSessionInfo(callerIsSubagent, deps.own),
++  }
++}
++
++// ---------------------------------------------------------------------------
++// La tabla de refs, adaptada a las formas del formato — `tj`/`M6`/`oBo`
++// ---------------------------------------------------------------------------
++
++function toPeerSessionRecord(session: UdsSession): PeerSessionRecord {
++  return {
++    name: session.name,
++    cwd: session.cwd,
++    sock: session.sock,
++    sessionId: session.sessionId,
++    statusUpdatedAt: session.statusUpdatedAt,
++    bridgeSessionId: session.bridgeSessionId,
++    hostSessionId: session.hostSessionId,
++    nameSource: session.nameSource,
++  }
++}
++
++/** Sin `updatedAt` la fila va sin fecha, y la tabla no le calcula `lastActive`. */
++function toPeerBridgeSession(session: BridgeSession): PeerBridgeSession {
++  return { ...session, updatedAt: session.updatedAt ?? '' }
++}
++
++/** `PeerRefDependencies` sobre `peerRefTable.ts`, con las sesiones traducidas a su forma de registro. */
++export function peerRefDependencies(deps: PeerRefTableDeps): PeerRefDependencies {
++  return {
++    buildPeerRefTable: (appState, options) =>
++      buildPeerRefTable(
++        appState,
++        { teamFile: options.teamFile ?? undefined, sessions: options.sessions.map(toPeerSessionRecord), cloud: options.cloud, bridge: options.bridge.map(toPeerBridgeSession) },
++        deps,
++      ),
++    formatWithRef: formatPeerWithRef,
++    ownSocketNeedsLongRef: (sessions, ownSock, ownEndpointShadowed) => shouldUseOwnSocketRef(sessions.map(toPeerSessionRecord), ownSock, deps, ownEndpointShadowed),
++  }
++}
++
++// ---------------------------------------------------------------------------
++// El cuerpo de `call` — `chunk-8xzbdmg9.js`
++// ---------------------------------------------------------------------------
++
++export interface ListAgentsDeps {
++  readonly sources: PeerSources
++  readonly extras: SubagentExtrasDeps
++  readonly refs: PeerRefTableDeps
++}
++
++/** Los pares y el contexto propio se piden a la vez, y el formato los junta. */
++export async function listAgentsForModel(appState: ListAgentsAppState, callerIsSubagent: boolean, deps: ListAgentsDeps): Promise<string> {
++  const [result, context] = await Promise.all([listAllPeers(deps.sources), buildSubagentExtras(appState, callerIsSubagent, deps.extras)])
++  return formatForModel(result.peers, context, peerRefDependencies(deps.refs), result)
++}
++
++// ---------------------------------------------------------------------------
++// El cableado del proceso
++// ---------------------------------------------------------------------------
++
++/** Las fuentes remotas sin porte: cero filas sin fallo, y sólo el puente del entorno remoto cuenta como propio. */
++export const unportedRemotePeerSources: RemotePeerSources = {
++  listCloudSessions: () => Promise.resolve({ sessions: [] }),
++  walkBridgeSessions: () => Promise.resolve(NO_BRIDGE_SESSIONS),
++  isOwnBridgeSession: id => {
++    const ownBridgeTarget = remoteEnvironmentBridgeTarget()
++    return ownBridgeTarget !== undefined && normalizeBridgeOrCloudId(ownBridgeTarget) === normalizeBridgeOrCloudId(id)
++  },
++}
++
++export function processPeerSources(): PeerSources {
++  return {
++    local: {
++      messagingEnabled: () => isSessionMessagingEnabled(),
++      listLiveSessions: () => liveNonSpareSessions(),
++      ownEndpointShadowed: hasConflictingMessagingSocketOwner,
++      stableAddressEnabled,
++    },
++    remote: unportedRemotePeerSources,
++  }
++}
++
++export function processOwnSessionDeps(): OwnSessionDeps {
++  return {
++    ownMessagingSocket: () => messagingSocketEnvOverride(),
++    registeredName: () => registeredSessionName(),
++    userTypedName: () => sessionNameState().userTypedName,
++    ownSessionId: () => getSessionId(),
++    stableAddressEnabled,
++  }
++}
++
++/** Lo que vive en `@thyrox/swarm` y este paquete no puede importar: `da`, `iy` y el id de agente propio. */
++export interface TeamDeps {
++  teamName: SubagentExtrasDeps['teamName']
++  readTeamFile: SubagentExtrasDeps['readTeamFile']
++  ownAgentId(): string | undefined
++}
++
++export function processListAgentsDeps(team: TeamDeps): ListAgentsDeps {
++  const own = processOwnSessionDeps()
++  return {
++    sources: processPeerSources(),
++    extras: { teamName: team.teamName, readTeamFile: team.readTeamFile, own },
++    refs: {
++      ownAgentId: () => team.ownAgentId() ?? own.ownSessionId(),
++      ownSessionId: own.ownSessionId,
++      stableAddressEnabled: own.stableAddressEnabled,
++      ownMessagingSocket: own.ownMessagingSocket,
++    },
++  }
++}
+diff --git a/src/packages/local-observability/src/uds/peerFiles.ts b/src/packages/local-observability/src/uds/peerFiles.ts
+index df4a16026..e49766c0e 100644
+--- a/src/packages/local-observability/src/uds/peerFiles.ts
++++ b/src/packages/local-observability/src/uds/peerFiles.ts
+@@ -8,7 +8,8 @@
+  *
+  * Porte de `chunk-xqnw10c4.js` (con los nombres que exporta
+  * `chunk-yrfq0b3e.js`), `ZOe` y `Dur` de `chunk-d6ekr2rh.js`, `met` de
+- * `chunk-k1ds5bv1.js`, `G3` de `chunk-c98zkdh2.js` y `nlt`/`Ws` de 2.1.283.
++ * `chunk-k1ds5bv1.js`, `G3` de `chunk-c98zkdh2.js`, `nlt` y la compuerta
++ * `Ws`/`Vee`/`$Mt` de `chunk-fhcnpt13.js`, todos de 2.1.283.
+  * El predicado de ruta insegura (`Mur`) vive en `@thyrox/permission`, que
+  * depende de este paquete, así que entra como dependencia.
+  */
+@@ -21,7 +22,7 @@ import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path
+ import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+ import { isEnvTruthy } from '@thyrox/config/env/utils'
+-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
++import { getAllGrowthBookFeatures, getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+ import { getPlatform } from '@thyrox/config/platform'
+ 
+ import { logForDebugging } from '../debug.ts'
+@@ -398,3 +399,71 @@ export function isSessionMessagingEnabled(readers: MessagingFlagReaders = proces
+ export function isPeerFileTransferEnabled(readers: MessagingFlagReaders = processMessagingFlagReaders()): boolean {
+   return isSessionMessagingEnabled(readers) && readers.flag('tengu_send_file', false)
+ }
++
++/** `$Mt`: lo que se contesta cuando la mensajería entre sesiones no está disponible. */
++export const CROSS_SESSION_MESSAGING_UNAVAILABLE_MESSAGE = 'Cross-session messaging is not available in this session.'
++
++/** La bandera que `Vee` lee. */
++const PROJECTS_HUMAN_ORIGIN_FLAG = 'tengu_cuddly_willow'
++
++/**
++ * Lo que `Vee` necesita: la bandera y si está DECLARADA (entorno, config u
++ * override local) — el `source !== 'fallback'` de `aa` en la referencia.
++ */
++export interface SettledFlagReaders {
++  flag: MessagingFlagReaders['flag']
++  flagDeclared: (name: string) => boolean
++}
++
++const processSettledFlagReaders = (): SettledFlagReaders => ({
++  flag: processMessagingFlagReaders().flag,
++  flagDeclared: name => name in getAllGrowthBookFeatures(),
++})
++
++/**
++ * `Vee`: si el origen humano de Projects cuenta como tal. Mientras las
++ * banderas no se han asentado (`flagsSettled === false`) sólo vale si la
++ * bandera está declarada; después, la bandera manda y por omisión es sí.
++ */
++export function isProjectsHumanOriginEnabled(state: { flagsSettled?: boolean } = {}, readers: SettledFlagReaders = processSettledFlagReaders()): boolean {
++  const unsettledWithoutDeclaration = state.flagsSettled === false && !readers.flagDeclared(PROJECTS_HUMAN_ORIGIN_FLAG)
++  if (unsettledWithoutDeclaration) return false
++  return readers.flag(PROJECTS_HUMAN_ORIGIN_FLAG, true)
++}
++
++// ---------------------------------------------------------------------------
++// La cara exportada del núcleo de ListAgents — el papel de `chunk-1csd5fav.js`
++// ---------------------------------------------------------------------------
++
++/**
++ * `chunk-1csd5fav.js` es, en la referencia, el barrel por el que la
++ * herramienta `ListAgents` llega a `listAllPeers`, `buildSubagentExtras` y
++ * `formatForModel`. Aquí ese papel lo hace este módulo porque es el único
++ * subpath de `./uds/` que `package.json` exporta y que TASK-THYROX-0600
++ * posee: `listAllPeers.js` y `listAgentsFormat.js` no están en `exports`, y
++ * ese archivo queda fuera del ítem. Cuando entren, la herramienta importa
++ * `./uds/listAllPeers.js` y este bloque se retira. El ciclo
++ * `listAllPeers.ts` → `peerFiles.ts` (por `Ws`) → `listAllPeers.ts` es
++ * inerte: ninguno usa al otro al evaluarse, sólo dentro de funciones.
++ */
++export {
++  buildSubagentExtras,
++  listAgentsForModel,
++  listAllPeers,
++  ownSessionInfo,
++  processListAgentsDeps,
++  processOwnSessionDeps,
++  processPeerSources,
++  unportedRemotePeerSources,
++  type BridgeSessionWalk,
++  type CloudSessionListing,
++  type ListAgentsDeps,
++  type ListAllPeersResult,
++  type LocalPeerSources,
++  type OwnSessionDeps,
++  type PeerSources,
++  type RemotePeerSources,
++  type SubagentExtrasDeps,
++  type TeamDeps,
++} from './listAllPeers.ts'
++export type { CloudSession, ListAgentsAppState } from './listAgentsFormat.ts'
+diff --git a/src/packages/tool-registry/src/tools/ListAgentsTool/ListAgentsTool.ts b/src/packages/tool-registry/src/tools/ListAgentsTool/ListAgentsTool.ts
+new file mode 100644
+index 000000000..ae216b175
+--- /dev/null
++++ b/src/packages/tool-registry/src/tools/ListAgentsTool/ListAgentsTool.ts
+@@ -0,0 +1,113 @@
++/**
++ * `ListAgents` (alias `ListPeers`): la lista de agentes a los que se puede
++ * mandar un `SendMessage`. Porte de `x` (`chunk-8xzbdmg9.js`, 2.1.283).
++ * `backgrounding: "never"` no tiene campo en el `ToolDef` de este árbol y no
++ * se escribe; `renderToolUseMessage(){return null}` sí, porque aquí es
++ * obligatorio (medido: `buildTool` no lo da por omisión, TS2345).
++ *
++ * El núcleo (`listAllPeers`, `buildSubagentExtras`, `formatForModel`) vive en
++ * `listAllPeers.ts` de `@thyrox/local-observability`, cuyo subpath NO está
++ * en los `exports` de ese paquete y cuyo `package.json` queda fuera del
++ * alcance de TASK-THYROX-0600: llega por `uds/peerFiles.js`, el subpath
++ * exportado que hace de barrel (el papel de `chunk-1csd5fav.js`), hasta que
++ * `./uds/listAllPeers.js` entre en `exports`. Medido antes: el import
++ * relativo entre paquetes rompe el typecheck (`rootDir`, 50 × TS6059).
++ */
++import { z } from 'zod/v4'
++
++import { isSessionMessagingEnabled, listAgentsForModel, processListAgentsDeps, type TeamDeps } from '@thyrox/local-observability/uds/peerFiles.js'
++import { readTeamFileAsync } from '@thyrox/swarm'
++import { getAgentId, getTeamName } from '@thyrox/swarm/teammateState.js'
++
++import type { Tool } from '../../Tool.js'
++import { buildTool } from '../../Tool.js'
++import { lazySchema } from '../../utils/lazySchema.js'
++import { SEND_MESSAGE_TOOL_NAME } from '../SendMessageTool/constants.js'
++import { LIST_AGENTS_TOOL_NAME, LIST_PEERS_TOOL_ALIAS, getPrompt } from './prompt.js'
++
++/** `p`. */
++const MAX_RESULT_SIZE_CHARS = 10_000
++/** El `.max(256)` de `channel` y `q`. */
++const MAX_FILTER_LENGTH = 256
++const UNAVAILABLE_FILTER_NOTE = 'Not available in this build; leave unset.'
++
++/** `d`. */
++const inputSchema = lazySchema(() =>
++  z.strictObject({
++    channel: z.string().max(MAX_FILTER_LENGTH).optional().describe(UNAVAILABLE_FILTER_NOTE),
++    q: z.string().max(MAX_FILTER_LENGTH).optional().describe(UNAVAILABLE_FILTER_NOTE),
++  }),
++)
++/** `S`. */
++const outputSchema = lazySchema(() => z.object({ listing: z.string().describe('Formatted list of reachable agents') }))
++
++type InputSchema = ReturnType<typeof inputSchema>
++export type Output = z.infer<ReturnType<typeof outputSchema>>
++
++/** `da`, `iy` y el id de agente propio viven en `@thyrox/swarm`, que local-observability no importa. */
++const swarmTeamDeps: TeamDeps = {
++  teamName: teamContext => getTeamName(teamContext?.teamName === undefined ? undefined : { teamName: teamContext.teamName }),
++  readTeamFile: readTeamFileAsync,
++  ownAgentId: getAgentId,
++}
++
++/** `eC`: el llamador es un subagente cuando el contexto lleva `agentId`, que sólo se fija para ellos. */
++function isSubagentCaller(context: { readonly agentId?: string }): boolean {
++  return context.agentId !== undefined
++}
++
++export const ListAgentsTool: Tool<InputSchema, Output> = buildTool({
++  name: LIST_AGENTS_TOOL_NAME,
++  aliases: [LIST_PEERS_TOOL_ALIAS],
++  searchHint: `list agents you can ${SEND_MESSAGE_TOOL_NAME} to`,
++  maxResultSizeChars: MAX_RESULT_SIZE_CHARS,
++
++  toAutoClassifierInput() {
++    return 'list agents'
++  },
++
++  async description() {
++    return getPrompt()
++  },
++
++  userFacingName() {
++    return LIST_AGENTS_TOOL_NAME
++  },
++
++  isEnabled() {
++    return isSessionMessagingEnabled()
++  },
++
++  get inputSchema(): InputSchema {
++    return inputSchema()
++  },
++
++  get outputSchema() {
++    return outputSchema()
++  },
++
++  isConcurrencySafe() {
++    return true
++  },
++
++  isReadOnly() {
++    return true
++  },
++
++  async prompt() {
++    return getPrompt()
++  },
++
++  renderToolUseMessage() {
++    return null
++  },
++
++  async call(_input, context) {
++    const listing = await listAgentsForModel(context.getAppState(), isSubagentCaller(context), processListAgentsDeps(swarmTeamDeps))
++    return { data: { listing } }
++  },
++
++  mapToolResultToToolResultBlockParam(data, toolUseID) {
++    return { tool_use_id: toolUseID, type: 'tool_result' as const, content: data.listing }
++  },
++})
+diff --git a/src/packages/tool-registry/src/tools/ListAgentsTool/__tests__/ListAgentsTool.test.ts b/src/packages/tool-registry/src/tools/ListAgentsTool/__tests__/ListAgentsTool.test.ts
+new file mode 100644
+index 000000000..49f5b13a7
+--- /dev/null
++++ b/src/packages/tool-registry/src/tools/ListAgentsTool/__tests__/ListAgentsTool.test.ts
+@@ -0,0 +1,365 @@
++/**
++ * TASK-THYROX-0600 — la herramienta `ListAgents` (alias `ListPeers`) de
++ * 2.1.283 (`chunk-8xzbdmg9.js`), su núcleo `listAllPeers`/`ownSessionInfo`/
++ * `buildSubagentExtras` (`kor`/`U`/`Tor`, `chunk-mk0qbzxv.js`) y la compuerta
++ * `Vee`/`$Mt` (`chunk-fhcnpt13.js`).
++ *
++ * El núcleo se prueba aquí y no en `local-observability/__tests__` porque
++ * este ítem sólo posee esta suite. Se importa por el subpath exportado
++ * `uds/peerFiles.js`, la misma cara por la que llega a la herramienta, y
++ * `SessionRecordsUnreadableError` por `uds/liveSessionRegistry.js`, para que
++ * sea la MISMA clase que `listAllPeers.ts` compara con `instanceof`.
++ */
++import { PRODUCT_NAME } from '@thyrox/config/product'
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { createServer, type Server } from 'node:net'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++
++import { SessionRecordsUnreadableError, type LiveSessionRecord } from '@thyrox/local-observability/uds/liveSessionRegistry.js'
++import {
++  CROSS_SESSION_MESSAGING_UNAVAILABLE_MESSAGE,
++  buildSubagentExtras,
++  isProjectsHumanOriginEnabled,
++  listAgentsForModel,
++  listAllPeers,
++  ownSessionInfo,
++  type CloudSession,
++  type ListAgentsAppState,
++  type ListAgentsDeps,
++  type OwnSessionDeps,
++  type PeerSources,
++  type SettledFlagReaders,
++} from '@thyrox/local-observability/uds/peerFiles.js'
++import { ListAgentsTool } from '../ListAgentsTool.ts'
++import { BuiltInToolsProvider } from '../../registry/providers/BuiltInToolsProvider.ts'
++import { LIST_AGENTS_TOOL_NAME, LIST_PEERS_TOOL_ALIAS, getPrompt } from '../prompt.ts'
++
++const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
++const HARBOR_KITE_ENV = 'THYROX_CODE_HARBOR_KITE'
++const OWN_SOCKET_ENV = 'THYROX_CODE_MESSAGING_SOCKET'
++const MESSAGING_DISABLED_NOTICE =
++  'Cross-session messaging is switched off in this session right now — no sessions were listed, and this session is not reachable by name until it is switched back on.'
++
++function liveSession(overrides: Partial<LiveSessionRecord> = {}): LiveSessionRecord {
++  return {
++    sock: '/tmp/cc-socks/1.sock',
++    cwd: '/work/one',
++    startedAt: Date.now() - 5000,
++    procStart: undefined,
++    formerNames: [],
++    kind: 'interactive',
++    sessionId: 'session-1',
++    spare: false,
++    status: 'idle',
++    entrypoint: undefined,
++    pid: 1,
++    name: 'one',
++    ...overrides,
++  }
++}
++
++function cloudSession(overrides: Partial<CloudSession> = {}): CloudSession {
++  return { id: 'session_cloud1', title: 'cloud one', ...overrides }
++}
++
++function sources(overrides: { local?: Partial<PeerSources['local']>; remote?: Partial<PeerSources['remote']> } = {}): PeerSources {
++  return {
++    local: {
++      messagingEnabled: () => true,
++      listLiveSessions: async () => [],
++      ownEndpointShadowed: async () => false,
++      stableAddressEnabled: () => false,
++      ...overrides.local,
++    },
++    remote: {
++      listCloudSessions: async () => ({ sessions: [] }),
++      walkBridgeSessions: async () => ({ sessions: [], failed: false }),
++      isOwnBridgeSession: () => false,
++      ...overrides.remote,
++    },
++  }
++}
++
++function ownDeps(overrides: Partial<OwnSessionDeps> = {}): OwnSessionDeps {
++  return {
++    ownMessagingSocket: () => '/tmp/cc-socks/9.sock',
++    registeredName: () => ({ name: 'alice', source: 'user' }),
++    userTypedName: () => 'alice',
++    ownSessionId: () => 'own-session',
++    stableAddressEnabled: () => false,
++    ...overrides,
++  }
++}
++
++function emptyAppState(): ListAgentsAppState {
++  return { agentNameRegistry: new Map(), tasks: {} }
++}
++
++function deps(overrides: Partial<ListAgentsDeps> = {}): ListAgentsDeps {
++  const own = ownDeps({ registeredName: () => undefined })
++  return {
++    sources: sources(),
++    extras: { teamName: () => undefined, readTeamFile: async () => null, own },
++    refs: { ownAgentId: () => 'a-main', ownSessionId: own.ownSessionId },
++    ...overrides,
++  }
++}
++
++describe('el descriptor de ListAgents (chunk-8xzbdmg9)', () => {
++  test('nombre, alias, lectura, concurrencia y tope de resultado', () => {
++    expect(ListAgentsTool.name).toBe('ListAgents')
++    expect(LIST_AGENTS_TOOL_NAME).toBe('ListAgents')
++    expect(ListAgentsTool.aliases).toEqual(['ListPeers'])
++    expect(LIST_PEERS_TOOL_ALIAS).toBe('ListPeers')
++    expect(ListAgentsTool.isReadOnly({})).toBe(true)
++    expect(ListAgentsTool.isConcurrencySafe({})).toBe(true)
++    expect(ListAgentsTool.maxResultSizeChars).toBe(10_000)
++    expect(ListAgentsTool.searchHint).toBe('list agents you can SendMessage to')
++    expect(ListAgentsTool.userFacingName({})).toBe('ListAgents')
++    expect(ListAgentsTool.toAutoClassifierInput({})).toBe('list agents')
++  })
++
++  test('el esquema de entrada admite channel/q hasta 256 y nada más; el de salida exige listing', () => {
++    const input = ListAgentsTool.inputSchema
++    expect(input.safeParse({}).success).toBe(true)
++    expect(input.safeParse({ channel: 'x'.repeat(256), q: 'y' }).success).toBe(true)
++    expect(input.safeParse({ channel: 'x'.repeat(257) }).success).toBe(false)
++    expect(input.safeParse({ other: 1 }).success).toBe(false)
++    const output = ListAgentsTool.outputSchema!
++    expect(output.safeParse({ listing: 'x' }).success).toBe(true)
++    expect(output.safeParse({}).success).toBe(false)
++  })
++
++  test('la descripción (Wxr) nombra a SendMessage y al producto por PRODUCT_NAME', async () => {
++    const prompt = getPrompt()
++    expect(prompt.startsWith('Lists agents you can SendMessage to')).toBe(true)
++    expect(prompt).toContain('`SendMessage({to: "<name>", message: "..."})`')
++    expect(prompt).toContain(`other local ${PRODUCT_NAME} sessions on this machine`)
++    expect(await ListAgentsTool.description({}, { isNonInteractiveSession: false, toolPermissionContext: {} as never, tools: [] })).toBe(prompt)
++  })
++
++  test('el resultado va al modelo como texto plano del listing', () => {
++    const block = ListAgentsTool.mapToolResultToToolResultBlockParam({ listing: 'No reachable agents.' }, 'tu1')
++    expect(block).toEqual({ tool_use_id: 'tu1', type: 'tool_result', content: 'No reachable agents.' })
++  })
++
++  test('BuiltInToolsProvider lo registra siempre, por nombre y por alias', async () => {
++    const tools = await BuiltInToolsProvider.discover()
++    const listAgents = tools.find(tool => tool.name === LIST_AGENTS_TOOL_NAME)
++    expect(listAgents).toBeDefined()
++    expect(listAgents?.aliases).toEqual([LIST_PEERS_TOOL_ALIAS])
++  })
++
++  test('isEnabled es la compuerta Ws: THYROX_CODE_HARBOR_KITE manda', () => {
++    const previous = process.env[HARBOR_KITE_ENV]
++    try {
++      process.env[HARBOR_KITE_ENV] = '0'
++      expect(ListAgentsTool.isEnabled()).toBe(false)
++      process.env[HARBOR_KITE_ENV] = '1'
++      expect(ListAgentsTool.isEnabled()).toBe(true)
++    } finally {
++      if (previous === undefined) delete process.env[HARBOR_KITE_ENV]
++      else process.env[HARBOR_KITE_ENV] = previous
++    }
++  })
++})
++
++describe('listAllPeers (kor)', () => {
++  test('cada sesión uds viva entra con su dirección uds:<socket>', async () => {
++    const result = await listAllPeers(sources({ local: { listLiveSessions: async () => [liveSession(), liveSession({ sock: '/tmp/cc-socks/2.sock', sessionId: 'session-2', pid: 2 })] } }))
++    expect(result.peers.map(peer => peer.address)).toEqual(['uds:/tmp/cc-socks/1.sock', 'uds:/tmp/cc-socks/2.sock'])
++    expect(result.peers.every(peer => peer.transport === 'uds')).toBe(true)
++    expect(result).toMatchObject({ messagingDisabled: false, localListFailed: false, cloudListFailed: false, bridgeWalkFailed: false, ownEndpointShadowed: false, listTruncated: false })
++  })
++
++  test('con la mensajería apagada no se consulta el registro ni el puente, y messagingDisabled lo dice', async () => {
++    let localCalls = 0
++    let bridgeCalls = 0
++    const result = await listAllPeers(
++      sources({
++        local: { messagingEnabled: () => false, listLiveSessions: async () => (localCalls++, [liveSession()]) },
++        remote: { walkBridgeSessions: async () => (bridgeCalls++, { sessions: [], failed: false }) },
++      }),
++    )
++    expect(localCalls).toBe(0)
++    expect(bridgeCalls).toBe(0)
++    expect(result.peers).toEqual([])
++    expect(result.messagingDisabled).toBe(true)
++  })
++
++  test('un registro ilegible (KOt) marca localListFailed sin tumbar el listado; otro error sí se propaga', async () => {
++    const unreadable = await listAllPeers(sources({ local: { listLiveSessions: async () => { throw new SessionRecordsUnreadableError('EACCES') } } }))
++    expect(unreadable.localListFailed).toBe(true)
++    expect(unreadable.peers).toEqual([])
++    await expect(listAllPeers(sources({ local: { listLiveSessions: async () => { throw new Error('otro') } } }))).rejects.toThrow('otro')
++  })
++
++  test('las sesiones en la nube entran salvo la propia de puente y las ya representadas por una sesión uds', async () => {
++    const result = await listAllPeers(
++      sources({
++        local: { listLiveSessions: async () => [liveSession({ bridgeSessionId: 'session_linked' })] },
++        remote: {
++          listCloudSessions: async () => ({ sessions: [cloudSession(), cloudSession({ id: 'session_linked' }), cloudSession({ id: 'session_own' })] }),
++          isOwnBridgeSession: id => id === 'session_own',
++        },
++      }),
++    )
++    expect(result.peers.map(peer => [peer.transport, peer.address])).toEqual([
++      ['uds', 'uds:/tmp/cc-socks/1.sock'],
++      ['cloud', undefined],
++    ])
++  })
++
++  test('cloudListFailed sólo con timeout o fetch_failed; listTruncated si la nube o el puente se cortaron', async () => {
++    const timeout = await listAllPeers(sources({ remote: { listCloudSessions: async () => ({ sessions: [], unavailable: 'timeout' }) } }))
++    const fetchFailed = await listAllPeers(sources({ remote: { listCloudSessions: async () => ({ sessions: [], unavailable: 'fetch_failed' }) } }))
++    const other = await listAllPeers(sources({ remote: { listCloudSessions: async () => ({ sessions: [], unavailable: 'unauthorized' }) } }))
++    expect([timeout.cloudListFailed, fetchFailed.cloudListFailed, other.cloudListFailed]).toEqual([true, true, false])
++    const cloudCut = await listAllPeers(sources({ remote: { listCloudSessions: async () => ({ sessions: [], truncated: true }) } }))
++    const bridgeCut = await listAllPeers(sources({ remote: { walkBridgeSessions: async () => ({ sessions: [], failed: false, truncated: true }) } }))
++    expect([cloudCut.listTruncated, bridgeCut.listTruncated]).toEqual([true, true])
++  })
++
++  test('las sesiones de puente entran como bridge:<id> y su fallo se declara', async () => {
++    const result = await listAllPeers(sources({ remote: { walkBridgeSessions: async () => ({ sessions: [{ id: 'session_b1', title: 'remote' }], failed: true }) } }))
++    expect(result.peers).toEqual([{ transport: 'bridge', address: 'bridge:session_b1', session: { id: 'session_b1', title: 'remote' } }])
++    expect(result.bridgeWalkFailed).toBe(true)
++  })
++
++  test('ownEndpointShadowed se mide sólo con la dirección estable activa, y su fallo cuenta como no', async () => {
++    let probes = 0
++    const shadowed = async () => (probes++, true)
++    const withoutStable = await listAllPeers(sources({ local: { ownEndpointShadowed: shadowed } }))
++    expect([withoutStable.ownEndpointShadowed, probes]).toEqual([false, 0])
++    const withStable = await listAllPeers(sources({ local: { ownEndpointShadowed: shadowed, stableAddressEnabled: () => true } }))
++    expect([withStable.ownEndpointShadowed, probes]).toEqual([true, 1])
++    const failing = await listAllPeers(sources({ local: { ownEndpointShadowed: async () => { throw new Error('no') }, stableAddressEnabled: () => true } }))
++    expect(failing.ownEndpointShadowed).toBe(false)
++  })
++})
++
++describe('ownSessionInfo (U)', () => {
++  test('sin socket propio o con nombre reservado no hay sesión propia; en blanco, es «untitled session»', () => {
++    expect(ownSessionInfo(false, ownDeps({ ownMessagingSocket: () => undefined }))).toBeNull()
++    expect(ownSessionInfo(false, ownDeps({ registeredName: () => undefined }))).toBeNull()
++    expect(ownSessionInfo(false, ownDeps({ registeredName: () => ({ name: 'user', source: 'user' }) }))).toBeNull()
++    expect(ownSessionInfo(false, ownDeps({ registeredName: () => ({ name: '   ', source: 'user' }) }))?.socketToken).toMatch(/^untitled session \[/)
++  })
++
++  test('el token lleva el ref de la dirección estable si está activa, y el socketToken siempre el del socket', () => {
++    const bySocket = ownSessionInfo(false, ownDeps())!
++    expect(bySocket.sock).toBe('/tmp/cc-socks/9.sock')
++    expect(bySocket.token).toBe(bySocket.socketToken)
++    expect(bySocket.token).toMatch(/^alice \[[0-9a-f]{6}\]$/)
++    const byStable = ownSessionInfo(true, ownDeps({ stableAddressEnabled: () => true }))!
++    expect(byStable.socketToken).toBe(bySocket.socketToken)
++    expect(byStable.token).not.toBe(byStable.socketToken)
++    expect(byStable.callerIsSubagent).toBe(true)
++  })
++
++  test('nameIsUserChosen (jkr): sólo si la fuente es user/collision y sigue siendo lo tecleado', () => {
++    expect(ownSessionInfo(false, ownDeps())!.nameIsUserChosen).toBe(true)
++    expect(ownSessionInfo(false, ownDeps({ registeredName: () => ({ name: 'alice', source: 'collision' }) }))!.nameIsUserChosen).toBe(true)
++    expect(ownSessionInfo(false, ownDeps({ registeredName: () => ({ name: 'alice', source: 'derived' }) }))!.nameIsUserChosen).toBe(false)
++    expect(ownSessionInfo(false, ownDeps({ userTypedName: () => 'bob' }))!.nameIsUserChosen).toBe(false)
++  })
++})
++
++describe('buildSubagentExtras (Tor)', () => {
++  test('lee el archivo de equipo sólo cuando hay nombre de equipo, y arma el contexto del formato', async () => {
++    const reads: string[] = []
++    const own = ownDeps()
++    const appState: ListAgentsAppState = { ...emptyAppState(), teamContext: { teammates: {}, teamName: 'crew' } }
++    const withTeam = await buildSubagentExtras(appState, false, {
++      teamName: context => context?.teamName,
++      readTeamFile: async name => (reads.push(name), { members: [] }),
++      own,
++    })
++    expect(reads).toEqual(['crew'])
++    expect(withTeam.teamFile).toEqual({ members: [] })
++    expect(withTeam.appState).toBe(appState)
++    expect(withTeam.callerTeammateId).toBeUndefined()
++    expect(withTeam.self?.callerIsSubagent).toBe(false)
++
++    const withoutTeam = await buildSubagentExtras(emptyAppState(), true, { teamName: () => undefined, readTeamFile: async name => (reads.push(name), null), own })
++    expect(reads).toEqual(['crew'])
++    expect(withoutTeam.teamFile).toBeNull()
++    expect(withoutTeam.self?.callerIsSubagent).toBe(true)
++  })
++})
++
++describe('listAgentsForModel (el cuerpo de call)', () => {
++  test('compone pares, contexto propio y formato en un solo listing', async () => {
++    const listing = await listAgentsForModel(emptyAppState(), false, deps({ sources: sources({ local: { listLiveSessions: async () => [liveSession()] } }) }))
++    expect(listing).toContain('Peer sessions (1):')
++    expect(listing).toContain('one [')
++    expect(listing).toContain('interactive')
++  })
++
++  test('con la mensajería apagada el listing es el aviso, sin filas', async () => {
++    const listing = await listAgentsForModel(emptyAppState(), false, deps({ sources: sources({ local: { messagingEnabled: () => false } }) }))
++    expect(listing).toBe(MESSAGING_DISABLED_NOTICE)
++  })
++})
++
++describe('call contra el registro real de sesiones', () => {
++  let dir: string | undefined
++  let server: Server | undefined
++  const previousEnv: Record<string, string | undefined> = {}
++
++  beforeEach(() => {
++    for (const name of [CONFIG_DIR_ENV, HARBOR_KITE_ENV, OWN_SOCKET_ENV]) previousEnv[name] = process.env[name]
++    dir = mkdtempSync(join(tmpdir(), 'list-agents-'))
++    mkdirSync(join(dir, 'sessions'), { recursive: true })
++    process.env[CONFIG_DIR_ENV] = dir
++    process.env[HARBOR_KITE_ENV] = '1'
++    delete process.env[OWN_SOCKET_ENV]
++  })
++
++  afterEach(async () => {
++    if (server) await new Promise<void>(resolve => server!.close(() => resolve()))
++    server = undefined
++    for (const [name, value] of Object.entries(previousEnv)) {
++      if (value === undefined) delete process.env[name]
++      else process.env[name] = value
++    }
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('lista la sesión viva cuyo socket contesta, y bajo HARBOR_KITE=0 devuelve el aviso', async () => {
++    const socketPath = join(dir!, 'peer.sock')
++    server = createServer(socket => socket.destroy())
++    await new Promise<void>(resolve => server!.listen(socketPath, () => resolve()))
++    writeFileSync(join(dir!, 'sessions', `${process.pid}.json`), JSON.stringify({ cwd: '/w', startedAt: Date.now() - 1000, sessionId: 'peer-session', messagingSocketPath: socketPath, name: 'peer-one' }))
++    const context = { getAppState: () => emptyAppState() }
++    const call = ListAgentsTool.call as unknown as (input: object, context: object) => Promise<{ data: { listing: string } }>
++
++    const listed = await call({}, context)
++    expect(listed.data.listing).toContain('Peer sessions (1):')
++    expect(listed.data.listing).toContain('peer-one [')
++
++    process.env[HARBOR_KITE_ENV] = '0'
++    const disabled = await call({}, context)
++    expect(disabled.data.listing).toBe(MESSAGING_DISABLED_NOTICE)
++  })
++})
++
++describe('la compuerta Vee y el aviso $Mt (chunk-fhcnpt13)', () => {
++  const readers = (declared: boolean, value = true): SettledFlagReaders => ({ flag: (_name, fallback) => (declared ? value : fallback), flagDeclared: () => declared })
++
++  test('$Mt es el aviso literal', () => {
++    expect(CROSS_SESSION_MESSAGING_UNAVAILABLE_MESSAGE).toBe('Cross-session messaging is not available in this session.')
++  })
++
++  test('con las banderas sin asentar y sin declaración, no; en cualquier otro caso, la bandera (por omisión sí)', () => {
++    expect(isProjectsHumanOriginEnabled({ flagsSettled: false }, readers(false))).toBe(false)
++    expect(isProjectsHumanOriginEnabled({ flagsSettled: false }, readers(true))).toBe(true)
++    expect(isProjectsHumanOriginEnabled({ flagsSettled: true }, readers(false))).toBe(true)
++    expect(isProjectsHumanOriginEnabled({}, readers(false))).toBe(true)
++    expect(isProjectsHumanOriginEnabled({}, readers(true, false))).toBe(false)
++    expect(isProjectsHumanOriginEnabled()).toBe(true)
++  })
++})
+diff --git a/src/packages/tool-registry/src/tools/ListAgentsTool/prompt.ts b/src/packages/tool-registry/src/tools/ListAgentsTool/prompt.ts
+new file mode 100644
+index 000000000..d3e5b678f
+--- /dev/null
++++ b/src/packages/tool-registry/src/tools/ListAgentsTool/prompt.ts
+@@ -0,0 +1,22 @@
++/**
++ * `Dl`, `MTo` y `Wxr` de `chunk-g3tnnx4p.js` (2.1.283): el nombre de
++ * `ListAgents`, su alias y su descripción. La cola `e()` de `Wxr` devuelve
++ * `''` en la referencia y no se porta; `lo` es el nombre de `SendMessage`,
++ * y el nombre del producto va como `PRODUCT_NAME`.
++ */
++import { PRODUCT_NAME } from '@thyrox/config/product'
++
++import { SEND_MESSAGE_TOOL_NAME } from '../SendMessageTool/constants.js'
++
++/** `Dl`. */
++export const LIST_AGENTS_TOOL_NAME = 'ListAgents'
++/** `MTo`. */
++export const LIST_PEERS_TOOL_ALIAS = 'ListPeers'
++
++/** `s`. */
++const DESCRIPTION = `Lists agents you can ${SEND_MESSAGE_TOOL_NAME} to — in-process subagents you spawned, the teammates on your team, other local ${PRODUCT_NAME} sessions on this machine, your ${PRODUCT_NAME} sessions running in the cloud (when this session has cloud access; a cloud session receives your message but cannot message any session back yet — do not ask it to reply, read its answer in its own transcript), and (when Remote Control is connected here) your account's other sessions — Remote Control sessions on other machines and cloud sessions, each row labeled by kind. Names are the address: send with \`${SEND_MESSAGE_TOOL_NAME}({to: "<name>", message: "..."})\`, copying the name exactly as a row prints it. Append a row's \` [ref]\` only when the bare name is not enough — two rows share it, or an error asks you to disambiguate.`
++
++/** `Wxr`. */
++export function getPrompt(): string {
++  return DESCRIPTION
++}
+diff --git a/src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts b/src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts
+index b26160fb9..07b21e564 100644
+--- a/src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts
++++ b/src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts
+@@ -138,9 +138,12 @@ const getSnipTool = () =>
+     ? require('@thyrox/tool-registry/tools/SnipTool/SnipTool.js').SnipTool as Tool
+     : null
+ 
+-// ListPeersTool: src/ shim never replaced with canonical package. Feature
+-// gate UDS_INBOX defaults false in this build.
+-const getListPeersTool = () => null
++// ListAgents (alias ListPeers) entra siempre, como en 2.1.283
++// (chunk-3pfj38s1.js lo requiere sin compuerta): su visibilidad la decide
++// isEnabled() → isSessionMessagingEnabled(). Require perezoso, como sus
++// vecinos, para no cerrar un ciclo de importación.
++const getListAgentsTool = () =>
++  require('../../ListAgentsTool/ListAgentsTool.js').ListAgentsTool as Tool
+ 
+ // Workflow tool ships in every build (ant parity); runtime visibility is the
+ // tool's own isEnabled() → isWorkflowsEnabled(). Unconditional require so DCE
+@@ -249,8 +252,7 @@ export function createBuiltInToolsProvider(
+       tools.push(SendMessageTool)
+ 
+       // UDS Inbox
+-      const listPeers = getListPeersTool()
+-      if (listPeers) tools.push(listPeers)
++      tools.push(getListAgentsTool())
+ 
+       // Agent swarms / teams
+       if (isAgentSwarmsEnabled()) {
+diff --git a/tests/session/test-list-agents-two-cli.sh b/tests/session/test-list-agents-two-cli.sh
+new file mode 100755
+index 000000000..1b6029af6
+--- /dev/null
++++ b/tests/session/test-list-agents-two-cli.sh
+@@ -0,0 +1,100 @@
++#!/usr/bin/env bash
++# TASK-THYROX-0600 — ListAgents entre dos procesos reales de bin/cli.
++#
++# A es un `thyrox -p` que se queda vivo dentro de una herramienta Bash real
++# (`sleep`), con su buzón UDS levantado y su sesión publicada en el registro.
++# B es otro `thyrox -p` cuya herramienta Bash corre el listado dentro de la
++# sesión de B —hereda su THYROX_CONFIG_DIR, su THYROX_CODE_HARBOR_KITE y el
++# THYROX_CODE_MESSAGING_SOCKET que el buzón de B exporta— y escribe lo que
++# `listAllPeers` y `ListAgentsTool.call` devuelven. Medido antes de escribir
++# esto: el bucle de `thyrox -p` arma sus herramientas con
++# `@thyrox/tools/registry` (Bash, Read, …), no con `BuiltInToolsProvider`, así
++# que la herramienta no puede llegar al modelo grabado de B como `tool_use`;
++# la invoca un hijo de B, con el entorno de B.
++#
++# Dos condiciones medidas que esta suite declara y no asume:
++#   - `feature('UDS_INBOX')` es falso al correr desde fuente, y sin él el
++#     registro no lleva `messagingSocketPath` y `qRr` no lista la sesión:
++#     `BUN_OPTIONS=--feature=UDS_INBOX` lo enciende a través de bin/cli.
++#   - la referencia no imprime la dirección en el listing (sólo nombre y
++#     `[ref]`): `uds:<socket>` se mide en los pares de `listAllPeers`, y el
++#     nombre del par en el listing de la herramienta.
++set -uo pipefail
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
++T="$(mktemp -d)"
++A_PID=""; B_PID=""
++cleanup() {
++  for pid in "$A_PID" "$B_PID"; do [[ -n "$pid" ]] && kill "$pid" 2>/dev/null; done
++  for pid in "$A_PID" "$B_PID"; do [[ -n "$pid" ]] && wait "$pid" 2>/dev/null; done
++  rm -rf "$T"
++}
++trap cleanup EXIT
++total=0; fallos=0
++check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FALLA $1 — esperado '$3', obtenido '$2'"; fallos=$((fallos+1)); fi; }
++
++USAGE='{"input_tokens":1,"output_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}'
++turnos() { # $1 = comando de la herramienta Bash del primer turno
++  printf '[{"id":"m1","model":"claude-opus-5","stop_reason":"tool_use","usage":%s,"content":[{"type":"tool_use","id":"tu1","name":"Bash","input":{"command":%s}}]},{"id":"m2","model":"claude-opus-5","stop_reason":"end_turn","usage":%s,"content":[{"type":"text","text":"listo"}]}]' \
++    "$USAGE" "$(printf '%s' "$1" | jq -Rs .)" "$USAGE"
++}
++cli() { # $1 = grabación. Se invoca con `&`: el exec conserva el pid del subshell hasta bun, que es el del registro.
++  exec env -u THYROX_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_SOCKET \
++    BUN_OPTIONS="--feature=UDS_INBOX" THYROX_CONFIG_DIR="$T/cfg" THYROX_CODE_HARBOR_KITE=1 \
++    bash "$ROOT/bin/cli" -p hola --provider recorded --grabacion "$1" --no-session-persistence --output-format json
++}
++espera_registro() { # $1 = pid; imprime la ruta del socket cuando el registro la publica
++  local sock
++  for _ in $(seq 1 150); do
++    sock="$(jq -r '.messagingSocketPath // empty' "$T/cfg/sessions/$1.json" 2>/dev/null)"
++    [[ -n "$sock" && -S "$sock" ]] && { printf '%s' "$sock"; return 0; }
++    kill -0 "$1" 2>/dev/null || return 1
++    sleep 0.2
++  done
++  return 1
++}
++
++mkdir -p "$T/cfg"
++cat > "$T/lister.ts" <<TS
++import { ListAgentsTool } from '$ROOT/src/packages/tool-registry/src/tools/ListAgentsTool/ListAgentsTool.ts'
++import { listAllPeers } from '$ROOT/src/packages/local-observability/src/uds/listAllPeers.ts'
++const context = { getAppState: () => ({ tasks: {}, agentNameRegistry: new Map() }) }
++const peers = await listAllPeers()
++const call = ListAgentsTool.call as unknown as (input: object, context: object) => Promise<{ data: { listing: string } }>
++const result = await call({}, context)
++console.log(JSON.stringify({ addresses: peers.peers.map(peer => peer.address), listing: result.data.listing }))
++TS
++
++echo "== 1. A vive con su buzón publicado en el registro =="
++turnos 'sleep 40' > "$T/turnos-a.json"
++cli "$T/turnos-a.json" > "$T/a.out" 2> "$T/a.err" &
++A_PID=$!
++A_SOCK="$(espera_registro "$A_PID")"
++check "A publica messagingSocketPath y el socket existe" "$([[ -n "$A_SOCK" && -S "$A_SOCK" ]] && echo si || echo no)" "si"
++A_NAME="$(jq -r .name "$T/cfg/sessions/$A_PID.json")"
++check "A tiene nombre en el registro" "$([[ -n "$A_NAME" && "$A_NAME" != null ]] && echo si || echo no)" "si"
++
++echo "== 2. B lista desde su propia sesión, con A viva =="
++turnos "bun \"$T/lister.ts\" > \"$T/listing.json\" 2> \"$T/lister.err\"" > "$T/turnos-b.json"
++cli "$T/turnos-b.json" > "$T/b.out" 2> "$T/b.err" &
++B_PID=$!
++wait "$B_PID"; B_CODE=$?; B_PID=""
++check "B termina su turno con éxito" "$B_CODE/$(jq -r .subtype "$T/b.out" 2>/dev/null)" "0/success"
++check "el listado se escribió" "$([[ -s "$T/listing.json" ]] && echo si || echo no)" "si"
++[[ -s "$T/listing.json" ]] || { echo "--- lister.err"; cat "$T/lister.err"; echo "--- b.err"; tail -5 "$T/b.err"; }
++check "los pares de listAllPeers traen uds:<socket de A>" \
++  "$(jq -r --arg a "uds:$A_SOCK" '.addresses | index($a) != null' "$T/listing.json" 2>/dev/null)" "true"
++check "el listing de ListAgents nombra a A con su [ref]" \
++  "$(jq -r --arg n "$A_NAME [" '.listing | contains($n)' "$T/listing.json" 2>/dev/null)" "true"
++check "el listing abre la sección de pares" "$(jq -r '.listing | contains("Peer sessions (")' "$T/listing.json" 2>/dev/null)" "true"
++check "A sigue viva mientras B lista" "$(kill -0 "$A_PID" 2>/dev/null && echo si || echo no)" "si"
++
++echo "== 3. control de anulación: con HARBOR_KITE=0 el mismo listado es el aviso, sin pares =="
++DISABLED="$(env -u THYROX_CODE_MESSAGING_SOCKET THYROX_CONFIG_DIR="$T/cfg" THYROX_CODE_HARBOR_KITE=0 bun "$T/lister.ts" 2>"$T/lister-off.err")"
++check "sin mensajería no hay pares" "$(printf '%s' "$DISABLED" | jq -r '.addresses | length')" "0"
++check "sin mensajería el listing es el aviso de apagado" \
++  "$(printf '%s' "$DISABLED" | jq -r '.listing | startswith("Cross-session messaging is switched off in this session right now")')" "true"
++
++kill "$A_PID" 2>/dev/null; wait "$A_PID" 2>/dev/null; A_PID=""
++echo
++echo "$total aserciones, $fallos fallo(s) (alcance medido: dos bin/cli reales, uno lista al otro)"
++[[ $fallos -eq 0 ]]
