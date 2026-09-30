@@ -1,0 +1,17 @@
+{
+  "name": "@thyrox/podman-execution",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Primitiva neutral de ejecución Podman (ADR-THYROX-007, TASK-THYROX-0667): crear y correr un contenedor, perfil de recursos, montajes, red, señales, código de salida, exportación de artefactos y limpieza. El dueño (daemon o pool) decide qué es un huérfano.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

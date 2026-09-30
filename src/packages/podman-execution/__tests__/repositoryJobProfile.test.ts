@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { DEFAULT_WORKER_RESOURCE_PROFILE, InvalidWorkerResourceProfileError } from '../podman/workerResourceProfile.js'
+import { DEFAULT_WORKER_RESOURCE_PROFILE, InvalidWorkerResourceProfileError } from '../workerResourceProfile.js'
 import {
   REPOSITORY_CONTAINER_PATH,
   UnsupportedRepositoryJobCredentialError,
@@ -8,7 +8,7 @@ import {
   repositoryJobProfileArgv,
   validateRepositoryJobProfile,
   type RepositoryJobProfile,
-} from '../podman/repositoryJobProfile.js'
+} from '../repositoryJobProfile.js'
 
 describe('createRepositoryJobProfile', () => {
   test('monta el repositorio en /w y usa los límites por defecto', () => {

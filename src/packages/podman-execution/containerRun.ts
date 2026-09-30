@@ -1,0 +1,114 @@
+/**
+ * Correr un contenedor hasta que termine, señalarlo y exportar lo que dejó
+ * (ADR-THYROX-007, TASK-THYROX-0667): la parte de «ejecutar» de la
+ * primitiva, sin máquina de estados, generaciones ni recuperación — eso es
+ * del dueño.
+ *
+ * El orden que este módulo garantiza es exportar ANTES de limpiar: `podman
+ * cp` sólo lee de un contenedor que todavía existe, así que una limpieza
+ * adelantada pierde el artefacto sin error visible en el llamador.
+ */
+
+import { basename, join } from 'node:path'
+
+import type { PodmanCommandResult, PodmanExecutor } from './podmanExecutor.js'
+import {
+  createWorkerContainerArgv,
+  removeWorkerContainerArgv,
+  workerContainerName,
+  type WorkerContainerSpec,
+} from './workerContainerLifecycle.js'
+
+export type ContainerRunStage = 'create' | 'start' | 'wait' | 'signal' | 'export'
+
+/** Un paso de la ejecución falló; nombra la etapa y lo que Podman dijo. */
+export class ContainerRunError extends Error {
+  readonly stage: ContainerRunStage
+
+  constructor(stage: ContainerRunStage, subject: string, result: PodmanCommandResult) {
+    super(`falló la etapa ${stage} sobre ${subject}: ${result.stderr.trim() || `exit ${result.exitCode}`}`)
+    this.name = 'ContainerRunError'
+    this.stage = stage
+  }
+}
+
+const EXIT_CODE_PATTERN = /^-?\d+$/
+
+async function requireSuccess(
+  podman: PodmanExecutor,
+  stage: ContainerRunStage,
+  subject: string,
+  args: readonly string[],
+): Promise<PodmanCommandResult> {
+  const result = await podman.run(args)
+  if (result.exitCode !== 0) throw new ContainerRunError(stage, subject, result)
+  return result
+}
+
+/** Lee el código que imprime `podman wait`; una salida que no es un entero no se lee como 0. */
+function parseWaitExitCode(name: string, result: PodmanCommandResult): number {
+  const printed = result.stdout.trim()
+  if (!EXIT_CODE_PATTERN.test(printed)) {
+    throw new ContainerRunError('wait', name, { ...result, stderr: `salida de wait ilegible: «${printed}»` })
+  }
+  return Number(printed)
+}
+
+/** Crea, arranca y espera el contenedor; devuelve el código de salida de su proceso. No lo retira. */
+export async function runToCompletion(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<number> {
+  const name = workerContainerName(spec.workerId)
+  await requireSuccess(podman, 'create', name, createWorkerContainerArgv(spec))
+  await requireSuccess(podman, 'start', name, ['start', name])
+  return parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
+}
+
+/** Envía `signal` al proceso principal del contenedor (p. ej. SIGTERM para un apagado ordenado). */
+export async function signalContainer(podman: PodmanExecutor, name: string, signal: NodeJS.Signals): Promise<void> {
+  await requireSuccess(podman, 'signal', name, ['kill', '--signal', signal, name])
+}
+
+/** Copia cada ruta del contenedor a `hostDir` con su nombre base; devuelve las rutas en el anfitrión. */
+export async function exportArtifacts(
+  podman: PodmanExecutor,
+  name: string,
+  containerPaths: readonly string[],
+  hostDir: string,
+): Promise<string[]> {
+  const exported: string[] = []
+  for (const containerPath of containerPaths) {
+    const hostPath = join(hostDir, basename(containerPath))
+    await requireSuccess(podman, 'export', `${name}:${containerPath}`, ['cp', `${name}:${containerPath}`, hostPath])
+    exported.push(hostPath)
+  }
+  return exported
+}
+
+export type ArtifactRequest = {
+  containerPaths: readonly string[]
+  hostDir: string
+}
+
+export type JobOutcome = {
+  exitCode: number
+  artifacts: string[]
+}
+
+/**
+ * Corre el contenedor hasta que termine, exporta lo pedido y sólo entonces
+ * lo retira. La limpieza ocurre siempre —también si correr o exportar
+ * falla— y nunca antes de la exportación.
+ */
+export async function runJobAndCollect(
+  podman: PodmanExecutor,
+  spec: WorkerContainerSpec,
+  artifacts: ArtifactRequest,
+): Promise<JobOutcome> {
+  const name = workerContainerName(spec.workerId)
+  try {
+    const exitCode = await runToCompletion(podman, spec)
+    const exported = await exportArtifacts(podman, name, artifacts.containerPaths, artifacts.hostDir)
+    return { exitCode, artifacts: exported }
+  } finally {
+    await podman.run(removeWorkerContainerArgv(name))
+  }
+}

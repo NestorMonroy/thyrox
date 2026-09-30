@@ -38,18 +38,19 @@
  * Podman sin privilegios (rootless), que ninguna prueba de aquí ejercita.
  */
 
-import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 
 import { admitVram, releaseVram, type VramAdmission } from '@thyrox/config/gpuAdmission'
+import { runCommand } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import {
   DEFAULT_STOP_TIMEOUT_SECONDS,
   InvalidWorkerContainerSpecError,
   createWorkerContainerArgv,
+  daemonContainerOwner,
   inspectWorkerContainer,
   isWorkerContainerProcessAlive,
-  retireOrphanedWorkerContainers,
+  retireDaemonOrphanedWorkerContainers,
   retireWorkerContainer,
   validateWorkerContainerSpec,
   workerContainerName,
@@ -200,7 +201,7 @@ export class PodmanWorkerManager {
 
   /** Retira los contenedores que dejó un daemon muerto; se llama al arrancar. */
   async reconcileOrphans(): Promise<WorkerContainerRetirement[]> {
-    return retireOrphanedWorkerContainers(this.deps.lifecycle, this.stopTimeout())
+    return retireDaemonOrphanedWorkerContainers(this.deps.lifecycle, this.stopTimeout())
   }
 
   private stopTimeout(): number {
@@ -211,7 +212,7 @@ export class PodmanWorkerManager {
     return {
       workerId: request.workerId,
       image: request.image,
-      daemonPid: this.deps.daemonPid,
+      owner: daemonContainerOwner(this.deps.daemonPid),
       resourceArgv: [...request.resourceArgv, ...deviceArgv],
       command: request.command,
     }
@@ -282,24 +283,8 @@ function thyroxRoot(): string {
   return process.env.THYROX_ROOT ?? join(import.meta.dir, '../../../../..')
 }
 
-function runProcess(bin: string, args: readonly string[]): Promise<PodmanCommandResult> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(bin, [...args], { stdio: ['ignore', 'pipe', 'pipe'] })
-    let stdout = ''
-    let stderr = ''
-    child.stdout.on('data', chunk => { stdout += chunk })
-    child.stderr.on('data', chunk => { stderr += chunk })
-    child.on('error', reject)
-    child.on('close', code => resolve({ exitCode: code ?? -1, stdout, stderr }))
-  })
-}
-
-/** Ejecutor real: el binario que `thyrox_toolchain_require_podman` resolvió, o `podman` del PATH. */
-export function createPodmanExecutor(): PodmanExecutor {
-  return {
-    run: args => runProcess(process.env.THYROX_TOOLCHAIN_PODMAN_BIN || 'podman', args),
-  }
-}
+/** Ejecutor real: el de la primitiva, reexportado para los importadores del daemon. */
+export { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 /**
  * Contrato de salida de `bin/hardware-inventory` (`src/session/hardware-inventory.sh`):
@@ -320,7 +305,7 @@ function isMeasuredExitCode(exitCode: number): boolean {
  * Exige que la línea `verdict` y el código de salida digan lo mismo: si discrepan, ninguno es fiable.
  */
 export async function readHardwareVerdict(): Promise<HardwareVerdict> {
-  const result = await runProcess('bash', [join(thyroxRoot(), 'bin/hardware-inventory')])
+  const result = await runCommand('bash', [join(thyroxRoot(), 'bin/hardware-inventory')])
   if (!isMeasuredExitCode(result.exitCode)) {
     throw new Error(`hardware-inventory no pudo medir (salió ${result.exitCode}): ${commandDetail(result)}`)
   }

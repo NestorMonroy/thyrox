@@ -6,7 +6,7 @@ import {
   validateWorkerResourceProfile,
   workerResourceLimitArgv,
   type WorkerResourceProfile,
-} from '../podman/workerResourceProfile.js'
+} from '../workerResourceProfile.js'
 
 describe('DEFAULT_WORKER_RESOURCE_PROFILE', () => {
   test('es el perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin montajes', () => {

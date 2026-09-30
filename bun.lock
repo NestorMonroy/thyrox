@@ -326,6 +326,7 @@
         "@anthropic-ai/sdk": "^0.124.0",
         "@thyrox/agent": "0.4.0",
         "@thyrox/config": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
       },
     },
     "src/packages/finding": {
@@ -570,6 +571,10 @@
       "devDependencies": {
         "@types/bun": "^1.4.0",
       },
+    },
+    "src/packages/podman-execution": {
+      "name": "@thyrox/podman-execution",
+      "version": "0.1.0",
     },
     "src/packages/provider": {
       "name": "@thyrox/provider",
@@ -1277,6 +1282,8 @@
     "@thyrox/permission": ["@thyrox/permission@workspace:src/packages/permission"],
 
     "@thyrox/plan": ["@thyrox/plan@workspace:src/packages/plan"],
+
+    "@thyrox/podman-execution": ["@thyrox/podman-execution@workspace:src/packages/podman-execution"],
 
     "@thyrox/provider": ["@thyrox/provider@workspace:src/packages/provider"],
 

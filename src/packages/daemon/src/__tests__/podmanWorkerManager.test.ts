@@ -21,6 +21,7 @@ import {
 import {
   InvalidWorkerContainerSpecError,
   createWorkerContainerArgv,
+  daemonContainerOwner,
   workerContainerName,
   type PodmanCommandResult,
   type PodmanExecutor,
@@ -42,7 +43,7 @@ function fakePodman(
       const answer = responses[args[0]]
       if (answer) return answer
       if (args[0] === 'inspect') {
-        return { exitCode: 0, stdout: `running\t${CONTAINER_PID}\t${DAEMON_PID}\tw1`, stderr: '' }
+        return { exitCode: 0, stdout: `running\t${CONTAINER_PID}\tdaemon\t${DAEMON_PID}\t${DAEMON_PID}\tw1`, stderr: '' }
       }
       return OK
     },
@@ -122,7 +123,7 @@ describe('launch — ruta CPU', () => {
     expect(podman.calls[0]).toEqual(createWorkerContainerArgv({
       workerId: 'w1',
       image: 'localhost/thyrox-worker:test',
-      daemonPid: DAEMON_PID,
+      owner: daemonContainerOwner(DAEMON_PID),
       resourceArgv: ['--network', 'none', '--read-only'],
       command: ['/bin/worker'],
     }))
@@ -270,7 +271,7 @@ describe('retire / retireAll / reconcileOrphans', () => {
     const orphanName = workerContainerName('old')
     const podman = fakePodman({
       ps: { exitCode: 0, stdout: `${orphanName}\n`, stderr: '' },
-      inspect: { exitCode: 0, stdout: `running\t77\t9999\told`, stderr: '' },
+      inspect: { exitCode: 0, stdout: `running\t77\tdaemon\t9999\t9999\told`, stderr: '' },
     })
     const manager = new PodmanWorkerManager(deps(podman, { alive: [DAEMON_PID] }))
     const retirements = await manager.reconcileOrphans()

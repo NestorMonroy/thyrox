@@ -1,0 +1,38 @@
+esperando: 0 de 1 asentados, 31s; vivos: verify-primitive
+  AVISO verify-primitive: pid 22886 (tail) lee stdin de un canal (pipe:[343523]) — si su productor no escribe ni cierra, espera para siempre
+esperando: 0 de 1 asentados, 62s; vivos: verify-primitive
+  AVISO verify-primitive: pid 23950 (tail) lee stdin de un canal (pipe:[343994]) — si su productor no escribe ni cierra, espera para siempre
+esperando: 0 de 1 asentados, 92s; vivos: verify-primitive
+  AVISO verify-primitive: pid 23950 (tail) lee stdin de un canal (pipe:[343994]) — si su productor no escribe ni cierra, espera para siempre
+esperando: 0 de 1 asentados, 122s; vivos: verify-primitive
+  AVISO verify-primitive: pid 23950 (tail) lee stdin de un canal (pipe:[343994]) — si su productor no escribe ni cierra, espera para siempre
+asentado: verify-primitive -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     verify-primitive exit=0
+       | == podman-execution bun test exit=0 |  76 pass  0 fail 
+       | == daemon bun test exit=0 |  554 pass  0 fail 
+       | check-package-typecheck: 2 provider(s) reconstruido(s) por viejos: cli, podman-execution
+       |   daemon: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   podman-execution: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+       | 
+       | check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+       |     tests/session/hardware/cuda_stepped_alloc.py:21: reportMissingImports Import "torch" could not be resolved
+       | __BG_EXIT__=0
+       memoria pico: 914492 KB (893 MB) · pared 128.86s
+
+[exited with code 0]
+
+## Por qué el pool dijo `rechazado`
+`outputs/pool-resume/1.verify.log`: todas las suites del ítem en verde (24, 1,
+7, 11, 1, 5 y 35 pass; 0 fail). El verify genérico falló por dos causas del
+arnés, no del cambio: (1) pasó a `bun test` un archivo que el ítem BORRÓ de
+`daemon` (se movió a `podman-execution`), y `bun test` sale distinto de 0 con
+un filtro sin coincidencias; (2) el typecheck no emitió veredicto porque seis
+paquetes no reconstruyeron sus tipos en el worktree. Arriba, en el árbol
+principal, las dos suites y el typecheck estricto dan cero.
+
+## Pendiente para el ítem B
+`podman-execution/workerContainerLifecycle.ts:168` selecciona huérfanos por
+prefijo de nombre (`name=^thyrox-worker-`). No alcanza a la infraestructura
+(`thyrox-ollama` lleva `io.thyrox.role=infrastructure`), pero el contrato de
+limpieza (ADR-007 1.6.x) pide seleccionar por etiquetas de propiedad.
