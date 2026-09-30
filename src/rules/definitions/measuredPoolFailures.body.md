@@ -10,6 +10,7 @@ una garantía: léela antes de repetir el patrón.
 | Falla | Lo impide |
 |---|---|
 | Un pool corrió en un modelo retirado porque `--model` se escribía a mano (H-THYROX-288) | `headless-pool` deriva el modelo de `--task-class` con `bin/agent-recommend`; `--model` rehúsa con exit 2 |
+| Se lanzó un pool con `--credential-proxy` sin credencial propia, rehusó con exit 2, y se pidió al ejecutor una clave que el pool no necesita. Sin opción de credencial rige `inherit`: cada ítem entra al proxy local (C7); así terminaron en `success` los ítems de `task-census-20260930T064202/impl-pool-a/outputs-2`. No se lanza con `--credential-proxy` ni se pide una credencial para un pool | el rechazo de `bin/provider-credential-proxy` lo dice ahora: nombra las dos vías de credencial propia y que un pool en `inherit` no la necesita (TASK-THYROX-0657, `f51f7a7c5`); el pool declara su fuente en la línea `credencial:` |
 | Un clon nuevo commitea sin ningún gate: `core.hooksPath` vive en `.git/config` y no se clona | `bash install.sh` los activa; `bin/check_githooks_activos --strict` los mide y su salida trae la orden que arregla cada clon |
 | Una suite «aislada» con `THYROX_JOBS_DIR=$TMP/jobs` escribió en el `.claude/jobs/` real: la clave por clon del `.env` gana | `src/lib/test_homes.sh::thyrox_isolate_homes`; el pre-commit `check_test_home_isolation` rehúsa la suite que el commit toca si exporta sólo la global |
 | Una suite leía el `.env` real y su caso «sin roster» encontraba el roster del árbol | `THYROX_ENV_FILE` apuntado a un archivo vacío (`test-githooks-activos.sh`) |

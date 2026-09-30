@@ -15,7 +15,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 export const measuredPoolFailures: RuleDefinition = {
   name: 'measured-pool-failures',
   scope: 'domain',
-  paths: ['src/session/**', 'src/verify/**', 'tests/session/**', 'tests/verify/**', '.githooks/**'],
+  paths: ['src/session/**', 'src/verify/**', 'tests/session/**', 'tests/verify/**', '.githooks/**', '.claude/workbench/**'],
   get body(): string {
     return readFileSync(join(HERE, 'measuredPoolFailures.body.md'), 'utf8')
   },
