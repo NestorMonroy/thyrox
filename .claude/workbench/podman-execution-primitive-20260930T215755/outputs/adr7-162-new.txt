@@ -1,0 +1,8 @@
+- **El estado lo decide la capa de capacidad, combinando dos observaciones**
+  (precisado en 1.6.2): sin evidencia de GPU y sin backend → ``absent``;
+  evidencia de GPU (presente o ``partial``) y ningún backend usable →
+  ``unavailable``; backend usable → telemetría disponible, y sólo entonces
+  una medida concreta da ``measured(...)`` o ``error``. La ausencia de backend
+  sólo significa «no hay telemetría»: no decide ``absent`` y nunca produce una
+  cantidad. Los cuatro estados son disjuntos: ``measured(0)`` ≠ ``absent`` ≠
+  ``unavailable`` ≠ ``error``.

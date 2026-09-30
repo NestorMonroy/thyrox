@@ -1,0 +1,6 @@
+- RAM disponible = ``límite − uso`` del cgroup si hay un límite efectivo; si
+  no, la del anfitrión. «Sin límite» es un estado, no un ``0`` ni un número
+  enorme; se soportan las versiones de cgroups que thyrox soporta, medidas.
+- Tras 0691, ``nvidia-smi`` sólo aparece en el backend NVIDIA y en la sonda de
+  hardware; el resto trabaja con estado, memoria libre y uso por proceso, y se
+  prueba con backends falsos sin simular el binario.

@@ -1,0 +1,1240 @@
+diff --git a/src/packages/daemon/src/daemonCli.ts b/src/packages/daemon/src/daemonCli.ts
+index a0a5c6b7b..e9019a2fc 100644
+--- a/src/packages/daemon/src/daemonCli.ts
++++ b/src/packages/daemon/src/daemonCli.ts
+@@ -28,13 +28,15 @@
+  * // (`launchAgent.ts`, `daemonClient.ts`, `bgDaemon.ts`) que este item no
+  * // toca. Lo que se porta de `wa` es su resolucion de `hub`→`status` y su
+  * // clasificacion de gating (`resolveDaemonBgDispatch`).
+- * // pendiente: `resolveDaemonBgDispatch` esta portado y probado, pero
+- * // `main.ts` no lo usa para bloquear `list`/`status`: en el binario real
+- * // `pV()` es un stub que siempre devuelve `false` (`chunk-4x2jc802.js`,
+- * // resuelto con `bin/binary symbol`), asi que aplicar su gate tal cual
+- * // apagaria permanentemente un comando de solo lectura que hoy funciona
+- * // en thyrox. Cablearlo a la ejecucion real queda pendiente de que
+- * // exista un mecanismo de feature flags equivalente al de la referencia.
++ * `main.ts` aplica `resolveDaemonBgDispatch` antes de ejecutar un
++ * subcomando de `daemon bg`, con la conducta observable del binario: alli
++ * `pV()` es un stub que siempre devuelve `false` (`chunk-4x2jc802.js`), asi
++ * que `list`/`scheduled` se rehusan siempre, `hub` se degrada a `status`
++ * (que no esta gateado) y `remote-control` sigue su propio gate.
++ * // pendiente: `rDe` antepone al texto por defecto dos motivos propios de
++ * // la vista de agentes (`CLAUDE_CODE_DISABLE_AGENT_VIEW` y el setting
++ * // `disableAgentView`); thyrox no tiene esa vista, se porta solo el texto
++ * // por defecto (`formatCommandUnavailableMessage`).
+  * // pendiente: `Bt` combina fragmentos de texto REALES del CLI de la
+  * // referencia (`Xr`/`qr`/`Jr`/`Qr`/`Zr`/`en`/`tn`); esos literales no son
+  * // simbolos de esta fila (viven en la fila
+@@ -419,3 +421,14 @@ export function resolveDaemonBgDispatch(
+  * "service" — porte exacto de `Yr`.
+  */
+ export const EXIT_CODE_SERVICE_STARTUP_FAILURE = 70
++
++const COMMAND_UNAVAILABLE_REASON = 'is not available in this environment'
++
++/**
++ * Mensaje con que se rehusa un comando cuyo gate esta cerrado — porte del
++ * texto por defecto de `rDe` (`chunk-4x2jc802.js`):
++ * `` `'${e}' ${o}.` `` con `o = "is not available in this environment"`.
++ */
++export function formatCommandUnavailableMessage(command: string): string {
++  return `'${command}' ${COMMAND_UNAVAILABLE_REASON}.`
++}
+diff --git a/src/packages/daemon/src/daemonConfig.ts b/src/packages/daemon/src/daemonConfig.ts
+index 98c5969d7..b41fe1f6b 100644
+--- a/src/packages/daemon/src/daemonConfig.ts
++++ b/src/packages/daemon/src/daemonConfig.ts
+@@ -19,17 +19,12 @@
+  *   - `Cr`=1000/`Tr`=5000 → `DAEMON_CONFIG_STOP_DRAIN_MS`/
+  *     `DAEMON_STATUS_WRITE_RETRY_MS`
+  *
+- * `runSupervisor` (`main.ts`) hoy usa una lista fija de un único worker
+- * `remoteControl`, sin noción de `daemon.json`. Su cableado a este
+- * módulo —leer la config, aplicar el feature gate, vigilar el archivo y
+- * aplicar el plan de recarga a los workers vivos— queda declarado
+- * `// pendiente` en `main.ts` para otra ola: ese archivo no se toca aquí.
++ * El resto de `Tt` —lanzar una instancia por entrada, recargar en
++ * caliente, `busyWorkerCount`/`hasOAuthConsumer`/`stop`— es
++ * `startDaemonWorkerSet`, que recibe el lanzador de instancias vivas
++ * (`Ue`) por parámetro; `runSupervisor` (`main.ts`) lo cablea.
+  *
+  * // pendiente: lo que NO se porta, y por qué:
+- * // - El resto de `Tt` (spawnear `Ue` por entrada, `busyWorkerCount`,
+- * //   `hasOAuthConsumer`, `stop`) agrega estado de procesos hijos VIVOS
+- * //   —eso es `Ue`, territorio de D9— y no tiene equivalente puro que
+- * //   portar en un módulo de sólo configuración.
+  * // - La persistencia de estado a disco (`b7n`/`S7n`,
+  * //   `chunk-egkwesgj.js`) no se porta: el daemon no abre archivos de
+  * //   estado propios fuera de lo que ya cubre `local-observability`
+@@ -51,8 +46,9 @@ import { readFile, stat } from 'node:fs/promises'
+ import { basename, dirname, join } from 'node:path'
+ 
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
++import { getFeatureValue_CACHED_MAY_BE_STALE, onGrowthBookRefresh } from '@thyrox/config/feature-flags'
+ import { logEvent } from '@thyrox/local-observability'
++import { logError } from '@thyrox/local-observability/logging'
+ import { logForDebugging } from '@thyrox/local-observability/debug.js'
+ 
+ // ── Tipos de worker (`L7`, `chunk-aywxqprf.js:14463-14602`) ────────────────
+@@ -88,7 +84,7 @@ const REMOTE_CONTROL_GATE = 'tengu_radiant_heron'
+  * está activa habilita CUALQUIER tipo de worker, no sólo `remoteControl` —
+  * hoy, en la referencia, nunca lo está.
+  */
+-function isDaemonWorkerRolloutOverrideEnabled(): boolean {
++export function isDaemonWorkerRolloutOverrideEnabled(): boolean {
+   return false
+ }
+ 
+@@ -525,3 +521,245 @@ export const DAEMON_CONFIG_STOP_DRAIN_MS = 1000
+  * (`E=setTimeout(C,Tr)` dentro del reactor de `Tt`).
+  */
+ export const DAEMON_STATUS_WRITE_RETRY_MS = 5000
++
++// ── Conjunto de workers de `daemon.json` (resto de `Tt`) ────────────────────
++
++/**
++ * `He`=2000 (`chunk-92tvramn.js`, `,He=2000,Rr=300000`): separación entre
++ * arranques sucesivos de una misma pasada (`V.start(W++*He)`), para no
++ * lanzar todos los workers en el mismo instante.
++ */
++export const DAEMON_WORKER_START_STAGGER_MS = 2000
++
++/** Causa con que `Tt` para un worker cuyo directorio sigue servido tras recargar. */
++const RELOAD_STOP_CAUSE = 'reload'
++
++/** Instancia viva de un worker — lo que `Tt` usa de `Ue`. */
++export interface DaemonWorkerHandle {
++  readonly kind: DaemonWorkerKind
++  isBusy(): boolean
++  stop(cause?: string): Promise<void>
++}
++
++export type LaunchDaemonWorker = (
++  id: string,
++  kind: DaemonWorkerKind,
++  entry: DaemonWorkerEntryConfig,
++  delayMs: number,
++) => DaemonWorkerHandle
++
++export interface DaemonWorkerSetOptions {
++  readonly configPath: string
++  /** Crea y arranca (tras `delayMs`) una instancia — el `new Ue(...)`+`start` de `Tt`. */
++  readonly launchWorker: LaunchDaemonWorker
++  /** Línea de log del supervisor — el `n.write("supervisor", …)` de `Tt`. */
++  readonly log: (line: string) => void
++  /** Config que rige mientras `daemon.json` no declara ningún worker. */
++  readonly fallbackConfig?: DaemonJsonConfig
++  readonly isKindEnabled?: (kind: DaemonWorkerKind) => boolean
++  readonly watch?: (path: string, onChange: () => void) => DaemonConfigWatcher
++  readonly onFlagsRefreshed?: (listener: () => void) => () => void
++  readonly logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
++  readonly logErrorFn?: (error: unknown) => void
++}
++
++/** Superficie que devuelve `Tt`. */
++export interface DaemonWorkerSet {
++  workerCount(): number
++  busyWorkerCount(): number
++  hasOAuthConsumer(): boolean
++  disposeWatcher(): void
++  drainReloads(): Promise<void>
++  stop(cause?: string): Promise<void>
++}
++
++function withFallback(config: DaemonJsonConfig, fallback: DaemonJsonConfig | undefined): DaemonJsonConfig {
++  const declaresNoWorker = countConfiguredWorkers(config) === 0
++  return declaresNoWorker && fallback !== undefined ? fallback : config
++}
++
++function logUnknownKeys(unknownKeys: readonly string[], log: (line: string) => void): void {
++  for (const key of unknownKeys) log(`unknown config key '${key}' — upgrade claude?`)
++}
++
++/** Porte de `Oe` sobre una entrada ya tipada: sólo las de `remoteControl` sirven un directorio. */
++function servedDirOf(entry: DaemonWorkerEntryConfig): string | undefined {
++  return 'dir' in entry ? entry.dir : undefined
++}
++
++function isDirStillServed(entry: DaemonWorkerEntryConfig, servedDirs: ReadonlySet<string>): boolean {
++  const dir = servedDirOf(entry)
++  return dir !== undefined && servedDirs.has(dir)
++}
++
++/** Causa al parar una entrada que desaparece: `we==="remoteControl"&&…&&ee.has(be)`. */
++function stopCauseForRemoved(
++  kind: DaemonWorkerKind,
++  previous: DaemonWorkerEntryConfig,
++  servedDirs: ReadonlySet<string>,
++): string | undefined {
++  return kind === 'remoteControl' && isDirStillServed(previous, servedDirs) ? RELOAD_STOP_CAUSE : undefined
++}
++
++/** Causa al parar una entrada que se reinicia: `we!=="remoteControl"||…&&ee.has(be)`. */
++function stopCauseForRestart(
++  kind: DaemonWorkerKind,
++  previous: DaemonWorkerEntryConfig,
++  servedDirs: ReadonlySet<string>,
++): string | undefined {
++  return kind !== 'remoteControl' || isDirStillServed(previous, servedDirs) ? RELOAD_STOP_CAUSE : undefined
++}
++
++/**
++ * Arranca y supervisa el conjunto de workers declarado en `daemon.json` —
++ * porte de `Tt`: carga la config (si falla, queda en idle con config
++ * vacía), lanza una instancia por entrada de cada tipo habilitado (`Ct`),
++ * avisa una vez por tipo deshabilitado, recarga en caliente al cambiar el
++ * archivo (`l6r` + parar/reiniciar/arrancar) y vuelve a lanzar lo que un
++ * refresco de flags habilita. Las recargas se serializan en una cola.
++ *
++ * Clasificación de fallos, fiel a la referencia: un fallo de carga o de
++ * recarga es manejo esperado (línea de log, sin `logError`); lo que lanza
++ * dentro de la cola va a `logError` (`.catch((W)=>d(W))`) y la cola sigue.
++ *
++ * // pendiente: lo que `Tt` hace y aquí no, y por qué:
++ * // - `await a.ready` (esperar al `authManager`): este supervisor no
++ * //   gestiona tokens por worker (ver `spawnWorker` en `main.ts`).
++ * // - El escritor de estado de workers (`b7n`/`S7n`, reintento `Tr`,
++ * //   drenaje `Cr`): no hay archivo de estado propio del daemon (cabecera).
++ * // - `Ue.updateConfig`+`start` en el reinicio: aquí se relanza una
++ * //   instancia nueva con el mismo id — misma conducta observable.
++ * // - `fallbackConfig` no existe en la referencia: conserva el contrato de
++ * //   las flags de `daemon start` (`--dir`, `--capacity`, …) mientras
++ * //   `daemon.json` no declare workers. Divergencia declarada.
++ */
++export async function startDaemonWorkerSet(options: DaemonWorkerSetOptions): Promise<DaemonWorkerSet> {
++  const {
++    configPath,
++    launchWorker,
++    log,
++    fallbackConfig,
++    isKindEnabled = isWorkerKindEnabled,
++    watch = watchDaemonConfigFile,
++    onFlagsRefreshed = onGrowthBookRefresh,
++    logEventFn = logEvent,
++    logErrorFn = logError,
++  } = options
++  const workers = new Map<string, DaemonWorkerHandle>()
++  const notifiedDisabledKinds = new Set<DaemonWorkerKind>()
++  let config = emptyDaemonConfig()
++
++  const initial = await loadDaemonConfig(configPath)
++  if (initial.ok) {
++    config = withFallback(initial.config, fallbackConfig)
++    logUnknownKeys(initial.unknownKeys, log)
++  } else {
++    log(`config load failed: ${initial.error} — idling`)
++  }
++
++  function launch(id: string, kind: DaemonWorkerKind, entry: DaemonWorkerEntryConfig, order: number): void {
++    workers.set(id, launchWorker(id, kind, entry, order * DAEMON_WORKER_START_STAGGER_MS))
++  }
++
++  function noticeDisabledKind(kind: DaemonWorkerKind, configuredCount: number): void {
++    if (configuredCount === 0 || notifiedDisabledKinds.has(kind)) return
++    notifiedDisabledKinds.add(kind)
++    log(`not starting ${configuredCount} ${kind} worker(s): not available for this account`)
++  }
++
++  /** Porte de `ce()`: lanza lo configurado y habilitado que aún no corre. */
++  function spawnEnabledWorkers(): void {
++    let order = 0
++    for (const kind of DAEMON_WORKER_KINDS) {
++      const entries: DaemonWorkerEntryConfig[] = config[kind]
++      if (!isKindEnabled(kind)) {
++        noticeDisabledKind(kind, entries.length)
++        continue
++      }
++      notifiedDisabledKinds.delete(kind)
++      entries.forEach((entry, index) => {
++        const id = `${kind}:${index}`
++        if (workers.has(id)) return
++        launch(id, kind, entry, order++)
++        log(`spawned ${id}`)
++      })
++    }
++  }
++
++  async function applyReloadPlan(plan: DaemonConfigReloadPlan, servedDirs: ReadonlySet<string>): Promise<void> {
++    for (const { id, kind, previousConfig } of plan.stop) {
++      const handle = workers.get(id)
++      if (!handle) continue
++      await handle.stop(stopCauseForRemoved(kind, previousConfig, servedDirs))
++      workers.delete(id)
++      log(`stopped ${id}`)
++    }
++    for (const { id, kind, previousConfig } of plan.restart) {
++      await workers.get(id)?.stop(stopCauseForRestart(kind, previousConfig, servedDirs))
++    }
++    let restartOrder = 0
++    for (const { id, kind, config: entry } of plan.restart) {
++      if (!workers.has(id)) continue
++      launch(id, kind, entry, restartOrder++)
++      log(`restarted ${id}`)
++    }
++    let startOrder = 0
++    for (const { id, kind, config: entry } of plan.start) {
++      if (!isKindEnabled(kind)) continue
++      launch(id, kind, entry, startOrder++)
++      log(`spawned ${id}`)
++    }
++  }
++
++  /** Porte de `ne`: recarga `daemon.json` y aplica el diff a los workers vivos. */
++  async function reload(): Promise<void> {
++    const next = await loadDaemonConfig(configPath)
++    if (!next.ok) {
++      log(`config reload failed: ${next.error} — keeping last-good config`)
++      return
++    }
++    logUnknownKeys(next.unknownKeys, log)
++    const nextConfig = withFallback(next.config, fallbackConfig)
++    const plan = diffDaemonConfigForReload(config, nextConfig)
++    config = nextConfig
++    await applyReloadPlan(plan, new Set(nextConfig.remoteControl.map(entry => entry.dir)))
++    if (daemonConfigReloadPlanIsEmpty(plan)) return
++    log(`reload: stopped=${plan.stop.length} started=${plan.start.length} restarted=${plan.restart.length}`)
++    emitDaemonConfigReloadEvent(plan, { logEventFn })
++  }
++
++  let queue: Promise<void> = Promise.resolve()
++  const enqueue = (task: () => void | Promise<void>): void => {
++    queue = queue.then(task).catch(error => logErrorFn(error))
++  }
++
++  spawnEnabledWorkers()
++
++  const watcher = watch(configPath, () => enqueue(reload))
++  let disposed = false
++  const unsubscribeFlags = onFlagsRefreshed(() =>
++    enqueue(() => {
++      if (!disposed) spawnEnabledWorkers()
++    }),
++  )
++
++  function disposeWatcher(): void {
++    if (disposed) return
++    disposed = true
++    watcher.close()
++    unsubscribeFlags()
++  }
++
++  return {
++    workerCount: () => countConfiguredWorkers(config),
++    busyWorkerCount: () => [...workers.values()].filter(handle => handle.isBusy()).length,
++    hasOAuthConsumer: () => [...workers.values()].some(handle => workerKindNeedsOAuth(handle.kind)),
++    disposeWatcher,
++    drainReloads: () => queue,
++    stop: async cause => {
++      disposeWatcher()
++      await queue
++      await Promise.all([...workers.values()].map(handle => handle.stop(cause)))
++    },
++  }
++}
+diff --git a/src/packages/daemon/src/main.ts b/src/packages/daemon/src/main.ts
+index ec239700f..47a229c5d 100644
+--- a/src/packages/daemon/src/main.ts
++++ b/src/packages/daemon/src/main.ts
+@@ -7,12 +7,27 @@ import { PRODUCT_NAME } from '@thyrox/config/product'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import {
+   buildDaemonHelpBanner,
++  formatCommandUnavailableMessage,
++  resolveDaemonBgDispatch,
+   resolveDaemonBgInvocation,
+   writeStderrLine,
+   writeStdoutLine,
++  type DaemonBgDispatchDecision,
++  type DaemonBgDispatchFlags,
+   type DaemonHelpFlags,
+   type DaemonHelpSections,
+ } from './daemonCli.js'
++import {
++  emptyDaemonConfig,
++  getDaemonConfigPath,
++  isDaemonWorkerRolloutOverrideEnabled,
++  isWorkerKindEnabled,
++  startDaemonWorkerSet,
++  type DaemonJsonConfig,
++  type DaemonWorkerEntryConfig,
++  type DaemonWorkerHandle,
++  type DaemonWorkerKind,
++} from './daemonConfig.js'
+ import {
+   WORKER_SHUTDOWN_SIGKILL_GRACE_MS,
+   parseWorkerToSupervisorMessage,
+@@ -122,8 +137,8 @@ const DAEMON_BG_HELP_FLAGS: DaemonHelpFlags = {
+  * Daemon supervisor entry point. Called from `cli.tsx` via:
+  *   `claude daemon [subcommand]`
+  *
+- * Starts and supervises long-running workers. Currently spawns one
+- * `remoteControl` worker that runs the headless bridge server.
++ * Arranca y supervisa los workers declarados en `daemon.json`; sin
++ * entradas, un único `remoteControl` con las flags de `daemon start`.
+  *
+  * Subcommands:
+  *   (none)  — start the supervisor with default workers
+@@ -159,11 +174,14 @@ export async function daemonMain(args: string[]): Promise<void> {
+       // (`args.slice(2)`) preserva el contrato previo: ningun llamador
+       // real antepone flags al subcomando (`daemonAdapter.ts` siempre
+       // invoca `daemon bg run` sin flags).
+-      const sub = resolveDaemonBgInvocation(bgArgs, {
+-        jsonPath: '',
+-        logPath: '',
+-        isStdinTty: Boolean(process.stdin.isTTY),
+-      }).sub
++      const decision = resolveDaemonBgExecution(bgArgs, Boolean(process.stdin.isTTY))
++      if (decision.action === 'refuse') {
++        // Porte de `rDe("daemon "+k)`: mensaje y salida 1, sin ejecutar.
++        writeStderrLine(formatCommandUnavailableMessage(`daemon ${decision.sub}`))
++        process.exitCode = 1
++        break
++      }
++      const sub = decision.sub
+       if (sub === 'run') {
+         const { bgDaemonMain } = await import('./bgDaemon.js')
+         let code = 1
+@@ -221,6 +239,27 @@ export async function daemonMain(args: string[]): Promise<void> {
+   }
+ }
+ 
++/**
++ * Flags que gatean los subcomandos de `daemon bg`: `pV()` (stub siempre
++ * falso en la referencia, `isDaemonWorkerRolloutOverrideEnabled`) y
++ * `s7e("remoteControl")` (`isWorkerKindEnabled`).
++ */
++export function getDaemonBgDispatchFlags(): DaemonBgDispatchFlags {
++  return {
++    remoteControlAvailable: isDaemonWorkerRolloutOverrideEnabled(),
++    remoteControlFeatureEnabled: isWorkerKindEnabled('remoteControl'),
++  }
++}
++
++/**
++ * Resuelve el subcomando de `daemon bg` que se ejecuta y si su gate está
++ * abierto — porte de `on` + las dos líneas de gating de `wa`.
++ */
++export function resolveDaemonBgExecution(bgArgs: readonly string[], isStdinTty: boolean): DaemonBgDispatchDecision {
++  const invocation = resolveDaemonBgInvocation(bgArgs, { jsonPath: '', logPath: '', isStdinTty })
++  return resolveDaemonBgDispatch(invocation, getDaemonBgDispatchFlags())
++}
++
+ async function bgDaemonTailLog(): Promise<void> {
+   const { join } = await import('node:path')
+   const { existsSync } = await import('node:fs')
+@@ -383,53 +422,151 @@ function parseSupervisorArgs(args: string[]): Record<string, string> {
+   return result
+ }
+ 
++/** Capacidad por worker cuando `daemon start` no la declara (contrato previo de las flags). */
++const LEGACY_WORKER_CAPACITY = 4
++
++function parseCapacity(raw: string | undefined): number {
++  const capacity = Number(raw)
++  return Number.isInteger(capacity) && capacity > 0 ? capacity : LEGACY_WORKER_CAPACITY
++}
++
+ /**
+- * Run the daemon supervisor loop. Spawns workers and restarts them
+- * on crash with exponential backoff.
++ * Config de respaldo con las flags de `daemon start` (`--dir`,
++ * `--capacity`, …): un único `remoteControl`, la lista fija que el
++ * supervisor lanzaba antes de leer `daemon.json`. Rige sólo mientras ese
++ * archivo no declare ningún worker (`startDaemonWorkerSet`).
+  */
+-async function runSupervisor(args: string[]): Promise<void> {
+-  const config = parseSupervisorArgs(args)
+-  const dir = config.dir || resolve('.')
++export function buildLegacyDaemonConfig(flags: Record<string, string>, dir: string): DaemonJsonConfig {
++  return {
++    ...emptyDaemonConfig(),
++    remoteControl: [
++      {
++        dir,
++        name: flags.name,
++        spawnMode: flags.spawnMode === 'worktree' ? 'worktree' : 'same-dir',
++        capacity: parseCapacity(flags.capacity),
++        permissionMode: flags.permissionMode,
++        sandbox: flags.sandbox === '1',
++        createSessionOnStart: true,
++      },
++    ],
++  }
++}
+ 
+-  console.log(`[daemon] supervisor starting in ${dir}`)
++/** Directorio y ajustes (`DAEMON_WORKER_*`) con que `spawnWorker` lanza una entrada. */
++export interface WorkerSpawnSettings {
++  readonly dir: string
++  readonly settings: Record<string, string>
++}
++
++function toFlag(value: boolean): string {
++  return value ? '1' : '0'
++}
+ 
+-  const workers: WorkerState[] = [
+-    {
+-      kind: 'remoteControl',
+-      process: null,
+-      consecutiveCrashes: 0,
+-      parked: false,
+-      lastStartTime: 0,
+-      lastBusy: false,
+-      lastBusyAt: 0,
+-      servedToolsCount: 0,
+-      forceKillTimer: null,
++/**
++ * Traduce una entrada de `daemon.json` a lo que `spawnWorker` pone en el
++ * entorno del worker. Sólo `remoteControl` sirve un directorio (`Oe`); el
++ * resto corre en el del supervisor y sin ajustes propios.
++ */
++export function buildWorkerSpawnSettings(entry: DaemonWorkerEntryConfig, supervisorDir: string): WorkerSpawnSettings {
++  if (!('dir' in entry)) return { dir: supervisorDir, settings: {} }
++  const settings: Record<string, string> = {
++    spawnMode: entry.spawnMode,
++    capacity: String(entry.capacity),
++    sandbox: toFlag(entry.sandbox),
++    createSession: toFlag(entry.createSessionOnStart),
++  }
++  if (entry.name !== undefined) settings.name = entry.name
++  if (entry.permissionMode !== undefined) settings.permissionMode = entry.permissionMode
++  if (entry.sessionTimeoutMs !== undefined) settings.timeoutMs = String(entry.sessionTimeoutMs)
++  return { dir: entry.dir, settings }
++}
++
++function newWorkerState(kind: DaemonWorkerKind): WorkerState {
++  return {
++    kind,
++    process: null,
++    consecutiveCrashes: 0,
++    parked: false,
++    lastStartTime: 0,
++    lastBusy: false,
++    lastBusyAt: 0,
++    servedToolsCount: 0,
++    forceKillTimer: null,
++  }
++}
++
++function waitForWorkerExit(worker: WorkerState): Promise<void> {
++  const child = worker.process
++  if (!child || child.exitCode !== null || child.signalCode !== null) return Promise.resolve()
++  return new Promise<void>(resolve => child.once('exit', () => resolve()))
++}
++
++/**
++ * Crea la instancia de una entrada y la arranca tras `delayMs` — el
++ * `new Ue(...)`+`start(delay)` de `Tt`. Cada instancia tiene su propio
++ * `AbortController`, encadenado al del supervisor, para que una recarga
++ * pueda pararla sin apagar a las demás.
++ */
++function launchSupervisedWorker(
++  kind: DaemonWorkerKind,
++  entry: DaemonWorkerEntryConfig,
++  delayMs: number,
++  supervisorDir: string,
++  supervisorSignal: AbortSignal,
++): DaemonWorkerHandle {
++  const worker = newWorkerState(kind)
++  const workerController = new AbortController()
++  const abortWorker = (): void => workerController.abort()
++  supervisorSignal.addEventListener('abort', abortWorker, { once: true })
++  const { dir, settings } = buildWorkerSpawnSettings(entry, supervisorDir)
++  const startTimer = setTimeout(() => spawnWorker(worker, dir, settings, workerController.signal), delayMs)
++  return {
++    kind,
++    isBusy: () => isWorkerBusyNow(worker),
++    stop: async cause => {
++      clearTimeout(startTimer)
++      supervisorSignal.removeEventListener('abort', abortWorker)
++      workerController.abort()
++      stopWorkerProcess(worker, cause)
++      await waitForWorkerExit(worker)
+     },
+-  ]
++  }
++}
++
++/**
++ * Bucle del supervisor: arranca el conjunto de workers de `daemon.json`
++ * (`startDaemonWorkerSet`, porte de `Tt`) con su feature gate por tipo, su
++ * recarga en caliente y el refresco de flags, y lo para al recibir
++ * SIGTERM/SIGINT. Cada worker se reintenta con backoff (`spawnWorker`).
++ *
++ * // pendiente: `workerRegistry.ts` sólo implementa `remoteControl`; una
++ * // entrada `heartbeat` arranca y sale con `EXIT_CODE_PERMANENT`, que el
++ * // supervisor aparca. Queda así hasta que se porte ese worker (fuera de
++ * // los archivos de esta tarea).
++ */
++async function runSupervisor(args: string[]): Promise<void> {
++  const flags = parseSupervisorArgs(args)
++  const dir = flags.dir || resolve('.')
++
++  console.log(`[daemon] supervisor starting in ${dir}`)
+ 
+   const controller = new AbortController()
++  const workerSet = await startDaemonWorkerSet({
++    configPath: getDaemonConfigPath(),
++    fallbackConfig: buildLegacyDaemonConfig(flags, dir),
++    launchWorker: (_id, kind, entry, delayMs) =>
++      launchSupervisedWorker(kind, entry, delayMs, dir, controller.signal),
++    log: line => console.log(`[daemon] ${line}`),
++  })
+ 
+-  // Graceful shutdown
+-  const shutdown = () => {
++  const shutdown = (): void => {
+     console.log('[daemon] supervisor shutting down...')
+     controller.abort()
+-    for (const w of workers) {
+-      if (w.process && !w.process.killed) {
+-        stopWorkerProcess(w)
+-      }
+-    }
+   }
+   process.on('SIGTERM', shutdown)
+   process.on('SIGINT', shutdown)
+ 
+-  // Spawn and supervise workers
+-  for (const worker of workers) {
+-    if (!controller.signal.aborted) {
+-      spawnWorker(worker, dir, config, controller.signal)
+-    }
+-  }
+-
+-  // Wait for abort signal
+   await new Promise<void>(resolve => {
+     if (controller.signal.aborted) {
+       resolve()
+@@ -438,24 +575,9 @@ async function runSupervisor(args: string[]): Promise<void> {
+     controller.signal.addEventListener('abort', () => resolve(), { once: true })
+   })
+ 
+-  // Wait for all workers to exit. `stopWorkerProcess` (invocado por
+-  // `shutdown`) ya programó su propio SIGKILL de gracia
+-  // (`WORKER_SHUTDOWN_SIGKILL_GRACE_MS`) — porte de `if(o) await o` en
+-  // `Ue.stop`, sin un segundo kill independiente.
+-  await Promise.all(
+-    workers
+-      .filter(w => w.process && !w.process.killed)
+-      .map(
+-        w =>
+-          new Promise<void>(resolve => {
+-            if (!w.process) {
+-              resolve()
+-              return
+-            }
+-            w.process.on('exit', () => resolve())
+-          }),
+-      ),
+-  )
++  // `stop` cierra el watcher, drena las recargas y para cada worker;
++  // `stopWorkerProcess` programa su SIGKILL de gracia — porte de `Tt.stop`.
++  await workerSet.stop()
+ 
+   console.log('[daemon] supervisor stopped')
+ }
+@@ -589,7 +711,8 @@ function spawnWorker(
+     DAEMON_WORKER_CAPACITY: config.capacity || '4',
+     DAEMON_WORKER_PERMISSION: config.permissionMode,
+     DAEMON_WORKER_SANDBOX: config.sandbox || '0',
+-    DAEMON_WORKER_CREATE_SESSION: '1',
++    DAEMON_WORKER_TIMEOUT_MS: config.timeoutMs,
++    DAEMON_WORKER_CREATE_SESSION: config.createSession || '1',
+     THYROX_CODE_SESSION_KIND: 'daemon-worker',
+   }
+ 
+diff --git a/src/packages/daemon/src/__tests__/daemonBgGating.test.ts b/src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+new file mode 100644
+index 000000000..94ba4f8e1
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+@@ -0,0 +1,120 @@
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++
++import {
++  clearGrowthBookConfigOverrides,
++  setGrowthBookConfigOverride,
++} from '@thyrox/config/feature-flags'
++
++import { formatCommandUnavailableMessage } from '../daemonCli.js'
++import { daemonMain, getDaemonBgDispatchFlags, resolveDaemonBgExecution } from '../main.js'
++
++// Porte del gating de `wa` (`chunk-92tvramn.js`, referencia 2.1.283):
++// `rn.has(k)&&!(k==="remote-control"?s7e("remoteControl"):pV())` →
++// `rDe("daemon "+k)`. En el binario `pV()` es un stub que siempre da
++// false, así que la conducta observable es: `list`/`scheduled` se
++// rehúsan siempre, `hub` se degrada a `status`, y `remote-control`
++// depende de su propio gate.
++
++describe('formatCommandUnavailableMessage (rDe)', () => {
++  test('texto por defecto de rDe', () => {
++    expect(formatCommandUnavailableMessage('daemon list')).toBe(
++      "'daemon list' is not available in this environment.",
++    )
++  })
++})
++
++describe('getDaemonBgDispatchFlags', () => {
++  beforeEach(() => clearGrowthBookConfigOverrides())
++  afterEach(() => clearGrowthBookConfigOverrides())
++
++  test('pV es siempre falso; remote-control sigue su gate', () => {
++    expect(getDaemonBgDispatchFlags()).toEqual({ remoteControlAvailable: false, remoteControlFeatureEnabled: false })
++    setGrowthBookConfigOverride('tengu_radiant_heron', true)
++    expect(getDaemonBgDispatchFlags()).toEqual({ remoteControlAvailable: false, remoteControlFeatureEnabled: true })
++  })
++})
++
++function captureStderr(): { lines: string[]; restore: () => void } {
++  const lines: string[] = []
++  const original = process.stderr.write.bind(process.stderr)
++  process.stderr.write = ((chunk: string | Uint8Array) => {
++    lines.push(String(chunk))
++    return true
++  }) as typeof process.stderr.write
++  return { lines, restore: () => (process.stderr.write = original) }
++}
++
++describe('daemonMain bg — gating de subcomandos', () => {
++  let previousExitCode: typeof process.exitCode
++  beforeEach(() => {
++    previousExitCode = process.exitCode
++    process.exitCode = 0
++    clearGrowthBookConfigOverrides()
++  })
++  afterEach(() => {
++    process.exitCode = previousExitCode
++    clearGrowthBookConfigOverrides()
++  })
++
++  test('bg list se rehúsa con el mensaje de rDe y exit 1', async () => {
++    const stderr = captureStderr()
++    try {
++      await daemonMain(['bg', 'list'])
++    } finally {
++      stderr.restore()
++    }
++    expect(stderr.lines).toEqual(["'daemon list' is not available in this environment.\n"])
++    expect(process.exitCode).toBe(1)
++  })
++
++  test('bg scheduled se rehúsa igual', async () => {
++    const stderr = captureStderr()
++    try {
++      await daemonMain(['bg', 'scheduled'])
++    } finally {
++      stderr.restore()
++    }
++    expect(stderr.lines).toEqual(["'daemon scheduled' is not available in this environment.\n"])
++  })
++
++  test('bg remote-control con su gate cerrado se rehúsa', async () => {
++    const stderr = captureStderr()
++    try {
++      await daemonMain(['bg', 'remote-control'])
++    } finally {
++      stderr.restore()
++    }
++    expect(stderr.lines).toEqual(["'daemon remote-control' is not available in this environment.\n"])
++  })
++
++  test('bg remote-control con el gate abierto pasa el gating (y cae en desconocido: no portado)', async () => {
++    setGrowthBookConfigOverride('tengu_radiant_heron', true)
++    const stderr = captureStderr()
++    try {
++      await daemonMain(['bg', 'remote-control'])
++    } finally {
++      stderr.restore()
++    }
++    expect(stderr.lines).toEqual(['Unknown daemon bg subcommand: remote-control\n'])
++  })
++})
++
++describe('resolveDaemonBgExecution (on + wa)', () => {
++  beforeEach(() => clearGrowthBookConfigOverrides())
++
++  test('sin subcomando en TTY, hub se degrada a status y corre', () => {
++    expect(resolveDaemonBgExecution([], true)).toEqual({ action: 'run', sub: 'status' })
++  })
++
++  test('sin subcomando fuera de TTY corre run', () => {
++    expect(resolveDaemonBgExecution([], false)).toEqual({ action: 'run', sub: 'run' })
++  })
++
++  test('status no está gateado', () => {
++    expect(resolveDaemonBgExecution(['status'], false)).toEqual({ action: 'run', sub: 'status' })
++  })
++
++  test('list se rehúsa', () => {
++    expect(resolveDaemonBgExecution(['list'], false)).toEqual({ action: 'refuse', sub: 'list' })
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts b/src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+new file mode 100644
+index 000000000..58e5591f4
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+@@ -0,0 +1,358 @@
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import {
++  DAEMON_WORKER_START_STAGGER_MS,
++  emptyDaemonConfig,
++  startDaemonWorkerSet,
++  type DaemonJsonConfig,
++  type DaemonWorkerEntryConfig,
++  type DaemonWorkerKind,
++  type DaemonWorkerSetOptions,
++} from '../daemonConfig.js'
++
++// Porte de `Tt` (`chunk-92tvramn.js`, referencia 2.1.283): arranque del
++// conjunto de workers de `daemon.json`, feature gate por tipo (`Ct`),
++// recarga en caliente y refresco de flags.
++
++const dirs: string[] = []
++
++afterEach(() => {
++  while (dirs.length) {
++    const dir = dirs.pop()
++    if (dir) rmSync(dir, { recursive: true, force: true })
++  }
++})
++
++function writeConfig(config: unknown): string {
++  const dir = mkdtempSync(join(tmpdir(), 'daemon-worker-set-'))
++  dirs.push(dir)
++  const path = join(dir, 'daemon.json')
++  writeFileSync(path, typeof config === 'string' ? config : JSON.stringify(config))
++  return path
++}
++
++function remoteControl(dir: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
++  return { dir, ...extra }
++}
++
++interface Launch {
++  id: string
++  kind: DaemonWorkerKind
++  entry: DaemonWorkerEntryConfig
++  delayMs: number
++}
++
++interface Harness {
++  launches: Launch[]
++  stops: Array<{ id: string; cause: string | undefined }>
++  lines: string[]
++  events: Array<{ name: string; metadata?: Record<string, unknown> }>
++  errors: unknown[]
++  busy: Set<string>
++  enabled: Set<DaemonWorkerKind>
++  triggerFileChange: () => void
++  triggerFlagsRefresh: () => void
++  watcherClosed: () => boolean
++  options: (configPath: string, extra?: Partial<DaemonWorkerSetOptions>) => DaemonWorkerSetOptions
++}
++
++function makeHarness(): Harness {
++  const launches: Launch[] = []
++  const stops: Array<{ id: string; cause: string | undefined }> = []
++  const lines: string[] = []
++  const events: Array<{ name: string; metadata?: Record<string, unknown> }> = []
++  const errors: unknown[] = []
++  const busy = new Set<string>()
++  const enabled = new Set<DaemonWorkerKind>(['heartbeat', 'remoteControl'])
++  let onFileChange: () => void = () => {}
++  let onFlags: () => void = () => {}
++  let closed = false
++  return {
++    launches,
++    stops,
++    lines,
++    events,
++    errors,
++    busy,
++    enabled,
++    triggerFileChange: () => onFileChange(),
++    triggerFlagsRefresh: () => onFlags(),
++    watcherClosed: () => closed,
++    options: (configPath, extra = {}) => ({
++      configPath,
++      launchWorker: (id, kind, entry, delayMs) => {
++        launches.push({ id, kind, entry, delayMs })
++        return {
++          kind,
++          isBusy: () => busy.has(id),
++          stop: async cause => {
++            stops.push({ id, cause })
++          },
++        }
++      },
++      log: line => lines.push(line),
++      isKindEnabled: kind => enabled.has(kind),
++      watch: (_path, onChange) => {
++        onFileChange = onChange
++        return { close: () => (closed = true) }
++      },
++      onFlagsRefreshed: listener => {
++        onFlags = listener
++        return () => (onFlags = () => {})
++      },
++      logEventFn: (name, metadata) => events.push({ name, metadata }),
++      logErrorFn: error => errors.push(error),
++      ...extra,
++    }),
++  }
++}
++
++describe('startDaemonWorkerSet — arranque (ce de Tt)', () => {
++  test('lanza una instancia por entrada, con id kind:index y escalonado He', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}], remoteControl: [remoteControl('/a'), remoteControl('/b')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    expect(h.launches.map(l => [l.id, l.delayMs])).toEqual([
++      ['heartbeat:0', 0],
++      ['remoteControl:0', DAEMON_WORKER_START_STAGGER_MS],
++      ['remoteControl:1', 2 * DAEMON_WORKER_START_STAGGER_MS],
++    ])
++    expect(h.lines).toEqual(['spawned heartbeat:0', 'spawned remoteControl:0', 'spawned remoteControl:1'])
++    expect(set.workerCount()).toBe(3)
++    await set.stop()
++  })
++
++  test('el escalonado es He=2000 ms', () => {
++    expect(DAEMON_WORKER_START_STAGGER_MS).toBe(2000)
++  })
++
++  test('un tipo sin gate no arranca y se avisa una sola vez', async () => {
++    const h = makeHarness()
++    h.enabled.delete('remoteControl')
++    const path = writeConfig({ remoteControl: [remoteControl('/a'), remoteControl('/b')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    expect(h.launches).toEqual([])
++    expect(h.lines).toEqual(["not starting 2 remoteControl worker(s): not available for this account"])
++    h.triggerFlagsRefresh()
++    await set.drainReloads()
++    expect(h.lines.length).toBe(1)
++    await set.stop()
++  })
++
++  test('workerCount cuenta lo configurado aunque el gate esté cerrado (Mr)', async () => {
++    const h = makeHarness()
++    h.enabled.delete('remoteControl')
++    const path = writeConfig({ remoteControl: [remoteControl('/a')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    expect(set.workerCount()).toBe(1)
++    await set.stop()
++  })
++
++  test('refrescar flags arranca lo que el gate acaba de abrir, sin duplicar', async () => {
++    const h = makeHarness()
++    h.enabled.delete('remoteControl')
++    const path = writeConfig({ heartbeat: [{}], remoteControl: [remoteControl('/a')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    expect(h.launches.map(l => l.id)).toEqual(['heartbeat:0'])
++    h.enabled.add('remoteControl')
++    h.triggerFlagsRefresh()
++    await set.drainReloads()
++    expect(h.launches.map(l => l.id)).toEqual(['heartbeat:0', 'remoteControl:0'])
++    await set.stop()
++  })
++
++  test('config inválida: idle, sin workers, con la línea de la referencia', async () => {
++    const h = makeHarness()
++    const path = writeConfig('{not json')
++    const set = await startDaemonWorkerSet(h.options(path, { fallbackConfig: legacyConfig() }))
++    expect(h.launches).toEqual([])
++    expect(h.lines[0]).toStartWith('config load failed: failed to parse ')
++    expect(h.lines[0]).toEndWith(' — idling')
++    await set.stop()
++  })
++
++  test('claves desconocidas se avisan por nombre', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ bogus: 1 })
++    const set = await startDaemonWorkerSet(h.options(path))
++    expect(h.lines).toEqual(["unknown config key 'bogus' — upgrade claude?"])
++    await set.stop()
++  })
++})
++
++function legacyConfig(): DaemonJsonConfig {
++  return {
++    ...emptyDaemonConfig(),
++    remoteControl: [
++      { dir: '/legacy', spawnMode: 'same-dir', capacity: 4, sandbox: false, createSessionOnStart: true },
++    ],
++  }
++}
++
++describe('startDaemonWorkerSet — configuración de respaldo (flags de `daemon start`)', () => {
++  test('sin entradas en daemon.json se usa la configuración de respaldo', async () => {
++    const h = makeHarness()
++    const path = join(mkdtempSync(join(tmpdir(), 'daemon-worker-set-')), 'daemon.json')
++    dirs.push(join(path, '..'))
++    const set = await startDaemonWorkerSet(h.options(path, { fallbackConfig: legacyConfig() }))
++    expect(h.launches.map(l => [l.id, (l.entry as { dir: string }).dir])).toEqual([['remoteControl:0', '/legacy']])
++    await set.stop()
++  })
++
++  test('con entradas en daemon.json el respaldo se ignora', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ remoteControl: [remoteControl('/file')] })
++    const set = await startDaemonWorkerSet(h.options(path, { fallbackConfig: legacyConfig() }))
++    expect(h.launches.map(l => (l.entry as { dir: string }).dir)).toEqual(['/file'])
++    await set.stop()
++  })
++})
++
++describe('startDaemonWorkerSet — recarga en caliente (ne de Tt)', () => {
++  test('para, reinicia y arranca según el diff, y emite el evento', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}, {}], remoteControl: [remoteControl('/a')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    h.lines.length = 0
++    writeFileSync(
++      path,
++      JSON.stringify({ heartbeat: [{ intervalSeconds: 5 }], remoteControl: [remoteControl('/a'), remoteControl('/b')] }),
++    )
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.stops).toEqual([
++      { id: 'heartbeat:1', cause: undefined },
++      { id: 'heartbeat:0', cause: 'reload' },
++    ])
++    expect(h.launches.slice(3).map(l => [l.id, l.delayMs])).toEqual([
++      ['heartbeat:0', 0],
++      ['remoteControl:1', 0],
++    ])
++    expect(h.lines).toEqual([
++      'stopped heartbeat:1',
++      'restarted heartbeat:0',
++      'spawned remoteControl:1',
++      'reload: stopped=1 started=1 restarted=1',
++    ])
++    expect(h.events).toEqual([
++      { name: 'tengu_daemon_config_reload', metadata: { stopped: 1, started: 1, restarted: 1 } },
++    ])
++    expect(set.workerCount()).toBe(3)
++    await set.stop()
++  })
++
++  test('remoteControl quitado cuyo dir sigue servido se para con causa reload', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ remoteControl: [remoteControl('/a'), remoteControl('/b')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    writeFileSync(path, JSON.stringify({ remoteControl: [remoteControl('/b')] }))
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.stops).toEqual([
++      { id: 'remoteControl:1', cause: 'reload' },
++      { id: 'remoteControl:0', cause: undefined },
++    ])
++    await set.stop()
++  })
++
++  test('remoteControl reiniciado con un dir que ya no se sirve se para sin causa', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ remoteControl: [remoteControl('/a')] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    writeFileSync(path, JSON.stringify({ remoteControl: [remoteControl('/z')] }))
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.stops).toEqual([{ id: 'remoteControl:0', cause: undefined }])
++    await set.stop()
++  })
++
++  test('una entrada nueva de un tipo sin gate no arranca', async () => {
++    const h = makeHarness()
++    h.enabled.delete('remoteControl')
++    const path = writeConfig({})
++    const set = await startDaemonWorkerSet(h.options(path))
++    writeFileSync(path, JSON.stringify({ remoteControl: [remoteControl('/a')] }))
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.launches).toEqual([])
++    expect(h.lines).toEqual(['reload: stopped=0 started=1 restarted=0'])
++    await set.stop()
++  })
++
++  test('recarga fallida conserva la última config buena', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    writeFileSync(path, '{broken')
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.lines[1]).toEndWith(' — keeping last-good config')
++    expect(h.stops).toEqual([])
++    expect(set.workerCount()).toBe(1)
++    await set.stop()
++  })
++
++  test('un plan vacío no emite evento', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.events).toEqual([])
++    await set.stop()
++  })
++
++  test('un fallo dentro de la recarga va a logError y no rompe la cola', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}] })
++    const failure = new Error('stop failed')
++    const set = await startDaemonWorkerSet(
++      h.options(path, {
++        launchWorker: (_id, kind) => ({ kind, isBusy: () => false, stop: () => Promise.reject(failure) }),
++      }),
++    )
++    writeFileSync(path, JSON.stringify({}))
++    h.triggerFileChange()
++    await set.drainReloads()
++    expect(h.errors).toEqual([failure])
++    h.triggerFlagsRefresh()
++    await set.drainReloads()
++    expect(h.errors.length).toBe(1)
++  })
++})
++
++describe('startDaemonWorkerSet — superficie de Tt', () => {
++  test('busyWorkerCount cuenta los handles ocupados', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}, {}] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    h.busy.add('heartbeat:1')
++    expect(set.busyWorkerCount()).toBe(1)
++    await set.stop()
++  })
++
++  test('hasOAuthConsumer sólo con un tipo que necesita OAuth vivo', async () => {
++    const h = makeHarness()
++    const heartbeatOnly = await startDaemonWorkerSet(h.options(writeConfig({ heartbeat: [{}] })))
++    expect(heartbeatOnly.hasOAuthConsumer()).toBe(false)
++    await heartbeatOnly.stop()
++    const withRemote = await startDaemonWorkerSet(h.options(writeConfig({ remoteControl: [remoteControl('/a')] })))
++    expect(withRemote.hasOAuthConsumer()).toBe(true)
++    await withRemote.stop()
++  })
++
++  test('stop cierra el watcher, desuscribe flags y para cada worker con la causa', async () => {
++    const h = makeHarness()
++    const path = writeConfig({ heartbeat: [{}] })
++    const set = await startDaemonWorkerSet(h.options(path))
++    await set.stop('shutdown')
++    expect(h.watcherClosed()).toBe(true)
++    expect(h.stops).toEqual([{ id: 'heartbeat:0', cause: 'shutdown' }])
++    h.triggerFlagsRefresh()
++    await set.drainReloads()
++    expect(h.launches.length).toBe(1)
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts b/src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts
+new file mode 100644
+index 000000000..7e046bdc6
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts
+@@ -0,0 +1,96 @@
++import { describe, expect, test } from 'bun:test'
++
++import { buildLegacyDaemonConfig, buildWorkerSpawnSettings } from '../main.js'
++
++// Traducción entre `daemon.json` (`Tt`) y el entorno que `spawnWorker`
++// entrega al worker (`workerRegistry.ts:runRemoteControlWorker`).
++
++describe('buildLegacyDaemonConfig — flags de `daemon start` como respaldo', () => {
++  test('sin flags: un remoteControl en dir con los defaults previos', () => {
++    expect(buildLegacyDaemonConfig({}, '/work')).toEqual({
++      heartbeat: [],
++      scheduled: [],
++      remoteControl: [
++        {
++          dir: '/work',
++          name: undefined,
++          spawnMode: 'same-dir',
++          capacity: 4,
++          permissionMode: undefined,
++          sandbox: false,
++          createSessionOnStart: true,
++        },
++      ],
++    })
++  })
++
++  test('las flags se trasladan a la entrada', () => {
++    const config = buildLegacyDaemonConfig(
++      { spawnMode: 'worktree', capacity: '8', permissionMode: 'plan', sandbox: '1', name: 'n' },
++      '/w',
++    )
++    expect(config.remoteControl[0]).toEqual({
++      dir: '/w',
++      name: 'n',
++      spawnMode: 'worktree',
++      capacity: 8,
++      permissionMode: 'plan',
++      sandbox: true,
++      createSessionOnStart: true,
++    })
++  })
++
++  test('una capacidad no numérica cae al default', () => {
++    expect(buildLegacyDaemonConfig({ capacity: 'x' }, '/w').remoteControl[0]!.capacity).toBe(4)
++  })
++})
++
++describe('buildWorkerSpawnSettings — entrada → entorno del worker', () => {
++  test('remoteControl completo', () => {
++    expect(
++      buildWorkerSpawnSettings(
++        {
++          dir: '/a',
++          name: 'n',
++          spawnMode: 'worktree',
++          capacity: 32,
++          permissionMode: 'plan',
++          sandbox: true,
++          sessionTimeoutMs: 1000,
++          createSessionOnStart: false,
++        },
++        '/fallback',
++      ),
++    ).toEqual({
++      dir: '/a',
++      settings: {
++        name: 'n',
++        spawnMode: 'worktree',
++        capacity: '32',
++        permissionMode: 'plan',
++        sandbox: '1',
++        timeoutMs: '1000',
++        createSession: '0',
++      },
++    })
++  })
++
++  test('remoteControl mínimo omite lo no declarado', () => {
++    expect(
++      buildWorkerSpawnSettings(
++        { dir: '/a', spawnMode: 'same-dir', capacity: 4, sandbox: false, createSessionOnStart: true },
++        '/fallback',
++      ),
++    ).toEqual({
++      dir: '/a',
++      settings: { spawnMode: 'same-dir', capacity: '4', sandbox: '0', createSession: '1' },
++    })
++  })
++
++  test('una entrada sin dir (heartbeat) corre en el dir del supervisor, sin ajustes', () => {
++    expect(buildWorkerSpawnSettings({ intervalSeconds: 30 }, '/fallback')).toEqual({
++      dir: '/fallback',
++      settings: {},
++    })
++  })
++})

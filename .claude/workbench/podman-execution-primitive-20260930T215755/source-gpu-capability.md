@@ -120,3 +120,53 @@ Pruebas añadidas por estos contratos: `partial` con backend NVIDIA usable da
 `measured`; `partial` sin backend da `unavailable`; `optional` sin backend
 elige la ruta CPU antes de ejecutar y no toca el ledger; «sin límite» de
 cgroup no es `0`; el `rg` del punto 7 como prueba.
+
+## Cuatro correcciones del ejecutor (cierran el contrato previo a 0691)
+
+Gobiernan sobre las secciones anteriores donde difieran.
+
+1. **El backend no decide el estado final.** La ausencia de backend sólo
+   significa «no hay telemetría»; nunca produce una cantidad. La capa de
+   capacidad combina las dos observaciones:
+
+   | evidencia de hardware | backend | estado |
+   |---|---|---|
+   | ninguna | ninguno | `absent` |
+   | presente o `partial` | ninguno usable | `unavailable` |
+   | presente o `partial` | usable | telemetría `available` |
+
+   y sólo con telemetría `available` una medida concreta da `measured(...)` o
+   `error`. `measured(0)`, `absent`, `unavailable` y `error` son disjuntos. Si
+   existe un `NoGpuBackend`, representa «no hay backend», no `absent`.
+2. **Capacidad y medida son dos etapas.** La prueba `partial` + backend usable
+   verifica primero que la telemetría queda `available` y después, con un
+   backend falso que da una lectura válida, que la medida es `measured`; y con
+   uno que falla, `error`. Tres aserciones con nombre propio, no una.
+3. **La invariante de `nvidia-smi` es de superficie, con lista de archivos
+   permitidos.** Una prueba recorre todo el código de producción relevante
+   (`src/session`, `src/lib`, `src/packages/*/src` y `bin` generado, Python,
+   shell y TypeScript, sin pruebas ni `dist`) y exige que cada archivo con
+   `nvidia-smi` esté en una lista explícita: el backend NVIDIA, la sonda de
+   hardware y la configuración expresamente permitida. Compara archivos, no un
+   conteo: una referencia nueva en cualquier sitio rompe la prueba.
+4. **`effective_available_ram()`**:
+
+   ```
+   effective_limit = el límite aplicable más restrictivo del cgroup y sus
+                     ancestros, normalizado
+   si effective_limit está acotado: max(0, effective_limit − uso actual)
+   si no:                           RAM disponible del anfitrión
+   ```
+
+   El valor «sin límite» de cgroup v1 (el número enorme de
+   `memory.limit_in_bytes`) y `max` de v2 se normalizan a `unlimited` antes de
+   restar: nunca se leen como RAM disponible. Archivos por versión:
+
+   | | v1 | v2 |
+   |---|---|---|
+   | límite | `memory.limit_in_bytes` | `memory.max` |
+   | uso | `memory.usage_in_bytes` | `memory.current` |
+   | pico | `memory.max_usage_in_bytes` | `memory.peak`, si existe |
+
+   Pruebas: límite en un ancestro más restrictivo que el propio; el sentinela
+   de v1 da `unlimited`; uso por encima del límite da `0`, no negativo.
