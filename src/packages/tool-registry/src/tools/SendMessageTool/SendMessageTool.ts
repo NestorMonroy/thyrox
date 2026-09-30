@@ -31,7 +31,13 @@ import {
   writeToMailbox,
 } from '@thyrox/swarm'
 import { resumeAgentBackground } from '../AgentTool/resumeAgent.js'
-import { SEND_MESSAGE_TOOL_NAME } from './constants.js'
+import {
+  MAX_REQUEST_ID_LENGTH,
+  MAX_SUMMARY_LENGTH,
+  MAX_TO_LENGTH,
+  SEND_MESSAGE_TOOL_NAME,
+  SINGLE_LINE,
+} from './constants.js'
 import { DESCRIPTION, getPrompt } from './prompt.js'
 import { renderToolResultMessage, renderToolUseMessage } from './UI.js'
 
@@ -43,13 +49,27 @@ const StructuredMessage = lazySchema(() =>
     }),
     z.object({
       type: z.literal('shutdown_response'),
-      request_id: z.string(),
+      request_id: z
+        .string()
+        .min(1, 'must be the request id being responded to')
+        .regex(SINGLE_LINE, 'must be a single-line request id')
+        .max(
+          MAX_REQUEST_ID_LENGTH,
+          `request id longer than any real one (max ${MAX_REQUEST_ID_LENGTH} characters)`,
+        ),
       approve: semanticBoolean(),
       reason: z.string().optional(),
     }),
     z.object({
       type: z.literal('plan_approval_response'),
-      request_id: z.string(),
+      request_id: z
+        .string()
+        .min(1, 'must be the request id being responded to')
+        .regex(SINGLE_LINE, 'must be a single-line request id')
+        .max(
+          MAX_REQUEST_ID_LENGTH,
+          `request id longer than any real one (max ${MAX_REQUEST_ID_LENGTH} characters)`,
+        ),
       approve: semanticBoolean(),
       feedback: z.string().optional(),
     }),
@@ -60,6 +80,11 @@ const inputSchema = lazySchema(() =>
   z.object({
     to: z
       .string()
+      .regex(SINGLE_LINE, 'must be a single-line recipient name or address')
+      .max(
+        MAX_TO_LENGTH,
+        `recipient longer than any listed name or address (max ${MAX_TO_LENGTH} characters)`,
+      )
       .describe(
         feature('UDS_INBOX')
           ? 'Recipient: teammate name, "*" for broadcast, "uds:<socket-path>" for a local peer, or "bridge:<session-id>" for a Remote Control peer (use ListPeers to discover)'
@@ -67,6 +92,7 @@ const inputSchema = lazySchema(() =>
       ),
     summary: z
       .string()
+      .max(MAX_SUMMARY_LENGTH)
       .optional()
       .describe(
         'A 5-10 word summary shown as a preview in the UI. For string messages, omitting this auto-derives a summary from the message; provide explicitly for better preview.',
