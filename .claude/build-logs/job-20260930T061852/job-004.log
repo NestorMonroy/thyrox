@@ -1,0 +1,15 @@
+caso 1 — con el candado del dueño tomado, no se toca
+  ok    el worktree del pool vivo sigue
+caso 2 — sin dueño, se retira y lo no entregado se salva
+  ok    el worktree huérfano se retira
+  ok    su directorio de ejecución desaparece
+  ok    el candado desaparece
+  ok    nombra el parche salvado
+  ok    el parche lleva el trabajo del ítem
+caso 3 — un proceso con su cwd dentro lo mantiene vivo (pool sin candado)
+  ok    el worktree ocupado sigue
+caso 4 — sin cambios, se retira sin parche
+  ok    el worktree limpio se retira
+  ok    no salva nada
+item_worktree orphans: 9/9
+EXIT=0
