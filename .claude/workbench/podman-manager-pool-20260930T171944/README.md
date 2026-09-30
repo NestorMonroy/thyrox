@@ -26,7 +26,16 @@ para TASK-THYROX-0558, su primer consumidor.
 
 ## Los resultados
 
-Se escriben al integrar.
+**Primer lanzamiento (2026-09-30T17:20): rehusado antes de lanzar ningún
+ítem, con exit 2.** El pool derivó `claude-opus-5-5` de `--task-class
+analisis` y la fuente `proxy-store` de `--credential-proxy`, porque el entorno
+no declara ninguna variable de credencial. El proxy no arrancó: el store de
+conexiones tampoco tiene credencial propia. Log: `.claude/jobs/podman-manager-pool-20260930T172008/`.
+
+Es la conducta correcta: la credencial del anfitrión no se usa, y el pool
+no cae a ella en silencio. Para relanzar hace falta una credencial propia
+declarada en el entorno: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN` o
+`THYROX_CODE_OAUTH_TOKEN`.
 
 *Metrica:* veredicto por ítem, casos de cada suite, errores propios.
 *Ciega a:* GPU real, Podman rootless y otros anfitriones.
