@@ -2849,10 +2849,6 @@ async function getRelevantMemoryAttachments(
 async function getSkillListingAttachments(
   toolUseContext: ToolUseContext,
 ): Promise<Attachment[]> {
-  if (readEnv('NODE_ENV') === 'test') {
-    return []
-  }
-
   // Skip skill listing for agents that don't have the Skill tool — they can't use skills directly.
   if (
     !toolUseContext.options.tools.some(t => toolMatchesName(t, SKILL_TOOL_NAME))

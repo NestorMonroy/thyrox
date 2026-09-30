@@ -35,11 +35,6 @@ export function setSystemPromptInjection(value: string | null): void {
 }
 
 export const getGitStatus = memoize(async (): Promise<string | null> => {
-  if (readEnv('NODE_ENV') === 'test') {
-    // Avoid cycles in tests
-    return null
-  }
-
   const startTime = Date.now()
   logForDiagnosticsNoPII('info', 'git_status_started')
 

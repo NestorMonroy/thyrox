@@ -273,7 +273,7 @@ export function getAnthropicApiKeyWithSource(
     return { key: apiKeyEnv, source: 'ANTHROPIC_API_KEY' }
   }
 
-  if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+  if (isEnvTruthy(readEnv('CI'))) {
     const apiKeyFromFd = getApiKeyFromFileDescriptor()
     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
 

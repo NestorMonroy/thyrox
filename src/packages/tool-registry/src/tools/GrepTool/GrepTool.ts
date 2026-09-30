@@ -547,10 +547,6 @@ export const GrepTool = buildTool({
         ] as const
       })
       .sort((a, b) => {
-        if (process.env.NODE_ENV === 'test') {
-          // In tests, we always want to sort by filename, so that results are deterministic
-          return a[0].localeCompare(b[0])
-        }
         const timeComparison = b[1] - a[1]
         if (timeComparison === 0) {
           // Sort by filename as a tiebreaker

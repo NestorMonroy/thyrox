@@ -40,7 +40,6 @@ import { ToolSearchTool } from '../../ToolSearchTool/ToolSearchTool.js'
 import { ConfigTool } from '../../ConfigTool/ConfigTool.js'
 import { TungstenTool } from '../../TungstenTool/TungstenTool.js'
 import { BriefTool } from '../../BriefTool/BriefTool.js'
-import { TestingPermissionTool } from '../../testing/TestingPermissionTool.js'
 import { EnterWorktreeTool } from '../../EnterWorktreeTool/EnterWorktreeTool.js'
 import { ExitWorktreeTool } from '../../ExitWorktreeTool/ExitWorktreeTool.js'
 // Workflow is a shipping (default-on) tool → static import like every other
@@ -172,156 +171,167 @@ const getPowerShellTool = () =>
  * Provider for built-in tools. Replicates the exact logic from `getAllBaseTools()`
  * in `tools.ts`, preserving all feature flag / environment variable gating.
  */
-export const BuiltInToolsProvider: ToolProvider = {
-  name: 'builtin',
-  discover(): Tools {
-    const tools: Tool[] = []
-
-    // Always-on tools
-    tools.push(AgentTool)
-    tools.push(TaskOutputTool)
-    tools.push(BashTool)
-
-    // Glob/Grep: hidden when embedded search tools are available
-    if (!hasEmbeddedSearchTools()) {
-      tools.push(GlobTool, GrepTool)
-    }
-
-    tools.push(ExitPlanModeV2Tool)
-    tools.push(FileReadTool)
-    tools.push(FileEditTool)
-    tools.push(FileWriteTool)
-    tools.push(NotebookEditTool)
-    tools.push(WebFetchTool)
-    tools.push(TodoWriteTool)
-    tools.push(WebSearchTool)
-    tools.push(TaskStopTool)
-    tools.push(AskUserQuestionTool)
-    tools.push(SkillTool)
-    tools.push(EnterPlanModeTool)
-
-    // Ant-only tools
-    if (process.env.USER_TYPE === 'ant') {
-      tools.push(ConfigTool)
-      tools.push(TungstenTool)
-    }
-
-    // Conditional tools (feature-gated via require)
-    const suggestPR = getSuggestBackgroundPRTool()
-    if (suggestPR) tools.push(suggestPR)
-
-    const webBrowser = getWebBrowserTool()
-    if (webBrowser) tools.push(webBrowser)
-
-    // Todo v2
-    if (isTodoV2Enabled()) {
-      tools.push(TaskCreateTool, TaskGetTool, TaskUpdateTool, TaskListTool)
-    }
-
-    // Feature-gated tools
-    const overflow = getOverflowTestTool()
-    if (overflow) tools.push(overflow)
-
-    const ctxInspect = getCtxInspectTool()
-    if (ctxInspect) tools.push(ctxInspect)
-
-    const terminalCapture = getTerminalCaptureTool()
-    if (terminalCapture) tools.push(terminalCapture)
-
-    // LSP tool
-    const lsp = getLSPTool()
-    if (lsp) tools.push(lsp)
-
-    // Worktree tools
-    if (isWorktreeModeEnabled()) {
-      tools.push(EnterWorktreeTool, ExitWorktreeTool)
-    }
-
-    // SendMessage (lazy require to break circular dep)
-    tools.push(SendMessageTool)
-
-    // UDS Inbox
-    const listPeers = getListPeersTool()
-    if (listPeers) tools.push(listPeers)
-
-    // Agent swarms / teams
-    if (isAgentSwarmsEnabled()) {
-      tools.push(getTeamCreateTool(), getTeamDeleteTool())
-    }
-
-    // Verify plan
-    const verifyPlan = getVerifyPlanExecutionTool()
-    if (verifyPlan) tools.push(verifyPlan)
-
-    // REPL (ant-only)
-    if (process.env.USER_TYPE === 'ant') {
-      const repl = getREPLTool()
-      if (repl) tools.push(repl)
-    }
-
-    // Workflow
-    const workflow = getWorkflowTool()
-    if (workflow) tools.push(workflow)
-
-    // Sleep
-    const sleep = getSleepTool()
-    if (sleep) tools.push(sleep)
-
-    // Cron tools (always loaded)
-    tools.push(...getCronTools())
-
-    // Remote trigger
-    const remoteTrigger = getRemoteTriggerTool()
-    if (remoteTrigger) tools.push(remoteTrigger)
-
-    // Monitor
-    const monitor = getMonitorTool()
-    if (monitor) tools.push(monitor)
-
-    tools.push(BriefTool)
-
-    // KAIROS tools
-    const sendUserFile = getSendUserFileTool()
-    if (sendUserFile) tools.push(sendUserFile)
-
-    const pushNotification = getPushNotificationTool()
-    if (pushNotification) tools.push(pushNotification)
-
-    const subscribePR = getSubscribePRTool()
-    if (subscribePR) tools.push(subscribePR)
-
-    const scheduleWakeup = getScheduleWakeupTool()
-    if (scheduleWakeup) tools.push(scheduleWakeup)
-
-    // PowerShell
-    const powerShell = getPowerShellTool()
-    if (powerShell) tools.push(powerShell)
-
-    // History snip
-    const snip = getSnipTool()
-    if (snip) tools.push(snip)
-
-    // Testing permission tool (test env only)
-    if (process.env.NODE_ENV === 'test') {
-      tools.push(TestingPermissionTool)
-    }
-
-    // MCP resource tools (always present)
-    tools.push(ListMcpResourcesTool)
-    tools.push(ReadMcpResourceTool)
-    // WaitForMcpServers — gated by isEnabled() reading tengu_ashen_kelp
-    // (ant v2.1.132 Iz8). Always registered; the tool descriptor's
-    // isEnabled gate hides it from the model when the flag is off.
-    tools.push(WaitForMcpServersTool)
-    // ShareOnboardingGuide — gated by tengu_flint_harbor_share AND OAuth.
-    // (ant v2.1.136 Il5). isEnabled() returns false for non-OAuth users.
-    tools.push(ShareOnboardingGuideTool)
-
-    // Tool search (optimistic)
-    if (isToolSearchEnabledOptimistic()) {
-      tools.push(ToolSearchTool)
-    }
-
-    return tools
-  },
+export type BuiltInToolsOptions = {
+  /** Herramientas adicionales (p. ej. el útil de pruebas de permisos) que
+   * las pruebas inyectan; producción no registra ninguna. */
+  extraTools?: Tools
 }
+
+export function createBuiltInToolsProvider(
+  options: BuiltInToolsOptions = {},
+): ToolProvider {
+  return {
+    name: 'builtin',
+    discover(): Tools {
+      const tools: Tool[] = []
+
+      // Always-on tools
+      tools.push(AgentTool)
+      tools.push(TaskOutputTool)
+      tools.push(BashTool)
+
+      // Glob/Grep: hidden when embedded search tools are available
+      if (!hasEmbeddedSearchTools()) {
+        tools.push(GlobTool, GrepTool)
+      }
+
+      tools.push(ExitPlanModeV2Tool)
+      tools.push(FileReadTool)
+      tools.push(FileEditTool)
+      tools.push(FileWriteTool)
+      tools.push(NotebookEditTool)
+      tools.push(WebFetchTool)
+      tools.push(TodoWriteTool)
+      tools.push(WebSearchTool)
+      tools.push(TaskStopTool)
+      tools.push(AskUserQuestionTool)
+      tools.push(SkillTool)
+      tools.push(EnterPlanModeTool)
+
+      // Ant-only tools
+      if (process.env.USER_TYPE === 'ant') {
+        tools.push(ConfigTool)
+        tools.push(TungstenTool)
+      }
+
+      // Conditional tools (feature-gated via require)
+      const suggestPR = getSuggestBackgroundPRTool()
+      if (suggestPR) tools.push(suggestPR)
+
+      const webBrowser = getWebBrowserTool()
+      if (webBrowser) tools.push(webBrowser)
+
+      // Todo v2
+      if (isTodoV2Enabled()) {
+        tools.push(TaskCreateTool, TaskGetTool, TaskUpdateTool, TaskListTool)
+      }
+
+      // Feature-gated tools
+      const overflow = getOverflowTestTool()
+      if (overflow) tools.push(overflow)
+
+      const ctxInspect = getCtxInspectTool()
+      if (ctxInspect) tools.push(ctxInspect)
+
+      const terminalCapture = getTerminalCaptureTool()
+      if (terminalCapture) tools.push(terminalCapture)
+
+      // LSP tool
+      const lsp = getLSPTool()
+      if (lsp) tools.push(lsp)
+
+      // Worktree tools
+      if (isWorktreeModeEnabled()) {
+        tools.push(EnterWorktreeTool, ExitWorktreeTool)
+      }
+
+      // SendMessage (lazy require to break circular dep)
+      tools.push(SendMessageTool)
+
+      // UDS Inbox
+      const listPeers = getListPeersTool()
+      if (listPeers) tools.push(listPeers)
+
+      // Agent swarms / teams
+      if (isAgentSwarmsEnabled()) {
+        tools.push(getTeamCreateTool(), getTeamDeleteTool())
+      }
+
+      // Verify plan
+      const verifyPlan = getVerifyPlanExecutionTool()
+      if (verifyPlan) tools.push(verifyPlan)
+
+      // REPL (ant-only)
+      if (process.env.USER_TYPE === 'ant') {
+        const repl = getREPLTool()
+        if (repl) tools.push(repl)
+      }
+
+      // Workflow
+      const workflow = getWorkflowTool()
+      if (workflow) tools.push(workflow)
+
+      // Sleep
+      const sleep = getSleepTool()
+      if (sleep) tools.push(sleep)
+
+      // Cron tools (always loaded)
+      tools.push(...getCronTools())
+
+      // Remote trigger
+      const remoteTrigger = getRemoteTriggerTool()
+      if (remoteTrigger) tools.push(remoteTrigger)
+
+      // Monitor
+      const monitor = getMonitorTool()
+      if (monitor) tools.push(monitor)
+
+      tools.push(BriefTool)
+
+      // KAIROS tools
+      const sendUserFile = getSendUserFileTool()
+      if (sendUserFile) tools.push(sendUserFile)
+
+      const pushNotification = getPushNotificationTool()
+      if (pushNotification) tools.push(pushNotification)
+
+      const subscribePR = getSubscribePRTool()
+      if (subscribePR) tools.push(subscribePR)
+
+      const scheduleWakeup = getScheduleWakeupTool()
+      if (scheduleWakeup) tools.push(scheduleWakeup)
+
+      // PowerShell
+      const powerShell = getPowerShellTool()
+      if (powerShell) tools.push(powerShell)
+
+      // History snip
+      const snip = getSnipTool()
+      if (snip) tools.push(snip)
+
+      // El ejecutable no ramifica por entorno aquí: lo inyectado viene del
+      // llamador (pruebas), no de NODE_ENV.
+      if (options.extraTools) tools.push(...options.extraTools)
+
+      // MCP resource tools (always present)
+      tools.push(ListMcpResourcesTool)
+      tools.push(ReadMcpResourceTool)
+      // WaitForMcpServers — gated by isEnabled() reading tengu_ashen_kelp
+      // (ant v2.1.132 Iz8). Always registered; the tool descriptor's
+      // isEnabled gate hides it from the model when the flag is off.
+      tools.push(WaitForMcpServersTool)
+      // ShareOnboardingGuide — gated by tengu_flint_harbor_share AND OAuth.
+      // (ant v2.1.136 Il5). isEnabled() returns false for non-OAuth users.
+      tools.push(ShareOnboardingGuideTool)
+
+      // Tool search (optimistic)
+      if (isToolSearchEnabledOptimistic()) {
+        tools.push(ToolSearchTool)
+      }
+
+      return tools
+    },
+  }
+}
+
+export const BuiltInToolsProvider: ToolProvider = createBuiltInToolsProvider()
