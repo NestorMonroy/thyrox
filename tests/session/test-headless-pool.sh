@@ -151,14 +151,15 @@ check "memfree ilegible: exit 2" "$CODE" "2"
 check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
 # --cache-ttl: el TTL de la caché llega a cada `thyrox -p` por
-# THYROX_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
+# THYROX_CODE_PROMPT_CACHE_TTL; sin la opción rige la constante de 1h,
 # y un valor fuera de 5m|1h rehúsa sin resumen.
 ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa beta
 check "cache-ttl 5m: exit 0" "$CODE" "0"
 check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "thx=5m"
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL='' corre alfa
-check "sin cache-ttl: no se fija" "$(ttl_de)" "thx=sin"
+check "sin cache-ttl: rige la constante de 1h" "$(ttl_de)" "thx=1h"
+check "sin cache-ttl: el pool nombra la constante" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(constant\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
 check "cache-ttl ilegible: exit 2" "$CODE" "2"
 check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
@@ -166,7 +167,8 @@ check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items
 # El entorno THYROX_* por encima de --cache-ttl, como `QCt` en 2.1.282: la
 # variable gana a la decisión calculada, y forzar 5m gana a la variable. El
 # ítem la recibe sólo como THYROX_CODE_PROMPT_CACHE_TTL: el pool corre
-# `thyrox -p` y nada más, así que CLAUDE_CODE_* no tiene lector (campo ttl=sin).
+# `thyrox -p` y nada más, así que CLAUDE_CODE_* no tiene lector (campo ttl=sin):
+# si `thyrox -p` delega en `claude -p`, la traduce la máscara (`printDelegation.ts`).
 thx_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5"|"$6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
 check "variable sin --cache-ttl: llega sólo como THYROX_*" "$(thx_de)" "ttl=sin|thx=1h"
@@ -192,7 +194,7 @@ rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 CLAUDE_CODE_
 check "activar 1h en Bedrock, con Bedrock: 1h" "$(thx_de)" "ttl=sin|thx=1h"
 check "activar 1h en Bedrock: la razón es la misma regla" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 corre alfa
-check "activar 1h en Bedrock sin Bedrock: no decide" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: /{n++} END{print n+0}')" "0"
+check "activar 1h en Bedrock sin Bedrock: no decide, rige la constante" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(constant\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
 check "variable ilegible: exit 2" "$CODE" "2"
 check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
@@ -409,12 +411,12 @@ unset HIST
 # --- el historial: cada ejecución deja su medida y la siguiente deriva de ella --
 # `HIST` es el mismo en los cuatro casos: el primero no tiene historial, los
 # siguientes leen la fila que dejó. La medida del GNU time falso es fija
-# (12345 KB, 1.50 s): pared de 1.5 s -> turnos seguidos -> 5m; 12345 KB x 2
-# -> 25M hacia arriba.
+# (12345 KB, 1.50 s): 12345 KB x 2 -> 25M hacia arriba. El TTL no sale del
+# historial: rige la constante de 1h salvo que se declare otro.
 HIST="$F/historial-compartido"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "historial vacío: lo declara" "$(printf '%s' "$SALIDA" | gawk '/sin ejecución previa/{n++} END{print n+0}')" "1"
-check "historial vacío: no inventa TTL" "$(thx_de)" "ttl=sin|thx=sin"
+check "historial vacío: rige la constante de 1h" "$(thx_de)" "ttl=sin|thx=1h"
 check "la ejecución deja una fila" "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | wc -l)" "1"
 check "la fila nombra el binario que corrió los ítems" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .runner)" "$HEADLESS_POOL_RUNNER"
@@ -424,8 +426,8 @@ check "la fila lleva la huella del CONTENIDO de la plantilla" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .template_digest)" \
   "$(sha256sum "$F/prompt.md" | gawk '{print $1}')"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
-check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=sin|thx=5m"
-check "con historial: declara de dónde salió el TTL" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}')" "1"
+check "con historial: el TTL sigue siendo la constante" "$(thx_de)" "ttl=sin|thx=1h"
+check "con historial: el TTL no sale del historial" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: [0-9a-z]+ \(history\)/{n++} END{print n+0}')" "0"
 check "con historial: --memfree sale de la memoria medida" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 25M \(history\)/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 1h --memfree 1G" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "lo declarado gana al historial: TTL" "$(thx_de)" "ttl=sin|thx=1h"

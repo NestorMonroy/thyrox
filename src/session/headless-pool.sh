@@ -56,8 +56,9 @@
 # `timeout` da 212 680 KB. Sin GNU Time el pool corre igual y lo declara.
 #
 # `--cache-ttl` fija el TTL de la cache de cada `thyrox -p` con
-# THYROX_CODE_PROMPT_CACHE_TTL. Sin la opcion decide el cliente: 1 h en
-# suscripcion, 5 m con clave de API. Otro valor rehusa con exit 2.
+# THYROX_CODE_PROMPT_CACHE_TTL. Sin la opcion, ni el entorno que la gobierna,
+# rige la constante DEFAULT_CACHE_TTL (1 h); el historial no la cambia. Otro
+# valor rehusa con exit 2.
 #
 # `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
 # item si queda menos que TAM; aplicacion: si baja de la mitad, mata al mas
@@ -209,8 +210,9 @@ case "$ISOLATION" in
         [[ -n "$TOOLS_SET" ]] || TOOLS="Bash" ;;
     *) rehusa "--isolation va vacío o \"worktree\", no: $ISOLATION" ;;
 esac
-# El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Sin
-# la opción no se fija y decide el cliente: 1 h en suscripción, 5 m con clave.
+# El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Lo
+# declarado —la opción o el entorno— gana; sin declaración rige la constante.
+readonly DEFAULT_CACHE_TTL=1h
 case "$CACHE_TTL" in
     ""|5m|1h) ;;
     *) rehusa "--cache-ttl va \"5m\" o \"1h\", no: $CACHE_TTL" ;;
@@ -246,6 +248,7 @@ if [[ -z "$CACHE_TTL" ]]; then
         CACHE_TTL=1h; CACHE_TTL_WHY=enable_1h_env
     fi
 fi
+[[ -n "$CACHE_TTL" ]] || { CACHE_TTL="$DEFAULT_CACHE_TTL"; CACHE_TTL_WHY=constant; }
 
 # El historial de ESTA plantilla (`pool_history.py`): lo que nadie declaró
 # arriba —TTL ni `--memfree`— se deriva de la última ejecución medida. Va
@@ -330,12 +333,12 @@ if [[ -n "$HP_NVIDIA_SMI" ]]; then
 fi
 MEMFREE_WHY=option
 HP_VRAM_NEED=""
-# Se deriva SIEMPRE: el TTL y --memfree sólo si nadie los declaró, pero la
+# Se deriva SIEMPRE: --memfree sólo si nadie lo declaró (el TTL es la
+# constante de arriba y la primera columna se descarta), pero la
 # anchura efectiva es min(configurada, RAM, VRAM) aunque la anchura se haya
 # configurado — una anchura configurada es un máximo, no una garantía de sitio.
-if IFS=$'\t' read -r H_TTL H_MEMFREE H_WIDTH H_VRAM_NEED H_WHY \
+if IFS=$'\t' read -r _ H_MEMFREE H_WIDTH H_VRAM_NEED H_WHY \
         < <(pool_history derive "$HISTORY" "$MODEL" "${DERIVE_ARGS[@]}"); then
-    [[ -n "$CACHE_TTL" || "$H_TTL" == - ]] || { CACHE_TTL="$H_TTL"; CACHE_TTL_WHY=history; }
     [[ -n "$MEMFREE_SPEC" || "$H_MEMFREE" == - ]] || { MEMFREE_SPEC="$H_MEMFREE"; MEMFREE_WHY=history; }
     if [[ "$H_WIDTH" != - && "$H_WIDTH" -lt "$WIDTH" ]]; then
         echo "anchura: $H_WIDTH (configurada $WIDTH; acotada por lo medido)"
