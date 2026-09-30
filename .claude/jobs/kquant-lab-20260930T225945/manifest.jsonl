@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-quantization-pipeline-20260930T224613/probes/llama_cpp_kquant_pipeline.sh", "started_at": "2026-09-30T22:59:45+00:00"}

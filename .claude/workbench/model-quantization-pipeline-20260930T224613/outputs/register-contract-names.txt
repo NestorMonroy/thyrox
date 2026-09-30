@@ -1,0 +1,19 @@
+== registro -> thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701
+copy=200
+== thyrox-qwen2.5-0.5b-instruct:q8_0 -> thyrox-qwen--qwen2.5-0.5b-instruct:q8_0-hf-7ae557604adf (manifiesto 90aa296f7909)
+{"status":"success"}
+{"quantization_level":"Q8_0","template_bytes":1482,"system":"You are Qwen, created by Aliba"}
+{"response":"processing"}
+retira_provisional=200
+== thyrox-qwen2.5-0.5b-instruct:q4_k_m -> thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf (manifiesto fa1be24f1eee)
+{"status":"success"}
+{"quantization_level":"Q4_K_M","template_bytes":1482,"system":"You are Qwen, created by Aliba"}
+{"response":"processing"}
+retira_provisional=200
+retira_nombre_ambiguo=200
+== modelos servidos
+  thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf 397809380 Q4_K_M
+  thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701 397821319 Q4_K_M
+  thyrox-qwen--qwen2.5-0.5b-instruct:q8_0-hf-7ae557604adf 531069666 Q8_0
+{"model":"thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701","response":"ready"}
+__BG_EXIT__=0

@@ -6,10 +6,33 @@ ADR-THYROX-010 (empaquetado).
 
 ## P0 — qué existe y se reutiliza
 
-| Pieza | Estado |
+| Pieza | Estado | Medido con |
+|---|---|---|
+| nombres, niveles, manifiesto y metadata de un modelo local | **MISSING** — no hay nada que extender: `gguf` aparece en **0** archivos de `src/`; `quantiz` en 15, y **ninguno** trata pesos de modelos (3 son `binary_quantize` de pgvector en `semantic-search`, 7 son cuantización de posiciones de scroll y render en `ink`/`repl`, 5 son binarios nativos de `image-processor-napi`) | `git grep -il gguf -- src`, `git grep -il quantiz -- src` |
+| la forma de un paquete TS | **EXISTS_AND_REUSE**: `src/packages/podman-execution/`, el paquete más reciente, con los cinco archivos del molde de abajo | `ls src/packages/podman-execution` |
+
+Métrica: archivos de `src/` que contienen el literal. Ciega a: un lector de
+GGUF escrito sin nombrar el formato (se descarta: el formato empieza con la
+magia `GGUF`, y un lector la nombra).
+
+### El molde del paquete — qué crear y cómo queda registrado
+
+| Archivo | Qué lleva (copiado de `podman-execution`, cambiando sólo el nombre) |
 |---|---|
-| nombres, niveles, manifiesto de un modelo local | **MISSING**: ningún archivo de `src/` nombra GGUF ni cuantización (las coincidencias de `quantize` son `binary_quantize` de pgvector) |
-| la forma de un paquete TS del árbol | `src/packages/podman-execution/` (reciente): `package.json`, `bunfig.toml`, `tsconfig.build.json`, `tsconfig.test.json`, `__tests__/` — cópiala |
+| `package.json` | `"name": "@thyrox/model-artifacts"`, `"private": true`, `"type": "module"`, `description` en español, `exports` `./*.ts` con las condiciones `@thyrox/source`, `types` (`./dist/*.d.ts`) y `default`, y `scripts.test = "bun test"` |
+| `bunfig.toml` | `[test] preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]` — sin él, `bun test` desde el paquete no pasa por los grifos de la raíz y escribiría en el store versionado |
+| `tsconfig.build.json` | el de `podman-execution` con `paths` `"@thyrox/model-artifacts/*.ts": ["./*.ts"]` y `files` `../../types/build-globals.d.ts` |
+| `tsconfig.test.json` | extiende el build con `noEmit` e incluye `__tests__/**` |
+| `__tests__/*.test.ts` | una suite por módulo |
+
+Registro, sin editar nada a mano: el `package.json` raíz declara
+`"workspaces": ["src/packages/*"]`, así que el directorio nuevo ya es
+workspace; `bun install` lo añade a `bun.lock` (así entró `podman-execution`:
+`bun.lock` le da su entrada en `src/packages/podman-execution`). Un consumidor
+lo declara en su propio `package.json`, como `daemon/package.json:73` declara
+`"@thyrox/podman-execution": "0.1.0"`. Se comprueba con
+`bash bin/check_package_typecheck --strict model-artifacts` y `bun test` desde
+el paquete.
 
 ## Lo que construye este ítem — lógica pura, sin Podman ni red
 

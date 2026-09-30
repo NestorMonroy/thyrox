@@ -1,0 +1,12 @@
+== thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701
+  What is 2+2? Answer with only the number. -> 4 [stop]
+  What is the capital of France? Answer with one word. -> Paris [stop]
+  Reply with the single word: ready -> ready [stop]
+== thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf
+  What is 2+2? Answer with only the number. -> 4 [stop]
+  What is the capital of France? Answer with one word. -> Paris [stop]
+  Reply with the single word: ready -> processing [stop]
+== thyrox-qwen--qwen2.5-0.5b-instruct:q8_0-hf-7ae557604adf
+  What is 2+2? Answer with only the number. -> 4 [stop]
+  What is the capital of France? Answer with one word. -> Paris [stop]
+  Reply with the single word: ready -> processing [stop]

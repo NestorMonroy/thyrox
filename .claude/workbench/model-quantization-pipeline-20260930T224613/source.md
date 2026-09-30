@@ -83,3 +83,30 @@ cualquier nombre dice de qué revisión exacta salió.
 4. **Estimador de memoria** desde metadata GGUF → admisión.
 5. **Uso**: el proxy local enruta el modelo `thyrox-…` al servicio gestionado sin
    que el usuario declare URL (TASK-THYROX-0663 y P12).
+
+## Registro con nombre del contrato (medido, `outputs/register-contract-names.txt`)
+
+Ollama acepta los tres nombres del contrato; `qwen2.5:0.5b` se copió a
+`thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701` y el nombre ambiguo
+se retiró (comparten blobs: sin espacio extra). Los GGUF convertidos aquí se
+registraron como `thyrox-qwen--qwen2.5-0.5b-instruct:{q8_0,q4_k_m}-hf-7ae557604adf`.
+
+**El import por `files` no basta.** Sin más, Ollama guarda la plantilla Jinja
+del GGUF (`tokenizer.chat_template`) y ningún `system`; el registrador tiene
+que fijar la plantilla Go y el `system` de la familia (aquí, los del modelo del
+registro de la misma familia). Con ellos, `outputs/compare-answers.txt`:
+
+| Pregunta | registro Q4_K_M | propio Q4_K_M | propio Q8_0 |
+|---|---|---|---|
+| 2+2 | 4 | 4 | 4 |
+| capital de Francia | Paris | Paris | Paris |
+| «Reply with the single word: ready» | ready | processing | processing |
+
+Los tres terminan en `stop`. La tercera es una instrucción ambigua para un
+0.5B en decodificación voraz: la diferencia de pesos (otra conversión, otra
+revisión) cambia la palabra elegida, no la capacidad de responder.
+
+*Métrica:* respuesta a tres preguntas cerradas, temperatura 0, semilla 7, n = 1.
+*Ciega a:* calidad general (eso lo mide la perplexity y el benchmark de tool
+calling) y a rendimiento: la carga media era 22–27 sobre 4 núcleos con dos
+pools en paralelo, así que ningún tokens/s de este banco es comparable.
