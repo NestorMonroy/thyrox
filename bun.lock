@@ -492,6 +492,10 @@
         "zod": "^4.3.6",
       },
     },
+    "src/packages/model-artifacts": {
+      "name": "@thyrox/model-artifacts",
+      "version": "0.1.0",
+    },
     "src/packages/modifiers-napi": {
       "name": "@thyrox/modifiers-napi",
       "version": "1.0.0",
@@ -503,6 +507,7 @@
         "@thyrox/agent": "0.4.0",
         "@thyrox/paths": "0.1.0",
         "@thyrox/store": "0.1.0",
+        "@thyrox/task": "0.1.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -591,6 +596,7 @@
         "@thyrox/local-observability": "0.1.0",
         "@thyrox/mcp-runtime": "0.1.0",
         "@thyrox/output": "0.1.0",
+        "@thyrox/paths": "0.1.0",
         "@thyrox/permission": "0.1.0",
         "@thyrox/repl": "0.0.0",
         "@thyrox/shared-state": "0.1.0",
@@ -787,6 +793,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/paths": "0.1.0",
+        "@thyrox/store": "0.1.0",
       },
     },
     "src/packages/teleport": {
@@ -1270,6 +1277,8 @@
     "@thyrox/memory": ["@thyrox/memory@workspace:src/packages/memory"],
 
     "@thyrox/mitm": ["@thyrox/mitm@workspace:src/packages/mitm"],
+
+    "@thyrox/model-artifacts": ["@thyrox/model-artifacts@workspace:src/packages/model-artifacts"],
 
     "@thyrox/modifiers-napi": ["@thyrox/modifiers-napi@workspace:src/packages/modifiers-napi"],
 

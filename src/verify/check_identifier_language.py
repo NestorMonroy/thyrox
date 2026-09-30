@@ -447,6 +447,8 @@ TECHNICAL_VOCABULARY = frozenset({
     'trae',      # un editor de ByteDance, nombre de producto (`mitm/handlers/trae.ts`)
     'nss',       # Network Security Services, la base de certificados de Chromium y Firefox (`mitm/cert/install.ts`)
     'windsurf',  # un editor, nombre de producto
+    'llama',     # llama.cpp y la arquitectura `llama` de GGUF, nombres propios
+                 # (`model-artifacts/quantizationLevel.ts`)
     'yates',     # el barajado de Fisher-Yates
     'principal', # la identidad de seguridad; se escribe igual en inglés (`principal_type` de xAI)
 })

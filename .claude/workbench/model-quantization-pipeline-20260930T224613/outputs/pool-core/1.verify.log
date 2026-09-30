@@ -1,0 +1,39 @@
+bun test v1.3.11 (af24e281)
+
+ 28 pass
+ 0 fail
+ 44 expect() calls
+Ran 28 tests across 1 file. [338.00ms]
+bun test v1.3.11 (af24e281)
+
+ 11 pass
+ 0 fail
+ 21 expect() calls
+Ran 11 tests across 1 file. [1.52s]
+bun test v1.3.11 (af24e281)
+
+ 14 pass
+ 0 fail
+ 27 expect() calls
+Ran 14 tests across 1 file. [210.00ms]
+bun test v1.3.11 (af24e281)
+
+ 16 pass
+ 0 fail
+ 32 expect() calls
+Ran 16 tests across 1 file. [255.00ms]
+bun test v1.3.11 (af24e281)
+
+ 1 pass
+ 0 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [267.00ms]
+bun test v1.3.11 (af24e281)
+
+ 8 pass
+ 0 fail
+ 101 expect() calls
+Ran 8 tests across 1 file. [276.00ms]
+  model-artifacts: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
