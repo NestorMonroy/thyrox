@@ -93,3 +93,17 @@ separación entre contenido durable y representación derivada.
 | un `analysis_run` sobrevive a reingesta y a retiro del espacio con su texto | análisis persistido |
 
 D5 sigue abierta sólo para qué fuentes se ingieren, su scope y la retención.
+
+## Corrección posterior a este ítem (ADR-008 1.5.0, commit `851eeeea2`)
+
+Llegó con el ítem ya en vuelo, y el buzón no entrega mensajes a un `-p`
+(TASK-THYROX-0674), así que se aplica en un ítem de seguimiento sobre lo que
+éste entregue, no en éste:
+
+- la identidad del documento es `domain` + `domain_id` (único), y el
+  `content_hash` sólo es la versión; `source_identity` pasa a ser procedencia
+  (`source_ref`, `source_revision`) y deja de decidir nada;
+- «sin cambios» es mismo `domain` + `domain_id` + mismo hash; dos documentos
+  con texto idéntico y distinto `domain_id` son dos identidades;
+- prueba de convergencia: el mismo `domain_id` ingerido desde dos rutas
+  distintas da una sola identidad y una sola versión.
