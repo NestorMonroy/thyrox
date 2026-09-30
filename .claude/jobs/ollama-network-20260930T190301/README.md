@@ -1,0 +1,16 @@
+# ollama-network
+
+## Qué se lanzó
+
+```
+bash .claude/workbench/ollama-podman-measure-20260930T185844/probes/network_modes.sh
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

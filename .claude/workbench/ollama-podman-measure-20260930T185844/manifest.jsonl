@@ -1,0 +1,2 @@
+{"probe":"probes/pull_image.sh","output":"outputs/pull_image.out","exit":0}
+{"probe":"probes/network_modes.sh","output":"outputs/network_modes.out","exit":0}

@@ -1,0 +1,9 @@
+== modo bridge (red propia de Podman), API publicada en 127.0.0.1:11535
+{"version":"0.35.0"} api_exit=0
+{"error":"pull model manifest: Get \"https://registry.ollama.ai/v2/library/qwen2.5/manifests/0.5b\": proxyconnect tcp: dial tcp 127.0.0.1:46021: connect: connection refused"} pull_seconds=0
+== modo host, OLLAMA_HOST=127.0.0.1:11534
+{"version":"0.35.0"} api_exit=0
+{"status":"success"} pull_seconds=8
+{"models":[{"name":"qwen2.5:0.5b","model":"qwen2.5:0.5b","modified_at":"2026-09-30T19:03:12.609490061Z","size":397821319,"digest":"a8b0c51577010a279d933d14c2a8ab4b268079d44c5c8830c0a93900f1827c67","details":{"parent_model":"","format":"gguf","family":"qwen2","families":["qwen2"],"parameter_size":"494.03M","quantization_level":"Q4_K_M","context_length":32768,"embedding_length":896},"capabilities":[
+volumen=/var/lib/containers/storage/volumes/thyrox-ollama-probe-models/_data
+__BG_EXIT__=0
