@@ -61,10 +61,23 @@ if [[ -f "$DEST" && "$FORCE" != true ]]; then
     exit 1
 fi
 
+# Las claves POR CLON del propio proveedor. Las globales `THYROX_WORKBENCH_DIR` /
+# `THYROX_JOBS_DIR` NO se emiten: `workbench_dir()` y `jobs_dir()` caen a la
+# global cuando un clon no declara la suya, y un consumidor sin clave por clon
+# resolveria DENTRO del arbol de thyrox (L-028). La composicion calca
+# `workbench_home_name` / `jobs_home_name`: nombre corto del clon, mayusculas,
+# `-` a `_`; sin prefijo de multi-repo el clon se nombra entero.
+_clone="$(basename "$ROOT")"
+_clone="${_clone#"${THYROX_CLONE_PREFIX:-kaupamex-}"}"
+_clone="$(printf '%s' "$_clone" | tr 'a-z' 'A-Z' | tr -c 'A-Z0-9_\n' '_')"
+WORKBENCH_KEY="THYROX_WORKBENCH_${_clone}"
+JOBS_KEY="THYROX_JOBS_${_clone}"
+
 # Las claves que ESTE guion emite. Se declaran una vez para que la
 # conservacion de abajo sepa que es suyo y que es del ejecutor.
 OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
-       THYROX_LAYER_SIGNALS THYROX_WORKBENCH_DIR THYROX_JOBS_DIR)
+       THYROX_LAYER_SIGNALS THYROX_WORKBENCH_DIR THYROX_JOBS_DIR
+       "$WORKBENCH_KEY" "$JOBS_KEY")
 
 # Lo que el guion NO puede derivar se conserva. Una clave de POLITICA —el hogar
 # por clon de una familia, `THYROX_JOBS_API`, cuyo valor decide el ejecutor— no
@@ -111,12 +124,12 @@ fi
     # de un consumidor este valor seria el hogar de otro arbol, que es el
     # defecto que la familia `THYROX_WORKBENCH_<CLONE>` existe para evitar.
     if [[ "$DEST" == "$ROOT/.env" ]]; then
-        echo "THYROX_WORKBENCH_DIR=${THYROX_WORKBENCH_DIR:-$ROOT/.claude/workbench}"
+        echo "${WORKBENCH_KEY}=${!WORKBENCH_KEY:-$ROOT/.claude/workbench}"
         # El hogar de los TRABAJOS, hermano del banco y con la misma guarda.
         # Sin el, `jobs_dir()` cae al default y devuelve un SEGMENTO relativo
         # —`.claude/jobs`— que resuelve contra el CWD. El de cada consumidor
         # vive en SU `.env` como `THYROX_JOBS_<CLONE>`; aqui va solo el propio.
-        echo "THYROX_JOBS_DIR=${THYROX_JOBS_DIR:-$ROOT/.claude/jobs}"
+        echo "${JOBS_KEY}=${!JOBS_KEY:-$ROOT/.claude/jobs}"
     fi
     if [[ -n "$PRESERVED" ]]; then
         echo
