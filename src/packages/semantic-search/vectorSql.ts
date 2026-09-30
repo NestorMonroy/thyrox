@@ -13,7 +13,7 @@
  * única parte interpolada que no es texto fijo ni una forma ya validada.
  */
 import type { EmbeddingShape } from './config.ts'
-import { CURRENT_VERSION_CONDITION } from './corpusSql.ts'
+import { SEARCHABLE_CHUNK_CONDITION } from './corpusSql.ts'
 
 export function spaceTableName(spaceId: number): string {
   if (!Number.isInteger(spaceId) || spaceId <= 0) throw new RangeError(`invalid space id ${spaceId}: expected a positive integer`)
@@ -61,7 +61,7 @@ export function putEmbeddingQuery(extensionSchema: string, spaceId: number, shap
 export function chunksWithoutEmbeddingQuery(spaceId: number): string {
   return `SELECT c.chunk_id, c.document_id, c.version, c.position, c.text
             FROM document_chunks c
-            JOIN documents d ON d.document_id = c.document_id AND ${CURRENT_VERSION_CONDITION}
+            JOIN documents d ON d.document_id = c.document_id AND ${SEARCHABLE_CHUNK_CONDITION}
             LEFT JOIN ${spaceTableName(spaceId)} e ON e.chunk_id = c.chunk_id
            WHERE e.chunk_id IS NULL
            ORDER BY c.document_id, c.version, c.position
@@ -69,7 +69,7 @@ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
 }
 
 /**
- * El filtro de versión vigente como subconsulta escalar correlacionada sobre
+ * El filtro de chunk buscable como subconsulta escalar correlacionada sobre
  * el alias `e`. Un `EXISTS` o un `JOIN` los aplana el planificador en un join
  * y ordena después (medido con `EXPLAIN`: sin rastro del HNSW); la subconsulta
  * escalar queda como `Filter: SubPlan` del recorrido por el índice.
@@ -79,7 +79,7 @@ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
  * `ef_search` 5 o 40 no se reprodujo (el grafo se recorrió entero), así que
  * `hnsw.iterative_scan` no se activa sin un caso que lo exija.
  */
-const CURRENT_CHUNK_FILTER = `(SELECT ${CURRENT_VERSION_CONDITION} FROM document_chunks c
+const SEARCHABLE_CHUNK_FILTER = `(SELECT ${SEARCHABLE_CHUNK_CONDITION} FROM document_chunks c
                                 JOIN documents d ON d.document_id = c.document_id
                                WHERE c.chunk_id = e.chunk_id)`
 
@@ -87,16 +87,16 @@ const CURRENT_CHUNK_FILTER = `(SELECT ${CURRENT_VERSION_CONDITION} FROM document
  * Los candidatos vigentes más cercanos por distancia de Hamming entre
  * cuantizaciones binarias, ordenados por la misma expresión que indexa el
  * HNSW para que el planificador pueda usarlo: `$1` consulta como texto, `$2`
- * límite. Devuelven el texto del chunk y su identidad de origen: la búsqueda
+ * límite. Devuelven el texto del chunk, su identidad y su procedencia: la búsqueda
  * no vuelve a ninguna fuente.
  */
 export function binaryCandidatesQuery(extensionSchema: string, spaceId: number, shape: EmbeddingShape): string {
   const query = binaryQuantized(extensionSchema, `$1::${vectorType(extensionSchema, shape)}`, shape)
   const distance = `${binaryQuantized(extensionSchema, 'e.embedding', shape)} OPERATOR(${extensionSchema}.<~>) ${query}`
-  return `SELECT n.chunk_id, n.embedding, c.text, c.document_id, c.version, d.source_identity, n.hamming_distance
+  return `SELECT n.chunk_id, n.embedding, c.text, c.document_id, c.version, d.domain, d.domain_id, d.source_ref, d.source_revision, n.hamming_distance
             FROM (SELECT e.chunk_id, e.embedding::text AS embedding, ${distance} AS hamming_distance
                     FROM ${spaceTableName(spaceId)} e
-                   WHERE ${CURRENT_CHUNK_FILTER}
+                   WHERE ${SEARCHABLE_CHUNK_FILTER}
                    ORDER BY ${distance}
                    LIMIT $2) AS n
             JOIN document_chunks c ON c.chunk_id = n.chunk_id

@@ -37,7 +37,10 @@ export type AnalysisCandidate = {
   chunkId: string
   score: number
   documentId: string
-  sourceIdentity: string
+  domain: string | null
+  domainId: string | null
+  sourceRef: string
+  sourceRevision: string | null
   version: number
   position: number
   text: string
@@ -77,7 +80,10 @@ type CandidateRow = {
   version: number
   position: number
   text: string
-  source_identity: string
+  domain: string | null
+  domain_id: string | null
+  source_ref: string
+  source_revision: string | null
 }
 
 function assertFiniteScores(candidates: readonly AnalysisCandidateInput[]): void {
@@ -91,7 +97,10 @@ function toCandidate(row: CandidateRow): AnalysisCandidate {
     chunkId: row.chunk_id,
     score: row.score,
     documentId: row.document_id,
-    sourceIdentity: row.source_identity,
+    domain: row.domain,
+    domainId: row.domain_id,
+    sourceRef: row.source_ref,
+    sourceRevision: row.source_revision,
     version: row.version,
     position: row.position,
     text: row.text,

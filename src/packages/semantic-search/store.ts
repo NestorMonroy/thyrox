@@ -1,5 +1,5 @@
 /**
- * `SemanticSearchStore` (ADR-THYROX-008 1.2.0): el corpus durable y su
+ * `SemanticSearchStore` (ADR-THYROX-008 1.5.0): el corpus durable y su
  * búsqueda semántica sobre PostgreSQL + pgvector. Guarda el contenido
  * ingerido (documentos y chunks versionados por hash), sus representaciones
  * derivadas (un espacio de embeddings por modelo · forma) y los análisis
@@ -20,11 +20,12 @@
  */
 import { SQL } from 'bun'
 
-import { runMigrations, type Migration } from '@thyrox/store/migrations.ts'
+import { runMigrations } from '@thyrox/store/migrations.ts'
 
 import { type SchemaConfig, validateEmbedding, validateSchemaConfig, validateStoreUrl } from './config.ts'
-import { type DocumentInput, type IngestResult, ingestDocument } from './corpus.ts'
-import { CORPUS_MIGRATION_NAME, CORPUS_MIGRATION_VERSION, CORPUS_STATEMENTS, MIGRATIONS_TABLE } from './corpusSql.ts'
+import { type DocumentIdentity, type DocumentInput, findDocument, type IngestResult, ingestDocument, type StoredDocument } from './corpus.ts'
+import { CORPUS_MIGRATIONS, MIGRATIONS_TABLE } from './corpusSql.ts'
+import { type LegacyIdentityResolver, type ReconciliationResult, reconcileLegacyIdentities } from './legacyIdentity.ts'
 import { type AnalysisRun, type AnalysisRunInput, getAnalysisRun, recordAnalysisRun } from './analysisRuns.ts'
 import { NoActiveEmbeddingSpaceError } from './errors.ts'
 import {
@@ -58,7 +59,10 @@ export type NearestResult = {
   chunkId: string
   text: string
   documentId: string
-  sourceIdentity: string
+  domain: string
+  domainId: string
+  sourceRef: string
+  sourceRevision: string | null
   version: number
   similarity: number
 }
@@ -71,9 +75,13 @@ export type SemanticSearchStoreDeps = {
 }
 
 export type SemanticSearchStore = {
-  /** Comprueba pgvector y aplica la migración del corpus si falta; devuelve las versiones aplicadas ahora. */
+  /** Comprueba pgvector y aplica las migraciones del corpus que falten; devuelve las versiones aplicadas ahora. */
   migrate(): Promise<number[]>
   ingestDocument(input: DocumentInput): Promise<IngestResult>
+  /** El documento ingerido con esa identidad, con su versión y hash vigentes; una fila sin mapear nunca se devuelve. */
+  findDocument(identity: DocumentIdentity): Promise<StoredDocument | null>
+  /** Asigna la identidad de dominio a las filas de la migración 2 y converge las que coinciden. */
+  reconcileLegacyIdentities(resolve: LegacyIdentityResolver): Promise<ReconciliationResult>
   createEmbeddingSpace(declaration: SpaceDeclaration): Promise<EmbeddingSpace>
   getEmbeddingSpace(spaceId: number): Promise<EmbeddingSpace | null>
   activeEmbeddingSpace(): Promise<EmbeddingSpace | null>
@@ -98,14 +106,11 @@ type CandidateRow = {
   text: string
   document_id: string
   version: number
-  source_identity: string
+  domain: string
+  domain_id: string
+  source_ref: string
+  source_revision: string | null
   hamming_distance: number
-}
-
-const CORPUS_MIGRATION: Migration = {
-  version: CORPUS_MIGRATION_VERSION,
-  name: CORPUS_MIGRATION_NAME,
-  statements: { postgres: [...CORPUS_STATEMENTS], sqlite: [] },
 }
 
 function parseVectorText(text: string): number[] {
@@ -121,7 +126,10 @@ function toNearest(row: CandidateRow, similarity: number): NearestResult {
     chunkId: row.chunk_id,
     text: row.text,
     documentId: row.document_id,
-    sourceIdentity: row.source_identity,
+    domain: row.domain,
+    domainId: row.domain_id,
+    sourceRef: row.source_ref,
+    sourceRevision: row.source_revision,
     version: row.version,
     similarity,
   }
@@ -163,12 +171,22 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
     async migrate() {
       await vectorExtension()
       await sql.unsafe(`CREATE SCHEMA IF NOT EXISTS ${config.name}`)
-      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: [CORPUS_MIGRATION] })
+      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: CORPUS_MIGRATIONS })
     },
 
     async ingestDocument(input) {
       await vectorExtension()
       return ingestDocument(sql, input)
+    },
+
+    async findDocument(identity) {
+      await vectorExtension()
+      return findDocument(sql, identity)
+    },
+
+    async reconcileLegacyIdentities(resolve) {
+      await vectorExtension()
+      return reconcileLegacyIdentities(sql, resolve)
     },
 
     async createEmbeddingSpace(declaration) {

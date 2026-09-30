@@ -14,12 +14,13 @@ import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/test
 
 import { MINIMUM_PGVECTOR_VERSION, VectorExtensionVersionError } from '../extension.ts'
 import { openSemanticSearchStore, type SemanticSearchStore } from '../store.ts'
-import { CORPUS_MIGRATION_VERSION, MIGRATIONS_TABLE } from '../corpusSql.ts'
+import { CORPUS_MIGRATIONS, MIGRATIONS_TABLE } from '../corpusSql.ts'
 import { binaryCandidatesQuery, spaceIndexName, spaceTableName } from '../vectorSql.ts'
 import { currentSchema, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
 
 const url = resolvePostgresTestUrl()
 const DIMENSIONS = 4
+const MIGRATION_VERSIONS = CORPUS_MIGRATIONS.map(migration => migration.version)
 const CORPUS_TABLES = ['analysis_candidates', 'analysis_runs', 'document_chunks', 'documents', 'embedding_spaces']
 
 /**
@@ -58,7 +59,7 @@ function alternateUrl(original: string): string {
 
 /** Ingiere el conjunto conocido como un documento de un chunk por etiqueta y lo embebe con sus vectores fijos. */
 async function seedKnownSet(store: SemanticSearchStore): Promise<{ spaceId: number; labelOf: Map<string, string> }> {
-  await store.ingestDocument({ scope: 'known', sourceIdentity: 'known-set', metadata: {}, chunks: Object.keys(KNOWN_SET) })
+  await store.ingestDocument({ domain: 'known', domainId: 'known-set', sourceRef: 'known-set.txt', sourceRevision: null, metadata: {}, chunks: Object.keys(KNOWN_SET) })
   const space = await store.createEmbeddingSpace({ model: 'fixed', dimensions: DIMENSIONS, representation: 'vector' })
   const pending = await store.chunksWithoutEmbedding(space.spaceId, 10)
   await store.putEmbeddings(space.spaceId, pending.map(chunk => ({ chunkId: chunk.chunkId, embedding: KNOWN_SET[chunk.text] ?? [] })))
@@ -74,16 +75,16 @@ if (!url) {
   const testUrl = url
 
   describe('SemanticSearchStore — migración', () => {
-    test('crea las tablas del corpus y registra su versión en el ledger', async () => {
+    test('crea las tablas del corpus y registra sus versiones en el ledger', async () => {
       await withDisposableSchema(testUrl, async sql => {
         const schema = await currentSchema(sql)
         const store = openStoreFor(testUrl, schema)
         try {
-          expect(await store.migrate()).toEqual([CORPUS_MIGRATION_VERSION])
+          expect(await store.migrate()).toEqual(MIGRATION_VERSIONS)
           const tables = (await sql.unsafe('SELECT tablename FROM pg_tables WHERE schemaname = $1 ORDER BY tablename', [schema])) as { tablename: string }[]
           expect(tables.map(row => row.tablename).filter(name => name !== MIGRATIONS_TABLE)).toEqual(CORPUS_TABLES)
           const ledger = (await sql.unsafe(`SELECT version FROM ${MIGRATIONS_TABLE}`)) as { version: number }[]
-          expect(ledger.map(row => row.version)).toEqual([CORPUS_MIGRATION_VERSION])
+          expect(ledger.map(row => row.version).sort()).toEqual(MIGRATION_VERSIONS)
           expect(await store.migrate()).toEqual([])
         } finally {
           await store.close()
@@ -168,11 +169,11 @@ if (!url) {
       const otherUrl = alternateUrl(testUrl)
       expect(otherUrl).not.toBe(testUrl)
       await withCorpusStore(testUrl, async (store, _sql, schema) => {
-        const ingested = await store.ingestDocument({ scope: 's', sourceIdentity: 'a', metadata: { origin: 'first-url' }, chunks: ['a'] })
+        const ingested = await store.ingestDocument({ domain: 's', domainId: 'a', sourceRef: 'a', sourceRevision: null, metadata: { origin: 'first-url' }, chunks: ['a'] })
         const other = openStoreFor(otherUrl, schema)
         try {
           expect(await other.migrate()).toEqual([])
-          expect(await other.ingestDocument({ scope: 's', sourceIdentity: 'a', metadata: {}, chunks: ['a'] })).toEqual({ ...ingested, status: 'unchanged' })
+          expect(await other.ingestDocument({ domain: 's', domainId: 'a', sourceRef: 'a', sourceRevision: null, metadata: {}, chunks: ['a'] })).toEqual({ ...ingested, status: 'unchanged' })
         } finally {
           await other.close()
         }
@@ -201,7 +202,7 @@ if (!url) {
         const nearest = await store.searchNearest(QUERY, 2, { candidates: 4 })
         expect(nearest.map(result => result.text)).toEqual(['x', 'y'])
         expect(nearest[0]?.similarity).toBeCloseTo(cosine(QUERY, KNOWN_SET.x ?? []), 5)
-        expect(nearest[0]?.sourceIdentity).toBe('known-set')
+        expect(nearest[0]).toMatchObject({ domain: 'known', domainId: 'known-set', sourceRef: 'known-set.txt' })
       })
     })
 

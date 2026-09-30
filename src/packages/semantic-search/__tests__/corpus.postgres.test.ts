@@ -1,5 +1,5 @@
 /**
- * Las invariantes del corpus durable (ADR-THYROX-008 1.2.0) contra un
+ * Las invariantes del corpus durable (ADR-THYROX-008 1.5.0) contra un
  * PostgreSQL real: el índice no depende de la fuente, la reingesta es
  * idempotente por hash, una versión nueva oculta la anterior, el cambio de
  * modelo re-embebe desde los chunks persistidos y un análisis guardado
@@ -23,7 +23,8 @@ const url = resolvePostgresTestUrl()
 
 const MODEL_A = { model: 'model-a', dimensions: 4, representation: 'vector' as const }
 const MODEL_B = { model: 'model-b', dimensions: 6, representation: 'halfvec' as const }
-const SCOPE = 'adr'
+const DOMAIN = 'note'
+const REVISION = 'abc'
 const NOTES = {
   'alpha.md': ['PostgreSQL guarda el texto de cada chunk.', 'El embedding se regenera desde los chunks.'],
   'beta.md': ['Un worker que muere no se lleva el corpus.'],
@@ -55,7 +56,7 @@ function writeSourceDirectory(): string {
 async function ingestDirectory(store: SemanticSearchStore, directory: string): Promise<void> {
   for (const name of readdirSync(directory).sort()) {
     const chunks = readFileSync(join(directory, name), 'utf8').split('\n')
-    await store.ingestDocument({ scope: SCOPE, sourceIdentity: `tmp:${name}`, metadata: { name }, chunks })
+    await store.ingestDocument({ domain: DOMAIN, domainId: name, sourceRef: `tmp:${name}`, sourceRevision: null, metadata: { name }, chunks })
   }
 }
 
@@ -89,7 +90,7 @@ if (!url) {
         await activateNewSpace(store, MODEL_A)
         const [first] = await store.searchNearest(embedText(target, MODEL_A.dimensions), 1, CANDIDATES)
         expect(first?.text).toBe(target)
-        expect(first?.sourceIdentity).toBe('tmp:beta.md')
+        expect(first).toMatchObject({ domain: DOMAIN, domainId: 'beta.md', sourceRef: 'tmp:beta.md', sourceRevision: null })
         expect(first?.version).toBe(1)
         expect(first?.similarity).toBeCloseTo(1, 5)
         expect(typeof first?.documentId).toBe('string')
@@ -101,7 +102,7 @@ if (!url) {
   describe('corpus durable — ingesta idempotente por hash', () => {
     test('el mismo contenido otra vez: unchanged y 0 filas nuevas en documentos, chunks y embeddings', async () => {
       await withCorpusStore(testUrl, async (store, sql) => {
-        const document = { scope: SCOPE, sourceIdentity: 'git:repo@abc:a.md', metadata: {}, chunks: ['uno', 'dos'] }
+        const document = { domain: DOMAIN, domainId: 'a.md', sourceRef: 'repo/a.md', sourceRevision: REVISION, metadata: {}, chunks: ['uno', 'dos'] }
         const first = await store.ingestDocument(document)
         expect(first.status).toBe('created')
         const spaceId = await activateNewSpace(store, MODEL_A)
@@ -118,7 +119,7 @@ if (!url) {
   describe('corpus durable — cambio de contenido', () => {
     test('otro contenido crea la versión 2 y la versión 1 deja de aparecer en la búsqueda', async () => {
       await withCorpusStore(testUrl, async store => {
-        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:c.md', metadata: {} }
+        const identity = { domain: DOMAIN, domainId: 'c.md', sourceRef: 'repo/c.md', sourceRevision: REVISION, metadata: {} }
         const first = await store.ingestDocument({ ...identity, chunks: ['texto viejo del documento'] })
         const spaceId = await activateNewSpace(store, MODEL_A)
         const second = await store.ingestDocument({ ...identity, chunks: ['texto nuevo del documento'] })
@@ -136,7 +137,7 @@ if (!url) {
     // máxima, recorridas por el HNSW: el filtro descarta las viejas y deja la vigente.
     test('la versión vigente aparece aunque haya muchas versiones viejas más cercanas', async () => {
       await withCorpusStore(indexOnlyUrl(testUrl), async store => {
-        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:e.md', metadata: {} }
+        const identity = { domain: DOMAIN, domainId: 'e.md', sourceRef: 'repo/e.md', sourceRevision: REVISION, metadata: {} }
         const space = await store.createEmbeddingSpace(MODEL_A)
         await store.activateSpace(space.spaceId)
         for (let version = 1; version <= STALE_VERSIONS; version++) {
@@ -172,7 +173,7 @@ if (!url) {
 
     test('putEmbeddings con otra dimensión que la del espacio rehúsa nombrando las dos', async () => {
       await withCorpusStore(testUrl, async store => {
-        await store.ingestDocument({ scope: SCOPE, sourceIdentity: 's', metadata: {}, chunks: ['x'] })
+        await store.ingestDocument({ domain: DOMAIN, domainId: 's', sourceRef: 's', sourceRevision: null, metadata: {}, chunks: ['x'] })
         const space = await store.createEmbeddingSpace(MODEL_A)
         const [chunk] = await store.chunksWithoutEmbedding(space.spaceId, 1)
         await expect(store.putEmbeddings(space.spaceId, [{ chunkId: chunk?.chunkId ?? '', embedding: [1, 2] }])).rejects.toThrow(/2 dimensions.*4/)
@@ -181,7 +182,7 @@ if (!url) {
 
     test('sin espacio activo la búsqueda rehúsa nombrándolo, no devuelve vacío', async () => {
       await withCorpusStore(testUrl, async store => {
-        await store.ingestDocument({ scope: SCOPE, sourceIdentity: 's', metadata: {}, chunks: ['x'] })
+        await store.ingestDocument({ domain: DOMAIN, domainId: 's', sourceRef: 's', sourceRevision: null, metadata: {}, chunks: ['x'] })
         await store.createEmbeddingSpace(MODEL_A)
         await expect(store.searchNearest([1, 1, 1, 1], 1, CANDIDATES)).rejects.toBeInstanceOf(NoActiveEmbeddingSpaceError)
         await expect(store.searchNearest([1, 1, 1, 1], 1, CANDIDATES)).rejects.toThrow(/active embedding space/)
@@ -217,7 +218,7 @@ if (!url) {
   describe('corpus durable — análisis persistido', () => {
     test('un analysis_run sobrevive a la reingesta y al retiro de su espacio con el mismo texto', async () => {
       await withCorpusStore(testUrl, async store => {
-        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:d.md', metadata: {} }
+        const identity = { domain: DOMAIN, domainId: 'd.md', sourceRef: 'repo/d.md', sourceRevision: REVISION, metadata: {} }
         await store.ingestDocument({ ...identity, chunks: ['primera redacción', 'otro párrafo'] })
         const spaceA = await activateNewSpace(store, MODEL_A)
         const results = await store.searchNearest(embedText('primera redacción', MODEL_A.dimensions), 2, CANDIDATES)
@@ -264,7 +265,7 @@ if (!url) {
           expect(await recreated.migrate()).toEqual([])
           expect(await topText(recreated, target, MODEL_A.dimensions)).toBe(target)
           expect(await recreated.getAnalysisRun(analysisId)).toEqual(recorded)
-          expect((await recreated.ingestDocument({ scope: SCOPE, sourceIdentity: 'tmp:beta.md', metadata: {}, chunks: NOTES['beta.md'] })).status).toBe('unchanged')
+          expect((await recreated.ingestDocument({ domain: DOMAIN, domainId: 'beta.md', sourceRef: 'tmp:beta.md', sourceRevision: null, metadata: {}, chunks: NOTES['beta.md'] })).status).toBe('unchanged')
         } finally {
           await recreated.close()
         }

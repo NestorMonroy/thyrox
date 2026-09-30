@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790804501.458	   602.052	0	0	0	0	_headless_item 1 'identity — TASK-THYROX-0682, corrección de identidad del corpus durable (ADR-008 1.5.0). Fuente de verdad: /home/user/thyrox/.claude/workbench/durable-semantic-corpus-20260930T211821/source-identity.md. Te pertenece todo src/packages/semantic-search/. No toques ningún otro paquete.'
