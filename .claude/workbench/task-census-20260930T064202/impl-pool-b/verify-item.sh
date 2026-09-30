@@ -4,6 +4,9 @@
 # y los mismos linters que el pre-commit sobre sus archivos. Sale 1 si el ítem no
 # tocó ninguna prueba, si alguna falla o si un linter reporta un hallazgo propio.
 set -uo pipefail
+# El worktree del ítem no lleva .venv: los linters son los del árbol principal,
+# el mismo universo que el pre-commit.
+export THYROX_LINT_BIN_DIR="${THYROX_LINT_BIN_DIR:-/home/user/thyrox/.venv/bin}"
 mapfile -t changed < <(git status --porcelain -uall | gawk '{print $2}')
 ran=0; rc=0; lintable=(); packages=()
 for path in "${changed[@]}"; do

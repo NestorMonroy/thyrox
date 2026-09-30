@@ -1,0 +1,193 @@
+diff --git a/.claude/workbench/task-thyrox-0507-d3-sweep-branch-20260930T075507/README.md b/.claude/workbench/task-thyrox-0507-d3-sweep-branch-20260930T075507/README.md
+new file mode 100644
+index 000000000..0b144ad37
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0507-d3-sweep-branch-20260930T075507/README.md
+@@ -0,0 +1,68 @@
++# TASK-THYROX-0507 — el ramal de barrido de `D3` (listar sesiones vivas), medido
++
++Alcance del ítem: sólo `src/packages/local-observability/src/uds/__tests__/udsLiveSessionRegistry.test.ts`.
++El porte de `D3` ya existía (`listAllLiveSessions`, `liveSessionRegistry.ts`); lo que faltaba
++era la mitad roja de su ramal de barrido y su control negativo.
++
++## Cómo lo resuelve la referencia (2.1.283, sólo lectura)
++
++Todo leído con `grep -n -o -b -F/-E` sobre `/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/`.
++La columna «offset» es el byte dentro de la línea que `grep -b` reporta.
++
++| Símbolo | Chunk | Línea:offset | Qué hace | Decisión |
++|---|---|---|---|---|
++| `D3(e,n)` | `chunk-qcy58j4w.js` | 12:20891 | lista con `F`, marca posible-vivo (`s(c)||ua(c.pid)`), verifica (`x_`), lee `TCe`, deriva `d=l?await HP():""`, y por registro: vivo → lo devuelve; si no, `l&&lpn(h,d)&&Nh(h.pid)` → `V(E,h.pid,d,e)` | ya portado línea a línea en `listAllLiveSessions` (:367-388); no se toca |
++| `V(e,n,r,i)` | `chunk-qcy58j4w.js` | 12:20698 | retira el registro muerto: por storage si `N()` y hay storage, si no `me(e).then(()=>ZKn(...)).catch(()=>{})` — fire-and-forget | ya portado como `retireDeadRecord` (:353-365); la prueba sondea el disco porque nadie espera esa promesa |
++| `ua(n)` | `chunk-j2p7jgmc.js` | 11:1624 | `if(n<=1)return!1; try{process.kill(n,0); return !0}` | `isProcessAlive` (:73) |
++| `x_(e,n)` | `chunk-x5vr5vwm.js` | 12:5379 | `if(n===void 0)return!0; return P(n,await nc(e))` — generoso sin token | `isSameProcessStartOrUnknown` (:300) |
++| `TCe()` | `chunk-t6pwageh.js` | 48:396946 | `HH().isRegistrySweepPermitted()` — el permiso memorizado del estado por anfitrión | `isRegistrySweepPermitted` (`registrySweep.ts`:181); en la prueba se fija `sessionRegistryState().registrySweepPermitted` y se restaura |
++| `lpn(e,n,r=[])` | `chunk-t6pwageh.js` | 48:397536 | con `pidDomain` declarado, `e.pidDomain===n`; sin él, por plataforma | `recordInPidDomain` (:195); la prueba declara `pidDomain` = dominio propio para no depender de la plataforma |
++| `Nh(e)` | `chunk-x5vr5vwm.js` | 11:2608 | `if(!mfn(e))return!1; try{process.kill(e,0); return !1}catch → ESRCH` | `isProcessGone` (`processIdentity.ts`:133). **Ojo:** hay otro `Nh` en `chunk-13pb2pb7.js` 45:225579 (un selector de credenciales); no es éste |
++| `ZKn(dir,pid,domain,storage)` | `chunk-t6pwageh.js` | 48:397069 | borra las claves `<pid>.<sha256>.key` del pid muerto que no declaren otro dominio | `sweepDeadPidKeys` (:242); la prueba deja una clave con `pidDomain` propio y espera su retiro |
++
++Divergencia: ninguna nueva. Las pruebas ejercitan el porte tal cual está.
++
++## Diseño de las dos pruebas
++
++- **Pid muerto real:** `Bun.spawn(['true'])` y `await child.exited`; el pid queda cosechado y
++  `kill(pid,0)` da `ESRCH`. No se usa un número fijo porque `pid_max` aquí es 32768 (medido:
++  `cat /proc/sys/kernel/pid_max`) y en otra máquina un literal alto podría existir.
++- **Retiro fire-and-forget:** `retireDeadRecord` no se espera, así que la prueba positiva sondea
++  el disco hasta 2000 ms cada 10 ms; la negativa espera 200 ms y afirma que los dos archivos
++  siguen.
++- **Permiso:** `withSweepPermission(valor, cuerpo)` fija el campo público
++  `registrySweepPermitted` del estado del anfitrión y lo restaura en `finally`.
++
++## Mediciones
++
++Suite (`bun test src/uds/__tests__/udsLiveSessionRegistry.test.ts`, desde `src/packages/local-observability`):
++
++| Estado | pass | fail | expect() |
++|---|---|---|---|
++| baseline, antes de tocar | 19 | 0 | 27 |
++| con las dos pruebas nuevas | 21 | 0 | 33 |
++
++Controles de anulación, cada uno sobre una copia con `cp` del módulo (nunca `git stash`),
++`bin/replace_literal`, medir, y restaurar desde la copia (sha256 igual antes y después:
++`e5cb655706385b49…`):
++
++| Anulación (en `liveSessionRegistry.ts`) | pass | fail | Qué cae |
++|---|---|---|---|
++| 1 · ramal `else if (…) retireDeadRecord(…)` retirado entero | 20 | 1 | sólo «con barrido permitido, un registro muerto … se retira con sus claves» |
++| 2 · sólo la guarda `sweepPermitted &&` retirada | 21 | 0 | **nada** |
++| 3 · `const sweepPermitted = true` (el sondeo deja de leerse) | 20 | 1 | sólo «sin permiso de barrido … queda en disco (control negativo)» |
++
++**Lo que la anulación 2 enseña, y no era obvio antes de medir:** para un registro que declara
++su `pidDomain`, la guarda `sweepPermitted &&` es redundante, porque el permiso ya viaja por
++`sweepDomain = sweepPermitted ? await currentPidDomain(…) : ''` y `recordInPidDomain(record, '')`
++es falso cuando el registro declara un dominio. Es la forma de la referencia (`d=l?await HP():""`,
++`lpn(h,d)`), no un defecto del porte. La guarda sí carga peso en un registro SIN `pidDomain`
++en linux (ahí `lpn` devuelve `true` por defecto). El control negativo mide por tanto «el permiso
++gobierna», no «esta conjunción concreta», y la anulación que lo prueba es la 3.
++
++Métrica: conteo `pass`/`fail`/`expect()` que imprime `bun test` sobre este único archivo, con el
++módulo anulado por sustitución literal.
++Ciega a: un pid reciclado entre `child.exited` y la lectura (probabilidad despreciable, no cero);
++a la rama por storage de `retireDeadRecord` (`storageBackendPin` inactivo en la prueba); y a
++plataformas distintas de la de este contenedor, aunque la prueba fija `pidDomain` justo para no
++depender de la rama por plataforma de `recordInPidDomain`.
+diff --git a/src/packages/local-observability/src/uds/__tests__/udsLiveSessionRegistry.test.ts b/src/packages/local-observability/src/uds/__tests__/udsLiveSessionRegistry.test.ts
+index 0c02e0a1f..da39f4421 100644
+--- a/src/packages/local-observability/src/uds/__tests__/udsLiveSessionRegistry.test.ts
++++ b/src/packages/local-observability/src/uds/__tests__/udsLiveSessionRegistry.test.ts
+@@ -9,6 +9,8 @@ import { mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
++import { getPlatform } from '@thyrox/config/platform'
++
+ import {
+   claimParkedJobPeer,
+   hasConflictingMessagingSocketOwner,
+@@ -21,7 +23,8 @@ import {
+   readSessionRecordFile,
+   sessionSpansForeignPidDomain,
+ } from '../liveSessionRegistry.ts'
+-import { currentProcessStartToken } from '../processIdentity.ts'
++import { currentPidDomain, currentProcessStartToken } from '../processIdentity.ts'
++import { sessionRegistryState } from '../sessionRegistryState.ts'
+ 
+ const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
+ let dir: string | undefined
+@@ -98,6 +101,67 @@ describe('listAllSessionRecords (YOt) y sessionSpansForeignPidDomain (G3o)', ()
+   })
+ })
+ 
++/** Un pid que vivió y ya murió: el de un hijo que terminó y fue cosechado. */
++async function exitedChildPid(): Promise<number> {
++  const child = Bun.spawn(['true'])
++  await child.exited
++  return child.pid
++}
++
++/** El retiro de un registro muerto es fire-and-forget; con este plazo, si no llegó, no va a llegar. */
++const RETIRE_TIMEOUT_MS = 2000
++const RETIRE_POLL_MS = 10
++/** Tras este plazo, un retiro que se hubiera lanzado ya habría tocado el disco. */
++const RETIRE_SETTLE_MS = 200
++
++function pause(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms))
++}
++
++function fileExists(path: string): boolean {
++  try {
++    statSync(path)
++    return true
++  } catch {
++    return false
++  }
++}
++
++/** Si `condition` se cumple antes de `RETIRE_TIMEOUT_MS`, sondeando cada `RETIRE_POLL_MS`. */
++async function becomesTrue(condition: () => boolean): Promise<boolean> {
++  const deadline = Date.now() + RETIRE_TIMEOUT_MS
++  while (Date.now() < deadline) {
++    if (condition()) return true
++    await pause(RETIRE_POLL_MS)
++  }
++  return condition()
++}
++
++/** Corre `body` con el permiso de barrido de este anfitrión fijado a `permitted`, y lo restaura. */
++async function withSweepPermission(permitted: boolean, body: () => Promise<void>): Promise<void> {
++  const state = sessionRegistryState()
++  const previous = state.registrySweepPermitted
++  state.registrySweepPermitted = Promise.resolve(permitted)
++  try {
++    await body()
++  } finally {
++    state.registrySweepPermitted = previous
++  }
++}
++
++const KEY_DIGEST = 'a'.repeat(64)
++const PEER_TOKEN = 'b'.repeat(32)
++
++/** Un registro `<pid>.json` y una clave `<pid>.<sha256>.key` de una sesión de este dominio cuyo pid ya murió. */
++async function writeDeadOwnDomainSession(sessionId: string): Promise<{ recordPath: string; keyPath: string }> {
++  const ownDomain = await currentPidDomain(getPlatform())
++  const pid = await exitedChildPid()
++  writeRecord(pid, { cwd: '/w', startedAt: 1, sessionId, pidDomain: ownDomain })
++  const keyPath = join(sessionsDir(), `${pid}.${KEY_DIGEST}.key`)
++  writeFileSync(keyPath, JSON.stringify({ peerToken: PEER_TOKEN, pidDomain: ownDomain }))
++  return { recordPath: join(sessionsDir(), `${pid}.json`), keyPath }
++}
++
+ describe('listAllLiveSessions (D3)', () => {
+   test('un registro sin token de arranque, de un pid vivo, cuenta como vivo', async () => {
+     writeRecord(process.pid, { cwd: '/w', startedAt: 1, sessionId: 'alive' })
+@@ -116,6 +180,27 @@ describe('listAllLiveSessions (D3)', () => {
+     const live = await listAllLiveSessions()
+     expect(live.some(record => record.sessionId === 'no-domain-check')).toBe(true)
+   })
++
++  test('con barrido permitido, un registro muerto del dominio propio se retira con sus claves', async () => {
++    await withSweepPermission(true, async () => {
++      const { recordPath, keyPath } = await writeDeadOwnDomainSession('dead-swept')
++      const live = await listAllLiveSessions()
++      expect(live.some(record => record.sessionId === 'dead-swept')).toBe(false)
++      expect(await becomesTrue(() => !fileExists(recordPath))).toBe(true)
++      expect(await becomesTrue(() => !fileExists(keyPath))).toBe(true)
++    })
++  })
++
++  test('sin permiso de barrido, el registro muerto no aparece pero queda en disco (control negativo)', async () => {
++    await withSweepPermission(false, async () => {
++      const { recordPath, keyPath } = await writeDeadOwnDomainSession('dead-kept')
++      const live = await listAllLiveSessions()
++      expect(live.some(record => record.sessionId === 'dead-kept')).toBe(false)
++      await pause(RETIRE_SETTLE_MS)
++      expect(fileExists(recordPath)).toBe(true)
++      expect(fileExists(keyPath)).toBe(true)
++    })
++  })
+ })
+ 
+ describe('livePeerByAddress (qOt) y liveSocketsByPid (zRr)', () => {
