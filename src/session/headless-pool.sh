@@ -126,10 +126,17 @@ if [[ "${_HP_FROZEN_LAUNCHER:-}" != "$_hp_source_root" ]]; then
         echo "headless-pool: REHUSA — no se pudo copiar el lanzador bajo $(thyrox_runtime_dir "$_hp_source_root")" >&2
         exit 2
     }
-    _HP_FROZEN_LAUNCHER="$_hp_frozen" bash "$_hp_frozen/src/session/headless-pool.sh" "$@"
-    _hp_exit=$?
+    # La copia corre en segundo plano para que una señal al lanzador le llegue
+    # a ella —que drena sus ítems— y el lanzador siga vivo hasta que salga. Un
+    # comando en segundo plano sin control de trabajos lee de /dev/null: los
+    # ítems llegan por stdin, así que se le pasa el descriptor a propósito.
+    _HP_FROZEN_LAUNCHER="$_hp_frozen" bash "$_hp_frozen/src/session/headless-pool.sh" "$@" <&0 &
+    _hp_child=$!
+    _hp_forward() { kill -"$1" "$_hp_child" 2>/dev/null; }
+    trap '_hp_forward TERM' TERM; trap '_hp_forward INT' INT; trap '_hp_forward HUP' HUP
+    while kill -0 "$_hp_child" 2>/dev/null; do wait "$_hp_child"; _hp_exit=$?; done
     rm -rf "${_hp_frozen:?}"
-    exit "$_hp_exit"
+    exit "${_hp_exit:-1}"
 fi
 unset _HP_FROZEN_LAUNCHER
 # <<< frozen-launcher
@@ -401,6 +408,7 @@ _headless_item() {
     _headless_item_run "$@" || rc=$?
     bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" --generation "$HP_ITEM_GENERATION" \
         2>> "$HP_LIVE/$n.lifecycle.err" || publish_rc=$?
+    rm -f "${HP_LIVE:?}/${n:?}.session"
     [[ "$publish_rc" -eq 0 ]] || return "$publish_failed_exit"
     # La ref de la foto del worktree se conserva también cuando el ítem se
     # publica con éxito: la foto es la garantía de no perder código, no un
@@ -501,6 +509,9 @@ _headless_item_run() {
             --output-format stream-json --verbose) \
       > "$HP_LIVE/$n.stream.jsonl" 2> "$HP_LIVE/$n.err" &
     local pid=$! monitor=""
+    # La sesión del ítem y el shell que la publica, para que el pool los drene
+    # y los espere al salir: el ítem no puede sobrevivir a su pool.
+    printf '%s\t%s\n' "$pid" "$BASHPID" > "$HP_LIVE/$n.session"
     # La VRAM del item: GNU Time mide su RAM y no ve la GPU. El monitor
     # muestrea el ARBOL de `pid` (el item y el ejecutor) mientras vive y deja
     # <n>.gpu; sin nvidia-smi no se lanza y el pool ya lo declaro.
@@ -658,8 +669,60 @@ if [[ -n "$MEMFREE_SPEC" ]]; then
     echo "memfree: $MEMFREE_SPEC ($MEMFREE_WHY)"
 fi
 
+# >>> exit-drain
+# Ningún ítem sobrevive al pool. Cada ítem en curso deja `<n>.session` con la
+# sesión de su runner y el pid del shell que lo publica; el pool, al recibir
+# una señal o al volver Parallel con ítems aún vivos —murió solo, como en
+# H-THYROX-283—, drena esas sesiones y espera a que sus shells publiquen. El
+# shell que murió con Parallel no publica: su ítem queda para `reconcile`, y
+# el barrido de abajo conserva su worktree.
+HP_EXIT_SETTLE_SECONDS="${HEADLESS_POOL_EXIT_SETTLE_SECONDS:-60}"
+[[ "$HP_EXIT_SETTLE_SECONDS" =~ ^[0-9]+$ ]] \
+    || rehusa "HEADLESS_POOL_EXIT_SETTLE_SECONDS va en segundos enteros, no: $HP_EXIT_SETTLE_SECONDS"
+drain_live_items() {
+    local record session_id
+    for record in "$HP_LIVE"/*.session; do
+        [[ -e "$record" ]] || continue
+        session_id="$(cut -f1 "$record")"
+        [[ -n "$session_id" ]] || continue
+        bash "$HP_PROCESS_OWNERSHIP" drain "$session_id" --grace "$HP_DRAIN_SECONDS" >> "$HP_LIVE/exit-drain.log" 2>&1 || true
+    done
+}
+item_shells_alive() {
+    local record shell_pid
+    for record in "$HP_LIVE"/*.session; do
+        [[ -e "$record" ]] || continue
+        shell_pid="$(cut -f2 "$record")"
+        [[ -n "$shell_pid" ]] && kill -0 "$shell_pid" 2>/dev/null && return 0
+    done
+    return 1
+}
+settle_item_shells() {
+    local deadline=$(( SECONDS + HP_EXIT_SETTLE_SECONDS ))
+    while item_shells_alive && (( SECONDS < deadline )); do sleep 0.2; done
+}
+on_exit_signal() {
+    echo "headless-pool: señal recibida; se drenan los ítems vivos antes de salir"
+    kill -HUP "$PARALLEL_PID" 2>/dev/null
+    drain_live_items
+}
+trap 'on_exit_signal' TERM INT HUP
+# <<< exit-drain
+# Parallel corre en segundo plano para que una señal interrumpa el `wait` y
+# la trampa corra; el bucle vuelve a esperar hasta que Parallel sale.
 "$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$HP_LIVE/joblog.tsv" \
-    _headless_item '{1}' '{2}' :::: "$HP_LIVE/index.tsv" >/dev/null 2>&1
+    _headless_item '{1}' '{2}' :::: "$HP_LIVE/index.tsv" >/dev/null 2>&1 &
+PARALLEL_PID=$!
+PARALLEL_RC=0
+while kill -0 "$PARALLEL_PID" 2>/dev/null; do wait "$PARALLEL_PID"; PARALLEL_RC=$?; done
+# Un Parallel que muere por señal sale con 128+N: es el rastro que H-THYROX-283
+# no tuvo, y se deja escrito antes de que el joblog lo esconda.
+[[ "$PARALLEL_RC" -lt 128 ]] || echo "headless-pool: GNU Parallel salió por señal (exit $PARALLEL_RC); los ítems vivos se drenan"
+# >>> exit-drain
+trap - TERM INT HUP
+drain_live_items
+settle_item_shells
+# <<< exit-drain
 
 # El veredicto sale del joblog (columna Exitval), emparejado con el indice por
 # numero: no depende del orden en que terminaron. El total sale del índice: un
@@ -685,7 +748,7 @@ if [[ "$ISOLATION" == worktree ]]; then
         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
         if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
         print "" }'
-    bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT"
+    bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT" "$HP_LIVE"
 fi
 # El cierre de la ejecución publica el índice y el joblog y deja `run.closed` al
 # final. Si algún ítem no llegó a cerrarse, su runtime se conserva y el pool

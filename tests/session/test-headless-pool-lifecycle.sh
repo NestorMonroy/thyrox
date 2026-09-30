@@ -76,6 +76,14 @@ release() {
 }
 
 bench_status() { git -C "$REPO" status --porcelain --untracked-files=all -- "$BENCH/$1" | wc -l; }
+# El runtime del ítem 1 de una ejecución. Si el ítem no arrancó, la suite se
+# detiene aquí: un `dirname` de una cadena vacía es `.`, y lo que se escribiera
+# ahí caería en el directorio de trabajo, fuera del arnés.
+live_dir() {
+  local match
+  match="$(compgen -G "$1/pool/*/1.stream.jsonl")" || { echo "ABORT: el ítem no dejó runtime en $1"; exit 1; }
+  dirname "$match"
+}
 
 # --- caso 1: en curso no se publica nada; al cerrar, todo coherente ----------
 start_pool run1 "$REPO/.thyrox/runtime"
@@ -147,7 +155,7 @@ git -C "$TARGET" checkout -q file.txt
 
 # --- caso 3: un pool cancelado conserva su runtime (prueba 13) ---------------
 start_pool run3 "$REPO/.thyrox/runtime"
-live3="$(dirname "$(compgen -G "$REPO/.thyrox/runtime/pool/*/1.stream.jsonl")")"
+live3="$(live_dir "$REPO/.thyrox/runtime")" || exit 1
 kill -TERM -- "-$POOL_PID"
 wait "$POOL_PID"
 check "cancelado: la salida no tiene artefactos del ítem" \
@@ -167,7 +175,7 @@ check "la salida sigue sin el ítem" "$(bash "$ROOT/bin/pool_lifecycle" closed-i
 # Mientras el ítem corre, otro actor lo declara abandonado y lo toma con una
 # generación nueva. El pool conserva la anterior: su publicación se rehúsa.
 start_pool run4 "$F/runtime4"
-live4="$(dirname "$(compgen -G "$F/runtime4/pool/*/1.stream.jsonl")")"
+live4="$(live_dir "$F/runtime4")" || exit 1
 THYROX_RUNTIME_DIR="$F/runtime4" bash "$ROOT/bin/pool_lifecycle" transition "$live4" 1 ABANDONED_RECOVERABLE
 gen4="$(THYROX_RUNTIME_DIR="$F/runtime4" bash "$ROOT/bin/pool_lifecycle" claim "$live4" "$REPO/$BENCH/run4" 1 --owner $$)"
 check "tomar el ítem en curso le da la generación 2" "$gen4" 2
@@ -184,7 +192,7 @@ check "el ítem sigue a nombre del nuevo dueño" \
 # --- caso 5 (I4): el pool desplazado no toma la foto de su generación --------
 # El nuevo dueño ya registró su foto; el pool de la generación 1 sale después.
 start_pool run5 "$F/runtime5" --isolation worktree --cwd "$REPO"
-live5="$(dirname "$(compgen -G "$F/runtime5/pool/*/1.stream.jsonl")")"
+live5="$(live_dir "$F/runtime5")" || exit 1
 THYROX_RUNTIME_DIR="$F/runtime5" bash "$ROOT/bin/pool_lifecycle" transition "$live5" 1 ABANDONED_RECOVERABLE
 gen5="$(THYROX_RUNTIME_DIR="$F/runtime5" bash "$ROOT/bin/pool_lifecycle" claim "$live5" "$REPO/$BENCH/run5" 1 --owner $$)"
 check "tomar el ítem con worktree le da la generación 2" "$gen5" 2
@@ -202,7 +210,7 @@ check "el pool declara que no toma la foto" \
 # declarado, la ref de su generación aparece antes de liberarlo.
 LIFECYCLE_TEST_WRITE=mid-run.txt THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS=1 \
   start_pool run6 "$F/runtime6" --isolation worktree --cwd "$REPO"
-live6="$(dirname "$(compgen -G "$F/runtime6/pool/*/1.stream.jsonl")")"
+live6="$(live_dir "$F/runtime6")" || exit 1
 ref6="refs/thyrox/snapshots/${live6##*/}/1/1"
 mid6=""
 for _ in $(seq 1 40); do

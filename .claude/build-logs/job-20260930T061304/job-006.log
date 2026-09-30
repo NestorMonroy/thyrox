@@ -1,0 +1,18 @@
+caso 1 — por defecto el worktree vive en .thyrox/pool-worktrees de la raíz
+  ok    prepare sale 0
+  ok    bajo REPO/.thyrox/pool-worktrees
+  ok    la ruta entera, sin segmentos sensibles
+  ok    es un worktree del repositorio
+  ok    el árbol principal queda limpio
+  ok    la exclusión no se duplica
+item_worktree: se conserva el worktree del ítem 1, sin cerrar: /root/.cache/thyrox-location-test.uMpUqg/repo/.thyrox/pool-worktrees/5ac6c9d26e43/1
+item_worktree: se conserva el worktree del ítem 2, sin cerrar: /root/.cache/thyrox-location-test.uMpUqg/repo/.thyrox/pool-worktrees/5ac6c9d26e43/2
+  FALLA sweep retira los worktrees de la ejecución: esperado «1», obtenido «3»
+caso 2 — THYROX_POOL_WORKTREES_DIR cambia la raíz
+  ok    bajo la raíz declarada
+item_worktree: se conserva el worktree del ítem 1, sin cerrar: /root/.cache/thyrox-location-test.uMpUqg/root/7a68afa43122/1
+caso 3 — una raíz con segmento sensible se rechaza
+  ok    exit 2
+  ok    lo dice
+item_worktree location: 9/10
+EXIT=1

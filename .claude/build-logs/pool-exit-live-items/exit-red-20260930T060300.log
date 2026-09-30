@@ -1,0 +1,16 @@
+OK   A: en curso, el ítem tiene su worktree
+FAIL A: en curso, el runner vive — expected '1', got '2'
+OK   A: el pool no termina bien
+FAIL A: ningún runner sobrevive al pool — expected '0', got '2'
+OK   A: la salida no tiene el ítem
+OK   A: el worktree del ítem no cerrado se conserva
+OK   A: el trabajo a mitad sigue en el worktree
+OK   A: el runtime se conserva
+FAIL A: el pool declara el runtime conservado — expected '1', got '0'
+OK   A: reconcile declara el ítem recuperable
+FAIL B: GNU Parallel corre bajo el pool — expected 'yes', got ''
+tests/session/test-headless-pool-exit-live-items.sh: line 115: kill: `': not a pid or valid job spec
+OK   B: el pool no termina bien
+tests/session/test-headless-pool-exit-live-items.sh: line 118: /tmp/tmp.ofmWvkc71Z/repo/.claude/workbench/b/runB/joblog.tsv: No such file or directory
+FAIL B: el joblog quedó sólo con cabecera — expected '1', got ''
+OK   B: ningún runner sobrevive al pool

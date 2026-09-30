@@ -64,9 +64,12 @@ run_case() {
   # Mientras el ítem corre, bajo el runtime existe una copia del lanzador.
   find "$F/$label.runtime" -name headless-pool.sh 2>/dev/null | wc -l > "$F/$label.live-copies"
   # Reescritura en su sitio: `cat >` conserva el inodo, así que un pool que lee
-  # este archivo ve los bytes nuevos. El reemplazo tiene la misma longitud.
+  # este archivo ve los bytes nuevos. El reemplazo tiene la misma longitud y
+  # cae DESPUÉS de una bifurcación del pool (`close-run`): bash relee el
+  # archivo al bifurcar, no al ejecutar un builtin, así que sólo una línea
+  # posterior a un comando externo puede medir si la reescritura llega.
   content="$(cat "$pool")"
-  printf '%s\n' "${content//items=%d ok=/ITEMS=%d ok=}" > "$pool"
+  printf '%s\n' "${content//memoria: sin GNU time/MEMORIA: sin GNU time}" > "$pool"
   exec {release_fd}<> "$F/$label.release"
   echo go >&"$release_fd"
   exec {release_fd}>&-
@@ -78,9 +81,9 @@ run_case() {
 scratch_tree "$F/frozen"
 out="$(run_case "$F/frozen" frozen)"; printf "%s\n" "$out" | sed "s/^/  | /"
 check "the live pool keeps the summary of the copy it started with" \
-  "$(grep -c '^items=1 ok=1' <<< "$out")" 1
+  "$(grep -c '^memoria: sin GNU time' <<< "$out")" 1
 check "the rewritten source does not reach the live pool" \
-  "$(grep -c '^ITEMS=' <<< "$out")" 0
+  "$(grep -c '^MEMORIA:' <<< "$out")" 0
 check "a frozen copy of the launcher exists while the item runs" \
   "$([[ "$(cat "$F/frozen.live-copies")" -ge 1 ]] && echo yes || echo no)" yes
 check "the frozen copy is removed when the pool exits" \
@@ -96,7 +99,7 @@ check "control: the freeze block was removed from the unfrozen copy" \
   "$(grep -c 'frozen-launcher' "$F/unfrozen/src/session/headless-pool.sh")" 0
 out="$(run_case "$F/unfrozen" unfrozen)"
 check "control: without the freeze, the rewrite reaches the live pool" \
-  "$(grep -c '^ITEMS=1 ok=1' <<< "$out")" 1
+  "$(grep -c '^MEMORIA: sin GNU time' <<< "$out")" 1
 
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]

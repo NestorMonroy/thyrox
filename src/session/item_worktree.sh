@@ -31,6 +31,9 @@ set -uo pipefail
 # sensibles (DANGEROUS_DIRECTORIES, permission/src/filesystem.ts) y en modo -p
 # rechaza cada Write y Edit del ítem sin poder pedir permiso.
 DEFAULT_WORKTREES_SUBDIR=".thyrox/pool-worktrees"
+# La CLI del ciclo de vida se resuelve por `bin/` del proveedor, no por este
+# archivo, que el pool corre desde su copia congelada.
+LIFECYCLE_BIN="${ITEM_WORKTREE_LIFECYCLE:-${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/bin/pool_lifecycle}"
 
 worktrees_root() {
     local repo="$1" top
@@ -218,19 +221,41 @@ prepare() {
     printf '%s\n' "$dir"
 }
 
-# Retira los worktrees que queden bajo la ejecución de OUT, aunque un
-# `finalize` no haya podido hacerlo.
+# ¿El ítem N es de la ejecución cuyo runtime es LIVE_DIR? Sin runtime no hay
+# ejecución en curso que proteger: un `sweep` sin LIVE_DIR es el barrido manual
+# del ejecutor, y retira todo lo que quede bajo la ejecución de OUT.
+run_item() {
+    local live_dir="$1" item="$2"
+    [[ -n "$live_dir" && -f "$live_dir/index.tsv" ]] || return 1
+    cut -f1 "$live_dir/index.tsv" | grep -qx -- "$item"
+}
+
+# sweep REPO OUT [LIVE_DIR]: retira los worktrees que queden bajo la ejecución
+# de OUT. Con LIVE_DIR, sólo se conserva el worktree de un ítem de ESTA
+# ejecución (una fila de su `index.tsv`) que aún no publicó su `<n>.closed`;
+# un worktree ajeno a la ejecución es un resto y se retira.
 sweep() {
-    local repo="$1" out="$2" base path
+    local repo="$1" out="$2" live_dir="${3:-}" base path item
     base="$(run_dir "$repo" "$out")" || return 2
-    git -C "$repo" worktree list --porcelain | gawk '/^worktree /{print substr($0, 10)}' \
-        | while read -r path; do
-            [[ "$path" == "$base"/* ]] && with_retries git -C "$repo" worktree remove --force "$path"
-        done
+    while read -r path; do
+        [[ "$path" == "$base"/* ]] || continue
+        # >>> sweep-closed-guard
+        # El worktree de un ítem que no publicó su `<n>.closed` no se retira: es
+        # lo único que conserva su trabajo hasta que `pool_lifecycle reconcile`
+        # lo recupere. Retirarlo debajo de un ítem vivo fue H-THYROX-283.
+        item="${path##*/}"
+        if run_item "$live_dir" "$item" && ! bash "$LIFECYCLE_BIN" is-closed "$out" "$item"; then
+            echo "item_worktree: se conserva el worktree del ítem $item, sin cerrar: $path" >&2
+            continue
+        fi
+        # <<< sweep-closed-guard
+        with_retries git -C "$repo" worktree remove --force "$path"
+    done < <(git -C "$repo" worktree list --porcelain | gawk '/^worktree /{print substr($0, 10)}')
     git -C "$repo" worktree prune
-    # Ni el directorio de la ejecución ni su candado sobreviven al pool.
-    rmdir "$base" 2>/dev/null
-    rm -f "$base.lock"
+    # El directorio de la ejecución y su candado sobreviven al pool sólo si
+    # queda un worktree conservado dentro.
+    rmdir "$base" 2>/dev/null && rm -f "$base.lock"
+    return 0
 }
 
 # El candado de la ejecución de OUT. El pool lo retiene toda su vida; mientras

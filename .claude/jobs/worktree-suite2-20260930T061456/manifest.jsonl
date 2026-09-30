@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash tests/session/test-headless-pool-worktree.sh", "started_at": "2026-09-30T06:14:56+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-30T06:15:32+00:00", "duration_seconds": 36.171355}

@@ -1,0 +1,75 @@
+run-task-pool: 5 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260930T061852
+  job-20260930T061852/job-001 bash tests/session/test-headless-pool-exit-live-items.sh
+  job-20260930T061852/job-002 bash tests/session/test-headless-pool-worktree.sh
+  job-20260930T061852/job-003 bash tests/session/test-headless-pool-lifecycle.sh
+  job-20260930T061852/job-004 bash tests/session/test-item-worktree-orphans.sh
+  job-20260930T061852/job-005 bash tests/session/test-headless-pool-item-drain.sh
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 881s)
+asentado: job-20260930T061852_job-001 -> OK (2 de 6)
+asentado: job-20260930T061852_job-002 -> OK (3 de 6)
+asentado: job-20260930T061852_job-003 -> OK (4 de 6)
+asentado: job-20260930T061852_job-004 -> OK (5 de 6)
+asentado: job-20260930T061852_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260930T061852
+       | (vacío — no emitió nada)
+OK     job-20260930T061852_job-001 exit=0
+       | OK   B: el veredicto es fallido (el runner murió)
+       | OK   B: la foto conserva el trabajo a mitad
+       | OK   B: el worktree se barrió sólo después de cerrar
+       | OK   B: el pool nombra el ítem sin veredicto de Parallel
+       | OK   control Ac: el bloque se retiró
+       | OK   control Ac: sin drenaje, el runner sobrevive al pool
+       | OK   control Bc: la guarda se retiró
+       | OK   control Bc: sin la guarda, el worktree del ítem no cerrado se barrió
+       | 24/24 aserciones
+       | EXIT=0
+       memoria pico: 28172 KB (28 MB) · pared 9.93s
+OK     job-20260930T061852_job-002 exit=0
+       | caso 11 — modificar solo el árbol principal no cambia el veredicto del verify
+       |   ok    el veredicto lee el worktree, no lo que cambió el árbol principal
+       | caso 12 — el verify no escribe en la cache/jobs/workbench/logs del árbol principal
+       |   ok    veredicto verificado
+       |   ok    no escribe en la cache del árbol principal
+       |   ok    no escribe en jobs del árbol principal
+       |   ok    no escribe en workbench del árbol principal
+       |   ok    no escribe en logs del árbol principal
+       | test-headless-pool-worktree: 42 aserciones — 42 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 27928 KB (27 MB) · pared 14.11s
+OK     job-20260930T061852_job-003 exit=0
+       | OK   el registro de foto del nuevo dueño sigue intacto
+       | OK   el pool desplazado no creó la ref de su generación
+       | OK   el pool declara que no toma la foto
+       | OK   en curso, el ítem ya tiene foto
+       | OK   la foto en curso trae el trabajo a mitad
+       | OK   la foto final existe
+       | OK   la foto final conserva el trabajo
+       | OK   el manifiesto de la foto describe la final
+       | result: 36 of 36 assertions green
+       | EXIT=0
+       memoria pico: 27860 KB (27 MB) · pared 17.78s
+OK     job-20260930T061852_job-004 exit=0
+       |   ok    el candado desaparece
+       |   ok    nombra el parche salvado
+       |   ok    el parche lleva el trabajo del ítem
+       | caso 3 — un proceso con su cwd dentro lo mantiene vivo (pool sin candado)
+       |   ok    el worktree ocupado sigue
+       | caso 4 — sin cambios, se retira sin parche
+       |   ok    el worktree limpio se retira
+       |   ok    no salva nada
+       | item_worktree orphans: 9/9
+       | EXIT=0
+       memoria pico: 27160 KB (27 MB) · pared 1.24s
+OK     job-20260930T061852_job-005 exit=0
+       | OK   el hijo fue retirado
+       | OK   el ítem declara que tuvo que terminar procesos
+       | OK   el resumen cuenta el ítem como fallido
+       | OK   nadie escribe ya en las salidas del ítem
+       | OK   control: el bloque de drenaje se retiró
+       | OK   control: sin drenaje el pool cierra con el hijo vivo
+       | OK   control: y el hijo sigue escribiendo en el stream del ítem
+       | OK   control: con el escritor vivo, la publicación rehúsa y el ítem no se cierra
+       | result: 17 of 17 assertions green
+       | EXIT=0
+       memoria pico: 22156 KB (22 MB) · pared 7.19s
