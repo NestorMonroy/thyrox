@@ -33,6 +33,7 @@ Ejecución en modo -p, sin nadie que te reanude:
 - TDD: primero la prueba en rojo, después la implementación. Por cada rama de decisión nueva, comprueba
   que retirarla hace caer exactamente las aserciones que dependen de ella, y dilo con números.
 - Nada de `/tmp` fijo: `tempfile.mkdtemp()` o `mktemp -d`, y se limpian. No leas stdin.
+- Nunca uses `git stash`: el pool marca el ítem `con-stash` y lo rechaza (grupo 4, sus 2 ítems). Para el control de anulación copia el archivo con `mktemp`, revierte, mide y restáuralo desde la copia.
 - No añadas dependencias. No corras `tests/run.sh` entero ni lances trabajos en segundo plano: corre las pruebas de lo que tocas.
 - No ejecutes `bin/binary extract`: escribe un corpus nuevo en `_references/` del árbol principal. El
   corpus de 2.1.283 ya está extraído en `/home/user/thyrox/_references/claude-code-bin/2.1.283/`: léelo
