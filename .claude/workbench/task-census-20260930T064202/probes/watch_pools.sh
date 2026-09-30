@@ -48,7 +48,9 @@ while true; do
     # Un AVISO sólo cuenta si el mismo pid lo repite en dos vueltas: el shell
     # de un ítem lo emite un instante al arrancar y desaparece (medido: los
     # pids 16999 y 17029 ya no existían al consultarlos).
-    warnings="$(bash bin/wait-jobs probe 2>&1 | gawk '/AVISO/')"
+    # Un pipe con escritor vivo es el final de un pipeline del ítem (`cmd | tail`)
+    # y se cierra solo; el caso que no termina es un socket.
+    warnings="$(bash bin/wait-jobs probe 2>&1 | gawk '/AVISO.*socket/')"
     persistent="$(comm -12 <(printf '%s\n' "$previous_warnings" | sort) <(printf '%s\n' "$warnings" | sort) | gawk 'NF')"
     [[ -z "$persistent" ]] || { echo "$persistent"; exit 0; }
     previous_warnings="$warnings"
