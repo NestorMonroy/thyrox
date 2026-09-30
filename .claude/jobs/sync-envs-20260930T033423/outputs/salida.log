@@ -1,0 +1,89 @@
++ cd /home/user/thyrox
++ uv sync --group lint
+Resolved 67 packages in 18ms
+Downloading pyright (5.9MiB)
+Downloading shellcheck-py (3.6MiB)
+Downloading ruff (9.9MiB)
+ Downloading shellcheck-py
+ Downloading ruff
+ Downloading pyright
+Prepared 5 packages in 1.65s
+Installed 5 packages in 104ms
+ + nodeenv==1.11.0
+ + pyright==1.1.414
+ + ruff==0.16.9
+ + shellcheck-py==0.11.0.1
+ + typing-extensions==4.16.0
++ echo 'RESULT thyrox-lint exit=0'
+RESULT thyrox-lint exit=0
++ cd /home/user/kaupamex-docs
++ make sync
+Instalando dependencias con uv...
+Using CPython 3.11.15 interpreter at: /usr/local/bin/python3
+Creating virtual environment at: .venv
+Resolved 45 packages in 2ms
+   Building kaupamex-doc @ file:///home/user/kaupamex-docs
+Downloading pygments (1.2MiB)
+Downloading sphinx-design (2.1MiB)
+Downloading sphinx (3.4MiB)
+Downloading accessible-pygments (1.3MiB)
+Downloading babel (9.7MiB)
+   Building sphinxcontrib-plantuml==0.26
+ Downloading sphinx-design
+ Downloading accessible-pygments
+ Downloading pygments
+ Downloading sphinx
+ Downloading babel
+      Built sphinxcontrib-plantuml==0.26
+      Built kaupamex-doc @ file:///home/user/kaupamex-docs
+Prepared 35 packages in 2.22s
+Installed 45 packages in 2.56s
+ + accessible-pygments==0.0.5
+ + alabaster==1.0.0
+ + anyio==4.12.0
+ + attrs==25.4.0
+ + babel==2.17.0
+ + beautifulsoup4==4.14.3
+ + certifi==2025.11.12
+ + charset-normalizer==3.4.7
+ + click==8.3.3
+ + colorama==0.4.6
+ + docutils==0.21.2
+ + furo==2025.9.25
+ + h11==0.16.0
+ + idna==3.11
+ + imagesize==1.4.1
+ + jinja2==3.1.6
+ + kaupamex-doc==0.1.0 (from file:///home/user/kaupamex-docs)
+ + markupsafe==3.0.3
+ + packaging==25.0
+ + pygments==2.19.2
+ + requests==2.32.5
+ + roman-numerals==4.1.0
+ + roman-numerals-py==4.1.0
+ + snowballstemmer==3.0.1
+ + soupsieve==2.8.3
+ + sphinx==8.2.3
+ + sphinx-autobuild==2025.8.25
+ + sphinx-basic-ng==1.0.0b2
+ + sphinx-copybutton==0.5.2
+ + sphinx-design==0.6.1
+ + sphinx-notfound-page==1.1.0
+ + sphinx-tabs==3.5.0
+ + sphinxcontrib-applehelp==2.0.0
+ + sphinxcontrib-devhelp==2.0.0
+ + sphinxcontrib-htmlhelp==2.1.0
+ + sphinxcontrib-jsmath==1.0.1
+ + sphinxcontrib-plantuml==0.26
+ + sphinxcontrib-qthelp==2.0.0
+ + sphinxcontrib-serializinghtml==2.0.0
+ + starlette==0.50.0
+ + typing-extensions==4.15.0
+ + urllib3==2.6.3
+ + uvicorn==0.38.0
+ + watchfiles==1.1.1
+ + websockets==15.0.1
+Listo. Ejecuta: make html
++ echo 'RESULT docs-sync exit=0'
+RESULT docs-sync exit=0
+__BG_EXIT__=0

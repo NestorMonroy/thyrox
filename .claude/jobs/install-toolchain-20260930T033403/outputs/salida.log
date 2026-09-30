@@ -1,0 +1,257 @@
+=== gnu_time
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  time
+0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+Need to get 45.2 kB of archives.
+After this operation, 129 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 time amd64 1.9-0.2build1 [45.2 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 45.2 kB in 0s (106 kB/s)
+Selecting previously unselected package time.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 54567 files and directories currently installed.)
+Preparing to unpack .../time_1.9-0.2build1_amd64.deb ...
+Unpacking time (1.9-0.2build1) ...
+Setting up time (1.9-0.2build1) ...
+RESULT gnu_time exit=0
+=== poppler
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  poppler-utils
+0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+Need to get 212 kB of archives.
+After this operation, 734 kB of additional disk space will be used.
+Ign:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 poppler-utils amd64 24.02.0-1ubuntu9.8
+Err:1 http://security.ubuntu.com/ubuntu noble-updates/main amd64 poppler-utils amd64 24.02.0-1ubuntu9.8
+  404  Not Found [IP: 185.125.190.81 80]
+E: Failed to fetch http://security.ubuntu.com/ubuntu/pool/main/p/poppler/poppler-utils_24.02.0-1ubuntu9.8_amd64.deb  404  Not Found [IP: 185.125.190.81 80]
+E: Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?
+thyrox_toolchain: el instalador termino y sigue sin resolver: pdftotext pdftoppm 
+                  Se re-comprueban los binarios, no se lee su exit.
+RESULT poppler exit=2
+=== pdf_text
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  poppler-utils
+0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+Need to get 212 kB of archives.
+After this operation, 734 kB of additional disk space will be used.
+Ign:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 poppler-utils amd64 24.02.0-1ubuntu9.8
+Err:1 http://security.ubuntu.com/ubuntu noble-updates/main amd64 poppler-utils amd64 24.02.0-1ubuntu9.8
+  404  Not Found [IP: 185.125.190.82 80]
+E: Failed to fetch http://security.ubuntu.com/ubuntu/pool/main/p/poppler/poppler-utils_24.02.0-1ubuntu9.8_amd64.deb  404  Not Found [IP: 185.125.190.82 80]
+E: Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?
+thyrox_toolchain: el instalador termino y 'pdftotext' sigue sin resolver.
+                  Se re-comprueba el binario, no se lee su exit.
+RESULT pdf_text exit=2
+=== rsync
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libpopt0
+Suggested packages:
+  openssh-client openssh-server python3-braceexpand
+The following NEW packages will be installed:
+  libpopt0 rsync
+0 upgraded, 2 newly installed, 0 to remove and 1 not upgraded.
+Need to get 465 kB of archives.
+After this operation, 923 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libpopt0 amd64 1.19+dfsg-1build1 [28.6 kB]
+Ign:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 rsync amd64 3.2.7-1ubuntu1.2
+Err:2 http://security.ubuntu.com/ubuntu noble-updates/main amd64 rsync amd64 3.2.7-1ubuntu1.2
+  404  Not Found [IP: 91.189.92.22 80]
+Fetched 28.6 kB in 1s (33.5 kB/s)
+E: Failed to fetch http://security.ubuntu.com/ubuntu/pool/main/r/rsync/rsync_3.2.7-1ubuntu1.2_amd64.deb  404  Not Found [IP: 91.189.92.22 80]
+E: Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?
+thyrox_toolchain: el instalador termino y 'rsync' sigue sin resolver.
+                  Se re-comprueba el binario, no se lee su exit.
+RESULT rsync exit=2
+=== iproute2
+thyrox_toolchain: falta 'ip' (paquete iproute2) y la instalacion es opt-in.
+                  Reintenta con THYROX_INSTALL_IPROUTE2=1.
+                  NO se emite conteo: un cero aqui no distinguiria
+                  «no hay» de «no pude medir».
+RESULT iproute2 exit=2
+=== redis
+RESULT redis exit=0
+=== podman
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  aardvark-dns buildah catatonit conmon containernetworking-plugins
+  fuse-overlayfs fuse3 golang-github-containers-common
+  golang-github-containers-image libfuse3-3 libslirp0 libsubid4 netavark passt
+  slirp4netns uidmap
+Suggested packages:
+  containers-storage apparmor docker-compose
+The following NEW packages will be installed:
+  aardvark-dns buildah catatonit conmon containernetworking-plugins
+  fuse-overlayfs fuse3 golang-github-containers-common
+  golang-github-containers-image libfuse3-3 libslirp0 libsubid4 netavark passt
+  podman slirp4netns uidmap
+0 upgraded, 17 newly installed, 0 to remove and 1 not upgraded.
+Need to get 32.2 MB of archives.
+After this operation, 130 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 libfuse3-3 amd64 3.14.0-5build1 [83.1 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 fuse3 amd64 3.14.0-5build1 [25.2 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/universe amd64 netavark amd64 1.4.0-4 [1666 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/universe amd64 aardvark-dns amd64 1.4.0-5 [881 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsubid4 amd64 1:4.13+dfsg1-4ubuntu3.2 [23.4 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 uidmap amd64 1:4.13+dfsg1-4ubuntu3.2 [26.0 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 containernetworking-plugins amd64 1.1.1+ds1-3ubuntu0.24.04.3 [7203 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble/universe amd64 golang-github-containers-image all 5.29.2-2 [33.4 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 golang-github-containers-common all 0.57.4+ds1-2ubuntu0.2 [39.9 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 buildah amd64 1.33.7+ds1-1ubuntu0.24.04.3 [8148 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/universe amd64 catatonit amd64 0.1.7-1 [307 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/universe amd64 conmon amd64 2.1.10+ds1-1build2 [35.2 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble/universe amd64 fuse-overlayfs amd64 1.13-1 [45.7 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble/main amd64 libslirp0 amd64 4.7.0-1ubuntu3 [63.8 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble/universe amd64 passt amd64 0.0~git20240220.1e6f92b-1 [163 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 podman amd64 4.9.3+ds1-1ubuntu0.2 [13.4 MB]
+Get:17 http://archive.ubuntu.com/ubuntu noble/universe amd64 slirp4netns amd64 1.2.1-1build2 [34.9 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 32.2 MB in 5s (6768 kB/s)
+Selecting previously unselected package libfuse3-3:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 54578 files and directories currently installed.)
+Preparing to unpack .../00-libfuse3-3_3.14.0-5build1_amd64.deb ...
+Unpacking libfuse3-3:amd64 (3.14.0-5build1) ...
+Selecting previously unselected package fuse3.
+Preparing to unpack .../01-fuse3_3.14.0-5build1_amd64.deb ...
+Unpacking fuse3 (3.14.0-5build1) ...
+Selecting previously unselected package netavark.
+Preparing to unpack .../02-netavark_1.4.0-4_amd64.deb ...
+Unpacking netavark (1.4.0-4) ...
+Selecting previously unselected package aardvark-dns.
+Preparing to unpack .../03-aardvark-dns_1.4.0-5_amd64.deb ...
+Unpacking aardvark-dns (1.4.0-5) ...
+Selecting previously unselected package libsubid4:amd64.
+Preparing to unpack .../04-libsubid4_1%3a4.13+dfsg1-4ubuntu3.2_amd64.deb ...
+Unpacking libsubid4:amd64 (1:4.13+dfsg1-4ubuntu3.2) ...
+Selecting previously unselected package uidmap.
+Preparing to unpack .../05-uidmap_1%3a4.13+dfsg1-4ubuntu3.2_amd64.deb ...
+Unpacking uidmap (1:4.13+dfsg1-4ubuntu3.2) ...
+Selecting previously unselected package containernetworking-plugins.
+Preparing to unpack .../06-containernetworking-plugins_1.1.1+ds1-3ubuntu0.24.04.3_amd64.deb ...
+Unpacking containernetworking-plugins (1.1.1+ds1-3ubuntu0.24.04.3) ...
+Selecting previously unselected package golang-github-containers-image.
+Preparing to unpack .../07-golang-github-containers-image_5.29.2-2_all.deb ...
+Unpacking golang-github-containers-image (5.29.2-2) ...
+Selecting previously unselected package golang-github-containers-common.
+Preparing to unpack .../08-golang-github-containers-common_0.57.4+ds1-2ubuntu0.2_all.deb ...
+Unpacking golang-github-containers-common (0.57.4+ds1-2ubuntu0.2) ...
+Selecting previously unselected package buildah.
+Preparing to unpack .../09-buildah_1.33.7+ds1-1ubuntu0.24.04.3_amd64.deb ...
+Unpacking buildah (1.33.7+ds1-1ubuntu0.24.04.3) ...
+Selecting previously unselected package catatonit.
+Preparing to unpack .../10-catatonit_0.1.7-1_amd64.deb ...
+Unpacking catatonit (0.1.7-1) ...
+Selecting previously unselected package conmon.
+Preparing to unpack .../11-conmon_2.1.10+ds1-1build2_amd64.deb ...
+Unpacking conmon (2.1.10+ds1-1build2) ...
+Selecting previously unselected package fuse-overlayfs.
+Preparing to unpack .../12-fuse-overlayfs_1.13-1_amd64.deb ...
+Unpacking fuse-overlayfs (1.13-1) ...
+Selecting previously unselected package libslirp0:amd64.
+Preparing to unpack .../13-libslirp0_4.7.0-1ubuntu3_amd64.deb ...
+Unpacking libslirp0:amd64 (4.7.0-1ubuntu3) ...
+Selecting previously unselected package passt.
+Preparing to unpack .../14-passt_0.0~git20240220.1e6f92b-1_amd64.deb ...
+Unpacking passt (0.0~git20240220.1e6f92b-1) ...
+Selecting previously unselected package podman.
+Preparing to unpack .../15-podman_4.9.3+ds1-1ubuntu0.2_amd64.deb ...
+Unpacking podman (4.9.3+ds1-1ubuntu0.2) ...
+Selecting previously unselected package slirp4netns.
+Preparing to unpack .../16-slirp4netns_1.2.1-1build2_amd64.deb ...
+Unpacking slirp4netns (1.2.1-1build2) ...
+Setting up libsubid4:amd64 (1:4.13+dfsg1-4ubuntu3.2) ...
+Setting up golang-github-containers-image (5.29.2-2) ...
+Setting up conmon (2.1.10+ds1-1build2) ...
+Setting up containernetworking-plugins (1.1.1+ds1-3ubuntu0.24.04.3) ...
+Setting up catatonit (0.1.7-1) ...
+Setting up netavark (1.4.0-4) ...
+Setting up libfuse3-3:amd64 (3.14.0-5build1) ...
+Setting up aardvark-dns (1.4.0-5) ...
+Setting up libslirp0:amd64 (4.7.0-1ubuntu3) ...
+Setting up passt (0.0~git20240220.1e6f92b-1) ...
+Setting up golang-github-containers-common (0.57.4+ds1-2ubuntu0.2) ...
+Setting up slirp4netns (1.2.1-1build2) ...
+Setting up uidmap (1:4.13+dfsg1-4ubuntu3.2) ...
+Setting up podman (4.9.3+ds1-1ubuntu0.2) ...
+Created symlink /etc/systemd/system/default.target.wants/podman-auto-update.service → /usr/lib/systemd/system/podman-auto-update.service.
+Created symlink /etc/systemd/system/timers.target.wants/podman-auto-update.timer → /usr/lib/systemd/system/podman-auto-update.timer.
+Created symlink /etc/systemd/system/default.target.wants/podman-clean-transient.service → /usr/lib/systemd/system/podman-clean-transient.service.
+Created symlink /etc/systemd/system/default.target.wants/podman-restart.service → /usr/lib/systemd/system/podman-restart.service.
+Created symlink /etc/systemd/system/default.target.wants/podman.service → /usr/lib/systemd/system/podman.service.
+Created symlink /etc/systemd/system/sockets.target.wants/podman.socket → /usr/lib/systemd/system/podman.socket.
+Setting up fuse3 (3.14.0-5build1) ...
+Setting up fuse-overlayfs (1.13-1) ...
+Setting up buildah (1.33.7+ds1-1ubuntu0.24.04.3) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+RESULT podman exit=0
+=== pgvector
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  clang-17 icu-devtools libclang-common-17-dev libclang-cpp17t64
+  libclang-rt-17-dev libclang1-17t64 libicu-dev libpq-dev libxml2-dev libz3-4
+  libz3-dev llvm-17 llvm-17-dev llvm-17-linker-tools llvm-17-runtime
+  llvm-17-tools python3-pygments
+Suggested packages:
+  clang-17-doc wasi-libc icu-doc postgresql-doc-16 llvm-17-doc
+  python-pygments-doc ttf-bitstream-vera
+The following NEW packages will be installed:
+  clang-17 icu-devtools libclang-common-17-dev libclang-cpp17t64
+  libclang-rt-17-dev libclang1-17t64 libicu-dev libpq-dev libxml2-dev libz3-4
+  libz3-dev llvm-17 llvm-17-dev llvm-17-linker-tools llvm-17-runtime
+  llvm-17-tools postgresql-server-dev-16 python3-pygments
+0 upgraded, 18 newly installed, 0 to remove and 1 not upgraded.
+Need to get 114 MB of archives.
+After this operation, 679 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble/main amd64 python3-pygments all 2.17.2+dfsg-1 [819 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-cpp17t64 amd64 1:17.0.6-9ubuntu1 [12.9 MB]
+Get:3 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-common-17-dev amd64 1:17.0.6-9ubuntu1 [690 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-linker-tools amd64 1:17.0.6-9ubuntu1 [1308 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang1-17t64 amd64 1:17.0.6-9ubuntu1 [7353 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble/universe amd64 clang-17 amd64 1:17.0.6-9ubuntu1 [78.6 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 icu-devtools amd64 74.2-1ubuntu3.1 [212 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble/universe amd64 libclang-rt-17-dev amd64 1:17.0.6-9ubuntu1 [2361 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libicu-dev amd64 74.2-1ubuntu3.1 [11.9 MB]
+Ign:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpq-dev amd64 16.13-0ubuntu0.24.04.1
+Ign:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libxml2-dev amd64 2.9.14+dfsg-1.3ubuntu3.7
+Get:12 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-runtime amd64 1:17.0.6-9ubuntu1 [529 kB]
+Err:10 http://security.ubuntu.com/ubuntu noble-updates/main amd64 libpq-dev amd64 16.13-0ubuntu0.24.04.1
+  404  Not Found [IP: 91.189.92.24 80]
+Get:13 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17 amd64 1:17.0.6-9ubuntu1 [23.8 MB]
+Err:11 http://security.ubuntu.com/ubuntu noble-updates/main amd64 libxml2-dev amd64 2.9.14+dfsg-1.3ubuntu3.7
+  404  Not Found [IP: 91.189.92.24 80]
+Get:14 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-tools amd64 1:17.0.6-9ubuntu1 [518 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble/universe amd64 libz3-4 amd64 4.8.12-3.1build1 [5836 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble/universe amd64 libz3-dev amd64 4.8.12-3.1build1 [72.2 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble/universe amd64 llvm-17-dev amd64 1:17.0.6-9ubuntu1 [43.4 MB]
+Ign:18 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 postgresql-server-dev-16 amd64 16.13-0ubuntu0.24.04.1
+Err:18 http://security.ubuntu.com/ubuntu noble-updates/universe amd64 postgresql-server-dev-16 amd64 16.13-0ubuntu0.24.04.1
+  404  Not Found [IP: 91.189.92.24 80]
+Fetched 112 MB in 6s (18.2 MB/s)
+E: Failed to fetch http://security.ubuntu.com/ubuntu/pool/main/p/postgresql-16/libpq-dev_16.13-0ubuntu0.24.04.1_amd64.deb  404  Not Found [IP: 91.189.92.24 80]
+E: Failed to fetch http://security.ubuntu.com/ubuntu/pool/main/libx/libxml2/libxml2-dev_2.9.14%2bdfsg-1.3ubuntu3.7_amd64.deb  404  Not Found [IP: 91.189.92.24 80]
+E: Failed to fetch http://security.ubuntu.com/ubuntu/pool/universe/p/postgresql-16/postgresql-server-dev-16_16.13-0ubuntu0.24.04.1_amd64.deb  404  Not Found [IP: 91.189.92.24 80]
+E: Unable to fetch some archives, maybe run apt-get update or try with --fix-missing?
+thyrox_toolchain: el instalador termino y 'vector.control' declara 'ninguna', no '0.8.6'.
+                  Se re-comprueba la version, no se lee su exit.
+RESULT pgvector exit=2
+=== postgres_test_db
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory
+	Is the server running locally and accepting connections on that socket?
+thyrox_toolchain: el administrador terminó y la base thyrox_test no sirve con la URL provisionada.
+                  Se re-comprueba conectando, no se lee su exit.
+RESULT postgres_test_db exit=2
+__BG_EXIT__=0
