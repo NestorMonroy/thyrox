@@ -660,6 +660,13 @@
       "name": "@thyrox/ripgrep-napi",
       "version": "1.0.0",
     },
+    "src/packages/semantic-search": {
+      "name": "@thyrox/semantic-search",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/store": "0.1.0",
+      },
+    },
     "src/packages/server": {
       "name": "@thyrox/server",
       "version": "0.1.0",
@@ -1276,6 +1283,8 @@
     "@thyrox/repl": ["@thyrox/repl@workspace:src/packages/repl"],
 
     "@thyrox/ripgrep-napi": ["@thyrox/ripgrep-napi@workspace:src/packages/ripgrep-napi"],
+
+    "@thyrox/semantic-search": ["@thyrox/semantic-search@workspace:src/packages/semantic-search"],
 
     "@thyrox/server": ["@thyrox/server@workspace:src/packages/server"],
 

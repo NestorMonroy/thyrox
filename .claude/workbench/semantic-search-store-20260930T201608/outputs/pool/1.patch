@@ -1,0 +1,1143 @@
+diff --git a/.env.example b/.env.example
+index 840084ac4..d86549312 100644
+--- a/.env.example
++++ b/.env.example
+@@ -902,6 +902,15 @@ THYROX_OBSERVABILITY_DATABASE_URL=
+ THYROX_TEST_POSTGRES_URL=
+ THYROX_TEST_REQUIRE_POSTGRES=
+ 
++# --- El store de búsqueda semántica ---------------------------------------
++# src/packages/semantic-search/config.ts: la base PostgreSQL + pgvector del
++# store vectorial, por URL (postgres:// o postgresql://): una máquina
++# persistente o un servicio gestionado, nunca el contenedor de un worker.
++# Vacía: el store rehúsa abrir; no hay base por defecto ni caída a SQLite.
++# La extensión `vector` la habilita el bootstrap de infraestructura: el store
++# comprueba su versión mínima y no ejecuta CREATE EXTENSION.
++THYROX_SEMANTIC_SEARCH_DATABASE_URL=
++
+ # --- Claves leídas por el código, sin valor propio del consumidor --------
+ # Cada grupo lleva el archivo que la lee primero. Vacío = rige el default que
+ # ese archivo declara; se rellena sólo para corregirlo. La mayor parte son los
+diff --git a/bun.lock b/bun.lock
+index 8e7c22502..5cc34b633 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -660,6 +660,13 @@
+       "name": "@thyrox/ripgrep-napi",
+       "version": "1.0.0",
+     },
++    "src/packages/semantic-search": {
++      "name": "@thyrox/semantic-search",
++      "version": "0.1.0",
++      "dependencies": {
++        "@thyrox/store": "0.1.0",
++      },
++    },
+     "src/packages/server": {
+       "name": "@thyrox/server",
+       "version": "0.1.0",
+@@ -1277,6 +1284,8 @@
+ 
+     "@thyrox/ripgrep-napi": ["@thyrox/ripgrep-napi@workspace:src/packages/ripgrep-napi"],
+ 
++    "@thyrox/semantic-search": ["@thyrox/semantic-search@workspace:src/packages/semantic-search"],
++
+     "@thyrox/server": ["@thyrox/server@workspace:src/packages/server"],
+ 
+     "@thyrox/shared-state": ["@thyrox/shared-state@workspace:src/packages/shared-state"],
+diff --git a/src/packages/semantic-search/__tests__/config.test.ts b/src/packages/semantic-search/__tests__/config.test.ts
+new file mode 100644
+index 000000000..543b69c0c
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/config.test.ts
+@@ -0,0 +1,81 @@
++/**
++ * La configuración del store: la URL como único contrato de conexión, la
++ * negativa a degradar y la forma del esquema vectorial. Sin servidor: todo
++ * rechazo ocurre antes de abrir una conexión.
++ */
++import { describe, expect, test } from 'bun:test'
++
++import {
++  EmbeddingDimensionError,
++  resolveSemanticSearchDatabaseUrl,
++  SEMANTIC_SEARCH_DATABASE_URL_VAR,
++  SemanticSearchConfigError,
++  validateEmbedding,
++  validateSchemaConfig,
++  validateStoreUrl,
++} from '../config.ts'
++
++describe('resolveSemanticSearchDatabaseUrl', () => {
++  test('lee la URL de la variable declarada', () => {
++    expect(resolveSemanticSearchDatabaseUrl({ [SEMANTIC_SEARCH_DATABASE_URL_VAR]: ' postgres://u@db.example/x ' }))
++      .toBe('postgres://u@db.example/x')
++  })
++
++  test('sin la variable rehúsa nombrándola: no hay base por defecto', () => {
++    expect(() => resolveSemanticSearchDatabaseUrl({})).toThrow(SEMANTIC_SEARCH_DATABASE_URL_VAR)
++    expect(() => resolveSemanticSearchDatabaseUrl({ [SEMANTIC_SEARCH_DATABASE_URL_VAR]: '  ' })).toThrow(SemanticSearchConfigError)
++  })
++})
++
++describe('validateStoreUrl', () => {
++  test('acepta postgres:// y postgresql://', () => {
++    expect(validateStoreUrl('postgres://u@h/db')).toBe('postgres://u@h/db')
++    expect(validateStoreUrl('postgresql://u@h/db')).toBe('postgresql://u@h/db')
++  })
++
++  test('sqlite: y file: rehúsan: no cae a SQLite', () => {
++    expect(() => validateStoreUrl('sqlite:///x.db')).toThrow(/PostgreSQL/)
++    expect(() => validateStoreUrl('file:x.db')).toThrow(SemanticSearchConfigError)
++  })
++
++  test('el rechazo no filtra la contraseña', () => {
++    expect(() => validateStoreUrl('mysql://user:secret@h/db')).toThrow(SemanticSearchConfigError)
++    expect(() => validateStoreUrl('mysql://user:secret@h/db')).not.toThrow(/secret/)
++  })
++})
++
++describe('validateSchemaConfig', () => {
++  test('acepta un esquema con dimensión y representación', () => {
++    const config = { name: 'semantic', dimensions: 1536, representation: 'halfvec' as const }
++    expect(validateSchemaConfig(config)).toEqual(config)
++  })
++
++  test('rechaza un nombre que no es un identificador simple', () => {
++    expect(() => validateSchemaConfig({ name: 'a; DROP', dimensions: 3, representation: 'vector' })).toThrow(SemanticSearchConfigError)
++  })
++
++  test('rechaza una dimensión no entera o no positiva', () => {
++    expect(() => validateSchemaConfig({ name: 's', dimensions: 0, representation: 'vector' })).toThrow(/dimensions/)
++    expect(() => validateSchemaConfig({ name: 's', dimensions: 2.5, representation: 'vector' })).toThrow(/dimensions/)
++  })
++
++  test('rechaza una representación desconocida', () => {
++    const config = { name: 's', dimensions: 3, representation: 'sparsevec' } as unknown as Parameters<typeof validateSchemaConfig>[0]
++    expect(() => validateSchemaConfig(config)).toThrow(/sparsevec/)
++  })
++})
++
++describe('validateEmbedding', () => {
++  test('un vector de otra dimensión se rechaza nombrando las dos', () => {
++    expect(() => validateEmbedding([1, 2], 3)).toThrow(EmbeddingDimensionError)
++    expect(() => validateEmbedding([1, 2], 3)).toThrow(/2.*3|3.*2/)
++  })
++
++  test('un componente no finito se rechaza', () => {
++    expect(() => validateEmbedding([1, Number.NaN, 3], 3)).toThrow(/finite/)
++  })
++
++  test('un vector de la dimensión declarada pasa', () => {
++    expect(() => validateEmbedding([1, 2, 3], 3)).not.toThrow()
++  })
++})
+diff --git a/src/packages/semantic-search/__tests__/extension.test.ts b/src/packages/semantic-search/__tests__/extension.test.ts
+new file mode 100644
+index 000000000..f3e8f9902
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/extension.test.ts
+@@ -0,0 +1,74 @@
++/**
++ * Los tres estados de pgvector que `migrateVectorSchema` distingue antes de
++ * migrar, sobre el estado ya leído: sin servidor, porque la decisión es pura
++ * y un servidor real no puede ponerse en «no disponible» ni en una versión
++ * vieja sin degradarlo.
++ */
++import { describe, expect, test } from 'bun:test'
++
++import {
++  assertVectorExtensionUsable,
++  compareVersions,
++  MINIMUM_PGVECTOR_VERSION,
++  VectorExtensionNotEnabledError,
++  VectorExtensionUnavailableError,
++  VectorExtensionVersionError,
++} from '../extension.ts'
++
++describe('assertVectorExtensionUsable', () => {
++  test('no disponible en el servidor: error de infraestructura', () => {
++    const state = { availableVersion: null, installed: null }
++    expect(() => assertVectorExtensionUsable(state)).toThrow(VectorExtensionUnavailableError)
++    try {
++      assertVectorExtensionUsable(state)
++    } catch (error) {
++      expect((error as VectorExtensionUnavailableError).code).toBe('pgvector-unavailable')
++    }
++  })
++
++  test('disponible pero no habilitada en la base: error de provisioning, con la versión ofrecida', () => {
++    const state = { availableVersion: '0.8.6', installed: null }
++    expect(() => assertVectorExtensionUsable(state)).toThrow(VectorExtensionNotEnabledError)
++    expect(() => assertVectorExtensionUsable(state)).toThrow(/0\.8\.6/)
++  })
++
++  // CONTROL: sin la comparación de versión, una 0.6.2 habilitada pasaría.
++  test('habilitada con versión menor que la mínima: error de versión con las dos versiones', () => {
++    const state = { availableVersion: '0.6.2', installed: { version: '0.6.2', schema: 'public' } }
++    let caught: unknown
++    try {
++      assertVectorExtensionUsable(state)
++    } catch (error) {
++      caught = error
++    }
++    expect(caught).toBeInstanceOf(VectorExtensionVersionError)
++    const versionError = caught as VectorExtensionVersionError
++    expect(versionError.found).toBe('0.6.2')
++    expect(versionError.required).toBe(MINIMUM_PGVECTOR_VERSION)
++    expect(versionError.message).toContain('0.6.2')
++    expect(versionError.message).toContain(MINIMUM_PGVECTOR_VERSION)
++  })
++
++  test('habilitada con versión compatible: devuelve versión y esquema de la extensión', () => {
++    const state = { availableVersion: '0.8.6', installed: { version: '0.8.6', schema: 'extensions' } }
++    expect(assertVectorExtensionUsable(state)).toEqual({ version: '0.8.6', schema: 'extensions' })
++  })
++
++  test('la mínima exacta es compatible', () => {
++    const state = { availableVersion: MINIMUM_PGVECTOR_VERSION, installed: { version: MINIMUM_PGVECTOR_VERSION, schema: 'public' } }
++    expect(assertVectorExtensionUsable(state).version).toBe(MINIMUM_PGVECTOR_VERSION)
++  })
++})
++
++describe('compareVersions', () => {
++  test('compara por segmento numérico, no como texto', () => {
++    expect(compareVersions('0.10.0', '0.7.0')).toBeGreaterThan(0)
++    expect(compareVersions('0.7.0', '0.7.0')).toBe(0)
++    expect(compareVersions('0.7', '0.7.0')).toBe(0)
++    expect(compareVersions('0.6.2', '0.7.0')).toBeLessThan(0)
++  })
++
++  test('una versión ilegible rehúsa en vez de compararse como cero', () => {
++    expect(() => compareVersions('0.x', '0.7.0')).toThrow(/0\.x/)
++  })
++})
+diff --git a/src/packages/semantic-search/__tests__/rerank.test.ts b/src/packages/semantic-search/__tests__/rerank.test.ts
+new file mode 100644
+index 000000000..9694ffd51
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/rerank.test.ts
+@@ -0,0 +1,27 @@
++/** El reranking matemático por coseno, sin servidor. */
++import { describe, expect, test } from 'bun:test'
++
++import { cosineSimilarity, rerankByCosine } from '../rerank.ts'
++
++describe('cosineSimilarity', () => {
++  test('vectores paralelos dan 1, opuestos -1, ortogonales 0', () => {
++    expect(cosineSimilarity([1, 2], [2, 4])).toBeCloseTo(1, 10)
++    expect(cosineSimilarity([1, 2], [-1, -2])).toBeCloseTo(-1, 10)
++    expect(cosineSimilarity([1, 0], [0, 3])).toBe(0)
++  })
++
++  test('un vector de norma cero da 0, no NaN', () => {
++    expect(cosineSimilarity([0, 0], [1, 1])).toBe(0)
++  })
++})
++
++describe('rerankByCosine', () => {
++  test('ordena de mayor a menor similitud y corta en k', () => {
++    const candidates = [
++      { embedding: [0, 1], item: 'ortogonal' },
++      { embedding: [1, 0.1], item: 'cercano' },
++      { embedding: [-1, 0], item: 'opuesto' },
++    ]
++    expect(rerankByCosine([1, 0], candidates, 2).map(result => result.item)).toEqual(['cercano', 'ortogonal'])
++  })
++})
+diff --git a/src/packages/semantic-search/__tests__/store.postgres.test.ts b/src/packages/semantic-search/__tests__/store.postgres.test.ts
+new file mode 100644
+index 000000000..7f9501f0b
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/store.postgres.test.ts
+@@ -0,0 +1,274 @@
++/**
++ * El store contra un PostgreSQL real con pgvector: migraciones, idempotencia,
++ * otra URL hacia la misma base, reapertura tras cerrar, y las dos búsquedas.
++ *
++ * Corre contra `THYROX_TEST_POSTGRES_URL`, cada caso en un esquema de usar y
++ * tirar (`withDisposableSchema`) cuyo nombre se lee de la conexión y se pasa
++ * al store como su esquema: el store abre su propia conexión por URL, como en
++ * uso real. Sin la variable, la suite se declara NO MEDIDA en vez de pasar.
++ */
++import type { SQL } from 'bun'
++import { describe, expect, test } from 'bun:test'
++
++import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
++
++import type { SchemaConfig } from '../config.ts'
++import { MINIMUM_PGVECTOR_VERSION, VectorExtensionVersionError } from '../extension.ts'
++import { openSemanticSearchStore, type SemanticSearchStore } from '../store.ts'
++import { binaryCandidatesQuery, BINARY_INDEX_NAME, EMBEDDINGS_TABLE, MIGRATIONS_TABLE } from '../vectorSql.ts'
++
++const url = resolvePostgresTestUrl()
++const DIMENSIONS = 4
++
++/**
++ * El conjunto conocido: con la consulta [1,1,1,1], el orden por distancia de
++ * Hamming de la cuantización binaria (y:0, x:1, w:2, z:4) y el orden por coseno
++ * exacto (x:0.866, y:0.503, w:0, z:-1) difieren en las dos primeras
++ * posiciones, así que sólo el reranking exacto da [x, y].
++ */
++const QUERY = [1, 1, 1, 1]
++const KNOWN_SET: Record<string, number[]> = {
++  x: [1, 1, 1, -0.01],
++  y: [5, 0.01, 0.01, 0.01],
++  w: [1, 1, -1, -1],
++  z: [-1, -1, -1, -1],
++}
++
++function cosine(left: number[], right: number[]): number {
++  const dot = left.reduce((sum, value, index) => sum + value * (right[index] ?? 0), 0)
++  const norm = (vector: number[]): number => Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0))
++  return dot / (norm(left) * norm(right))
++}
++
++/**
++ * Otra URL hacia la misma base: cambia el alias de loopback del host si lo
++ * es, y si no añade un `application_name`. Se deriva de la URL declarada, sin
++ * suponer dónde vive el servidor.
++ */
++function alternateUrl(original: string): string {
++  const parsed = new URL(original)
++  const loopbackAliases: Record<string, string> = { '127.0.0.1': 'localhost', localhost: '127.0.0.1' }
++  const alias = loopbackAliases[parsed.hostname]
++  if (alias) parsed.hostname = alias
++  else parsed.searchParams.set('application_name', 'thyrox_semantic_search_alternate')
++  return parsed.toString()
++}
++
++async function currentSchema(sql: SQL): Promise<string> {
++  const [row] = (await sql.unsafe('SELECT current_schema() AS name')) as { name: string }[]
++  if (!row) throw new Error('current_schema() returned no row')
++  return row.name
++}
++
++function schemaConfig(name: string, representation: SchemaConfig['representation'] = 'vector'): SchemaConfig {
++  return { name, dimensions: DIMENSIONS, representation }
++}
++
++async function withStore(storeUrl: string, body: (store: SemanticSearchStore, sql: SQL, schema: string) => Promise<void>): Promise<void> {
++  await withDisposableSchema(storeUrl, async sql => {
++    const schema = await currentSchema(sql)
++    const store = openSemanticSearchStore({ url: storeUrl, schema: schemaConfig(schema) })
++    try {
++      await body(store, sql, schema)
++    } finally {
++      await store.close()
++    }
++  })
++}
++
++async function seedKnownSet(store: SemanticSearchStore): Promise<void> {
++  for (const [id, embedding] of Object.entries(KNOWN_SET)) await store.upsertEmbedding(id, embedding, { label: id })
++}
++
++if (!url) {
++  describe('SemanticSearchStore — postgres', () => {
++    test.skip('NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo', () => {})
++  })
++} else {
++  const testUrl = url
++
++  describe('SemanticSearchStore — migraciones', () => {
++    test('con pgvector compatible crea la tabla, la columna vectorial, el índice binario y el ledger', async () => {
++      await withStore(testUrl, async (store, sql, schema) => {
++        expect(await store.migrateVectorSchema()).toEqual([1])
++        const [column] = (await sql.unsafe(
++          `SELECT format_type(a.atttypid, a.atttypmod) AS type FROM pg_attribute a
++             JOIN pg_class c ON c.oid = a.attrelid JOIN pg_namespace n ON n.oid = c.relnamespace
++            WHERE n.nspname = $1 AND c.relname = $2 AND a.attname = 'embedding'`,
++          [schema, EMBEDDINGS_TABLE],
++        )) as { type: string }[]
++        const extension = await store.vectorExtension()
++        expect(column?.type).toBe(`${extension.schema}.vector(${DIMENSIONS})`)
++        const indexes = (await sql.unsafe('SELECT indexname, indexdef FROM pg_indexes WHERE schemaname = $1 AND tablename = $2', [
++          schema,
++          EMBEDDINGS_TABLE,
++        ])) as { indexname: string; indexdef: string }[]
++        const binaryIndex = indexes.find(index => index.indexname === BINARY_INDEX_NAME)
++        expect(binaryIndex?.indexdef).toContain('USING hnsw')
++        expect(binaryIndex?.indexdef).toContain('bit_hamming_ops')
++        expect(binaryIndex?.indexdef).toContain(`binary_quantize(embedding))::bit(${DIMENSIONS})`)
++        const ledger = (await sql.unsafe(`SELECT version FROM ${MIGRATIONS_TABLE}`)) as { version: number }[]
++        expect(ledger.map(row => row.version)).toEqual([1])
++      })
++    })
++
++    test('la segunda ejecución es idempotente: no aplica nada ni duplica índices', async () => {
++      await withStore(testUrl, async (store, sql, schema) => {
++        await store.migrateVectorSchema()
++        expect(await store.migrateVectorSchema()).toEqual([])
++        const [count] = (await sql.unsafe('SELECT count(*)::int AS n FROM pg_indexes WHERE schemaname = $1 AND tablename = $2', [
++          schema,
++          EMBEDDINGS_TABLE,
++        ])) as { n: number }[]
++        expect(count?.n).toBe(2)
++      })
++    })
++
++    test('con halfvec la columna es halfvec(N) y el embedding vuelve igual', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        const store = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema, 'halfvec') })
++        try {
++          await store.migrateVectorSchema()
++          await store.upsertEmbedding('h', [0.5, -1, 2, 0.25], {})
++          expect((await store.getEmbedding('h'))?.embedding).toEqual([0.5, -1, 2, 0.25])
++          const [column] = (await sql.unsafe(
++            `SELECT format_type(atttypid, atttypmod) AS type FROM pg_attribute WHERE attrelid = to_regclass($1) AND attname = 'embedding'`,
++            [EMBEDDINGS_TABLE],
++          )) as { type: string }[]
++          const extension = await store.vectorExtension()
++          expect(column?.type).toBe(`${extension.schema}.halfvec(${DIMENSIONS})`)
++        } finally {
++          await store.close()
++        }
++      })
++    })
++
++    test('otra dimensión sobre un esquema ya migrado rehúsa por procedencia, no altera la tabla', async () => {
++      await withStore(testUrl, async (store, _sql, schema) => {
++        await store.migrateVectorSchema()
++        const wider = openSemanticSearchStore({ url: testUrl, schema: { name: schema, dimensions: DIMENSIONS + 1, representation: 'vector' } })
++        try {
++          await expect(wider.migrateVectorSchema()).rejects.toThrow(/vector\(4\)|vector\(5\)/)
++        } finally {
++          await wider.close()
++        }
++      })
++    })
++
++    test('con versión insuficiente (doble de la consulta) rehúsa con las dos versiones y no crea nada', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        const probeExtension = async (): Promise<{ availableVersion: string; installed: { version: string; schema: string } }> => ({
++          availableVersion: '0.6.2',
++          installed: { version: '0.6.2', schema: 'public' },
++        })
++        const store = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema) }, { probeExtension })
++        try {
++          const rejection = store.migrateVectorSchema()
++          await expect(rejection).rejects.toBeInstanceOf(VectorExtensionVersionError)
++          await expect(rejection).rejects.toThrow(new RegExp(`0\\.6\\.2.*${MINIMUM_PGVECTOR_VERSION.replaceAll('.', '\\.')}`))
++          const [found] = (await sql.unsafe('SELECT to_regclass($1) IS NOT NULL AS found', [MIGRATIONS_TABLE])) as { found: boolean }[]
++          expect(found?.found).toBe(false)
++        } finally {
++          await store.close()
++        }
++      })
++    })
++  })
++
++  describe('SemanticSearchStore — conexión y persistencia', () => {
++    test('otra URL hacia la misma base abre el mismo store sin cambiar código', async () => {
++      const otherUrl = alternateUrl(testUrl)
++      expect(otherUrl).not.toBe(testUrl)
++      await withStore(testUrl, async (store, _sql, schema) => {
++        await store.migrateVectorSchema()
++        await store.upsertEmbedding('a', [1, 2, 3, 4], { origin: 'first-url' })
++        const other = openSemanticSearchStore({ url: otherUrl, schema: schemaConfig(schema) })
++        try {
++          expect(await other.migrateVectorSchema()).toEqual([])
++          expect(await other.getEmbedding('a')).toEqual({ id: 'a', embedding: [1, 2, 3, 4], metadata: { origin: 'first-url' } })
++        } finally {
++          await other.close()
++        }
++      })
++    })
++
++    test('cerrar el store y abrir uno nuevo con la misma URL conserva lo escrito', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        const first = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema) })
++        await first.migrateVectorSchema()
++        await first.upsertEmbedding('kept', [0, 1, 0, 1], { note: 'survives' })
++        await first.close()
++        const recreated = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema) })
++        try {
++          expect(await recreated.getEmbedding('kept')).toEqual({ id: 'kept', embedding: [0, 1, 0, 1], metadata: { note: 'survives' } })
++          expect(await recreated.getEmbedding('missing')).toBeNull()
++        } finally {
++          await recreated.close()
++        }
++      })
++    })
++
++    test('upsert sobre el mismo id reemplaza embedding y metadata', async () => {
++      await withStore(testUrl, async store => {
++        await store.migrateVectorSchema()
++        await store.upsertEmbedding('u', [1, 0, 0, 0], { v: 1 })
++        await store.upsertEmbedding('u', [0, 0, 0, 1], { v: 2 })
++        expect(await store.getEmbedding('u')).toEqual({ id: 'u', embedding: [0, 0, 0, 1], metadata: { v: 2 } })
++      })
++    })
++  })
++
++  describe('SemanticSearchStore — búsqueda', () => {
++    test('searchBinaryCandidates ordena por distancia de Hamming de la cuantización binaria', async () => {
++      await withStore(testUrl, async store => {
++        await store.migrateVectorSchema()
++        await seedKnownSet(store)
++        expect(await store.searchBinaryCandidates(QUERY, 4)).toEqual([
++          { id: 'y', hammingDistance: 0 },
++          { id: 'x', hammingDistance: 1 },
++          { id: 'w', hammingDistance: 2 },
++          { id: 'z', hammingDistance: 4 },
++        ])
++      })
++    })
++
++    // CONTROL: sin el reranking exacto, el orden sería el de Hamming: [y, x].
++    test('searchNearest reordena los candidatos por coseno exacto', async () => {
++      await withStore(testUrl, async store => {
++        await store.migrateVectorSchema()
++        await seedKnownSet(store)
++        const nearest = await store.searchNearest(QUERY, 2, { candidates: 4 })
++        expect(nearest.map(result => result.id)).toEqual(['x', 'y'])
++        expect(nearest[0]?.similarity).toBeCloseTo(cosine(QUERY, KNOWN_SET.x ?? []), 5)
++        expect(nearest[0]?.metadata).toEqual({ label: 'x' })
++      })
++    })
++
++    test('searchBinaryCandidates usa el índice HNSW binario (EXPLAIN)', async () => {
++      await withStore(testUrl, async (store, sql) => {
++        await store.migrateVectorSchema()
++        await seedKnownSet(store)
++        const extension = await store.vectorExtension()
++        const plan = await sql.begin(async tx => {
++          await tx.unsafe('SET LOCAL enable_seqscan = off')
++          return (await tx.unsafe(`EXPLAIN ${binaryCandidatesQuery(extension.schema, schemaConfig('unused'))}`, [
++            JSON.stringify(QUERY),
++            4,
++          ])) as { 'QUERY PLAN': string }[]
++        })
++        expect(plan.map(row => row['QUERY PLAN']).join('\n')).toContain(BINARY_INDEX_NAME)
++      })
++    })
++
++    test('una consulta de otra dimensión se rechaza nombrando las dos', async () => {
++      await withStore(testUrl, async store => {
++        await store.migrateVectorSchema()
++        await expect(store.searchNearest([1, 2], 1, { candidates: 2 })).rejects.toThrow(/2 dimensions.*4/)
++        await expect(store.upsertEmbedding('bad', [1, 2, 3], {})).rejects.toThrow(/3 dimensions.*4/)
++      })
++    })
++  })
++}
+diff --git a/src/packages/semantic-search/bunfig.toml b/src/packages/semantic-search/bunfig.toml
+new file mode 100644
+index 000000000..51b90dff6
+--- /dev/null
++++ b/src/packages/semantic-search/bunfig.toml
+@@ -0,0 +1,5 @@
++# `bun test` lee sólo el bunfig del cwd: sin este archivo, una suite corrida
++# desde el paquete no pasaría por los grifos de la raíz y escribiría en el
++# store versionado. Los preloads son los mismos, en el mismo orden.
++[test]
++preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]
+diff --git a/src/packages/semantic-search/config.ts b/src/packages/semantic-search/config.ts
+new file mode 100644
+index 000000000..8e7cf9cdd
+--- /dev/null
++++ b/src/packages/semantic-search/config.ts
+@@ -0,0 +1,97 @@
++/**
++ * La configuración del store de búsqueda semántica: la URL como único
++ * contrato de conexión y el esquema vectorial (nombre, dimensión y
++ * representación). Ni la dimensión ni la representación tienen valor por
++ * defecto: dependen del modelo de embeddings, que el store no decide.
++ */
++import { dialectOf } from '@thyrox/store/sql.ts'
++
++/** La variable que declara la base del store en uso real. */
++export const SEMANTIC_SEARCH_DATABASE_URL_VAR = 'THYROX_SEMANTIC_SEARCH_DATABASE_URL'
++
++/** Representaciones que admite la columna vectorial. */
++export const REPRESENTATIONS = ['vector', 'halfvec'] as const
++export type Representation = (typeof REPRESENTATIONS)[number]
++
++/** El esquema vectorial: dónde viven las tablas y qué forma tiene cada embedding. */
++export type SchemaConfig = {
++  /** El esquema de PostgreSQL que aloja las tablas del store y su ledger. */
++  name: string
++  dimensions: number
++  representation: Representation
++}
++
++/**
++ * Identificador simple de PostgreSQL, sin comillas: el nombre del esquema se
++ * interpola en el DDL, así que sólo se acepta esta forma.
++ */
++const IDENTIFIER_PATTERN = /^[a-z_][a-z0-9_]{0,62}$/
++
++type Env = Record<string, string | undefined>
++
++/** La configuración no permite abrir el store; nunca se sustituye por otro motor. */
++export class SemanticSearchConfigError extends Error {
++  constructor(message: string) {
++    super(message)
++    this.name = 'SemanticSearchConfigError'
++  }
++}
++
++/** Un embedding con otra dimensión que la del esquema. */
++export class EmbeddingDimensionError extends Error {
++  constructor(
++    readonly received: number,
++    readonly expected: number,
++  ) {
++    super(`embedding has ${received} dimensions; the schema declares ${expected}`)
++    this.name = 'EmbeddingDimensionError'
++  }
++}
++
++function maskCredentials(url: string): string {
++  return url.replace(/\/\/[^@/]*@/, '//***@')
++}
++
++/**
++ * La URL del store en uso real. Sin la variable rehúsa: no hay base por
++ * defecto, ni local ni en memoria.
++ */
++export function resolveSemanticSearchDatabaseUrl(env: Env = process.env): string {
++  const raw = env[SEMANTIC_SEARCH_DATABASE_URL_VAR]?.trim()
++  if (!raw) throw new SemanticSearchConfigError(`${SEMANTIC_SEARCH_DATABASE_URL_VAR} is not set: the semantic search store needs a PostgreSQL URL`)
++  return validateStoreUrl(raw)
++}
++
++/** Acepta sólo una URL de PostgreSQL; `sqlite:`/`file:` rehúsan en vez de degradar. */
++export function validateStoreUrl(url: string): string {
++  if (dialectOf(url) !== 'postgres') {
++    throw new SemanticSearchConfigError(
++      `semantic search store requires a PostgreSQL URL (postgres:// or postgresql://), got '${maskCredentials(url)}'`,
++    )
++  }
++  return url
++}
++
++function isPositiveInteger(value: number): boolean {
++  return Number.isInteger(value) && value > 0
++}
++
++/** Valida el esquema vectorial antes de interpolarlo en ningún DDL. */
++export function validateSchemaConfig(config: SchemaConfig): SchemaConfig {
++  if (!IDENTIFIER_PATTERN.test(config.name)) {
++    throw new SemanticSearchConfigError(`invalid schema name '${config.name}': expected a simple identifier matching ${IDENTIFIER_PATTERN}`)
++  }
++  if (!isPositiveInteger(config.dimensions)) {
++    throw new SemanticSearchConfigError(`invalid dimensions ${config.dimensions}: expected a positive integer`)
++  }
++  if (!(REPRESENTATIONS as readonly string[]).includes(config.representation)) {
++    throw new SemanticSearchConfigError(`invalid representation '${config.representation}': expected one of ${REPRESENTATIONS.join(', ')}`)
++  }
++  return config
++}
++
++/** Rechaza un embedding de otra dimensión, o con un componente no finito. */
++export function validateEmbedding(embedding: readonly number[], dimensions: number): void {
++  if (embedding.length !== dimensions) throw new EmbeddingDimensionError(embedding.length, dimensions)
++  if (!embedding.every(Number.isFinite)) throw new SemanticSearchConfigError('embedding components must be finite numbers')
++}
+diff --git a/src/packages/semantic-search/extension.ts b/src/packages/semantic-search/extension.ts
+new file mode 100644
+index 000000000..5dbacd3a5
+--- /dev/null
++++ b/src/packages/semantic-search/extension.ts
+@@ -0,0 +1,115 @@
++/**
++ * La comprobación de pgvector que precede a toda migración y consulta del
++ * store. El store NO administra la extensión —no ejecuta `CREATE EXTENSION`—:
++ * detecta su estado y distingue tres condiciones con errores propios, sin
++ * prescribir un remedio, porque quién la habilita y cómo depende de la
++ * instalación o del servicio gestionado.
++ */
++import type { SQL } from 'bun'
++
++/**
++ * La versión mínima de pgvector que el store exige. Es 0.7.0 porque es la
++ * primera que trae las tres capacidades que el store usa: el tipo `halfvec`,
++ * la función `binary_quantize` y la clase de operadores HNSW
++ * `bit_hamming_ops`. Medido en el paquete instalado: las tres aparecen por
++ * primera vez en `vector--0.6.2--0.7.0.sql`. No se iguala a la instalada
++ * (0.8.6 en la base de pruebas): subirla sin una capacidad nueva que la exija
++ * rechazaría servidores válidos.
++ */
++export const MINIMUM_PGVECTOR_VERSION = '0.7.0'
++
++const EXTENSION_NAME = 'vector'
++
++/** Lo que el servidor y la base declaran sobre pgvector, leído sin interpretar. */
++export type VectorExtensionState = {
++  /** La versión por defecto que el servidor ofrece, o `null` si no la ofrece. */
++  availableVersion: string | null
++  /** La extensión habilitada en la base, o `null` si no lo está. */
++  installed: { version: string; schema: string } | null
++}
++
++/** La extensión utilizable: su versión efectiva y el esquema donde viven sus objetos. */
++export type UsableVectorExtension = { version: string; schema: string }
++
++/** La lectura del estado de pgvector; se sustituye en pruebas por un doble. */
++export type VectorExtensionProbe = (sql: SQL) => Promise<VectorExtensionState>
++
++/** pgvector no está disponible en el servidor: falta en la infraestructura. */
++export class VectorExtensionUnavailableError extends Error {
++  readonly code = 'pgvector-unavailable'
++
++  constructor() {
++    super(`PostgreSQL server does not offer the '${EXTENSION_NAME}' extension (pg_available_extensions): infrastructure without pgvector`)
++    this.name = 'VectorExtensionUnavailableError'
++  }
++}
++
++/** pgvector está disponible en el servidor pero no habilitada en esta base. */
++export class VectorExtensionNotEnabledError extends Error {
++  readonly code = 'pgvector-not-enabled'
++
++  constructor(readonly availableVersion: string) {
++    super(
++      `extension '${EXTENSION_NAME}' ${availableVersion} is available on the server but not enabled in this database (pg_extension): ` +
++        'the database needs provisioning; this store does not enable extensions',
++    )
++    this.name = 'VectorExtensionNotEnabledError'
++  }
++}
++
++/** pgvector está habilitada con una versión menor que la mínima. */
++export class VectorExtensionVersionError extends Error {
++  readonly code = 'pgvector-version'
++
++  constructor(
++    readonly found: string,
++    readonly required: string,
++  ) {
++    super(`extension '${EXTENSION_NAME}' is enabled at version ${found}; this store requires ${required} or newer`)
++    this.name = 'VectorExtensionVersionError'
++  }
++}
++
++function versionSegments(version: string): number[] {
++  const segments = version.split('.')
++  const allNumeric = segments.every(segment => /^\d+$/.test(segment))
++  if (!allNumeric) throw new Error(`unreadable extension version '${version}': expected dot-separated integers`)
++  return segments.map(Number)
++}
++
++/** Compara dos versiones por segmento numérico; un segmento ausente cuenta como 0. */
++export function compareVersions(left: string, right: string): number {
++  const leftSegments = versionSegments(left)
++  const rightSegments = versionSegments(right)
++  const length = Math.max(leftSegments.length, rightSegments.length)
++  for (let index = 0; index < length; index++) {
++    const difference = (leftSegments[index] ?? 0) - (rightSegments[index] ?? 0)
++    if (difference !== 0) return difference
++  }
++  return 0
++}
++
++/**
++ * Decide, en el orden fijo —disponible en el servidor, habilitada en la base,
++ * versión efectiva—, si pgvector es utilizable, y lanza el error de la
++ * primera condición que falla.
++ */
++export function assertVectorExtensionUsable(state: VectorExtensionState): UsableVectorExtension {
++  if (state.availableVersion === null && state.installed === null) throw new VectorExtensionUnavailableError()
++  if (state.installed === null) throw new VectorExtensionNotEnabledError(state.availableVersion ?? 'unknown')
++  const isTooOld = compareVersions(state.installed.version, MINIMUM_PGVECTOR_VERSION) < 0
++  if (isTooOld) throw new VectorExtensionVersionError(state.installed.version, MINIMUM_PGVECTOR_VERSION)
++  return state.installed
++}
++
++/** Lee el estado de pgvector de los catálogos del servidor y de la base. */
++export async function readVectorExtensionState(sql: SQL): Promise<VectorExtensionState> {
++  const [available] = (await sql.unsafe('SELECT default_version FROM pg_available_extensions WHERE name = $1', [EXTENSION_NAME])) as {
++    default_version: string
++  }[]
++  const [installed] = (await sql.unsafe(
++    'SELECT e.extversion AS version, n.nspname AS schema FROM pg_extension e JOIN pg_namespace n ON n.oid = e.extnamespace WHERE e.extname = $1',
++    [EXTENSION_NAME],
++  )) as { version: string; schema: string }[]
++  return { availableVersion: available?.default_version ?? null, installed: installed ?? null }
++}
+diff --git a/src/packages/semantic-search/package.json b/src/packages/semantic-search/package.json
+new file mode 100644
+index 000000000..7011c284a
+--- /dev/null
++++ b/src/packages/semantic-search/package.json
+@@ -0,0 +1,17 @@
++{
++  "name": "@thyrox/semantic-search",
++  "version": "0.1.0",
++  "private": true,
++  "type": "module",
++  "description": "Store de búsqueda semántica sobre PostgreSQL + pgvector: esquema vectorial, escritura y consultas por candidatos binarios con reranking por coseno exacto.",
++  "exports": {
++    "./*.ts": {
++      "@thyrox/source": "./*.ts",
++      "types": "./dist/*.d.ts",
++      "default": "./*.ts"
++    }
++  },
++  "dependencies": {
++    "@thyrox/store": "0.1.0"
++  }
++}
+diff --git a/src/packages/semantic-search/rerank.ts b/src/packages/semantic-search/rerank.ts
+new file mode 100644
+index 000000000..e225027f1
+--- /dev/null
++++ b/src/packages/semantic-search/rerank.ts
+@@ -0,0 +1,35 @@
++/**
++ * El reranking matemático del store: reordena candidatos por similitud de
++ * coseno exacta contra la consulta. El reranking por modelo no es del store:
++ * es del worker que consume sus resultados.
++ */
++
++/** Un candidato con su vector completo, tal como sale de la búsqueda binaria. */
++export type RerankCandidate<T> = { embedding: readonly number[]; item: T }
++
++/** Un resultado reordenado, con su similitud de coseno. */
++export type Reranked<T> = { item: T; similarity: number }
++
++function norm(vector: readonly number[]): number {
++  return Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0))
++}
++
++/**
++ * Similitud de coseno. Un vector de norma cero no tiene dirección: su
++ * similitud con cualquier otro se define como 0, en lugar de un NaN que
++ * rompería el orden.
++ */
++export function cosineSimilarity(left: readonly number[], right: readonly number[]): number {
++  const normProduct = norm(left) * norm(right)
++  if (normProduct === 0) return 0
++  const dot = left.reduce((sum, value, index) => sum + value * (right[index] ?? 0), 0)
++  return dot / normProduct
++}
++
++/** Los `k` candidatos de mayor similitud de coseno con `query`, de mayor a menor. */
++export function rerankByCosine<T>(query: readonly number[], candidates: readonly RerankCandidate<T>[], k: number): Reranked<T>[] {
++  return candidates
++    .map(candidate => ({ item: candidate.item, similarity: cosineSimilarity(query, candidate.embedding) }))
++    .sort((left, right) => right.similarity - left.similarity)
++    .slice(0, k)
++}
+diff --git a/src/packages/semantic-search/store.ts b/src/packages/semantic-search/store.ts
+new file mode 100644
+index 000000000..95b41ebcf
+--- /dev/null
++++ b/src/packages/semantic-search/store.ts
+@@ -0,0 +1,156 @@
++/**
++ * `SemanticSearchStore` (ADR-THYROX-008): el store de dominio vectorial sobre
++ * PostgreSQL + pgvector. Abre, migra, lee y escribe; no tiene ciclo de vida
++ * de servidor ni de worker, y su único contrato de conexión es una URL.
++ *
++ * Nunca degrada: una URL que no es de PostgreSQL rehúsa al abrir, y sin
++ * pgvector utilizable rehúsa cada operación con el error de su estado —no
++ * cae a SQLite ni a búsqueda lineal—.
++ *
++ * La conexión fija el esquema del store como `search_path` en el arranque de
++ * cada conexión del pool, no con un `SET` suelto: `Bun.SQL` es un pool y un
++ * `SET` llega a una sola conexión (medido en `@thyrox/store`,
++ * `testing/postgresTestSchema.ts`). `openByUrl` de `@thyrox/store` no acepta
++ * opciones de conexión, por eso la URL se valida con su `dialectOf` y la
++ * conexión se construye aquí.
++ */
++import { SQL } from 'bun'
++
++import { runMigrations, type Migration } from '@thyrox/store/migrations.ts'
++import { readJson } from '@thyrox/store/sql.ts'
++
++import { type SchemaConfig, validateEmbedding, validateSchemaConfig, validateStoreUrl } from './config.ts'
++import {
++  assertVectorExtensionUsable,
++  readVectorExtensionState,
++  type UsableVectorExtension,
++  type VectorExtensionProbe,
++} from './extension.ts'
++import { rerankByCosine } from './rerank.ts'
++import {
++  binaryCandidatesQuery,
++  createEmbeddingsStatements,
++  getEmbeddingQuery,
++  migrationName,
++  MIGRATIONS_TABLE,
++  upsertQuery,
++} from './vectorSql.ts'
++
++export type Metadata = Record<string, unknown>
++
++/** Un embedding guardado. */
++export type StoredEmbedding = { id: string; embedding: number[]; metadata: Metadata }
++
++/** Un candidato de la búsqueda binaria, con su distancia de Hamming. */
++export type BinaryCandidate = { id: string; hammingDistance: number }
++
++/** Un resultado de `searchNearest`, reordenado por coseno exacto. */
++export type NearestResult = { id: string; similarity: number; metadata: Metadata }
++
++export type SemanticSearchStoreOptions = { url: string; schema: SchemaConfig }
++
++export type SemanticSearchStoreDeps = {
++  /** Sustituye la lectura del estado de pgvector — para probar rechazos sin degradar el servidor. */
++  probeExtension?: VectorExtensionProbe
++}
++
++export type SemanticSearchStore = {
++  /** Comprueba pgvector y aplica la migración del esquema si falta; devuelve las versiones aplicadas ahora. */
++  migrateVectorSchema(): Promise<number[]>
++  upsertEmbedding(id: string, embedding: readonly number[], metadata: Metadata): Promise<void>
++  getEmbedding(id: string): Promise<StoredEmbedding | null>
++  searchBinaryCandidates(query: readonly number[], limit: number): Promise<BinaryCandidate[]>
++  searchNearest(query: readonly number[], k: number, options: { candidates: number }): Promise<NearestResult[]>
++  /** La extensión utilizable (versión y esquema), comprobada una vez por store. */
++  vectorExtension(): Promise<UsableVectorExtension>
++  close(): Promise<void>
++}
++
++type CandidateRow = { id: string; embedding: string; metadata: unknown; hamming_distance: number }
++type EmbeddingRow = { id: string; embedding: string; metadata: unknown }
++
++const SCHEMA_VERSION = 1
++
++function parseVectorText(text: string): number[] {
++  return JSON.parse(text) as number[]
++}
++
++function vectorLiteral(embedding: readonly number[]): string {
++  return JSON.stringify(embedding)
++}
++
++function assertPositiveCount(name: string, value: number): void {
++  if (!Number.isInteger(value) || value <= 0) throw new RangeError(`${name} must be a positive integer, got ${value}`)
++}
++
++function vectorMigration(extension: UsableVectorExtension, config: SchemaConfig): Migration {
++  const statements = createEmbeddingsStatements(extension.schema, config)
++  return { version: SCHEMA_VERSION, name: migrationName(config), statements: { postgres: statements, sqlite: [] } }
++}
++
++/**
++ * Abre el store sobre la URL declarada. No conecta todavía: la primera
++ * operación comprueba pgvector y conecta.
++ */
++export function openSemanticSearchStore(options: SemanticSearchStoreOptions, deps: SemanticSearchStoreDeps = {}): SemanticSearchStore {
++  const url = validateStoreUrl(options.url)
++  const config = validateSchemaConfig(options.schema)
++  const probeExtension = deps.probeExtension ?? readVectorExtensionState
++  const sql = new SQL({ url, connection: { search_path: config.name } })
++  let extensionCheck: Promise<UsableVectorExtension> | undefined
++
++  function vectorExtension(): Promise<UsableVectorExtension> {
++    extensionCheck ??= probeExtension(sql).then(assertVectorExtensionUsable)
++    return extensionCheck
++  }
++
++  async function fetchCandidates(query: readonly number[], limit: number): Promise<CandidateRow[]> {
++    validateEmbedding(query, config.dimensions)
++    assertPositiveCount('limit', limit)
++    const extension = await vectorExtension()
++    return (await sql.unsafe(binaryCandidatesQuery(extension.schema, config), [vectorLiteral(query), limit])) as CandidateRow[]
++  }
++
++  return {
++    vectorExtension,
++
++    async migrateVectorSchema() {
++      const extension = await vectorExtension()
++      await sql.unsafe(`CREATE SCHEMA IF NOT EXISTS ${config.name}`)
++      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: [vectorMigration(extension, config)] })
++    },
++
++    async upsertEmbedding(id, embedding, metadata) {
++      validateEmbedding(embedding, config.dimensions)
++      const extension = await vectorExtension()
++      await sql.unsafe(upsertQuery(extension.schema, config), [id, vectorLiteral(embedding), JSON.stringify(metadata)])
++    },
++
++    async getEmbedding(id) {
++      await vectorExtension()
++      const [row] = (await sql.unsafe(getEmbeddingQuery(), [id])) as EmbeddingRow[]
++      if (!row) return null
++      return { id: row.id, embedding: parseVectorText(row.embedding), metadata: readJson(row.metadata) }
++    },
++
++    async searchBinaryCandidates(query, limit) {
++      const rows = await fetchCandidates(query, limit)
++      return rows.map(row => ({ id: row.id, hammingDistance: Number(row.hamming_distance) }))
++    },
++
++    async searchNearest(query, k, { candidates }) {
++      assertPositiveCount('k', k)
++      const rows = await fetchCandidates(query, candidates)
++      const ranked = rerankByCosine(
++        query,
++        rows.map(row => ({ embedding: parseVectorText(row.embedding), item: row })),
++        k,
++      )
++      return ranked.map(({ item, similarity }) => ({ id: item.id, similarity, metadata: readJson(item.metadata) }))
++    },
++
++    async close() {
++      await sql.close()
++    },
++  }
++}
+diff --git a/src/packages/semantic-search/tsconfig.build.json b/src/packages/semantic-search/tsconfig.build.json
+new file mode 100644
+index 000000000..d5933b9f1
+--- /dev/null
++++ b/src/packages/semantic-search/tsconfig.build.json
+@@ -0,0 +1,40 @@
++{
++  "compilerOptions": {
++    "declaration": true,
++    "emitDeclarationOnly": true,
++    "noEmit": false,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "rootDir": ".",
++    "outDir": "dist",
++    "paths": {
++      "@thyrox/semantic-search/*.ts": [
++        "./*.ts"
++      ]
++    }
++  },
++  "include": [
++    "**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}
+diff --git a/src/packages/semantic-search/tsconfig.test.json b/src/packages/semantic-search/tsconfig.test.json
+new file mode 100644
+index 000000000..de4a64e70
+--- /dev/null
++++ b/src/packages/semantic-search/tsconfig.test.json
+@@ -0,0 +1,19 @@
++{
++  "extends": "./tsconfig.build.json",
++  "compilerOptions": {
++    "noEmit": true,
++    "declaration": false,
++    "emitDeclarationOnly": false,
++    "rootDir": "."
++  },
++  "include": [
++    "**/*",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/__tests__/**/*"
++  ],
++  "exclude": [
++    "node_modules",
++    "dist"
++  ]
++}
+diff --git a/src/packages/semantic-search/vectorSql.ts b/src/packages/semantic-search/vectorSql.ts
+new file mode 100644
+index 000000000..7f6790383
+--- /dev/null
++++ b/src/packages/semantic-search/vectorSql.ts
+@@ -0,0 +1,78 @@
++/**
++ * El SQL vectorial del store: el DDL de su única migración y las consultas.
++ * Es el único sitio del árbol que escribe SQL de pgvector.
++ *
++ * Todo objeto de la extensión se califica con el esquema donde vive
++ * (`<ext>.vector`, `OPERATOR(<ext>.<~>)`, `<ext>.bit_hamming_ops`): la
++ * conexión sólo lleva el esquema del store en su `search_path`, y la
++ * extensión puede estar habilitada en cualquier otro —en un servicio
++ * gestionado no tiene por qué ser `public`—.
++ */
++import type { SchemaConfig } from './config.ts'
++
++export const EMBEDDINGS_TABLE = 'semantic_embeddings'
++export const MIGRATIONS_TABLE = 'semantic_search_migrations'
++export const BINARY_INDEX_NAME = 'semantic_embeddings_binary_hnsw'
++
++/** El tipo de la columna vectorial, calificado con el esquema de la extensión. */
++export function vectorType(extensionSchema: string, config: SchemaConfig): string {
++  return `${extensionSchema}.${config.representation}(${config.dimensions})`
++}
++
++/** La cuantización binaria de una expresión vectorial, idéntica en el índice y en la consulta. */
++function binaryQuantized(extensionSchema: string, expression: string, config: SchemaConfig): string {
++  return `(${extensionSchema}.binary_quantize(${expression})::bit(${config.dimensions}))`
++}
++
++/** La expresión de la consulta, recibida como literal de texto en `$1`. */
++function queryVector(extensionSchema: string, config: SchemaConfig): string {
++  return `$1::${vectorType(extensionSchema, config)}`
++}
++
++/**
++ * El nombre de la migración lleva la forma del embedding: abrir un esquema ya
++ * migrado con otra dimensión o representación choca con la procedencia del
++ * ledger en vez de alterar la tabla en silencio.
++ */
++export function migrationName(config: SchemaConfig): string {
++  return `create_embeddings_${config.representation}(${config.dimensions})`
++}
++
++/** El DDL de la tabla de embeddings y de su índice HNSW sobre la cuantización binaria. */
++export function createEmbeddingsStatements(extensionSchema: string, config: SchemaConfig): string[] {
++  return [
++    `CREATE TABLE ${EMBEDDINGS_TABLE} (
++       id TEXT PRIMARY KEY,
++       embedding ${vectorType(extensionSchema, config)} NOT NULL,
++       metadata JSONB NOT NULL,
++       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
++     )`,
++    `CREATE INDEX ${BINARY_INDEX_NAME} ON ${EMBEDDINGS_TABLE}
++       USING hnsw (${binaryQuantized(extensionSchema, 'embedding', config)} ${extensionSchema}.bit_hamming_ops)`,
++  ]
++}
++
++/** Inserta o reemplaza un embedding: `$1` id, `$2` vector como texto, `$3` metadata como JSON. */
++export function upsertQuery(extensionSchema: string, config: SchemaConfig): string {
++  return `INSERT INTO ${EMBEDDINGS_TABLE} (id, embedding, metadata, updated_at)
++          VALUES ($1, $2::${vectorType(extensionSchema, config)}, $3::jsonb, now())
++          ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding, metadata = EXCLUDED.metadata, updated_at = now()`
++}
++
++/** Lee un embedding por id: `$1` id. El vector vuelve como texto `[a,b,…]`. */
++export function getEmbeddingQuery(): string {
++  return `SELECT id, embedding::text AS embedding, metadata FROM ${EMBEDDINGS_TABLE} WHERE id = $1`
++}
++
++/**
++ * Los candidatos más cercanos por distancia de Hamming entre cuantizaciones
++ * binarias, ordenados por la misma expresión que indexa el HNSW para que el
++ * planificador pueda usarlo: `$1` consulta como texto, `$2` límite.
++ */
++export function binaryCandidatesQuery(extensionSchema: string, config: SchemaConfig): string {
++  const distance = `${binaryQuantized(extensionSchema, 'embedding', config)} OPERATOR(${extensionSchema}.<~>) ${binaryQuantized(extensionSchema, queryVector(extensionSchema, config), config)}`
++  return `SELECT id, embedding::text AS embedding, metadata, ${distance} AS hamming_distance
++            FROM ${EMBEDDINGS_TABLE}
++           ORDER BY ${distance}
++           LIMIT $2`
++}

@@ -1,0 +1,15 @@
+.env.example
+bun.lock
+src/packages/semantic-search/__tests__/config.test.ts
+src/packages/semantic-search/__tests__/extension.test.ts
+src/packages/semantic-search/__tests__/rerank.test.ts
+src/packages/semantic-search/__tests__/store.postgres.test.ts
+src/packages/semantic-search/bunfig.toml
+src/packages/semantic-search/config.ts
+src/packages/semantic-search/extension.ts
+src/packages/semantic-search/package.json
+src/packages/semantic-search/rerank.ts
+src/packages/semantic-search/store.ts
+src/packages/semantic-search/tsconfig.build.json
+src/packages/semantic-search/tsconfig.test.json
+src/packages/semantic-search/vectorSql.ts
