@@ -22,9 +22,18 @@ TASK-THYROX-0691  GpuMemoryBackend + ledger por dispositivo y por tipo (worker|r
                  │
       TASK-THYROX-0699  ModelScheduler + ExecutionGrant (residencia, concurrencia, dispositivo)
                  │
+      TASK-THYROX-0702  PodmanExecutionPrimitive materializa el grant (unidad de larga
+                 │       vida, dispositivos del grant, dueño de residencia)
+                 │
       ├── TASK-THYROX-0700  el proxy enruta por grant (N modelos)
-      └── TASK-THYROX-0701  OllamaAdapter: actuador restringido y reconciliado
+      ├── TASK-THYROX-0701  RuntimeAdapter de Ollama: traduce, no decide; se reconcilia
+      └── TASK-THYROX-0703  los runtimes se materializan por la primitiva (M2);
+                            espera la decisión de topología del ejecutor
 ```
 
 0697 y 0698 son disjuntos y van en paralelo por `headless-pool`; 0699 espera a
-0691 integrado; 0700 y 0701 esperan a 0699.
+0691 integrado; 0702 puede avanzar en paralelo a 0699 (no decide placement);
+0700, 0701 y 0703 esperan a 0699 y 0702. ADR-007 1.7.1 (`kaupamex-docs@e927fe1b9`)
+pone la primitiva entre el grant y el adapter: decisión → scheduler,
+autorización → grant, materialización → primitiva, adaptación → adapter,
+ejecución → runtime.
