@@ -19,3 +19,38 @@ escritura aunque `--help` no llegue a ejecutarlo (`rules-emit` rechaza
 `--help` sin emitir nada). Es una lista de candidatos, no un veredicto. El
 episodio que lo motivó sí es de conducta: `bin/install-hooks --help` corrió
 la instalación en vez de mostrar la ayuda.
+
+## Conducta de `--help`, medida (`probes/smoke_help.sh`)
+
+Cada envoltorio se corrió con `--help` en un montaje de sólo lectura
+(`unshare --mount`), con 20 s de plazo. Un intento de escritura aparece como
+EROFS en la salida. Resultado: `outputs/smoke_help.tsv`, 295 filas.
+
+| Medida | Cuántos |
+|---|---|
+| terminan en el plazo | 292 de 295 |
+| muestran una ayuda | 202 de 295 |
+| intentan escribir con `--help` | 6 de 295 |
+
+**No terminan (3).** `provider-anthropic-mock-server` es un servidor: no
+terminar es su conducta. `convert_broken_references` (exit 124) y
+`podman_capabilities` no tratan `--help` como ayuda; el segundo llegó a correr
+un contenedor.
+
+**Intentan escribir con `--help` (6).** `headless-pool` crea su lanzador en
+`.thyrox/runtime/launchers/` antes de leer los argumentos; `commands-emit` y
+`headless-sdk-generate-core-types` ignoran `--help` y corren su comparación;
+`detect_broken_references` y `fix_agent_frontmatter` mueren con un traceback;
+`podman_capabilities` ejecuta el contenedor. A esta lista se suma
+`install-hooks`, que con `--help` corrió la instalación (medido antes del
+barrido, sobre el clon real).
+
+Por tanto, a la pregunta «¿está correcto `bin/`?» la respuesta medida es:
+**al día sí (295 de 295); correcto no del todo**. Los destinos existen, pasan
+lint y typecheck, pero `--help` no es inerte en 7 envoltorios y 93 no muestran
+ayuda. Es el alcance de Empaquetado P6: un paquete publicado no puede tener
+una orden que escriba al pedir su ayuda.
+
+*Métrica:* código de salida, plazo y EROFS en la salida de `<bin> --help`.
+*Ciega a:* un envoltorio que escriba fuera de los árboles montados en sólo
+lectura, y uno que muestre ayuda y además haga algo más sin escribir.
