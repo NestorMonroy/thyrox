@@ -35,6 +35,19 @@ kaupamex-docs: vive sólo en el store y en ese banco.
 | 3 · infraestructura gestionada | PostgreSQL + pgvector (persistente, puede ser externo), Redis (compartido/efímero), Ollama (inferencia de larga vida), Podman como runtime; su dueño es el bootstrap de infraestructura (ADR-007 Regla 4, ADR-008 §Ámbito de vida) | **nueva, P12** |
 | 4 · servicios de thyrox | daemon, proxy local, fuentes de credencial, pool | **nueva, P13** |
 
+### La capa 3 en concreto, con lo que ya está medido
+
+| Servicio | Tarea | Lo que la instalación tiene que llevar |
+|---|---|---|
+| PostgreSQL + pgvector | TASK-THYROX-0562 (store), ADR-008 | una URL (`THYROX_SEMANTIC_SEARCH_DATABASE_URL`), la extensión habilitada por la infraestructura (el store sólo la verifica: tres estados), migraciones propias del store |
+| Redis | ADR-006 (modo `single`/varios proxies) | `THYROX_REDIS_URL` y `THYROX_PROXY_MODE`; contenedor `redis` ya declarado |
+| **Ollama** | **TASK-THYROX-0662** (Run Ollama as managed inference infrastructure) | imagen `docker.io/ollama/ollama:0.35.0` (5.5 GB, 89 s medidos); `--network host` con `OLLAMA_HOST` en loopback y la CA del proxy montada (medido: la red propia de Podman no alcanza el proxy); el modelo elegido por el benchmark CPU; la admisión de disco antes de bajar imagen y modelo (TASK-THYROX-0671); NVIDIA opcional por diseño; hoy **no está declarado** en `infrastructure.sh` |
+| Podman | ADR-007 | el runtime de los tres anteriores; `thyrox_toolchain_require_podman` |
+
+Límite operativo común (ADR-007): el entorno es efímero, así que cada
+reciclado recupera imágenes y modelos (5.5 GB de Ollama más su modelo); el
+techo de disco lo da la admisión de 0671, no el tamaño nominal del disco.
+
 **Qué NO decide este análisis** (es del ejecutor): si la instalación en
 producción *provisiona* la infraestructura o sólo *verifica* una ya dada
 (URL externa), y cómo se distribuye la credencial de PostgreSQL. ADR-008 ya
