@@ -1,0 +1,26 @@
+== decidir contra la base
+  FALLA y la base siguiente es el log del prefijo largo — esperado ['c.ts(1,1): error TS9001: bad 3.'], obtenido ['a.ts(1,1): error TS9001: bad 1.', 'b.ts(1,1): error TS9001: bad 2.', 'c.ts(1,1): error TS9001: bad 3.']
+  FALLA la base siguiente es la del último conservado — esperado ['b.ts(1,1): error TS9001: bad 2.', 'c.ts(1,1): error TS9001: bad 3.'], obtenido ['a.ts(1,1): error TS9001: bad 1.', 'b.ts(1,1): error TS9001: bad 2.', 'c.ts(1,1): error TS9001: bad 3.']
+  FALLA la mejora de u1 no se le acredita a u2 — esperado (['fix:a.ts'], 'accepted-net'), obtenido (['fix:a.ts', 'fix:b.ts'], 'accepted-net')
+test_prefix_speculation: 14 aserciones — 11 ok, 3 falla(s)
+== seguir tras un rechazo
+  FALLA u2 se decide contra el log de u1, no contra la base — esperado (['fix:a.ts'], 'rejected'), obtenido (['fix:a.ts', 'fix:c.ts'], 'rejected')
+  FALLA la base siguiente es la del último conservado — esperado ['b.ts(1,1): error TS9001: bad 2.', 'c.ts(1,1): error TS9001: bad 3.'], obtenido ['b.ts(1,1): error TS9002: worse.']
+  FALLA un primero rechazado no conserva nada y deja al resto sin decidir — esperado ([], ['fix:a.ts'], ['a.ts(1,1): error TS9001: bad 1.', 'b.ts(1,1): error TS9001: bad 2.', 'c.ts(1,1): error TS9001: bad 3.']), obtenido (['fix:a.ts'], ['fix:a.ts'], ['c.ts(1,1): error TS9001: bad 3.', 'b.ts(1,1): error TS9002: worse.'])
+test_prefix_speculation: 14 aserciones — 11 ok, 3 falla(s)
+== juntar archivos que se cruzan
+  FALLA un prefijo no junta dos unidades del mismo archivo — esperado ['fix:a.ts', 'fix:b.ts'], obtenido ['fix:a.ts', 'fix:a.ts#2', 'fix:b.ts']
+test_prefix_speculation: 14 aserciones — 13 ok, 1 falla(s)
+== no revertir los worktrees
+  FALLA y cada worktree vuelve a su texto — esperado [{'a.ts': 'const a = BAD1\n', 'b.ts': 'const b = BAD2\n', 'c.ts': 'const c = BAD3\n'}, {'a.ts': 'const a = BAD1\n', 'b.ts': 'const b = BAD2\n', 'c.ts': 'const c = BAD3\n'}], obtenido [{'a.ts': 'const a = 1\n', 'b.ts': 'const b = BAD2\n', 'c.ts': 'const c = BAD3\n'}, {'a.ts': 'const a = 1\n', 'b.ts': 'const b = WORSE\n', 'c.ts': 'const c = BAD3\n'}]
+== conservar sólo en el primer worktree
+  FALLA la ronda conserva lo aceptado en TODOS los worktrees — esperado ['const a = 1\n', 'const a = 1\n'], obtenido ['const a = 1\n', 'const a = BAD1\n']
+test_prefix_speculation: 14 aserciones — 13 ok, 1 falla(s)
+== no comprobar GNU Parallel
+== no revertir los worktrees
+  FALLA y cada worktree vuelve a su texto — esperado [{'a.ts': 'const a = BAD1\n', 'b.ts': 'const b = BAD2\n', 'c.ts': 'const c = BAD3\n'}, {'a.ts': 'const a = BAD1\n', 'b.ts': 'const b = BAD2\n', 'c.ts': 'const c = BAD3\n'}], obtenido [{'a.ts': 'const a = 1\n', 'b.ts': 'const b = BAD2\n', 'c.ts': 'const c = BAD3\n'}, {'a.ts': 'const a = 1\n', 'b.ts': 'const b = WORSE\n', 'c.ts': 'const c = BAD3\n'}]
+  FALLA y no deja lo rechazado — esperado ['const b = BAD2\n', 'const b = BAD2\n'], obtenido ['const b = BAD2\n', 'const b = WORSE\n']
+test_prefix_speculation: 14 aserciones — 12 ok, 2 falla(s)
+== no comprobar GNU Parallel
+  FALLA sin GNU Parallel rehúsa en vez de medir en serie a escondidas — esperado 'ParallelUnavailable', obtenido 'RuntimeError'
+test_prefix_speculation: 14 aserciones — 13 ok, 1 falla(s)

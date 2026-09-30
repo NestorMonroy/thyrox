@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts(55,41): error TS2307: Cannot find module '@thyrox/tool-registry/tools/REPLTool/REPLTool.js' or its corresponding type declarations.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts:45-65 ---
+     45  
+     46  /**
+     47   * ant 3848.js XI7 — replay REPL log so inner agent's vm.Script REPL
+     48   * state matches the parent's. ccb's REPLTool is a 1-line stub today
+     49   * (isEnabled:()=>false) so this no-ops; the path is wired so that
+     50   * once REPLTool gets a real impl, hydration becomes active.
+     51   */
+     52  export async function runReplHydration(rh: ReplHydration): Promise<void> {
+     53    try {
+     54      const { hydrateRepl } = await import('@thyrox/agent/replHydration.js')
+     55>     const REPLToolModule = await import('@thyrox/tool-registry/tools/REPLTool/REPLTool.js')
+     56      const replTool = (REPLToolModule as { REPLTool?: { isEnabled?: () => boolean } }).REPLTool
+     57      const isEnabled = (): boolean => {
+     58        if (!replTool) return false
+     59        const fn = replTool.isEnabled
+     60        return typeof fn === 'function' && fn() === true
+     61      }
+     62      const r = await hydrateRepl(rh, { isReplToolEnabled: isEnabled })
+     63      if (!r.skipped) {
+     64        logForDebugging(`[runAgent] REPL hydration: ${r.ok}/${r.attempted} ok (${r.drift} drift, ${r.threw} threw)`)
+     65      }

@@ -1,0 +1,10 @@
+== A sin admision por VRAM
+FALLA admision: sin VRAM para su pico el item no arranca — esperado 'items=1 ok=0 fallidos=1', obtenido 'items=1 ok=1 fallidos=0'
+FALLA admision: la causa queda en su .err — esperado '1', obtenido '0'
+FALLA VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4 — esperado '1', obtenido '0'
+aserciones: 65 de 68 · fallos: 3
+== B sin aplicar la anchura efectiva
+aserciones: 68 de 68 · fallos: 0
+== restaurado
+identico
+__BG_EXIT__=0

@@ -1,0 +1,7 @@
+(fail) deletePermissionRuleFromSettings — borrar la que existe > 12. borra por forma NORMALIZADA, no por cadena cruda
+(fail) getPermissionRulesForSource — de JSON a reglas > 1. lee los TRES comportamientos, no sólo permitir y denegar
+(fail) getPermissionRulesForSource — de JSON a reglas > 2. cada regla lleva su fuente y su valor ya parseado
+(fail) loadAllPermissionRulesFromDisk — todas las fuentes > 6. junta las reglas de varias fuentes
+(fail) persistPermissionUpdate — sólo los destinos con archivo detrás > 3. si TODOS los directorios ya estaban, no reescribe
+(fail) persistPermissionUpdate — sólo los destinos con archivo detrás > 4. quitar directorios deja los que no se nombraron
+(fail) persistPermissionUpdate — sólo los destinos con archivo detrás > 7. quitar reglas COMPARA NORMALIZADO, no por cadena cruda

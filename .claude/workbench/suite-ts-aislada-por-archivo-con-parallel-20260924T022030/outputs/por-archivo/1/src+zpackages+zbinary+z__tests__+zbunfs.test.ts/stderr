@@ -1,0 +1,22 @@
+
+src/packages/binary/__tests__/bunfs.test.ts:
+140 |     // Una build desconocida FALLA, no se salta. El salto seria un verde que no
+141 |     // discrimina «coincide» de «no lo mire» — y es justo la senal de frescura
+142 |     // que falto tres builds seguidas (2.1.250, 2.1.251, 2.1.258).
+143 |     expect(
+144 |       esperado ?? `build ${version} sin medir — anadir su fila a MEASURED tras extraerla`,
+145 |     ).toBeObject()
+            ^
+error: expect(received).toBeObject()
+
+Expected value to be an object
+
+Received: "build 2.1.281 sin medir — anadir su fila a MEASURED tras extraerla"
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/bunfs.test.ts:145:7)
+(fail) fidelidad contra la build medida > las cifras de la build viva coinciden con las medidas [153.22ms]
+
+ 10 pass
+ 1 fail
+ 2266 expect() calls
+Ran 11 tests across 1 file. [553.00ms]

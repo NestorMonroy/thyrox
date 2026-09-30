@@ -1,0 +1,12 @@
+== 1. gemelo quieto: el árbol no cambia y el veredicto sale ==
+OK   exit 0
+OK   sin aviso de árbol mutado
+== 2. una suite escribe en src/: el veredicto no es atribuible ==
+OK   exit 3, ni verde ni rojo
+OK   lo declara
+OK   y dice qué veredicto habría dado
+== 3. también en --changed ==
+OK   --changed con árbol mutado: exit 3
+
+aserciones: 6 de 6 · fallos: 0
+EXIT=0

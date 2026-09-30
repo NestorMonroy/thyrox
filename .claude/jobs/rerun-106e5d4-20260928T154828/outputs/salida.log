@@ -1,0 +1,9 @@
+== 5: store leído una vez
+   (src/proxy/startServer.ts)
+(fail) startProxyServer: credenciales del store de conexiones > el store se relee en cada petición: una conexión nueva sirve sin reiniciar [7.30ms]
+ 68 pass
+ 1 fail
+== restaurado
+ 69 pass
+ 0 fail
+__BG_EXIT__=0

@@ -1,0 +1,1 @@
+function skt(e){let n=_2e();if(n===null)return null;try{let r=d.resolve(n),i=d.resolve(e.cwd()),o=d.parse(r).root;if(o!==d.parse(i).root)return null;let s=r.slice(o.length).split(_).filter(Boolean),a=i.slice(o.length).split(_).filter(Boolean),u=0;while(u<s.length&&u<a.length&&s[u]===a[u])u++;return u>0?d.join(o,...s.slice(0,u)):null}catch{return null}}

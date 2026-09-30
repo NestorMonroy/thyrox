@@ -1,0 +1,3 @@
+src/packages/config/plugin/hintRecommendation.ts(75,25): error TS2339: Property 'value' does not exist on type 'ClaudeCodeHint'.
+src/packages/config/plugin/hintRecommendation.ts(106,25): error TS2339: Property 'value' does not exist on type 'ClaudeCodeHint'.
+src/packages/config/plugin/hintRecommendation.ts(133,25): error TS2339: Property 'sourceCommand' does not exist on type 'ClaudeCodeHint'.

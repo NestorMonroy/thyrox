@@ -1,0 +1,10 @@
+{
+  "id": "231",
+  "subject": "Portar local-observability (47 mod) — desbloquea a cinco de los siete",
+  "description": "CERRADA 2026-09-07 por medición, no por reporte: `comm -23` entre los 47 módulos de ccnmt y los 50 de thyrox da **0 ausentes** (nuestro árbol tiene 3 de más, que son puertos con módulo propio). El estado `in_progress` estaba obsoleto respecto de la medición.",
+  "status": "completed",
+  "blocks": [
+    "198"
+  ],
+  "blockedBy": []
+}

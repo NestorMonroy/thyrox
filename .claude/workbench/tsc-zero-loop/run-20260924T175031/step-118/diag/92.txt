@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3467,34): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3457-3477 ---
+   3457            // ran but its lifecycle was never closed (interrupted before ack).
+   3458            // Runtime dups don't need this — the original enqueue path closes them.
+   3459            if (existsInSession) {
+   3460              notifyCommandLifecycle(message.uuid, 'completed')
+   3461            }
+   3462            // Don't enqueue duplicate messages for execution
+   3463            continue
+   3464          }
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467>         trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474          value: await resolveAndPrepend(message, message.message.content),
+   3475          uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })

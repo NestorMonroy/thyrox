@@ -1,0 +1,3 @@
+FALLA admision: lo reservado por otro pool vivo no se vuelve a dar — esperado 'items=1 ok=0 fallidos=1', obtenido 'items=1 ok=1 fallidos=0'
+FALLA reserva: el registro queda vacio al terminar — esperado '0', obtenido ''
+aserciones: 72 de 74 · fallos: 2

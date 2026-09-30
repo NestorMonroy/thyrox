@@ -1,0 +1,376 @@
+Patrón: jsonparse-unknown-result-accessed-without-narrowing
+Señal del verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+Arreglo genérico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+Ya aplicado en: src/packages/config/plugin/installedPluginsManager.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts, src/packages/agent/query.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts
+
+src/packages/agent/hooks.ts(2530,38): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/hooks.ts:2520-2540 ---
+   2520   * para evitar construir hook inputs por cada archivo de instrucciones cuando no hay
+   2521   * ningún hook configurado.
+   2522   *
+   2523   * Comprueba tanto los hooks de settings-file (getHooksConfigFromSnapshot) como los
+   2524   * hooks registrados (plugin hooks + SDK callback hooks vía registerHookCallbacks).
+   2525   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2526   * internos y no se comprueban.
+   2527   */
+   2528  export function hasInstructionsLoadedHook(): boolean {
+   2529    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2530>   if (snapshotHooks && snapshotHooks.length > 0) return true
+   2531    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2532    if (registeredHooks && registeredHooks.length > 0) return true
+   2533    return false
+   2534  }
+   2535  /**
+   2536   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2537   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')
+   2538   * @param matcher El patrón del matcher - puede ser:
+   2539   *   - Cadena simple para coincidencia exacta (p.ej. 'Write')
+   2540   *   - Lista separada por pipes para varias coincidencias exactas (p.ej. 'Write|Edit')
+
+src/packages/agent/query.ts(386,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:376-396 ---
+    376      const microcompactResult = await deps.microcompact(
+    377        messagesForQuery,
+    378        toolUseContext,
+    379        querySource,
+    380      )
+    381      messagesForQuery = microcompactResult.messages
+    382      // For cached microcompact (cache editing), defer boundary message until after
+    383      // the API response so we can use actual cache_deleted_input_tokens.
+    384      // Gated behind feature() so the string is eliminated from external builds.
+    385      const pendingCacheEdits = feature('CACHED_MICROCOMPACT')
+    386>       ? microcompactResult.compactionInfo?.pendingCacheEdits
+    387        : undefined
+    388      queryCheckpoint('query_microcompact_end')
+    389  
+    390      // Project the collapsed context view and maybe commit more collapses.
+    391      // Runs BEFORE autocompact so that if collapse gets us under the
+    392      // autocompact threshold, autocompact is a no-op and we keep granular
+    393      // context instead of a single summary.
+    394      //
+    395      // Nothing is yielded — the collapsed view is a read-time projection
+    396      // over the REPL's full history. Summary messages live in the collapse
+src/packages/agent/query.ts(448,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:438-458 ---
+    438      // The compactor already logged + emitted telemetry; we don't yield a
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448>         preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+src/packages/agent/query.ts(449,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:439-459 ---
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449>         postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+src/packages/agent/query.ts(450,9): error TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:440-460 ---
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450>         truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+src/packages/agent/query.ts(451,9): error TS2339: Property 'compactionUsage' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:441-461 ---
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451>         compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+src/packages/agent/query.ts(457,28): error TS2339: Property 'summaryMessages' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:447-467 ---
+    447        const {
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457>           compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+src/packages/agent/query.ts(458,28): error TS2339: Property 'attachments' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:448-468 ---
+    448          preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458>           compactionResult.attachments.length +
+    459            compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+    468            compactionUsage?.cache_creation_input_tokens ?? 0,
+src/packages/agent/query.ts(459,28): error TS2339: Property 'hookResults' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:449-469 ---
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +
+    459>           compactionResult.hookResults.length,
+    460          preCompactTokenCount,
+    461          postCompactTokenCount,
+    462          truePostCompactTokenCount,
+    463          compactionInputTokens: compactionUsage?.input_tokens,
+    464          compactionOutputTokens: compactionUsage?.output_tokens,
+    465          compactionCacheReadTokens:
+    466            compactionUsage?.cache_read_input_tokens ?? 0,
+    467          compactionCacheCreationTokens:
+    468            compactionUsage?.cache_creation_input_tokens ?? 0,
+    469          compactionTotalTokens: compactionUsage
+src/packages/agent/query.ts(725,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:715-735 ---
+    715                    toolUseContext,
+    716                  )
+    717                }
+    718              }
+    719              // Backfill tool_use inputs on a cloned message before yield so
+    720              // SDK stream output and transcript serialization see legacy/derived
+    721              // fields. The original `message` is left untouched for
+    722              // assistantMessages.push below — it flows back to the API and
+    723              // mutating it would break prompt caching (byte mismatch).
+    724              let yieldMessage: typeof message = message
+    725>             if (message.type === 'assistant') {
+    726                const assistantMsg = message as AssistantMessage
+    727                const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
+    728                let clonedContent: typeof contentArr | undefined
+    729                for (let i = 0; i < contentArr.length; i++) {
+    730                  const block = contentArr[i]!
+    731                  if (
+    732                    block.type === 'tool_use' &&
+    733                    typeof block.input === 'object' &&
+    734                    block.input !== null
+    735                  ) {
+src/packages/agent/query.ts(804,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:794-814 ---
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798              if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804>             if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    809                  (content: { type: string }) => content.type === 'tool_use',
+    810                ) as ToolUseBlock[]
+    811                if (msgToolUseBlocks.length > 0) {
+    812                  toolUseBlocks.push(...msgToolUseBlocks)
+    813                  needsFollowUp = true
+    814                }
+src/packages/agent/query.ts(1427,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1417-1437 ---
+   1417      const toolUpdates = streamingToolExecutor
+   1418        ? streamingToolExecutor.getRemainingResults()
+   1419        : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+   1420  
+   1421      for await (const update of toolUpdates) {
+   1422        if (update.message) {
+   1423          yield update.message
+   1424  
+   1425          if (
+   1426            update.message.type === 'attachment' &&
+   1427>           update.message.attachment.type === 'hook_stopped_continuation'
+   1428          ) {
+   1429            shouldPreventContinuation = true
+   1430          }
+   1431  
+   1432          toolResults.push(
+   1433            ...normalizeMessagesForAPI(
+   1434              [update.message],
+   1435              toolUseContext.options.tools,
+   1436            ).filter(_ => _.type === 'user'),
+   1437          )
+src/packages/agent/query.ts(1756,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1746-1766 ---
+   1746            notifyCommandLifecycle(cmd.uuid, 'started')
+   1747          }
+   1748        }
+   1749        removeFromQueue(consumedCommands)
+   1750      }
+   1751  
+   1752      // Instrumentation: Track file change attachments after they're added
+   1753      const fileChangeAttachmentCount = count(
+   1754        toolResults,
+   1755        tr =>
+   1756>         tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+   1757      )
+   1758  
+   1759      logEvent('tengu_query_after_attachments', {
+   1760        totalToolResultsCount: toolResults.length,
+   1761        fileChangeAttachmentCount,
+   1762        queryChainId: queryChainIdForAnalytics,
+   1763        queryDepth: queryTracking.depth,
+   1764      })
+   1765  
+   1766      // Refresh tools between turns so newly-connected MCP servers become available
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,29): error TS2339: Property 'content' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the

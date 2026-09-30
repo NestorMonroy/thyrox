@@ -1,0 +1,3 @@
+ * Sólo `auth.type === 'api_key'` alimenta `apiKey`: OAuth no tiene una llave
+ * estatica que reenviar tal cual -- ese camino queda sin cerrar, declarado,
+ * no en silencio (ninguna conexion de este arbol usa OAuth todavia).

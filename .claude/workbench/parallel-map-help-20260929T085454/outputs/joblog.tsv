@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790672095.044	   195.970	0	0	0	0	_headless_item 1 'src/session/parallel_map.sh tests/session/test-parallel-map.sh'

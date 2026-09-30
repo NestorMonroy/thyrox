@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+243 |     await updatePidFile({ parkedJobId: 'job' }, undefined, deps())
+244 |     switchListeners[0]!('s2', 'clear')
+245 |     await flush()
+246 |     expect(record()).toMatchObject({ sessionId: 's2', name: 'app-s1' })
+247 |     expect('parkedJobId' in record()).toBe(false)
+248 |     expect(state.liveSessionId).toBe('s2')
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "s2"
+Received: "s1"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:248:33)
+(fail) los cambios de sesión y de directorio > un cambio que no adopta sólo publica la sesión nueva [8.23ms]
+
+ 22 pass
+ 1 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [200.00ms]

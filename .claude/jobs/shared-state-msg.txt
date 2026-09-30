@@ -1,0 +1,10 @@
+Add @thyrox/shared-state with its port and contract
+
+ADR-THYROX-006 1.1.0 puts the proxy's cross-instance hot state
+(leases, windowed counters, TTL values) behind one port. This lands
+the port and the contract suite both adapters must pass, so memory
+and redis cannot drift in semantics; the adapters come from the R1
+and R2 pool items (TASK-THYROX-0267, 0268).
+
+Not @thyrox/coordination: that package is the claims ledger between
+sessions. The persistence rule gains the hot-state section.

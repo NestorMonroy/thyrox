@@ -1,0 +1,12 @@
+    # La VRAM libre cambia mientras los items arrancan: se mira por item, justo
+    # antes de lanzar, y se RESERVA en el mismo paso bajo el lock del registro
+    # (`gpu_monitor admit`): comprobar sin reservar dejaba arrancar a dos items
+    # que no cabían juntos. El dueño es este shell, vivo hasta que el item
+    # termina; el `release` de abajo suelta la reserva, y si el shell muere
+    # antes, su reserva deja de contar sola. La otra mitad de Parallel —matar
+    # al más joven cuando lo libre cae a la mitad, 6847 y 6980-7005— NO se
+    # porta: matar un `claude -p` a mitad de su petición tira los tokens ya
+    # pagados.
+    local owner="$BASHPID"
+    if [[ -n "$HP_VRAM_NEED" ]] && ! bash "$HP_GPU" admit "$HP_VRAM_NEED" --ledger "$HP_VRAM_LEDGER" \
+            --owner "$owner" --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL"; then

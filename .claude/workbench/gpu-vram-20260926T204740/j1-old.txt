@@ -1,0 +1,3 @@
+rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"

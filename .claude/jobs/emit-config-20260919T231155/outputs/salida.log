@@ -1,0 +1,4 @@
+config: emitio pese a 1150 errores (831 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1150 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

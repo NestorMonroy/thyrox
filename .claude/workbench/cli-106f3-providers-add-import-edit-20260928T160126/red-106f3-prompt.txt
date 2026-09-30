@@ -1,0 +1,2 @@
+error: Cannot find module '../src/commands/providers/secretPrompt.ts' from '/home/user/thyrox/src/packages/cli/__tests__/providersSecretPrompt.test.ts'
+ 1 fail

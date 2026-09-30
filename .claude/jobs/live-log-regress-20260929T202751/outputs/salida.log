@@ -1,0 +1,26 @@
+tests/hooks/test_detect_agent_dispatch.py :: 11 caso(s); 0 fallo(s)
+tests/hooks/test_detect_client_background.py :: 12 ok, 0 fallos
+tests/hooks/test_detect_dedicated_tool_usage.py :: 13 caso(s); 0 fallo(s)
+tests/hooks/test_detect_foreground_long_command.py :: resumen: 0 fallo(s)
+tests/lib/test-toolchain-parallel.sh :: 11 casos: 11 ok, 0 fallos
+tests/session/test-bg-familia.sh :: aserciones: 26  ok: 26  fallo: 0
+tests/session/test-bg-grace-window.sh :: aserciones: 5 de 5 · fallos: 0
+tests/session/test-bg-memfree.sh :: test-bg-memfree: 8 aserciones — 8 ok, 0 falla(s)
+tests/session/test-bg-name-flag.sh :: resumen: 9 ok, 0 fallo
+tests/session/test-gnu-time-launchers.sh :: test-gnu-time-launchers: 13 ok, 0 falla(s)
+tests/session/test-headless-pool-worktree.sh :: test-headless-pool-worktree: 37 aserciones — 37 ok, 0 falla(s)
+tests/session/test-process-group.sh :: test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+tests/session/test-run-task-pool-scope.sh :: resumen: 8 ok, 0 fallo(s)
+tests/session/test-wait-jobs-dependency.sh :: resumen: 16 ok, 0 fallo(s)
+tests/session/test_generate_bin.py :: 119 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+tests/session/test_job_runs.py :: resumen: 0 fallo(s)
+tests/session/test_jobs_home.py :: OK
+tests/session/test_ledger_home_consumer.py :: OK
+tests/session/test_log_tail.py :: 9 ok, 0 fallos
+tests/session/test_marker_wait.py :: 26 ok, 0 fallos
+tests/session/test_pid_wait.py :: 13 ok, 0 fallos
+tests/shell/test_shell_cli.py :: 33 aprobada(s) · 0 fallida(s) (alcance medido: shell.ts)
+tests/verify/test-assert-no-writes.sh :: OK: todas las aserciones pasan (alcance medido: 5 payload(s) de despacho, 11 detector(es) por payload)
+tests/verify/test_tsc_cycle.py :: test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+tests/workbench/test_manifest_jsonl.py :: 43 ok, 0 fallos (alcance medido: 43 aserciones)
+__BG_EXIT__=1

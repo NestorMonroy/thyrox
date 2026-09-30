@@ -1,0 +1,354 @@
+diff --git a/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts b/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+index fc3126d3..0126905d 100644
+--- a/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
++++ b/src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+@@ -116,16 +116,19 @@ import { sessionNameState } from '@thyrox/local-observability/uds/sessionNameSta
+ import { processRegistrationDeps, startSessionRegistration } from '@thyrox/local-observability/uds/sessionRegistration.js'
+ import { registeredSessionName, sessionRegistryState, stableAddressEnabled, whenSessionRegistered } from '@thyrox/local-observability/uds/sessionRegistryState.js'
+ import { sweepRegistry, type RegistrySweepDeps } from '@thyrox/local-observability/uds/registrySweep.js'
++import { notifyCorrespondentsOfRename, type RenameNoticeDeps } from '@thyrox/local-observability/uds/renameNotice.js'
+ import {
+   restoreSessionName as restoreSessionNamePorted,
+   runStartupNaming as runStartupNamingPorted,
++  sanitizeSessionName,
++  type RegisteredName,
+   type RenameContext,
+ } from '@thyrox/local-observability/uds/sessionRename.js'
+ import { cacheSessionTitle, getCurrentSessionTitle } from '@thyrox/storage/sessionStorage.js'
+ import { generateShortWordSlug, isShortWordSlug, derivedSessionName } from '@thyrox/tool-registry/words.js'
+ 
+ /** El contexto de renombre único de este proceso: mismo estado en cada llamada, como `wS()`. */
+-function buildRenameContext(): RenameContext {
++export function buildRenameContext(): RenameContext {
+   return {
+     state: sessionNameState(),
+     registry: {
+@@ -201,3 +204,96 @@ export async function registerSessionAtLaunch(sessionNameArg?: string): Promise<
+ export function adoptLoopSessionId(sessionId: string, resumed: boolean): void {
+   switchSession(asSessionId(sessionId), resumed ? 'resume' : 'startup_custom_id')
+ }
++
++/**
++ * `RenameNoticeDeps` sin correspondiente real: en `bin/cli` no hay envío de
++ * mensajes entre sesiones por UDS (`git grep -l sendPeerMessage -- src/`
++ * sin resultados fuera del propio tipo) — `messagingEnabled` queda en
++ * `() => false` a propósito, la misma forma que `isSpareParked`/
++ * `setAgentName` de arriba: `notifyCorrespondentsOfRename` corta en su
++ * primera línea (`!deps.messagingEnabled()`) antes de tocar `ownSocket`,
++ * `listLive` o `send`, así que esas tres quedan con una implementación
++ * mínima que nunca corre.
++ */
++function buildRenameNoticeDeps(context: RenameContext): RenameNoticeDeps {
++  return {
++    state: context.state,
++    uniquenessEnabled: context.uniquenessEnabled,
++    messagingEnabled: () => false,
++    ownSocket: () => undefined,
++    listLive: () => context.registry.listLive(),
++    send: async () => undefined,
++    log: message => context.log(message, 'info'),
++  }
++}
++
++/**
++ * `/rename <nombre>` del chat de `bin/cli`. Compone los primitivos ya
++ * portados de `sessionRename.ts` (`tPt`/`resolveUniqueName`,
++ * `Vtn`/`scheduleNameRecheck`, `li`/`sanitizeSessionName`) sobre el registro
++ * de ESTA sesión, más el aviso a correspondientes (`zkr`/
++ * `notifyCorrespondentsOfRename`).
++ *
++ * Medido contra 2.1.283 antes de cablear, `chunk-csayct82.js` (comando) y
++ * `chunk-myby092r.js` (`LTn`, la función que ambas variantes —`local-jsx`
++ * interactiva y `local` de thin-client— invocan):
++ *
++ *   var r1o={type:"local-jsx",name:"rename",aliases:["name"],
++ *     description:"Rename the current conversation", …,
++ *     load:()=>import("/$bunfs/root/chunk-rna068k2.js")},
++ *   $Fe={type:"local",name:"rename",aliases:["name"],
++ *     supportsNonInteractive:!0, …,
++ *     load:()=>import("/$bunfs/root/chunk-sn2j4wz5.js")}
++ *
++ * `chunk-sn2j4wz5.js` (la variante `local`, la que corresponde a un CLI sin
++ * Ink): `async function o(e,a){let{message:m}=await LTn(e,a,!1);return
++ * {type:"text",value:m}}` — `e` es el argumento tecleado, `a` el contexto de
++ * turno, y devuelve el mensaje de `LTn` como texto.
++ *
++ * `LTn` (`chunk-myby092r.js`): si el argumento está vacío, genera un nombre
++ * con un fork del modelo (`jSt`/`f`, un `system_prompt` +
++ * `outputFormat:"json_schema"` pidiendo `{name}` kebab-case); si no, usa el
++ * argumento tal cual. Escribe con `ARt(n,"user",e.storageV5,…)` y arma el
++ * mensaje final: `"Session renamed to: "+i` en el caso simple, con el sufijo
++ * `(" + c + " is held by another live session on this machine)"` cuando
++ * `s.outcome==="yielded"`, y `"That name is empty once invisible characters
++ * are removed. Usage: /rename <name>"` cuando el nombre saneado queda vacío.
++ *
++ * DOS DIVERGENCIAS DECLARADAS (`porte-completo-no-parcial.md`):
++ *
++ *   - **Sin argumento, no genera nombre — muestra el actual.** `jSt`/`f`
++ *     abren un fork de conversación contra el modelo en vivo (otro
++ *     `querySource`, otro `system_prompt`, `outputFormat` de JSON) sólo para
++ *     sugerir un nombre; nada de esa maquinaria está portado, y añadirla
++ *     aquí sería una llamada al proveedor en medio del REPL, fuera del
++ *     alcance de este ítem. El ítem admite explícitamente esta rama
++ *     («derivar o mostrar el actual»): se muestra el nombre registrado.
++ *   - **El aviso a correspondientes no reproduce el disparador exacto de
++ *     `ARt`/`Bfe`.** En la referencia, `zkr` sólo se llama dentro de `Bfe`
++ *     cuando `V.yieldedFrom!==void 0` — una condición de la maquinaria de
++ *     escritura de registro (`ARt`/`Bfe`/`KDt`) que este árbol no porta
++ *     (`sessionRename.ts` porta `tPt`/`Gkr`/`Vtn`/`VFn`/`sae`/`jkr`, no
++ *     `ARt` ni `Bfe`). Aquí se llama cuando el nombre registrado cambia de
++ *     verdad a causa de este comando, la composición más fiel con lo que sí
++ *     está portado. Es inerte hoy de todos modos: `messagingEnabled` es
++ *     `() => false` (ver `buildRenameNoticeDeps`), así que no envía nada.
++ */
++export async function renameCurrentSession(requestedName: string | undefined): Promise<string> {
++  const context = buildRenameContext()
++  const before: RegisteredName | undefined = context.registeredName()
++  const trimmed = requestedName?.trim() ?? ''
++  if (!trimmed) {
++    return before ? `Session is named: ${before.name}. Usage: /rename <name>` : 'Usage: /rename <name>'
++  }
++  const sanitized = sanitizeSessionName(trimmed)
++  if (!sanitized) return 'That name is empty once invisible characters are removed. Usage: /rename <name>'
++  await restoreSessionNamePorted(sanitized, undefined, { source: 'user' }, context)
++  const after = context.registeredName()
++  const finalName = after?.name ?? sanitized
++  if (before !== undefined && before.name !== finalName) {
++    await notifyCorrespondentsOfRename(before.name, finalName, sanitized, undefined, buildRenameNoticeDeps(context))
++  }
++  return finalName === sanitized
++    ? `Session renamed to: ${finalName}`
++    : `Session renamed to: ${finalName} ("${sanitized}" is held by another live session on this machine)`
++}
+diff --git a/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts b/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts
+new file mode 100644
+index 00000000..fea4768a
+--- /dev/null
++++ b/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts
+@@ -0,0 +1,201 @@
++/**
++ * TASK-THYROX-0505 — `/rename <nombre>` del chat de `bin/cli`, de punta a
++ * punta: proceso REAL con `--provider recorded` y `THYROX_CONFIG_DIR`
++ * propio, misma forma que `sessionRegistryAtLaunch.e2e.test.ts`.
++ *
++ * Medido contra 2.1.283 antes de escribir (`_references/claude-code-bin/
++ * 2.1.283/bunfs-root/`): el comando `rename` (`chunk-csayct82.js`) llama a
++ * `LTn` (`chunk-myby092r.js`) vía su variante `local`
++ * (`chunk-sn2j4wz5.js`) — la que corresponde a un CLI sin Ink, como este
++ * árbol. `LTn` escribe con `ARt(n,"user",…)` y arma "Session renamed to: X"
++ * ("... (\"Y\" is held by another live session on this machine)" si cede,
++ * "That name is empty once invisible characters are removed. Usage:
++ * /rename <name>" si el nombre saneado queda vacío). El detalle completo —
++ * las dos divergencias declaradas (sin argumento no genera nombre por LLM;
++ * el aviso a correspondientes es inerte sin mensajería UDS portada)— vive en
++ * el docstring de `renameCurrentSession`,
++ * `@thyrox/app-host/runtime/sessionRegistryAtLaunch.ts`.
++ */
++import { describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
++const usage = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
++
++async function waitUntil(predicate: () => boolean, timeoutMs = 10000, stepMs = 20): Promise<void> {
++  const deadline = Date.now() + timeoutMs
++  while (!predicate()) {
++    if (Date.now() > deadline) throw new Error('tiempo agotado esperando la condición')
++    await Bun.sleep(stepMs)
++  }
++}
++
++function readRecord(path: string): Record<string, unknown> {
++  return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
++}
++
++function writeSingleTurn(cwd: string): string {
++  const path = join(cwd, 'turnos.json')
++  writeFileSync(path, JSON.stringify([
++    { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage, content: [{ type: 'text', text: 'ok' }] },
++  ]))
++  return path
++}
++
++/**
++ * Bombea `stdout` a un buffer de líneas SIN cerrar el stream, para poder leer
++ * lo que el proceso ya escribió y seguir escribiéndole por `stdin` después.
++ * `new Response(stream).text()` no sirve aquí: bloquea hasta EOF, es decir
++ * hasta que el proceso salga — y `/rename` hay que leerlo con el proceso
++ * todavía vivo, antes de que al salir retire `sessions/<pid>.json`.
++ */
++function pumpLines(readable: ReadableStream<Uint8Array>): { lines: () => string[] } {
++  let buffer = ''
++  const reader = readable.getReader()
++  const decoder = new TextDecoder()
++  void (async () => {
++    while (true) {
++      const { done, value } = await reader.read()
++      if (done) break
++      buffer += decoder.decode(value, { stream: true })
++    }
++  })()
++  return { lines: () => buffer.split('\n') }
++}
++
++/** Arranca un `--chat` con un único turno grabado y espera su pid file. */
++function spawnChat(cwd: string, cfg: string, extraArgs: string[] = [], env: Record<string, string | undefined> = {}) {
++  return Bun.spawn(
++    ['bun', 'run', BIN, '--chat', '--provider', 'recorded', '--grabacion', writeSingleTurn(cwd),
++      '--cwd', cwd, '--transcript-dir', join(cwd, 'tr'), '--output-style', 'quiet', ...extraArgs],
++    { stdin: 'pipe', stdout: 'pipe', stderr: 'pipe', env: { ...process.env, THYROX_CONFIG_DIR: cfg, ...env } },
++  )
++}
++
++describe('bin/cli: /rename en el chat (TASK-THYROX-0505)', () => {
++  test('/rename foo escribe name/nameSource en sessions/<pid>.json y responde "Session renamed to: foo"', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'chat-rename-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const proc = spawnChat(cwd, cfg)
++    const out = pumpLines(proc.stdout)
++    try {
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      await waitUntil(() => existsSync(pidFile))
++
++      proc.stdin.write('hola\n')
++      proc.stdin.flush()
++      await waitUntil(() => existsSync(join(cwd, 'tr')))
++
++      proc.stdin.write('/rename foo\n')
++      proc.stdin.flush()
++      await waitUntil(() => out.lines().includes('Session renamed to: foo'))
++
++      const record = readRecord(pidFile)
++      expect(record.name).toBe('foo')
++      expect(record.nameSource).toBe('user')
++
++      await proc.stdin.end()
++      await proc.exited
++      expect(existsSync(pidFile)).toBe(false)
++    } finally {
++      proc.kill()
++    }
++  })
++
++  test('/rename sin argumento muestra el nombre actual (divergencia declarada: no genera con el modelo)', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'chat-rename-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const proc = spawnChat(cwd, cfg, ['--name', 'ya-puesto'])
++    const out = pumpLines(proc.stdout)
++    try {
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      await waitUntil(() => existsSync(pidFile) && readRecord(pidFile).name === 'ya-puesto')
++
++      proc.stdin.write('hola\n')
++      proc.stdin.flush()
++      await waitUntil(() => existsSync(join(cwd, 'tr')))
++
++      proc.stdin.write('/rename\n')
++      proc.stdin.flush()
++      await waitUntil(() => out.lines().includes('Session is named: ya-puesto. Usage: /rename <name>'))
++
++      // sin escritura nueva: sigue con la fuente con la que arrancó
++      expect(readRecord(pidFile).nameSource).toBe('user')
++
++      await proc.stdin.end()
++      await proc.exited
++    } finally {
++      proc.kill()
++    }
++  })
++
++  test('/rename con sólo caracteres invisibles: mensaje verbatim de la referencia, sin escribir', async () => {
++    const cwd = mkdtempSync(join(tmpdir(), 'chat-rename-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const proc = spawnChat(cwd, cfg)
++    const out = pumpLines(proc.stdout)
++    try {
++      const pidFile = join(cfg, 'sessions', `${proc.pid}.json`)
++      await waitUntil(() => existsSync(pidFile))
++      const before = readRecord(pidFile)
++
++      proc.stdin.write('hola\n')
++      proc.stdin.flush()
++      await waitUntil(() => existsSync(join(cwd, 'tr')))
++
++      proc.stdin.write('/rename \u0007\u0007\u0007\n')
++      proc.stdin.flush()
++      await waitUntil(() => out.lines().includes('That name is empty once invisible characters are removed. Usage: /rename <name>'))
++
++      const after = readRecord(pidFile)
++      expect(after.name).toBe(before.name)
++      expect(after.nameSource).toBe(before.nameSource)
++
++      await proc.stdin.end()
++      await proc.exited
++    } finally {
++      proc.kill()
++    }
++  })
++
++  test('/rename al nombre de una sesión viva cede a "<nombre>-adjetivo-sustantivo" con nameSource collision (uniqueness on)', async () => {
++    const cwd1 = mkdtempSync(join(tmpdir(), 'chat-rename-'))
++    const cwd2 = mkdtempSync(join(tmpdir(), 'chat-rename-'))
++    const cfg = mkdtempSync(join(tmpdir(), 'thyrox-config-'))
++    const flags = { THYROX_FEATURE_FLAGS: JSON.stringify({ tengu_session_name_uniqueness: true }) }
++
++    const holder = spawnChat(cwd1, cfg, ['--name', 'shared'], flags)
++    const guest = spawnChat(cwd2, cfg, [], flags)
++    const guestOut = pumpLines(guest.stdout)
++    try {
++      const holderPidFile = join(cfg, 'sessions', `${holder.pid}.json`)
++      const guestPidFile = join(cfg, 'sessions', `${guest.pid}.json`)
++      await waitUntil(() => existsSync(holderPidFile) && readRecord(holderPidFile).name === 'shared')
++      await waitUntil(() => existsSync(guestPidFile))
++
++      guest.stdin.write('hola\n')
++      guest.stdin.flush()
++      await waitUntil(() => existsSync(join(cwd2, 'tr')))
++
++      guest.stdin.write('/rename shared\n')
++      guest.stdin.flush()
++      await waitUntil(() => readRecord(guestPidFile).nameSource === 'collision')
++
++      const record = readRecord(guestPidFile)
++      expect(typeof record.name).toBe('string')
++      expect(record.name as string).toMatch(/^shared-[a-z]+-[a-z]+$/)
++
++      await waitUntil(() => guestOut.lines().some(l =>
++        l.startsWith(`Session renamed to: ${record.name} `) && l.includes('"shared" is held by another live session on this machine'),
++      ))
++
++      await guest.stdin.end()
++      await guest.exited
++    } finally {
++      holder.kill()
++      guest.kill()
++    }
++  })
++})
+diff --git a/src/packages/cli/src/entry/runLoop.ts b/src/packages/cli/src/entry/runLoop.ts
+index a189b6ba..00e355b8 100644
+--- a/src/packages/cli/src/entry/runLoop.ts
++++ b/src/packages/cli/src/entry/runLoop.ts
+@@ -38,7 +38,7 @@ import { systemPromptFor } from './systemPrompt.ts'
+ import { flag, hasFlag } from './flags.ts'
+ import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+ import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
+-import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
++import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+ 
+ /**
+  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
+@@ -277,6 +277,11 @@ export async function runLoop(argv: string[], cwd: string, transcriptDir: string
+     const texto = line.trim()
+     if (!texto) continue
+     if (texto === '/salir' || texto === '/exit') break
++    if (texto === '/rename' || texto.startsWith('/rename ')) {
++      const nombre = texto === '/rename' ? undefined : texto.slice('/rename '.length).trim()
++      process.stdout.write(`${await renameCurrentSession(nombre)}\n`)
++      continue
++    }
+     const r = await runTurn(texto, sesion)
+     sesion = r.sessionId
+     ultimo = r.stop === 'end_turn' ? 0 : 1

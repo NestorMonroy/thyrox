@@ -1,0 +1,8 @@
+{
+  "id": "182",
+  "subject": "Hacer que `task_ids.py cita` publique el sujeto, no sólo el id",
+  "description": "Sucesor de H-DOCS-1110.\n\n`_cmd_lookup` (`thyrox: src/task/task_ids.py:588-595`) recibe `tarea` y lo\nresuelve como `task_id` de la fila del store. Imprime SÓLO el identificador\n—`print(identifier)`— y nunca el sujeto. Un llamador que le pasa un ordinal del\nboard recibe una respuesta bien formada sobre OTRA tarea, sin señal alguna.\n\nMedido 2026-09-05 sobre los cuatro ordinales citados en el pase de openswarm:\n2 de 4 coincidían (#103, #101 — ordinal y fila comparten número) y 2 de 4 no\n(#172 sin fila; #159 vive en la fila 1015). Coincidir la mitad de las veces es\npeor que fallar siempre: entrena a confiar en el comando.\n\nEntregable mínimo: `cita` imprime `TASK-<CAPA>-NNNN  <sujeto truncado>` en una\nlínea, de modo que quien pregunta pueda comparar contra lo que quería. Con un\ncontrol que falle si el sujeto desaparece de la salida.\n\nEntregable opcional, si el ejecutor lo aprueba: un modo `cita --por-sujeto` que\nreciba un patrón en vez de un número, que es como se resolvieron a mano los\ncuatro de este pase.\n\nNo cubre la elección de alcance de #113 (878 ordinales huérfanos) ni el gate de\n#124 (rechazar el ordinal como cita de sucesor): éstos son el mismo defecto en\notras dos superficies.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

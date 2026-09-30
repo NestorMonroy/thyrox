@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPidFileRecord.test.ts:
+254 |     state.spareClaimPoll = setInterval(() => {}, 1_000_000)
+255 |     expect(await updateSessionStatus({ status: 'busy' }, undefined, deps())).toBe(false)
+256 |     expect(state.spareClaimPoll).toBeDefined()
+257 |     stopSpareClaimPoll(state)
+258 |     owned = false
+259 |     expect(await updateSessionStatus({ status: 'busy' }, undefined, deps())).toBe(true)
+                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPidFileRecord.test.ts:259:78)
+(fail) los demás campos del registro > si el registro falla y es de esta sesión, el estado no se publicó [1.54ms]
+
+ 21 pass
+ 1 fail
+ 74 expect() calls
+Ran 22 tests across 1 file. [132.00ms]

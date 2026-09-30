@@ -1,0 +1,2 @@
+ROJO tests/agents/test-agent-store-render-tablero.sh
+EXIT=0

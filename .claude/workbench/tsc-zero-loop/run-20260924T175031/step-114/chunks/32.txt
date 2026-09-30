@@ -1,0 +1,1 @@
+src/packages/config/plugin/lspPluginIntegration.ts(243,22): error TS2698: Spread types may only be created from object types.

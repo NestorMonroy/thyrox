@@ -1,0 +1,7 @@
+==== w: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js variable w [2541,2553)
+w=2147483647
+==== h: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js class h [5648,5723)
+class h{#e=new Map;get(e){return this.#e.get(e)}set(e,n){this.#e.set(e,n)}}
+symbol: 2 de 2 nombre(s) resueltos

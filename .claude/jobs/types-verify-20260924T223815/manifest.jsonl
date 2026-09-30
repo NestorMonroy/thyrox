@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > /home/user/thyrox/.claude/workbench/types-canonical-20260924T223639/outputs/verify-after.log 2>&1; bun src/verify/message_shape_audit.ts >> /home/user/thyrox/.claude/workbench/types-canonical-20260924T223639/outputs/verify-after.log 2>/dev/null; echo done", "started_at": "2026-09-24T22:38:15+00:00"}

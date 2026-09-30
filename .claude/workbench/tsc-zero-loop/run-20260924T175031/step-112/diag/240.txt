@@ -1,0 +1,46 @@
+tests/integration/context-build.test.ts(14,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:4-24 ---
+      4    isMemoryFilePath,
+      5    getLargeMemoryFiles,
+      6  } from '@thyrox/storage/claudemd.js'
+      7  import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
+      8  
+      9  // ─── CLAUDE.md Integration with System Prompt ─────────────────────────
+     10  
+     11  describe('Context build: CLAUDE.md + system prompt integration', () => {
+     12    test('buildEffectiveSystemPrompt passes through default prompt', () => {
+     13      const result = buildEffectiveSystemPrompt({
+     14>       defaultSystemPrompt: 'You are Claude.',
+     15      })
+     16      // Result is an array of strings (may be split differently)
+     17      const joined = Array.from(result).join('')
+     18      expect(joined).toBe('You are Claude.')
+     19    })
+     20  
+     21    test('buildEffectiveSystemPrompt handles empty prompts', () => {
+     22      const result = buildEffectiveSystemPrompt({
+     23        defaultSystemPrompt: '',
+     24      })
+tests/integration/context-build.test.ts(23,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:13-33 ---
+     13      const result = buildEffectiveSystemPrompt({
+     14        defaultSystemPrompt: 'You are Claude.',
+     15      })
+     16      // Result is an array of strings (may be split differently)
+     17      const joined = Array.from(result).join('')
+     18      expect(joined).toBe('You are Claude.')
+     19    })
+     20  
+     21    test('buildEffectiveSystemPrompt handles empty prompts', () => {
+     22      const result = buildEffectiveSystemPrompt({
+     23>       defaultSystemPrompt: '',
+     24      })
+     25      const joined = Array.from(result).join('')
+     26      expect(joined).toBe('')
+     27    })
+     28  
+     29    test('buildEffectiveSystemPrompt with overrideSystemPrompt replaces everything', () => {
+     30      const result = buildEffectiveSystemPrompt({
+     31        defaultSystemPrompt: 'Default',
+     32        overrideSystemPrompt: 'Override',
+     33      })

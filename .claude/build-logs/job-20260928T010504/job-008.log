@@ -1,0 +1,21 @@
+  ok    preparación: la cita 1 nombra su sujeto
+  ok    rehúsa cuando un id cambiaría de sujeto (exit 4)
+  ok    y NO escribió: la cita sigue nombrando lo suyo
+  ok    y nombra la cita afectada
+  ok    con --permitir-reasignacion sí vuelca (exit 0)
+  ok    y entonces la cita cambia de sujeto
+  ok    un volcado sin reasignación pasa (exit 0)
+  ok    y el alta nueva aterrizó
+  ok    editar el sujeto de una fila sin cita pasa (exit 0)
+  ok    caso 5 · preparación: la cita 1 nombra su sujeto
+  ok    una renumeración pura NO dispara el guard (exit 0)
+  ok    y la cita viajó CON su sujeto
+  ok    al ordinal nuevo (2), no al 1 que reciclaron
+  ok    y la segunda cita también, al ordinal 3
+  ok    ninguna cita quedó duplicada
+  ok    5d: el mutante SÍ anuló la línea (si no, el control no mide nada)
+  ok    5d: y el mutante ARRANCA (si muriera en el import, su silencio mentiría)
+  ok    5d: sin re-anclaje la cita se queda en el ordinal y cambia de sujeto
+
+18 ok · 0 falla(s)
+EXIT=0

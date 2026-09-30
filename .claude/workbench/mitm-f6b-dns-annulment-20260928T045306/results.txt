@@ -1,0 +1,53 @@
+== base
+ 19 pass
+ 0 fail
+== anulado en src/dns/dnsConfig.ts: execFileSync('sudo', ['-n', 'true'], { stdio: 'ignore', windowsHide: true, env: process.env })
+(fail) a non-root user whose sudo asks for a password needs one [13.30ms]
+(fail) runPrivilegedMitmStep skips the step when the gate is closed [#7938] [12.14ms]
+ 17 pass
+ 2 fail
+== anulado en src/systemCommands.ts: { stdio: 'ignore', env: process.env }
+(fail) a given password, NOPASSWD sudo or no sudo at all lift the gate [10.41ms]
+ 18 pass
+ 1 fail
+== anulado en src/dns/dnsConfig.ts: return process.env.THYROX_MITM_SKIP_DNS_WRITE === '1'
+(fail) THYROX_MITM_SKIP_DNS_WRITE=1 skips both writers; other values do not [1.97ms]
+ 18 pass
+ 1 fail
+== anulado en src/dns/dnsConfig.ts: return parts.length >= 2 && parts[0] === ip && parts.includes(host!)
+(fail) addDNSEntries writes only the missing lines and nothing when all exist [1.59ms]
+(fail) an entry counts only with the matching address in the first column [0.34ms]
+ 17 pass
+ 2 fail
+replace_literal: 0 coincidencias de OLD en src/dns/dnsConfig.ts; no se toca
+NO APLICA: if (isRoot()) return false
+== anulado en src/dns/dnsConfig.ts: if (isRoot()) return false
+ 19 pass
+ 0 fail
+== anulado en src/sudoGate.ts: if (isRoot()) return false
+ 19 pass
+ 0 fail
+== anulado en src/dns/provision.ts:     deps.logger.error({ err }, 'Failed to add default DNS entries (continuing)')
+(fail) a failing default step neither aborts nor hides its stderr [#6127 #6198] [2.28ms]
+(fail) a failing step does not stop the ones after it [3.21ms]
+ 21 pass
+ 2 fail
+== anulado en src/dns/provision.ts:       if (!state.dns_enabled) continue
+(fail) the default readers take agents and enabled custom hosts from the store [5.42ms]
+ 22 pass
+ 1 fail
+== anulado en src/dns/provision.ts: listCustomHosts(db!, { enabledOnly: true })
+(fail) the default readers take agents and enabled custom hosts from the store [6.15ms]
+ 22 pass
+ 1 fail
+== anulado en src/dns/provision.ts:   if (!canElevate()) {
+(fail) without elevation every step is skipped with a clear message [2.27ms]
+ 22 pass
+ 1 fail
+== anulado en src/dns/provision.ts: === 'true') {
+(fail) THYROX_MITM_SKIP_ANTIGRAVITY_DNS=true skips every step and says why [1.66ms]
+ 22 pass
+ 1 fail
+== anulado en src/stopDnsTeardown.ts:   } catch (err) {
+ 19 pass
+ 1 fail

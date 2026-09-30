@@ -1,0 +1,32 @@
+test_15_dumps_to_stdout_and_publishes_its_count (__main__.TestLineSurface.test_15_dumps_to_stdout_and_publishes_its_count) ... ok
+test_16_a_missing_origin_exits_2_and_emits_NO_count (__main__.TestLineSurface.test_16_a_missing_origin_exits_2_and_emits_NO_count) ... ok
+test_10_the_TAB_survives (__main__.TestTheBlocks.test_10_the_TAB_survives)
+130 en el archivo real: son las columnas de sus definiciones. ... ok
+test_11_a_structure_mark_does_not_become_a_space (__main__.TestTheBlocks.test_11_a_structure_mark_does_not_become_a_space)
+0x03 y 0x04 marcan encabezado y pie. No son contenido y tampoco ... ok
+test_9_the_paragraph_end_SPLITS (__main__.TestTheBlocks.test_9_the_paragraph_end_SPLITS) ... ok
+test_4_what_follows_ccpText_is_NOT_the_body (__main__.TestTheBound.test_4_what_follows_ccpText_is_NOT_the_body)
+CONTROL POSITIVO de la trampa que si muerde: en el archivo real ... ok
+test_5_and_the_whole_body_DOES_come_out (__main__.TestTheBound.test_5_and_the_whole_body_DOES_come_out)
+CONTROL DE ANULACION: un lector que devolviera la cadena vacia ... ok
+test_1_a_COMPRESSED_piece_is_read_as_cp1252 (__main__.TestTheEncoding.test_1_a_COMPRESSED_piece_is_read_as_cp1252)
+CONTROL POSITIVO: la unica pieza del archivo real lo es. Leerla ... ok
+test_2_and_a_WIDE_piece_is_read_as_UTF_16 (__main__.TestTheEncoding.test_2_and_a_WIDE_piece_is_read_as_UTF_16)
+CONTROL DE ANULACION del anterior: si el lector ignorara el bit ... ok
+test_3_the_ACCENT_survives_cp1252 (__main__.TestTheEncoding.test_3_the_ACCENT_survives_cp1252) ... ok
+test_8_a_field_CODE_is_not_dumped (__main__.TestTheField.test_8_a_field_CODE_is_not_dumped)
+Hermana de `w:instrText` en el `.docx`: entre 0x13 y 0x14 va la ... ok
+test_6_the_bit_decides_BETWEEN_0Table_and_1Table (__main__.TestTheTableStream.test_6_the_bit_decides_BETWEEN_0Table_and_1Table)
+Elegir el otro no da error: da un CLX que no es un CLX. ... ok
+test_7_a_CLX_with_properties_in_front_does_not_confuse (__main__.TestTheTableStream.test_7_a_CLX_with_properties_in_front_does_not_confuse)
+El CLX puede empezar con uno o varios `Prc`. Leer el primero ... ok
+test_12_a_CFB_that_is_not_Word_REFUSES_naming_it (__main__.TestVerdict.test_12_a_CFB_that_is_not_Word_REFUSES_naming_it)
+Un `.xls` es tambien un CFB. Lo que discrimina es la parte. ... ok
+test_13_a_stream_WITHOUT_the_signature_REFUSES (__main__.TestVerdict.test_13_a_stream_WITHOUT_the_signature_REFUSES)
+El nombre del flujo no basta: la firma 0xa5ec es el veredicto. ... ok
+test_14_what_is_not_a_CFB_REFUSES (__main__.TestVerdict.test_14_what_is_not_a_CFB_REFUSES) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.111s
+
+OK

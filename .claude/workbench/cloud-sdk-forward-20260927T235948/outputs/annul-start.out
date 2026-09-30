@@ -1,0 +1,5 @@
+base	21 pass, 0 fail	—
+no-skip-endpoint	19 pass, 2 fail	upstreams de nube > un upstream declarado de nube va por su SDK sin endpoint ni credencial propios | upstreams de nube > el error del SDK lleva el identificador de la petición
+no-synthetic-credential	19 pass, 2 fail	upstreams de nube > un upstream declarado de nube va por su SDK sin endpoint ni credencial propios | upstreams de nube > el error del SDK lleva el identificador de la petición
+no-cloud-map	19 pass, 2 fail	upstreams de nube > un upstream declarado de nube va por su SDK sin endpoint ni credencial propios | upstreams de nube > el error del SDK lleva el identificador de la petición
+no-cloud-options	20 pass, 1 fail	upstreams de nube > un upstream declarado de nube va por su SDK sin endpoint ni credencial propios

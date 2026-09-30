@@ -1,0 +1,9 @@
+{
+  "id": "19",
+  "subject": "Detectar el patrón general que precede al específico en una lista ordenada",
+  "description": "ID: TASK-API-0007\n\nUn emparejador por lista ordenada decide el destino por el ORDEN de sus reglas, y una regla general que preceda a una específica se lo lleva en silencio. Ocurrió dos veces en la misma sesión, en dos instrumentos distintos:\n\n- `.claude/eventos/triaje-skills-md-20260902T153717/gen.py:113` — el cajón de fase antes que `WP_ROOT_HOME`: cuatro artefactos con hogar declarado por una regla salieron como «sin contraparte».\n- `.claude/eventos/mapeo-destinos-sin-coordinador-20260902T174252/gen.py` — `-plan\\.md$` antes que `task-plan`: los dos `*-task-plan.md` de `workflow-decompose` fueron a `decisiones` en vez de a `tareas`.\n\nEl segundo se cometió mientras se corregía el primero, sin gate que lo impidiera. Ver :ref:`h-docs-1016`.\n\nNingún control del proyecto lo mide. Es sintáctico y por tanto mecanizable, a diferencia del sub-patrón C.\n\nCondición de cierre: un check que, dada una lista ordenada de patrones, reporte los pares donde el patrón de la posición i empareja un superconjunto del de la posición j > i (sufijo, subcadena o alternancia que lo contiene), probado contra los dos positivos reales de arriba y no contra un incumplidor fabricado.",
+  "activeForm": "Detectando reglas generales que preceden a específicas",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

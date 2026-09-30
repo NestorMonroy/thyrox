@@ -1,0 +1,8 @@
+rm -f "$HIST/vram-reservations.json"
+# Un error de la admisión no es un plazo vencido: con el registro en un sitio
+# donde no se puede escribir, el .err dice que la admisión FALLÓ y con qué
+# código, no «no hubo sitio» —eso afirmaría una medida que no ocurrió—.
+rm -rf "$F/out"; EXTRA="--timeout 2" HEADLESS_POOL_VRAM_LEDGER=/proc/no-se-puede/vram.json HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admisión con error: el ítem falla" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admisión con error: el .err dice que falló, no que venció" \
+  "$(gawk '/la admision por VRAM fallo \(exit [0-9]+\)/{a++} /admision por VRAM vencida/{b++} END{print a+0, b+0}' "$F/out/1.err")" "1 0"

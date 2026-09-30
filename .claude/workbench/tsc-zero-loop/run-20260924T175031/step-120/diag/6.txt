@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(386,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:376-396 ---
+    376      const microcompactResult = await deps.microcompact(
+    377        messagesForQuery,
+    378        toolUseContext,
+    379        querySource,
+    380      )
+    381      messagesForQuery = microcompactResult.messages
+    382      // For cached microcompact (cache editing), defer boundary message until after
+    383      // the API response so we can use actual cache_deleted_input_tokens.
+    384      // Gated behind feature() so the string is eliminated from external builds.
+    385      const pendingCacheEdits = feature('CACHED_MICROCOMPACT')
+    386>       ? microcompactResult.compactionInfo?.pendingCacheEdits
+    387        : undefined
+    388      queryCheckpoint('query_microcompact_end')
+    389  
+    390      // Project the collapsed context view and maybe commit more collapses.
+    391      // Runs BEFORE autocompact so that if collapse gets us under the
+    392      // autocompact threshold, autocompact is a no-op and we keep granular
+    393      // context instead of a single summary.
+    394      //
+    395      // Nothing is yielded — the collapsed view is a read-time projection
+    396      // over the REPL's full history. Summary messages live in the collapse

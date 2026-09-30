@@ -1,0 +1,7 @@
+== test-run-task-pool
+test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+== test-process-group
+test-process-group: 12 aserciones — 12 ok, 0 falla(s)
+== test-run-task-pool-aislamiento
+
+resultado: 10 de 11 aserciones en verde

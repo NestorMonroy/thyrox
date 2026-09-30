@@ -1,0 +1,19 @@
+src/packages/repl/src/commands/vim/index.ts(8,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/repl/src/commands/vim/vim")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/repl/src/commands/vim/index.ts:1-11 ---
+      1  import type { Command } from '@thyrox/command-runtime/runtime'
+      2  
+      3  const command = {
+      4    name: 'vim',
+      5    description: 'Toggle between Vim and Normal editing modes',
+      6    supportsNonInteractive: false,
+      7    type: 'local',
+      8>   load: () => import('./vim.js'),
+      9  } satisfies Command
+     10  
+     11  export default command
+  Type 'typeof import("/home/user/thyrox/src/packages/repl/src/commands/vim/vim")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

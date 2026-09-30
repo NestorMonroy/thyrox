@@ -1,0 +1,53 @@
+bun test v1.3.11 (af24e281)
+
+ 1112 pass
+ 0 fail
+ 1696 expect() calls
+Ran 1112 tests across 101 files. [1451.00ms]
+bun test v1.3.11 (af24e281)
+fatal: not a git repository (or any of the parent directories): .git
+
+__tests__/portFidelity.test.ts:
+[portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+
+ 2691 pass
+ 0 fail
+ 4928 expect() calls
+Ran 2691 tests across 199 files. [16.17s]
+bun test v1.3.11 (af24e281)
+
+src/__tests__/declaredDependencies.test.ts:
+=== @thyrox/<name> derivados de app-host/src ===
+ - agent
+ - bridge
+ - cli
+ - command-runtime
+ - config
+ - ide
+ - local-observability
+ - mcp-runtime
+ - memory
+ - output
+ - permission
+ - provider
+ - repl
+ - server
+ - shell
+ - stdin-napi
+ - storage
+ - swarm
+ - teleport
+ - tool-registry
+ - voice
+size: 21
+
+ 284 pass
+ 0 fail
+ 494 expect() calls
+Ran 284 tests across 31 files. [1114.00ms]
+bun test v1.3.11 (af24e281)
+
+ 911 pass
+ 0 fail
+ 1855 expect() calls
+Ran 911 tests across 62 files. [8.63s]

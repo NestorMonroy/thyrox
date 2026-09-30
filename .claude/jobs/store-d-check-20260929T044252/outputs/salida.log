@@ -1,0 +1,19 @@
+check-package-typecheck: 6 provider(s) reconstruido(s) por viejos: local-observability, mitm, observability, provider, store, tools
+  cli: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  finding: 1 propio(s) · 0 de hermano · 0 fuera (total 1)  <- sin baseline
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  mitm: 1 propio(s) · 0 de hermano · 0 fuera (total 1)  <- sin baseline
+  observability: 2 propio(s) · 0 de hermano · 0 fuera (total 2)  <- sube desde 0
+  provider: 1 propio(s) · 0 de hermano · 0 fuera (total 1)  <- sube desde 0
+  store: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tools: 1 propio(s) · 0 de hermano · 0 fuera (total 1)  <- sube desde 0
+
+check-package-typecheck: 6 error(es) propio(s) (alcance medido: 8 de 8 paquete(s))
+  3 paquete(s) suben sobre su baseline:
+    observability: 0 -> 2
+    provider: 0 -> 1
+    tools: 0 -> 1
+TC=1
+pass=263 fail=0 errors=0 crashes=0 files=24 failed=0
+T=0
+__BG_EXIT__=0

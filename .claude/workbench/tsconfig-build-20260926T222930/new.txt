@@ -1,0 +1,1 @@
+        return ".", [f"{d}/**/*" for d in covered] + root_files

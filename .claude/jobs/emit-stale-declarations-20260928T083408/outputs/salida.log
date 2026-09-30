@@ -1,0 +1,29 @@
+observability: OK
+output: OK
+paths: emitio pese a 2 errores (0 propio(s))
+permission: OK
+repl: OK
+server: OK
+shell: OK
+skills: OK
+storage: OK
+swarm: OK
+task: emitio pese a 5 errores (0 propio(s))
+teleport: OK
+tool-registry: OK
+tools: OK
+transparent-napi: OK
+updater: OK
+voice: OK
+workbench: emitio pese a 2 errores (0 propio(s))
+
+emit_declarations: 37 paquete(s) medido(s), 14 error(es) que siguen vivos en su propio paquete
+__tests__/mitmPrivilegedVerbs.test.ts(14,83): error TS2307: Cannot find module '../src/commands/mitm/privilegedVerbs.ts' or its corresponding type declarations.
+__tests__/mitmPrivilegedVerbs.test.ts(28,26): error TS7006: Parameter 'request' implicitly has an 'any' type.
+__tests__/mitmPrivilegedVerbs.test.ts(33,12): error TS7006: Parameter 'text' implicitly has an 'any' type.
+src/commands/mitm-commands.ts(64,40): error TS2322: Type 'import("/home/user/thyrox/src/packages/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/src/packages/mitm/src/inspector/buffer").TrafficBuffer'.
+src/commands/mitm/inProcessApi.ts(24,55): error TS2322: Type 'import("/home/user/thyrox/src/packages/mitm/dist/inspector/buffer").TrafficBuffer' is not assignable to type 'import("/home/user/thyrox/src/packages/mitm/src/inspector/buffer").TrafficBuffer'.
+check-cli-typecheck: tsconfig.json CRECE — 2 sobre un baseline de 0.
+check-cli-typecheck: tsconfig.tests.json CRECE — 7 sobre un baseline de 0.
+check-cli-typecheck: proyectos medidos: 2 de 2
+__BG_EXIT__=0

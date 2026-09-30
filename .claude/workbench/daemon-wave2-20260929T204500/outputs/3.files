@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+src/packages/daemon/src/__tests__/upgradeProbe.test.ts
+src/packages/daemon/src/bgDaemonTimers.ts
+src/packages/daemon/src/upgradeProbe.ts

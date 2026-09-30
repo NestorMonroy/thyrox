@@ -1,0 +1,73 @@
+Documentar un comando destructivo lo EJECUTO: heredoc sin comillas
+
+QUE PASO
+Al escribir el banco de arriba use `cat > archivo <<EOF` con el
+delimitador SIN comillas. El texto documentaba el estrechamiento del
+cono y citaba dos comandos entre acentos graves, como prosa tecnica
+normal. Bash empareja acentos graves dentro de un heredoc no
+entrecomillado y los ejecuta como sustitucion de comandos.
+
+La pareja que aterrizo fue la del final del bloque "Metrica:", que
+citaba el comando de estrechamiento SIN sus argumentos. Ejecutado asi,
+en modo cono, significa "ninguna carpeta":
+
+    core.sparseCheckout           -> true      (.git/config.worktree)
+    .git/info/sparse-checkout     -> /*        (solo archivos de raiz)
+                                     !/*/
+
+Resultado en el arbol de trabajo de THYROX:
+
+    src            27 entradas  -> AUSENTE
+    tests          37 entradas  -> AUSENTE
+    bin           180 entradas  -> AUSENTE
+    _references    64 entradas  -> AUSENTE
+    .claude                        PRESENTE (sus archivos sin seguir
+                                   protegieron el directorio)
+
+NO SE PERDIO NADA, Y ESO ES MEDIDO, NO SUPUESTO
+HEAD seguia en 927df467, sin stash, y `git status --porcelain` daba 6
+lineas: el store sqlite modificado (esperado, es un store vivo) y cinco
+directorios sin seguir bajo .claude/. Todo lo retirado estaba commiteado,
+asi que `git sparse-checkout disable` lo devolvio entero. Verificado
+despues: las cuatro raices vuelven con su mismo conteo de entradas, y
+`git diff --stat` solo lista el sqlite.
+
+Los 41 enlaces de workspace bajo node_modules tambien sobrevivieron
+(37 @thyrox + 4 @ant): estan en .gitignore, y sparse-checkout retira
+archivos SEGUIDOS.
+
+EL CONTROL QUE DISCRIMINA
+Una sonda con payload inocuo, dos variantes identicas salvo el
+delimitador. El payload crea un archivo testigo:
+
+    sin-comillas   testigo=EXISTE
+    con-comillas   testigo=ausente
+
+O sea: el delimitador entrecomillado es lo unico que separa "documentar
+un comando" de "ejecutarlo". No es una precaucion de estilo.
+
+    Metrica: existencia del archivo testigo tras correr cada variante.
+    Ciega a: las otras dos formas de expansion que un heredoc sin
+      comillas tambien hace -- $VAR y $(...) -- que la sonda no
+      ejercita; y a que el efecto depende de que el comando citado sea
+      ejecutable con los argumentos que la prosa le deje, que aqui fue
+      "ninguno".
+
+POR QUE LA PROSA NO BASTA
+El comando citado era correcto EN LA PROSA: describia lo que se hizo,
+con sus siete rutas. Lo que lo volvio destructivo fue citarlo una
+segunda vez sin argumentos, en la linea de "Metrica:", donde nombrar el
+comando basta. Un banco de evidencia cita comandos por oficio, asi que
+la exposicion no es excepcional: es la forma normal de este trabajo.
+
+CONDUCTA
+Todo heredoc que escriba prosa lleva el delimitador entrecomillado
+(<<'FIN'). El no entrecomillado queda para cuando la interpolacion es
+el proposito, y entonces el texto no cita comandos.
+
+SUCESOR
+Un gate que rechace `<<EOF` sin comillas cuando el cuerpo contiene un
+acento grave o $( es mecanizable y cae en la familia de los detectores
+de PreToolUse. Queda sin abrir aqui: el detector vive en el proveedor y
+su cableado es parametro del consumidor, que hoy no carga PreToolUse
+bajo este harness (H-DOCS-1010).

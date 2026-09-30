@@ -1,0 +1,1 @@
+function sk(){return la.getManagedFilePath()}

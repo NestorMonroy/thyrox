@@ -1,0 +1,6 @@
+./config/testing/index.ts
+./config/settings/validateEditTool.ts
+./config/contracts.ts
+./permission/src/filesystem.ts
+./permission/src/pathSafety.ts
+./permission/src/__tests__/pathSafety.test.ts

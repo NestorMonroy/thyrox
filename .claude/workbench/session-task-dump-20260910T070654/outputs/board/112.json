@@ -1,0 +1,8 @@
+{
+  "id": "112",
+  "subject": "Decidir si el ID segmentado debe verse en el Plan, y por cuál de las tres vías",
+  "description": "DESCONOCIDO declarado, con condición de cierre: decisión de alcance del ejecutor.\n\nMedido 2026-09-05 (analisis-que-campos-de-una-tarea-llegan-al-plan): el Plan\n—el attachment `task_reminder` que el ejecutable inyecta cada 10/10 turnos—\nrenderiza SOLO tres campos por tarea: `#id`, `[status]`, `subject`. La\n`description` no se serializa ahí por ninguna vía, y `TaskList` declara la misma\nsalida. Por tanto el `ID: TASK-<CAPA>-NNNN` escrito en las 34 descripciones NO\naparece en la lista que el ejecutor lee de un vistazo; sí aparece en `TaskGet`,\nen `pm/reportes/tablero-de-tareas.rst` y en toda cita de un `.rst`.\n\nNuestro harness hereda la forma por fidelidad de porte (`resumenTablero` en\ntools/tasks.ts:262-272 selecciona las mismas tres columnas).\n\nLas tres salidas, con su costo:\n\n(a) Dejarlo así — el ID vive donde se cita. Costo: no se ve en la lista.\n    Beneficio: cero riesgo sobre el anclaje por sujeto.\n(b) Prefijar el `subject` — se ve, pero rompe `_reanclar_citas_por_sujeto()`\n    salvo que aprenda a recortar el prefijo (segunda gramática que mantener), y\n    exige reescribir los 111 sujetos vivos del tablero del ejecutable.\n(c) Enriquecer SOLO nuestro renderer — `resumenTablero` devuelve también\n    `citation_id` y la línea pasa a `#id [TASK-…] [status] subject`. Es\n    divergencia declarada contra la fuente y NO cambia el Plan de esta sesión\n    (ése lo pinta el ejecutable), sino el de una sesión servida por el harness\n    propio.\n\nCierra cuando el ejecutor elija una, o cuando se registre por qué ninguna.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

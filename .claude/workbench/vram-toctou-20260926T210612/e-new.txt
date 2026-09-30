@@ -1,0 +1,8 @@
+HEADLESS_POOL_VRAM_RESERVE_MIB=
+
+# El registro de VRAM comprometida (`gpu_monitor admit/release`): cada ítem
+# reserva su pico bajo lock antes de arrancar y lo suelta al terminar, así dos
+# ítems —del mismo pool o de dos pools— no toman la misma VRAM libre. La
+# reserva de un dueño muerto deja de contar. Default:
+# `<base del historial>/vram-reservations.json`.
+HEADLESS_POOL_VRAM_LEDGER=

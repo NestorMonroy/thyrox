@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2404, "total_final": 2401, "tsc_runs": 1, "accepted": ["agent:port-compaction-result"], "files_kept": ["src/packages/agent/compaction/compact.ts"], "outcomes": {"agent:port-compaction-result": "accepted-net"}}

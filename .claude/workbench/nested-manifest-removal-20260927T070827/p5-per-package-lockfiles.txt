@@ -1,0 +1,8 @@
+## src/packages/bridge/bun.lock  ultimo cambio: 85379014 2026-09-07  workspaces-propios: 0
+## src/packages/daemon/bun.lock  ultimo cambio: 85379014 2026-09-07  workspaces-propios: 0
+## src/packages/headless-sdk/bun.lock  ultimo cambio: 2bec2cec 2026-09-07  workspaces-propios: 0
+## src/packages/ide/bun.lock  ultimo cambio: 59e4024b 2026-09-07  workspaces-propios: 0
+## src/packages/server/bun.lock  ultimo cambio: 59e4024b 2026-09-07  workspaces-propios: 0
+## bun desde un paquete con lockfile propio (antes de retirar el agregador)
+error: @ant/computer-use-mcp@workspace:* failed to resolve
+error: @anthropic/ink@workspace:* failed to resolve

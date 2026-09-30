@@ -1,0 +1,12 @@
+Bundled 5 modules in 4ms
+
+  index.js           289 bytes  (entry point)
+  index-xj4s3ryr.js  1.33 KB    (chunk)
+  index-3fxbzd7d.js  5.36 KB    (chunk)
+  index-53xdsek0.js  1.63 KB    (chunk)
+  io.js              119 bytes  (entry point)
+  premises.js        141 bytes  (entry point)
+  rst.js             91 bytes   (entry point)
+  schema.js          4.56 KB    (entry point)
+
+EXIT=0

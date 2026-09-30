@@ -1,0 +1,278 @@
+run-task-pool: 21 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260928T013616
+  job-20260928T013616/job-001 python3 tests/task/test_task_ids.py
+  job-20260928T013616/job-002 python3 tests/task/test_layer_axis.py
+  job-20260928T013616/job-003 python3 tests/hallazgo/test_hallazgo_ids.py
+  job-20260928T013616/job-004 python3 tests/task/test_census_open_tasks.py
+  job-20260928T013616/job-005 python3 tests/hallazgo/test_finding_id_collision.py
+  job-20260928T013616/job-006 python3 tests/task/test_board_sync.py
+  job-20260928T013616/job-007 python3 tests/agents/test_retention_level.py
+  job-20260928T013616/job-008 bash tests/agents/test-agent-store-usage-source.sh
+  job-20260928T013616/job-009 python3 tests/agents/test_task_status_vocabulary.py
+  job-20260928T013616/job-010 bash tests/agents/test-reconciliar-store-journal.sh
+  job-20260928T013616/job-011 python3 tests/session/test_generate_bin.py
+  job-20260928T013616/job-012 bash tests/agents/test-agent-store-compara-antes-de-escribir.sh
+  job-20260928T013616/job-013 bash tests/agents/test-reconciliar-store-completar.sh
+  job-20260928T013616/job-014 bash tests/agents/test-reconciliar-store-status.sh
+  job-20260928T013616/job-015 bash tests/agents/test-agent-store-render-tablero.sh
+  job-20260928T013616/job-016 python3 tests/agents/test_retention_backfill.py
+  job-20260928T013616/job-017 bash tests/agents/test-register-agent-session.sh
+  job-20260928T013616/job-018 python3 tests/agents/test_stop_reason_provenance.py
+  job-20260928T013616/job-019 bash tests/session/test-jobs-ledger-home.sh
+  job-20260928T013616/job-020 python3 tests/session/test_user_wiring.py
+  job-20260928T013616/job-021 python3 tests/session/test_installed_hooks_resolve.py
+run-task-pool: lanzados 21 de 21; esperando en PRIMER PLANO (timeout 343s)
+asentado: job-20260928T013616_job-001 -> OK (2 de 22)
+asentado: job-20260928T013616_job-002 -> OK (3 de 22)
+asentado: job-20260928T013616_job-003 -> OK (4 de 22)
+asentado: job-20260928T013616_job-004 -> OK (5 de 22)
+asentado: job-20260928T013616_job-005 -> OK (6 de 22)
+asentado: job-20260928T013616_job-006 -> OK (7 de 22)
+asentado: job-20260928T013616_job-007 -> OK (8 de 22)
+asentado: job-20260928T013616_job-008 -> OK (9 de 22)
+asentado: job-20260928T013616_job-009 -> OK (10 de 22)
+asentado: job-20260928T013616_job-010 -> OK (11 de 22)
+asentado: job-20260928T013616_job-011 -> OK (12 de 22)
+asentado: job-20260928T013616_job-012 -> OK (13 de 22)
+asentado: job-20260928T013616_job-013 -> OK (14 de 22)
+asentado: job-20260928T013616_job-014 -> OK (15 de 22)
+asentado: job-20260928T013616_job-015 -> OK (16 de 22)
+asentado: job-20260928T013616_job-016 -> OK (17 de 22)
+asentado: job-20260928T013616_job-017 -> OK (18 de 22)
+asentado: job-20260928T013616_job-018 -> OK (19 de 22)
+asentado: job-20260928T013616_job-019 -> OK (20 de 22)
+asentado: job-20260928T013616_job-020 -> OK (21 de 22)
+asentado: job-20260928T013616_job-021 -> OK (22 de 22)
+== 22 trabajos asentados ==
+OLVIDADO job-20260928T013616
+       | (vacío — no emitió nada)
+OK     job-20260928T013616_job-001 exit=0
+       | El store del mapa se declara, no se deriva por aritmetica
+       | 71 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 16728 KB (16 MB) · pared 1.22s
+OK     job-20260928T013616_job-002 exit=0
+       | test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+       | Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+       | test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+       | CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 0.066s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 23272 KB (23 MB) · pared 0.14s
+OK     job-20260928T013616_job-003 exit=0
+       |   ok    propose-id es el subcomando
+       |   ok    mint sigue resolviendo, como alias
+       |   ok    acunar sigue resolviendo, como alias
+       |   ok    la ayuda anuncia propose-id
+       |   ok    y dice que no reserva el número
+       |   ok    verify es el subcomando
+       |   ok    verificar sigue resolviendo, como alias
+       | 
+       | 32 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15036 KB (15 MB) · pared 0.08s
+OK     job-20260928T013616_job-004 exit=0
+       | 30 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 57408 KB (56 MB) · pared 56.09s
+OK     job-20260928T013616_job-005 exit=1
+       |   ok   y el contenido converge
+       |   ok   el siguiente id no colisiona con la fila del store
+       |   ok   sin el store, el verificador lo ve libre (la mitad ciega)
+       |   ok   con el store, el verificador lo ve OCUPADO
+       |   ok   el .rst del consumidor sigue contando
+       |   ok   no aparecen archivos nuevos en el árbol
+       |   FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/build-logs/job-20260928T013616/job-011.log']
+       | 
+       | 11 aprobada(s) · 1 fallida(s) (alcance medido: hallazgo_ids.next_id + agent_store agregar-hallazgo)
+       | EXIT=1
+       memoria pico: 112444 KB (110 MB) · pared 14.92s
+OK     job-20260928T013616_job-006 exit=0
+       | 100 aserciones
+       | OK: todas las aserciones pasan
+       | EXIT=0
+       memoria pico: 17640 KB (17 MB) · pared 0.71s
+OK     job-20260928T013616_job-007 exit=0
+       | == B. Un estado NO terminal no tiene nivel que afirmar ==
+       |   ok    running -> None, no 4: el agente sigue vivo
+       |   ok    un estado desconocido tampoco se cierra
+       | == C. La línea que escribe respeta el veredicto ==
+       |   ok    running no emite --retention-level
+       |   ok    completed sí lo emite, con su valor
+       |   ok    el status viaja igual en los dos casos
+       | 
+       | RESULTADO: 7 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 14852 KB (15 MB) · pared 0.04s
+OK     job-20260928T013616_job-008 exit=0
+       |   ok    'viva' (running) sigue en NULL
+       | == Caso 6: control anulable — sin discriminador, el censo deja de separar
+       |   ok    con discriminador, el censo declara el n del agregado
+       |   ok    con discriminador, el censo nombra la fila irrecuperable
+       |   ok    anulado, el relleno reconstruye 'transcript' desde los tokens
+       |   ok    anulado, 'no_medido' NO vuelve: no es deducible de la tabla
+       |   ok    anulado, la fila perdida cae al cubo 'sin clasificar'
+       | 
+       | usage_source: 12 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24712 KB (24 MB) · pared 1.78s
+OK     job-20260928T013616_job-009 exit=0
+       |   ok    y conserva sus tres filas
+       |   ok    y ahora rechaza lo de fuera
+       |   ok    y la clave compuesta sobrevive a la reconstruccion
+       | 
+       | == 5. la migracion es idempotente ==
+       |   ok    segunda pasada: las filas siguen
+       |   ok    y no quedo ninguna tabla de trabajo
+       | 
+       | resultado: 18 de 18 aserciones en verde
+       | EXIT=0
+       memoria pico: 20260 KB (20 MB) · pared 0.06s
+OK     job-20260928T013616_job-010 exit=0
+       | == caso 1: el journal declara result -> completed/journal ==
+       | == caso 2: el journal declara solo started -> failed/journal ==
+       | == caso 3: con sidecar manda la firma del transcript, no el journal ==
+       | == caso 4: CONTROL ANULADO — sin lector de journal caen 1 y 2, no el 3 ==
+       | == caso 5: el arbol REAL — ninguna fila ALCANZABLE queda sin procedencia ==
+       |   (store ausente en este arbol — caso omitido, no da verde falso)
+       | 
+       | OK: 4 de 4 casos en verde
+       | EXIT=0
+       memoria pico: 13736 KB (13 MB) · pared 0.24s
+OK     job-20260928T013616_job-011 exit=1
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |   ok   y el plan medido no esta vacio
+       | 
+       | 119 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=1
+       memoria pico: 27284 KB (27 MB) · pared 22.68s
+OK     job-20260928T013616_job-012 exit=0
+       | == 5. CONTROL ANULADO — sin el guard cae el caso 2, y SÓLO él ==
+       |   ok    la copia anulada se pudo construir
+       |   ok    SIN guard, el pase idéntico SÍ mueve updated_at (el defecto)
+       |   ok    SIN guard, la fila ausente sigue saliendo 1 (no depende del guard)
+       | == 6. el resumen del reconciliador separa completar de retocar ==
+       |   ok    el primer pase sí completa
+       |   ok    el segundo pase reporta sin cambios, no completados
+       | 
+       | 13 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24704 KB (24 MB) · pared 6.43s
+OK     job-20260928T013616_job-013 exit=0
+       |   ok    el sentinela sigue siendo «fallo»
+       |   ok    nombra el agente
+       |   ok    publica el codigo de salida
+       |   ok    publica el stderr del subproceso
+       |   ok    el camino sano no publica ruido
+       |   ok    el timeout es un desenlace, no una excepcion
+       |   ok    el timeout se nombra con su umbral
+       | 
+       | == 7 ok · 0 fallas ==
+       | EXIT=0
+       memoria pico: 13648 KB (13 MB) · pared 0.20s
+OK     job-20260928T013616_job-014 exit=0
+       |   ok    el mismo transcript, ya en silencio, sí se cierra
+       | == 7. el discriminador es el sidecar, y se mide como tal ==
+       |   ok    _tiene_sidecar ve el .meta.json
+       |   ok    _tiene_sidecar es False cuando no está
+       | == 8. el ancla del store, que la mudanza a agents/ rompio ==
+       |   ok    store_db() sin --claude-dir resuelve a un archivo que existe
+       |   ok    el ancla es la raiz del proveedor, y sin scripts/ intermedio
+       | 
+       | 12 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 15120 KB (15 MB) · pared 0.65s
+OK     job-20260928T013616_job-015 exit=0
+       |   ok    render sin sesión activa sale 0
+       |   ok    y sigue describiendo las dos sesiones
+       | == 7. store vacío: no revienta, deja constancia ==
+       |   ok    un store sin tareas sale 0
+       | == 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+       |   ok    cambiar el subject mueve la firma
+       |   ok    sin tocar nada la firma es estable
+       | 
+       | 18 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 68092 KB (66 MB) · pared 3.30s
+OK     job-20260928T013616_job-016 exit=0
+       | == C. El conteo publica su alcance ==
+       |   ok    cuatro filas tocadas, no seis
+       | == D. Lo que NO se toca — el control que puede fallar ==
+       |   ok    usage_source NULL sigue NULL: «nadie ha pasado todavía»
+       |   ok    un agente vivo no recibe nivel
+       | == E. Idempotencia: un segundo pase no reescribe nada ==
+       |   ok    segunda pasada toca 0
+       | 
+       | RESULTADO: 10 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 21148 KB (21 MB) · pared 0.20s
+OK     job-20260928T013616_job-017 exit=0
+       |   ok    el prompt es el encargo, no el eco del tool_result
+       |   ok    el nivel de retención sigue saliendo del payload
+       |   ok    sin timestamps, duration_s queda NULL
+       |   ok    sin tool_use, tool_uses_total queda NULL
+       |   ok    sin mensaje de usuario, prompt queda NULL
+       |   ok    el hook guarda el conjunto de claves del payload
+       |   ok    un payload de otra forma da otro conjunto de claves
+       | 
+       | 25 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 24912 KB (24 MB) · pared 5.41s
+OK     job-20260928T013616_job-018 exit=0
+       |   ok    total 0
+       |   ok    y los cubos suman 0
+       | 
+       | == 6. el barrido NO reclama una fila cuyo stop_reason ya se leyo ==
+       |   ok    la fila sana no se reclama
+       |   ok    stop_reason NULL leido por el extractor actual NO se reclama
+       |   ok    la que nunca se leyo si se reclama
+       | 
+       | resultado: 19 de 19 aserciones en verde
+       | EXIT=0
+       memoria pico: 22452 KB (22 MB) · pared 0.29s
+OK     job-20260928T013616_job-019 exit=0
+       |   ok    el hogar de las corridas NO mueve el ledger
+       |   ok    el .job cae bajo la raíz del ledger, en su sesión, y nada en las corridas
+       |   ok    THYROX_SESSION_LEDGER_DIR es el ledger de la sesión, tal cual
+       | 
+       | 3 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13068 KB (13 MB) · pared 0.28s
+OK     job-20260928T013616_job-020 exit=0
+       |   ok    17-bis.5 con la version vieja, 17.1 CAE
+       |   ok    17-bis.6 y 17.2 CAE: el comando roto sale del universo
+       |   ok    17-bis.7 restaurada, vuelve a verlo
+       |   ok    --hooks-only instala sin rehusar
+       |   ok    --hooks-only escribe los hooks declarados
+       |   ok    --hooks-only no toca advisorModel
+       |   ok    --hooks-only conserva permissions
+       | 
+       | 85 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 16152 KB (16 MB) · pared 2.10s
+OK     job-20260928T013616_job-021 exit=0
+       | test_it_emits_the_declared_event_set (__main__.InstalledHooksResolve.test_it_emits_the_declared_event_set)
+       | Sin esto, un instalador que no escribiera nada daría verde. ... ok
+       | test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+       | CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.885s
+       | 
+       | OK
+       | EXIT=0
+       memoria pico: 15788 KB (15 MB) · pared 0.94s
+salida distinta de 0: 2 (job-20260928T013616_job-005 job-20260928T013616_job-011)
+ÁRBOL MUTADO durante el despacho (/home/user/thyrox): el veredicto no es atribuible a ningún estado.
+  habría sido: exit 0
+__BG_EXIT__=5

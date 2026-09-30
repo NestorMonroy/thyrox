@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx(18,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx:8-28 ---
+      8  import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
+      9  import { Spinner } from '../../../Spinner.js'
+     10  import TextInput from '../../../TextInput.js'
+     11  import { useWizard } from '../../../wizard/index.js'
+     12  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+     13  import { generateAgent } from '../../generateAgent.js'
+     14  import type { AgentWizardData } from '../types.js'
+     15  
+     16  export function GenerateStep(): ReactNode {
+     17    const { updateWizardData, goBack, goToStep, wizardData } =
+     18>     useWizard<AgentWizardData>()
+     19    const [prompt, setPrompt] = useState(wizardData.generationPrompt || '')
+     20    const [isGenerating, setIsGenerating] = useState(false)
+     21    const [error, setError] = useState<string | null>(null)
+     22    const [cursorOffset, setCursorOffset] = useState(prompt.length)
+     23    const model = useMainLoopModel()
+     24    const abortControllerRef = useRef<AbortController | null>(null)
+     25  
+     26    // Cancel generation when escape pressed during generation
+     27    const handleCancelGeneration = useCallback(() => {
+     28      if (abortControllerRef.current) {

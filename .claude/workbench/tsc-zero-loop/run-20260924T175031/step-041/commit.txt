@@ -1,0 +1,8 @@
+Make the plugin gitExe binding synchronous
+
+config/plugin/_deps.ts declared gitExe as returning Promise<string>,
+but the function it binds, storage/git.ts gitExe, is a memoized
+synchronous lookup, and every caller in the marketplace manager and
+the plugin loader passes its result straight to execFile. The binding
+is now () => string, and the installer drops the cast that hid the
+mismatch.

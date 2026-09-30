@@ -1,0 +1,1 @@
+cd src/packages/skills && bun test 2>&1 | tail -n 4

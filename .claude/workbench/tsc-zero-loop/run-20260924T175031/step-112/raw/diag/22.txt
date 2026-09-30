@@ -1,0 +1,2 @@
+src/packages/agent/QueryEngine.ts(1337,22): error TS2339: Property 'type' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1338,45): error TS2339: Property 'text' does not exist on type '{}'.

@@ -1,0 +1,5 @@
+bash bin/emit_declarations --repoint paths > .claude/workbench/frontera-publica-20260927T023207/move/emit-paths.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-paths.out
+bash bin/emit_declarations --repoint store > .claude/workbench/frontera-publica-20260927T023207/move/emit-store.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-store.out
+bash bin/emit_declarations --repoint task > .claude/workbench/frontera-publica-20260927T023207/move/emit-task.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-task.out
+bash bin/emit_declarations --repoint coordination > .claude/workbench/frontera-publica-20260927T023207/move/emit-coordination.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-coordination.out
+bash bin/emit_declarations --repoint workbench > .claude/workbench/frontera-publica-20260927T023207/move/emit-workbench.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-workbench.out

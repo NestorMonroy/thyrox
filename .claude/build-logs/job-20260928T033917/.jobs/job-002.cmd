@@ -1,0 +1,1 @@
+cd src/packages/app-host && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)'

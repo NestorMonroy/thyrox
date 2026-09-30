@@ -1,0 +1,268 @@
+src/packages/repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:106-126 ---
+    106          <AttachmentMessage
+    107            addMargin={addMargin}
+    108            attachment={message.attachment}
+    109            verbose={verbose}
+    110            isTranscriptMode={isTranscriptMode}
+    111          />
+    112        )
+    113      case 'assistant':
+    114        return (
+    115          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    116>           {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+    117              <AssistantMessageBlock
+    118                key={index}
+    119                param={_}
+    120                addMargin={addMargin}
+    121                tools={tools}
+    122                commands={commands}
+    123                verbose={verbose}
+    124                inProgressToolUseIDs={inProgressToolUseIDs}
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+src/packages/repl/src/components/Message.tsx(116,36): error TS2339: Property 'map' does not exist on type 'MessageContent'.
+  --- código src/packages/repl/src/components/Message.tsx:106-126 ---
+    106          <AttachmentMessage
+    107            addMargin={addMargin}
+    108            attachment={message.attachment}
+    109            verbose={verbose}
+    110            isTranscriptMode={isTranscriptMode}
+    111          />
+    112        )
+    113      case 'assistant':
+    114        return (
+    115          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    116>           {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+    117              <AssistantMessageBlock
+    118                key={index}
+    119                param={_}
+    120                addMargin={addMargin}
+    121                tools={tools}
+    122                commands={commands}
+    123                verbose={verbose}
+    124                inProgressToolUseIDs={inProgressToolUseIDs}
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+  Property 'map' does not exist on type 'string'.
+src/packages/repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:125-145 ---
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+    127                shouldShowDot={shouldShowDot}
+    128                width={width}
+    129                inProgressToolCallCount={inProgressToolUseIDs.size}
+    130                isTranscriptMode={isTranscriptMode}
+    131                lookups={lookups}
+    132                onOpenRateLimitOptions={onOpenRateLimitOptions}
+    133                thinkingBlockId={`${message.uuid}:${index}`}
+    134                lastThinkingBlockId={lastThinkingBlockId}
+    135>               advisorModel={message.advisorModel}
+    136              />
+    137            ))}
+    138          </Box>
+    139        )
+    140      case 'user': {
+    141        if (message.isCompactSummary) {
+    142          return (
+    143            <CompactSummary
+    144              message={message}
+    145              screen={isTranscriptMode ? 'transcript' : 'prompt'}
+src/packages/repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/Message.tsx:148-168 ---
+    148        }
+    149        // Precompute the imageIndex prop for each content block. The previous
+    150        // version incremented a counter inside the .map() callback, which
+    151        // React Compiler bails on ("UpdateExpression to variables captured
+    152        // within lambdas"). A plain for loop keeps the mutation out of a
+    153        // closure so the compiler can memoize MessageImpl.
+    154        const imageIndices: number[] = []
+    155        let imagePosition = 0
+    156        for (const param of message.message.content) {
+    157          if (param.type === 'image') {
+    158>           const id = message.imagePasteIds?.[imagePosition]
+    159            imagePosition++
+    160            imageIndices.push(id ?? imagePosition)
+    161          } else {
+    162            imageIndices.push(imagePosition)
+    163          }
+    164        }
+    165        // Check if this message is the latest bash output - if so, wrap content
+    166        // with provider so OutputLine can show full output via context
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/components/Message.tsx(177,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:167-187 ---
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+    169          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    170            {message.message.content.map((param, index) => (
+    171              <UserMessage
+    172                key={index}
+    173                message={message}
+    174                addMargin={addMargin}
+    175                tools={tools}
+    176                progressMessagesForMessage={progressMessagesForMessage}
+    177>               param={param}
+    178                style={style}
+    179                verbose={verbose}
+    180                imageIndex={imageIndices[index]!}
+    181                isUserContinuation={isUserContinuation}
+    182                lookups={lookups}
+    183                isTranscriptMode={isTranscriptMode}
+    184              />
+    185            ))}
+    186          </Box>
+    187        )
+  Type 'SearchResultBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+    Property 'tool_use_id' is missing in type 'SearchResultBlockParam' but required in type 'ToolResultBlockParam'.
+src/packages/repl/src/components/Message.tsx(321,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:311-331 ---
+    311    isTranscriptMode: boolean
+    312  }): React.ReactNode {
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321>           planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323            timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+src/packages/repl/src/components/Message.tsx(323,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:313-333 ---
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321            planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323>           timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+    332            addMargin={addMargin && !isUserContinuation}
+    333          />
+src/packages/repl/src/components/Message.tsx(419,11): error TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:409-429 ---
+    409            width={width}
+    410            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    411          />
+    412        )
+    413      }
+    414    }
+    415    switch (param.type) {
+    416      case 'tool_use':
+    417        return (
+    418          <AssistantToolUseMessage
+    419>           param={param}
+    420            addMargin={addMargin}
+    421            tools={tools}
+    422            commands={commands}
+    423            verbose={verbose}
+    424            inProgressToolUseIDs={inProgressToolUseIDs}
+    425            progressMessagesForMessage={progressMessagesForMessage}
+    426            shouldAnimate={shouldAnimate}
+    427            shouldShowDot={shouldShowDot}
+    428            inProgressToolCallCount={inProgressToolCallCount}
+    429            lookups={lookups}
+  Type 'ConnectorTextBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/repl/src/components/Message.tsx(436,11): error TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:426-446 ---
+    426            shouldAnimate={shouldAnimate}
+    427            shouldShowDot={shouldShowDot}
+    428            inProgressToolCallCount={inProgressToolCallCount}
+    429            lookups={lookups}
+    430            isTranscriptMode={isTranscriptMode}
+    431          />
+    432        )
+    433      case 'text':
+    434        return (
+    435          <AssistantTextMessage
+    436>           param={param}
+    437            addMargin={addMargin}
+    438            shouldShowDot={shouldShowDot}
+    439            verbose={verbose}
+    440            width={width}
+    441            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    442          />
+    443        )
+    444      case 'redacted_thinking':
+    445        if (!isTranscriptMode && !verbose) {
+    446          return null
+  Property 'text' is missing in type 'ConnectorTextBlock' but required in type 'TextBlockParam'.
+src/packages/repl/src/components/Message.tsx(459,11): error TS2322: Type 'ThinkingBlockParam | ConnectorTextBlock | BetaThinkingBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+  --- código src/packages/repl/src/components/Message.tsx:449-469 ---
+    449      case 'thinking': {
+    450        if (!isTranscriptMode && !verbose) {
+    451          return null
+    452        }
+    453        // In transcript mode with hidePastThinking, only show the last thinking block
+    454        const isLastThinking =
+    455          !lastThinkingBlockId || thinkingBlockId === lastThinkingBlockId
+    456        return (
+    457          <AssistantThinkingMessage
+    458            addMargin={addMargin}
+    459>           param={param}
+    460            isTranscriptMode={isTranscriptMode}
+    461            verbose={verbose}
+    462            hideInTranscript={isTranscriptMode && !isLastThinking}
+    463          />
+    464        )
+    465      }
+    466      case 'server_tool_use':
+    467      case 'advisor_tool_result':
+    468        if (isAdvisorBlock(param)) {
+    469          return (
+  Type 'ConnectorTextBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+    Property 'thinking' is missing in type 'ConnectorTextBlock' but required in type 'ThinkingBlock'.
+src/packages/repl/src/components/Message.tsx(507,24): error TS2345: Argument of type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+  --- código src/packages/repl/src/components/Message.tsx:497-517 ---
+    497  }
+    498  
+    499  /** Exported for testing */
+    500  export function areMessagePropsEqual(prev: Props, next: Props): boolean {
+    501    if (prev.message.uuid !== next.message.uuid) return false
+    502    // Only re-render on lastThinkingBlockId change if this message actually
+    503    // has thinking content — otherwise every message in scrollback re-renders
+    504    // whenever streaming thinking starts/stops (CC-941).
+    505    if (
+    506      prev.lastThinkingBlockId !== next.lastThinkingBlockId &&
+    507>     hasThinkingContent(next.message)
+    508    ) {
+    509      return false
+    510    }
+    511    // Verbose toggle changes thinking block visibility/expansion
+    512    if (prev.verbose !== next.verbose) return false
+    513    // Only re-render if this message's "is latest bash output" status changed,
+    514    // not when the global latestBashOutputUUID changes to a different message
+    515    const prevIsLatest = prev.latestBashOutputUUID === prev.message.uuid
+    516    const nextIsLatest = next.latestBashOutputUUID === next.message.uuid
+    517    if (prevIsLatest !== nextIsLatest) return false
+  Type 'AssistantMessage' is not assignable to type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; } | undefined'.
+        Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; }'.
+          Types of property 'content' are incompatible.
+            Type 'MessageContent | undefined' is not assignable to type '{ type: string; }[]'.
+              Type 'undefined' is not assignable to type '{ type: string; }[]'.

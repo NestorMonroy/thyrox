@@ -1,0 +1,5 @@
+    ram_cap: int | None = None
+    vram_cap: int | None = None
+    #: La VRAM libre que un ítem espera antes de arrancar (pico × margen): la
+    #: admisión que ``--memfree`` hace para la RAM y Parallel no hace para la GPU.
+    vram_need_mib: int | None = None

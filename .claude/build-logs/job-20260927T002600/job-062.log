@@ -1,0 +1,51 @@
+OK   build_command: lleva --session-id propio
+OK   build_command: modo -p con salida json
+OK   build_command: --settings con la ruta dada
+OK   build_command: --model con el identificador
+OK   build_command: sin --resume ni --advisor si no se piden
+OK   build_command: --resume y --advisor cuando se piden
+OK   build_command: al reanudar NO lleva --session-id (el cliente exigiría --fork-session)
+OK   child_env: el hijo no hereda CLAUDE_CODE_SESSION_ID
+OK   build_command: rehúsa un alias
+OK   build_command: rehúsa un session-id que no es UUID
+OK   new_session_id: es un UUID distinto del de la sesión madre
+OK   hook_settings: advisorModel declarado
+OK   hook_settings: Pre/PostModelSwitch y el control Stop cableados
+OK   hook_settings: el hook vuelca su stdin a un marcador con el nombre del evento
+OK   hook_settings: sin advisor no declara advisorModel
+OK   write_settings: escribe JSON válido en el directorio
+OK   parse_result: contexto = entrada + escritura + lectura
+OK   parse_result: TTL real de la escritura
+OK   parse_result: modelos que el cliente valoró
+OK   parse_result: coste del cliente
+OK   parse_result: sin iteración de advisor
+OK   parse_result: rehúsa salida no JSON
+OK   cache_reused: 95 % del contexto previo → sí
+OK   cache_reused: por debajo → no
+OK   cache_reused: sin contexto previo no decide
+OK   advisor_outcome: iteraciones advisor_message → used
+OK   advisor_outcome: literal de no soporte → unsupported
+OK   advisor_outcome: no puede asesorar → cannot_advise
+OK   advisor_outcome: consentimiento → consent_required
+OK   advisor_outcome: sin señal → unknown
+OK   verdict: la entrada original sobrevivió al cambio (vuelta relee ≥ 95 % del contexto de ida)
+OK   verdict: el destino reescribió el contexto de la conversación
+OK   verdict: cita los tres pasos
+OK   verdict: un paso sin usage deja el veredicto en None
+OK   verdict: publica la fracción releída de la vuelta y del control
+OK   verdict: si el control pierde lo mismo, la pérdida no se atribuye al cambio
+OK   verdict: si el control relee y la vuelta no, la pérdida sí es del cambio
+OK   pares: la lista incluye el control de cada origen y no se repite
+OK   pares: un solo modelo da sólo su control
+OK   matriz: el control publica su fracción releída
+OK   matriz: leer 0 con un hermano es clave NO compartida
+OK   matriz: leer casi todo con otro id sería clave compartida
+OK   matriz: el control se marca como tal, no como hallazgo
+OK   matriz: un par cruzado por debajo de su control no comparte conversación
+OK   matriz: el control se compara consigo mismo y da True
+OK   matriz: sin control del mismo origen, vs_control no decide
+OK   matriz: sin contexto previo el par no decide
+OK   preconditions: sin binario → mensaje y código 2
+
+test_probe_model_switch_cache: 48 ok, 0 fallos (alcance medido: 48 aserciones)
+EXIT=0

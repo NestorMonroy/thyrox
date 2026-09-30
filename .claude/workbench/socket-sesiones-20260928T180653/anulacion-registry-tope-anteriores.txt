@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistryState.test.ts:
+ 95 |     for (const name of ['a', 'b', 'c', 'd', 'b', 'e']) {
+ 96 |       state.setRegisteredName(name, 'user')
+ 97 |       clock += 20000
+ 98 |     }
+ 99 |     state.setRegisteredName('f', 'user')
+100 |     expect(state.formerNames.map(former => former.name)).toEqual(['e', 'b', 'd'])
+                                                               ^
+error: expect(received).toEqual(expected)
+
+@@ -4,3 +4,4 @@
+    "d",
++   "c",
++   "a",
+  ]
+
+- Expected  - 0
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts:100:58)
+(fail) setRegisteredName > los anteriores son tres como mucho, sin repetir, del más reciente al más antiguo [0.51ms]
+
+ 13 pass
+ 1 fail
+ 36 expect() calls
+Ran 14 tests across 1 file. [76.00ms]

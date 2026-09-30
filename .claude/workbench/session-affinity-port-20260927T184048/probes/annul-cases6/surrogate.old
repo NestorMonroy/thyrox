@@ -1,0 +1,1 @@
+  return JSON.stringify(value.replace(LONE_SURROGATE, '\ufffd'))

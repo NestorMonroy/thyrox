@@ -1,0 +1,28 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/cli/src/structuredIOHelper.ts(20,11): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | "now" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; }'.
+  --- código src/packages/cli/src/structuredIOHelper.ts:10-30 ---
+     10      sdkUrl: string | undefined
+     11      replayUserMessages?: boolean
+     12    },
+     13  ): StructuredIO {
+     14    let inputStream: AsyncIterable<string>
+     15    if (typeof inputPrompt === 'string') {
+     16      if (inputPrompt.trim() !== '') {
+     17        inputStream = fromArray([
+     18          jsonStringify({
+     19            type: 'user',
+     20>           content: inputPrompt,
+     21            uuid: '',
+     22            session_id: '',
+     23            message: {
+     24              role: 'user',
+     25              content: inputPrompt,
+     26            },
+     27            parent_tool_use_id: null,
+     28          } satisfies SDKUserMessage),
+     29        ])
+     30      } else {

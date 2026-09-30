@@ -1,0 +1,1 @@
+cd src/packages/ink && bun test 2>&1 | tail -n 4

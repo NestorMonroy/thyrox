@@ -1,0 +1,6 @@
+src/packages/ide/src/lsp/passiveFeedback.ts(64,5): error TS2345: Argument of type '(diag: { message: string; severity?: number; range: { start: { line: number; character: number; }; end: { line: number; character: number; }; }; source?: string; code?: string | number; }) => { ...; }' is not assignable to parameter of type '(value: Diagnostic, index: number, array: Diagnostic[]) => { message: string; severity: "Error" | "Warning" | "Info" | "Hint"; range: { start: { line: number; character: number; }; end: { ...; }; }; source: string | undefined; code: string | undefined; }'.
+  Types of parameters 'diag' and 'value' are incompatible.
+    Type 'Diagnostic' is not assignable to type '{ message: string; severity?: number | undefined; range: { start: { line: number; character: number; }; end: { line: number; character: number; }; }; source?: string | undefined; code?: string | number | undefined; }'.
+      Types of property 'message' are incompatible.
+        Type 'string | MarkupContent' is not assignable to type 'string'.
+          Type 'MarkupContent' is not assignable to type 'string'.

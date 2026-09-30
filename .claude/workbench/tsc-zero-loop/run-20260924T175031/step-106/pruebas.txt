@@ -1,0 +1,12 @@
+src/packages/agent/__tests__/contentTextHelpers.test.ts
+src/packages/agent/__tests__/directMemberMessage.test.ts
+src/packages/agent/__tests__/preModelSwitch.test.ts
+src/packages/provider/__tests__/runtimeHelpers.test.ts
+src/packages/storage/src/__tests__/conversationChain.test.ts
+src/packages/swarm/__tests__/spawnInProcess.test.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+tests/coordination/claims.test.ts
+tests/coordination/collapse.test.ts
+tests/integration/slash-commands.test.ts
+tests/verify/namedImports.test.ts

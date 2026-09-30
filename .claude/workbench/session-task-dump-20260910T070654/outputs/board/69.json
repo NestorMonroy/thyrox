@@ -1,0 +1,9 @@
+{
+  "id": "69",
+  "subject": "Medir el CUMPLIMIENTO de una directiva tras compactación, no sólo su supervivencia textual",
+  "description": "ID: TASK-GEN-0028\n\nH-DOCS-1029. El test de compactación (#21/#32) midió si un HECHO/CIFRA sobrevive al resumen (supervivencia textual) y concluyó \"no se pierde nada\". Es ciego al fenómeno que importa: si una REGLA se OBEDECE tras la compactación. Demostrado en esta sesión: la prohibición de remolques Co-Authored-By: Claude / Claude-Session: está en .claude/rules/git-author-identity.md (cargada cada sesión) Y verbatim en el summary de compactación, y aun así se violó en el commit. Construir un control que pueda fallar sobre el CUMPLIMIENTO, no sólo la presencia del texto. El gate de commit-msg ya cierra el caso concreto de los remolques; esto es el caso general (una directiva compite con una inyección de turno del harness y pierde saliencia tras compactar).",
+  "activeForm": "Diseñando el control de cumplimiento post-compactación",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

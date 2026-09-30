@@ -1,0 +1,52 @@
+== base
+ 18 pass
+ 0 fail
+== anulado:     await execFileWithPassword('sudo', ['-S', 'chmod', '0644', destFile], sudoPassword)
+(fail) linux install copies, makes it world-readable, refreshes and adds to NSS [#9442] [28.76ms]
+ 17 pass
+ 1 fail
+== anulado:     if (mode !== 0o644) await
+(fail) an installed cert only has its mode repaired [#9442] [4.72ms]
+(fail) ensureSystemCertMode chmods only a cert that is not 0644 [7.41ms]
+ 16 pass
+ 2 fail
+== anulado:       await ensureSystemCertMode(linuxDestFile(deps), sudoPassword)
+(fail) an installed cert only has its mode repaired [#9442] [5.54ms]
+ 17 pass
+ 1 fail
+== anulado:   return normalize(securityOutput).includes(normalize(fingerprint))
+(fail) macCertOutputHasFingerprint ignores colons and case [2.75ms]
+(fail) macOS reads the keychain fingerprint and adds or deletes by it [4.62ms]
+ 16 pass
+ 2 fail
+== anulado:         await execFileText('certutil', ['-store', 'Root', certutilThumbprint(certPath)])
+(fail) windows checks and removes by the cert thumbprint [#7275] [6.52ms]
+ 17 pass
+ 1 fail
+== anulado:   return /cancel+ed/i.test(message) ? 'canceled' : 'environment'
+(fail) classifyCertInstallError calls only an explicit cancel canceled [2.21ms]
+(fail) installCertResult passes a user cancel through without skipping [9.90ms]
+ 16 pass
+ 2 fail
+== anulado:   return process.env.THYROX_MITM_SKIP_SYSTEM_TRUST === '1'
+(fail) THYROX_MITM_SKIP_SYSTEM_TRUST=1 skips the trust store but still checks the file [40.19ms]
+ 17 pass
+ 1 fail
+== anulado:       await execFileWithPassword('sudo', ['-S', config.cmd], sudoPassword)
+(fail) linux uninstall removes from NSS and the store, refreshing with --fresh or without [29.20ms]
+ 17 pass
+ 1 fail
+== anulado:   return candidates.find(config => fs.existsSync(config.dir)) ?? candidates[0]!
+ 18 pass
+ 0 fail
+== anulado:     await updateNssDatabases(certPath, 'add')
+(fail) linux install copies, makes it world-readable, refreshes and adds to NSS [#9442] [25.04ms]
+ 17 pass
+ 1 fail
+== anulado (con el caso de dos candidatos): return candidates.find(config => fs.existsSync(config.dir)) ?? candidates[0]!
+(fail) linux uses the first candidate whose directory exists, with its refresh command [27.51ms]
+ 18 pass
+ 1 fail
+== base final
+ 19 pass
+ 0 fail

@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboundPolicy.test.ts:
+43 |     expect(resolveInboundPolicy(readers({ flagSettings: 'hold', userSettings: 'refuse' }))).toEqual({ value: 'hold', decidedBy: 'flagSettings' })
+44 |     expect(resolveInboundPolicy(readers({ userSettings: 'refuse' }))).toEqual({ value: 'refuse', decidedBy: 'userSettings' })
+45 |   })
+46 | 
+47 |   test('una fuente deshabilitada no cuenta', () => {
+48 |     expect(resolveInboundPolicy(readers({ policySettings: 'refuse', userSettings: 'hold' }, { isSourceEnabled: source => source !== 'policySettings' }))).toEqual({
+                                                                                                                                                               ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "decidedBy": "userSettings",
+-   "value": "hold",
++   "decidedBy": "policySettings",
++   "value": "refuse",
+  }
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboundPolicy.test.ts:48:155)
+(fail) resolveInboundPolicy (I) > una fuente deshabilitada no cuenta [0.31ms]
+
+ 11 pass
+ 1 fail
+ 39 expect() calls
+Ran 12 tests across 1 file. [155.00ms]

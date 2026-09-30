@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscProposers.test.ts:
+87 |     // un archivo sobre el resultado de la primera metió la anotación en otro
+88 |     // sitio (TS2693). Las posiciones son del texto sobre el que se propuso.
+89 |     const rows = proposeInMemory(sources, ['/p/a.ts'], '/p')
+90 |     expect(rows.length).toBe(2)
+91 |     const first = applyProposalEdits(sources, rows[0], '/p')
+92 |     expect(() => applyProposalEdits(first, rows[1], '/p')).toThrow(/cambió/)
+                                                                ^
+error: expect(received).toThrow(expected)
+
+Expected pattern: /cambi\u00F3/
+
+Received function did not throw
+Received value: {
+  "/p/a.ts": "export function double(value) { return value * 2 }\nexport function idle(): number { const unusedLocal = 1 }\n",
+  "/p/dep.ts": "export const used = 1\n",
+  "/p/b.ts": "export const wrong: string = 1\n",
+}
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscProposers.test.ts:92:60)
+(fail) tscProposers > refuses to apply a candidate over a file that changed since it was proposed [595.16ms]
+
+ 17 pass
+ 1 fail
+ 37 expect() calls
+Ran 18 tests across 2 files. [13.40s]
+
+[exit=1]

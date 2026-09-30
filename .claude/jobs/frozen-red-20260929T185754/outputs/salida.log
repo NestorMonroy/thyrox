@@ -1,0 +1,13 @@
+  | the item never started:
+  | bash: /tmp/tmp.FiH7leBCes/frozen/src/session/../../bin/pool_history: No such file or directory
+  | headless-pool: REHUSA — no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)
+  | bash: /tmp/tmp.FiH7leBCes/frozen/src/session/../../bin/pool_history: No such file or directory
+  | headless-pool: REHUSA — no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)
+FAIL the live pool keeps the summary of the copy it started with — expected '1', got '0'
+OK   the rewritten source does not reach the live pool
+FAIL a frozen copy of the launcher exists while the item runs — expected 'yes', got 'no'
+OK   the frozen copy is removed when the pool exits
+OK   control: the freeze block was removed from the unfrozen copy
+FAIL control: without the freeze, the rewrite reaches the live pool — expected '1', got '0'
+result: 3 of 6 assertions green
+__BG_EXIT__=1

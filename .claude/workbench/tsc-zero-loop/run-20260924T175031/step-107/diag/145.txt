@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts(92,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts:82-102 ---
+     82          yesInputMode,
+     83          noInputMode,
+     84        }),
+     85      [filePath, toolPermissionContext, operationType, yesInputMode, noInputMode],
+     86    )
+     87  
+     88    // Handle option selection using shared handlers
+     89    const onChange = useCallback(
+     90      (option: PermissionOption, input: T, feedback?: string) => {
+     91        const params: PermissionHandlerParams = {
+     92>         messageId: toolUseConfirm.assistantMessage.message.id,
+     93          path: filePath,
+     94          toolUseConfirm,
+     95          toolPermissionContext,
+     96          onDone,
+     97          onReject,
+     98          completionType,
+     99          languageName,
+    100          operationType,
+    101        }
+    102  
+  Type 'undefined' is not assignable to type 'string'.

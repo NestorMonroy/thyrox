@@ -1,0 +1,2 @@
+    assert_equal("gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa", (2, True, False),
+                 (blocked, "GATE 4 BLOQUEADO" in err.getvalue(), (root / "local/items.txt").exists()))

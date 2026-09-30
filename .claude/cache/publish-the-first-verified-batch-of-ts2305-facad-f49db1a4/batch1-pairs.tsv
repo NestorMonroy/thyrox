@@ -1,0 +1,15 @@
+@thyrox/agent/messages/systemInit.js	buildSystemInitMessage
+@thyrox/agent/sessionTitle.js	generateSessionTitle
+@thyrox/app-host/state/AppState.js	getDefaultAppState
+@thyrox/config/env	env
+@thyrox/output/capture	ansiToPng
+@thyrox/output/capture	renameRecordingForSession
+@thyrox/permission	getAutoModeUnavailableNotification
+@thyrox/permission	getAutoModeUnavailableReason
+@thyrox/permission	hasPermissionsToUseTool
+@thyrox/permission	isAutoModeGateEnabled
+@thyrox/permission	isBypassPermissionsModeDisabled
+@thyrox/permission	transitionPermissionMode
+@thyrox/provider/claudeAiLimits.js	getRateLimitWarning
+@thyrox/provider/claudeAiLimits.js	getUsingOverageText
+@thyrox/shell	getCachedPowerShellPath

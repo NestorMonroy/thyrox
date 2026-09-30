@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declaration.test.ts:
+35 | 
+36 |   test('la SUBCADENA de un literal mayor NO cuenta', () => {
+37 |     // La forma real del defecto: la prosa de ayuda menciona el nombre del
+38 |     // campo dentro de un literal enorme.
+39 |     const doc = 'var d="...\\"used_percentage\\": number | null, // Pre-calculated...";'
+40 |     expect(findLiteralSites(doc, 'used_percentage').length).toBe(0)
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/declaration.test.ts:40:61)
+(fail) sitios de literal — la guarda de texto completo > la SUBCADENA de un literal mayor NO cuenta [0.64ms]
+
+ 11 pass
+ 1 fail
+ 20 expect() calls
+Ran 12 tests across 1 file. [5.72s]

@@ -1,0 +1,9 @@
+test_clone_tree:
+  ok    el roster se DERIVA de los clones construidos
+  ok    root compone la ruta del clon dentro del arbol
+  ok    los clones existen en disco
+  ok    el proveedor lleva el marcador del ascenso
+  FALLA sin roster declarado: la derivacion es la que responde — esperado None, obtenido 'api,docs,ui'
+  FALLA un solo clon sigue rehusando por mayoria — esperado 'ReachRootError', obtenido 'sin error'
+  ok    el entorno THYROX_* se restaura al salir
+test_clone_tree: 7 aserciones — 5 ok, 2 falla(s)

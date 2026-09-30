@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/lib/test-toolchain-*.sh; do r=$(timeout 300 bash \"$t\" 2>&1 | tail -1); echo \"$t :: $r\"; done", "started_at": "2026-09-29T17:24:29+00:00"}

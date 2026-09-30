@@ -1,0 +1,14 @@
+caso 1 — por defecto el worktree vive en .thyrox/pool-worktrees de la raíz
+  ok    prepare sale 0
+  FALLA bajo REPO/.thyrox/pool-worktrees: esperado «si», obtenido «no»
+  FALLA la ruta entera, sin segmentos sensibles: esperado «0», obtenido «1»
+  ok    es un worktree del repositorio
+  ok    el árbol principal queda limpio
+  FALLA la exclusión no se duplica: esperado «1», obtenido «0»
+  ok    sweep retira los worktrees de la ejecución
+caso 2 — THYROX_POOL_WORKTREES_DIR cambia la raíz
+  FALLA bajo la raíz declarada: esperado «si», obtenido «no»
+caso 3 — una raíz con segmento sensible se rechaza
+  FALLA exit 2: esperado «2», obtenido «0»
+  FALLA lo dice: esperado «1», obtenido «0»
+item_worktree location: 4/10

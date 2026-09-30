@@ -1,0 +1,48 @@
+== 1: cualquier prefijo
+ 1 fail
+== 2: el salto final rompe el blob
+ 1 fail
+== 3: cualquier alfabeto
+ 1 fail
+== 4: cualquier versión
+ 1 fail
+== 5: un proveedor en blanco basta
+ 1 fail
+== 6: sin tokens no es error
+ 1 fail
+== 7: sin access_token no es error
+ 1 fail
+== 8: el proveedor se codifica sin recortar
+ 1 fail
+== 9: se codifica sin proveedor
+ 1 fail
+== 10: cualquier proveedor admite el pegado
+ 1 fail
+== 11: el blob de otro proveedor se acepta
+ 1 fail
+== 12: sólo la forma key
+ 1 fail
+== 13: sin exigir refresco
+ 1 fail
+== 14: el JWT suelto se lee como basura
+ 1 fail
+== 15: lo vacío sin recortar
+ 2 fail
+== 16: todos los archivos del ZIP
+ 2 fail
+== 17: sin tope de archivos
+ 1 fail
+== 18: con rutas que suben
+ 1 fail
+== 19: sin tope por archivo
+ 1 fail
+== 20: sin tope total
+ 1 fail
+== 21: la ruta entera como nombre
+ 1 fail
+== 22: un ZIP roto sin decirlo
+ 1 fail
+== 23: un ZIP sin JSON devuelve vacío
+ 1 fail
+== restaurado
+ 0 fail

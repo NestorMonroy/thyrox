@@ -1,0 +1,1 @@
+    if (hasOverflow || maxCandidates.length === 0) return undefined

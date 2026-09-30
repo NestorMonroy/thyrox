@@ -1,0 +1,8 @@
+ok   literal IPv6 desnudo             NO_PROXY=::1          -> true (esperado true)
+ok   bloque CIDR IPv6 (ULA)           NO_PROXY=fd00::/8     -> true (esperado true)
+ok   bloque CIDR IPv6 (link-local)    NO_PROXY=fe80::/10    -> true (esperado true)
+ok   CONTROL IPv4: ya funciona        NO_PROXY=127.0.0.0/8  -> true (esperado true)
+ok   CONTROL en familia: CIDR discrimina NO_PROXY=fd00::/8     -> false (esperado false)
+ok   CONTROL fuera de familia (debil) NO_PROXY=::1          -> false (esperado false)
+
+rojos: 0 de 6

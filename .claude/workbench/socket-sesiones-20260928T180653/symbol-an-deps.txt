@@ -1,0 +1,13 @@
+==== lde: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js function lde [1324,1386)
+function lde(e,n=2000){return e.length>n?`${re(e,n)}\u2026`:e}
+==== YC: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js function YC [868,934)
+function YC(e){return Tn(XUt(Mz(e))).replace(/ {2,}/g," ").trim()}
+==== y: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js function y [2671,3001)
+function y(e,n){let t=re(e,n*8);if(t.length===e.length)return t;let r=/\x1b(?:[\]PX^_][^\x1b\x07]*\x1b?|\[[\x30-\x3f]*[\x20-\x2f]*)$/.exec(t);if(r===null)return t;let o=e.slice(r.index);return(o[1]==="["?/^\x1b\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]/.test(o):/^\x1b[\]PX^_][^\x1b\x07]*(?:\x07|\x1b\\)/.test(o))?t.slice(0,r.index):t}
+==== p: 1 definicion(es) de nivel superior
+---- chunk-tp36n59y.js variable p [3005,3032)
+p=/(?<![^\s\p{P}])\p{M}+/gu
+symbol: 4 de 4 nombre(s) resueltos

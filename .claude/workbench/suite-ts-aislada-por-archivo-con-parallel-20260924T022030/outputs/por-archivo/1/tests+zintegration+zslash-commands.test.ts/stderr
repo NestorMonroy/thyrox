@@ -1,0 +1,23 @@
+
+tests/integration/slash-commands.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) slash command popup e2e > getCommands returns at least built-in commands [1493.98ms]
+3169 |   // getInlinePlugins() is a synchronous state read with no dependency on
+3170 |   // marketplace loading, so these two sources can be fetched concurrently.
+3171 |   const inlinePlugins = getInlinePlugins()
+3172 |   const [marketplaceResult, sessionResult] = await Promise.all([
+3173 |     marketplaceLoader(),
+3174 |     inlinePlugins.length > 0
+           ^
+TypeError: undefined is not an object (evaluating 'inlinePlugins.length')
+      at assemblePluginLoadResult (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3174:5)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3149:12)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/loadPluginCommands.ts:424:37)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/tests/integration/slash-commands.test.ts:51:24)
+(fail) slash command popup e2e > getPluginCommands + getPluginSkills aggregate cleanly [5.58ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [1.61s]

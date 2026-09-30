@@ -1,0 +1,4 @@
+permission: emitio pese a 4793 errores (192 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 4793 error(es) que siguen vivos en su propio paquete
+EXIT=0

@@ -1,0 +1,220 @@
+diff --git a/src/session/recovery_controller.py b/src/session/recovery_controller.py
+index a7ba4d93..25d377f9 100644
+--- a/src/session/recovery_controller.py
++++ b/src/session/recovery_controller.py
+@@ -20,6 +20,19 @@ Clasificación
+   completa;
+ - ``closed``: publicado y coherente.
+ 
++Tomar la propiedad
++-------------------
++``recover_to_worktree`` sólo lee la foto; no dice nada sobre quién es el
++dueño del ítem en ``pool_lifecycle``. Cuando la recuperación DECIDE
++continuar el trabajo de un ítem ``abandoned-recoverable``, ``claim_and_recover``
++toma la propiedad con ``pool_lifecycle.claim`` ANTES de abrir el worktree: el
++ítem pasa a una generación mayor que la abandonada, y cualquier actor que
++siga citando la generación vieja queda rechazado con ``StaleGenerationError``
++en su próxima transición o publicación, sin que le haga falta enterarse del
++worktree nuevo. El destino y la rama se nombran con la generación tomada;
++el contenido que reproducen sigue siendo el de la foto de la generación
++abandonada, que es la última que existe.
++
+ Lo que nunca hace
+ -----------------
+ No borra un runtime sin publicar: ``prune`` rehúsa mientras quede un ítem de
+@@ -38,7 +51,7 @@ import sys
+ from pathlib import Path
+ 
+ from session import pool_lifecycle as lc
+-from session.snapshot_store import SnapshotError, read_manifest
++from session.snapshot_store import SnapshotError, SnapshotManifest, read_manifest
+ 
+ ACTIVE = "active"
+ CLOSING = "closing"
+@@ -81,25 +94,20 @@ def recovery_branch(run: str, item: str, generation: int) -> str:
+     return f"refs/heads/thyrox/recovery/{run}/{item}/{generation}"
+ 
+ 
+-def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
+-                        into: Path | None = None, restore_index: bool = True) -> Path:
+-    """Reproduce la foto en un worktree y una rama temporales; el árbol del usuario no cambia.
++def _open_worktree_from_manifest(repo: Path, manifest: SnapshotManifest, target: Path, branch: str, *,
++                                 restore_index: bool) -> Path:
++    """Crea el worktree y la rama de recuperación, y reproduce la foto en su árbol.
+ 
+-    El worktree queda como estaba el del ítem al tomar la foto: ``HEAD`` en
++    Deja el worktree como estaba el del ítem al tomar la foto: ``HEAD`` en
+     ``base_head``, el índice en ``original_index_tree`` y los archivos del
+     ``snapshot_commit``. Así lo preparado y lo no preparado siguen separados.
+-    ``restore_index`` existe sólo como control de anulación.
++    Compartida por ``recover_to_worktree`` y ``claim_and_recover``: la única
++    diferencia entre ambas es de dónde sale la generación con la que se nombran
++    el destino y la rama.
+     """
+-    manifest = read_manifest(run, item, generation)
+-    if manifest is None:
+-        raise RecoveryError(f"no hay foto de {run}/{item}/{generation}")
+-    if not manifest.is_intact():
+-        raise RecoveryError(f"el manifiesto de {run}/{item}/{generation} no coincide con su sha256")
+-    target = Path(into) if into else recovery_path(run, item, generation)
+     if target.exists():
+         raise RecoveryError(f"{target} ya existe; no se reutiliza un destino de recuperación")
+     target.parent.mkdir(parents=True, exist_ok=True)
+-    branch = recovery_branch(run, item, generation).removeprefix("refs/heads/")
+     base = manifest.base_head or manifest.snapshot_commit
+     steps = [["git", "-C", str(repo), "worktree", "add", "-q", "-b", branch, str(target), base]]
+     if restore_index:
+@@ -113,6 +121,59 @@ def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
+     return target
+ 
+ 
++def recover_to_worktree(repo: Path, run: str, item: str, generation: int, *,
++                        into: Path | None = None, restore_index: bool = True) -> Path:
++    """Reproduce la foto en un worktree y una rama temporales; el árbol del usuario no cambia.
++
++    No toma la propiedad del ítem en ``pool_lifecycle``: es la lectura simple
++    de una foto ya tomada, y su destino se nombra con la misma generación que
++    la foto. ``claim_and_recover`` es la forma que sí toma la propiedad antes
++    de abrir el worktree. ``restore_index`` existe sólo como control de
++    anulación.
++    """
++    manifest = read_manifest(run, item, generation)
++    if manifest is None:
++        raise RecoveryError(f"no hay foto de {run}/{item}/{generation}")
++    if not manifest.is_intact():
++        raise RecoveryError(f"el manifiesto de {run}/{item}/{generation} no coincide con su sha256")
++    target = Path(into) if into else recovery_path(run, item, generation)
++    branch = recovery_branch(run, item, generation).removeprefix("refs/heads/")
++    return _open_worktree_from_manifest(repo, manifest, target, branch, restore_index=restore_index)
++
++
++def claim_and_recover(repo: Path, live_dir: Path, out_dir: Path, run: str, item: str,
++                      owner_pid: int, *, into: Path | None = None, restore_index: bool = True) -> Path:
++    """La recuperación decide continuar: toma el ítem antes de abrir su foto.
++
++    ``pool_lifecycle.claim`` mueve el ítem a una generación mayor que la
++    abandonada y que la publicada ANTES de abrir ningún worktree: desde ese
++    momento cualquier actor que siga citando la generación abandonada queda
++    rechazado con ``StaleGenerationError`` en su próxima transición o
++    publicación, exista o no exista ya el worktree de recuperación. El destino
++    y la rama se nombran con la generación nueva; el contenido que reproducen
++    sigue siendo el de la última foto tomada, la de la generación abandonada.
++    Sólo se puede tomar un ítem ``ABANDONED_RECOVERABLE`` (la precondición de
++    ``claim``); si no hay foto íntegra de la generación abandonada, se rehúsa
++    sin tomar la propiedad. ``recover_to_worktree`` es la forma sin esta toma
++    de propiedad, para una foto que ya se sabe cerrada y sin dueño que disputar.
++    """
++    stale = lc.read_state(live_dir, item)
++    if stale is None:
++        raise RecoveryError(f"el ítem {item} no tiene estado en {live_dir}")
++    manifest = read_manifest(run, item, stale.generation)
++    if manifest is None:
++        raise RecoveryError(f"no hay foto de {run}/{item}/{stale.generation}")
++    if not manifest.is_intact():
++        raise RecoveryError(f"el manifiesto de {run}/{item}/{stale.generation} no coincide con su sha256")
++    try:
++        claimed = lc.claim(live_dir, out_dir, item, owner_pid)
++    except lc.LifecycleError as error:
++        raise RecoveryError(str(error)) from error
++    target = Path(into) if into else recovery_path(run, item, claimed.generation)
++    branch = recovery_branch(run, item, claimed.generation).removeprefix("refs/heads/")
++    return _open_worktree_from_manifest(repo, manifest, target, branch, restore_index=restore_index)
++
++
+ def restore_in_place(repo: Path, run: str, item: str, generation: int, *, confirm: bool = False) -> None:
+     """Sobrescribe el árbol de ``repo`` con la foto. Sólo con ``confirm=True``.
+ 
+diff --git a/tests/session/test_snapshot_recovery.py b/tests/session/test_snapshot_recovery.py
+index 288733da..e87bf576 100644
+--- a/tests/session/test_snapshot_recovery.py
++++ b/tests/session/test_snapshot_recovery.py
+@@ -13,6 +13,10 @@ Casos (numeración de la especificación de TASK-THYROX-0601):
+      rehúsa retirar su runtime.
+  14. (I4) la foto de una generación desplazada se rehúsa si ya existe la de
+      la siguiente: no deja ref ni manifiesto, y la siguiente queda intacta.
++ 15. (TASK-THYROX-0621) la recuperación que decide continuar toma la
++     propiedad del ítem antes de abrir el worktree: la generación sube, el
++     destino se nombra con la nueva, y un actor de la generación abandonada
++     queda rechazado con ``StaleGenerationError`` al transicionar o publicar.
+ 
+ Controles de anulación:
+ - ``capture_worktree=False``: la foto se queda en lo preparado y caen
+@@ -21,6 +25,10 @@ Controles de anulación:
+ - ``refuse_superseded=False``: la foto de la generación desplazada se escribe.
+ - ``restore_in_place(confirm=True)``: la operación destructiva sí pisa el árbol,
+   que es lo que la recuperación por defecto evita.
++- caso 15 vs. 15c: usar ``recover_to_worktree`` (sin claim) en vez de
++  ``claim_and_recover`` deja la generación abandonada vigente, y caen
++  exactamente las dos aserciones de rechazo por generación —el resto del
++  caso 15 no depende de la toma de propiedad y no cae.
+ """
+ from __future__ import annotations
+ 
+@@ -244,5 +252,67 @@ with tempfile.TemporaryDirectory() as scratch:
+     check("control: la ref de la generación 1 existe", stale.snapshot_commit,
+           git(repo14, "rev-parse", ss.snapshot_ref("r14", "1", 1)))
+ 
++
++    print("caso 15 (TASK-THYROX-0621): la recuperación que decide continuar toma la propiedad")
++    repo15 = make_repo(base / "repo15")
++    dirty(repo15)
++    status15 = git(repo15, "status", "--porcelain")
++    ss.take_snapshot(repo15, "r15", "1", 1)
++    out15 = base / "out15"
++    out15.mkdir()
++    live15 = lc.open_run(out15, os.getpid(), run_id="r15")
++    dead15 = subprocess.Popen(["true"])
++    dead15.wait()
++    lc.begin(live15, out15, "1", owner_pid=dead15.pid)
++    lc.transition(live15, "1", lc.ABANDONED_RECOVERABLE)
++    new_owner = os.getpid()
++    target15 = rc.claim_and_recover(repo15, live15, out15, "r15", "1", new_owner)
++    claimed15 = lc.read_state(live15, "1")
++    check("el ítem queda en la generación nueva, con el dueño nuevo", (2, new_owner),
++          (claimed15.generation, claimed15.owner_pid))
++    check("el worktree de recuperación se nombra con la generación nueva",
++          rc.recovery_path("r15", "1", 2), target15)
++    check("la rama de recuperación es la de la generación nueva",
++          rc.recovery_branch("r15", "1", 2), git(target15, "symbolic-ref", "-q", "HEAD"))
++    check("el contenido recuperado es el de la foto de la generación abandonada", status15,
++          git(target15, "status", "--porcelain"))
++    check("... exactamente lo que esa foto capturó", ("sin preparar\n", "nuevo\n"),
++          ((target15 / "unstaged.txt").read_text(), (target15 / "untracked.txt").read_text()))
++    try:
++        lc.transition(live15, "1", lc.CLOSING, generation=1)
++        check("un actor de la generación abandonada queda rechazado al transicionar",
++              "StaleGenerationError", "no rechazó")
++    except lc.StaleGenerationError:
++        check("un actor de la generación abandonada queda rechazado al transicionar", True, True)
++    try:
++        lc.publish(live15, out15, "1", generation=1)
++        check("...también al publicar con esa generación", "StaleGenerationError", "no rechazó")
++    except lc.StaleGenerationError:
++        check("...también al publicar con esa generación", True, True)
++    lc.transition(live15, "1", lc.CLOSING, generation=2)
++    check("... y la generación tomada sí puede seguir trabajando", lc.CLOSING,
++          lc.read_state(live15, "1").state)
++
++    print("caso 15c: control — recuperar sin claim deja actuar a la generación abandonada")
++    repo15c = make_repo(base / "repo15c")
++    dirty(repo15c)
++    ss.take_snapshot(repo15c, "r15c", "1", 1)
++    out15c = base / "out15c"
++    out15c.mkdir()
++    live15c = lc.open_run(out15c, os.getpid(), run_id="r15c")
++    dead15c = subprocess.Popen(["true"])
++    dead15c.wait()
++    lc.begin(live15c, out15c, "1", owner_pid=dead15c.pid)
++    lc.transition(live15c, "1", lc.ABANDONED_RECOVERABLE)
++    rc.recover_to_worktree(repo15c, "r15c", "1", 1)
++    check("control: sin claim, el ítem se queda en la generación abandonada", 1,
++          lc.read_state(live15c, "1").generation)
++    lc.transition(live15c, "1", lc.CLOSING, generation=1)
++    check("control: sin claim, un actor de la generación abandonada NO se rechaza al transicionar",
++          lc.CLOSING, lc.read_state(live15c, "1").state)
++    lc.publish(live15c, out15c, "1", generation=1)
++    check("control: sin claim, tampoco se rechaza al publicar con la generación abandonada", True,
++          lc.is_closed(out15c, "1"))
++
+ print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
+ sys.exit(1 if FAILED else 0)

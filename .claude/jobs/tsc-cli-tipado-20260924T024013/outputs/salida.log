@@ -1,0 +1,5 @@
+.claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/tsc-cli-conteo.sh: line 7: .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/tipado-hooks.txt: No such file or directory
+.claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/tsc-cli-conteo.sh: line 8: .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/tipado-hooks.txt: No such file or directory
+--- nuevos contra base
+comm: .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/base.txt: No such file or directory
+__BG_EXIT__=1

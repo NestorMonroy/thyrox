@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -104,7 +104,7 @@
+       const edits = proposer.edits(service, fileName, text)
+       if (edits.length === 0) continue
+       const targets = diagnostics
+-        .filter(diagnostic => proposer.codes.has(diagnostic.code) && touches(diagnostic, edits))
++        .filter(diagnostic => touches(diagnostic, edits))
+         .map(diagnostic => diagnosticKey(diagnostic, cwd))
+       // Una edición que no toca ningún diagnóstico reclamado no tiene objeto:
+       // el verificador la daría `no-targets` y no enseñaría nada.

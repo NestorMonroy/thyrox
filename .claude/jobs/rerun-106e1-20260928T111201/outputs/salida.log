@@ -1,0 +1,34 @@
+== 9: sin recortar
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > the field wins over a code merely mentioned earlier in the text [0.35ms]
+ 26 pass
+ 1 fail
+== 10: sin JSON anidado
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > the field wins over a code merely mentioned earlier in the text [0.39ms]
+ 26 pass
+ 1 fail
+== 11: sin el campo en texto
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > the field wins over a code merely mentioned earlier in the text [0.37ms]
+ 26 pass
+ 1 fail
+== 37: irrecuperable se reintenta
+   (src/accounts/refresh/circuitBreaker.ts)
+(fail) retry with circuit breaker > an unrecoverable result leaves the failure count alone [0.55ms]
+ 26 pass
+ 1 fail
+== 57: Google — sin la marca de prefijo
+   (src/accounts/refresh/googleClientBinding.ts)
+(fail) Google refresh client > a rotated custom client, a missing secret, no marker or builtin fall back to the provider builtin [0.51ms]
+ 26 pass
+ 1 fail
+== 17b: el cuerpo sin clasificar
+   (src/accounts/refresh/refreshErrors.ts)
+(fail) refresh errors > the error body is read once, parsed when it is JSON, and classified [0.53ms]
+ 26 pass
+ 1 fail
+== restaurado
+ 27 pass
+ 0 fail
+__BG_EXIT__=0

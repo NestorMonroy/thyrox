@@ -1,0 +1,83 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1157-1177 ---
+   1157    // 3P default: off — OSC 21337 is ant-only while the spec stabilizes.
+   1158    // Gated so we can roll back if the sidebar indicator conflicts with
+   1159    // the title spinner in terminals that render both. When the flag is
+   1160    // on, the user-facing config setting controls whether it's active.
+   1161    const tabStatusGateEnabled = getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false);
+   1162    const showStatusInTerminalTab = tabStatusGateEnabled && (getGlobalConfig().showStatusInTerminalTab ?? false);
+   1163    useTabStatus(titleDisabled || !showStatusInTerminalTab ? null : sessionStatus);
+   1164  
+   1165    // Register the leader's setToolUseConfirmQueue for in-process teammates
+   1166    useEffect(() => {
+   1167>     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+   1168      return () => unregisterLeaderToolUseConfirmQueue();
+   1169    }, [setToolUseConfirmQueue]);
+   1170  
+   1171    const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
+   1172    const messagesRef = useRef(messages);
+   1173  
+   1174    // Bg-session FleetView sync (see hook JSDoc for ant 3988.js lineage):
+   1175    // state.json disk writes + rv-channel mirror on each turn transition.
+   1176    useBgFleetStateSync(isLoading, messages);
+   1177    useBgRendezvousServer(isLoading); // ant 4291.js rv server: 30s heartbeat + startup-wedge (no-op unless bg+rv-sock)
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<ToolUseConfirm[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: ToolUseConfirm[]) => ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2371-2391 ---
+   2371            });
+   2372            return currentQueue;
+   2373          });
+   2374        }, setToolUseConfirmQueue);
+   2375      },
+   2376      [setAppState, setToolUseConfirmQueue],
+   2377    );
+   2378  
+   2379    // Register the leader's setToolPermissionContext for in-process teammates
+   2380    useEffect(() => {
+   2381>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2382      return () => unregisterLeaderSetToolPermissionContext();
+   2383    }, [setToolPermissionContext]);
+   2384  
+   2385    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2386  
+   2387    const requestPrompt = useCallback(
+   2388      (title: string, toolInputSummary?: string | null) =>
+   2389        (request: PromptRequest): Promise<PromptResponse> =>
+   2390          new Promise<PromptResponse>((resolve, reject) => {
+   2391            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2919-2939 ---
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929>         onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2937          const entries = apiMetricsRef.current;
+   2938  
+   2939          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp

@@ -1,0 +1,25 @@
+# variante-b-extends
+# fuente: .claude/jobs/tc-extends-20260919T113250/outputs/salida.log
+# errores TS: 3287
+# archivos distintos: 595
+# --- por familia (top 20) ---
+    540 error TS2305
+    510 error TS2345
+    472 error TS18046
+    377 error TS2339
+    282 error TS6133
+    255 error TS7006
+    226 error TS2322
+    135 error TS18048
+     57 error TS2698
+     54 error TS2724
+     44 error TS7053
+     40 error TS2554
+     38 error TS2349
+     26 error TS2307
+     21 error TS7016
+     20 error TS6196
+     18 error TS2353
+     16 error TS2532
+     15 error TS2741
+     13 error TS1360

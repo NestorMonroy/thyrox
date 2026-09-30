@@ -1,0 +1,40 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/claudeAiLimits.test.ts:
+142 |    * Anulación: sustituir `parseHeaderNumber` por `Number` hace caer este caso
+143 |    * y el de `extractRawUtilization` que lo ejerce sobre la cabecera; ninguno más.
+144 |    */
+145 |   test('la cadena VACÍA da `undefined` — `Number("")` daría 0, un cero fabricado', () => {
+146 |     expect(Number('')).toBe(0)
+147 |     expect(parseHeaderNumber('')).toBeUndefined()
+                                        ^
+error: expect(received).toBeUndefined()
+
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:147:35)
+(fail) parseHeaderNumber — el parseo de la cabecera (`vot`) > la cadena VACÍA da `undefined` — `Number("")` daría 0, un cero fabricado [0.30ms]
+198 |     // saldría `{ utilization: 0, resets_at: 1800000000 }` — un 0 % inventado.
+199 |     const got = extractRawUtilization(headersOf({
+200 |       'anthropic-ratelimit-unified-5h-utilization': '',
+201 |       'anthropic-ratelimit-unified-5h-reset': '1800000000',
+202 |     }))
+203 |     expect(got).toEqual({ five_hour: { resets_at: 1800000000 } })
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+      "resets_at": 1800000000,
++     "utilization": 0,
+    },
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/claudeAiLimits.test.ts:203:17)
+(fail) extractRawUtilization — tres cabeceras, campos opcionales (`szo`) > una cabecera VACÍA no fabrica un cero: la ventana queda sin ese campo [0.22ms]
+
+ 49 pass
+ 2 fail
+ 59 expect() calls
+Ran 51 tests across 1 file. [142.00ms]

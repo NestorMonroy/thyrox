@@ -1,0 +1,101 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/bridge/src/bridgeMain.ts(2269,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/bridge/src/bridgeMain.ts:2259-2279 ---
+   2259    }
+   2260  
+   2261    const branch = await getBranchForHeadless()
+   2262    const gitRepoUrl = await getRemoteUrlForHeadless()
+   2263    const machineName = hostname()
+   2264    const bridgeId = randomUUID()
+   2265  
+   2266    const config: BridgeConfig = {
+   2267      dir,
+   2268      machineName,
+   2269>     branch,
+   2270      gitRepoUrl,
+   2271      maxSessions: opts.capacity,
+   2272      spawnMode: opts.spawnMode,
+   2273      verbose: false,
+   2274      sandbox: opts.sandbox,
+   2275      bridgeId,
+   2276      workerType: 'claude_code',
+   2277      environmentId: randomUUID(),
+   2278      apiBaseUrl: baseUrl,
+   2279      sessionIngressUrl,
+src/packages/bridge/src/bridgeMain.ts(2270,5): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  --- código src/packages/bridge/src/bridgeMain.ts:2260-2280 ---
+   2260  
+   2261    const branch = await getBranchForHeadless()
+   2262    const gitRepoUrl = await getRemoteUrlForHeadless()
+   2263    const machineName = hostname()
+   2264    const bridgeId = randomUUID()
+   2265  
+   2266    const config: BridgeConfig = {
+   2267      dir,
+   2268      machineName,
+   2269      branch,
+   2270>     gitRepoUrl,
+   2271      maxSessions: opts.capacity,
+   2272      spawnMode: opts.spawnMode,
+   2273      verbose: false,
+   2274      sandbox: opts.sandbox,
+   2275      bridgeId,
+   2276      workerType: 'claude_code',
+   2277      environmentId: randomUUID(),
+   2278      apiBaseUrl: baseUrl,
+   2279      sessionIngressUrl,
+   2280      sessionTimeoutMs: opts.sessionTimeoutMs,
+src/packages/bridge/src/bridgeMain.ts(2323,9): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  --- código src/packages/bridge/src/bridgeMain.ts:2313-2333 ---
+   2313    const logger = createHeadlessBridgeLogger(log)
+   2314    logger.printBanner(config, environmentId)
+   2315  
+   2316    let initialSessionId: string | undefined
+   2317    if (opts.createSessionOnStart) {
+   2318      try {
+   2319        const sid = await createBridgeSession({
+   2320          environmentId,
+   2321          title: opts.name,
+   2322          events: [],
+   2323>         gitRepoUrl,
+   2324          branch,
+   2325          signal,
+   2326          baseUrl,
+   2327          getAccessToken: opts.getAccessToken,
+   2328          permissionMode: opts.permissionMode,
+   2329        })
+   2330        if (sid) {
+   2331          initialSessionId = sid
+   2332          log(`created initial session ${sid}`)
+   2333        }
+src/packages/bridge/src/bridgeMain.ts(2324,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/bridge/src/bridgeMain.ts:2314-2334 ---
+   2314    logger.printBanner(config, environmentId)
+   2315  
+   2316    let initialSessionId: string | undefined
+   2317    if (opts.createSessionOnStart) {
+   2318      try {
+   2319        const sid = await createBridgeSession({
+   2320          environmentId,
+   2321          title: opts.name,
+   2322          events: [],
+   2323          gitRepoUrl,
+   2324>         branch,
+   2325          signal,
+   2326          baseUrl,
+   2327          getAccessToken: opts.getAccessToken,
+   2328          permissionMode: opts.permissionMode,
+   2329        })
+   2330        if (sid) {
+   2331          initialSessionId = sid
+   2332          log(`created initial session ${sid}`)
+   2333        }
+   2334      } catch (err) {

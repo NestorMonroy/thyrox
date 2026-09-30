@@ -1,0 +1,213 @@
+run-task-pool: 104 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260928T014319
+  job-20260928T014319/job-001 PYTHONPATH=src bash tests/agents/test-agent-store-auto-recall-limit.sh
+  job-20260928T014319/job-002 PYTHONPATH=src bash tests/agents/test-agent-store-buscar-tareas.sh
+  job-20260928T014319/job-003 PYTHONPATH=src bash tests/agents/test-agent-store-clasificar-documentos.sh
+  job-20260928T014319/job-004 PYTHONPATH=src bash tests/agents/test-agent-store-compara-antes-de-escribir.sh
+  job-20260928T014319/job-005 PYTHONPATH=src bash tests/agents/test-agent-store-fecha-apertura.sh
+  job-20260928T014319/job-006 PYTHONPATH=src bash tests/agents/test-agent-store-fecha-documento.sh
+  job-20260928T014319/job-007 PYTHONPATH=src bash tests/agents/test-agent-store-fts-degradation.sh
+  job-20260928T014319/job-008 PYTHONPATH=src bash tests/agents/test-agent-store-reassignment-guard.sh
+  job-20260928T014319/job-009 PYTHONPATH=src bash tests/agents/test-agent-store-render-tablero.sh
+  job-20260928T014319/job-010 PYTHONPATH=src bash tests/agents/test-agent-store-sessions.sh
+  job-20260928T014319/job-011 PYTHONPATH=src bash tests/agents/test-agent-store-tareas.sh
+  job-20260928T014319/job-012 PYTHONPATH=src bash tests/agents/test-agent-store-transcript-path.sh
+  job-20260928T014319/job-013 PYTHONPATH=src bash tests/agents/test-agent-store-type-source.sh
+  job-20260928T014319/job-014 PYTHONPATH=src bash tests/agents/test-agent-store-usage-columns.sh
+  job-20260928T014319/job-015 PYTHONPATH=src bash tests/agents/test-agent-store-usage-source.sh
+  job-20260928T014319/job-016 PYTHONPATH=src bash tests/agents/test-carrete-store.sh
+  job-20260928T014319/job-017 PYTHONPATH=src bash tests/agents/test-merge-sqlite-union.sh
+  job-20260928T014319/job-018 PYTHONPATH=src bash tests/agents/test-model-catalog.sh
+  job-20260928T014319/job-019 PYTHONPATH=src bash tests/agents/test-reconciliar-store-journal.sh
+  job-20260928T014319/job-020 PYTHONPATH=src bash tests/agents/test-reconciliar-store-status.sh
+  job-20260928T014319/job-021 PYTHONPATH=src bash tests/agents/test-register-agent-session.sh
+  job-20260928T014319/job-022 PYTHONPATH=src python3 tests/agents/test_derive_submodule.py
+  job-20260928T014319/job-023 PYTHONPATH=src python3 tests/agents/test_document_root_default.py
+  job-20260928T014319/job-024 PYTHONPATH=src python3 tests/agents/test_readonly_connection.py
+  job-20260928T014319/job-025 PYTHONPATH=src python3 tests/agents/test_register_session.py
+  job-20260928T014319/job-026 PYTHONPATH=src python3 tests/agents/test_retention_backfill.py
+  job-20260928T014319/job-027 PYTHONPATH=src python3 tests/agents/test_stop_reason_provenance.py
+  job-20260928T014319/job-028 PYTHONPATH=src python3 tests/agents/test_store_dir_default.py
+  job-20260928T014319/job-029 PYTHONPATH=src python3 tests/agents/test_store_home.py
+  job-20260928T014319/job-030 PYTHONPATH=src python3 tests/agents/test_store_import_without_roster.py
+  job-20260928T014319/job-031 PYTHONPATH=src python3 tests/agents/test_store_repo_path.py
+  job-20260928T014319/job-032 PYTHONPATH=src python3 tests/agents/test_table_census.py
+  job-20260928T014319/job-033 PYTHONPATH=src python3 tests/agents/test_task_status_vocabulary.py
+  job-20260928T014319/job-034 PYTHONPATH=src python3 tests/agents/test_usage_census_deviation.py
+  job-20260928T014319/job-035 PYTHONPATH=src python3 tests/corpus/test_backfill_store_destination.py
+  job-20260928T014319/job-036 PYTHONPATH=src python3 tests/corpus/test_censo_contraparte.py
+  job-20260928T014319/job-037 PYTHONPATH=src python3 tests/corpus/test_cfb.py
+  job-20260928T014319/job-038 PYTHONPATH=src python3 tests/corpus/test_doc_to_text.py
+  job-20260928T014319/job-039 PYTHONPATH=src python3 tests/corpus/test_docx_charts.py
+  job-20260928T014319/job-040 PYTHONPATH=src python3 tests/corpus/test_xls_to_text.py
+  job-20260928T014319/job-041 PYTHONPATH=src python3 tests/corpus/test_xlsx_to_text.py
+  job-20260928T014319/job-042 PYTHONPATH=src bash tests/githooks/test-pre-commit-cache-layout.sh
+  job-20260928T014319/job-043 PYTHONPATH=src bash tests/githooks/test-pre-commit-reconcile-status.sh
+  job-20260928T014319/job-044 PYTHONPATH=src python3 tests/hallazgo/test_finding_id_collision.py
+  job-20260928T014319/job-045 PYTHONPATH=src bash tests/hooks/test-hook-error-log.sh
+  job-20260928T014319/job-046 PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+  job-20260928T014319/job-047 PYTHONPATH=src python3 tests/hooks/test_detect_client_background.py
+  job-20260928T014319/job-048 PYTHONPATH=src python3 tests/hooks/test_detect_dedicated_tool_usage.py
+  job-20260928T014319/job-049 PYTHONPATH=src python3 tests/hooks/test_detect_self_matching_pgrep.py
+  job-20260928T014319/job-050 PYTHONPATH=src python3 tests/hooks/test_task_lifecycle.py
+  job-20260928T014319/job-051 PYTHONPATH=src bash tests/lib/test-reach-pythonpath.sh
+  job-20260928T014319/job-052 PYTHONPATH=src python3 tests/lib/test_pyproject_declares_imports.py
+  job-20260928T014319/job-053 PYTHONPATH=src python3 tests/measurement/test_residual_structure.py
+  job-20260928T014319/job-054 PYTHONPATH=src python3 tests/measurement/test_series.py
+  job-20260928T014319/job-055 PYTHONPATH=src python3 tests/measurement/test_trend.py
+  job-20260928T014319/job-056 PYTHONPATH=src python3 tests/meta/test_runner_exit_two.py
+  job-20260928T014319/job-057 PYTHONPATH=src python3 tests/paths/test_child_env.py
+  job-20260928T014319/job-058 PYTHONPATH=src python3 tests/paths/test_consumer_env_layer.py
+  job-20260928T014319/job-059 PYTHONPATH=src python3 tests/paths/test_declaration_port.py
+  job-20260928T014319/job-060 PYTHONPATH=src python3 tests/repo/test_pending_work_telemetry.py
+  job-20260928T014319/job-061 PYTHONPATH=src bash tests/run.sh
+  job-20260928T014319/job-062 PYTHONPATH=src python3 tests/session/hardware/cuda_pool_item.py
+  job-20260928T014319/job-063 PYTHONPATH=src bash tests/session/hardware/test-gpu-pools-real.sh
+  job-20260928T014319/job-064 PYTHONPATH=src bash tests/session/test-gnu-time-launchers.sh
+  job-20260928T014319/job-065 PYTHONPATH=src bash tests/session/test-gpu-admission-cli.sh
+  job-20260928T014319/job-066 PYTHONPATH=src bash tests/session/test-headless-pool-thyrox-p.sh
+  job-20260928T014319/job-067 PYTHONPATH=src bash tests/session/test-headless-pool-worktree.sh
+  job-20260928T014319/job-068 PYTHONPATH=src bash tests/session/test-headless-pool.sh
+  job-20260928T014319/job-069 PYTHONPATH=src bash tests/session/test-store-faucet.sh
+  job-20260928T014319/job-070 PYTHONPATH=src bash tests/session/test-write-env-repairs-moved-clone.sh
+  job-20260928T014319/job-071 PYTHONPATH=src python3 tests/session/test_documentation_preflight.py
+  job-20260928T014319/job-072 PYTHONPATH=src python3 tests/session/test_generate_bin.py
+  job-20260928T014319/job-073 PYTHONPATH=src python3 tests/session/test_gpu_scenarios.py
+  job-20260928T014319/job-074 PYTHONPATH=src python3 tests/session/test_installed_hooks_resolve.py
+  job-20260928T014319/job-075 PYTHONPATH=src python3 tests/session/test_jobs_home.py
+  job-20260928T014319/job-076 PYTHONPATH=src python3 tests/session/test_pid_wait.py
+  job-20260928T014319/job-077 PYTHONPATH=src python3 tests/session/test_pool_history.py
+  job-20260928T014319/job-078 PYTHONPATH=src python3 tests/session/test_write_env.py
+  job-20260928T014319/job-079 PYTHONPATH=src bash tests/skills/test-evals-use-thyrox-p.sh
+  job-20260928T014319/job-080 PYTHONPATH=src python3 tests/store/test_agent_sessions.py
+  job-20260928T014319/job-081 PYTHONPATH=src bash tests/task/test-closure-graph.sh
+  job-20260928T014319/job-082 PYTHONPATH=src bash tests/task/test-refresh-board.sh
+  job-20260928T014319/job-083 PYTHONPATH=src python3 tests/task/test_board_sync.py
+  job-20260928T014319/job-084 PYTHONPATH=src python3 tests/task/test_layer_axis.py
+  job-20260928T014319/job-085 PYTHONPATH=src python3 tests/task/test_layer_signals.py
+  job-20260928T014319/job-086 PYTHONPATH=src python3 tests/task/test_task_ids.py
+  job-20260928T014319/job-087 PYTHONPATH=src python3 tests/task/test_task_source_citas.py
+  job-20260928T014319/job-088 PYTHONPATH=src bash tests/verify/test-gitattributes.sh
+  job-20260928T014319/job-089 PYTHONPATH=src bash tests/verify/test-githooks-activos.sh
+  job-20260928T014319/job-090 PYTHONPATH=src bash tests/verify/test-ids-entre-ramas.sh
+  job-20260928T014319/job-091 PYTHONPATH=src bash tests/verify/test-mutante-en-staging.sh
+  job-20260928T014319/job-092 PYTHONPATH=src bash tests/verify/test-post-commit-store-index.sh
+  job-20260928T014319/job-093 PYTHONPATH=src bash tests/verify/test-script-naming.sh
+  job-20260928T014319/job-094 PYTHONPATH=src bash tests/verify/test-suite-discrimina.sh
+  job-20260928T014319/job-095 PYTHONPATH=src bash tests/verify/test-verificar-premisa.sh
+  job-20260928T014319/job-096 PYTHONPATH=src bash tests/verify/test-verify-task-store.sh
+  job-20260928T014319/job-097 PYTHONPATH=src python3 tests/verify/test_check_cache_layout.py
+  job-20260928T014319/job-098 PYTHONPATH=src python3 tests/verify/test_identifier_language_baseline.py
+  job-20260928T014319/job-099 PYTHONPATH=src python3 tests/verify/test_pre_commit_hook.py
+  job-20260928T014319/job-100 PYTHONPATH=src python3 tests/verify/test_script_naming_scope.py
+  job-20260928T014319/job-101 PYTHONPATH=src python3 tests/verify/test_source_copy_step.py
+  job-20260928T014319/job-102 PYTHONPATH=src python3 tests/verify/test_tsc_cycle.py
+  job-20260928T014319/job-103 PYTHONPATH=src python3 tests/verify/test_unbounded_pipe.py
+  job-20260928T014319/job-104 PYTHONPATH=src python3 tests/verify/test_unsized_writer_pipe.py
+run-task-pool: lanzados 104 de 104; esperando en PRIMER PLANO (timeout 1s)
+asentado: job-20260928T014319_job-001 -> OK (2 de 105)
+asentado: job-20260928T014319_job-002 -> OK (3 de 105)
+asentado: job-20260928T014319_job-003 -> OK (4 de 105)
+asentado: job-20260928T014319_job-004 -> OK (5 de 105)
+asentado: job-20260928T014319_job-005 -> OK (6 de 105)
+asentado: job-20260928T014319_job-006 -> OK (7 de 105)
+asentado: job-20260928T014319_job-007 -> OK (8 de 105)
+asentado: job-20260928T014319_job-008 -> OK (9 de 105)
+asentado: job-20260928T014319_job-009 -> OK (10 de 105)
+asentado: job-20260928T014319_job-010 -> OK (11 de 105)
+asentado: job-20260928T014319_job-011 -> OK (12 de 105)
+asentado: job-20260928T014319_job-012 -> OK (13 de 105)
+asentado: job-20260928T014319_job-013 -> OK (14 de 105)
+asentado: job-20260928T014319_job-014 -> OK (15 de 105)
+asentado: job-20260928T014319_job-015 -> OK (16 de 105)
+asentado: job-20260928T014319_job-016 -> OK (17 de 105)
+asentado: job-20260928T014319_job-017 -> OK (18 de 105)
+asentado: job-20260928T014319_job-018 -> OK (19 de 105)
+asentado: job-20260928T014319_job-019 -> OK (20 de 105)
+asentado: job-20260928T014319_job-020 -> OK (21 de 105)
+asentado: job-20260928T014319_job-021 -> OK (22 de 105)
+asentado: job-20260928T014319_job-022 -> OK (23 de 105)
+asentado: job-20260928T014319_job-023 -> OK (24 de 105)
+asentado: job-20260928T014319_job-024 -> OK (25 de 105)
+asentado: job-20260928T014319_job-025 -> OK (26 de 105)
+asentado: job-20260928T014319_job-026 -> OK (27 de 105)
+asentado: job-20260928T014319_job-027 -> OK (28 de 105)
+asentado: job-20260928T014319_job-028 -> OK (29 de 105)
+asentado: job-20260928T014319_job-029 -> OK (30 de 105)
+asentado: job-20260928T014319_job-030 -> OK (31 de 105)
+asentado: job-20260928T014319_job-031 -> OK (32 de 105)
+asentado: job-20260928T014319_job-032 -> OK (33 de 105)
+asentado: job-20260928T014319_job-033 -> OK (34 de 105)
+asentado: job-20260928T014319_job-034 -> OK (35 de 105)
+asentado: job-20260928T014319_job-035 -> OK (36 de 105)
+asentado: job-20260928T014319_job-036 -> OK (37 de 105)
+asentado: job-20260928T014319_job-037 -> OK (38 de 105)
+asentado: job-20260928T014319_job-038 -> OK (39 de 105)
+asentado: job-20260928T014319_job-039 -> OK (40 de 105)
+asentado: job-20260928T014319_job-040 -> OK (41 de 105)
+asentado: job-20260928T014319_job-041 -> OK (42 de 105)
+asentado: job-20260928T014319_job-042 -> OK (43 de 105)
+asentado: job-20260928T014319_job-043 -> OK (44 de 105)
+asentado: job-20260928T014319_job-044 -> OK (45 de 105)
+asentado: job-20260928T014319_job-045 -> OK (46 de 105)
+asentado: job-20260928T014319_job-046 -> OK (47 de 105)
+asentado: job-20260928T014319_job-047 -> OK (48 de 105)
+asentado: job-20260928T014319_job-048 -> OK (49 de 105)
+asentado: job-20260928T014319_job-049 -> OK (50 de 105)
+asentado: job-20260928T014319_job-050 -> OK (51 de 105)
+asentado: job-20260928T014319_job-051 -> OK (52 de 105)
+asentado: job-20260928T014319_job-052 -> OK (53 de 105)
+asentado: job-20260928T014319_job-053 -> OK (54 de 105)
+asentado: job-20260928T014319_job-054 -> OK (55 de 105)
+asentado: job-20260928T014319_job-055 -> OK (56 de 105)
+asentado: job-20260928T014319_job-056 -> OK (57 de 105)
+asentado: job-20260928T014319_job-057 -> OK (58 de 105)
+asentado: job-20260928T014319_job-058 -> OK (59 de 105)
+asentado: job-20260928T014319_job-059 -> OK (60 de 105)
+asentado: job-20260928T014319_job-060 -> OK (61 de 105)
+asentado: job-20260928T014319_job-062 -> OK (62 de 105)
+asentado: job-20260928T014319_job-063 -> OK (63 de 105)
+asentado: job-20260928T014319_job-064 -> OK (64 de 105)
+asentado: job-20260928T014319_job-065 -> OK (65 de 105)
+asentado: job-20260928T014319_job-066 -> OK (66 de 105)
+asentado: job-20260928T014319_job-067 -> OK (67 de 105)
+asentado: job-20260928T014319_job-068 -> OK (68 de 105)
+asentado: job-20260928T014319_job-069 -> OK (69 de 105)
+asentado: job-20260928T014319_job-070 -> OK (70 de 105)
+asentado: job-20260928T014319_job-071 -> OK (71 de 105)
+asentado: job-20260928T014319_job-072 -> OK (72 de 105)
+asentado: job-20260928T014319_job-073 -> OK (73 de 105)
+asentado: job-20260928T014319_job-074 -> OK (74 de 105)
+asentado: job-20260928T014319_job-075 -> OK (75 de 105)
+asentado: job-20260928T014319_job-076 -> OK (76 de 105)
+asentado: job-20260928T014319_job-077 -> OK (77 de 105)
+asentado: job-20260928T014319_job-078 -> OK (78 de 105)
+asentado: job-20260928T014319_job-079 -> OK (79 de 105)
+asentado: job-20260928T014319_job-080 -> OK (80 de 105)
+asentado: job-20260928T014319_job-081 -> OK (81 de 105)
+asentado: job-20260928T014319_job-082 -> OK (82 de 105)
+asentado: job-20260928T014319_job-083 -> OK (83 de 105)
+asentado: job-20260928T014319_job-084 -> OK (84 de 105)
+asentado: job-20260928T014319_job-085 -> OK (85 de 105)
+asentado: job-20260928T014319_job-086 -> OK (86 de 105)
+asentado: job-20260928T014319_job-087 -> OK (87 de 105)
+asentado: job-20260928T014319_job-088 -> OK (88 de 105)
+asentado: job-20260928T014319_job-089 -> OK (89 de 105)
+asentado: job-20260928T014319_job-090 -> OK (90 de 105)
+asentado: job-20260928T014319_job-091 -> OK (91 de 105)
+asentado: job-20260928T014319_job-092 -> OK (92 de 105)
+asentado: job-20260928T014319_job-093 -> OK (93 de 105)
+asentado: job-20260928T014319_job-094 -> OK (94 de 105)
+asentado: job-20260928T014319_job-095 -> OK (95 de 105)
+asentado: job-20260928T014319_job-096 -> OK (96 de 105)
+asentado: job-20260928T014319_job-097 -> OK (97 de 105)
+asentado: job-20260928T014319_job-098 -> OK (98 de 105)
+asentado: job-20260928T014319_job-099 -> OK (99 de 105)
+asentado: job-20260928T014319_job-100 -> OK (100 de 105)
+asentado: job-20260928T014319_job-101 -> OK (101 de 105)
+asentado: job-20260928T014319_job-102 -> OK (102 de 105)
+asentado: job-20260928T014319_job-103 -> OK (103 de 105)
+asentado: job-20260928T014319_job-104 -> OK (104 de 105)
+TIMEOUT — 1s con 1 de 105 trabajos sin asentar.
+          Siguen en el ledger: el Stop hook bloqueará el fin del turno.
+          | job-20260928T014319_job-061 — vivo y sin marcador
+__BG_EXIT__=3

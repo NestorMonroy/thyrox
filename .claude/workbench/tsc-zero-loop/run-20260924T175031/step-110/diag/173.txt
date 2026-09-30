@@ -1,0 +1,75 @@
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(60,45): error TS2352: Conversion of type '{ statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:50-70 ---
+     50  
+     51  describe('extractDangerousSettings — shell settings (always dangerous)', () => {
+     52    test('apiKeyHelper extracted', () => {
+     53      const result = extractDangerousSettings({
+     54        apiKeyHelper: '/path/to/script.sh',
+     55      } as SettingsJson)
+     56      expect(result.shellSettings.apiKeyHelper).toBe('/path/to/script.sh')
+     57    })
+     58  
+     59    test('statusLine extracted', () => {
+     60>     const result = extractDangerousSettings({
+     61        statusLine: 'echo $USER',
+     62      } as SettingsJson)
+     63      expect(result.shellSettings.statusLine).toBe('echo $USER')
+     64    })
+     65  
+     66    test('all 6 dangerous shell settings extracted', () => {
+     67      const result = extractDangerousSettings({
+     68        apiKeyHelper: 'a',
+     69        awsAuthRefresh: 'b',
+     70        awsCredentialExport: 'c',
+  Types of property 'statusLine' are incompatible.
+    Type 'string' is not comparable to type '{ type: "command"; command: string; }'.
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(67,45): error TS2352: Conversion of type '{ apiKeyHelper: string; awsAuthRefresh: string; awsCredentialExport: string; gcpAuthRefresh: string; otelHeadersHelper: string; statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:57-77 ---
+     57    })
+     58  
+     59    test('statusLine extracted', () => {
+     60      const result = extractDangerousSettings({
+     61        statusLine: 'echo $USER',
+     62      } as SettingsJson)
+     63      expect(result.shellSettings.statusLine).toBe('echo $USER')
+     64    })
+     65  
+     66    test('all 6 dangerous shell settings extracted', () => {
+     67>     const result = extractDangerousSettings({
+     68        apiKeyHelper: 'a',
+     69        awsAuthRefresh: 'b',
+     70        awsCredentialExport: 'c',
+     71        gcpAuthRefresh: 'd',
+     72        otelHeadersHelper: 'e',
+     73        statusLine: 'f',
+     74      } as SettingsJson)
+     75      expect(Object.keys(result.shellSettings).sort()).toEqual([
+     76        'apiKeyHelper',
+     77        'awsAuthRefresh',
+  Types of property 'statusLine' are incompatible.
+    Type 'string' is not comparable to type '{ type: "command"; command: string; }'.
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(174,45): error TS2352: Conversion of type '{ hooks: null; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:164-184 ---
+    164  
+    165    test('empty hooks object → hasHooks=false', () => {
+    166      const result = extractDangerousSettings({
+    167        hooks: {},
+    168      } as SettingsJson)
+    169      expect(result.hasHooks).toBe(false)
+    170      expect(result.hooks).toBeUndefined()
+    171    })
+    172  
+    173    test('null hooks → hasHooks=false', () => {
+    174>     const result = extractDangerousSettings({
+    175        hooks: null,
+    176      } as SettingsJson)
+    177      expect(result.hasHooks).toBe(false)
+    178    })
+    179  
+    180    test('hooks as non-object (string) → hasHooks=false', () => {
+    181      const result = extractDangerousSettings({
+    182        hooks: 'a string' as unknown as object,
+    183      } as SettingsJson)
+    184      expect(result.hasHooks).toBe(false)
+  Types of property 'hooks' are incompatible.
+    Type 'null' is not comparable to type '{ SessionStart?: { hooks: { type: "command"; command: string; timeout?: number | undefined; }[]; matcher?: string | undefined; }[] | undefined; UserPromptSubmit?: { hooks: { type: "command"; command: string; timeout?: number | undefined; }[]; matcher?: string | undefined; }[] | undefined; ... 9 more ...; SubagentSto...'.

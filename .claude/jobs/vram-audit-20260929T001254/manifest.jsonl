@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 .claude/workbench/vram-flow-audit-20260929T001226/commands.txt", "started_at": "2026-09-29T00:12:54+00:00"}

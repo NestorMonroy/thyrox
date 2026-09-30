@@ -1,0 +1,10 @@
+==== _t: 1 definicion(es) de nivel superior
+---- chunk-ckctvm5v.js function _t [66970,67382)
+function _t(e){let n=$v(),r=sft(),s=e?.policyHelpers,g=s?Ee(s,Cne().chain,!0)?.config??null:null,S=rft(g),E=Zn(e),{winner:h,skipped:R}=Jn(E);return{verified:n,tuple:S,helperMayExec:S!==void 0&&r,helperMergesOutput:g?.outputBehavior==="merge",helperRefusesOnFailure:Mn(g,!0),payloadKey:b($P(E.map((T)=>[T.field,T.raw,T.mergesOutput]))),winner:h,skipped:R,payloadServable:h!==null&&(r||!Xn(e,h)&&(n||S===void 0))}}
+==== Qn: 1 definicion(es) de nivel superior
+---- chunk-ckctvm5v.js function Qn [67382,67650)
+function Qn(e,n){return e.verified===n.verified&&e.tuple===n.tuple&&e.helperMayExec===n.helperMayExec&&e.helperMergesOutput===n.helperMergesOutput&&e.helperRefusesOnFailure===n.helperRefusesOnFailure&&e.payloadKey===n.payloadKey&&e.payloadServable===n.payloadServable}
+==== F: 1 definicion(es) de nivel superior
+---- chunk-ckctvm5v.js function F [85998,86581)
+function F(){let e={store:dl(),cwd:hm(),projectConfigDir:Ho()??void 0,allowedSources:Pxe(),onLegacyLocalSettingsRead:(n)=>U2o.of(j().host).fire(n),parentManaged:TVr(),hostManagedProvider:a.CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST,flagInline:sT(),flagPath:NF(),flagExpectedContent:KP()??Lde(),coworkPlugins:djt(),canonicalGitRoot:Mx,mdm:()=>i6(),hkcu:()=>HFe(),helper:()=>er(),helperArmedFromRemote:()=>nr(),helperMergesOutput:()=>rr(),helperWarnings:()=>mt(),wslInherits:()=>pF(),helperArmedFromUserWritableBase:()=>NFt(),credentialHelperKeysFrom:(n)=>B2o(n)};return e.file=()=>aft(e),e}
+symbol: 3 de 3 nombre(s) resueltos

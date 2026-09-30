@@ -1,0 +1,11 @@
+src/packages/repl/src/screens/REPLView.tsx(2447,9): error TS2322: Type '(action: React.SetStateAction<MessageType[]>) => void' is not assignable to type '(updater: (prev: unknown[]) => unknown[]) => void'.
+  Types of parameters 'action' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<Message[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: Message[]) => Message[]'.
+        Type 'unknown[]' is not assignable to type 'Message[]'.
+          Type 'unknown' is not assignable to type 'Message'.
+src/packages/repl/src/screens/REPLView.tsx(2478,9): error TS2322: Type '(config: Record<string, ScopedMcpServerConfig>) => void' is not assignable to type '(config: Record<string, unknown>) => void'.
+  Types of parameters 'config' and 'config' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.

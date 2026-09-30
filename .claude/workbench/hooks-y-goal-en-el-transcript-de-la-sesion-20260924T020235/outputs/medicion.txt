@@ -1,0 +1,38 @@
+== adjuntos por tipo ==
+    602 total_tokens_reminder
+    195 deferred_tools_record
+     73 task_reminder
+     61 environment
+     35 silent_turn_reminder
+     34 queued_command
+      4 prompt_snapshot
+      3 date
+      3 instructions
+      3 skill_listing
+      2 agent_listing_delta
+      2 auto_mode
+      2 credential_org
+      2 deferred_tools_delta
+      2 mcp_instructions_delta
+      2 model
+      2 remote_session_change
+      2 session_context
+== adjuntos de hook (hook_*) ==
+== registros del harness que declaran goal o Stop hook ==
+16
+0
+== cwd de arranque (primera instantanea environment) ==
+/home/user
+== instantaneas environment por workingDirectory (sigue al cd del shell) ==
+     27 /home/user/thyrox
+     19 /home/user/kaupamex-docs
+      7 /home/user
+      3 /home/user/thyrox/_references/claude-code-bin/2.1.275/bunfs-root
+      1 /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas
+      1 /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos
+      1 /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos
+      1 /home/user/thyrox/_references/claude-code-bin
+      1 /home/user/thyrox/src/packages/cli
+== CLAUDE.md y reglas cargadas, por repo ==
+     41 kaupamex-docs
+      8 thyrox

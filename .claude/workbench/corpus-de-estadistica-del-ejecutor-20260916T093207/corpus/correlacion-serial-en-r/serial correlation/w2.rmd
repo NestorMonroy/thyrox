@@ -1,0 +1,475 @@
+---
+title: "EMH and RW"
+author: "Menghan Yuan"
+date: "March 22, 2024"
+output: 
+    bookdown::html_document2:
+        toc: true
+        toc_float: true
+        toc_depth: 4
+        number_sections: false
+        css: "style.css"
+bibliography: bibli.bib
+link-citations: yes
+biblio-style: apalike
+---
+
+```{r load-packages, include=F, echo=F}
+library(knitr) # load packages
+library(kableExtra)
+library(tidyverse)
+library(bookdown)
+# don't show code unless we explicitly set echo = TRUE
+opts_chunk$set(echo = TRUE, message=FALSE, fig.align="center", fig.pos = "H")
+opts <- options(knitr.kable.NA = "")
+
+## control long outputs by using eg `max.lines = 10`
+hook_output_default <- knitr::knit_hooks$get('output')
+truncate_to_lines <- function(x, n) {
+   if (!is.null(n)) {
+      x = unlist(stringr::str_split(x, '\n'))
+      if (length(x) > n) {
+         # truncate the output
+         x = c(head(x, n), '...\n')
+      }
+      x = paste(x, collapse = '\n') # paste first n lines together
+   }
+   x
+}
+knitr::knit_hooks$set(output = function(x, options) {
+   max.lines <- options$max.lines
+   x <- truncate_to_lines(x, max.lines)
+   hook_output_default(x, options)
+})
+```
+
+
+## Quiz Questions on Canvas
+
+For the preparation of the final exam, it is highly encouraged to practice with the quiz questions on Canvas. 
+
+Three quizzes are available, covering various topics. You are expected to take all of them.
+
+Get familiarized with the **Equation Editor** on Canvas. 
+
+
+```{r eq-step1, out.width="70%", echo=FALSE}
+include_graphics("./images/step1.png")
+```
+
+
+```{r eq-step2, out.width="70%", echo=FALSE}
+include_graphics("./images/step2.png")
+```
+
+
+You can either choose from the math symbols provided by the editor, or type *LaTeX* equations directly, which is much faster! 
+
+See a LaTeX equation tutorial [HERE](https://www.overleaf.com/learn/latex/Mathematical_expressions).
+
+You are expected to type equations in the **final exam** whenever formulas are needed in the calculation.
+
+```{r eq-editor, out.width="70%", echo=FALSE}
+include_graphics("./images/eq_editor.png")
+```
+
+
+------------------------------------------------------------------------
+
+
+## EMH
+
+A market in which prices always "fully reflect" available information is called "*efficient*."
+
+Formally, the market is said to be efficient with respect to some *information set*.
+
+Three forms of efficiency corresponding to differing information sets:
+
+1.  weak-from (historical market trading data, such as prices, volumes)
+2.  semistrong-form (weak-form set **+** all publicly available information, such as *fundamental data*, including earnings, dividends, accounting practices)
+3.  strong-form (semistrong-from set **+** insider info, such as mergers and acquisitions)
+
+The direction of valid implication is
+
+$$
+\text{Strong-form EMH} \Longrightarrow \text{semistrong-form EMH} \Longrightarrow \text{weak-form EMH}
+$$
+Note that
+
+- stronger form of EMH indicates weaker form of EMH;
+- violation of weaker EMH indicates violation of stronger form of EMH.
+
+Efficiency with respect to an information set implies that it is impossible to make economic profits by trading on the basis of [that information set].
+
+-   Here by economic profits, we mean "abnormal/superior" returns after adjustment for risk and costs.
+
+-   We need equilibrium (asset pricing) models for risk adjustments, such as CAPM, to determine the "normal" returns appropriate for bearing the level risk in a security.
+
+-   If the abnormal return is unforecastable, and in this sense "random", then the *Efficiency Market Hypothesis* (EMH) is not rejected.
+
+Market efficiency can be tested by **revealing information** to market participants and measuring the reaction of security prices. If prices do not move when info is revealed, then the market is efficient w.r.t. that info.
+
+**Challenges** of testing EMH: Any test of efficiency must assume an equilibrium model that defines normal security returns. 
+
+- This leads to our null is a *joint test* of market efficiency and a correct equilibrium model.
+
+- The result of this is that when we reject the null, this could be because the market is truly inefficient or because an incorrect equilibrium model has been assumed.
+
+- With the wrong asset pricing model, we can wind up rejecting efficiency. It would be easy to find abnormal returns to be forecastable if we had the wrong equilibrium.
+
+- Asset pricing models give the equilibrium return; abnormal returns are deviations of real prices from equilibriums.
+
+Types of market efficiency $\rightarrow$ **Violations** of efficiency:
+
+-   weak form $\rightarrow$ *technical analysis* or *charting* earn superior profits (after adjustment for risk).
+-   semistrong form $\rightarrow$ *fundamental analysis* achieves superior returns
+-   strong from $\rightarrow$ corporate insiders making profitable trades
+
+```{r EMH, out.width="50%", fig.cap="EMH", echo=FALSE}
+include_graphics("./images/EMH.png")
+```
+
+Perfect efficiency exists only in the idealized frictionless world of the imagination. Abnormal returns will exist if there are costs of gathering and processing information. Since market efficiency is an idealization that is economically unrealizable, what we can do is to measure relative efficiency. And if some markets turn out to be particularly inefficient, then investors will be well-prepared to take advantage of the opportunity to make profits.
+
+Most tests suggest that if the security (demeaned) return cannot be forecasted, then market efficiency cannot be rejected.
+
+------------------------------------------------------------------------
+
+## Predictability of Asset Returns
+
+A process $\{p_t\}$ is called a *Random Walk* (RW) if:
+
+$$
+p_t = \mu + p_{t-1} + e_t 
+$$
+
+where $E(e_t)=0$ and $\text{Var}(e_t)=\sigma^2$.
+
+-   $\mu$ is called the expected price change or *drift*.
+
+-   $\{e_t\}$ is called the innovations, disturbances, or increments.
+
+    There are differing hypotheses regarding to its distribution:
+
+    -   RW1: $e_t\sim \text{IID } (0, \sigma^2)$ meaning increments are Independently and Identically Distributed (IID).
+
+    -   RW2: $e_t\sim \text{INID } (0, \sigma^2)$ independent but not (necessarily) identically distributed (INID) increments. RW2 is weaker than RW1 because it relaxes the assumption of identically distributed increments.
+
+        -   RW2 allows for heteroskedasticity.
+
+    -   RW3: $e_t$ is uncorrelated. $\text{Cov}[e_t, e_{t-k}]=0$ for all $k\neq 0$. This is the weakest form of RW.
+
+        -   RW3 allows for **dependence** in higher moments.
+
+        -   An example that satisfiies RW3 but not RW1 and RW2: $\text{Cov}[e_t,e_{t−k}]=0$ for all $k\neq 0$, but $\text{Cov}[e_t^2,e_{t−k}^2]\neq0$ for some $k\neq 0$. In words, first moments are uncorrelated, but second moments are correlated; therefore, such a process is not independent.
+
+-   Let $p_t=\ln P_t$ be the natural logarithm of price $P_t$, and $r_t=\mu+e_t=\Delta p = p_t-p_{t-1}$. Then $r_t$ is the **log return** at time $t$.
+
+------------------------------------------------------------------------
+
+### Cowles and Jones Test
+
+@Cowles1937 proposed a test of RW1 using the frequency of *sequences* and *reversals* in historical stock returns.
+
+-   Sequences: pairs of consecutive returns with the same sign $(+,+)$ or $(-,-)$;
+
+-   Reversals: consecutive returns with opposite signs $(+,-)$ or $(-,+)$.
+
+More formally, we define $I_t$ an indicator variable as:
+
+$$
+\begin{align*}
+I_t = 
+\begin{cases}
+1 & \text{if } r_t>0 \\
+0 & \text{if } r_t\leq0
+\end{cases}
+\end{align*}
+$$
+
+$I_t$ is an analogy to the *Bernoulli* coin-tossing experiments. That is, when it is a fair coin, $X_t\sim \text{Bernoulli } (p=1/2)$.
+
+$$
+\begin{align*}
+X_t = 
+\begin{cases}
+1 & \text{if it is a head, with prob. } p=\frac{1}{2}  \\
+0 & \text{if it is a tail, with prob. } 1-p=\frac{1}{2}.
+\end{cases}
+\end{align*}
+$$
+
+The number of sequences ($N_s$) and reversals ($N_r$) can be expressed as functions of $I_t$'s.
+
+$$
+\begin{aligned}
+N_s &\equiv \sum_{t=1}^n Y_t, \quad \color{red}{Y_t} \equiv I_tI_{t-1} + (1-I_t)(1-I_{t-1})  \\
+N_r &\equiv n-N_s. 
+\end{aligned}
+$$
+
+$Y_t$ is thus a sequence indicator, $Y_t=1$ if it is a sequence; $Y_t=0$ if it is a reversal.
+
+### RW without drift
+
+For simplicity, we often assume $\mu=0$ (a driftless RW). $r_t=p_t-p_{t-1}=e_t$. In other words, the increments $e_t$ are first differences of the level of the random walk.
+
+If $p_t$ follows a driftless RW, then for any pair of consecutive returns, a sequence and a reversal are equally probable. We would expect $N_s$ should be approximately equal to $N_r$.
+
+-   $N_s + N_r = n$
+
+The Cowles-Jones test statistic is given by the **ratio of the probability of a sequence** $\color{red}{\pi_s}$ to the probability of a reversal $1-\pi_s$.
+
+$$
+\begin{equation} (\#eq:CJ) 
+\widehat{\text{CJ}} \equiv \frac{N_s}{N_r} = \frac{N_s/n}{N_r/n} = \frac{\hat{\pi}_s}{1-\hat{\pi}_s} \xrightarrow{p} \frac{\pi_s}{1-\pi_s} = \text{CJ} = \frac{1/2}{1-1/2} = 1 
+\end{equation}
+$$ where $\xrightarrow{p}$ denotes convergence in probability.
+
+<div class = "boxed">
+```{exercise, proof1}
+<em>Show $\pi_s=\frac{1}{2}$.</em>
+
+Hint: This is equivalent to show that 
+$$
+Y_t = 
+\begin{cases}
+1 & \text{with prob. } p= \pi_s \\
+0 & \text{with prob. } 1-p= 1-\pi_s .
+\end{cases}
+$$
+
+```
+</div>
+
+------------------------------------------------------------------------
+
+### RW with drift
+
+$r_t=\mu+e_t$. Such a drift, either positive or negative, makes sequences more likely than reversals.
+
+For now we assume that log prices follow a *normal* random walk with drift:
+
+$$
+p_t=\mu+p_{t-1}+e_t, \quad e_t\sim N(0, \sigma^2).
+$$ Then $I_t$ is no longer a fair coin-toss but is biased in the direction of the drift, i.e.,
+
+$$
+I_t = 
+\begin{cases}
+1 & \text{with prob. } p= \color{red}{\pi} \\
+0 & \text{with prob. } 1-p= 1-\pi .
+\end{cases}
+$$ where
+
+$$
+\pi \equiv P(r_t>0) = \Phi \left(\frac{\mu}{\sigma}\right).
+$$ $\pi$ is fully determined by the drift $\mu$ and the volatility of increments $\sigma$.
+
+$\Phi(.)$ is the cdf of the *standard normal* distribution.
+
+Given that $\Phi(.)$ is symmetric,
+
+-   if the drift $\mu=0$, then $\pi = \frac{1}{2}$ (fair-coin case);
+-   if the drift $\mu$ is positive, then $\pi > \frac{1}{2}$;
+-   if the drift $\mu$ is negative, then $\pi < \frac{1}{2}$.
+
+<div class = "boxed">
+```{exercise, proof2}
+<em>Show $\pi=\Phi \left(\frac{\mu}{\sigma}\right)$.</em>
+$$
+\begin{aligned}[b]
+P(r_t>0) &= P(\mu+e_t>0) \\
+&= P(e_t>-\mu) \quad\quad\quad (\sigma>0, \text{dividing by a pos. number, inequality unchanged}) \\
+&= P\left( \frac{e_t}{\sigma} > -\frac{\mu}{\sigma}\right) \quad\;\; e_t\sim N(0, \sigma^2), \text{ then } \frac{e_t}{\sigma}\sim N(0,1) \\
+&= P \left( \frac{e_t}{\sigma} < \frac{\mu}{\sigma} \right) \\
+&= \Phi \left(\frac{\mu}{\sigma} \right) 
+\end{aligned}  
+\square
+$$
+```
+</div>
+
+<br/>
+
+
+Then we have
+
+$$
+\text{CJ} = \frac{\pi_s}{1-\pi_s} = \frac{\pi^2+(1-\pi)^2}{2\pi(1-\pi)}
+$$
+
+<br/>
+
+<div class = "boxed">
+```{exercise, proof3}
+<em>Show $\pi_s=\pi^2+(1-\pi)^2$.</em>
+
+Hint: use the probability mass function of $Y_t$ in Proof. \@ref(exr:proof1).
+```
+</div>
+
+<br/>
+
+The asymptotic distribution of $\widehat{\text{CJ}}$ is given by
+
+$$
+\widehat{\text{CJ}} \overset{a}{\sim} N \left(\frac{\pi_s}{1-\pi_s}, \frac{\pi_s(1-\pi_s) + 2\big[\pi^3+(1-\pi)^3-\pi_s^3\big]}{n(1-\pi_s)^4} \right)
+$$ where $\overset{a}{\sim}$ indicates that the distributional relation is asymptotic.
+
+Refer to @Campbell1996 chapter 2 for proof.
+
+------------------------------------------------------------------------
+
+### Simulation example
+
+```{r CJ-data}
+# RW example
+set.seed(123)
+t <- seq(1, 100, by=1)
+et <- rnorm(length(t), mean=0, sd=1) # IID N(0,1) increments
+pt <- c(0, cumsum(et))  # driftless random walk
+par(mfrow=c(2,1)); par(mar=c(3.5, 4, 2, .5), mgp=c(2.4,0.8,0))
+plot(t, et, type="o", col="blue", xlab="t", ylab=expression(e[t]), cex.lab=1.2)
+plot(c(0,t), pt, type="o", col="blue", xlab="t", ylab=expression(p[t]), cex.lab=1.2)
+
+It <- ifelse(et>0,1,0)
+It_1 <- c(NA, head(It, -1))
+data <- cbind(et, It, It_1) %>% as_tibble()
+data <- data %>% mutate(yt = It*It_1 + (1-It)*(1-It_1))
+data
+```
+
+```{r CJ-test}
+Ns <- sum(data$yt, na.rm=TRUE)
+Nr <- length(t)-Ns
+CJ_hat <- Ns/Nr
+CJ_hat
+pi_hat <- sum(It)/length(t)
+pis_hat <- Ns/length(t)
+sigma2 <- (pis_hat*(1-pis_hat) + 2*(pi_hat^3 + (1-pi_hat)^3 - pis_hat^2)) /(length(t))/(1-pis_hat)^4
+sigma <- sqrt(sigma2)
+```
+
+Test for $H_0: \widehat{CJ}=1$.
+
+```{r}
+t_stat <- (CJ_hat-1)/sigma
+t_stat
+p_value <- pnorm(-abs(t_stat)) *2
+list(test_statistic = t_stat, p_value = p_value)
+```
+
+The estimate is not statistically significantly different from $1$. 
+
+Therefore, we fail to reject the null hypothesis of random walk. Equivalently, we say that this provides little evidence against the random walk hypothesis.
+
+------------------------------------------------------------------------
+
+## Autocorrelation Tests
+
+One of the most direct and intuitive tests of the random walk hypotheses for an individual time series is to check for *serial correlation*, correlation between two observations of the same series at different dates.
+
+Under the random walk hypothesis, increments $e_t$ are uncorrelated, that is
+
+$$
+\gamma(k) \equiv \text{Cov}(e_t, e_{t-k}) = 0 \quad \text{for all } k\neq 0
+$$
+$\gamma(k)$ is the *autocovariance coefficient*.
+
+Or
+
+$$
+\rho(k) \equiv \frac{\text{Cov}(e_t, e_{t-k})}{\sqrt{\text{Var}(e_t)\text{Var}(e_{t-k})}} = 0 \quad \text{for all } k\neq 0
+$$
+$\rho(k)$ is the *autocorrelation coefficient*.
+
+<div class = "boxed">
+```{exercise proof4}
+<em>Show that $$\text{Cov}(e_t, e_{t-k}) = 0$$ is equivalent to show that $$\text{Cov}(r_t, r_{t-k}) = 0.$$ </em>
+
+Rewrite $r_t$ as
+
+\begin{aligned}
+p_t &= \mu + p_{t-1} + e_t & \Rightarrow & \qquad  r_t =  \mu + e_t \\
+p_{t-k} &= \mu + p_{t-k-1} + e_{t-k} & \Rightarrow & \quad  r_{t-k} =  \mu + e_{t-k}
+\end{aligned}
+
+$r_t$ is the first-difference of the price at time $t$.
+
+Then we have
+
+\begin{aligned}
+\text{Cov}(r_t, r_{t-k}) &= \text{Cov}( \mu+e_t, \mu+e_{t-k}) \\
+&= \text{Cov}(e_t, e_{t-k}) \qquad (\mu \text{ is a constant})
+\end{aligned}
+
+That is, the covariance of the first-differences equals the covariance of the increments. 
+<span style='float:right; margin-right:10px'>&#9633;</span>
+```
+</div>
+
+For a given sample $\{r_t\}_{t=1}^T$, autocovariance and autocorrelation coefficients may be estimated by replacing population moments with sample counterparts:
+
+
+$$
+\begin{aligned}
+\hat{\gamma}(k) & =  \frac{1}{T} \sum_{t=1}^{T-k} (r_t-\bar{r}_T) (r_{t+k}-\bar{r}_T), \quad 0\leq k <T \\
+\hat{\rho}(k) &= \frac{\hat{\gamma}(k)}{\hat{\gamma}(0)} \\
+\bar{r}_T &\equiv \frac{1}{T} \sum_{t=1}^{T} r_t
+\end{aligned}
+$$
+Sample autocorrelation coefficients are **asymptotically independent and normally distributed** with distribution:
+
+$$
+\sqrt{T} \hat{\rho} (k) \overset{a}{\sim} N(0,1)
+$$
+The sampling distribution yields a variety of autocorrelation-based tests.
+
+### Box-Pierce Q-statistic
+
+Box-Pierce Q-statistic test a joint hypothesis that the first $m$ autocorrelations are equal to zero. That is,
+
+$$
+H_0: \rho_1 = \rho_2 = \cdots = \rho_m = 0.
+$$
+@Box1970 proposed the Q-statistic:
+
+$$
+Q_m \equiv T\sum_{k=1}^m \rho^2(k)
+$$
+Since $\rho(k)$ is normally distributed, $\hat{Q}_m$ is distributed as a *chi-square distribution* of $m$ degrees of freedom, that is $Q_m \sim \chi_m^2$.
+
+@Ljung1979 provided a correction which yields a better fit to the $\chi_m^2$ for small sample sizes:
+
+$$
+Q_m' \equiv T(T+2)\sum_{k=1}^m \frac{\rho^2(k)}{T-k}.
+$$
+$Q'_m$ is the usual Q-statistic version.
+
+By summing the squared autocorrelations, the Q-statistic is designed to detect departures from zero autocorrelations in either direction and at all $m$ lags. 
+
+```{r}
+Box.test(diff(pt), lag=1, type="Ljung-Box")
+Box.test(diff(pt), lag=1, type="Box-Pierce")
+```
+
+
+## Variance Ratio Test
+
+The VR(q) tests for the null hypothesis that the first $q$ autocorrealtions are zero.
+
+$$
+\text{VR(q)} \equiv \frac{\text{Var}[r_t(q)]}{q\cdot \text{Var}[r_t]}
+$$
+where $r_t(q)\equiv \sum_{k=0}^{q-1} r_{t-k}=r_t+r_{t-1}+\cdots+r_{t-q+1}$ is the $q$-period (log) return.
+
+- Under zero autocorrelation, $\text{Var}[r_t(q)] = q\cdot \text{Var}[r_t]$; therefore, $\text{VR(q)}=1$.
+- When there exists serial correlation, $\text{VR(q)}$ moves away from $1$.
+
+
+Lo and MacKinlay present a number of test statistics based on the $\text{VR(q)}$. Check Lo and MacKinlay [-@Lo-Mackinlay1988; -@Lo1989] for example.
+
+------------------------------------------------------------------------
+
+### References

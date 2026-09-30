@@ -1,0 +1,24 @@
+test_12_dumps_to_stdout_and_publishes_its_count (__main__.TestLineSurface.test_12_dumps_to_stdout_and_publishes_its_count) ... ok
+test_13_a_missing_origin_exits_2_and_emits_NO_count (__main__.TestLineSurface.test_13_a_missing_origin_exits_2_and_emits_NO_count) ... ok
+test_1_the_RUNS_of_a_paragraph_are_joined (__main__.TestParagraph.test_1_the_RUNS_of_a_paragraph_are_joined)
+El formato parte una frase en varios `w:r` cuando cambia la ... ok
+test_2_the_TAB_is_an_element_and_does_not_vanish (__main__.TestParagraph.test_2_the_TAB_is_an_element_and_does_not_vanish)
+CONTROL POSITIVO de la trampa que el archivo real trae 1575 veces. ... ok
+test_3_the_line_BREAK_separates (__main__.TestParagraph.test_3_the_line_BREAK_separates) ... ok
+test_4_DELETED_text_does_not_come_back (__main__.TestParagraph.test_4_DELETED_text_does_not_come_back)
+`w:delText` es texto que alguien ELIMINO con control de cambios. ... ok
+test_5_the_field_CODE_is_not_text (__main__.TestParagraph.test_5_the_field_CODE_is_not_text)
+`w:instrText` lleva la instruccion del campo —`PAGE`, `TOC \o`—, ... ok
+test_6_an_EMPTY_paragraph_does_not_dirty_the_output (__main__.TestParagraph.test_6_an_EMPTY_paragraph_does_not_dirty_the_output) ... ok
+test_10_a_TAB_inside_a_CELL_does_not_split_the_column (__main__.TestTable.test_10_a_TAB_inside_a_CELL_does_not_split_the_column) ... ok
+test_7_the_table_keeps_its_ROWS_and_COLUMNS (__main__.TestTable.test_7_the_table_keeps_its_ROWS_and_COLUMNS) ... ok
+test_8_NULLIFICATION_walking_the_paragraphs_FLATTENS_the_table (__main__.TestTable.test_8_NULLIFICATION_walking_the_paragraphs_FLATTENS_the_table)
+Control de anulacion. `root.iter(w:p)` devuelve tambien los ... ok
+test_9_the_document_ORDER_is_respected (__main__.TestTable.test_9_the_document_ORDER_is_respected)
+Un parrafo antes y otro despues de la tabla. Recorrer primero ... ok
+test_11_a_ZIP_that_is_not_a_document_REFUSES (__main__.TestVerdict.test_11_a_ZIP_that_is_not_a_document_REFUSES) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.120s
+
+OK

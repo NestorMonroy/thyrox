@@ -1,0 +1,120 @@
+diff --git a/src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts b/src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts
+new file mode 100644
+index 00000000..18d5855f
+--- /dev/null
++++ b/src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts
+@@ -0,0 +1,50 @@
++/**
++ * Ventana de peticiones global por credencial (ADR-THYROX-006, 1.1.0): dos
++ * proxies que comparten un `SharedStateStore` ven la misma cuenta, aunque
++ * cada uno tenga su propia instancia de `RateLimitManager`.
++ */
++import { describe, expect, test } from 'bun:test'
++import { createMemorySharedStateStore } from '@thyrox/shared-state/memory.ts'
++import { RateLimitManager } from '../rateLimitManager.ts'
++
++const CREDENTIAL_ID = 'cred-1'
++const WINDOW_MS = 60_000
++
++describe('RateLimitManager — ventana global compartida', () => {
++  test('dos managers con el mismo store suman en la misma ventana, y el que pasa el límite recibe "excedido"', async () => {
++    let currentTime = 0
++    const store = createMemorySharedStateStore({ now: () => currentTime })
++    const proxyA = new RateLimitManager({}, store)
++    const proxyB = new RateLimitManager({}, store)
++
++    expect(await proxyA.checkGlobalWindow(CREDENTIAL_ID, 2, WINDOW_MS)).toBe(false)
++    expect(await proxyB.checkGlobalWindow(CREDENTIAL_ID, 2, WINDOW_MS)).toBe(false)
++    // La tercera petición, venga de quien venga, ya pasa el límite de 2.
++    expect(await proxyA.checkGlobalWindow(CREDENTIAL_ID, 2, WINDOW_MS)).toBe(true)
++
++    await store.close()
++  })
++
++  test('en una ventana nueva el conteo reinicia', async () => {
++    let currentTime = 0
++    const store = createMemorySharedStateStore({ now: () => currentTime })
++    const proxyA = new RateLimitManager({}, store)
++
++    expect(await proxyA.checkGlobalWindow(CREDENTIAL_ID, 1, WINDOW_MS)).toBe(false)
++    expect(await proxyA.checkGlobalWindow(CREDENTIAL_ID, 1, WINDOW_MS)).toBe(true)
++
++    currentTime += WINDOW_MS
++    expect(await proxyA.checkGlobalWindow(CREDENTIAL_ID, 1, WINDOW_MS)).toBe(false)
++
++    await store.close()
++  })
++
++  test('sin sharedState cada manager cuenta solo lo suyo', async () => {
++    const proxyA = new RateLimitManager()
++    const proxyB = new RateLimitManager()
++
++    expect(await proxyA.checkGlobalWindow(CREDENTIAL_ID, 1, WINDOW_MS)).toBe(false)
++    // proxyB no ve la petición de proxyA: sin store compartido no hay vista global.
++    expect(await proxyB.checkGlobalWindow(CREDENTIAL_ID, 1, WINDOW_MS)).toBe(false)
++  })
++})
+diff --git a/src/packages/provider/src/proxy/resilience/rateLimitManager.ts b/src/packages/provider/src/proxy/resilience/rateLimitManager.ts
+index b2fe2fef..4e099a6f 100644
+--- a/src/packages/provider/src/proxy/resilience/rateLimitManager.ts
++++ b/src/packages/provider/src/proxy/resilience/rateLimitManager.ts
+@@ -19,6 +19,7 @@
+  *   la vigilancia de colas atascadas ni la expulsión por inactividad: piezas
+  *   de un servicio que vive semanas con miles de conexiones.
+  */
++import type { SharedStateStore } from '@thyrox/shared-state/port.ts'
+ import { requestCapSettings, parseRequestCapFromBody } from './requestCap.ts'
+ import { ANTHROPIC_HEADERS, parseResetTime, STANDARD_HEADERS, toPlainHeaders } from './rateLimitHeaders.ts'
+ import { RequestLimiter, type RequestLimiterSettings } from './requestLimiter.ts'
+@@ -79,8 +80,13 @@ export class RateLimitManager {
+   private readonly limiters = new Map<string, RequestLimiter>()
+   private readonly enabled = new Set<string>()
+   private readonly learned = new Map<string, LearnedLimit>()
++  /** Ventanas locales de `checkGlobalWindow` cuando no hay `sharedState`: una por credencial, sin vista entre proxies. */
++  private readonly localWindows = new Map<string, { windowIndex: number; count: number }>()
+ 
+-  constructor(private readonly queue: RateLimitQueueSettings = {}) {}
++  constructor(
++    private readonly queue: RateLimitQueueSettings = {},
++    private readonly sharedState?: SharedStateStore,
++  ) {}
+ 
+   enable(credentialId: string): void {
+     this.enabled.add(credentialId)
+@@ -107,6 +113,20 @@ export class RateLimitManager {
+     return this.limiterFor(provider, credentialId, model).schedule(task, signal)
+   }
+ 
++  /**
++   * Cuenta una petición de `credentialId` en la ventana fija de `windowMs`
++   * y dice si con ella ya se pasó `limit`. Con `sharedState` la cuenta es
++   * global entre proxies (ADR-THYROX-006); sin él, local a esta instancia,
++   * con la misma semántica de ventana fija.
++   */
++  async checkGlobalWindow(credentialId: string, limit: number, windowMs: number): Promise<boolean> {
++    const key = `rate-window:${credentialId}`
++    const count = this.sharedState
++      ? await this.sharedState.incrementWindow(key, windowMs)
++      : this.incrementLocalWindow(key, windowMs)
++    return count > limit
++  }
++
+   /** Aprende de las cabeceras de una respuesta; un 429 retira el limitador. */
+   updateFromHeaders(provider: string, credentialId: string, headers: unknown, status: number, model: string | null = null): void {
+     if (!this.isEnabled(credentialId) || !headers) return
+@@ -203,6 +223,15 @@ export class RateLimitManager {
+     return MODEL_SCOPED_PROVIDERS.has(provider) && model ? `${provider}:${credentialId}:${model}` : `${provider}:${credentialId}`
+   }
+ 
++  /** La cuenta local de `checkGlobalWindow` cuando no hay `sharedState`, con la misma ventana fija que `incrementWindow`. */
++  private incrementLocalWindow(key: string, windowMs: number): number {
++    const windowIndex = Math.floor(Date.now() / windowMs)
++    const existing = this.localWindows.get(key)
++    const count = existing !== undefined && existing.windowIndex === windowIndex ? existing.count + 1 : 1
++    this.localWindows.set(key, { windowIndex, count })
++    return count
++  }
++
+   private credentialOf(key: string): string {
+     return key.split(':')[1] ?? ''
+   }

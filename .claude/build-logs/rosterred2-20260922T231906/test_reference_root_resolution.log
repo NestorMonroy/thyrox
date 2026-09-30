@@ -1,0 +1,21 @@
+== 1. sobre el árbol vivo: publica un conteo y su denominador ==
+  ok    sale 0 (informa, no bloquea sin --strict)
+  ok    publica su denominador
+  ok    publica un conteo de incumplidores
+== 2. CONTROL POSITIVO REAL: ve las dos formas del defecto ==
+  ok    ve la composición contra UNA raíz
+  ok    ve la lista DUPLICADA
+  ok    cuenta los dos, no uno
+== 3. --strict discrimina: 1 con incumplidores, 0 sin ellos ==
+  ok    --strict sobre el control sale 1
+  ok    --strict sobre el propio directorio de gates sale 0
+== 4. el gate NO se marca a sí mismo por citar el anti-patrón ==
+  ok    no aparece su propio archivo en la salida
+== 5. el barrido por omisión SALTA el directorio de control ==
+  ok    por omisión no reporta nada bajo control/
+== 6. CONTROL DE ANULACIÓN: sin el control positivo, los casos 2-3 caen ==
+  ok    sobre un directorio vacío NO ve la composición contra una raíz
+  ok    y --strict ahí sale 0 — el 1 del caso 3 venía del control
+
+12 ok, 0 fallos
+EXIT=0

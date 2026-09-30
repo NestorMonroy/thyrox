@@ -1,0 +1,3 @@
+(fail) boundSessionIdentity > corta sin partir un carácter y sin colisiones [0.45ms]
+ 35 pass
+ 1 fail

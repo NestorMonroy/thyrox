@@ -1,0 +1,12 @@
+Sweep step-099 patterns across 51 files
+
+Gate 4 of plan v2.2.0: the patterns step 099 learned had 95 live
+instances. A headless pool (one claude -p per file, width 8) proposed
+the sweep and step 100 kept 51 of 63 candidates: 1610 -> 1527 in 3
+tsc passes, most of them dead locals and functions.
+
+Every removed declaration was checked against the source: each one is
+dead there too (a single occurrence), so no port gap is buried. A
+transpiled-output check flagged 20 files losing calls; all were whole
+dead declarations. The 107 derived test files pass except five cli
+tests that fail identically without the change (mode-dispatch).

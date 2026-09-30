@@ -1,0 +1,2 @@
+==== So (64)
+function So(){return n().host.launchOptions.projectConfigRoot()}

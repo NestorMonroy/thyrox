@@ -1,0 +1,12 @@
+== 0. sintaxis ==
+  ok    agent_store.py parsea
+== 1. poblar 25 hallazgos con el mismo término buscable ==
+== 2. --limit negativo (bug de invocación) NO vuelca el índice completo ==
+  ok    limit=-5 acotado (filas=1, <=20)
+== 3. --limit sobre 20 se acota a 20, no a 25 (todos los indexados) ==
+  ok    limit=500 acotado a 20
+== 4. --limit sano (3, el default del hook) sigue devolviendo 3 ==
+  ok    limit=3 sin cambios
+
+4 ok, 0 fallos
+EXIT=0

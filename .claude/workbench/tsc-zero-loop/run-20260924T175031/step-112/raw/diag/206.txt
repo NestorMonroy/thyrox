@@ -1,0 +1,6 @@
+src/packages/repl/src/screens/REPLView.tsx(2622,11): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2680,80): error TS18046: 'newMessage.data' is of type 'unknown'.

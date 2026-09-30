@@ -1,0 +1,6 @@
+src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts(53,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts(60,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts(69,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

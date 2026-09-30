@@ -1,0 +1,6 @@
+# Cadenas del binario 2.1.281 que fijan la regla de combinación
+# (strings -n 4 /opt/claude-code/bin/claude; claude --version -> 2.1.281)
+
+var Di=["userSettings","projectSettings","localSettings","flagSettings","policySettings"]
+sources:C(d({source:z(["userSettings","projectSettings","localSettings","flagSettings","policySettings"]),settings:me(o(),ae())})).describe("Ordered low-to-high priority \u2014 later entries override earlier ones.")
+this.appliedGlobalConfigEnv=this.filterSettingsEnv(le().env,"globalConfig"),Object.assign(process.env,this.appliedGlobalConfigEnv);for(let o of te){if(o==="policySettings")continue;if(!pr(o))continue;Object.assign(process.env,this.filterSettingsEnv(ye(o)?.env,o))}

@@ -1,0 +1,38 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1325,5): error TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1315-1332 ---
+   1315      }),
+   1316      ...attachmentMessages,
+   1317      createAttachmentMessage({
+   1318        type: 'command_permissions',
+   1319        allowedTools: additionalAllowedTools,
+   1320        model: command.model,
+   1321      }),
+   1322    ]
+   1323  
+   1324    return {
+   1325>     messages, shouldQuery: true,
+   1326      allowedTools: additionalAllowedTools,
+   1327      model: command.model,
+   1328      effort: command.effort,
+   1329      command,
+   1330      ...(command.type === 'prompt' && { activeSkill: command.name }), // ant 5045.js:1623
+   1331    }
+   1332  }
+  Type 'unknown' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1328,5): error TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1318-1332 ---
+   1318        type: 'command_permissions',
+   1319        allowedTools: additionalAllowedTools,
+   1320        model: command.model,
+   1321      }),
+   1322    ]
+   1323  
+   1324    return {
+   1325      messages, shouldQuery: true,
+   1326      allowedTools: additionalAllowedTools,
+   1327      model: command.model,
+   1328>     effort: command.effort,
+   1329      command,
+   1330      ...(command.type === 'prompt' && { activeSkill: command.name }), // ant 5045.js:1623
+   1331    }
+   1332  }

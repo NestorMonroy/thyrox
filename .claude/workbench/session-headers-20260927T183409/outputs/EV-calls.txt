@@ -1,0 +1,9 @@
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:1,model:h,source:"count_tokens",agentContext:Ac(),credentials:s?.credentials}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:1,model:w,source:"count_tokens",agentContext:Ac(),credentials:r}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:0,model:e,source:"quota_check",agentContext:Ac(),credentials:n}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:ft,model:$e,source:"side_query",querySource:e.querySource,agentContext:ze,credentials:We,...(De||Ne)&&{fetchOverride:async(vr,yr)=>{De?.();let kr=await k9(vr,yr);return Ne?qkt(kr,Ne()):kr}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:0,agentContext:Ac(),credentials:n,storageV5:r}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({apiKey:e,maxRetries:3,model:g,source:"verify_api_key",agentContext:Ac(),credentials:r,storageV5:s}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:0,model:e.model,fetchOverride:e.fetchOverride,source:e.source,agentContext:e.agentContext,promptId:e.promptId,permissionContext:e.permissionContext,credentials:e.credentials,storageV5:e.storageV5}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-csayct82.js:EV({maxRetries:0,model:h.model,fetchOverride:h.fetchOverride,source:h.querySource,agentContext:h.agentContext,promptId:W,permissionContext:uue,credentials:h.credentials,storageV5:h.storageV5}
+_references/claude-code-bin/2.1.283/bunfs-root/chunk-5t3x93y6.js:EV({apiKey:e,maxRetries:n,model:r,fetchOverride:s,source:g,querySource:h=g,agentContext:w,promptId:S,permissionContext:E,credentials:T,storageV5:C}

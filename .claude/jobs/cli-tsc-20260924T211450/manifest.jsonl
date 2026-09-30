@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/cli && bunx tsc --noEmit -p tsconfig.json", "started_at": "2026-09-24T21:14:50+00:00"}

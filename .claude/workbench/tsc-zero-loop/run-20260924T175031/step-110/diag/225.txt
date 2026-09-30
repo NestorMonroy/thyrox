@@ -1,0 +1,60 @@
+src/packages/repl/src/components/mcp/McpParsingWarnings.tsx(43,36): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/mcp/McpParsingWarnings.tsx:33-53 ---
+     33            </Text>
+     34          )}
+     35          <Text>{getScopeLabel(scope)}</Text>
+     36        </Box>
+     37        <Box>
+     38          <Text dimColor>Location: </Text>
+     39          <Text dimColor>{describeMcpConfigFilePath(scope)}</Text>
+     40        </Box>
+     41        <Box marginLeft={1} flexDirection="column">
+     42          {parsingErrors.map((error, i) => {
+     43>           const serverName = error.mcpErrorMetadata?.serverName
+     44            return (
+     45              <Box key={`error-${i}`}>
+     46                <Text>
+     47                  <Text dimColor>└ </Text>
+     48                  <Text color="error">[Error]</Text>
+     49                  <Text dimColor>
+     50                    {' '}
+     51                    {serverName && `[${serverName}] `}
+     52                    {error.path && error.path !== '' ? `${error.path}: ` : ''}
+     53                    {error.message}
+src/packages/repl/src/components/mcp/McpParsingWarnings.tsx(60,38): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/mcp/McpParsingWarnings.tsx:50-70 ---
+     50                    {' '}
+     51                    {serverName && `[${serverName}] `}
+     52                    {error.path && error.path !== '' ? `${error.path}: ` : ''}
+     53                    {error.message}
+     54                  </Text>
+     55                </Text>
+     56              </Box>
+     57            )
+     58          })}
+     59          {warnings.map((warning, i) => {
+     60>           const serverName = warning.mcpErrorMetadata?.serverName
+     61  
+     62            return (
+     63              <Box key={`warning-${i}`}>
+     64                <Text>
+     65                  <Text dimColor>└ </Text>
+     66                  <Text color="warning">[Warning]</Text>
+     67                  <Text dimColor>
+     68                    {' '}
+     69                    {serverName && `[${serverName}] `}
+     70                    {warning.path && warning.path !== ''
+src/packages/repl/src/components/mcp/McpParsingWarnings.tsx(146,31): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.
+  --- código src/packages/repl/src/components/mcp/McpParsingWarnings.tsx:136-147 ---
+    136         * - Approved / disabled status of servers
+    137         */}
+    138      </Box>
+    139    )
+    140  }
+    141  
+    142  function filterErrors(
+    143    errors: ValidationError[],
+    144    severity: 'fatal' | 'warning',
+    145  ): ValidationError[] {
+    146>   return errors.filter(e => e.mcpErrorMetadata?.severity === severity)
+    147  }

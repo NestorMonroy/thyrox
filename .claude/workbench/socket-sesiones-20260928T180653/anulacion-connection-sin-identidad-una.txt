@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+197 | describe('identidad y ancestría del par', () => {
+198 |   test('la identidad se calcula una vez, en el primer mensaje enrutado', async () => {
+199 |     let lookups = 0
+200 |     overrides.peerPid = () => (lookups++, 77)
+201 |     await exchange([line({ type: 'user' }), line({ type: 'user' })])
+202 |     expect(lookups).toBe(1)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:202:21)
+(fail) identidad y ancestría del par > la identidad se calcula una vez, en el primer mensaje enrutado [2.44ms]
+
+ 16 pass
+ 1 fail
+ 29 expect() calls
+Ran 17 tests across 1 file. [558.00ms]

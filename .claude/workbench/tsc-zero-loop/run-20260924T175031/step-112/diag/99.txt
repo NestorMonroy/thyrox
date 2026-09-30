@@ -1,0 +1,55 @@
+src/packages/cli/src/structuredIO.ts(653,11): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/structuredIO.ts:643-663 ---
+    643          )
+    644        } catch (error) {
+    645          return permissionPromptToolResultToPermissionDecision(
+    646            {
+    647              behavior: 'deny',
+    648              message: `Tool permission request failed: ${error}`,
+    649              toolUseID,
+    650            },
+    651            tool,
+    652            input,
+    653>           toolUseContext,
+    654          )
+    655        } finally {
+    656          // Only transition back to 'running' if no other permission prompts
+    657          // are pending (concurrent tool execution can have multiple in-flight).
+    658          if (this.getPendingPermissionRequests().length === 0) {
+    659            notifySessionStateChanged('running')
+    660          }
+    661          parentSignal.removeEventListener('abort', onParentAbort)
+    662        }
+    663      }
+  Types of property 'setAppState' are incompatible.
+    Type '(f: (prev: AppState) => AppState) => void' is not assignable to type '(updater: (prev: never) => unknown) => void'.
+      Types of parameters 'f' and 'updater' are incompatible.
+        Types of parameters 'prev' and 'prev' are incompatible.
+          Type 'AppState' is not assignable to type 'never'.
+src/packages/cli/src/structuredIO.ts(670,7): error TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.
+  --- código src/packages/cli/src/structuredIO.ts:660-680 ---
+    660          }
+    661          parentSignal.removeEventListener('abort', onParentAbort)
+    662        }
+    663      }
+    664    }
+    665  
+    666    createHookCallback(callbackId: string, timeout?: number): HookCallback {
+    667      return {
+    668        type: 'callback',
+    669        timeout,
+    670>       callback: async (
+    671          input: HookInput,
+    672          toolUseID: string | null,
+    673          abort: AbortSignal | undefined,
+    674        ): Promise<HookJSONOutput> => {
+    675          try {
+    676            const result = await this.sendRequest<HookJSONOutput>(
+    677              {
+    678                subtype: 'hook_callback',
+    679                callback_id: callbackId,
+    680                input,
+  Types of parameters 'input' and 'input' are incompatible.
+    Type 'HookInput' is not assignable to type '({ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "PreToolUse"; tool_name: string; tool_input: unknown; tool_use_id: string; }) | ... 25 more ... | ({ ...; } & { ...; })'.
+      Type 'HookInput' is not assignable to type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "InstructionsLoaded"; ... 5 more ...; parent_file_path?: string | undefined; }'.
+        Type 'HookInput' is missing the following properties from type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; }': session_id, transcript_path, cwd

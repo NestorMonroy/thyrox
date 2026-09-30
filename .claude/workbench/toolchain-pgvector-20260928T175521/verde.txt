@@ -1,0 +1,11 @@
+  ok    la adquisicion existe
+  ok    sin pg_config rehusa nombrandolo
+  ok    rehusa con exit 2 cuando falta y no hay opt-in
+  ok    el rechazo nombra la variable de opt-in y el paquete de la version mayor
+  ok    el instalador por defecto pide postgresql-16-pgvector
+  ok    el instalador declarado gana
+  ok    con vector.control presente pasa sin instalar
+  ok    un instalador que miente NO se acepta: se re-comprueba el control
+  ok    un instalador que deja vector.control se acepta
+
+9 casos: 9 ok, 0 fallos

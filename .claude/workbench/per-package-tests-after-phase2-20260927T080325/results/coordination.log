@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-ABGCwC/integ-9hENTE/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-ABGCwC/integ-qYbIYZ/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+
+ 56 pass
+ 4 skip
+ 0 fail
+ 114 expect() calls
+Ran 60 tests across 4 files. [3.87s]

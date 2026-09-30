@@ -1,0 +1,22 @@
+== 1. la REGLA no cambia: sigue publicando el ultimo NO NULO ==
+  ok    con el final parcial, la regla retrocede al turno anterior
+  ok    con el final reconciliado, la regla publica su cierre
+== 2. la columna NUEVA declara el cierre CRUDO del ultimo mensaje ==
+  ok    el final parcial no declaro cierre: la columna es nula
+  ok    el final reconciliado si lo declaro
+== 3. y la clave EXISTE en los dos: nula no es ausente ==
+  ok    la clave viaja en el dict del final parcial
+  ok    y en el del reconciliado
+== 4. las dos cifras DISCREPAN en el grupo acusado y no en el otro ==
+  ok    discrepan con el final parcial
+  ok    coinciden con el final reconciliado
+== 5. CONTROL CRUZADO: el destilador y el extractor coinciden ==
+  ok    [final parcial] el cierre crudo coincide
+  ok    [final parcial] la regla coincide
+  ok    [final parcial] el denominador coincide
+  ok    [final reconciliado] el cierre crudo coincide
+  ok    [final reconciliado] la regla coincide
+  ok    [final reconciliado] el denominador coincide
+
+14 ok, 0 fallos
+EXIT=0

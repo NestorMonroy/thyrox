@@ -1,0 +1,8 @@
+{
+  "id": "229",
+  "subject": "Portar output (34 mod) — el mas cercano a portable: 4 de 6 deps ya estan",
+  "description": "Cerrada y verificada en serie por el orquestador (thyrox@f990ab10, docs@f3dbdc82a, ambos publicados). 23 de 36 módulos portados; 13 diferidos con su bloqueador nombrado uno a uno — cobertura declarada, que es el desenlace válido de porte-completo-no-parcial.md.\n\nRe-corrido por el orquestador, no leído del resumen: `bun test src/packages/output` → 324/0 sobre 16 archivos, y `dependencies.test.ts` → 38/0, o sea el porte no añadió ni un especificador sin resolver.\n\nSu hallazgo H-DOCS-1148 corrige la premisa que YO le di, y las cuatro cláusulas eran falsas. Verifiqué las dos que más pesan: los dos .tsx que mi conteo de «34 módulos» excluía existen y `exportRenderer.js` está en el `exports` de la fuente (total real 36); y los imports que declaré «de tipo o en tests» son de valor e invocados en producción — `ctrlOToExpand` en terminal.ts:101, `logForDebugging` en asciicast.ts:105. Eso retira el orden de porte entero: docs@de6c9f5a9.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

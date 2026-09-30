@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+tests/paths/providerLayer.test.ts:
+43 |   rmSync(base, { recursive: true, force: true })
+44 | })
+45 | 
+46 | describe('productionDeclarations — capa del .env del proveedor', () => {
+47 |   test('la familia por clon cae al proveedor hermano', () => {
+48 |     expect(productionDeclarations(consumer).declared('THYROX_CAPA_DOCS')).toBe('del-proveedor-para-docs')
+                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "del-proveedor-para-docs"
+Received: null
+
+      at <anonymous> (/home/user/thyrox/tests/paths/providerLayer.test.ts:48:75)
+(fail) productionDeclarations — capa del .env del proveedor > la familia por clon cae al proveedor hermano [1.54ms]
+
+ 7 pass
+ 1 fail
+ 8 expect() calls
+Ran 8 tests across 1 file. [114.00ms]

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "python3 src/verify/check_suite_discrimina.py --limit 2 --budget 240", "started_at": "2026-09-17T07:27:54+00:00"}
+{"kind": "settle", "exit_code": 3, "finished_at": "2026-09-17T07:29:25+00:00", "duration_seconds": 91.24986}

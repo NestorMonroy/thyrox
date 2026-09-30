@@ -1,0 +1,69 @@
+src/packages/agent/sessionTools/analyzeContext.ts(358,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+  --- código src/packages/agent/sessionTools/analyzeContext.ts:348-368 ---
+    348    if (builtInTools.length < 1) {
+    349      return {
+    350        builtInToolTokens: 0,
+    351        deferredBuiltinDetails: [],
+    352        deferredBuiltinTokens: 0,
+    353        systemToolDetails: [],
+    354      }
+    355    }
+    356  
+    357    // Check if tool search is enabled
+    358>   const { isToolSearchEnabled } = await import('../toolSearch.js')
+    359    const { isDeferredTool } = await import('@thyrox/tool-registry/tools/ToolSearchTool/prompt.js')
+    360    const isDeferred = await isToolSearchEnabled(
+    361      model ?? '',
+    362      tools,
+    363      getToolPermissionContext,
+    364      agentInfo?.activeAgents ?? [],
+    365      'analyzeBuiltIn',
+    366    )
+    367  
+    368    // Separate always-loaded and deferred builtin tools using dynamic isDeferredTool check
+src/packages/agent/sessionTools/analyzeContext.ts(633,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+  --- código src/packages/agent/sessionTools/analyzeContext.ts:623-643 ---
+    623        ),
+    624      ),
+    625    )
+    626    const estimateTotal = estimates.reduce((s, e) => s + e, 0) || 1
+    627    const mcpToolTokensByTool = estimates.map(e =>
+    628      Math.round((e / estimateTotal) * totalTokens),
+    629    )
+    630  
+    631    // Check if tool search is enabled - if so, MCP tools are deferred
+    632    // isToolSearchEnabled handles threshold calculation internally for TstAuto mode
+    633>   const { isToolSearchEnabled } = await import('../toolSearch.js')
+    634    const { isDeferredTool } = await import('@thyrox/tool-registry/tools/ToolSearchTool/prompt.js')
+    635  
+    636    const isDeferred = await isToolSearchEnabled(
+    637      model,
+    638      tools,
+    639      getToolPermissionContext,
+    640      agentInfo?.activeAgents ?? [],
+    641      'analyzeMcp',
+    642    )
+    643  
+src/packages/agent/sessionTools/analyzeContext.ts(773,23): error TS18048: 'msg.message.content' is possibly 'undefined'.
+  --- código src/packages/agent/sessionTools/analyzeContext.ts:763-783 ---
+    763  ): void {
+    764    // Handle both string and array content
+    765    if (typeof msg.message.content === 'string') {
+    766      // Simple string content
+    767      const tokens = roughTokenCountEstimation(msg.message.content)
+    768      breakdown.userMessageTokens += tokens
+    769      return
+    770    }
+    771  
+    772    // Process each content block individually
+    773>   for (const block of msg.message.content) {
+    774      const blockStr = jsonStringify(block)
+    775      const blockTokens = roughTokenCountEstimation(blockStr)
+    776  
+    777      if ('type' in block && block.type === 'tool_result') {
+    778        breakdown.toolResultTokens += blockTokens
+    779        const toolUseId = 'tool_use_id' in block ? block.tool_use_id : undefined
+    780        const toolName =
+    781          (toolUseId ? toolUseIdToName.get(toolUseId) : undefined) || 'unknown'
+    782        breakdown.toolResultsByType.set(
+    783          toolName,

@@ -1,0 +1,360 @@
+diff --git a/src/packages/daemon/src/__tests__/classifierState.test.ts b/src/packages/daemon/src/__tests__/classifierState.test.ts
+new file mode 100644
+index 00000000..1489bfca
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/classifierState.test.ts
+@@ -0,0 +1,13 @@
++import { describe, expect, test } from 'bun:test'
++import { TASK_KINDS, type TaskKind } from '../classifier/state.js'
++
++describe('TASK_KINDS', () => {
++  test('es la unica definicion canonica de los kinds de tarea/worker', () => {
++    expect(TASK_KINDS).toEqual(['local_bash', 'in_process_teammate', 'dream', 'auto_mode_scan'])
++  })
++
++  test('cada valor tipa como TaskKind', () => {
++    const k: TaskKind = TASK_KINDS[1]
++    expect(k).toBe('in_process_teammate')
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/ptyStatusFeed.test.ts b/src/packages/daemon/src/__tests__/ptyStatusFeed.test.ts
+new file mode 100644
+index 00000000..1d1b2e03
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/ptyStatusFeed.test.ts
+@@ -0,0 +1,175 @@
++import { describe, expect, test } from 'bun:test'
++import { MAX_DETAIL_CHARS } from '../classifier/state.js'
++import { createPtyStatusFeed, type StatusFeedPatch } from '../ptyStatusFeed.js'
++
++/** Espera lo bastante para que corran `n` ticks de `tickMs`. */
++function waitTicks(tickMs: number, n = 1): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, tickMs * n + Math.max(5, tickMs / 2)))
++}
++
++describe('createPtyStatusFeed — cadencia sin escritura', () => {
++  test('sin ningun feed() emite working/idle en el primer tick', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    await waitTicks(15, 1)
++    feed.dispose()
++    expect(patches.length).toBeGreaterThan(0)
++    expect(patches[0]?.state).toBe('working')
++    expect(patches[0]?.tempo).toBe('idle')
++  })
++
++  test('una linea terminada en salto no deja pendiente — sigue idle, no blocked', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    feed.feed('todo listo\n')
++    await waitTicks(15, 2)
++    feed.dispose()
++    expect(patches.some(p => p.tempo === 'blocked')).toBe(false)
++  })
++
++  test('una linea sin salto final, tras silencio, pasa a blocked con esa linea de detalle', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    feed.feed('¿continuo con el borrado? (y/n)')
++    await waitTicks(15, 2)
++    feed.dispose()
++    const blocked = patches.find(p => p.state === 'blocked')
++    expect(blocked).toBeDefined()
++    expect(blocked?.tempo).toBe('blocked')
++    expect(blocked?.detail).toBe('¿continuo con el borrado? (y/n)')
++  })
++})
++
++describe('createPtyStatusFeed — escritura reciente', () => {
++  test('un feed() reciente da working/active en el siguiente tick que lo ve', async () => {
++    const patches: StatusFeedPatch[] = []
++    const tickMs = 200
++    const feed = createPtyStatusFeed({ tickMs, onPatch: p => void patches.push(p) })
++    // feed() ANTES del primer tick, con margen de sobra respecto de tickMs
++    // en las dos direcciones: bastante lejos del tick (para que siga
++    // "reciente" cuando el tick lo mire) y bastante cerca (para no cruzar
++    // al tick siguiente).
++    await new Promise(r => setTimeout(r, tickMs * 0.6))
++    feed.feed('trabajando…\n')
++    await new Promise(r => setTimeout(r, tickMs * 0.55))
++    feed.dispose()
++    const last = patches[patches.length - 1]
++    expect(last?.state).toBe('working')
++    expect(last?.tempo).toBe('active')
++  })
++
++  test('un feed() nuevo mientras esta blocked reactiva a working/active de inmediato', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    feed.feed('¿seguro? (y/n)')
++    await waitTicks(15, 2)
++    expect(patches.some(p => p.state === 'blocked')).toBe(true)
++    const before = patches.length
++    feed.feed('y\n')
++    feed.dispose()
++    expect(patches.length).toBeGreaterThan(before)
++    expect(patches[patches.length - 1]?.state).toBe('working')
++    expect(patches[patches.length - 1]?.tempo).toBe('active')
++  })
++})
++
++describe('createPtyStatusFeed — deduplicacion', () => {
++  test('dos ticks con la misma clave no repiten el patch', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    await waitTicks(15, 3)
++    feed.dispose()
++    expect(patches.length).toBe(1)
++  })
++})
++
++describe('createPtyStatusFeed — limpieza de la PTY', () => {
++  test('un movimiento de cursor ANSI hacia atras separa en lineas', () => {
++    // Sin el `\x1b[7D` como delimitador, "primero" y "segundo" quedarian
++    // fundidos en una sola linea ("primerosegundo") y `lastLine` seria esa
++    // fusion, no "segundo": la ultima linea COMPLETA antes del salto final.
++    const feed = createPtyStatusFeed({ tickMs: 10_000, onPatch: () => {} })
++    feed.feed('primero\x1b[7Dsegundo\n')
++    feed.dispose()
++    expect(feed.lastLine).toBe('segundo')
++  })
++
++  test('secuencias ANSI de color se limpian del detalle', () => {
++    const feed = createPtyStatusFeed({ tickMs: 10_000, onPatch: () => {} })
++    feed.feed('\x1b[31mfallo\x1b[0m\n')
++    feed.dispose()
++    expect(feed.lastLine).toBe('fallo')
++  })
++
++  test('el buffer interno sin saltos se acota a la cola tras 2x MAX_DETAIL_CHARS', () => {
++    // La cola se acota ANTES de que llegue el salto que cierra la linea.
++    // Sin acotar, la linea completa mediria 2000 caracteres y el truncado
++    // final del `lastLine` la recortaria con una elipsis; acotada, queda
++    // justo en MAX_DETAIL_CHARS y sin elipsis — misma longitud, contenido
++    // distinguible.
++    const feed = createPtyStatusFeed({ tickMs: 10_000, onPatch: () => {} })
++    feed.feed('x'.repeat(2000))
++    feed.feed('\n')
++    feed.dispose()
++    expect(feed.lastLine).toBe('x'.repeat(MAX_DETAIL_CHARS))
++  })
++})
++
++describe('createPtyStatusFeed — chunk que limpia a vacio', () => {
++  test('un chunk puramente ANSI (sin texto visible) no refresca el reloj de escritura', async () => {
++    const patches: StatusFeedPatch[] = []
++    const tickMs = 50
++    const feed = createPtyStatusFeed({ tickMs, onPatch: p => void patches.push(p) })
++    feed.feed('en curso')
++    await new Promise(r => setTimeout(r, 30))
++    // Se limpia a cadena vacia: si refrescara el reloj de escritura como
++    // una escritura real, el tick de mas abajo veria la ventana activa en
++    // vez de "blocked".
++    feed.feed('\x1b[0m')
++    await new Promise(r => setTimeout(r, 30))
++    feed.dispose()
++    expect(patches.some(p => p.state === 'blocked')).toBe(true)
++  })
++})
++
++describe('createPtyStatusFeed — fallo del sumidero inyectado', () => {
++  test('si onPatch rechaza, se logea con logErrorFn en vez de propagar', async () => {
++    const errors: unknown[] = []
++    const feed = createPtyStatusFeed({
++      tickMs: 15,
++      onPatch: () => Promise.reject(new Error('sumidero caido')),
++      logErrorFn: e => void errors.push(e),
++    })
++    await waitTicks(15, 1)
++    feed.dispose()
++    expect(errors.length).toBeGreaterThan(0)
++  })
++})
++
++describe('createPtyStatusFeed — dispose', () => {
++  test('tras dispose no se publican mas patches, ni por tick ni por reactivacion', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    await waitTicks(15, 1)
++    feed.dispose()
++    const before = patches.length
++    // El propio `feed()` puede disparar `emit()` fuera del temporizador
++    // (la reactivacion tras "blocked"); dispose() lo tiene que cortar
++    // tambien, no solo el temporizador.
++    feed.feed('algo nuevo despues de disponer\n')
++    await waitTicks(15, 2)
++    expect(patches.length).toBe(before)
++  })
++
++  test('dispose corta la reactivacion blocked->active de feed(), no solo el temporizador', async () => {
++    const patches: StatusFeedPatch[] = []
++    const feed = createPtyStatusFeed({ tickMs: 15, onPatch: p => void patches.push(p) })
++    feed.feed('¿seguro? (y/n)')
++    await waitTicks(15, 2)
++    expect(patches.some(p => p.state === 'blocked')).toBe(true)
++    feed.dispose()
++    const before = patches.length
++    feed.feed('y\n')
++    expect(patches.length).toBe(before)
++  })
++})
+diff --git a/src/packages/daemon/src/classifier/state.ts b/src/packages/daemon/src/classifier/state.ts
+index 3ef0ce4c..33d046a3 100644
+--- a/src/packages/daemon/src/classifier/state.ts
++++ b/src/packages/daemon/src/classifier/state.ts
+@@ -9,6 +9,22 @@
+ export type WorkerState = 'idle' | 'working' | 'blocked' | 'done' | 'failed' | 'crashed' | 'stopped'
+ export type WorkerTempo = 'active' | 'idle' | 'blocked'
+ 
++/**
++ * `tt` (chunk-ygx717jg.js) — los kinds de tarea/worker en 2do plano que la
++ * clase `g7` puede representar. Definicion canonica unica: en thyrox el
++ * mismo vocabulario vive repartido como string literals sueltos en
++ * `@thyrox/swarm` (`tasks/types.ts`, sólo `'in_process_teammate'`), `repl` y
++ * `tool-registry` — esta constante no los sustituye, es la referencia
++ * contra la que se podrían unificar (parcial, fuera de alcance de D17).
++ */
++export const TASK_KINDS = [
++  'local_bash',
++  'in_process_teammate',
++  'dream',
++  'auto_mode_scan',
++] as const
++export type TaskKind = (typeof TASK_KINDS)[number]
++
+ export interface ClassifierResult {
+   state: WorkerState
+   detail: string
+diff --git a/src/packages/daemon/src/ptyStatusFeed.ts b/src/packages/daemon/src/ptyStatusFeed.ts
+new file mode 100644
+index 00000000..9144ed13
+--- /dev/null
++++ b/src/packages/daemon/src/ptyStatusFeed.ts
+@@ -0,0 +1,127 @@
++/**
++ * Feed de estado por PTY con cadencia fija — porte de `ke`
++ * (`chunk-ygx717jg.js`, referencia 2.1.283).
++ *
++ * Cada `tickMs` decide, sin mirar el contenido de la ultima linea salvo
++ * para el detalle: `working/active` si hubo una escritura dentro de la
++ * ultima ventana, `blocked` si no la hubo y queda una linea sin terminar en
++ * salto (`ne`/`Tm` — ver `classifier/state.ts::MAX_DETAIL_CHARS`), o
++ * `working/idle` en cualquier otro caso. El patch se deduplica por la clave
++ * `state|tempo|detail`, igual que la variable `o` de `ke`.
++ *
++ * `st` (`/\x1b\[\d*D/g`) limpia los movimientos de cursor hacia atras antes
++ * de trocear en lineas: una racha de redibujados (spinner, barra de
++ * progreso) se lee como una sucesion de lineas, no como ruido de escape.
++ *
++ * `Pr` (leer el estado guardado) y `ja` (fusionar el patch y escribirlo) no
++ * se portan aqui: ese almacen ya existe en este arbol
++ * (`classifier/stateFile.ts::readState/writeState`,
++ * `@thyrox/agent/background/fleet/fleetStore.js`), y no es responsabilidad
++ * de esta feed decidir cual lo consume — `onPatch` queda inyectado, y es el
++ * unico punto donde el llamador hace ese Pr+ja.
++ *
++ * // pendiente: `Vo` (chunk-zkn0228z.js, `Z.redact` → clase `nt`, un
++ * // escaner de secretos de proposito general) no se porta: el detalle se
++ * // publica sin redactar. Es una pieza propia, fuera del alcance de D17
++ * // — no especifica de la feed de la PTY.
++ *
++ * El pipeline actual de `classifier/` (`heuristic.ts` + `llmClient.ts` +
++ * `orchestrator.ts`, tras `THYROX_CODE_BG_CLASSIFIER=1`) no existe en la
++ * referencia: decide `working/blocked/done/failed/idle` leyendo el TEXTO
++ * (regex + LLM). `ke` sólo decide tempo (y, como único estado además de
++ * `working`, `blocked`) a partir de CUANDO llego la ultima escritura, sin
++ * leer que dice. Los dos quedan coexistiendo sin tocarse — cual alimenta el
++ * `state.json` de un worker es una decision del ejecutor, no de este porte.
++ */
++import { logError } from '@thyrox/local-observability/logging'
++import { MAX_DETAIL_CHARS, truncate, type WorkerState, type WorkerTempo } from './classifier/state.js'
++
++/** `Pe` — cadencia del temporizador, en ms. */
++export const STATUS_FEED_TICK_MS = 2000
++
++/** `st` — movimientos de cursor ANSI hacia atras. */
++const CURSOR_BACK_RE = /\x1b\[\d*D/g
++
++export interface StatusFeedPatch {
++  state: WorkerState
++  tempo: WorkerTempo
++  detail: string
++  updatedAt: string
++}
++
++export interface StatusFeedHandle {
++  /** Alimenta la feed con un fragmento crudo de salida de la PTY. */
++  feed(chunk: string): void
++  /** Detiene el temporizador; ningun patch mas se publica. */
++  dispose(): void
++  /** Ultima linea vista, truncada — `get lastLine` de `ke`. */
++  readonly lastLine: string
++}
++
++export interface StatusFeedOptions {
++  /** Cadencia del temporizador; por defecto `STATUS_FEED_TICK_MS` (`Pe`). */
++  tickMs?: number
++  /** Publica un patch ya deduplicado — la mitad inyectada de `Pr`+`ja`. */
++  onPatch: (patch: StatusFeedPatch) => void | Promise<void>
++  /** `d` (`chunk-fmsbxtrp.js`) — logea un fallo del propio `onPatch`. */
++  logErrorFn?: (error: unknown) => void
++}
++
++export function createPtyStatusFeed(options: StatusFeedOptions): StatusFeedHandle {
++  const tickMs = options.tickMs ?? STATUS_FEED_TICK_MS
++  const { onPatch } = options
++  const logErrorFn = options.logErrorFn ?? logError
++
++  let pendingLine = ''
++  let lastLine = ''
++  let pendingLineEmpty = true
++  let lastWriteAt = 0
++  let lastKey = ''
++  let disposed = false
++
++  function emit(state: WorkerState, tempo: WorkerTempo): void {
++    // La clave de deduplicacion se actualiza SIEMPRE, incluso tras
++    // dispose() — igual que `o=w` en `ke`, que corre antes de comprobar
++    // `!u`. Sólo se corta la publicacion misma.
++    const detail = truncate(lastLine, MAX_DETAIL_CHARS)
++    const key = `${state}|${tempo}|${detail}`
++    if (key === lastKey) return
++    lastKey = key
++    if (disposed) return
++    Promise.resolve(onPatch({ state, tempo, detail, updatedAt: new Date().toISOString() })).catch(logErrorFn)
++  }
++
++  const timer = setInterval(() => {
++    if (lastWriteAt > 0 && Date.now() - lastWriteAt < tickMs) emit('working', 'active')
++    else if (!pendingLineEmpty && lastLine) emit('blocked', 'blocked')
++    else emit('working', 'idle')
++  }, tickMs)
++  timer.unref()
++
++  return {
++    feed(chunk: string): void {
++      // Sin guarda de `disposed` aqui — `ke` tampoco la tiene en `feed`;
++      // el corte real esta en `emit()`, justo antes de publicar.
++      const clean = Bun.stripANSI(chunk.replace(CURSOR_BACK_RE, '\x00'))
++        .replace(/\r\n?/g, '\n')
++        .replace(/\0+$/, '')
++        .replace(/\0/g, '\n')
++      if (!clean) return
++      lastWriteAt = Date.now()
++      pendingLine += clean
++      const lines = pendingLine.split('\n')
++      pendingLine = lines.pop() ?? ''
++      pendingLineEmpty = pendingLine === ''
++      lastLine = pendingLine.trim() || lines.findLast(l => l.trim())?.trim() || lastLine
++      if (pendingLine.length > MAX_DETAIL_CHARS * 2) pendingLine = pendingLine.slice(-MAX_DETAIL_CHARS)
++      if (lastKey.startsWith('blocked|')) emit('working', 'active')
++    },
++    dispose(): void {
++      disposed = true
++      clearInterval(timer)
++    },
++    get lastLine(): string {
++      return truncate(lastLine, MAX_DETAIL_CHARS)
++    },
++  }
++}

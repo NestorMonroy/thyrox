@@ -1,0 +1,20 @@
+asentado: job-20260927T154004_job-002 -> OK (1 de 3)
+asentado: job-20260927T154004_job-001 -> OK (1 de 3)
+asentado: repl-rename -> OK (3 de 3)
+== 3 trabajos asentados ==
+OK     job-20260927T154004_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T154004_job-002
+       | (vacío — no emitió nada)
+OK     repl-rename exit=0
+       | OK     job-20260927T154004_job-002 exit=0
+       |        | bun test v1.3.11 (af24e281)
+       |        | 
+       |        |  541 pass
+       |        |  0 fail
+       |        |  1259 expect() calls
+       |        | Ran 541 tests across 31 files. [2.28s]
+       |        | EXIT=0
+       |        memoria pico: 216684 KB (212 MB) · pared 2.30s
+       | __BG_EXIT__=0
+       memoria pico: 842384 KB (823 MB) · pared 21.25s

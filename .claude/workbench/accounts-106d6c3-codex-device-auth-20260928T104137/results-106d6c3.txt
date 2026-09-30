@@ -1,0 +1,25 @@
+== 1: el 404 no es inicio deshabilitado -> 1
+== 2: sin el alias usercode -> 1
+== 3: sin intervalo por defecto -> 1
+== 4: el intervalo en texto no se lee -> 1
+== 5: el 403 no es pendiente -> 2
+== 6: el 404 no es pendiente -> 1
+== 7: un fallo de red corta el sondeo -> 1
+== 8: sin plazo -> 1
+== 9: sin comprobar la señal antes de esperar -> 1
+== 10: el aborto del fetch es de red -> 1
+== 11: sin verificador se acepta -> 1
+== 12: un fallo del sondeo no se rehúsa -> 1
+== 13: el intercambio fallido no es error -> 1
+== 14: sin access token se acepta -> 1
+== 15: otra retrollamada -> 1
+== 16: sin client id en el código de usuario -> 1
+== 17: sin el verificador en el intercambio -> 1
+== 18: sin avisar el código -> 1
+== 19: sin el user_code en el sondeo -> 1
+== 20: un fallo de código de usuario no es error -> 1
+== restaurado -> 0
+ 8 pass
+ 0 fail
+
+[exited with code 0]

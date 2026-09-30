@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+75 |     expect(seen).toEqual(['pedido', 'default-setting', 'main-loop'])
+76 |   })
+77 | 
+78 |   test('la política de la organización', () => {
+79 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ policyFastMode: false }))).toBe('preference')
+80 |     expect(fastModeUnavailabilityCause(undefined, {}, context({ policyPerSessionOptIn: true }))).toBeNull()
+                                                                                                      ^
+error: expect(received).toBeNull()
+
+Received: "preference"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:80:98)
+(fail) fastModeUnavailabilityCause (gL) > la política de la organización [0.25ms]
+
+ 13 pass
+ 1 fail
+ 51 expect() calls
+Ran 14 tests across 1 file. [41.00ms]

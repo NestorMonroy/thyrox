@@ -1,0 +1,8 @@
+{
+  "id": "148",
+  "subject": "Gate: rechazar grep -q sobre variable bajo pipefail (invierte el veredicto)",
+  "description": "PREMISA MEDIDA 2026-09-05 (.claude/eventos/pipefail-grep-q-20260905T180148/): el enunciado es cierto A VECES, y el «a veces» decide si el gate sirve. Medido con la marca en el primer byte: cat de 20 MB 10/10 invirtió, echo builtin de 20 MB 10/10, `yes` (infinito) 10/10; echo builtin de 5 MB 0/20 y cadena de 5 bytes 0/20. El predicado real NO es sintáctico: pide (a) que grep -q salga antes de que el escritor termine —marca temprana— y (b) que quede bastante entrada por escribir. Un gate que marque todo `… | grep -q` bajo pipefail marcaría los sitios del árbol que operan sobre cadenas cortas y nunca invierten — falso positivo por construcción, que es lo que entrena a ignorar un gate. Lo mecanizable sin adivinar es el ESCRITOR NO ACOTADO: `yes`, `tail -f`, `cat` de un archivo cuyo tamaño el guion no controla. Ése es el alcance que el gate debe tener, no todo `grep -q`.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

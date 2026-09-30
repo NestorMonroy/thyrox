@@ -1,0 +1,4 @@
+not-limited	s/const response = limiter$/const response = false/
+headers-learn	/limiter?.updateFromHeaders(upstream.provider, credential.id, response.headers, response.status, resolved.model)/d
+body-learn	/if (errorText !== null) limiter?.updateFromResponseBody/d
+reads-5xx	s/const errorText = response.status >= 400 \&\& response.status < 500 ? await response.clone().text() : null/const errorText = response.status >= 400 ? await response.clone().text() : null/

@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+173 | })
+174 | 
+175 | describe('getParentSessionId (zE) y setCliParentSessionId (nYo)', () => {
+176 |   test('el contexto en proceso gana, luego el dinámico y al final la línea de comandos', () => {
+177 |     setCliParentSessionId('cli')
+178 |     expect(getParentSessionId()).toBe('cli')
+                                       ^
+error: expect(received).toBe(expected)
+
+Expected: "cli"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:178:34)
+(fail) getParentSessionId (zE) y setCliParentSessionId (nYo) > el contexto en proceso gana, luego el dinámico y al final la línea de comandos [0.31ms]
+182 |   })
+183 | 
+184 |   test('un contexto dinámico sin padre cae al de la línea de comandos', () => {
+185 |     setCliParentSessionId('cli')
+186 |     setDynamicTeamContext({ agentId: 'a@e', agentName: 'a', teamName: 'e', planModeRequired: false })
+187 |     expect(getParentSessionId()).toBe('cli')
+                                       ^
+error: expect(received).toBe(expected)
+
+Expected: "cli"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:187:34)
+(fail) getParentSessionId (zE) y setCliParentSessionId (nYo) > un contexto dinámico sin padre cae al de la línea de comandos [0.08ms]
+
+ 16 pass
+ 2 fail
+ 37 expect() calls
+Ran 18 tests across 1 file. [130.00ms]

@@ -1,0 +1,202 @@
+{
+ "reviewed": [
+  {
+   "pattern": "mock-fetch-cast-missing-preconnect",
+   "files": [
+    "src/packages/provider/src/__tests__/integration.test.ts"
+   ]
+  },
+  {
+   "pattern": "assistant-event-message-unknown-via-index-signature-member",
+   "files": [
+    "src/packages/provider/src/__tests__/integration.test.ts"
+   ]
+  },
+  {
+   "pattern": "optional-provider-message-field-accessed-without-guard",
+   "files": [
+    "src/packages/provider/src/gemini/convertMessages.ts"
+   ]
+  },
+  {
+   "pattern": "sdk-content-block-param-not-assignable-to-record-string-unknown",
+   "files": [
+    "src/packages/provider/src/gemini/convertMessages.ts"
+   ]
+  },
+  {
+   "pattern": "map-callback-param-implicit-any-por-import-any",
+   "files": [
+    "src/packages/provider/src/vcr.ts"
+   ]
+  },
+  {
+   "pattern": "normalized-message-field-falls-to-index-signature",
+   "files": [
+    "src/packages/repl/src/components/MessageModel.tsx"
+   ]
+  },
+  {
+   "pattern": "indexed-property-of-unknown-stub-type",
+   "files": [
+    "src/packages/repl/src/components/StatusLine.tsx"
+   ]
+  },
+  {
+   "pattern": "ported-type-missing-optional-ui-fields",
+   "files": [
+    "src/packages/repl/src/components/ValidationErrorsList.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-attachment-field-needs-local-shape",
+   "files": [
+    "src/packages/repl/src/components/VirtualMessageList.tsx"
+   ]
+  },
+  {
+   "pattern": "discriminated-union-wider-than-consumer-narrows-via-runtime-only-filter",
+   "files": [
+    "src/packages/repl/src/components/VirtualMessageList.tsx"
+   ]
+  },
+  {
+   "pattern": "record-keyed-by-unknown-hookevent",
+   "files": [
+    "src/packages/repl/src/components/hooks/SelectMatcherMode.tsx"
+   ]
+  },
+  {
+   "pattern": "renderable-message-switch-missing-progress-case",
+   "files": [
+    "src/packages/repl/src/components/messageActions.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-via-in-operator-on-index-signature",
+   "files": [
+    "src/packages/repl/src/components/messageActions.tsx"
+   ]
+  },
+  {
+   "pattern": "hookevent-unknown-sdk-stub",
+   "files": [
+    "src/packages/repl/src/components/messages/HookProgressMessage.tsx"
+   ]
+  },
+  {
+   "pattern": "imported-type-not-reexported-by-partial-attachments-port",
+   "files": [
+    "src/packages/repl/src/components/messages/nullRenderingAttachments.ts"
+   ]
+  },
+  {
+   "pattern": "stub-type-flattened-to-non-generic-alias",
+   "files": [
+    "src/packages/repl/src/components/wizard/WizardProvider.tsx"
+   ]
+  },
+  {
+   "pattern": "leader-tool-use-confirm-queue-unknown-bridge",
+   "files": [
+    "src/packages/repl/src/hooks/useInboxPoller.ts"
+   ]
+  },
+  {
+   "pattern": "campo-usage-opcional-sin-guarda",
+   "files": [
+    "src/packages/repl/src/promptSuggestion.tsx"
+   ]
+  },
+  {
+   "pattern": "in-operator-no-descarta-undefined-en-propiedad-opcional",
+   "files": [
+    "src/packages/repl/src/promptSuggestionSpeculation.tsx"
+   ]
+  },
+  {
+   "pattern": "local-required-callback-prop-fed-conditional-undefined",
+   "files": [
+    "src/packages/repl/src/screens/agentFleet/FleetView.tsx"
+   ]
+  },
+  {
+   "pattern": "highlight-literal-missing-required-priority-field",
+   "files": [
+    "src/packages/repl/src/screens/agentFleet/FleetView.tsx"
+   ]
+  },
+  {
+   "pattern": "fixed-length-tuple-indexed-with-literal-constant",
+   "files": [
+    "src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts"
+   ]
+  },
+  {
+   "pattern": "modulo-indexed-array-noUncheckedIndexedAccess",
+   "files": [
+    "src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts"
+   ]
+  },
+  {
+   "pattern": "progress-message-data-unknown",
+   "files": [
+    "src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts"
+   ]
+  },
+  {
+   "pattern": "generate-task-id-invalid-literal",
+   "files": [
+    "src/packages/shell/src/shellCommand.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-access-undefined-into-string-param",
+   "files": [
+    "src/packages/skills/src/fromDir.ts"
+   ]
+  },
+  {
+   "pattern": "discriminant-literal-not-in-closed-union",
+   "files": [
+    "src/packages/storage/src/__tests__/sessionStoragePredicates.test.ts"
+   ]
+  },
+  {
+   "pattern": "spread-de-shim-local-no-satisface-union-canonica",
+   "files": [
+    "src/packages/swarm/src/teammateState.ts"
+   ]
+  },
+  {
+   "pattern": "tool-registry-host-bindings-stub-missing-replonlytoolnames",
+   "files": [
+    "src/packages/tool-registry/src/__tests__/integration.test.ts"
+   ]
+  },
+  {
+   "pattern": "team-mem-ops-wrong-export-name",
+   "files": [
+    "src/packages/tool-registry/src/collapseReadSearch.ts"
+   ]
+  },
+  {
+   "pattern": "optional-array-attachment-spread",
+   "files": [
+    "src/packages/tool-registry/src/collapseReadSearch.ts"
+   ]
+  },
+  {
+   "pattern": "callback-annotated-with-narrower-or-unknown-type-than-array-element",
+   "files": [
+    "src/packages/tool-registry/src/notebook.ts"
+   ]
+  },
+  {
+   "pattern": "inline-message-literal-bypasses-any-helper",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts"
+   ]
+  }
+ ]
+}

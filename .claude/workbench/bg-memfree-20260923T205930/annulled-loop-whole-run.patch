@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_loop.py
++++ b/src/verify/tsc_zero_loop.py
+@@ -70,7 +70,7 @@
+         # `result.json`). Sin `add -N` un commit por pathspec los dejaría fuera
+         # en silencio, y el `pre-commit` (`check_bench_untracked`) lo bloquea:
+         # medido, el lazo real murió así en su primer commit.
+-        _git(root, "add", "-N", "--", str(loop_dir))
++        _git(root, "add", "-N", "--", str(bench), str(ledger))
+         _git(root, "commit", "-q", "-m",
+              f"Apply tsc-zero step {index}: {report.total_before} -> {report.total_final}\n\n"
+              f"Accepted by one tsc pass: {', '.join(report.accepted)}.",

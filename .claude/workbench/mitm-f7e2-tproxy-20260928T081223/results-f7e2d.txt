@@ -1,0 +1,29 @@
+== 1: sin cerrar cuando el cliente lo pide
+   (src/tproxy/tlsCapture.ts)
+(fail) an HTTPS request is intercepted, decrypted, forwarded and recorded [5626.37ms]
+ 7 pass
+ 1 fail
+== 2: la cabecera de cierre sin cerrar el socket
+   (src/tproxy/tlsCapture.ts)
+(fail) an HTTPS request is intercepted, decrypted, forwarded and recorded [5533.87ms]
+ 7 pass
+ 1 fail
+== 3: la connection del upstream copiada al cliente
+   (src/tproxy/tlsCapture.ts)
+(fail) the upstream's hop-by-hop Connection header does not reach the client [223.65ms]
+ 7 pass
+ 1 fail
+== 4: la salida sin marca de exclusión
+   (src/tproxy/commands.ts)
+(fail) an HTTPS request is intercepted, decrypted, forwarded and recorded [1086.84ms]
+ 7 pass
+ 1 fail
+== 5: sin descifrar: el cliente recibe el certificado equivocado
+   (src/tproxy/captureMode.ts)
+(fail) an HTTPS request is intercepted, decrypted, forwarded and recorded [750.49ms]
+ 7 pass
+ 1 fail
+== restaurado
+ M src/packages/mitm/src/tproxy/tlsCapture.ts
+ 8 pass
+ 0 fail

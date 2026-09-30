@@ -1,0 +1,7 @@
+patron: sync-external-store-snapshot-inferred-unknown-from-untyped-require
+senal_del_verificador: TS2322: Type 'unknown' is not assignable to type '(boolean|string|number)'
+fix_generico: Cuando `getSnapshot` (o `subscribe`) de `useSyncExternalStore` viene de un `require(...)` sin anotar (por feature-flag dead-code-elimination), su tipo es `any`/`unknown` y TypeScript no puede inferir el genérico `Snapshot`, colapsándolo a `unknown` en el punto de consumo. Se arregla pasando el tipo explícito como argumento genérico — `React.useSyncExternalStore<TipoReal>(subscribe, getSnapshot)` — sin tocar la conducta en ejecución, porque el valor real (booleano/string/etc.) ya lo garantiza el stub o el módulo condicional.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/hooks/AsyncHookRegistry.ts(64,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/packages/agent/hooks/AsyncHookRegistry.ts(110,5): error TS2322: Type 'unknown' is not assignable to type 'string'.

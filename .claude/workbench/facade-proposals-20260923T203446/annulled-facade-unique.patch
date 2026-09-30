@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -192,7 +192,7 @@
+       const pkg = packageRoot(provider.fileName, read, packages)
+       if (!pkg) continue
+       const candidates = exportsOf(pkg, found.member)
+-      if (candidates.size !== 1) continue
++      if (candidates.size === 0) continue
+       const [[symbol, declaring]] = [...candidates]
+       if (declaring === provider) continue
+       if (declaring.text.includes('getAgentHostBindings')) continue

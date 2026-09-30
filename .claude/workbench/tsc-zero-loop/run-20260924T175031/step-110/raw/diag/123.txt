@@ -1,0 +1,6 @@
+src/packages/config/settings/allErrors.ts(37,5): error TS2322: Type '(SettingsError | { file?: string | undefined; path: string; message: string; source?: string | undefined; })[]' is not assignable to type 'SettingsError[]'.
+  Type 'SettingsError | { file?: string | undefined; path: string; message: string; source?: string | undefined; }' is not assignable to type 'SettingsError'.
+    Type '{ file?: string | undefined; path: string; message: string; source?: string | undefined; }' is not assignable to type 'SettingsError'.
+      Types of property 'file' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.

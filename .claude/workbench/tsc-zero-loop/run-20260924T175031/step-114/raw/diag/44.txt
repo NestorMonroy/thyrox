@@ -1,0 +1,1 @@
+src/packages/provider/src/openai/client.ts(83,5): error TS2698: Spread types may only be created from object types.

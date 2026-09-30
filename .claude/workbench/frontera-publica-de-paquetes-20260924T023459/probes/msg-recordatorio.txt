@@ -1,0 +1,9 @@
+Drive the task reminder loop with a read-only tool
+
+The two loop cases count turns without a task write, and generated
+them with a real Bash call per turn. Measured, the Bash tool costs
+~110 ms per "true" against 1 ms per Glob turn, so 23 turns reached
+bun test's 5 s default under load. The cases measure the reminder's
+cadence, not the shell: the turns now use Glob and the file runs in
+0.67 s, green even at an 800 ms timeout. The reset control that
+discriminates (TaskUpdate on turn one) is untouched.

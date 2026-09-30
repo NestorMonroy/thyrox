@@ -1,0 +1,40 @@
+== 1. ninguno aporta: {} y ni una línea de formato ==
+  ok    devuelve {}
+== 2. la salida atribuye por detector, porque el cliente no lo hace ==
+  ok    etiqueta el primero
+  ok    etiqueta el segundo
+  ok    conserva el texto de ambos
+  ok    el evento va en hookEventName
+== 3. un detector mudo no gasta ni separador (cortocircuito) ==
+  ok    no aparece la etiqueta del mudo
+  ok    y no queda separador colgando
+== 4. un detector roto se AÍSLA: no tumba a sus compañeros ==
+  ok    el sano publica igual
+  ok    y la excepción no viaja al contexto
+== 5. la ventana es COMPARTIDA y el recorte se declara ==
+  ok    la salida cabe en el presupuesto
+  ok    y dice cuánto dejó fuera
+  ok    los dos siguen presentes — ninguno enmudece al otro
+== 6. CONTROL que discrimina: cero detectores REHÚSA, no devuelve {} ==
+  ok    rehúsa con lista vacía
+  ok    y el mensaje dice que NO es lo mismo que no tener hallazgos
+== 7. carga parcial: sigue con los que hay, pero LO DICE ==
+  ok    ninguno cargó
+  ok    y los nombra a los dos
+== 8. el CLI nunca rompe el flujo: entrada basura -> {} y exit 0 ==
+{}
+  ok    sale 0
+== 9. un detector puede PEDIR CONFIRMACION, no solo avisar ==
+  ok    emite la decision
+  ok    con su razon
+  ok    y conserva el aviso del otro
+  ok    sin quien la pida, no hay decision
+  ok    entre ask y deny gana la mas fuerte
+  ok    el detector irreversible esta en la lista
+  ok    el de edicion en bucle tambien
+  ok    el de substr como destino de gsub tambien
+  ok    y el de los momentos de gensub e -i inplace
+  ok    y carga sin faltantes
+  ok    el despacho real devuelve su aviso
+
+28 ok, 0 fallos

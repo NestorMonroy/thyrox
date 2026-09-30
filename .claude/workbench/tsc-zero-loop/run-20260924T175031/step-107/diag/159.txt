@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts(27,18): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts:17-37 ---
+     17  
+     18  /**
+     19   * If `cwd` is inside a `.claude/worktrees/<branch>/` subdir, return the
+     20   * parent directory (the original repo root). Otherwise the cwd itself.
+     21   *
+     22   * Source: ant PR_.
+     23   */
+     24  export function spawnOrigin(state: FleetJobState): string {
+     25    if (state.originCwd) return state.originCwd
+     26    const match = state.cwd.match(/^(.+?)[/\\]\.claude[/\\]worktrees[/\\]/)
+     27>   return match ? match[1] : state.cwd
+     28  }
+     29  
+     30  /**
+     31   * Group key — typically the spawn origin path. Used to bucket rows by
+     32   * repo when the user picks "by repo" grouping in the filter bar.
+     33   *
+     34   * Source: ant Hi8.
+     35   */
+     36  export function repoGroup(state: FleetJobState): string {
+     37    return spawnOrigin(state)
+  Type 'undefined' is not assignable to type 'string'.

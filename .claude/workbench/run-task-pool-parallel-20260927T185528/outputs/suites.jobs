@@ -1,0 +1,4 @@
+test-run-task-pool	bash tests/session/test-run-task-pool.sh
+test-run-task-pool-memfree	bash tests/session/test-run-task-pool-memfree.sh
+test-run-task-pool-scope	bash tests/session/test-run-task-pool-scope.sh
+test-run-task-pool-isolation	bash tests/session/test-run-task-pool-isolation.sh

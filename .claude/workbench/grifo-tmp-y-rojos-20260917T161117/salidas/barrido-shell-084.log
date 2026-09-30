@@ -1,0 +1,2 @@
+VERDE tests/verify/test-verificar-premisa.sh
+EXIT=0

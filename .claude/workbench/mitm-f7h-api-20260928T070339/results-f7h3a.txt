@@ -1,0 +1,59 @@
+== 1: host propio sin validar el nombre
+(fail) hosts: POST refuses a host that is not a hostname, before touching the hosts file [1.06ms]
+ 23 pass
+ 1 fail
+== 2: repetir con la autorización enmascarada
+(fail) POST /requests/:id/replay drops a masked authorization [0.93ms]
+ 23 pass
+ 1 fail
+== 3: repetir sin la marca de origen
+(fail) POST /requests/:id/replay resends to the local proxy, tagged, with its original auth [2.28ms]
+ 23 pass
+ 1 fail
+== 4: repetición que falla sin 502
+(fail) POST /requests/:id/replay of a proxy that cannot be reached is a sanitized 502 [17.61ms]
+ 23 pass
+ 1 fail
+== 5: HAR de sesión con filas sin validar
+(fail) sessions/:id/export.har names the file after the session and keeps valid rows only [5.82ms]
+ 23 pass
+ 1 fail
+== 6: nombre del HAR sin sanear
+(fail) sessions/:id/export.har names the file after the session and keeps valid rows only [7.33ms]
+ 23 pass
+ 1 fail
+== 7: renombrar sin nombre
+(fail) sessions/:id: PATCH stops or renames, and a rename needs a name [2.23ms]
+ 23 pass
+ 1 fail
+== 8: sesión sin cuerpo como JSON malformado
+(fail) sessions: POST with no body creates an unnamed session [0.93ms]
+ 23 pass
+ 1 fail
+== 9: host sin DNS al añadir
+(fail) hosts: POST adds the host and its DNS entry with the cached password [2.50ms]
+(fail) hosts: POST whose DNS entry fails keeps the host and reports the warning [0.99ms]
+ 22 pass
+ 2 fail
+== 10: DNS que falla al añadir sin conservar el host
+(fail) hosts: POST adds the host and its DNS entry with the cached password [2.46ms]
+(fail) hosts: POST whose DNS entry fails keeps the host and reports the warning [3.47ms]
+(fail) hosts/:host: PATCH toggles it, and an unknown host is a 404 [1.61ms]
+ 21 pass
+ 3 fail
+== 11: borrar host sin aviso cuando falta la contraseña
+(fail) hosts/:host: DELETE without a password, or with a failing DNS removal, warns in a header [1.33ms]
+ 23 pass
+ 1 fail
+== 12: sesión con requests aunque no exista
+(fail) sessions/:id/requests: POST appends with the next sequence [2.24ms]
+ 23 pass
+ 1 fail
+== 13: consulta fuera del esquema aceptada
+(fail) GET /requests rejects a query outside the schema [7.99ms]
+ 23 pass
+ 1 fail
+== restaurado
+?? src/packages/mitm/src/api/routes/inspector.ts
+ 24 pass
+ 0 fail

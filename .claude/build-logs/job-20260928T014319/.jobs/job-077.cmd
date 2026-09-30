@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/session/test_pool_history.py

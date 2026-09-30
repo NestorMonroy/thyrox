@@ -1,0 +1,24 @@
+src/packages/permission/__tests__/permissionPersistence.test.ts(293,32): error TS2339: Property 'updatedPermissions' does not exist on type '{ behavior: "allow"; updatedInput: Record<string, unknown>; updatedPermissions?: ({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | ... 3 more ... | "session"; } | ... 4 more ... | { ...; })[] | undefined; toolUseID...'.
+  --- código src/packages/permission/__tests__/permissionPersistence.test.ts:283-303 ---
+    283    test('14. unos permisos MAL FORMADOS no tumban la decisión entera', async () => {
+    284      const { outputSchema } = await import('../src/PermissionPromptToolResultSchema.ts')
+    285      const r = outputSchema().safeParse({
+    286        behavior: 'allow',
+    287        updatedInput: {},
+    288        updatedPermissions: [{ type: 'inventado' }],
+    289      })
+    290      // Un anfitrión SDK ajeno puede mandar basura en ese campo. Rechazar toda
+    291      // la decisión por eso convertiría un permiso concedido en una denegación.
+    292      expect(r.success).toBe(true)
+    293>     expect(r.success && r.data.updatedPermissions).toBe(undefined)
+    294    })
+    295  
+    296    test('15. una clasificación desconocida cae a indefinida, no rechaza', async () => {
+    297      const { outputSchema } = await import('../src/PermissionPromptToolResultSchema.ts')
+    298      const r = outputSchema().safeParse({
+    299        behavior: 'deny',
+    300        message: 'no',
+    301        decisionClassification: 'inventada',
+    302      })
+    303      expect(r.success).toBe(true)
+  Property 'updatedPermissions' does not exist on type '{ behavior: "deny"; message: string; interrupt?: boolean | undefined; toolUseID?: string | undefined; decisionClassification?: "user_temporary" | "user_permanent" | "user_reject" | undefined; }'.

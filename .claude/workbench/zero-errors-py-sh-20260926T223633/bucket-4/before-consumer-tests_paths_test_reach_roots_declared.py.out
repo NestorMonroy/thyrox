@@ -1,0 +1,19 @@
+== 1. la constante nombra la variable ==
+  ok    nombra THYROX_REACH_ROOTS
+== 2. entrada A — la variable del proceso gana ==
+  ok    lee la lista declarada
+  ok    recorta el espacio alrededor de cada nombre
+== 3. entrada B — la declaracion del .env cuando el proceso calla ==
+  ok    lee la declaracion del archivo
+== 4. el proceso gana sobre el .env ==
+  ok    la invocacion corrige al archivo
+== 5. sin declaracion, DERIVA del arbol real ==
+  ok    deriva los cinco hermanos del arbol
+== 6. CONTROL DE ANULACION: deriva sobre un arbol que NO es este ==
+  ok    deriva alpha/beta/gamma, no los de aqui
+== 7. el atributo REACH_ROOTS sigue resolviendo (6 consumidores) ==
+  ok    el nombre historico devuelve lo mismo que la funcion
+== 8. sin declaracion NI derivacion posible, REHUSA ==
+  ok    rehusa nombrando la variable
+
+9 ok, 0 fallos

@@ -1,0 +1,54 @@
+censo-jsonl: 466 archivo(s) versionado(s) (alcance medido: git ls-files menos _references/, _archived/ y node_modules)
+
+  bucket A — contrato de tercero — NO se convierte: 57
+    package.json (31 archivos)
+    tsconfig.json (11 archivos)
+    tsconfig.tests.json (9 archivos)
+    evals.json (2 archivos)
+    plugin.json
+    multi-interaction-evals.json
+    trigger-evals.json
+    tsconfig.messages.json
+
+  bucket B — ya es JSONL: 5
+    premise_drift_baseline.jsonl
+    agent-a163953c6da4980e2.jsonl
+    agent-a29f8c2656ce8c9c3.jsonl
+    agent-ab5a332fb0711f638.jsonl
+    store_row_369.jsonl
+
+  bucket D — evidencia capturada — NO se convierte: 315
+    .claude/workbench/session-task-dump-20260910T070654/outputs/  (297 archivo(s))
+    .claude/workbench/audit-consumer-provider-scripts-20260913T231343/outputs/  (11 archivo(s))
+    .claude/workbench/correr-connectionToolCompression-de-verdad-20260913T064445/outputs/  (2 archivo(s))
+    .claude/workbench/audit-session-tools-20260913T213511/outputs/  (1 archivo(s))
+    .claude/workbench/classify-unlabeled-task-layer-20260912T101557/outputs/  (1 archivo(s))
+    .claude/workbench/verificar-hogares-de-sesion-thyrox-20260912T082046/outputs/  (1 archivo(s))
+    tests/hooks/fixtures/agent_dispatch_orm.json  (1 archivo(s))
+    tests/task/fixtures/board_store_drift/card_369.json  (1 archivo(s))
+
+  bucket C — propiedad de thyrox — se convierte: 89
+    manifest.json                                (88 archivos)   nombran<=14
+        src/packages/cli/__tests__/workbench.test.ts
+        src/packages/config/dxt/helpers.ts
+        src/packages/tools/src/definitions/workbenchInstrumenter.ts
+        src/packages/updater/src/nativeInstaller/download.ts
+        src/session/bg.sh
+        src/verify/check_manifest_language.py
+        src/workbench/manifest.py
+        src/workbench/manifest.ts
+        src/workbench/paths.py
+        tests/session/test-bg-familia.sh
+        tests/verify/test_manifest_language.py
+        tests/workbench/manifest.test.ts
+        tests/workbench/test_manifest.py
+        tests/workbench/test_paths.py
+    models.json                                                  nombran<=8
+        src/agents/measure_subagent_usage.py
+        src/agents/model_catalog.py
+        src/packages/agent/__tests__/catalogCoverage.test.ts
+        src/packages/agent/__tests__/models.test.ts
+        src/packages/agent/bin/extract_model_registry.py
+        src/packages/agent/models.ts
+        tests/agents/test-model-catalog.sh
+        tests/agents/test_model_catalog_paths.py

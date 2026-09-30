@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bun test src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts", "started_at": "2026-09-29T13:42:42+00:00"}

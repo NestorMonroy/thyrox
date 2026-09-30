@@ -1,0 +1,10 @@
+==== ci: 1 definicion(es) de nivel superior
+---- chunk-bzev8hcq.js function ci [22652,22752)
+async function ci(e,r){let n=await lt().lock(e,r);return Object.assign(n,{[Symbol.asyncDispose]:n})}
+==== dIo: 1 definicion(es) de nivel superior
+---- chunk-bzev8hcq.js function dIo [22752,22793)
+function dIo(e,r){return lt().check(e,r)}
+==== vm: 1 definicion(es) de nivel superior
+---- chunk-bzev8hcq.js function vm [22793,23181)
+async function vm(e,r){if(!e)return;try{await e()}catch(n){let i;try{let u=v(n);i=u==="ERELEASED"||u==="ENOTACQUIRED"?`lock was no longer held at release (${u}); the locked section may have run without exclusivity`:`lock directory could not be removed and is left to go stale: ${l(n)}`}catch{i="lock release rejected with a value that cannot be described"}t(`${r}: ${i}`,{level:"warn"})}}
+symbol: 3 de 3 nombre(s) resueltos

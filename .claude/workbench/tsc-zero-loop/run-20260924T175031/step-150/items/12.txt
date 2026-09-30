@@ -1,0 +1,29 @@
+Patrón: concrete-config-fn-assigned-to-erased-unknown-bindings
+Señal del verificador: TS2322:.*is not assignable to type.*Record<string, unknown>
+Arreglo genérico: Cuando una función con parámetro/retorno de tipo concreto (p. ej. Record<string, ScopedMcpServerConfig>) se asigna a una propiedad de un tipo genérico instanciado con `unknown` en la frontera del paquete, no se relaja el tipo del productor: se afirma la asignación con `as <TipoContenedor>['<propiedad>']`, igual que ya hace este mismo archivo para `handleMcpSetServers`/`reconcileMcpServers`. No cambia la conducta; sólo declara que el objeto de bindings es opaco a propósito en esa frontera.
+Ya aplicado en: src/packages/mcp-runtime/src/runtimeHostSetup.ts
+Archivos donde la señal sigue viva: src/packages/provider/src/claudeLegacyRuntime.ts
+
+src/packages/provider/src/claudeLegacyRuntime.ts(575,61): error TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | BetaUsage | undefined'.
+  --- código src/packages/provider/src/claudeLegacyRuntime.ts:565-585 ---
+    565      if (error instanceof APIUserAbortError) throw error
+    566      logError(error)
+    567      yield createAssistantAPIErrorMessage(`API Error: ${errorMessage(error)}`) as unknown as AssistantMessage
+    568      return
+    569    } finally {
+    570      cleanupStream(stream)
+    571    }
+    572  
+    573    const assistantMessage: AssistantMessage = {
+    574      type: 'assistant',
+    575>     message: { role: 'assistant', content: textAccumulator, usage: usage as unknown },
+    576    }
+    577    yield assistantMessage
+    578  }
+    579  
+    580  export async function queryModelWithoutStreaming({
+    581    messages,
+    582    systemPrompt,
+    583    thinkingConfig,
+    584    tools,
+    585    signal,

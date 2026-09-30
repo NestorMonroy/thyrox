@@ -1,0 +1,9 @@
+{
+  "id": "95",
+  "subject": "Decidir la conducta del hook Stop ahora que su cadena rehúsa con exit 4",
+  "description": "ID: TASK-GEN-0040\n\n`stop-gate-tablero-desactualizado.sh` corre la MISMA cadena que el guion recién deprecado: `snapshot-tareas --session-id <sesión viva>` + `render-tablero`. Marcar `refrescar-tablero.sh` no cerró el defecto — sólo lo quitó de un guion que casi nadie invoca y lo dejó en el hook que corre en cada turno.\n\nCon el guard nuevo el `snapshot-tareas` del hook devuelve exit 4. El `|| true` lo absorbe y `ejecutar_con_registro` lo asienta en el log crudo, así que el turno no se rompe y el render sigue corriendo DESDE el store no corrompido. Esa degradación es la correcta, pero no está declarada en ningún sitio y su efecto —el tablero deja de incorporar tareas vivas— se lee como que el hook funciona.\n\nACTUALIZADO 2026-09-05: la opción (c) cambia de referente. #76 cerró sin entregar el anclaje; quien lo entregó fue **#104 / TASK-API-0050** (docs@3209b6a2a), y con el re-anclaje por sujeto una renumeración pura ya NO dispara el guard — `refresh-board.sh` pasó de «estado DECLARADO» a **estado PLENO**. Queda por medir si el hook, bajo el mecanismo nuevo, sigue degradando alguna vez; si no lo hace, (a) y (b) pierden su motivo y la tarea cierra por medición.\n\nDecidir entre: (a) declarar la degradación en el hook y en el `.rst` que produce; (b) que el hook use la escotilla `--permitir-reasignacion` cuando la sesión no tenga citas acuñadas; (c) medir el hook contra el anclaje de #104 antes de decidir nada.\n\nBloqueada por la decisión, no por código.",
+  "activeForm": "Decidiendo la conducta del hook Stop",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

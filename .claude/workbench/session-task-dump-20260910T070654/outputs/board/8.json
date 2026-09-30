@@ -1,0 +1,11 @@
+{
+  "id": "8",
+  "subject": "Triar los 82 skills que mandan escribir .md en dos clases",
+  "description": "Separar los 82 SKILL.md que mandan escribir un .md en (a) entregable legítimo del proyecto, cuyo hogar es source/ en RST, y (b) archivo de apoyo del propio skill, que pasa a ser una entrada `files` embebida. El análisis declara que esto exige leer cada cuerpo, no greppearlo. Insumo: mapa-skills-a-hogar-documental.rst (842 líneas sobre los mismos skills) y analisis-destinos-de-escritura-de-los-skills.rst (320). Condición de cierre: cada uno de los 82 con su clase declarada y su hogar nombrado. Ver analisis-skill-como-codigo-vs-markdown.rst.",
+  "activeForm": "Triando los 82 skills que mandan escribir .md",
+  "status": "completed",
+  "blocks": [
+    "9"
+  ],
+  "blockedBy": []
+}

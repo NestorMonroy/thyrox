@@ -1,0 +1,1 @@
+const truncated = (text: string) => encoder.encode(text).subarray(0, MESSAGE_PREFIX_BYTES)

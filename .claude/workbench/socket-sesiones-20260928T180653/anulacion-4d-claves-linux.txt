@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+265 |   })
+266 | 
+267 |   test('en linux una clave sin dominio de un pid muerto se borra', async () => {
+268 |     write(KEY(12), { peerToken: 'a'.repeat(32) })
+269 |     await sweepRegistry(undefined, deps({}, [12]))
+270 |     expect(readdirSync(dir)).toEqual([])
+                                   ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "12.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.key",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:270:30)
+(fail) sweepRegistry (xut) > en linux una clave sin dominio de un pid muerto se borra [1.11ms]
+
+ 27 pass
+ 1 fail
+ 81 expect() calls
+Ran 28 tests across 1 file. [227.00ms]

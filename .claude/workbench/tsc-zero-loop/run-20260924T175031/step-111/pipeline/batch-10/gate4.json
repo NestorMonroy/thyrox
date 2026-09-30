@@ -1,0 +1,94 @@
+{
+ "reviewed": [
+  {
+   "pattern": "message-content-union-not-narrowed-before-array-op",
+   "files": [
+    "src/packages/repl/src/screens/repl/onlySleepToolActive.ts"
+   ]
+  },
+  {
+   "pattern": "structural-app-state-nested-spread-unknown",
+   "files": [
+    "src/packages/storage/src/sessionRestore.ts"
+   ]
+  },
+  {
+   "pattern": "dropped-memoization-orphaned-cache-clear",
+   "files": [
+    "src/packages/storage/src/sessionRestore.ts"
+   ]
+  },
+  {
+   "pattern": "readonly-modifier-on-indexed-access-type",
+   "files": [
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts"
+   ]
+  },
+  {
+   "pattern": "optional-chained-method-narrowing-lost-in-closure",
+   "files": [
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts"
+   ]
+  },
+  {
+   "pattern": "fs-promises-overload-wrapper-leaks-non-void-return",
+   "files": [
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts"
+   ]
+  },
+  {
+   "pattern": "beta-usage-missing-fallback-credit",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/UI.tsx"
+   ]
+  },
+  {
+   "pattern": "zod-safeparse-data-indexed-as-unknown",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/UI.tsx"
+   ]
+  },
+  {
+   "pattern": "lazy-schema-call-on-plain-zod-export",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts"
+   ]
+  },
+  {
+   "pattern": "optional-boolean-param-passed-to-required-boolean",
+   "files": [
+    "src/packages/tool-registry/src/tools/BashTool/pathValidation.ts"
+   ]
+  },
+  {
+   "pattern": "mock-sin-parametros-vacia-tuple-calls",
+   "files": [
+    "src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts"
+   ]
+  },
+  {
+   "pattern": "narrowing-unknown-async-generator-event",
+   "files": [
+    "src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts"
+   ]
+  },
+  {
+   "pattern": "test-stub-missing-required-tool-keys",
+   "files": [
+    "src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts"
+   ]
+  },
+  {
+   "pattern": "missing-declaration-typeof-import-untyped-module",
+   "files": [
+    "src/packages/updater/src/internal/semverCompat.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-access-adds-undefined-under-noUncheckedIndexedAccess",
+   "files": [
+    "tests/task/premises.test.ts"
+   ]
+  }
+ ]
+}

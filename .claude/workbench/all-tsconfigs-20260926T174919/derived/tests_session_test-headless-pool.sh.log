@@ -1,0 +1,48 @@
+OK   tres items: exit 0
+OK   tres items: resumen
+OK   una salida json por item
+OK   el item llega al final del prompt
+OK   sin sesion persistida y en stream-json
+OK   el .json es la linea result del stream, sola
+OK   un stream por item, una linea por peticion
+OK   el indice empareja numero e item
+OK   un fallo: exit 1
+OK   un fallo: lo nombra
+OK   un fallo: resumen
+OK   timeout: exit 1
+OK   timeout: nombra al lento
+OK   alias: exit 2
+OK   alias: sin resumen
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin claude: exit 2
+OK   sin plantilla: exit 2
+OK   memfree: exit 0
+OK   memfree: la cota llega a parallel
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
+OK   cache-ttl 5m: exit 0
+OK   cache-ttl 5m: llega a cada item
+OK   sin cache-ttl: no se fija
+OK   cache-ttl ilegible: exit 2
+OK   cache-ttl ilegible: sin resumen
+OK   variable sin --cache-ttl: llega con los dos nombres
+OK   variable: el pool nombra la razón
+OK   la variable gana a --cache-ttl
+OK   forzar 5m gana a la variable y a la opción
+OK   sólo --cache-ttl: su razón es la opción
+OK   activar 1h sin opción ni variable: 1h
+OK   activar 1h: el pool nombra la razón
+OK   la opción gana a activar 1h
+OK   forzar 5m gana a activar 1h
+OK   variable ilegible: exit 2
+OK   variable ilegible: la nombra, sin resumen
+OK   con GNU time: un .time por item
+OK   con GNU time: memoria pico, pared, usuario y sistema
+OK   con GNU time: el fallo del item sigue siendo fallo
+OK   sin GNU time: ningun .time
+OK   sin GNU time: lo declara en vez de callar
+
+aserciones: 45 de 45 · fallos: 0
+EXIT=0

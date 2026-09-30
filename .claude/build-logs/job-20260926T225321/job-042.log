@@ -1,0 +1,17 @@
+(corriendo el guion — esto tarda minutos; usa AUDIT_OUT para reusar)
+=== Caso 1: --timing publica un desglose ===
+  OK   el encabezado del desglose esta
+=== Caso 2: cada fila del desglose trae su duracion en ms ===
+  OK   11 fila(s) con duracion
+=== Caso 3: las filas vienen ordenadas de mayor a menor ===
+  OK   orden descendente
+=== Caso 4 (EL QUE DISCRIMINA): el desglose declara su denominador ===
+  OK   declara «alcance medido: 11 de 11 seccion»
+  OK   las 11 secciones estan instrumentadas
+  OK   el denominador coincide con las secciones reales del guion (11)
+=== Caso 5: el total del desglose se publica y no excede el reloj ===
+  OK   el encabezado trae el total
+=== Caso 6: --timing NO rompe lo que el hook parsea ===
+  OK   la linea Score sigue presente
+audit-timing: todo en verde
+EXIT=0

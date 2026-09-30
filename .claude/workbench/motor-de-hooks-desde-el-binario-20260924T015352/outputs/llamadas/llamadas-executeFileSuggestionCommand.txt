@@ -1,0 +1,15 @@
+src/packages/repl/src/hooks/fileSuggestions.ts:732:    const results = await executeFileSuggestionCommand(input)
+src/packages/repl/src/hooks/fileSuggestions.ts-733-    return results.slice(0, MAX_SUGGESTIONS).map(createFileSuggestionItem)
+src/packages/repl/src/hooks/fileSuggestions.ts-734-  }
+src/packages/repl/src/hooks/fileSuggestions.ts-735-
+src/packages/repl/src/hooks/fileSuggestions.ts-736-  // If the partial path is empty or just a dot, return current directory suggestions
+src/packages/repl/src/hooks/fileSuggestions.ts-737-  if (partialPath === '' || partialPath === '.' || partialPath === './') {
+src/packages/repl/src/hooks/fileSuggestions.ts-738-    const topLevelPaths = await getTopLevelPaths()
+src/packages/repl/src/hooks/fileSuggestions.ts-739-    startBackgroundCacheRefresh()
+src/packages/repl/src/hooks/fileSuggestions.ts-740-    return topLevelPaths.slice(0, MAX_SUGGESTIONS).map(createFileSuggestionItem)
+src/packages/repl/src/hooks/fileSuggestions.ts-741-  }
+src/packages/repl/src/hooks/fileSuggestions.ts-742-
+src/packages/repl/src/hooks/fileSuggestions.ts-743-  const startTime = Date.now()
+src/packages/repl/src/hooks/fileSuggestions.ts-744-
+src/packages/repl/src/hooks/fileSuggestions.ts-745-  try {
+src/packages/repl/src/hooks/fileSuggestions.ts-746-    // Kick a background refresh. The index is progressively queryable —

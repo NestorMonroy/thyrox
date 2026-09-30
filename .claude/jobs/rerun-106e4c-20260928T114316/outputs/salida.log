@@ -1,0 +1,14 @@
+== 10: pausa cero se duerme
+   (src/accounts/refresh/refreshSerializer.ts)
+(fail) refresh serializer > a zero spacing never sleeps, even with a refresh waiting [0.67ms]
+ 22 pass
+ 1 fail
+== 18: recuerda sin refresh token
+   (src/accounts/refresh/tokenRefresh.ts)
+(fail) access token orchestration > a dead or tokenless result is not remembered as a rotation [2.96ms]
+ 22 pass
+ 1 fail
+== restaurado
+ 23 pass
+ 0 fail
+__BG_EXIT__=0

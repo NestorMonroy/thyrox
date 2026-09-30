@@ -1,0 +1,37 @@
+base	26 pass, 0 fail	—
+preserve429	25 pass, 1 fail	classifyProviderError > 429: límite, cuota por categoría y cuota diaria
+resource404	24 pass, 2 fail	classifyProviderError > 404: modelo, o recurso de la petición | blamesRequest > lo que culpa a la petición deja la credencial sin enfriar
+fingerprint	24 pass, 2 fail	classifyProviderError > Cloudflare 1010 y desafío gestionado: huella, nunca prohibido | blamesRequest > lo que culpa a la petición deja la credencial sin enfriar
+deactivated403	24 pass, 2 fail	classifyProviderError > 403 de Cloud Code y Kiro no banean; la baja real sí se detecta | classifyProviderError > Anthropic OAuth «Request not allowed» rechaza la petición
+notallowed	23 pass, 3 fail	classifyProviderError > Anthropic OAuth «Request not allowed» rechaza la petición | classifyProviderError > el proveedor anthropic con credencial OAuth es la superficie de suscripción de Anthropic | blamesRequest > lo que culpa a la petición deja la credencial sin enfriar
+anthropicsurface	25 pass, 1 fail	classifyProviderError > el proveedor anthropic con credencial OAuth es la superficie de suscripción de Anthropic
+project403	24 pass, 2 fail	classifyProviderError > 403 de proyecto recuperable, plano, clave de API y sin credencial | classifyProviderError > 403 de Cloud Code y Kiro no banean; la baja real sí se detecta
+kiro403	25 pass, 1 fail	classifyProviderError > 403 de Cloud Code y Kiro no banean; la baja real sí se detecta
+sentinel	25 pass, 1 fail	classifyProviderError > los 403 terminales siguen terminales
+freetier	25 pass, 1 fail	classifyProviderError > el nivel gratuito de OpenCode rehúsa la petición, no la cuenta
+apikey403	23 pass, 3 fail	classifyProviderError > 403 de proyecto recuperable, plano, clave de API y sin credencial | classifyProviderError > el nivel gratuito de OpenCode rehúsa la petición, no la cuenta | classifyProviderError > el proveedor anthropic con credencial OAuth es la superficie de suscripción de Anthropic
+none403	25 pass, 1 fail	classifyProviderError > 403 de proyecto recuperable, plano, clave de API y sin credencial
+geosurface	25 pass, 1 fail	classifyProviderError > bloqueo regional sólo en las superficies de Google
+geobranch	25 pass, 1 fail	classifyProviderError > bloqueo regional sólo en las superficies de Google
+gcp422	24 pass, 2 fail	classifyProviderError > 422 BYOP, 5xx y 400 de contexto o de modelo | blamesRequest > lo que culpa a la credencial o al proveedor, no
+overflow	25 pass, 1 fail	classifyProviderError > 422 BYOP, 5xx y 400 de contexto o de modelo
+model400	25 pass, 1 fail	classifyProviderError > 422 BYOP, 5xx y 400 de contexto o de modelo
+model401	25 pass, 1 fail	classifyProviderError > 401: desactivada, plana, oauth inválido y modelo no admitido
+oauthinvalid	25 pass, 1 fail	classifyProviderError > 401: desactivada, plana, oauth inválido y modelo no admitido
+dailyquota	25 pass, 1 fail	classifyProviderError > 429: límite, cuota por categoría y cuota diaria
+quota4xx	24 pass, 2 fail	classifyProviderError > 402 y señales de facturación en 400/403 | blamesRequest > lo que culpa a la credencial o al proveedor, no
+unknowncategory	24 pass, 2 fail	classifyProviderError > 429: límite, cuota por categoría y cuota diaria | classifyProviderError > 403 de proyecto recuperable, plano, clave de API y sin credencial
+bannedsignals	25 pass, 1 fail	classifyProviderError > las señales de baja que el operador añade cuentan como las propias
+cflookbehind	25 pass, 1 fail	los predicados > huella de Cloudflare: sólo las formas con clave
+cfsuffix	25 pass, 1 fail	los predicados > huella de Cloudflare: sólo las formas con clave
+challenge	25 pass, 1 fail	los predicados > desafío de Cloudflare: marcadores completos, nunca la palabra suelta
+trustedstop	25 pass, 1 fail	isEmptyContentResponse > las APIs de primera parte admiten una parada normal vacía
+legitfinish	25 pass, 1 fail	isEmptyContentResponse > forma OpenAI
+reasoningalt	25 pass, 1 fail	isEmptyContentResponse > forma OpenAI
+toolcalls	25 pass, 1 fail	isEmptyContentResponse > forma OpenAI
+fakecoverage	25 pass, 1 fail	classifyFakeSuccessBody > sólo en la lista, contenido corto y señal dominante
+fakelength	26 pass, 0 fail	—
+fakeallowlist	25 pass, 1 fail	classifyFakeSuccessBody > sólo en la lista, contenido corto y señal dominante
+blamestypes	25 pass, 1 fail	blamesRequest > lo que culpa a la petición deja la credencial sin enfriar
+blamesstatus	25 pass, 1 fail	blamesRequest > lo que culpa a la credencial o al proveedor, no
+blamesnull	24 pass, 2 fail	blamesRequest > lo que culpa a la petición deja la credencial sin enfriar | blamesRequest > lo que culpa a la credencial o al proveedor, no

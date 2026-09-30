@@ -1,0 +1,3 @@
+cd /home/user/thyrox/src/packages/cli && timeout 900 bun test > /home/user/thyrox/.claude/workbench/entry-point-20260927T015546/green3/bun-cli.out 2>&1; echo EXIT=$? >> /home/user/thyrox/.claude/workbench/entry-point-20260927T015546/green3/bun-cli.out
+cd /home/user/thyrox && timeout 900 bunx tsc -p tsconfig.json --noEmit > .claude/workbench/entry-point-20260927T015546/green3/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green3/root-tsc.out
+cd /home/user/thyrox && timeout 600 bash src/verify/check-cli-typecheck.sh > .claude/workbench/entry-point-20260927T015546/green3/cli-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green3/cli-typecheck.out

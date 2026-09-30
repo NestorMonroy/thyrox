@@ -1,0 +1,15 @@
+  ok   el primer registro entra
+  ok   el segundo REHÚSA con exit 2
+  ok   y nombra el id en conflicto
+  ok   el primero SIGUE en el store
+  ok   con --force el registro entra
+  ok   y el contenido converge
+  ok   el siguiente id no colisiona con la fila del store
+  ok   sin el store, el verificador lo ve libre (la mitad ciega)
+  ok   con el store, el verificador lo ve OCUPADO
+  ok   el .rst del consumidor sigue contando
+  FAIL no aparecen archivos nuevos en el árbol — ['/home/user/thyrox/.claude/build-logs/storederived-20260922T231511/test_child_env.log', '/home/user/thyrox/.claude/build-logs/storederived-20260922T231511/test_residual_structure.log', '/home/user/thyrox/.claude/build-logs/storederived-20260922T231511/test_series.log']
+  FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/jobs/store-derived-20260922T231511/outputs/salida.log']
+
+10 aprobada(s) · 2 fallida(s) (alcance medido: hallazgo_ids.next_id + agent_store agregar-hallazgo)
+EXIT=1

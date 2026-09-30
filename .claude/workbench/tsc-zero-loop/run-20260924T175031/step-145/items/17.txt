@@ -1,0 +1,69 @@
+src/packages/agent/messages.ts(3971,10): error TS6133: 'createToolResultMessage' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:3961-3981 ---
+   3961        if (hasToolUse) {
+   3962          count++
+   3963          if (maxCount && count >= maxCount) {
+   3964            return count
+   3965          }
+   3966        }
+   3967      }
+   3968    }
+   3969    return count
+   3970  }
+   3971> function createToolResultMessage<Output>(
+   3972    tool: Tool<AnyObject, Output>,
+   3973    toolUseResult: Output,
+   3974  ): UserMessage {
+   3975    try {
+   3976      const result = tool.mapToolResultToToolResultBlockParam(toolUseResult, '1')
+   3977  
+   3978      // If the result contains image content blocks, preserve them as is
+   3979      if (
+   3980        Array.isArray(result.content) &&
+   3981        result.content.some(block => block.type === 'image')
+src/packages/agent/messages.ts(4007,10): error TS6133: 'createToolUseMessage' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:3997-4017 ---
+   3997        content: `Result of calling the ${tool.name} tool:\n${contentStr}`,
+   3998        isMeta: true,
+   3999      })
+   4000    } catch {
+   4001      return createUserMessage({
+   4002        content: `Result of calling the ${tool.name} tool: Error`,
+   4003        isMeta: true,
+   4004      })
+   4005    }
+   4006  }
+   4007> function createToolUseMessage(
+   4008    toolName: string,
+   4009    input: { [key: string]: string | number },
+   4010  ): UserMessage {
+   4011    return createUserMessage({
+   4012      content: `Called the ${toolName} tool with the following input: ${jsonStringify(input)}`,
+   4013      isMeta: true,
+   4014    })
+   4015  }
+   4016  /**
+   4017   * Validacion defensiva: asegura que el emparejado tool_use/tool_result sea
+src/packages/agent/messages.ts(4380,10): error TS6133: 'getAutoModeInstructions' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:4370-4390 ---
+   4370  >(messages: T[]): number {
+   4371    // Scan backwards to find the most recent compact boundary
+   4372    for (let i = messages.length - 1; i >= 0; i--) {
+   4373      const message = messages[i]
+   4374      if (message && isCompactBoundaryMessage(message)) {
+   4375        return i
+   4376      }
+   4377    }
+   4378    return -1 // No boundary found
+   4379  }
+   4380> function getAutoModeInstructions(attachment: {
+   4381    reminderType: 'full' | 'sparse'
+   4382  }): UserMessage[] {
+   4383    if (attachment.reminderType === 'sparse') {
+   4384      return getAutoModeSparseInstructions()
+   4385    }
+   4386    return getAutoModeFullInstructions()
+   4387  }
+   4388  
+   4389  function getAutoModeFullInstructions(): UserMessage[] {
+   4390    const content = `## Auto Mode Active

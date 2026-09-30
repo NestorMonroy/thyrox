@@ -1,0 +1,8 @@
+test-run-task-pool
+test-run-task-pool-memfree
+test-run-task-pool-scope
+test-run-task-pool-isolation
+test-gpu-admission-cli
+test-headless-pool
+test_gpu_scenarios
+test_gpu_monitor

@@ -1,0 +1,3 @@
+tool-registry: emitio pese a 7326 errores (1035 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 7326 error(es) que siguen vivos en su propio paquete

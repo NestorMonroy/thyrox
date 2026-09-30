@@ -1,0 +1,41 @@
+== 1: ruta repetida aceptada
+   (src/api/mitmApi.ts)
+(fail) a repeated method and path is refused, naming it [0.59ms]
+ 10 pass
+ 1 fail
+== 2: arrancar sin publicar el destino de ingesta
+   (src/api/mitmApi.ts)
+(fail) the running API accepts ingest with the token it hands the MITM server, and streams it [3.38ms]
+ 10 pass
+ 1 fail
+== 3: parar sin retirar el destino
+   (src/api/mitmApi.ts)
+(fail) stopping the API withdraws the ingest target [3.44ms]
+ 10 pass
+ 1 fail
+== 4: la ruta de ingesta con otro token
+   (src/api/mitmApi.ts)
+(fail) the running API accepts ingest with the token it hands the MITM server, and streams it [23.75ms]
+ 10 pass
+ 1 fail
+== 5: destino heredado sin retirar
+   (src/manager.ts)
+(fail) the MITM server environment carries the API URL and token only when the API runs [0.34ms]
+ 10 pass
+ 1 fail
+== 6: el arranque sin el destino de ingesta
+   (src/manager.ts)
+(fail) con la API local en marcha, el hijo recibe su URL y el token de ingesta [499.17ms]
+ 10 pass
+ 1 fail
+== 7: el reinicio del gestor sin limpiar el destino
+   (src/manager.ts)
+(fail) resetting the manager forgets the ingest target [0.30ms]
+(fail) arranca el servidor con el puerto, el modelo de certificado y la clave, y deja el PID [405.49ms]
+ 9 pass
+ 2 fail
+== restaurado
+ M src/packages/mitm/src/manager.ts
+?? src/packages/mitm/src/api/mitmApi.ts
+ 11 pass
+ 0 fail

@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(1270,17): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/QueryEngine.ts:1260-1280 ---
+   1260      // valid successful terminal state).
+   1261      const result = messages.findLast(
+   1262        m => m.type === 'assistant' || m.type === 'user',
+   1263      )
+   1264      // Capture for the error_during_execution diagnostic — isResultSuccessful
+   1265      // is a type predicate (message is Message), so inside the false branch
+   1266      // `result` narrows to never and these accesses don't typecheck.
+   1267      const edeResultType = result?.type ?? 'undefined'
+   1268      const edeLastContentType =
+   1269        result?.type === 'assistant'
+   1270>         ? (last(result.message.content)?.type ?? 'none')
+   1271          : 'n/a'
+   1272  
+   1273      // Flush buffered transcript writes before yielding result.
+   1274      // The desktop app kills the CLI process immediately after receiving the
+   1275      // result message, so any unflushed writes would be lost.
+   1276      if (persistSession) {
+   1277        if (
+   1278          isEnvTruthy(readEnv('CLAUDE_CODE_EAGER_FLUSH')) ||
+   1279          isEnvTruthy(readEnv('CLAUDE_CODE_IS_COWORK'))
+   1280        ) {
+src/packages/agent/QueryEngine.ts(1270,42): error TS2339: Property 'type' does not exist on type '{}'.
+  --- código src/packages/agent/QueryEngine.ts:1260-1280 ---
+   1260      // valid successful terminal state).
+   1261      const result = messages.findLast(
+   1262        m => m.type === 'assistant' || m.type === 'user',
+   1263      )
+   1264      // Capture for the error_during_execution diagnostic — isResultSuccessful
+   1265      // is a type predicate (message is Message), so inside the false branch
+   1266      // `result` narrows to never and these accesses don't typecheck.
+   1267      const edeResultType = result?.type ?? 'undefined'
+   1268      const edeLastContentType =
+   1269        result?.type === 'assistant'
+   1270>         ? (last(result.message.content)?.type ?? 'none')
+   1271          : 'n/a'
+   1272  
+   1273      // Flush buffered transcript writes before yielding result.
+   1274      // The desktop app kills the CLI process immediately after receiving the
+   1275      // result message, so any unflushed writes would be lost.
+   1276      if (persistSession) {
+   1277        if (
+   1278          isEnvTruthy(readEnv('CLAUDE_CODE_EAGER_FLUSH')) ||
+   1279          isEnvTruthy(readEnv('CLAUDE_CODE_IS_COWORK'))
+   1280        ) {

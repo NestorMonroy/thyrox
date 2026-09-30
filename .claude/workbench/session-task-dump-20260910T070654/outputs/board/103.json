@@ -1,0 +1,11 @@
+{
+  "id": "103",
+  "subject": "Decidir DEC-TASK-03: etapas 5-6 del subsistema de tareas (hooks y multi-agente)",
+  "description": "ID: TASK-API-0049\n\nDESCONOCIDO declarado, con condición de cierre: decisión del ejecutor sobre si el harness sostiene un tablero COMPARTIDO entre agentes, y si las etapas 5-6 (hooks TaskCreated/TaskCompleted, coordinación multi-agente) se portan.\n\nEs la parte que `analisis-rediseno-del-subsistema-de-tareas.rst` deja abierta en su sección Sucesor. Las dos mitades implementables del rediseño ya cerraron: DEC-TASK-01 (attachment `task_reminder` + gate 10/10 en loop.ts) y DEC-TASK-02 (contrato de 8 campos de TaskUpdate + marca de agua).\n\nPor qué es decisión y no derivación: el alcance del tablero compartido depende de si la coordinación es local o multi-máquina, y ese fork ya está nombrado en la tarea #62 sin que el ejecutor lo haya resuelto. Portar hooks de tarea antes de esa decisión fijaría la forma equivocada.\n\nCierra cuando el ejecutor declare el alcance, o cuando se registre por qué se descarta.",
+  "activeForm": "Esperando la decisión de alcance de DEC-TASK-03",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "76"
+  ]
+}

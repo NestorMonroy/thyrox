@@ -1,0 +1,2 @@
+random	s/        return fisherYatesShuffle(list)$/        return list/
+rr-sticky	s/    const stickyHolds = this.stickyLimit > 1 \&\& /    const stickyHolds = false \&\& /

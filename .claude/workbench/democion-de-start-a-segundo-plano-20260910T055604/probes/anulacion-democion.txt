@@ -1,0 +1,3 @@
+  FALLA un trabajo corto devuelve SU codigo de salida
+  FALLA un trabajo largo devuelve 125 (demotido), no el codigo del trabajo
+  FALLA y lo dice, en vez de callarlo

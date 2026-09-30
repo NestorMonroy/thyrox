@@ -1,0 +1,6 @@
+ejecutable  .claude/workbench/standalone-compile-probe-20260928T054036/out/thyrox
+version     0.0.0-dev   (declarada por quien llama (--declared-version))
+payload     apendice en 99295408, 30253617 B
+tabla       3 entradas, paso 52, 156 B
+contenido   30253313 B
+por tipo    .node 2 · (sin) 1

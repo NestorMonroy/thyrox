@@ -1,0 +1,79 @@
+== 1. sin historial no se inventa nada ==
+  ok    sin TTL
+  ok    sin memfree
+  ok    y dice por qué
+== 2. record agrega una fila con pared y memoria máximas ==
+  ok    una fila
+  ok    mide los dos ítems
+  ok    pared máxima
+  ok    memoria pico máxima
+== 3. el ítem fallido cuenta: se lee su última línea con cifras ==
+  ok    la memoria del ítem fallido entra
+== 4. derive: el TTL sigue las TRES ramas de choose_cache_ttl ==
+  ok    pared 120 s -> 5m
+  ok    pared 600 s -> 1h
+  ok    pared 4000 s -> 5m
+== 5. derive: --memfree es la memoria pico por el margen, en MiB ==
+  ok    266000 KB x 2 -> 520M
+== 6. manda la ÚLTIMA ejecución, no la primera ==
+  ok    la segunda fila decide
+== 7. sin ningún .time medible, record no agrega fila ==
+  ok    sin fila
+== 8. el hogar del historial se deriva de la plantilla, no se elige ==
+  ok    dos plantillas homónimas en rutas distintas no comparten historial
+  ok    y el nombre es legible
+== 9. la reserva de un vecino se SUMA a lo medido, no lo sustituye ==
+  ok    266000 x 2 + 2 GiB -> 2568M
+== 10. sin historial, la reserva sola es la cota, y se dice ==
+  ok    memfree = la reserva
+  ok    sin TTL inventado
+  ok    nombra la reserva
+== 12. la VRAM: record guarda el pico de los .gpu, y sin ellos no inventa la clave ==
+  ok    pico de VRAM entre ítems
+  ok    sin .gpu no hay clave: ausente no es cero
+== 13. la anchura se acota por VRAM: libre / (pico x margen) ==
+  ok    12000 libres / (3000 x 2) -> 2 a la vez
+  ok    sin VRAM libre medida, sin tope
+  ok    sin pico de VRAM en el historial y con GPU: de a uno hasta calibrar
+  ok    si ni uno cabe, el tope es 1 y se dice
+== 14. el margen de seguridad se RESTA de lo libre: (14000 - 2000) / 3200 = 3 ==
+  ok    tope de VRAM
+== 15. anchura efectiva = min(configurada, RAM, VRAM) ==
+  ok    tope de RAM: MemAvailable / pico
+  ok    el efectivo es el menor de los topes
+  ok    con configurada 8: min(8, 6, 3) = 3
+  ok    con configurada 2 manda la configurada
+  ok    sin ningún tope, la configurada
+== 16. un .gpu con error o ilegible NO entra al pico: sólo lo medido ==
+  ok    el 0 medido es el pico; el error no cuenta
+== 17. la VRAM que pide cada ítem para ser admitido: pico x margen ==
+  ok    3200 x 1.0 -> 3200
+  ok    sin pico de VRAM, sin admisión
+== 18. la CLI: ttl, memfree, anchura efectiva, VRAM por ítem y porqué ==
+  ok    anchura efectiva y VRAM por ítem
+== 19. record guarda la cobertura de la medida: ítems con VRAM medida y pared mínima ==
+  ok    ítems con VRAM medida (el del error no cuenta)
+  ok    la pared del ítem más corto
+== 20. ¿es fiable el historial de VRAM? calibrado, o por qué no ==
+  ok    todos medidos y largos: calibrado
+  ok    sin ejecución previa
+  ok    sin VRAM medida
+  ok    VRAM medida en 1 de 2: no fiable, y lo dice
+  ok    un ítem de 0.6 s con muestras cada 0.5 s: un 0 puede ser un pico no visto
+  ok    fila anterior a la calibración: no fiable
+== 21. lo que se pide: calibrado, piso declarado o exclusiva hasta calibrar ==
+  ok    H-THYROX-192: pico 0 de ítems demasiado cortos -> pide la GPU entera
+  ok    ... y de a uno
+  ok    ... y lo dice
+  ok    sin historial y con GPU: exclusiva y de a uno
+  ok    con piso declarado: pide el piso
+  ok    ... y la anchura la acota el piso: 12000 / 1500 = 8
+  ok    pico 0 calibrado y sin piso: no pide VRAM, y lo dice
+  ok    con piso, el piso manda sobre el 0
+  ok    calibrado: max(pico x margen, piso)
+  ok    sin GPU no cambia nada: ni pedido ni tope
+== 22. la CLI recibe el intervalo y el piso ==
+  ok    anchura 1 y la GPU entera
+
+test_pool_history: 55 ok, 0 falla(s)
+exit=0

@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+92 | 
+93 |   test('un segundo respaldo sobre el primero conserva el modelo previo original', () => {
+94 |     latchRefusalFallbackModel(latch())
+95 |     setMainLoopModelOverride('claude-opus-5')
+96 |     latchRefusalFallbackModel(latch({ fallbackModel: 'claude-sonnet-5', previousOverride: 'claude-opus-5', previousAppStateModel: 'claude-opus-5' }))
+97 |     expect(getRefusalFallbackModelLatch()).toEqual(latch({ fallbackModel: 'claude-sonnet-5' }))
+                                                ^
+error: expect(received).toEqual(expected)
+
+@@ -2,5 +2,5 @@
+    "fallbackModel": "claude-sonnet-5",
+-   "previousAppStateModel": "claude-fable-5-1",
++   "previousAppStateModel": "claude-opus-5",
+    "previousModelForSession": null,
+-   "previousOverride": "claude-fable-5-1",
++   "previousOverride": "claude-opus-5",
+  }
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:97:44)
+(fail) el enclavamiento del modelo (Imt, a2r, fre, n7) > un segundo respaldo sobre el primero conserva el modelo previo original [0.37ms]
+
+ 25 pass
+ 1 fail
+ 54 expect() calls
+Ran 26 tests across 2 files. [82.00ms]

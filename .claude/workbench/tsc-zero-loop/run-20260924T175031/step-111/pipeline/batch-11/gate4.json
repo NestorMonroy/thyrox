@@ -1,0 +1,10 @@
+{
+ "reviewed": [
+  {
+   "pattern": "objeto-mutable-tipado-como-record-unknown-en-vez-del-tipo-del-modulo",
+   "files": [
+    "tests/unit/utils/treeify.test.ts"
+   ]
+  }
+ ]
+}

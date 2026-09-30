@@ -1,0 +1,8 @@
+{
+  "id": "27",
+  "subject": "Medir si `llamada-desconocida` ocurre de verdad, y construir el índice sobre el transcript",
+  "description": "Causa `llamada-desconocida` de `cleared_unpersisted`: no hay `tool_use` para ese `tool_use_id` en `mensajes`. Hoy es INFERRED — se razona que puede pasar cuando la llamada queda detrás de una frontera de compactación, pero NO se ha observado en una ejecución real. Dos pasos, en este orden: (1) medir si ocurre, instrumentando una sesión con compactación automática activa y resultados purgables a ambos lados de la frontera; (2) si ocurre, construir `toolCallIndex` sobre el transcript —que conserva todo— en vez de sobre el historial vivo. Sin el paso 1 el paso 2 es una solución a un problema no medido.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

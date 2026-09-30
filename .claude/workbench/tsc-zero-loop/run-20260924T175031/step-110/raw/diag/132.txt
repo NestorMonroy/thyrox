@@ -1,0 +1,2 @@
+src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts(67,15): error TS2352: Conversion of type '{ name: undefined; }' to type 'Tool' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ name: undefined; }' is missing the following properties from type 'Tool': call, description, inputSchema, isConcurrencySafe, and 9 more.

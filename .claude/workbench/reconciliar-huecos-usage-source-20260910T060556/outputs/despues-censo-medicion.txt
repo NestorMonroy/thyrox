@@ -1,0 +1,22 @@
+filas en agent_sessions: 1357
+  medido, valor > 0 o = 0 (usage_source='transcript'): 468   — de ellos con cache_read = 0: 12
+  NUNCA medido, irrecuperable (usage_source='no_medido'): 886
+  sin clasificar todavía (usage_source NULL, sin tokens): 3
+
+agregado sobre los MEDIDOS — n = 468 de 1357 (34 % del universo)
+  cache_read         16,198,852,800   media   34,612,933
+  cache_creation        273,650,623   media      584,723
+  output                  6,527,052   media       13,946
+  input                     159,153   media          340
+  equiv_cost          1,994,742,970   media    4,262,271
+
+USD por modelo — precio de lista del catálogo (_references/claude-code-bin/2.1.258/claude_strings.txt), sobre los medidos con modelo declarado:
+  modelo                   n  turnos     usd@5m     usd@1h
+  claude-sonnet-5        340   27174    3161.30    3464.27
+  claude-opus-5           54    3970    1212.07    1349.32
+  claude-fable-5          24    1092     599.72     679.70
+  claude-fable-5-1         3     184     103.23     148.37
+  claude-opus-4-8          2      61      19.81      23.60
+  (alcance medido: 423 de 468 medidos declaran modelo; 45 sin `claude-*` en `model` quedan fuera; 5m/1h = TTL de la escritura de caché, que el store no registra)
+
+Toda cifra derivada de aquí se cita CON su n. Las filas 'no_medido' quedan fuera del denominador: su costo existió y ya no se puede leer.

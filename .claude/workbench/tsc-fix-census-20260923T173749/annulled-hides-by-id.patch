@@ -1,0 +1,10 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -43,7 +43,6 @@
+   fixMissingMember: 'judgment',
+   fixMissingProperties: 'judgment',
+   addMissingAwait: 'judgment',
+-  addConvertToUnknownForNonOverlappingTypes: 'hides',
+   fixSpelling: 'hides',
+ }
+ 

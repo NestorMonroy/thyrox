@@ -1,0 +1,49 @@
+src/packages/cli/src/bg.ts(906,48): error TS2345: Argument of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: JobMeta) => void; }' is not assignable to parameter of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: RespawnJobMeta) => void; }'.
+  --- código src/packages/cli/src/bg.ts:896-916 ---
+    896  
+    897    if (args.includes('--all')) {
+    898      const { respawnSingle } = await import('./bg/respawnJob.js')
+    899      const targets = listJobs().filter(j => j.status === 'running')
+    900      if (targets.length === 0) {
+    901        process.stdout.write('no live jobs to respawn\n')
+    902        return
+    903      }
+    904      let okCount = 0
+    905      for (const j of targets) {
+    906>       const restarted = await respawnSingle(j, helpers)
+    907        if (restarted) okCount++
+    908      }
+    909      if (okCount < targets.length) process.exit(1)
+    910      return
+    911    }
+    912  
+    913    const short = positional[0]
+    914    if (!short) {
+    915      process.stderr.write('Usage: ccb respawn <short>|--all\n')
+    916      process.exit(1)
+  Types of property 'writeJobMeta' are incompatible.
+    Type '(meta: JobMeta) => void' is not assignable to type '(meta: RespawnJobMeta) => void'.
+      Types of parameters 'meta' and 'meta' are incompatible.
+        Property 'startedAt' is missing in type 'RespawnJobMeta' but required in type 'JobMeta'.
+src/packages/cli/src/bg.ts(921,39): error TS2345: Argument of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: JobMeta) => void; }' is not assignable to parameter of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: RespawnJobMeta) => void; }'.
+  --- código src/packages/cli/src/bg.ts:911-926 ---
+    911    }
+    912  
+    913    const short = positional[0]
+    914    if (!short) {
+    915      process.stderr.write('Usage: ccb respawn <short>|--all\n')
+    916      process.exit(1)
+    917    }
+    918    const job = resolveJobOrExit(short)
+    919    ;(await import('./bg/agentActionEvent.js')).emitAgentAction('respawn', job.short)
+    920    const { respawnSingle } = await import('./bg/respawnJob.js')
+    921>   const ok = await respawnSingle(job, helpers)
+    922    if (!ok) process.exit(1)
+    923  }
+    924  
+    925  export { extractRespawnArgs, splitBgArgs, tailFile }
+    926  export { runPtyHost } from './bg/ptyHost.js'
+  Types of property 'writeJobMeta' are incompatible.
+    Type '(meta: JobMeta) => void' is not assignable to type '(meta: RespawnJobMeta) => void'.
+      Types of parameters 'meta' and 'meta' are incompatible.
+        Property 'startedAt' is missing in type 'RespawnJobMeta' but required in type 'JobMeta'.

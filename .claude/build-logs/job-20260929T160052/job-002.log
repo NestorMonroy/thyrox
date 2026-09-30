@@ -1,0 +1,4 @@
+18 aserciones
+  FALLA — 1f: `fix-layer` (antes `corregir-capa`) es un subcomando valido
+  FALLA — 3b: `--layer`/`--reason` (antes `--capa`/`--razon`) se aceptan en `fix-layer`
+EXIT=1

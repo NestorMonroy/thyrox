@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -204,7 +204,7 @@
+       let relative = path.relative(path.dirname(provider.fileName), declaring.fileName).replace(/\.tsx?$/, '.js')
+       if (!relative.startsWith('.')) relative = `./${relative}`
+       // Un tipo reexportado con `export {}` es un error bajo `isolatedModules`.
+-      const typeOnly = (symbol.flags & ts.SymbolFlags.Value) === 0
++      const typeOnly = false
+       const pending = byProvider.get(provider.fileName) ??
+         { provider, lines: new Map<string, string>(), targets: [] }
+       pending.lines.set(found.member, `export ${typeOnly ? 'type ' : ''}{ ${found.member} } from '${relative}'`)

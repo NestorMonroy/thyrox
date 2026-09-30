@@ -1,0 +1,19 @@
+Port the diff display and line counting from the binary
+
+diff.ts declared a partial port: countLinesChanged, getPatchFromContents
+and getPatchForDisplay depended on the diff library and four packages
+that did not exist here then. They exist now, and eleven red test files
+failed to load on the missing names.
+
+The contract follows the 2.1.275 block that opens with R4e=3,Cxe=5000:
+escape & and $ before diffing, rawText, convertTabs and singleHunk, and
+edits applied over escaped text with a replacement function. The
+binary passes the model as countLinesChanged's second argument; this
+tree's callers use the reference form, and adopting the binary's order
+would read their file contents as a model name, so the reference form
+stays and the counter goes without the model label.
+
+Annulments: counting whole contents without a patch drops exactly its
+three cases. Either dollar guard alone drops nothing, because escaping
+and the replacement function cover each other; removing both drops
+exactly the dollar case, and the test says so.

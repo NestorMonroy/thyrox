@@ -1,0 +1,3 @@
+server.pid
+src/packages/shared-state/__tests__/redis.test.ts
+src/packages/shared-state/redis.ts

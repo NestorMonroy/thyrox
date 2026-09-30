@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c set -a; . ./.env; set +a; cd src/packages/store && timeout 300 bun test 2>&1 | tail -15; cd ../local-observability && timeout 300 bun test __tests__/errorStore* 2>&1 | tail -6", "started_at": "2026-09-29T15:41:07+00:00"}

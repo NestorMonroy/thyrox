@@ -1,0 +1,8 @@
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+ 0 fail
+ 786 expect() calls
+Ran 248 tests across 17 files. [5.76s]
+__BG_EXIT__=0

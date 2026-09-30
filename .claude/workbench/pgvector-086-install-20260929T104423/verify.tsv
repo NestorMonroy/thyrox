@@ -1,0 +1,10 @@
+vector	1536	bytes=6148 	hnsw=ok
+vector	2000	bytes=8004 	hnsw=ok
+vector	2001	bytes=8008 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 
+vector	4000	bytes=16004 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 
+vector	4001	bytes=16008 	hnsw=ERROR:  column cannot have more than 2000 dimensions for hnsw index 
+halfvec	1536	bytes=3076 	hnsw=ok
+halfvec	2000	bytes=4004 	hnsw=ok
+halfvec	2001	bytes=4006 	hnsw=ok
+halfvec	4000	bytes=8004 	hnsw=ok
+halfvec	4001	bytes=8006 	hnsw=ERROR:  column cannot have more than 4000 dimensions for hnsw index 

@@ -1,0 +1,4 @@
+src/packages/daemon/src/__tests__/classifierState.test.ts
+src/packages/daemon/src/__tests__/ptyStatusFeed.test.ts
+src/packages/daemon/src/classifier/state.ts
+src/packages/daemon/src/ptyStatusFeed.ts

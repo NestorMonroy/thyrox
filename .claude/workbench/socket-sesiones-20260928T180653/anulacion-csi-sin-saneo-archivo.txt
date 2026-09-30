@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/crossSessionInbound.test.ts:
+66 |   test('parseSettingsFile retira el valor y devuelve el aviso que la política lee', () => {
+67 |     const path = join(dir, 'settings.json')
+68 |     writeFileSync(path, JSON.stringify({ crossSessionInbound: 'maybe' }))
+69 |     const { settings, errors } = parseSettingsFile(path)
+70 |     expect(settings?.crossSessionInbound).toBeUndefined()
+71 |     expect(errors).toContainEqual(expect.objectContaining({ path: 'crossSessionInbound', severity: 'warning' }))
+                        ^
+error: expect(received).toContainEqual(expected)
+
+Expected to contain: ObjectContaining {
+  path: "crossSessionInbound",
+  severity: "warning",
+}
+Received: []
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/crossSessionInbound.test.ts:71:20)
+(fail) el saneo en los sitios que parsean settings > parseSettingsFile retira el valor y devuelve el aviso que la política lee [19.80ms]
+
+ 5 pass
+ 1 fail
+ 21 expect() calls
+Ran 6 tests across 1 file. [160.00ms]

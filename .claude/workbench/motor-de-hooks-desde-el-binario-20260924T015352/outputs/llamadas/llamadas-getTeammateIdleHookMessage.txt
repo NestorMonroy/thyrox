@@ -1,0 +1,15 @@
+src/packages/agent/agentHostBindings.ts:631:        return require('./hooks.js').getTeammateIdleHookMessage(blockingError)
+src/packages/agent/agentHostBindings.ts-632-      } catch {
+src/packages/agent/agentHostBindings.ts-633-        return ''
+src/packages/agent/agentHostBindings.ts-634-      }
+src/packages/agent/agentHostBindings.ts-635-    },
+src/packages/agent/agentHostBindings.ts-636-
+src/packages/agent/agentHostBindings.ts-637-    // ── Message factories ────────────────────────────────────────────────────
+src/packages/agent/agentHostBindings.ts-638-    // stopHooksCore.ts feeds the hook's `reason` back into the loop by
+src/packages/agent/agentHostBindings.ts-639-    // wrapping it in a user message; without these, `decision:block` produces
+src/packages/agent/agentHostBindings.ts-640-    // a no-op (createUserMessage?.() === undefined → push undefined → filter).
+src/packages/agent/agentHostBindings.ts-641-    createUserMessage: (opts: unknown) => {
+src/packages/agent/agentHostBindings.ts-642-      try {
+src/packages/agent/agentHostBindings.ts-643-        return require('./messages.js').createUserMessage(opts)
+src/packages/agent/agentHostBindings.ts-644-      } catch {
+src/packages/agent/agentHostBindings.ts-645-        return undefined

@@ -1,0 +1,5 @@
+src/proxy/server.ts(298,9): error TS7034: Variable 'targets' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/proxy/server.ts(309,48): error TS7005: Variable 'targets' implicitly has an 'any[]' type.
+src/proxy/server.ts(309,57): error TS7005: Variable 'targets' implicitly has an 'any[]' type.
+tsc-done
+__BG_EXIT__=0

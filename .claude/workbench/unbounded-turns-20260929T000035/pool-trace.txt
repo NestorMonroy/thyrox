@@ -1,0 +1,1945 @@
++ set -uo pipefail
++++ dirname tests/session/test-headless-pool.sh
+++ cd tests/session/../..
+++ pwd
++ RAIZ=/home/user/thyrox
++ POOL=/home/user/thyrox/src/session/headless-pool.sh
++ fallos=0
++ total=0
+++ mktemp -d
++ F=/tmp/tmp.nALX2A3CMy
++ trap 'rm -rf "$F"' EXIT
++ cat
++ chmod +x /tmp/tmp.nALX2A3CMy/claude
++ printf 'Lee y resume.\n'
++ export HEADLESS_POOL_RUNNER=/tmp/tmp.nALX2A3CMy/claude
++ HEADLESS_POOL_RUNNER=/tmp/tmp.nALX2A3CMy/claude
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ corre alfa beta gamma
+++ printf '%s\n' alfa beta gamma
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.QT9BsUGBwT
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=3 ok=3 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
++ check 'tres items: exit 0' 0 0
++ total=1
++ [[ 0 == \0 ]]
++ echo 'OK   tres items: exit 0'
+OK   tres items: exit 0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=3 ok=3 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^items=/{print}'
++ check 'tres items: resumen' 'items=3 ok=3 fallidos=0' 'items=3 ok=3 fallidos=0'
++ total=2
++ [[ items=3 ok=3 fallidos=0 == \i\t\e\m\s\=\3\ \o\k\=\3\ \f\a\l\l\i\d\o\s\=\0 ]]
++ echo 'OK   tres items: resumen'
+OK   tres items: resumen
+++ ls /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json /tmp/tmp.nALX2A3CMy/out/3.json
+++ wc -l
++ check 'una salida json por item' 3 3
++ total=3
++ [[ 3 == \3 ]]
++ echo 'OK   una salida json por item'
+OK   una salida json por item
+++ jq -r .result
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json /tmp/tmp.nALX2A3CMy/out/3.json
+++ cut '-d|' -f1
+++ sort
+++ paste -sd,
++ check 'el item llega al final del prompt' 'Item: alfa,Item: beta,Item: gamma' 'Item: alfa,Item: beta,Item: gamma'
++ total=4
++ [[ Item: alfa,Item: beta,Item: gamma == \I\t\e\m\:\ \a\l\f\a\,\I\t\e\m\:\ \b\e\t\a\,\I\t\e\m\:\ \g\a\m\m\a ]]
++ echo 'OK   el item llega al final del prompt'
+OK   el item llega al final del prompt
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json /tmp/tmp.nALX2A3CMy/out/3.json
+++ jq -r .result
+++ sort -u
+++ cut '-d|' -f3,4
++ check 'sin sesion persistida y en stream-json' 'persist=no|formato=stream-json' 'persist=no|formato=stream-json'
++ total=5
++ [[ persist=no|formato=stream-json == \p\e\r\s\i\s\t\=\n\o\|\f\o\r\m\a\t\o\=\s\t\r\e\a\m\-\j\s\o\n ]]
++ echo 'OK   sin sesion persistida y en stream-json'
+OK   sin sesion persistida y en stream-json
+++ jq -r .type
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json /tmp/tmp.nALX2A3CMy/out/3.json
+++ sort -u
++ check 'el .json es la linea result del stream, sola' result result
++ total=6
++ [[ result == \r\e\s\u\l\t ]]
++ echo 'OK   el .json es la linea result del stream, sola'
+OK   el .json es la linea result del stream, sola
+++ jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens'
+++ sort
+++ cat /tmp/tmp.nALX2A3CMy/out/1.stream.jsonl /tmp/tmp.nALX2A3CMy/out/2.stream.jsonl /tmp/tmp.nALX2A3CMy/out/3.stream.jsonl
+++ uniq -c
+++ gawk '{print $1"x"$2}'
+++ paste -sd,
++ check 'un stream por item, una linea por peticion' 3x111,3x500 3x111,3x500
++ total=7
++ [[ 3x111,3x500 == \3\x\1\1\1\,\3\x\5\0\0 ]]
++ echo 'OK   un stream por item, una linea por peticion'
+OK   un stream por item, una linea por peticion
+++ gawk '-F\t' '{print $2}' /tmp/tmp.nALX2A3CMy/out/index.tsv
+++ paste -sd,
++ check 'el indice empareja numero e item' alfa,beta,gamma alfa,beta,gamma
++ total=8
++ [[ alfa,beta,gamma == \a\l\f\a\,\b\e\t\a\,\g\a\m\m\a ]]
++ echo 'OK   el indice empareja numero e item'
+OK   el indice empareja numero e item
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ corre alfa FALLA-beta gamma
+++ printf '%s\n' alfa FALLA-beta gamma
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.l1Gqp0KaRq
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO FALLA-beta
+items=3 ok=2 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=1
++ check 'un fallo: exit 1' 1 1
++ total=9
++ [[ 1 == \1 ]]
++ echo 'OK   un fallo: exit 1'
+OK   un fallo: exit 1
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO FALLA-beta
+items=3 ok=2 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^-- FALLIDO FALLA-beta$/{n++} END{print n+0}'
++ check 'un fallo: lo nombra' 1 1
++ total=10
++ [[ 1 == \1 ]]
++ echo 'OK   un fallo: lo nombra'
+OK   un fallo: lo nombra
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO FALLA-beta
+items=3 ok=2 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^items=/{print}'
++ check 'un fallo: resumen' 'items=3 ok=2 fallidos=1' 'items=3 ok=2 fallidos=1'
++ total=11
++ [[ items=3 ok=2 fallidos=1 == \i\t\e\m\s\=\3\ \o\k\=\2\ \f\a\l\l\i\d\o\s\=\1 ]]
++ echo 'OK   un fallo: resumen'
+OK   un fallo: resumen
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--timeout 1'
++ corre LENTO-uno dos
+++ printf '%s\n' LENTO-uno dos
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.jNeFrwIH1v
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --timeout 1
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO LENTO-uno
+items=2 ok=1 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=1
++ check 'timeout: exit 1' 1 1
++ total=12
++ [[ 1 == \1 ]]
++ echo 'OK   timeout: exit 1'
+OK   timeout: exit 1
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO LENTO-uno
+items=2 ok=1 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^-- FALLIDO LENTO-uno/{n++} END{print n+0}'
++ check 'timeout: nombra al lento' 1 1
++ total=13
++ [[ 1 == \1 ]]
++ echo 'OK   timeout: nombra al lento'
+OK   timeout: nombra al lento
++ rm -rf /tmp/tmp.nALX2A3CMy/out
+++ printf 'alfa\n'
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model sonnet
++ SALIDA='headless-pool: REHUSA — --model va por identificador completo (claude-…), no alias: sonnet'
++ CODE=2
++ check 'alias: exit 2' 2 2
++ total=14
++ [[ 2 == \2 ]]
++ echo 'OK   alias: exit 2'
+OK   alias: exit 2
+++ printf %s 'headless-pool: REHUSA — --model va por identificador completo (claude-…), no alias: sonnet'
+++ gawk '/^items=/{n++} END{print n+0}'
++ check 'alias: sin resumen' 0 0
++ total=15
++ [[ 0 == \0 ]]
++ echo 'OK   alias: sin resumen'
+OK   alias: sin resumen
+++ printf ''
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+headless-pool: REHUSA — no recibio ningun item por stdin.'
++ CODE=2
++ check 'sin items: exit 2' 2 2
++ total=16
++ [[ 2 == \2 ]]
++ echo 'OK   sin items: exit 2'
+OK   sin items: exit 2
+++ printf 'alfa\n'
+++ HEADLESS_POOL_PARALLEL=/no/existe/parallel
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5
++ SALIDA='headless-pool: REHUSA — falta GNU parallel (/no/existe/parallel). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh.'
++ CODE=2
++ check 'sin parallel: exit 2' 2 2
++ total=17
++ [[ 2 == \2 ]]
++ echo 'OK   sin parallel: exit 2'
+OK   sin parallel: exit 2
+++ printf %s 'headless-pool: REHUSA — falta GNU parallel (/no/existe/parallel). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh.'
+++ gawk '/parallel/{n++} END{print (n>0)}'
++ check 'sin parallel: lo nombra' 1 1
++ total=18
++ [[ 1 == \1 ]]
++ echo 'OK   sin parallel: lo nombra'
+OK   sin parallel: lo nombra
+++ printf 'alfa\n'
+++ HEADLESS_POOL_RUNNER=/no/existe/thyrox
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5
++ SALIDA='headless-pool: REHUSA — falta el ejecutor de los ítems (/no/existe/thyrox).'
++ CODE=2
++ check 'sin ejecutor: exit 2' 2 2
++ total=19
++ [[ 2 == \2 ]]
++ echo 'OK   sin ejecutor: exit 2'
+OK   sin ejecutor: exit 2
+++ printf 'alfa\n'
+++ HEADLESS_POOL_CLAUDE=claude
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/hist-legacy
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5
++ SALIDA='headless-pool: REHUSA — HEADLESS_POOL_CLAUDE se retiró: el ejecutor se declara con --runner claude.'
++ CODE=2
++ check 'HEADLESS_POOL_CLAUDE retirada: exit 2' 2 2
++ total=20
++ [[ 2 == \2 ]]
++ echo 'OK   HEADLESS_POOL_CLAUDE retirada: exit 2'
+OK   HEADLESS_POOL_CLAUDE retirada: exit 2
+++ printf %s 'headless-pool: REHUSA — HEADLESS_POOL_CLAUDE se retiró: el ejecutor se declara con --runner claude.'
+++ gawk '/HEADLESS_POOL_CLAUDE/ && /--runner claude/{n++} END{print n+0}'
++ check 'HEADLESS_POOL_CLAUDE retirada: nombra --runner claude' 1 1
++ total=21
++ [[ 1 == \1 ]]
++ echo 'OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude'
+OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude
+++ printf %s 'headless-pool: REHUSA — HEADLESS_POOL_CLAUDE se retiró: el ejecutor se declara con --runner claude.'
+++ gawk '/^items=/{n++} END{print n+0}'
++ check 'HEADLESS_POOL_CLAUDE retirada: sin resumen' 0 0
++ total=22
++ [[ 0 == \0 ]]
++ echo 'OK   HEADLESS_POOL_CLAUDE retirada: sin resumen'
+OK   HEADLESS_POOL_CLAUDE retirada: sin resumen
+++ printf 'alfa\n'
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/no-existe.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5
++ SALIDA='headless-pool: REHUSA — la plantilla de prompt no existe: /tmp/tmp.nALX2A3CMy/no-existe.md'
++ CODE=2
++ check 'sin plantilla: exit 2' 2 2
++ total=23
++ [[ 2 == \2 ]]
++ echo 'OK   sin plantilla: exit 2'
+OK   sin plantilla: exit 2
++ printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_RUNNER" > "%s/runner.txt"\n' /tmp/tmp.nALX2A3CMy
++ chmod +x /tmp/tmp.nALX2A3CMy/parallel-runner
++ rm -rf /tmp/tmp.nALX2A3CMy/out /tmp/tmp.nALX2A3CMy/runner.txt
++ printf 'alfa\n'
++ env -u HEADLESS_POOL_RUNNER HEADLESS_POOL_PARALLEL=/tmp/tmp.nALX2A3CMy/parallel-runner HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-runner bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5
+++ cat /tmp/tmp.nALX2A3CMy/runner.txt
++ check 'sin ejecutor declarado: thyrox -p (bin/cli)' /home/user/thyrox/bin/cli /home/user/thyrox/bin/cli
++ total=24
++ [[ /home/user/thyrox/bin/cli == \/\h\o\m\e\/\u\s\e\r\/\t\h\y\r\o\x\/\b\i\n\/\c\l\i ]]
++ echo 'OK   sin ejecutor declarado: thyrox -p (bin/cli)'
+OK   sin ejecutor declarado: thyrox -p (bin/cli)
++ cat
++ chmod +x /tmp/tmp.nALX2A3CMy/parallel
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--memfree 1G'
++ HEADLESS_POOL_PARALLEL=/tmp/tmp.nALX2A3CMy/parallel
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.6q2zKYZRJH
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --memfree 1G
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+memfree: 1G (option)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
++ check 'memfree: exit 0' 0 0
++ total=25
++ [[ 0 == \0 ]]
++ echo 'OK   memfree: exit 0'
+OK   memfree: exit 0
+++ grep -c -- '--memfree 1G' /tmp/tmp.nALX2A3CMy/parallel.args
++ check 'memfree: la cota llega a parallel' 1 1
++ total=26
++ [[ 1 == \1 ]]
++ echo 'OK   memfree: la cota llega a parallel'
+OK   memfree: la cota llega a parallel
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--memfree mucho'
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.T7sRTDp7ay
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --memfree mucho
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — --memfree ilegible: '\''mucho'\'' (ej. 2G, 512M)'
++ CODE=2
++ check 'memfree ilegible: exit 2' 2 2
++ total=27
++ [[ 2 == \2 ]]
++ echo 'OK   memfree ilegible: exit 2'
+OK   memfree ilegible: exit 2
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — --memfree ilegible: '\''mucho'\'' (ej. 2G, 512M)'
+++ gawk '/^items=/{n++} END{print n+0}'
++ check 'memfree ilegible: sin resumen' 0 0
++ total=28
++ [[ 0 == \0 ]]
++ echo 'OK   memfree ilegible: sin resumen'
+OK   memfree ilegible: sin resumen
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 5m'
++ corre alfa beta
+++ printf '%s\n' alfa beta
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.QjyULN94hD
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 5m
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (option)
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
++ check 'cache-ttl 5m: exit 0' 0 0
++ total=29
++ [[ 0 == \0 ]]
++ echo 'OK   cache-ttl 5m: exit 0'
+OK   cache-ttl 5m: exit 0
+++ ttl_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json
+++ jq -r .result
+++ gawk '-F|' '{print $6}'
+++ sort -u
+++ paste -sd,
++ check 'cache-ttl 5m: llega a cada item' thx=5m thx=5m
++ total=30
++ [[ thx=5m == \t\h\x\=\5\m ]]
++ echo 'OK   cache-ttl 5m: llega a cada item'
+OK   cache-ttl 5m: llega a cada item
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_CODE_PROMPT_CACHE_TTL=
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.htc6WbsaN5
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ ttl_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $6}'
+++ sort -u
+++ paste -sd,
++ check 'sin cache-ttl: no se fija' thx=sin thx=sin
++ total=31
++ [[ thx=sin == \t\h\x\=\s\i\n ]]
++ echo 'OK   sin cache-ttl: no se fija'
+OK   sin cache-ttl: no se fija
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 2h'
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.gfS6Hv1IZb
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 2h
++ SALIDA='headless-pool: REHUSA — --cache-ttl va "5m" o "1h", no: 2h'
++ CODE=2
++ check 'cache-ttl ilegible: exit 2' 2 2
++ total=32
++ [[ 2 == \2 ]]
++ echo 'OK   cache-ttl ilegible: exit 2'
+OK   cache-ttl ilegible: exit 2
+++ printf %s 'headless-pool: REHUSA — --cache-ttl va "5m" o "1h", no: 2h'
+++ gawk '/^items=/{n++} END{print n+0}'
++ check 'cache-ttl ilegible: sin resumen' 0 0
++ total=33
++ [[ 0 == \0 ]]
++ echo 'OK   cache-ttl ilegible: sin resumen'
+OK   cache-ttl ilegible: sin resumen
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_CODE_PROMPT_CACHE_TTL=1h
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.JLAvMT8iSr
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'variable sin --cache-ttl: llega sólo como THYROX_*' 'ttl=sin|thx=1h' 'ttl=sin|thx=1h'
++ total=34
++ [[ ttl=sin|thx=1h == \t\t\l\=\s\i\n\|\t\h\x\=\1\h ]]
++ echo 'OK   variable sin --cache-ttl: llega sólo como THYROX_*'
+OK   variable sin --cache-ttl: llega sólo como THYROX_*
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^cache-ttl: 1h \(env\)$/{n++} END{print n+0}'
++ check 'variable: el pool nombra la razón' 1 1
++ total=35
++ [[ 1 == \1 ]]
++ echo 'OK   variable: el pool nombra la razón'
+OK   variable: el pool nombra la razón
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 5m'
++ THYROX_CODE_PROMPT_CACHE_TTL=1h
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.lbviwy30HI
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 5m
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ sort -u
+++ gawk '-F|' '{print $5"|"$6}'
+++ paste -sd,
++ check 'la variable gana a --cache-ttl' 'ttl=sin|thx=1h' 'ttl=sin|thx=1h'
++ total=36
++ [[ ttl=sin|thx=1h == \t\t\l\=\s\i\n\|\t\h\x\=\1\h ]]
++ echo 'OK   la variable gana a --cache-ttl'
+OK   la variable gana a --cache-ttl
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 1h'
++ THYROX_FORCE_PROMPT_CACHING_5M=1
++ THYROX_CODE_PROMPT_CACHE_TTL=1h
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.PVx1XtV0Bt
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 1h
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (force_5m_env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'forzar 5m gana a la variable y a la opción' 'ttl=sin|thx=5m' 'ttl=sin|thx=5m'
++ total=37
++ [[ ttl=sin|thx=5m == \t\t\l\=\s\i\n\|\t\h\x\=\5\m ]]
++ echo 'OK   forzar 5m gana a la variable y a la opción'
+OK   forzar 5m gana a la variable y a la opción
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 5m'
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.dBs6W7TVQw
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 5m
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (option)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+++ gawk '/^cache-ttl: 5m \(option\)$/{n++} END{print n+0}'
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (option)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ check 'sólo --cache-ttl: su razón es la opción' 1 1
++ total=38
++ [[ 1 == \1 ]]
++ echo 'OK   sólo --cache-ttl: su razón es la opción'
+OK   sólo --cache-ttl: su razón es la opción
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_ENABLE_PROMPT_CACHING_1H=1
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.UbyBTFgghI
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (enable_1h_env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'activar 1h sin opción ni variable: 1h' 'ttl=sin|thx=1h' 'ttl=sin|thx=1h'
++ total=39
++ [[ ttl=sin|thx=1h == \t\t\l\=\s\i\n\|\t\h\x\=\1\h ]]
++ echo 'OK   activar 1h sin opción ni variable: 1h'
+OK   activar 1h sin opción ni variable: 1h
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+++ gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}'
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (enable_1h_env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ check 'activar 1h: el pool nombra la razón' 1 1
++ total=40
++ [[ 1 == \1 ]]
++ echo 'OK   activar 1h: el pool nombra la razón'
+OK   activar 1h: el pool nombra la razón
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 5m'
++ THYROX_ENABLE_PROMPT_CACHING_1H=1
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.4Ah0WhsdxU
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 5m
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (option)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ jq -r .result
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ gawk '-F|' '{print $5"|"$6}'
+++ paste -sd,
+++ sort -u
++ check 'la opción gana a activar 1h' 'ttl=sin|thx=5m' 'ttl=sin|thx=5m'
++ total=41
++ [[ ttl=sin|thx=5m == \t\t\l\=\s\i\n\|\t\h\x\=\5\m ]]
++ echo 'OK   la opción gana a activar 1h'
+OK   la opción gana a activar 1h
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_FORCE_PROMPT_CACHING_5M=1
++ THYROX_ENABLE_PROMPT_CACHING_1H=1
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.VsoYEnCtoW
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (force_5m_env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ sort -u
+++ gawk '-F|' '{print $5"|"$6}'
+++ paste -sd,
++ check 'forzar 5m gana a activar 1h' 'ttl=sin|thx=5m' 'ttl=sin|thx=5m'
++ total=42
++ [[ ttl=sin|thx=5m == \t\t\l\=\s\i\n\|\t\h\x\=\5\m ]]
++ echo 'OK   forzar 5m gana a activar 1h'
+OK   forzar 5m gana a activar 1h
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1
++ CLAUDE_CODE_USE_BEDROCK=1
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.Bw9GXNYvTV
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (enable_1h_env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'activar 1h en Bedrock, con Bedrock: 1h' 'ttl=sin|thx=1h' 'ttl=sin|thx=1h'
++ total=43
++ [[ ttl=sin|thx=1h == \t\t\l\=\s\i\n\|\t\h\x\=\1\h ]]
++ echo 'OK   activar 1h en Bedrock, con Bedrock: 1h'
+OK   activar 1h en Bedrock, con Bedrock: 1h
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 1h (enable_1h_env)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}'
++ check 'activar 1h en Bedrock: la razón es la misma regla' 1 1
++ total=44
++ [[ 1 == \1 ]]
++ echo 'OK   activar 1h en Bedrock: la razón es la misma regla'
+OK   activar 1h en Bedrock: la razón es la misma regla
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.Q7jrtuGQIl
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^cache-ttl: /{n++} END{print n+0}'
++ check 'activar 1h en Bedrock sin Bedrock: no decide' 0 0
++ total=45
++ [[ 0 == \0 ]]
++ echo 'OK   activar 1h en Bedrock sin Bedrock: no decide'
+OK   activar 1h en Bedrock sin Bedrock: no decide
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_CODE_PROMPT_CACHE_TTL=30m
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.fM5FMlfthg
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='headless-pool: REHUSA — THYROX_CODE_PROMPT_CACHE_TTL va "5m" o "1h", no: 30m'
++ CODE=2
++ check 'variable ilegible: exit 2' 2 2
++ total=46
++ [[ 2 == \2 ]]
++ echo 'OK   variable ilegible: exit 2'
+OK   variable ilegible: exit 2
+++ printf %s 'headless-pool: REHUSA — THYROX_CODE_PROMPT_CACHE_TTL va "5m" o "1h", no: 30m'
+++ gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}'
++ check 'variable ilegible: la nombra, sin resumen' '1 0' '1 0'
++ total=47
++ [[ 1 0 == \1\ \0 ]]
++ echo 'OK   variable ilegible: la nombra, sin resumen'
+OK   variable ilegible: la nombra, sin resumen
++ cat
++ chmod +x /tmp/tmp.nALX2A3CMy/credential-proxy
++ printf '#!/usr/bin/env bash\necho "sin credencial" >&2\nexit 2\n'
++ chmod +x /tmp/tmp.nALX2A3CMy/credential-proxy-refuses
++ rm -rf /tmp/tmp.nALX2A3CMy/out /tmp/tmp.nALX2A3CMy/proxy-saw
++ EXTRA=--credential-proxy
++ ANTHROPIC_API_KEY=sk-user
++ HEADLESS_POOL_CREDENTIAL_PROXY=/tmp/tmp.nALX2A3CMy/credential-proxy
++ corre alfa beta
+++ printf '%s\n' alfa beta
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.9Sl1hF5wmO
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --credential-proxy
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ cred_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json
+++ jq -r .result
+++ gawk '-F|' '{print $7"|"$8"|"$9}'
+++ sort -u
+++ paste -sd,
++ check 'con proxy: el item ve el socket y el marcador, sin credencial' 'sock=/tmp/tmp.nALX2A3CMy/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin' 'sock=/tmp/tmp.nALX2A3CMy/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin'
++ total=48
++ [[ sock=/tmp/tmp.nALX2A3CMy/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin == \s\o\c\k\=\/\t\m\p\/\t\m\p\.\n\A\L\X\2\A\3\C\M\y\/\o\u\t\/\.\c\r\e\d\e\n\t\i\a\l\-\p\r\o\x\y\.\s\o\c\k\|\k\e\y\=\s\s\h\-\p\l\a\c\e\h\o\l\d\e\r\|\a\u\t\h\=\s\i\n ]]
++ echo 'OK   con proxy: el item ve el socket y el marcador, sin credencial'
+OK   con proxy: el item ve el socket y el marcador, sin credencial
+++ cut '-d|' -f1 /tmp/tmp.nALX2A3CMy/proxy-saw
++ check 'con proxy: la credencial la recibe el proxy' sk-user sk-user
++ total=49
++ [[ sk-user == \s\k\-\u\s\e\r ]]
++ echo 'OK   con proxy: la credencial la recibe el proxy'
+OK   con proxy: la credencial la recibe el proxy
++++ cut '-d|' -f2 /tmp/tmp.nALX2A3CMy/proxy-saw
+++ kill -0 14875
+++ echo muerto
++ check 'con proxy: al terminar el pool el proxy ya no vive' muerto muerto
++ total=50
++ [[ muerto == \m\u\e\r\t\o ]]
++ echo 'OK   con proxy: al terminar el pool el proxy ya no vive'
+OK   con proxy: al terminar el pool el proxy ya no vive
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=--credential-proxy
++ ANTHROPIC_API_KEY=sk-user
++ HEADLESS_POOL_CREDENTIAL_PROXY=/tmp/tmp.nALX2A3CMy/credential-proxy-refuses
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.xSlhM1lzkL
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --credential-proxy
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — el proxy de credencial no arrancó (/tmp/tmp.nALX2A3CMy/credential-proxy-refuses): sin credencial '
++ CODE=2
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — el proxy de credencial no arrancó (/tmp/tmp.nALX2A3CMy/credential-proxy-refuses): sin credencial '
+++ gawk '/^items=/{n++} /proxy de credencial/{p++} END{print n+0, (p>0)}'
++ check 'proxy que no arranca: exit 2, sin resumen, y lo nombra' '2 0 1' '2 0 1'
++ total=51
++ [[ 2 0 1 == \2\ \0\ \1 ]]
++ echo 'OK   proxy que no arranca: exit 2, sin resumen, y lo nombra'
+OK   proxy que no arranca: exit 2, sin resumen, y lo nombra
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ ANTHROPIC_API_KEY=sk-user
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.oWTu9K3Bpt
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ cred_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $7"|"$8"|"$9}'
+++ sort -u
+++ paste -sd,
++ check 'sin --credential-proxy el item conserva su entorno' 'sock=sin|key=sk-user|auth=sin' 'sock=sin|key=sk-user|auth=sin'
++ total=52
++ [[ sock=sin|key=sk-user|auth=sin == \s\o\c\k\=\s\i\n\|\k\e\y\=\s\k\-\u\s\e\r\|\a\u\t\h\=\s\i\n ]]
++ echo 'OK   sin --credential-proxy el item conserva su entorno'
+OK   sin --credential-proxy el item conserva su entorno
++ cat
++ chmod +x /tmp/tmp.nALX2A3CMy/gnu-time
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa FALLA-beta
+++ printf '%s\n' alfa FALLA-beta
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.JQ6wCBwt0I
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO FALLA-beta
+items=2 ok=1 fallidos=1'
++ CODE=1
+++ wc -l
+++ ls /tmp/tmp.nALX2A3CMy/out/1.time /tmp/tmp.nALX2A3CMy/out/2.time
++ check 'con GNU time: un .time por item' 2 2
++ total=53
++ [[ 2 == \2 ]]
++ echo 'OK   con GNU time: un .time por item'
+OK   con GNU time: un .time por item
+++ cat /tmp/tmp.nALX2A3CMy/out/1.time
++ check 'con GNU time: memoria pico, pared, usuario y sistema' '12345 1.50 0.40 0.10' '12345 1.50 0.40 0.10'
++ total=54
++ [[ 12345 1.50 0.40 0.10 == \1\2\3\4\5\ \1\.\5\0\ \0\.\4\0\ \0\.\1\0 ]]
++ echo 'OK   con GNU time: memoria pico, pared, usuario y sistema'
+OK   con GNU time: memoria pico, pared, usuario y sistema
+++ cat /tmp/tmp.nALX2A3CMy/out/2.time
++ check 'con GNU time: el .time del item fallido es solo la medida' '12345 1.50 0.40 0.10' '12345 1.50 0.40 0.10'
++ total=55
++ [[ 12345 1.50 0.40 0.10 == \1\2\3\4\5\ \1\.\5\0\ \0\.\4\0\ \0\.\1\0 ]]
++ echo 'OK   con GNU time: el .time del item fallido es solo la medida'
+OK   con GNU time: el .time del item fallido es solo la medida
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO FALLA-beta
+items=2 ok=1 fallidos=1'
+++ gawk '/^items=/{print}'
++ check 'con GNU time: el fallo del item sigue siendo fallo' 'items=2 ok=1 fallidos=1' 'items=2 ok=1 fallidos=1'
++ total=56
++ [[ items=2 ok=1 fallidos=1 == \i\t\e\m\s\=\2\ \o\k\=\1\ \f\a\l\l\i\d\o\s\=\1 ]]
++ echo 'OK   con GNU time: el fallo del item sigue siendo fallo'
+OK   con GNU time: el fallo del item sigue siendo fallo
+++ /usr/bin/time --version
++ [[ time (GNU Time) UNKNOWN
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by David Keppel, David MacKenzie, and Assaf Gordon. == *\G\N\U\ \T\i\m\e* ]]
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/usr/bin/time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/usr/bin/time
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.4hatB8boNR
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ gawk 'NF == 4 && $1 ~ /^[0-9]+$/ && $1 > 0 {n++} END{print n+0}' /tmp/tmp.nALX2A3CMy/out/1.time
++ check 'GNU time real: el .time trae cuatro cifras' 1 1
++ total=57
++ [[ 1 == \1 ]]
++ echo 'OK   GNU time real: el .time trae cuatro cifras'
+OK   GNU time real: el .time trae cuatro cifras
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
+++ gawk '/sin GNU time/{n++} END{print n+0}'
++ check 'GNU time real: no declara que falte' 0 0
++ total=58
++ [[ 0 == \0 ]]
++ echo 'OK   GNU time real: no declara que falte'
+OK   GNU time real: no declara que falte
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.F0ZgSyWlGl
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ ls '/tmp/tmp.nALX2A3CMy/out/*.time'
+++ wc -l
++ check 'sin GNU time: ningun .time' 0 0
++ total=59
++ [[ 0 == \0 ]]
++ echo 'OK   sin GNU time: ningun .time'
+OK   sin GNU time: ningun .time
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+++ gawk '/sin GNU time/{n++} END{print n+0}'
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ check 'sin GNU time: lo declara en vez de callar' 1 1
++ total=60
++ [[ 1 == \1 ]]
++ echo 'OK   sin GNU time: lo declara en vez de callar'
+OK   sin GNU time: lo declara en vez de callar
++ cat
++ chmod +x /tmp/tmp.nALX2A3CMy/nvidia-smi
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre LENTO-alfa
+++ printf '%s\n' LENTO-alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.oT3QIt2Hso
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar; VRAM sin ejecución previa de esta plantilla: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ ls /tmp/tmp.nALX2A3CMy/out/1.gpu
+++ wc -l
++ check 'con nvidia-smi: el item deja su .gpu' 1 1
++ total=61
++ [[ 1 == \1 ]]
++ echo 'OK   con nvidia-smi: el item deja su .gpu'
+OK   con nvidia-smi: el item deja su .gpu
+++ gawk '{print $1, $3}' /tmp/tmp.nALX2A3CMy/out/1.gpu
++ check 'con nvidia-smi: VRAM pico y uso pico del item' '400 77' '400 77'
++ total=62
++ [[ 400 77 == \4\0\0\ \7\7 ]]
++ echo 'OK   con nvidia-smi: VRAM pico y uso pico del item'
+OK   con nvidia-smi: VRAM pico y uso pico del item
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar; VRAM sin ejecución previa de esta plantilla: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^gpu: se mide la VRAM/{n++} END{print n+0}'
++ check 'con nvidia-smi: lo declara' 1 1
++ total=63
++ [[ 1 == \1 ]]
++ echo 'OK   con nvidia-smi: lo declara'
+OK   con nvidia-smi: lo declara
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/no-existe
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.fxDmOKvnA6
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (/tmp/tmp.nALX2A3CMy/no-existe): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ ls '/tmp/tmp.nALX2A3CMy/out/*.gpu'
+++ wc -l
++ check 'sin nvidia-smi: ningun .gpu' 0 0
++ total=64
++ [[ 0 == \0 ]]
++ echo 'OK   sin nvidia-smi: ningun .gpu'
+OK   sin nvidia-smi: ningun .gpu
+++ gawk '/^gpu: sin nvidia-smi/{n++} END{print n+0}'
+++ printf %s 'gpu: sin nvidia-smi (/tmp/tmp.nALX2A3CMy/no-existe): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ check 'sin nvidia-smi: lo declara en vez de callar' 1 1
++ total=65
++ [[ 1 == \1 ]]
++ echo 'OK   sin nvidia-smi: lo declara en vez de callar'
+OK   sin nvidia-smi: lo declara en vez de callar
++ HIST=/tmp/tmp.nALX2A3CMy/historial-gpu
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre LENTO-alfa
+++ printf '%s\n' LENTO-alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar; VRAM sin ejecución previa de esta plantilla: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+items=1 ok=1 fallidos=0'
++ CODE=0
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--timeout 2'
++ FAKE_FREE_VRAM=500
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --timeout 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15575164 − 0) / (12345 × 2) -> 630; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: 500 MiB utilizables y el ítem pide 400 × 2, no cabe ni uno: anchura 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1'
++ CODE=1
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15575164 − 0) / (12345 × 2) -> 630; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: 500 MiB utilizables y el ítem pide 400 × 2, no cabe ni uno: anchura 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1'
+++ gawk '/^items=/{print}'
++ check 'admision: sin VRAM para su pico el item no arranca' 'items=1 ok=0 fallidos=1' 'items=1 ok=0 fallidos=1'
++ total=66
++ [[ items=1 ok=0 fallidos=1 == \i\t\e\m\s\=\1\ \o\k\=\0\ \f\a\l\l\i\d\o\s\=\1 ]]
++ echo 'OK   admision: sin VRAM para su pico el item no arranca'
+OK   admision: sin VRAM para su pico el item no arranca
+++ gawk '/admision por VRAM/{n++} END{print n+0}' /tmp/tmp.nALX2A3CMy/out/1.err
++ check 'admision: la causa queda en su .err' 1 1
++ total=67
++ [[ 1 == \1 ]]
++ echo 'OK   admision: la causa queda en su .err'
+OK   admision: la causa queda en su .err
++ printf '{"%s": 900}' 13234
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--timeout 2'
++ FAKE_FREE_VRAM=1000
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --timeout 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15579020 − 0) / (12345 × 2) -> 630; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: (1000 − 0) / (400 × 2) -> 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=1
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15579020 − 0) / (12345 × 2) -> 630; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: (1000 − 0) / (400 × 2) -> 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^items=/{print}'
++ check 'admision: lo reservado por otro pool vivo no se vuelve a dar' 'items=1 ok=0 fallidos=1' 'items=1 ok=0 fallidos=1'
++ total=68
++ [[ items=1 ok=0 fallidos=1 == \i\t\e\m\s\=\1\ \o\k\=\0\ \f\a\l\l\i\d\o\s\=\1 ]]
++ echo 'OK   admision: lo reservado por otro pool vivo no se vuelve a dar'
+OK   admision: lo reservado por otro pool vivo no se vuelve a dar
+++ jq -r --arg p 13234 '.[$p]' /tmp/tmp.nALX2A3CMy/historial-gpu/vram-reservations.json
++ check 'admision: la reserva ajena sigue en el registro' 900 900
++ total=69
++ [[ 900 == \9\0\0 ]]
++ echo 'OK   admision: la reserva ajena sigue en el registro'
+OK   admision: la reserva ajena sigue en el registro
++ rm -f /tmp/tmp.nALX2A3CMy/historial-gpu/vram-reservations.json
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--timeout 2'
++ HEADLESS_POOL_VRAM_LEDGER=/proc/no-se-puede/vram.json
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --timeout 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15580800 − 0) / (12345 × 2) -> 631; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: (100000 − 0) / (400 × 2) -> 125
+cache-ttl: 5m (history)
+memfree: 25M (history)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=1
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15580800 − 0) / (12345 × 2) -> 631; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: (100000 − 0) / (400 × 2) -> 125
+cache-ttl: 5m (history)
+memfree: 25M (history)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^items=/{print}'
++ check 'admisión con error: el ítem falla' 'items=1 ok=0 fallidos=1' 'items=1 ok=0 fallidos=1'
++ total=70
++ [[ items=1 ok=0 fallidos=1 == \i\t\e\m\s\=\1\ \o\k\=\0\ \f\a\l\l\i\d\o\s\=\1 ]]
++ echo 'OK   admisión con error: el ítem falla'
+OK   admisión con error: el ítem falla
+++ gawk '/la admision por VRAM fallo \(exit [0-9]+\)/{a++} /admision por VRAM vencida/{b++} END{print a+0, b+0}' /tmp/tmp.nALX2A3CMy/out/1.err
++ check 'admisión con error: el .err dice que falló, no que venció' '1 0' '1 0'
++ total=71
++ [[ 1 0 == \1\ \0 ]]
++ echo 'OK   admisión con error: el .err dice que falló, no que venció'
+OK   admisión con error: el .err dice que falló, no que venció
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--width 4'
++ FAKE_FREE_VRAM=1000
++ HEADLESS_POOL_PARALLEL=/tmp/tmp.nALX2A3CMy/parallel
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --width 4
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 4; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15582296 − 0) / (12345 × 2) -> 631; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: (1000 − 0) / (400 × 2) -> 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 4; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15582296 − 0) / (12345 × 2) -> 631; VRAM calibrado: pide 800 MiB (pico × 2, piso 0); VRAM: (1000 − 0) / (400 × 2) -> 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}'
++ check 'VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4' 1 1
++ total=72
++ [[ 1 == \1 ]]
++ echo 'OK   VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4'
+OK   VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4
+++ gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' /tmp/tmp.nALX2A3CMy/parallel.args
++ check 'VRAM: Parallel se lanza con -j 1' 1 1
++ total=73
++ [[ 1 == \1 ]]
++ echo 'OK   VRAM: Parallel se lanza con -j 1'
+OK   VRAM: Parallel se lanza con -j 1
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa beta
+++ printf '%s\n' alfa beta
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15561372 − 0) / (12345 × 2) -> 630; VRAM 1 ítems medidos para lanzar 2 a la vez: no representa su dispersión: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ gawk '/^items=/{print}'
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15561372 − 0) / (12345 × 2) -> 630; VRAM 1 ítems medidos para lanzar 2 a la vez: no representa su dispersión: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ check 'reserva: los items admitidos arrancan' 'items=2 ok=2 fallidos=0' 'items=2 ok=2 fallidos=0'
++ total=74
++ [[ items=2 ok=2 fallidos=0 == \i\t\e\m\s\=\2\ \o\k\=\2\ \f\a\l\l\i\d\o\s\=\0 ]]
++ echo 'OK   reserva: los items admitidos arrancan'
+OK   reserva: los items admitidos arrancan
+++ jq -r length /tmp/tmp.nALX2A3CMy/historial-gpu/vram-reservations.json
++ check 'reserva: el registro queda vacio al terminar' 0 0
++ total=75
++ [[ 0 == \0 ]]
++ echo 'OK   reserva: el registro queda vacio al terminar'
+OK   reserva: el registro queda vacio al terminar
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--width 4'
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa beta
+++ printf '%s\n' alfa beta
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --width 4
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 4; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15567388 − 0) / (12345 × 2) -> 630; VRAM 1 ítems medidos para lanzar 2 a la vez: no representa su dispersión: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 4; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15567388 − 0) / (12345 × 2) -> 630; VRAM 1 ítems medidos para lanzar 2 a la vez: no representa su dispersión: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk 'index($0, "1 ítems medidos para lanzar 2"){n++} END{print n+0}'
++ check 'calibrado exige tantos ítems medidos como van a la vez' 1 1
++ total=76
++ [[ 1 == \1 ]]
++ echo 'OK   calibrado exige tantos ítems medidos como van a la vez'
+OK   calibrado exige tantos ítems medidos como van a la vez
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_HISTORY_MAX_AGE_HOURS=0
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/nvidia-smi
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15562032 − 0) / (12345 × 2) -> 630; VRAM la fila tiene 10 s, más que el límite de 0 s: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ printf %s 'gpu: se mide la VRAM de cada item con /tmp/tmp.nALX2A3CMy/nvidia-smi (<n>.gpu)
+anchura: 1 (configurada 2; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15562032 − 0) / (12345 × 2) -> 630; VRAM la fila tiene 10 s, más que el límite de 0 s: pide la GPU entera (100000 MiB), de a uno hasta calibrar
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^historial:.*límite/{n++} END{print n+0}'
++ check 'la edad máxima declarada deja fuera la fila' 1 1
++ total=77
++ [[ 1 == \1 ]]
++ echo 'OK   la edad máxima declarada deja fuera la fila'
+OK   la edad máxima declarada deja fuera la fila
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_HISTORY_MAX_AGE_HOURS=muchas
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-gpu
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+headless-pool: REHUSA — HEADLESS_POOL_HISTORY_MAX_AGE_HOURS va en horas, no: muchas'
++ CODE=2
++ check 'edad máxima ilegible: exit 2' 2 2
++ total=78
++ [[ 2 == \2 ]]
++ echo 'OK   edad máxima ilegible: exit 2'
+OK   edad máxima ilegible: exit 2
++ export GPU_STATE=/tmp/tmp.nALX2A3CMy/gpu-state RAMPA_LOG=/tmp/tmp.nALX2A3CMy/rampa.log
++ GPU_STATE=/tmp/tmp.nALX2A3CMy/gpu-state
++ RAMPA_LOG=/tmp/tmp.nALX2A3CMy/rampa.log
++ mkdir -p /tmp/tmp.nALX2A3CMy/gpu-state/used
++ echo 1000
++ :
++ printf '#!/usr/bin/env bash\nexec bash "%s" "$@"\n' /home/user/thyrox/tests/session/fakes/stateful-nvidia-smi.sh
++ chmod +x /tmp/tmp.nALX2A3CMy/smi-estado
++ HIST=/tmp/tmp.nALX2A3CMy/historial-dos-pools
++ printf 'RAMPA-medida\n'
++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-dos-pools
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/smi-estado
++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out-medida --model claude-sonnet-5 --width 2 --timeout 20
++ :
+++ gawk '{print $1}' /tmp/tmp.nALX2A3CMy/out-medida/1.gpu
++ check 'dos pools: la ejecución de medida deja el pico del ítem' 400 400
++ total=79
++ [[ 400 == \4\0\0 ]]
++ echo 'OK   dos pools: la ejecución de medida deja el pico del ítem'
+OK   dos pools: la ejecución de medida deja el pico del ítem
++ dos_pools
++ for p in a b
++ rm -rf /tmp/tmp.nALX2A3CMy/out-a
++ printf 'RAMPA-%s\n' a
++ for p in a b
++ rm -rf /tmp/tmp.nALX2A3CMy/out-b
++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-dos-pools
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/smi-estado
++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out-a --model claude-sonnet-5 --width 2 --timeout 20
++ printf 'RAMPA-%s\n' b
++ wait
++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-dos-pools
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/smi-estado
++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out-b --model claude-sonnet-5 --width 2 --timeout 20
+++ cat /tmp/tmp.nALX2A3CMy/pool-a.salida /tmp/tmp.nALX2A3CMy/pool-b.salida
+++ gawk '/^items=/{print}'
+++ sort -u
++ check 'dos pools: los dos items terminan' 'items=1 ok=1 fallidos=0' 'items=1 ok=1 fallidos=0'
++ total=80
++ [[ items=1 ok=1 fallidos=0 == \i\t\e\m\s\=\1\ \o\k\=\1\ \f\a\l\l\i\d\o\s\=\0 ]]
++ echo 'OK   dos pools: los dos items terminan'
+OK   dos pools: los dos items terminan
+++ sort -k2,2n /tmp/tmp.nALX2A3CMy/rampa.log
+++ gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}'
++ check 'dos pools: nunca corren juntos (máximo simultáneo 1)' 1 1
++ total=81
++ [[ 1 == \1 ]]
++ echo 'OK   dos pools: nunca corren juntos (máximo simultáneo 1)'
+OK   dos pools: nunca corren juntos (máximo simultáneo 1)
+++ jq -r length /tmp/tmp.nALX2A3CMy/historial-dos-pools/vram-reservations.json
++ check 'dos pools: el registro queda vacío' 0 0
++ total=82
++ [[ 0 == \0 ]]
++ echo 'OK   dos pools: el registro queda vacío'
+OK   dos pools: el registro queda vacío
+++ gawk 'END{print NR}' /tmp/tmp.nALX2A3CMy/historial-dos-pools/prompt-d4cb62eb0963/runs.jsonl
++ check 'dos pools: la ejecución concurrente también se mide (una fila por pool)' 3 3
++ total=83
++ [[ 3 == \3 ]]
++ echo 'OK   dos pools: la ejecución concurrente también se mide (una fila por pool)'
+OK   dos pools: la ejecución concurrente también se mide (una fila por pool)
++ HIST=/tmp/tmp.nALX2A3CMy/historial-cero
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-cero
+++ bash /home/user/thyrox/bin/pool_history dir /tmp/tmp.nALX2A3CMy/prompt.md
++ HIST_DIR=/tmp/tmp.nALX2A3CMy/historial-cero/prompt-d4cb62eb0963
++ mkdir -p /tmp/tmp.nALX2A3CMy/historial-cero/prompt-d4cb62eb0963
++ printf '{"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 0.1, "max_wall_s": 0.1, "peak_kb": 1000, "peak_vram_mib": 0, "runner": "%s"}\n' /tmp/tmp.nALX2A3CMy/claude
++ :
++ dos_pools
++ for p in a b
++ rm -rf /tmp/tmp.nALX2A3CMy/out-a
++ for p in a b
++ printf 'RAMPA-%s\n' a
++ rm -rf /tmp/tmp.nALX2A3CMy/out-b
++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-cero
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/smi-estado
++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out-a --model claude-sonnet-5 --width 2 --timeout 20
++ printf 'RAMPA-%s\n' b
++ wait
++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-cero
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ HEADLESS_POOL_NVIDIA_SMI=/tmp/tmp.nALX2A3CMy/smi-estado
++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out-b --model claude-sonnet-5 --width 2 --timeout 20
+++ cat /tmp/tmp.nALX2A3CMy/pool-a.salida /tmp/tmp.nALX2A3CMy/pool-b.salida
+++ gawk '/^items=/{print}'
+++ sort -u
++ check 'pico 0 sin calibrar: los dos terminan' 'items=1 ok=1 fallidos=0' 'items=1 ok=1 fallidos=0'
++ total=84
++ [[ items=1 ok=1 fallidos=0 == \i\t\e\m\s\=\1\ \o\k\=\1\ \f\a\l\l\i\d\o\s\=\0 ]]
++ echo 'OK   pico 0 sin calibrar: los dos terminan'
+OK   pico 0 sin calibrar: los dos terminan
+++ sort -k2,2n /tmp/tmp.nALX2A3CMy/rampa.log
+++ gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}'
++ check 'pico 0 sin calibrar: nunca corren juntos' 1 1
++ total=85
++ [[ 1 == \1 ]]
++ echo 'OK   pico 0 sin calibrar: nunca corren juntos'
+OK   pico 0 sin calibrar: nunca corren juntos
+++ gawk '/hasta calibrar/{n++} END{print n+0}' /tmp/tmp.nALX2A3CMy/pool-a.salida
++ check 'pico 0 sin calibrar: lo dice' 1 1
++ total=86
++ [[ 1 == \1 ]]
++ echo 'OK   pico 0 sin calibrar: lo dice'
+OK   pico 0 sin calibrar: lo dice
++ unset GPU_STATE RAMPA_LOG
++ unset HIST
++ printf 'MemTotal: 100000 kB\nMemAvailable: 30000 kB\n'
++ HIST=/tmp/tmp.nALX2A3CMy/historial-ram
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-ram
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
++ CODE=0
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--width 4'
++ THYROX_POOL_MEMINFO_PATH=/tmp/tmp.nALX2A3CMy/meminfo
++ HEADLESS_POOL_PARALLEL=/tmp/tmp.nALX2A3CMy/parallel
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa beta
+++ printf '%s\n' alfa beta
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-ram
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --width 4
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+anchura: 1 (configurada 4; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (30000 − 0) / (12345 × 2) -> 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=2 ok=2 fallidos=0'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+anchura: 1 (configurada 4; acotada por lo medido)
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (30000 − 0) / (12345 × 2) -> 1
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=2 ok=2 fallidos=0'
+++ gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}'
++ check 'RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1' 1 1
++ total=87
++ [[ 1 == \1 ]]
++ echo 'OK   RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1'
+OK   RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1
+++ gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' /tmp/tmp.nALX2A3CMy/parallel.args
++ check 'RAM: Parallel se lanza con -j 1' 1 1
++ total=88
++ [[ 1 == \1 ]]
++ echo 'OK   RAM: Parallel se lanza con -j 1'
+OK   RAM: Parallel se lanza con -j 1
++ unset HIST
++ HIST=/tmp/tmp.nALX2A3CMy/historial-compartido
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-compartido
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ gawk '/sin ejecución previa/{n++} END{print n+0}'
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
++ check 'historial vacío: lo declara' 1 1
++ total=89
++ [[ 1 == \1 ]]
++ echo 'OK   historial vacío: lo declara'
+OK   historial vacío: lo declara
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'historial vacío: no inventa TTL' 'ttl=sin|thx=sin' 'ttl=sin|thx=sin'
++ total=90
++ [[ ttl=sin|thx=sin == \t\t\l\=\s\i\n\|\t\h\x\=\s\i\n ]]
++ echo 'OK   historial vacío: no inventa TTL'
+OK   historial vacío: no inventa TTL
+++ find /tmp/tmp.nALX2A3CMy/historial-compartido -name runs.jsonl -exec cat '{}' +
+++ wc -l
++ check 'la ejecución deja una fila' 1 1
++ total=91
++ [[ 1 == \1 ]]
++ echo 'OK   la ejecución deja una fila'
+OK   la ejecución deja una fila
+++ find /tmp/tmp.nALX2A3CMy/historial-compartido -name runs.jsonl -exec cat '{}' +
+++ jq -r .runner
++ check 'la fila nombra el binario que corrió los ítems' /tmp/tmp.nALX2A3CMy/claude /tmp/tmp.nALX2A3CMy/claude
++ total=92
++ [[ /tmp/tmp.nALX2A3CMy/claude == \/\t\m\p\/\t\m\p\.\n\A\L\X\2\A\3\C\M\y\/\c\l\a\u\d\e ]]
++ echo 'OK   la fila nombra el binario que corrió los ítems'
+OK   la fila nombra el binario que corrió los ítems
+++ find /tmp/tmp.nALX2A3CMy/historial-compartido -name runs.jsonl -exec cat '{}' +
+++ jq -r .item_model
++ check 'la fila nombra el modelo que corrió los ítems' claude-sonnet-5 claude-sonnet-5
++ total=93
++ [[ claude-sonnet-5 == \c\l\a\u\d\e\-\s\o\n\n\e\t\-\5 ]]
++ echo 'OK   la fila nombra el modelo que corrió los ítems'
+OK   la fila nombra el modelo que corrió los ítems
+++ find /tmp/tmp.nALX2A3CMy/historial-compartido -name runs.jsonl -exec cat '{}' +
+++ jq -r .template_digest
+++ sha256sum /tmp/tmp.nALX2A3CMy/prompt.md
+++ gawk '{print $1}'
++ check 'la fila lleva la huella del CONTENIDO de la plantilla' fe4725f385197bcdd9c86aa2450e1eb0d8435f93a7b9a4be4afdbcf1056bfa5d fe4725f385197bcdd9c86aa2450e1eb0d8435f93a7b9a4be4afdbcf1056bfa5d
++ total=94
++ [[ fe4725f385197bcdd9c86aa2450e1eb0d8435f93a7b9a4be4afdbcf1056bfa5d == \f\e\4\7\2\5\f\3\8\5\1\9\7\b\c\d\d\9\c\8\6\a\a\2\4\5\0\e\1\e\b\0\d\8\4\3\5\f\9\3\a\7\b\9\a\4\b\e\4\a\f\d\b\c\f\1\0\5\6\b\f\a\5\d ]]
++ echo 'OK   la fila lleva la huella del CONTENIDO de la plantilla'
+OK   la fila lleva la huella del CONTENIDO de la plantilla
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-compartido
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15567024 − 0) / (12345 × 2) -> 630
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'con historial: el TTL sale de la pared medida' 'ttl=sin|thx=5m' 'ttl=sin|thx=5m'
++ total=95
++ [[ ttl=sin|thx=5m == \t\t\l\=\s\i\n\|\t\h\x\=\5\m ]]
++ echo 'OK   con historial: el TTL sale de la pared medida'
+OK   con historial: el TTL sale de la pared medida
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+++ gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}'
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15567024 − 0) / (12345 × 2) -> 630
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0'
++ check 'con historial: declara de dónde salió el TTL' 1 1
++ total=96
++ [[ 1 == \1 ]]
++ echo 'OK   con historial: declara de dónde salió el TTL'
+OK   con historial: declara de dónde salió el TTL
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15567024 − 0) / (12345 × 2) -> 630
+cache-ttl: 5m (history)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0'
+++ gawk '/^memfree: 25M \(history\)/{n++} END{print n+0}'
++ check 'con historial: --memfree sale de la memoria medida' 1 1
++ total=97
++ [[ 1 == \1 ]]
++ echo 'OK   con historial: --memfree sale de la memoria medida'
+OK   con historial: --memfree sale de la memoria medida
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 1h --memfree 1G'
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-compartido
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --cache-ttl 1h --memfree 1G
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15570256 − 0) / (12345 × 2) -> 630
+cache-ttl: 1h (option)
+memfree: 1G (option)
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'lo declarado gana al historial: TTL' 'ttl=sin|thx=1h' 'ttl=sin|thx=1h'
++ total=98
++ [[ ttl=sin|thx=1h == \t\t\l\=\s\i\n\|\t\h\x\=\1\h ]]
++ echo 'OK   lo declarado gana al historial: TTL'
+OK   lo declarado gana al historial: TTL
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15570256 − 0) / (12345 × 2) -> 630
+cache-ttl: 1h (option)
+memfree: 1G (option)
+items=1 ok=1 fallidos=0'
+++ gawk '/^memfree: 1G \(option\)/{n++} END{print n+0}'
++ check 'lo declarado gana al historial: memfree' 1 1
++ total=99
++ [[ 1 == \1 ]]
++ echo 'OK   lo declarado gana al historial: memfree'
+OK   lo declarado gana al historial: memfree
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ THYROX_ENABLE_PROMPT_CACHING_1H=1
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-compartido
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 -> 25M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15568172 − 0) / (12345 × 2) -> 630
+cache-ttl: 1h (enable_1h_env)
+memfree: 25M (history)
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ thx_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json
+++ jq -r .result
+++ gawk '-F|' '{print $5"|"$6}'
+++ sort -u
+++ paste -sd,
++ check 'el entorno gana al historial' 'ttl=sin|thx=1h' 'ttl=sin|thx=1h'
++ total=100
++ [[ ttl=sin|thx=1h == \t\t\l\=\s\i\n\|\t\h\x\=\1\h ]]
++ echo 'OK   el entorno gana al historial'
+OK   el entorno gana al historial
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_MEMFREE_RESERVE=1G
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-compartido
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 + reserva 1048576 KB -> 1049M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15577264 − 1048576) / (12345 × 2) -> 588
+cache-ttl: 5m (history)
+memfree: 1049M (history)
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 1.5 s, pico 12345 KB × 2 + reserva 1048576 KB -> 1049M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15577264 − 1048576) / (12345 × 2) -> 588
+cache-ttl: 5m (history)
+memfree: 1049M (history)
+items=1 ok=1 fallidos=0'
+++ gawk '/^memfree: 1049M \(history\)/{n++} END{print n+0}'
++ check 'la reserva del vecino se suma a lo medido' 1 1
++ total=101
++ [[ 1 == \1 ]]
++ echo 'OK   la reserva del vecino se suma a lo medido'
+OK   la reserva del vecino se suma a lo medido
+++ find /tmp/tmp.nALX2A3CMy/historial-compartido -name runs.jsonl
+++ wc -l
++ check 'una plantilla, un solo historial' 1 1
++ total=102
++ [[ 1 == \1 ]]
++ echo 'OK   una plantilla, un solo historial'
+OK   una plantilla, un solo historial
++ unset HIST
++ HIST=/tmp/tmp.nALX2A3CMy/historial-otro-binario
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-otro-binario
+++ bash /home/user/thyrox/bin/pool_history dir /tmp/tmp.nALX2A3CMy/prompt.md
++ HIST_DIR=/tmp/tmp.nALX2A3CMy/historial-otro-binario/prompt-d4cb62eb0963
++ mkdir -p /tmp/tmp.nALX2A3CMy/historial-otro-binario/prompt-d4cb62eb0963
++ printf '{"items_measured": 1, "min_wall_s": 1.0, "max_wall_s": 1.0, "peak_kb": 900000, "runner": "claude"}\n'
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-otro-binario
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
+++ gawk '/^memfree: .*\(history\)/{n++} END{print n+0}'
++ check 'otro binario: no deriva memfree de su fila' 0 0
++ total=103
++ [[ 0 == \0 ]]
++ echo 'OK   otro binario: no deriva memfree de su fila'
+OK   otro binario: no deriva memfree de su fila
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
+++ gawk -v b=/tmp/tmp.nALX2A3CMy/claude 'index($0, "sin ejecución previa de " b){n++} END{print n+0}'
++ check 'otro binario: lo dice' 1 1
++ total=104
++ [[ 1 == \1 ]]
++ echo 'OK   otro binario: lo dice'
+OK   otro binario: lo dice
++ unset HIST
++ HIST=/tmp/tmp.nALX2A3CMy/historial-otro-modelo
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-otro-modelo
+++ bash /home/user/thyrox/bin/pool_history dir /tmp/tmp.nALX2A3CMy/prompt.md
++ HIST_DIR=/tmp/tmp.nALX2A3CMy/historial-otro-modelo/prompt-d4cb62eb0963
++ mkdir -p /tmp/tmp.nALX2A3CMy/historial-otro-modelo/prompt-d4cb62eb0963
++ printf '{"items_measured": 1, "min_wall_s": 1.0, "max_wall_s": 1.0, "peak_kb": 900000, "runner": "%s", "item_model": "claude-opus-5"}\n' /tmp/tmp.nALX2A3CMy/claude
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/gnu-time
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/historial-otro-modelo
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
+++ gawk '/^memfree: .*\(history\)/{n++} END{print n+0}'
++ check 'otro modelo: no deriva memfree de su fila' 0 0
++ total=105
++ [[ 0 == \0 ]]
++ echo 'OK   otro modelo: no deriva memfree de su fila'
+OK   otro modelo: no deriva memfree de su fila
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0'
+++ gawk 'index($0, "ninguna con el modelo claude-sonnet-5"){n++} END{print n+0}'
++ check 'otro modelo: lo dice' 1 1
++ total=106
++ [[ 1 == \1 ]]
++ echo 'OK   otro modelo: lo dice'
+OK   otro modelo: lo dice
++ unset HIST
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_MEMFREE_RESERVE=1G
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.WEhnerCGiG
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: la cota es sólo la reserva 1048576 KB
+memfree: 1024M (history)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: la cota es sólo la reserva 1048576 KB
+memfree: 1024M (history)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^memfree: 1024M \(history\)/{n++} END{print n+0}'
++ check 'sin historial, la reserva sola es la cota' 1 1
++ total=107
++ [[ 1 == \1 ]]
++ echo 'OK   sin historial, la reserva sola es la cota'
+OK   sin historial, la reserva sola es la cota
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA=
++ HEADLESS_POOL_MEMFREE_RESERVE=mucha
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.DvKxKl5QIO
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+headless-pool: REHUSA — HEADLESS_POOL_MEMFREE_RESERVE ilegible: '\''mucha'\'' (ej. 2G, 512M)'
++ CODE=2
++ check 'reserva ilegible: exit 2' 2 2
++ total=108
++ [[ 2 == \2 ]]
++ echo 'OK   reserva ilegible: exit 2'
+OK   reserva ilegible: exit 2
++ mkdir -p /tmp/tmp.nALX2A3CMy/path-claude
++ cp /tmp/tmp.nALX2A3CMy/claude /tmp/tmp.nALX2A3CMy/path-claude/claude
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ run_with_claude alfa beta
+++ printf '%s\n' alfa beta
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ env -u HEADLESS_POOL_RUNNER PATH=/tmp/tmp.nALX2A3CMy/path-claude:/root/.local/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/node22/bin:/opt/maven/bin:/opt/gradle/bin:/opt/rbenv/bin:/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.FvU5qfeF99 bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --runner claude
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
++ check 'runner claude: exit 0' 0 0
++ total=109
++ [[ 0 == \0 ]]
++ echo 'OK   runner claude: exit 0'
+OK   runner claude: exit 0
+++ printf %s 'gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
+++ gawk '/^items=/{print}'
++ check 'runner claude: resumen' 'items=2 ok=2 fallidos=0' 'items=2 ok=2 fallidos=0'
++ total=110
++ [[ items=2 ok=2 fallidos=0 == \i\t\e\m\s\=\2\ \o\k\=\2\ \f\a\l\l\i\d\o\s\=\0 ]]
++ echo 'OK   runner claude: resumen'
+OK   runner claude: resumen
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json
+++ jq -r .result
+++ cut '-d|' -f3,4
+++ sort -u
++ check 'runner claude: sin sesión persistida y en stream-json' 'persist=no|formato=stream-json' 'persist=no|formato=stream-json'
++ total=111
++ [[ persist=no|formato=stream-json == \p\e\r\s\i\s\t\=\n\o\|\f\o\r\m\a\t\o\=\s\t\r\e\a\m\-\j\s\o\n ]]
++ echo 'OK   runner claude: sin sesión persistida y en stream-json'
+OK   runner claude: sin sesión persistida y en stream-json
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json
+++ jq -r .result
+++ gawk -Fsid= '{print $2}'
++ sids='4425172f-fb60-414f-9072-c6b5eb7d68ac
+a67ba84a-3d67-4dd7-a5a2-28a475905643'
+++ printf '%s\n' '4425172f-fb60-414f-9072-c6b5eb7d68ac
+a67ba84a-3d67-4dd7-a5a2-28a475905643'
+++ grep -cE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
++ check 'runner claude: cada ítem trae un --session-id con forma de uuid' 2 2
++ total=112
++ [[ 2 == \2 ]]
++ echo 'OK   runner claude: cada ítem trae un --session-id con forma de uuid'
+OK   runner claude: cada ítem trae un --session-id con forma de uuid
+++ printf '%s\n' '4425172f-fb60-414f-9072-c6b5eb7d68ac
+a67ba84a-3d67-4dd7-a5a2-28a475905643'
+++ sort -u
+++ wc -l
++ check 'runner claude: los --session-id son distintos' 2 2
++ total=113
++ [[ 2 == \2 ]]
++ echo 'OK   runner claude: los --session-id son distintos'
+OK   runner claude: los --session-id son distintos
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.uToZ35j2Qr
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ jq -r .result /tmp/tmp.nALX2A3CMy/out/1.json
+++ gawk -Fsid= '{print $2}'
++ check 'runner thyrox por defecto: sin --session-id' sin sin
++ total=114
++ [[ sin == \s\i\n ]]
++ echo 'OK   runner thyrox por defecto: sin --session-id'
+OK   runner thyrox por defecto: sin --session-id
+++ turns_of
+++ jq -r .result /tmp/tmp.nALX2A3CMy/out/1.json
+++ gawk '-F|' '{for (i=1;i<=NF;i++) if ($i ~ /^turns=/) print substr($i,7)}'
++ check 'sin --max-turns: el ítem corre sin tope de turnos' sin sin
++ total=115
++ [[ sin == \s\i\n ]]
++ echo 'OK   sin --max-turns: el ítem corre sin tope de turnos'
+OK   sin --max-turns: el ítem corre sin tope de turnos
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--max-turns 7'
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.o1JkU0kMPr
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --max-turns 7
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.nALX2A3CMy/claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ turns_of
+++ jq -r .result /tmp/tmp.nALX2A3CMy/out/1.json
+++ gawk '-F|' '{for (i=1;i<=NF;i++) if ($i ~ /^turns=/) print substr($i,7)}'
++ check '--max-turns declarado llega al ítem' 7 7
++ total=116
++ [[ 7 == \7 ]]
++ echo 'OK   --max-turns declarado llega al ítem'
+OK   --max-turns declarado llega al ítem
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ run_with_claude alfa
+++ printf '%s\n' alfa
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ env -u HEADLESS_POOL_RUNNER PATH=/tmp/tmp.nALX2A3CMy/path-claude:/root/.local/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/node22/bin:/opt/maven/bin:/opt/gradle/bin:/opt/rbenv/bin:/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.B2RSw3kP9E bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --runner claude
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
+++ turns_of
+++ jq -r .result /tmp/tmp.nALX2A3CMy/out/1.json
+++ gawk '-F|' '{for (i=1;i<=NF;i++) if ($i ~ /^turns=/) print substr($i,7)}'
++ check 'runner claude sin --max-turns: sin tope' sin sin
++ total=117
++ [[ sin == \s\i\n ]]
++ echo 'OK   runner claude sin --max-turns: sin tope'
+OK   runner claude sin --max-turns: sin tope
+++ printf 'alfa\n'
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ env -u HEADLESS_POOL_RUNNER PATH=/tmp/tmp.nALX2A3CMy/sin-claude:/usr/bin:/bin HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.epmEK2WZpf bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --runner claude
++ SALIDA='headless-pool: REHUSA — falta el ejecutor de los ítems (claude).'
++ CODE=2
++ check 'runner claude sin claude en el PATH: exit 2' 2 2
++ total=118
++ [[ 2 == \2 ]]
++ echo 'OK   runner claude sin claude en el PATH: exit 2'
+OK   runner claude sin claude en el PATH: exit 2
+++ printf %s 'headless-pool: REHUSA — falta el ejecutor de los ítems (claude).'
+++ gawk '/REHUSA/ && /claude/{n++} END{print n+0}'
++ check 'runner claude sin claude en el PATH: lo nombra' 1 1
++ total=119
++ [[ 1 == \1 ]]
++ echo 'OK   runner claude sin claude en el PATH: lo nombra'
+OK   runner claude sin claude en el PATH: lo nombra
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--runner otro'
++ corre alfa
+++ printf '%s\n' alfa
+++ HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.9duki8hTvt
+++ bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --runner otro
++ SALIDA='headless-pool: REHUSA — --runner va thyrox o claude, no: otro'
++ CODE=2
++ check 'runner desconocido: exit 2' 2 2
++ total=120
++ [[ 2 == \2 ]]
++ echo 'OK   runner desconocido: exit 2'
+OK   runner desconocido: exit 2
++ rm -rf /tmp/tmp.nALX2A3CMy/out
++ EXTRA='--cache-ttl 5m'
++ run_with_claude alfa
+++ printf '%s\n' alfa
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ env -u HEADLESS_POOL_RUNNER PATH=/tmp/tmp.nALX2A3CMy/path-claude:/root/.local/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/node22/bin:/opt/maven/bin:/opt/gradle/bin:/opt/rbenv/bin:/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.yXn6UlHscX bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --runner claude --cache-ttl 5m
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+cache-ttl: 5m (option)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
++ check 'runner claude con --cache-ttl: exit 0' 0 0
++ total=121
++ [[ 0 == \0 ]]
++ echo 'OK   runner claude con --cache-ttl: exit 0'
+OK   runner claude con --cache-ttl: exit 0
+++ jq -r .result /tmp/tmp.nALX2A3CMy/out/1.json
+++ cut '-d|' -f5,6
++ check 'runner claude con --cache-ttl: la variable de claude, no la de thyrox' 'ttl=5m|thx=sin' 'ttl=5m|thx=sin'
++ total=122
++ [[ ttl=5m|thx=sin == \t\t\l\=\5\m\|\t\h\x\=\s\i\n ]]
++ echo 'OK   runner claude con --cache-ttl: la variable de claude, no la de thyrox'
+OK   runner claude con --cache-ttl: la variable de claude, no la de thyrox
++ rm -rf /tmp/tmp.nALX2A3CMy/out /tmp/tmp.nALX2A3CMy/proxy-saw
++ EXTRA=--credential-proxy
++ ANTHROPIC_API_KEY=sk-user
++ HEADLESS_POOL_CREDENTIAL_PROXY=/tmp/tmp.nALX2A3CMy/credential-proxy
++ run_with_claude alfa beta
+++ printf '%s\n' alfa beta
++++ mktemp -d -p /tmp/tmp.nALX2A3CMy
+++ env -u HEADLESS_POOL_RUNNER PATH=/tmp/tmp.nALX2A3CMy/path-claude:/root/.local/bin:/root/.cargo/bin:/usr/local/go/bin:/opt/node22/bin:/opt/maven/bin:/opt/gradle/bin:/opt/rbenv/bin:/root/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HEADLESS_POOL_TIME=/tmp/tmp.nALX2A3CMy/no-existe HEADLESS_POOL_HISTORY_DIR=/tmp/tmp.nALX2A3CMy/tmp.PwwkxOPdSM bash /home/user/thyrox/src/session/headless-pool.sh --prompt /tmp/tmp.nALX2A3CMy/prompt.md --out /tmp/tmp.nALX2A3CMy/out --model claude-sonnet-5 --width 2 --runner claude --credential-proxy
++ SALIDA='gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de claude en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+items=2 ok=2 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)'
++ CODE=0
++ check 'runner claude con proxy: exit 0' 0 0
++ total=123
++ [[ 0 == \0 ]]
++ echo 'OK   runner claude con proxy: exit 0'
+OK   runner claude con proxy: exit 0
+++ cred_de
+++ cat /tmp/tmp.nALX2A3CMy/out/1.json /tmp/tmp.nALX2A3CMy/out/2.json
+++ jq -r .result
+++ sort -u
+++ gawk '-F|' '{print $7"|"$8"|"$9}'
+++ paste -sd,
++ check 'runner claude con proxy: el ítem ve el socket y el marcador, sin credencial' 'sock=/tmp/tmp.nALX2A3CMy/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin' 'sock=/tmp/tmp.nALX2A3CMy/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin'
++ total=124
++ [[ sock=/tmp/tmp.nALX2A3CMy/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin == \s\o\c\k\=\/\t\m\p\/\t\m\p\.\n\A\L\X\2\A\3\C\M\y\/\o\u\t\/\.\c\r\e\d\e\n\t\i\a\l\-\p\r\o\x\y\.\s\o\c\k\|\k\e\y\=\s\s\h\-\p\l\a\c\e\h\o\l\d\e\r\|\a\u\t\h\=\s\i\n ]]
++ echo 'OK   runner claude con proxy: el ítem ve el socket y el marcador, sin credencial'
+OK   runner claude con proxy: el ítem ve el socket y el marcador, sin credencial
+++ cut '-d|' -f1 /tmp/tmp.nALX2A3CMy/proxy-saw
++ check 'runner claude con proxy: la credencial la recibe el proxy' sk-user sk-user
++ total=125
++ [[ sk-user == \s\k\-\u\s\e\r ]]
++ echo 'OK   runner claude con proxy: la credencial la recibe el proxy'
+OK   runner claude con proxy: la credencial la recibe el proxy
++ echo
+
++ echo 'aserciones: 125 de 125 · fallos: 0'
+aserciones: 125 de 125 · fallos: 0
++ exit 0
++ rm -rf /tmp/tmp.nALX2A3CMy
+EXIT=0

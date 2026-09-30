@@ -1,0 +1,1 @@
+function Xa(e){let n=kw();ke((r)=>{if(r.projects?.[n]?.localSettingsSeenGitTracked===!0)return r;return{...r,projects:{...r.projects,[n]:{...r.projects?.[n]??Ste,localSettingsSeenGitTracked:!0}}}},e)}

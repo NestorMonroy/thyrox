@@ -1,0 +1,657 @@
+-- ROJO src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getAssistantMessageText' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [356.00ms]
+-- ROJO src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1.94s]
+-- ROJO src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:
+106 |     expect(classifierDecision).toMatch(/export function isPlanModeDecision/)
+107 |     expect(classifierDecision).toMatch(/reason\?\.type === 'mode'/)
+108 |   })
+109 | 
+110 |   test('the gate triages via computeAutoModeFallback before the classifier', () => {
+111 |     expect(permissions).toMatch(/computeAutoModeFallback\(/)
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /computeAutoModeFallback\(/
+Received: "/**\n * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`\n * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no\n * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,\n * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`\n * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).\n *\n * PORTADAS (11 de 17) — el bloque completo de \"reglas puras\" de la fuente\n * (líneas ~123-395), todas construidas sobre las mismas tres piezas\n * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):\n *\n *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`\n *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·\n *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`\n *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`\n *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver\n *   abajo; antes OMITIDA por falta de consumidor)\n *\n * OMITIDAS (6 de 17), declaradas por nombre, línea y bloqueo — ninguna\n * tiene consumidor confirmado en este pase:\n *\n *   - `createPermissionRequestMessage` (permissions.ts:144-220) — depende de\n *     `feature('BASH_CLASSIFIER')`/`feature('TRANSCRIPT_CLASSIFIER')` de\n *     `bun:bundle` (no resuelve en este runtime, medido con `bun -e`) y de\n *     `./PermissionMode.js` (sibling no portado en este pase).\n *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —\n *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,\n *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por\n *     `./PermissionUpdate.js` (330 líneas, no portado).\n *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —\n *     mismo bloqueo que la anterior.\n *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por\n *     `deletePermissionRuleFromSettings` (host binding sin implementación\n *     de referencia en este árbol) y `./PermissionUpdate.js`.\n *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —\n *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.\n *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada\n *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.\n *\n * Divergencias medidas en lo portado:\n *\n * - `getPermissionRuleSources` usa `SETTING_SOURCES` de\n *   `@claude-code-how-works/config`; se repunta a `@thyrox/config`, que\n *   declara el mismo array de 5 elementos (mismos nombres — verificado\n *   leyendo `config/settings/constants.ts`). El especificador `@thyrox/*`\n *   no resuelve todavía en este árbol (falta `\"workspaces\"` en la raíz,\n *   medido con `Bun.resolveSync`), así que se usa `require()` diferido con\n *   respaldo — el mismo array escrito localmente si el require falla.\n * - `ToolPermissionContext` es un tipo inline (igual que en la fuente,\n *   comentario \"V7 §11.4 — inlined types\" en el original), pero MÁS\n *   PRECISO que el de la fuente: la fuente lo declara como\n *   `{ permissionRules: unknown; [key: string]: unknown }`, que bajo\n *   `strict`/`noUncheckedIndexedAccess` no tipa las tres propiedades que\n *   este archivo realmente indexa (`alwaysAllowRules`/`alwaysDenyRules`/\n *   `alwaysAskRules`). Es una declaración de tipo local, no cambia\n *   comportamiento en tiempo de ejecución.\n * - `Tool` es el mismo tipo inline de la fuente\n *   (`{ name: string; [key: string]: unknown }`).\n * - `permissionRuleSourceDisplayString` llama en la fuente a\n *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`\n *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos\n *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,\n *   sólo lectura), en vez de un `require()` diferido con respaldo — a\n *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de\n *   `@thyrox/config` real que citar y copiar, así que no hace falta el\n *   patrón try/require.\n *\n * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que\n * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle\n * su propio contexto sin declarar un cuarto tipo duplicado.\n */\nimport type {\n  PermissionBehavior,\n  PermissionRule,\n  PermissionRuleSource,\n} from './permissionTypes.js'\nimport {\n  permissionRuleValueFromString,\n} from './permissionRuleParser.js'\n\nexport type ToolPermissionContext = {\n  alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>\n  [key: string]: unknown\n}\n\ntype Tool = { name: string; [key: string]: unknown }\n\nconst FALLBACK_SETTING_SOURCES = [\n  'userSettings',\n  'projectSettings',\n  'localSettings',\n  'flagSettings',\n  'policySettings',\n] as const\n\nfunction requireConfigSettingSources(): { SETTING_SOURCES: readonly string[] } {\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  return require('@thyrox/config')\n}\n\nfunction getPermissionRuleSources(): readonly PermissionRuleSource[] {\n  let base: readonly string[]\n  try {\n    base = requireConfigSettingSources().SETTING_SOURCES\n  } catch {\n    base = FALLBACK_SETTING_SOURCES\n  }\n  return [...base, 'cliArg', 'command', 'session'] as readonly PermissionRuleSource[]\n}\n\nexport function getAllowRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAllowRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'allow' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getDenyRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysDenyRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'deny' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getAskRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAskRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'ask' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\n/**\n * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —\n * `permissions.ts:123-131` en la fuente, que delega en\n * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.\n * Ver la divergencia declarada en el docstring del módulo: el `switch` se\n * inlinea aquí verbatim (leído de\n * `ccnmt: packages/config/settings/constants.ts:73-93`).\n */\nexport function permissionRuleSourceDisplayString(\n  source: PermissionRuleSource,\n): string {\n  switch (source) {\n    case 'userSettings':\n      return 'user settings'\n    case 'projectSettings':\n      return 'shared project settings'\n    case 'localSettings':\n      return 'project local settings'\n    case 'flagSettings':\n      return 'command line arguments'\n    case 'policySettings':\n      return 'enterprise managed settings'\n    case 'cliArg':\n      return 'CLI argument'\n    case 'command':\n      return 'command configuration'\n    case 'session':\n      return 'current session'\n  }\n}\n\nfunction mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {\n  const parts = s.split('__')\n  const [mcp, server, ...rest] = parts\n  if (mcp !== 'mcp' || !server) return null\n  return { serverName: server, toolName: rest.length > 0 ? rest.join('__') : undefined }\n}\n\nfunction getToolNameForPermissionCheck(tool: {\n  name: string\n  mcpInfo?: { serverName: string; toolName: string }\n}): string {\n  if (tool.mcpInfo) return `mcp__${tool.mcpInfo.serverName}__${tool.mcpInfo.toolName}`\n  return tool.name\n}\n\n/**\n * ¿Esta regla casa esta llamada entera? Casa \"Bash\" pero no\n * \"Bash(prefix:*)\" para BashTool. También casa herramientas MCP por\n * servidor: la regla \"mcp__server1\" casa \"mcp__server1__tool1\".\n */\nfunction toolMatchesRule(\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n  rule: PermissionRule,\n): boolean {\n  if (rule.ruleValue.ruleContent !== undefined) {\n    return false\n  }\n\n  const nameForRuleMatch = getToolNameForPermissionCheck(tool)\n\n  if (rule.ruleValue.toolName === nameForRuleMatch) {\n    return true\n  }\n\n  const ruleInfo = mcpInfoFromString(rule.ruleValue.toolName)\n  const toolInfo = mcpInfoFromString(nameForRuleMatch)\n\n  return (\n    ruleInfo !== null &&\n    toolInfo !== null &&\n    (ruleInfo.toolName === undefined || ruleInfo.toolName === '*') &&\n    ruleInfo.serverName === toolInfo.serverName\n  )\n}\n\nexport function toolAlwaysAllowedRule(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAllowRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\n/**\n * ¿La herramienta está en las reglas de denegación permanente? Es el\n * objetivo de este pase — consumido por\n * `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts`.\n */\nexport function getDenyRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getDenyRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getAskRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAskRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getDenyRuleForAgent(\n  context: ToolPermissionContext,\n  agentToolName: string,\n  agentType: string,\n): PermissionRule | null {\n  return (\n    getDenyRules(context).find(\n      rule =>\n        rule.ruleValue.toolName === agentToolName &&\n        rule.ruleValue.ruleContent === agentType,\n    ) || null\n  )\n}\n\nexport function filterDeniedAgents<T extends { agentType: string }>(\n  agents: T[],\n  context: ToolPermissionContext,\n  agentToolName: string,\n): T[] {\n  const deniedAgentTypes = new Set<string>()\n  for (const rule of getDenyRules(context)) {\n    if (\n      rule.ruleValue.toolName === agentToolName &&\n      rule.ruleValue.ruleContent !== undefined\n    ) {\n      deniedAgentTypes.add(rule.ruleValue.ruleContent)\n    }\n  }\n  return agents.filter(agent => !deniedAgentTypes.has(agent.agentType))\n}\n\nexport function getRuleByContentsForTool(\n  context: ToolPermissionContext,\n  tool: Tool & { mcpInfo?: { serverName: string; toolName: string } },\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  return getRuleByContentsForToolName(context, getToolNameForPermissionCheck(tool), behavior)\n}\n\nexport function getRuleByContentsForToolName(\n  context: ToolPermissionContext,\n  toolName: string,\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  const ruleByContents = new Map<string, PermissionRule>()\n  let rules: PermissionRule[] = []\n  switch (behavior) {\n    case 'allow':\n      rules = getAllowRules(context)\n      break\n    case 'deny':\n      rules = getDenyRules(context)\n      break\n    case 'ask':\n      rules = getAskRules(context)\n      break\n  }\n  for (const rule of rules) {\n    if (\n      rule.ruleValue.toolName === toolName &&\n      rule.ruleValue.ruleContent !== undefined &&\n      rule.ruleBehavior === behavior\n    ) {\n      ruleByContents.set(rule.ruleValue.ruleContent, rule)\n    }\n  }\n  return ruleByContents\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:111:25)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > the gate triages via computeAutoModeFallback before the classifier [0.38ms]
+114 | 
+115 |   test('sandboxOverride ALONE falls through to the classifier (ant: no J in j||D||f)', () => {
+116 |     // `computeAutoModeFallback` devuelve null cuando sólo hay
+117 |     // `sandboxOverride`, para que llegue al clasificador; las tres razones que
+118 |     // merecen prompt devuelven una razón.
+119 |     expect(classifierDecision).toMatch(/sandboxOverride alone/)
+                                     ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /sandboxOverride alone/
+Received: "import { feature } from 'bun:bundle'\nimport { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'\nimport { ENTER_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/EnterPlanModeTool/constants.js'\nimport { EXIT_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'\nimport { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'\nimport { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'\nimport { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'\nimport { LIST_MCP_RESOURCES_TOOL_NAME } from '@thyrox/tool-registry/tools/ListMcpResourcesTool/prompt.js'\nimport { LSP_TOOL_NAME } from '@thyrox/tool-registry/tools/LSPTool/prompt.js'\nimport { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'\nimport { SLEEP_TOOL_NAME } from '@thyrox/tool-registry/tools/SleepTool/prompt.js'\nimport { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'\nimport { TASK_GET_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskGetTool/constants.js'\nimport { TASK_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskListTool/constants.js'\nimport { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'\nimport { TASK_STOP_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskStopTool/prompt.js'\nimport { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'\nimport { TEAM_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamCreateTool/constants.js'\nimport { TEAM_DELETE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamDeleteTool/constants.js'\nimport { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/constants.js'\nimport { TOOL_SEARCH_TOOL_NAME } from '@thyrox/tool-registry/tools/ToolSearchTool/prompt.js'\nimport { WORKFLOW_TOOL_NAME } from '@thyrox/tool-registry/tools/WorkflowTool/constants.js'\nimport { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'\nimport type { PermissionDecisionReason } from './permissionTypes.js'\n\n// Copia de `ccnmt: packages/permission/src/classifierDecision.ts` con los\n// comentarios traducidos; el cuerpo es el de la fuente.\n//\n// Nombres de herramienta exclusivos de ant: `require` condicional, para que Bun\n// pueda eliminarlos como código muerto en las builds externas. Las guardas\n// replican las de `tools.ts`. Mantiene las cadenas de nombre de herramienta\n// fuera de `cli.js`.\n/* eslint-disable @typescript-eslint/no-require-imports */\nconst TERMINAL_CAPTURE_TOOL_NAME = feature('TERMINAL_PANEL')\n  ? (\n      require('@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js')\n    ).TERMINAL_CAPTURE_TOOL_NAME\n  : null\nconst OVERFLOW_TEST_TOOL_NAME = feature('OVERFLOW_TEST_TOOL')\n  ? (\n      require('@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js') as typeof import('@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js')\n    ).OVERFLOW_TEST_TOOL_NAME\n  : null\nconst VERIFY_PLAN_EXECUTION_TOOL_NAME =\n  process.env.USER_TYPE === 'ant'\n    ? (\n        require('@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js') as typeof import('@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js')\n      ).VERIFY_PLAN_EXECUTION_TOOL_NAME\n    : null\n/* eslint-enable @typescript-eslint/no-require-imports */\n\n/**\n * Herramientas que son seguras y no necesitan que el clasificador las revise.\n * El clasificador de modo automático las usa para saltarse llamadas al API\n * innecesarias. NO incluye las herramientas de escritura y edición — de ésas\n * se ocupa el camino rápido de `acceptEdits` (permitidas dentro del CWD,\n * clasificadas fuera de él).\n */\nconst SAFE_YOLO_ALLOWLISTED_TOOLS = new Set([\n  // Operaciones de archivo de sólo lectura\n  FILE_READ_TOOL_NAME,\n  // Búsqueda, de sólo lectura\n  GREP_TOOL_NAME,\n  GLOB_TOOL_NAME,\n  LSP_TOOL_NAME,\n  TOOL_SEARCH_TOOL_NAME,\n  LIST_MCP_RESOURCES_TOOL_NAME,\n  'ReadMcpResourceTool', // sin constante exportada\n  // Gestión de tareas (sólo metadata)\n  TODO_WRITE_TOOL_NAME,\n  TASK_CREATE_TOOL_NAME,\n  TASK_GET_TOOL_NAME,\n  TASK_UPDATE_TOOL_NAME,\n  TASK_LIST_TOOL_NAME,\n  TASK_STOP_TOOL_NAME,\n  TASK_OUTPUT_TOOL_NAME,\n  // Modo plan e interfaz\n  ASK_USER_QUESTION_TOOL_NAME,\n  ENTER_PLAN_MODE_TOOL_NAME,\n  EXIT_PLAN_MODE_TOOL_NAME,\n  // Coordinación del swarm (sólo buzón interno y estado de equipo — los\n  // pares llevan sus propias comprobaciones de permiso, así que no hay\n  // elusión de seguridad real).\n  TEAM_CREATE_TOOL_NAME,\n  // Limpieza de agentes\n  TEAM_DELETE_TOOL_NAME,\n  SEND_MESSAGE_TOOL_NAME,\n  // Orquestación de workflow — cada subagente pasa por canUseTool\n  WORKFLOW_TOOL_NAME,\n  // Varios, seguros\n  SLEEP_TOOL_NAME,\n  // Herramientas seguras exclusivas de ant (las guardas replican tools.ts)\n  ...(TERMINAL_CAPTURE_TOOL_NAME ? [TERMINAL_CAPTURE_TOOL_NAME] : []),\n  ...(OVERFLOW_TEST_TOOL_NAME ? [OVERFLOW_TEST_TOOL_NAME] : []),\n  ...(VERIFY_PLAN_EXECUTION_TOOL_NAME ? [VERIFY_PLAN_EXECUTION_TOOL_NAME] : []),\n  // Herramienta interna del clasificador\n  YOLO_CLASSIFIER_TOOL_NAME,\n])\n\nexport function isAutoModeAllowlistedTool(toolName: string): boolean {\n  return SAFE_YOLO_ALLOWLISTED_TOOLS.has(toolName)\n}\n\n/**\n * Si una decisión de permiso es una regla `ask` que el usuario configuró\n * explícitamente — de forma directa, o anidada dentro de un paquete de\n * `subcommandResults` de Bash. ant `FW6` (4260.js). Ante éstas el modo\n * automático tiene que caer de vuelta al PROMPT en vez de entregárselas al\n * clasificador: el usuario dijo deliberadamente «pregúntame sobre esto», así\n * que la respuesta le toca a él darla, no a un LLM más débil adivinarla.\n */\nexport function isAskRuleDecision(\n  reason: PermissionDecisionReason | undefined,\n): boolean {\n  if (reason?.type === 'rule' && reason.rule.ruleBehavior === 'ask') {\n    return true\n  }\n  if (reason?.type === 'subcommandResults') {\n    for (const sub of reason.reasons.values()) {\n      if (sub.behavior === 'ask' && isAskRuleDecision(sub.decisionReason)) {\n        return true\n      }\n    }\n  }\n  return false\n}\n\n/**\n * Si una decisión es el piso del modo plan (ant `qMK`, 4260.js): el modo plan\n * fuerza un prompt de aprobación que el modo automático no puede resolver por\n * su cuenta con el clasificador.\n */\nexport function isPlanModeDecision(\n  reason: PermissionDecisionReason | undefined,\n): boolean {\n  return reason?.type === 'mode' && reason.mode === 'plan'\n}\n\n/**\n * Triaje puro previo al clasificador para el modo automático (ant `xaH`\n * 4260.js, el bloque `j||J||D||M||f`). Decide si una decisión debe saltarse el\n * clasificador por completo y preguntarle o denegarle al usuario en su lugar.\n * Devuelve:\n *   - 'deny-headless'        — una razón que merece prompt, pero sin prompt\n *                              disponible\n *   - {reason}               — caer de vuelta al prompt (quien llama devuelve\n *                              el resultado 'ask' y registra\n *                              tengu_auto_mode_fallback_to_ask)\n *   - null                   — seguir hacia el clasificador\n * No tiene efectos secundarios, por eso vive aquí (sin ataduras al host); el\n * `logEvent` y el retorno son de quien llama. `M` (el techo de organización de\n * MCP) queda omitido — ccb no tiene techo de organización. `sandboxOverride`\n * por sí solo NO es una caída de vuelta (la condición interactiva de ant es\n * j||D||f).\n */\nexport type AutoModeFallback =\n  | 'deny-headless'\n  | { reason: 'safety_check' | 'ask_rule' | 'plan_mode_floor' }\n  | null\n\nexport function computeAutoModeFallback(\n  reason: PermissionDecisionReason | undefined,\n  isHeadless: boolean,\n): AutoModeFallback {\n  const isNonApprovableSafetyCheck =\n    reason?.type === 'safetyCheck' && !reason.classifierApprovable\n  const isSandboxOverride = reason?.type === 'sandboxOverride'\n  const isAskRule = isAskRuleDecision(reason)\n  const isPlanFloor = isPlanModeDecision(reason)\n  if (\n    !isNonApprovableSafetyCheck &&\n    !isSandboxOverride &&\n    !isAskRule &&\n    !isPlanFloor\n  ) {\n    return null\n  }\n  if (isHeadless) return 'deny-headless'\n  if (isNonApprovableSafetyCheck) return { reason: 'safety_check' }\n  if (isAskRule) return { reason: 'ask_rule' }\n  if (isPlanFloor) return { reason: 'plan_mode_floor' }\n  // sandboxOverride por sí solo — cae hacia el clasificador.\n  return null\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:119:32)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > sandboxOverride ALONE falls through to the classifier (ant: no J in j||D||f) [0.15ms]
+122 |       /return \{ reason: 'safety_check' \}|reason: 'safety_check'/,
+123 |     )
+124 |   })
+125 | 
+126 |   test('emits tengu_auto_mode_fallback_to_ask for every fallback reason', () => {
+127 |     expect(permissions).toMatch(/tengu_auto_mode_fallback_to_ask/)
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /tengu_auto_mode_fallback_to_ask/
+Received: "/**\n * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`\n * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no\n * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,\n * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`\n * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).\n *\n * PORTADAS (11 de 17) — el bloque completo de \"reglas puras\" de la fuente\n * (líneas ~123-395), todas construidas sobre las mismas tres piezas\n * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):\n *\n *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`\n *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·\n *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`\n *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`\n *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver\n *   abajo; antes OMITIDA por falta de consumidor)\n *\n * OMITIDAS (6 de 17), declaradas por nombre, línea y bloqueo — ninguna\n * tiene consumidor confirmado en este pase:\n *\n *   - `createPermissionRequestMessage` (permissions.ts:144-220) — depende de\n *     `feature('BASH_CLASSIFIER')`/`feature('TRANSCRIPT_CLASSIFIER')` de\n *     `bun:bundle` (no resuelve en este runtime, medido con `bun -e`) y de\n *     `./PermissionMode.js` (sibling no portado en este pase).\n *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —\n *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,\n *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por\n *     `./PermissionUpdate.js` (330 líneas, no portado).\n *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —\n *     mismo bloqueo que la anterior.\n *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por\n *     `deletePermissionRuleFromSettings` (host binding sin implementación\n *     de referencia en este árbol) y `./PermissionUpdate.js`.\n *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —\n *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.\n *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada\n *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.\n *\n * Divergencias medidas en lo portado:\n *\n * - `getPermissionRuleSources` usa `SETTING_SOURCES` de\n *   `@claude-code-how-works/config`; se repunta a `@thyrox/config`, que\n *   declara el mismo array de 5 elementos (mismos nombres — verificado\n *   leyendo `config/settings/constants.ts`). El especificador `@thyrox/*`\n *   no resuelve todavía en este árbol (falta `\"workspaces\"` en la raíz,\n *   medido con `Bun.resolveSync`), así que se usa `require()` diferido con\n *   respaldo — el mismo array escrito localmente si el require falla.\n * - `ToolPermissionContext` es un tipo inline (igual que en la fuente,\n *   comentario \"V7 §11.4 — inlined types\" en el original), pero MÁS\n *   PRECISO que el de la fuente: la fuente lo declara como\n *   `{ permissionRules: unknown; [key: string]: unknown }`, que bajo\n *   `strict`/`noUncheckedIndexedAccess` no tipa las tres propiedades que\n *   este archivo realmente indexa (`alwaysAllowRules`/`alwaysDenyRules`/\n *   `alwaysAskRules`). Es una declaración de tipo local, no cambia\n *   comportamiento en tiempo de ejecución.\n * - `Tool` es el mismo tipo inline de la fuente\n *   (`{ name: string; [key: string]: unknown }`).\n * - `permissionRuleSourceDisplayString` llama en la fuente a\n *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`\n *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos\n *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,\n *   sólo lectura), en vez de un `require()` diferido con respaldo — a\n *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de\n *   `@thyrox/config` real que citar y copiar, así que no hace falta el\n *   patrón try/require.\n *\n * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que\n * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle\n * su propio contexto sin declarar un cuarto tipo duplicado.\n */\nimport type {\n  PermissionBehavior,\n  PermissionRule,\n  PermissionRuleSource,\n} from './permissionTypes.js'\nimport {\n  permissionRuleValueFromString,\n} from './permissionRuleParser.js'\n\nexport type ToolPermissionContext = {\n  alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>\n  [key: string]: unknown\n}\n\ntype Tool = { name: string; [key: string]: unknown }\n\nconst FALLBACK_SETTING_SOURCES = [\n  'userSettings',\n  'projectSettings',\n  'localSettings',\n  'flagSettings',\n  'policySettings',\n] as const\n\nfunction requireConfigSettingSources(): { SETTING_SOURCES: readonly string[] } {\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  return require('@thyrox/config')\n}\n\nfunction getPermissionRuleSources(): readonly PermissionRuleSource[] {\n  let base: readonly string[]\n  try {\n    base = requireConfigSettingSources().SETTING_SOURCES\n  } catch {\n    base = FALLBACK_SETTING_SOURCES\n  }\n  return [...base, 'cliArg', 'command', 'session'] as readonly PermissionRuleSource[]\n}\n\nexport function getAllowRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAllowRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'allow' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getDenyRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysDenyRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'deny' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getAskRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAskRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'ask' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\n/**\n * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —\n * `permissions.ts:123-131` en la fuente, que delega en\n * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.\n * Ver la divergencia declarada en el docstring del módulo: el `switch` se\n * inlinea aquí verbatim (leído de\n * `ccnmt: packages/config/settings/constants.ts:73-93`).\n */\nexport function permissionRuleSourceDisplayString(\n  source: PermissionRuleSource,\n): string {\n  switch (source) {\n    case 'userSettings':\n      return 'user settings'\n    case 'projectSettings':\n      return 'shared project settings'\n    case 'localSettings':\n      return 'project local settings'\n    case 'flagSettings':\n      return 'command line arguments'\n    case 'policySettings':\n      return 'enterprise managed settings'\n    case 'cliArg':\n      return 'CLI argument'\n    case 'command':\n      return 'command configuration'\n    case 'session':\n      return 'current session'\n  }\n}\n\nfunction mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {\n  const parts = s.split('__')\n  const [mcp, server, ...rest] = parts\n  if (mcp !== 'mcp' || !server) return null\n  return { serverName: server, toolName: rest.length > 0 ? rest.join('__') : undefined }\n}\n\nfunction getToolNameForPermissionCheck(tool: {\n  name: string\n  mcpInfo?: { serverName: string; toolName: string }\n}): string {\n  if (tool.mcpInfo) return `mcp__${tool.mcpInfo.serverName}__${tool.mcpInfo.toolName}`\n  return tool.name\n}\n\n/**\n * ¿Esta regla casa esta llamada entera? Casa \"Bash\" pero no\n * \"Bash(prefix:*)\" para BashTool. También casa herramientas MCP por\n * servidor: la regla \"mcp__server1\" casa \"mcp__server1__tool1\".\n */\nfunction toolMatchesRule(\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n  rule: PermissionRule,\n): boolean {\n  if (rule.ruleValue.ruleContent !== undefined) {\n    return false\n  }\n\n  const nameForRuleMatch = getToolNameForPermissionCheck(tool)\n\n  if (rule.ruleValue.toolName === nameForRuleMatch) {\n    return true\n  }\n\n  const ruleInfo = mcpInfoFromString(rule.ruleValue.toolName)\n  const toolInfo = mcpInfoFromString(nameForRuleMatch)\n\n  return (\n    ruleInfo !== null &&\n    toolInfo !== null &&\n    (ruleInfo.toolName === undefined || ruleInfo.toolName === '*') &&\n    ruleInfo.serverName === toolInfo.serverName\n  )\n}\n\nexport function toolAlwaysAllowedRule(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAllowRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\n/**\n * ¿La herramienta está en las reglas de denegación permanente? Es el\n * objetivo de este pase — consumido por\n * `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts`.\n */\nexport function getDenyRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getDenyRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getAskRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAskRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getDenyRuleForAgent(\n  context: ToolPermissionContext,\n  agentToolName: string,\n  agentType: string,\n): PermissionRule | null {\n  return (\n    getDenyRules(context).find(\n      rule =>\n        rule.ruleValue.toolName === agentToolName &&\n        rule.ruleValue.ruleContent === agentType,\n    ) || null\n  )\n}\n\nexport function filterDeniedAgents<T extends { agentType: string }>(\n  agents: T[],\n  context: ToolPermissionContext,\n  agentToolName: string,\n): T[] {\n  const deniedAgentTypes = new Set<string>()\n  for (const rule of getDenyRules(context)) {\n    if (\n      rule.ruleValue.toolName === agentToolName &&\n      rule.ruleValue.ruleContent !== undefined\n    ) {\n      deniedAgentTypes.add(rule.ruleValue.ruleContent)\n    }\n  }\n  return agents.filter(agent => !deniedAgentTypes.has(agent.agentType))\n}\n\nexport function getRuleByContentsForTool(\n  context: ToolPermissionContext,\n  tool: Tool & { mcpInfo?: { serverName: string; toolName: string } },\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  return getRuleByContentsForToolName(context, getToolNameForPermissionCheck(tool), behavior)\n}\n\nexport function getRuleByContentsForToolName(\n  context: ToolPermissionContext,\n  toolName: string,\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  const ruleByContents = new Map<string, PermissionRule>()\n  let rules: PermissionRule[] = []\n  switch (behavior) {\n    case 'allow':\n      rules = getAllowRules(context)\n      break\n    case 'deny':\n      rules = getDenyRules(context)\n      break\n    case 'ask':\n      rules = getAskRules(context)\n      break\n  }\n  for (const rule of rules) {\n    if (\n      rule.ruleValue.toolName === toolName &&\n      rule.ruleValue.ruleContent !== undefined &&\n      rule.ruleBehavior === behavior\n    ) {\n      ruleByContents.set(rule.ruleValue.ruleContent, rule)\n    }\n  }\n  return ruleByContents\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:127:25)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > emits tengu_auto_mode_fallback_to_ask for every fallback reason [0.16ms]
+139 |       expect(permissions).toContain(`'${reason}'`)
+140 |     }
+141 |   })
+142 | 
+143 |   test('REPL is allowed through on transcript-too-long (ant if(H.name===e9))', () => {
+144 |     expect(permissions).toMatch(/tool\.name === REPL_TOOL_NAME/)
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /tool\.name === REPL_TOOL_NAME/
+Received: "/**\n * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`\n * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no\n * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,\n * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`\n * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).\n *\n * PORTADAS (11 de 17) — el bloque completo de \"reglas puras\" de la fuente\n * (líneas ~123-395), todas construidas sobre las mismas tres piezas\n * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):\n *\n *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`\n *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·\n *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`\n *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`\n *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver\n *   abajo; antes OMITIDA por falta de consumidor)\n *\n * OMITIDAS (6 de 17), declaradas por nombre, línea y bloqueo — ninguna\n * tiene consumidor confirmado en este pase:\n *\n *   - `createPermissionRequestMessage` (permissions.ts:144-220) — depende de\n *     `feature('BASH_CLASSIFIER')`/`feature('TRANSCRIPT_CLASSIFIER')` de\n *     `bun:bundle` (no resuelve en este runtime, medido con `bun -e`) y de\n *     `./PermissionMode.js` (sibling no portado en este pase).\n *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —\n *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,\n *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por\n *     `./PermissionUpdate.js` (330 líneas, no portado).\n *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —\n *     mismo bloqueo que la anterior.\n *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por\n *     `deletePermissionRuleFromSettings` (host binding sin implementación\n *     de referencia en este árbol) y `./PermissionUpdate.js`.\n *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —\n *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.\n *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada\n *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.\n *\n * Divergencias medidas en lo portado:\n *\n * - `getPermissionRuleSources` usa `SETTING_SOURCES` de\n *   `@claude-code-how-works/config`; se repunta a `@thyrox/config`, que\n *   declara el mismo array de 5 elementos (mismos nombres — verificado\n *   leyendo `config/settings/constants.ts`). El especificador `@thyrox/*`\n *   no resuelve todavía en este árbol (falta `\"workspaces\"` en la raíz,\n *   medido con `Bun.resolveSync`), así que se usa `require()` diferido con\n *   respaldo — el mismo array escrito localmente si el require falla.\n * - `ToolPermissionContext` es un tipo inline (igual que en la fuente,\n *   comentario \"V7 §11.4 — inlined types\" en el original), pero MÁS\n *   PRECISO que el de la fuente: la fuente lo declara como\n *   `{ permissionRules: unknown; [key: string]: unknown }`, que bajo\n *   `strict`/`noUncheckedIndexedAccess` no tipa las tres propiedades que\n *   este archivo realmente indexa (`alwaysAllowRules`/`alwaysDenyRules`/\n *   `alwaysAskRules`). Es una declaración de tipo local, no cambia\n *   comportamiento en tiempo de ejecución.\n * - `Tool` es el mismo tipo inline de la fuente\n *   (`{ name: string; [key: string]: unknown }`).\n * - `permissionRuleSourceDisplayString` llama en la fuente a\n *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`\n *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos\n *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,\n *   sólo lectura), en vez de un `require()` diferido con respaldo — a\n *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de\n *   `@thyrox/config` real que citar y copiar, así que no hace falta el\n *   patrón try/require.\n *\n * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que\n * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle\n * su propio contexto sin declarar un cuarto tipo duplicado.\n */\nimport type {\n  PermissionBehavior,\n  PermissionRule,\n  PermissionRuleSource,\n} from './permissionTypes.js'\nimport {\n  permissionRuleValueFromString,\n} from './permissionRuleParser.js'\n\nexport type ToolPermissionContext = {\n  alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>\n  [key: string]: unknown\n}\n\ntype Tool = { name: string; [key: string]: unknown }\n\nconst FALLBACK_SETTING_SOURCES = [\n  'userSettings',\n  'projectSettings',\n  'localSettings',\n  'flagSettings',\n  'policySettings',\n] as const\n\nfunction requireConfigSettingSources(): { SETTING_SOURCES: readonly string[] } {\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  return require('@thyrox/config')\n}\n\nfunction getPermissionRuleSources(): readonly PermissionRuleSource[] {\n  let base: readonly string[]\n  try {\n    base = requireConfigSettingSources().SETTING_SOURCES\n  } catch {\n    base = FALLBACK_SETTING_SOURCES\n  }\n  return [...base, 'cliArg', 'command', 'session'] as readonly PermissionRuleSource[]\n}\n\nexport function getAllowRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAllowRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'allow' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getDenyRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysDenyRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'deny' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getAskRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAskRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'ask' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\n/**\n * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —\n * `permissions.ts:123-131` en la fuente, que delega en\n * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.\n * Ver la divergencia declarada en el docstring del módulo: el `switch` se\n * inlinea aquí verbatim (leído de\n * `ccnmt: packages/config/settings/constants.ts:73-93`).\n */\nexport function permissionRuleSourceDisplayString(\n  source: PermissionRuleSource,\n): string {\n  switch (source) {\n    case 'userSettings':\n      return 'user settings'\n    case 'projectSettings':\n      return 'shared project settings'\n    case 'localSettings':\n      return 'project local settings'\n    case 'flagSettings':\n      return 'command line arguments'\n    case 'policySettings':\n      return 'enterprise managed settings'\n    case 'cliArg':\n      return 'CLI argument'\n    case 'command':\n      return 'command configuration'\n    case 'session':\n      return 'current session'\n  }\n}\n\nfunction mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {\n  const parts = s.split('__')\n  const [mcp, server, ...rest] = parts\n  if (mcp !== 'mcp' || !server) return null\n  return { serverName: server, toolName: rest.length > 0 ? rest.join('__') : undefined }\n}\n\nfunction getToolNameForPermissionCheck(tool: {\n  name: string\n  mcpInfo?: { serverName: string; toolName: string }\n}): string {\n  if (tool.mcpInfo) return `mcp__${tool.mcpInfo.serverName}__${tool.mcpInfo.toolName}`\n  return tool.name\n}\n\n/**\n * ¿Esta regla casa esta llamada entera? Casa \"Bash\" pero no\n * \"Bash(prefix:*)\" para BashTool. También casa herramientas MCP por\n * servidor: la regla \"mcp__server1\" casa \"mcp__server1__tool1\".\n */\nfunction toolMatchesRule(\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n  rule: PermissionRule,\n): boolean {\n  if (rule.ruleValue.ruleContent !== undefined) {\n    return false\n  }\n\n  const nameForRuleMatch = getToolNameForPermissionCheck(tool)\n\n  if (rule.ruleValue.toolName === nameForRuleMatch) {\n    return true\n  }\n\n  const ruleInfo = mcpInfoFromString(rule.ruleValue.toolName)\n  const toolInfo = mcpInfoFromString(nameForRuleMatch)\n\n  return (\n    ruleInfo !== null &&\n    toolInfo !== null &&\n    (ruleInfo.toolName === undefined || ruleInfo.toolName === '*') &&\n    ruleInfo.serverName === toolInfo.serverName\n  )\n}\n\nexport function toolAlwaysAllowedRule(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAllowRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\n/**\n * ¿La herramienta está en las reglas de denegación permanente? Es el\n * objetivo de este pase — consumido por\n * `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts`.\n */\nexport function getDenyRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getDenyRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getAskRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAskRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getDenyRuleForAgent(\n  context: ToolPermissionContext,\n  agentToolName: string,\n  agentType: string,\n): PermissionRule | null {\n  return (\n    getDenyRules(context).find(\n      rule =>\n        rule.ruleValue.toolName === agentToolName &&\n        rule.ruleValue.ruleContent === agentType,\n    ) || null\n  )\n}\n\nexport function filterDeniedAgents<T extends { agentType: string }>(\n  agents: T[],\n  context: ToolPermissionContext,\n  agentToolName: string,\n): T[] {\n  const deniedAgentTypes = new Set<string>()\n  for (const rule of getDenyRules(context)) {\n    if (\n      rule.ruleValue.toolName === agentToolName &&\n      rule.ruleValue.ruleContent !== undefined\n    ) {\n      deniedAgentTypes.add(rule.ruleValue.ruleContent)\n    }\n  }\n  return agents.filter(agent => !deniedAgentTypes.has(agent.agentType))\n}\n\nexport function getRuleByContentsForTool(\n  context: ToolPermissionContext,\n  tool: Tool & { mcpInfo?: { serverName: string; toolName: string } },\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  return getRuleByContentsForToolName(context, getToolNameForPermissionCheck(tool), behavior)\n}\n\nexport function getRuleByContentsForToolName(\n  context: ToolPermissionContext,\n  toolName: string,\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  const ruleByContents = new Map<string, PermissionRule>()\n  let rules: PermissionRule[] = []\n  switch (behavior) {\n    case 'allow':\n      rules = getAllowRules(context)\n      break\n    case 'deny':\n      rules = getDenyRules(context)\n      break\n    case 'ask':\n      rules = getAskRules(context)\n      break\n  }\n  for (const rule of rules) {\n    if (\n      rule.ruleValue.toolName === toolName &&\n      rule.ruleValue.ruleContent !== undefined &&\n      rule.ruleBehavior === behavior\n    ) {\n      ruleByContents.set(rule.ruleValue.ruleContent, rule)\n    }\n  }\n  return ruleByContents\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:144:25)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > REPL is allowed through on transcript-too-long (ant if(H.name===e9)) [0.10ms]
+
+ 10 pass
+ 4 fail
+ 21 expect() calls
+Ran 14 tests across 1 file. [137.00ms]
+-- ROJO src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts:
+47 |     )
+48 |   })
+49 | 
+50 |   test('request body includes expires_in ONLY when caller provides it', () => {
+51 |     // Pin: optional field add. Ant's Bq_ does `if (q !== void 0) O.expires_in = q;`
+52 |     expect(clientSource).toMatch(
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /if \(expiresIn !== undefined\) requestBody\.expires_in = expiresIn/
+Received: "/**\n * Porte de `ccnmt: packages/provider/src/oauth/client.ts` — cliente OAuth\n * para los flujos de autenticación con los servicios de Claude. Sus 14\n * exportaciones, ninguna omitida.\n *\n * `./types.js` → `internal/oauthTypes.ts` (ver su cabecera: incluso en la\n * fuente estos tipos son un stub `unknown`). `./getOauthProfile.js` no está\n * asignado a este pase; `getOauthProfileFromOauthToken` se re-implementa\n * aquí mismo (es la única función de ese archivo que este módulo consume,\n * y es autocontenida). `./refreshTokenDeadSet.js` → `internal/refreshTokenDeadSet.ts`,\n * compartido con `authAlias.ts` (ambos de los 18 consumen el mismo Set).\n * `@thyrox/config` (`getGlobalConfig`/`saveGlobalConfig`) → import directo desde\n * que #260 portó `global/config.ts`; el `require()` diferido que sustituía a ese\n * módulo ausente queda retirado.\n */\n\nimport axios from 'axios'\nimport { logEvent, type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'\nimport { ALL_OAUTH_SCOPES, CLAUDE_AI_INFERENCE_SCOPE, CLAUDE_AI_OAUTH_SCOPES, getOauthConfig, OAUTH_BETA_HEADER } from '../oauthConstants.ts'\nimport { checkAndRefreshOAuthTokenIfNeeded, getClaudeAIOAuthTokens, hasProfileScope, isClaudeAISubscriber, saveApiKey } from '../authAlias.ts'\nimport { logForDebugging } from '@thyrox/local-observability/debug.js'\nimport { readEnv } from '@thyrox/config/env/utils'\nimport { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'\nimport type {\n  AccountInfo,\n  BillingType,\n  OAuthProfileResponse,\n  OAuthTokenExchangeResponse,\n  OAuthTokens,\n  RateLimitTier,\n  SubscriptionType,\n  UserRolesResponse,\n} from '../internal/oauthTypes.ts'\nimport { markRefreshTokenDead } from '../internal/refreshTokenDeadSet.ts'\n\n\n/**\n * Porte de `ccnmt: packages/provider/src/oauth/getOauthProfile.ts` — sólo\n * `getOauthProfileFromOauthToken` (la única función de ese archivo que\n * este módulo consume). No asignado a este pase; autocontenido.\n */\nasync function getOauthProfileFromOauthToken(accessToken: string): Promise<OAuthProfileResponse | undefined> {\n  const endpoint = `${getOauthConfig().BASE_API_URL}/api/oauth/profile`\n  try {\n    const response = await axios.get<OAuthProfileResponse>(endpoint, {\n      headers: {\n        Authorization: `Bearer ${accessToken}`,\n        'anthropic-beta': OAUTH_BETA_HEADER,\n      },\n      timeout: 10000,\n    })\n    return response.data\n  } catch {\n    return undefined\n  }\n}\n\nconst OAUTH_ERROR_TYPE_PATTERN = /^[a-z][a-z_]{0,39}$/\n\nfunction isAxiosErrorDuckTyped(\n  error: unknown,\n): error is { isAxiosError: true; response?: { status: number; data: unknown } } {\n  return Boolean(error && typeof error === 'object' && (error as { isAxiosError?: unknown }).isAxiosError === true)\n}\n\n/** Detecta una respuesta `invalid_grant`, mirando hasta 3 capas del error axios. */\nexport function isInvalidGrantError(error: unknown): boolean {\n  if (!isAxiosErrorDuckTyped(error) || !error.response) return false\n  const status = error.response.status\n  if (status !== 400 && status !== 401) return false\n  const data = error.response.data\n  if (!data || typeof data !== 'object') return false\n  const err = (data as { error?: unknown }).error\n  const type = typeof err === 'string' ? err : err && typeof err === 'object' ? (err as { type?: unknown }).type : undefined\n  return type === 'invalid_grant'\n}\n\n/** Extrae `oauth_error_status`/`oauth_error_type` de un error axios para telemetría. */\nexport function extractOAuthErrorFields(error: unknown): { oauth_error_status?: string; oauth_error_type?: string } {\n  if (!isAxiosErrorDuckTyped(error) || !error.response) return {}\n  const status = error.response.status\n  const data = error.response.data\n  let type = 'unparseable'\n  if (data && typeof data === 'object') {\n    const err = (data as { error?: unknown }).error\n    const rawType = typeof err === 'string' ? err : err && typeof err === 'object' ? (err as { type?: unknown }).type : undefined\n    if (typeof rawType === 'string' && OAUTH_ERROR_TYPE_PATTERN.test(rawType)) {\n      type = rawType\n    }\n  }\n  return { oauth_error_status: String(status), oauth_error_type: type }\n}\n\n/** @private Sólo para código de auth OAuth. */\nexport function shouldUseClaudeAIAuth(scopes: string[] | undefined): boolean {\n  return Boolean(scopes?.includes(CLAUDE_AI_INFERENCE_SCOPE))\n}\n\nexport function parseScopes(scopeString?: string): string[] {\n  return scopeString?.split(' ').filter(Boolean) ?? []\n}\n\nexport function buildAuthUrl({\n  codeChallenge,\n  state,\n  port,\n  isManual,\n  loginWithClaudeAi,\n  inferenceOnly,\n  orgUUID,\n  loginHint,\n  loginMethod,\n}: {\n  codeChallenge: string\n  state: string\n  port: number\n  isManual: boolean\n  loginWithClaudeAi?: boolean\n  inferenceOnly?: boolean\n  orgUUID?: string\n  loginHint?: string\n  loginMethod?: string\n}): string {\n  const authUrlBase = loginWithClaudeAi ? getOauthConfig().CLAUDE_AI_AUTHORIZE_URL : getOauthConfig().CONSOLE_AUTHORIZE_URL\n\n  const authUrl = new URL(authUrlBase)\n  authUrl.searchParams.append('code', 'true')\n  authUrl.searchParams.append('client_id', getOauthConfig().CLIENT_ID)\n  authUrl.searchParams.append('response_type', 'code')\n  authUrl.searchParams.append('redirect_uri', isManual ? getOauthConfig().MANUAL_REDIRECT_URL : `http://localhost:${port}/callback`)\n  const scopesToUse = inferenceOnly ? [CLAUDE_AI_INFERENCE_SCOPE] : ALL_OAUTH_SCOPES\n  authUrl.searchParams.append('scope', scopesToUse.join(' '))\n  authUrl.searchParams.append('code_challenge', codeChallenge)\n  authUrl.searchParams.append('code_challenge_method', 'S256')\n  authUrl.searchParams.append('state', state)\n\n  if (orgUUID) {\n    authUrl.searchParams.append('orgUUID', orgUUID)\n  }\n  if (loginHint) {\n    authUrl.searchParams.append('login_hint', loginHint)\n  }\n  if (loginMethod) {\n    authUrl.searchParams.append('login_method', loginMethod)\n  }\n\n  return authUrl.toString()\n}\n\ntype AM = AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS\n// Los comentarios `ant <fn> <emisor>` de las llamadas de abajo nombran la\n// build 2.1.136 que cita su suite (`dg6` intercambio, `Bq_` refresco, `cg6`\n// roles, `lg6` clave de API; `yH` ok, `xH` bad, `G6` sad). Esa build no esta\n// en este arbol; lo medido es 2.1.275, entre parentesis: `$nr`, `dte`, `pSt`\n// y `Fnr`, con `_` ok, `m` bad y `f` sad (chunk-xbd48fav.js).\nfunction featureOk(n: string): void {\n  logEvent('tengu_feature_ok', { feature_name: n as AM })\n}\nfunction featureBad(n: string, code: string): void {\n  logEvent('tengu_feature_bad', { feature_name: n as AM, error_code: code as AM })\n}\nfunction featureSad(n: string, code: string): void {\n  logEvent('tengu_feature_sad', { feature_name: n as AM, error_code: code as AM })\n}\n\nexport async function exchangeCodeForTokens(\n  authorizationCode: string,\n  state: string,\n  codeVerifier: string,\n  port: number,\n  useManualRedirect: boolean = false,\n  expiresIn?: number,\n): Promise<OAuthTokenExchangeResponse> {\n  const requestBody: Record<string, string | number> = {\n    grant_type: 'authorization_code',\n    code: authorizationCode,\n    redirect_uri: useManualRedirect ? getOauthConfig().MANUAL_REDIRECT_URL : `http://localhost:${port}/callback`,\n    client_id: getOauthConfig().CLIENT_ID,\n    code_verifier: codeVerifier,\n    state,\n  }\n  if (expiresIn !== undefined) {\n    requestBody.expires_in = expiresIn\n  }\n\n  const response = await axios.post(getOauthConfig().TOKEN_URL, requestBody, {\n    headers: { 'Content-Type': 'application/json' },\n    timeout: 30000,\n  })\n\n  if (response.status !== 200) {\n    const reason = response.status === 401 ? 'oauth_exchange_invalid_code' : 'oauth_exchange_http_error'\n    logEvent('tengu_oauth_token_exchange_failed', { reason, status: String(response.status) })\n    featureBad('oauth_token_exchange', reason) // ant dg6 xH(\"oauth_token_exchange\", reason) (2.1.275: $nr m)\n    throw new Error(\n      response.status === 401 ? 'Authentication failed: Invalid authorization code' : `Token exchange failed (${response.status}): ${response.statusText}`,\n    )\n  }\n  logEvent('tengu_oauth_token_exchange_success', {})\n  featureOk('oauth_token_exchange') // ant dg6 yH (2.1.275: $nr _)\n  return response.data\n}\n\n/**\n * Port of ant Bq_ signature: `{ scopes, expiresIn, clientId }` — el nombre\n * es de la build 2.1.136 que cita su suite, que no esta en este arbol. En\n * 2.1.275 la funcion es `dte` (chunk-xbd48fav.js) y lleva cinco opciones mas\n * —`skipProfileFetch`, `signal`, `telemetryContext`, `invalidScopeRetried`,\n * `storageV5`— que este porte no tiene.\n */\nexport async function refreshOAuthToken(\n  refreshToken: string,\n  { scopes: requestedScopes, expiresIn, clientId }: { scopes?: string[]; expiresIn?: number; clientId?: string } = {},\n): Promise<OAuthTokens> {\n  const requestBody: Record<string, unknown> = {\n    grant_type: 'refresh_token',\n    refresh_token: refreshToken,\n    client_id: clientId ?? getOauthConfig().CLIENT_ID,\n    scope: (requestedScopes?.length ? requestedScopes : CLAUDE_AI_OAUTH_SCOPES).join(' '),\n  }\n  if (expiresIn !== undefined) {\n    requestBody.expires_in = expiresIn\n  }\n\n  try {\n    const response = await axios.post(getOauthConfig().TOKEN_URL, requestBody, {\n      headers: { 'Content-Type': 'application/json' },\n      timeout: 30000,\n    })\n\n    if (response.status !== 200) {\n      throw new Error(`Token refresh failed: ${response.statusText}`)\n    }\n\n    const data = response.data as OAuthTokenExchangeResponse\n    const { access_token: accessToken, refresh_token: newRefreshToken = refreshToken, expires_in: newExpiresIn } = data\n\n    const expiresAt = Date.now() + newExpiresIn * 1000\n    const scopes = parseScopes(data.scope)\n\n    logEvent('tengu_oauth_token_refresh_success', {})\n    featureOk('oauth_token_refresh')\n\n    const config = getGlobalConfig()\n    const existing = getClaudeAIOAuthTokens()\n    const haveProfileAlready =\n      config.oauthAccount?.billingType !== undefined &&\n      config.oauthAccount?.accountCreatedAt !== undefined &&\n      config.oauthAccount?.subscriptionCreatedAt !== undefined &&\n      config.oauthAccount?.ccOnboardingFlags !== undefined &&\n      existing?.subscriptionType != null &&\n      existing?.rateLimitTier != null\n\n    const profileInfo = haveProfileAlready ? null : await fetchProfileInfo(accessToken)\n\n    if (profileInfo && config.oauthAccount) {\n      const updates: Partial<AccountInfo> = {}\n      if (profileInfo.displayName !== undefined) updates.displayName = profileInfo.displayName\n      if (typeof profileInfo.hasExtraUsageEnabled === 'boolean') updates.hasExtraUsageEnabled = profileInfo.hasExtraUsageEnabled\n      if (profileInfo.billingType !== null) updates.billingType = profileInfo.billingType\n      if (profileInfo.accountCreatedAt !== undefined) updates.accountCreatedAt = profileInfo.accountCreatedAt\n      if (profileInfo.subscriptionCreatedAt !== undefined) updates.subscriptionCreatedAt = profileInfo.subscriptionCreatedAt\n      if (profileInfo.rawProfile) {\n        updates.ccOnboardingFlags = profileInfo.ccOnboardingFlags\n        updates.claudeCodeTrialEndsAt = profileInfo.claudeCodeTrialEndsAt\n        updates.claudeCodeTrialDurationDays = profileInfo.claudeCodeTrialDurationDays\n        updates.seatTier = profileInfo.seatTier\n      }\n      if (Object.keys(updates).length > 0) {\n        saveGlobalConfig(current => ({\n          ...current,\n          oauthAccount: current.oauthAccount ? { ...current.oauthAccount, ...updates } : current.oauthAccount,\n        }))\n      }\n    }\n\n    // ant Bq_ return: `clientId: K`. Devolverlo hace que el siguiente\n    // refresco lo reenvie y el token siga ligado a su cliente OAuth; 2.1.275\n    // (`dte`) devuelve `clientId:s` igual.\n    return {\n      accessToken,\n      refreshToken: newRefreshToken,\n      expiresAt,\n      scopes,\n      clientId,\n      subscriptionType: profileInfo?.subscriptionType ?? existing?.subscriptionType ?? null,\n      rateLimitTier: profileInfo?.rateLimitTier ?? existing?.rateLimitTier ?? null,\n      profile: profileInfo?.rawProfile,\n      tokenAccount: data.account\n        ? { uuid: data.account.uuid, emailAddress: data.account.email_address, organizationUuid: data.organization?.uuid }\n        : undefined,\n    }\n  } catch (error) {\n    logEvent('tengu_oauth_token_refresh_failure', {\n      error: (error as Error).message as AM,\n      ...extractOAuthErrorFields(error),\n    })\n    if (isInvalidGrantError(error)) {\n      markRefreshTokenDead(refreshToken)\n      logEvent('tengu_oauth_refresh_token_marked_dead_invalid_grant', {})\n      featureBad('oauth_token_refresh', 'oauth_refresh_invalid_grant') // ant Bq_ xH (2.1.275: dte m)\n    } else {\n      featureSad('oauth_token_refresh', 'oauth_refresh_request_failed') // ant Bq_ G6 (2.1.275: dte f)\n    }\n    throw error\n  }\n}\n\nexport async function fetchAndStoreUserRoles(accessToken: string): Promise<void> {\n  const response = await axios.get(getOauthConfig().ROLES_URL, {\n    headers: { Authorization: `Bearer ${accessToken}` },\n  })\n\n  if (response.status !== 200) {\n    logEvent('tengu_oauth_fetch_roles_failed', { reason: 'http_error', status: String(response.status) })\n    featureBad('oauth_fetch_roles', 'oauth_roles_http_error') // ant cg6 xH (2.1.275: pSt m)\n    throw new Error(`Failed to fetch user roles: ${response.statusText}`)\n  }\n  const data = response.data as UserRolesResponse\n  const config = getGlobalConfig()\n\n  if (!config.oauthAccount) {\n    logEvent('tengu_oauth_fetch_roles_failed', { reason: 'no_account' })\n    featureBad('oauth_fetch_roles', 'oauth_roles_no_account') // ant cg6 xH (2.1.275: pSt m)\n    throw new Error('OAuth account information not found in config')\n  }\n\n  saveGlobalConfig(current => ({\n    ...current,\n    oauthAccount: current.oauthAccount\n      ? {\n          ...current.oauthAccount,\n          organizationRole: data.organization_role,\n          workspaceRole: data.workspace_role,\n          organizationName: data.organization_name,\n        }\n      : current.oauthAccount,\n  }))\n\n  logEvent('tengu_oauth_roles_stored', { org_role: data.organization_role as AM })\n  featureOk('oauth_fetch_roles') // ant cg6 yH (2.1.275: pSt _)\n}\n\nexport async function createAndStoreApiKey(accessToken: string): Promise<string | null> {\n  try {\n    const response = await axios.post(getOauthConfig().API_KEY_URL, null, {\n      headers: { Authorization: `Bearer ${accessToken}` },\n    })\n\n    const apiKey = response.data?.raw_key\n    if (apiKey) {\n      await saveApiKey(apiKey)\n      logEvent('tengu_oauth_api_key', { status: 'success' as AM, statusCode: response.status })\n      featureOk('oauth_create_api_key') // ant lg6 yH (2.1.275: Fnr _)\n      return apiKey\n    }\n    logEvent('tengu_oauth_create_api_key_failed', { reason: 'empty_response' })\n    featureBad('oauth_create_api_key', 'oauth_api_key_empty_response') // ant lg6 xH (2.1.275: Fnr m)\n    return null\n  } catch (error) {\n    logEvent('tengu_oauth_api_key', {\n      status: 'failure' as AM,\n      error: (error instanceof Error ? error.message : String(error)) as AM,\n    })\n    logEvent('tengu_oauth_create_api_key_failed', { reason: 'request_failed' })\n    featureBad('oauth_create_api_key', 'oauth_api_key_request_failed') // ant lg6 xH (2.1.275: Fnr m)\n    throw error\n  }\n}\n\nexport function isOAuthTokenExpired(expiresAt: number | null): boolean {\n  if (expiresAt === null) return false\n  const bufferTime = 5 * 60 * 1000\n  const now = Date.now()\n  return now + bufferTime >= expiresAt\n}\n\nexport async function fetchProfileInfo(accessToken: string): Promise<{\n  subscriptionType: SubscriptionType | null\n  displayName?: string\n  rateLimitTier: RateLimitTier | null\n  hasExtraUsageEnabled: boolean | null\n  billingType: BillingType | null\n  accountCreatedAt?: string\n  subscriptionCreatedAt?: string\n  seatTier: string | null\n  ccOnboardingFlags: Record<string, unknown>\n  claudeCodeTrialEndsAt: string | null\n  claudeCodeTrialDurationDays: number | null\n  rawProfile?: OAuthProfileResponse\n}> {\n  const profile = await getOauthProfileFromOauthToken(accessToken)\n  const orgType = profile?.organization?.organization_type\n\n  let subscriptionType: SubscriptionType | null = null\n  switch (orgType) {\n    case 'claude_max':\n      subscriptionType = 'max'\n      break\n    case 'claude_pro':\n      subscriptionType = 'pro'\n      break\n    case 'claude_enterprise':\n      subscriptionType = 'enterprise'\n      break\n    case 'claude_team':\n      subscriptionType = 'team'\n      break\n    default:\n      subscriptionType = null\n  }\n\n  const result = {\n    subscriptionType,\n    rateLimitTier: profile?.organization?.rate_limit_tier ?? null,\n    hasExtraUsageEnabled: profile?.organization?.has_extra_usage_enabled ?? null,\n    billingType: profile?.organization?.billing_type ?? null,\n    seatTier: profile?.organization?.seat_tier ?? null,\n    ccOnboardingFlags: profile?.organization?.cc_onboarding_flags ?? {},\n    claudeCodeTrialEndsAt: profile?.organization?.claude_code_trial_ends_at ?? null,\n    claudeCodeTrialDurationDays: profile?.organization?.claude_code_trial_duration_days ?? null,\n  } as {\n    subscriptionType: SubscriptionType | null\n    displayName?: string\n    rateLimitTier: RateLimitTier | null\n    hasExtraUsageEnabled: boolean | null\n    billingType: BillingType | null\n    accountCreatedAt?: string\n    subscriptionCreatedAt?: string\n    seatTier: string | null\n    ccOnboardingFlags: Record<string, unknown>\n    claudeCodeTrialEndsAt: string | null\n    claudeCodeTrialDurationDays: number | null\n  }\n\n  if (profile?.account?.display_name) result.displayName = profile.account.display_name\n  if (profile?.account?.created_at) result.accountCreatedAt = profile.account.created_at\n  if (profile?.organization?.subscription_created_at) result.subscriptionCreatedAt = profile.organization.subscription_created_at\n\n  logEvent('tengu_oauth_profile_fetch_success', {})\n\n  return { ...result, rawProfile: profile }\n}\n\n/**\n * UUID de la organización para la sesión actual. Búsqueda en 3 niveles:\n * variable de entorno override → `oauthAccount.organizationUuid` guardado\n * → fetch en vivo del perfil (requiere scope `user:profile`).\n */\nexport async function getOrganizationUUID(): Promise<string | null> {\n  const envOrgUUID = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')\n  if (envOrgUUID) return envOrgUUID\n\n  const globalConfig = getGlobalConfig()\n  const orgUUID = globalConfig.oauthAccount?.organizationUuid\n  if (orgUUID) return orgUUID\n\n  const accessToken = getClaudeAIOAuthTokens()?.accessToken\n  if (accessToken === undefined || !hasProfileScope()) {\n    return null\n  }\n  const profile = await getOauthProfileFromOauthToken(accessToken)\n  const profileOrgUUID = profile?.organization?.uuid\n  if (!profileOrgUUID) return null\n  return profileOrgUUID\n}\n\n/** Puebla la info de cuenta OAuth si no está ya cacheada en config. */\nexport async function populateOAuthAccountInfoIfNeeded(): Promise<boolean> {\n  const envAccountUuid = readEnv('CLAUDE_CODE_ACCOUNT_UUID')\n  const envUserEmail = readEnv('CLAUDE_CODE_USER_EMAIL')\n  const envOrganizationUuid = readEnv('CLAUDE_CODE_ORGANIZATION_UUID')\n  const hasEnvVars = Boolean(envAccountUuid && envUserEmail && envOrganizationUuid)\n  if (envAccountUuid && envUserEmail && envOrganizationUuid) {\n    if (!getGlobalConfig().oauthAccount) {\n      storeOAuthAccountInfo({\n        accountUuid: envAccountUuid,\n        emailAddress: envUserEmail,\n        organizationUuid: envOrganizationUuid,\n      })\n    }\n  }\n\n  await checkAndRefreshOAuthTokenIfNeeded()\n\n  const config = getGlobalConfig()\n  if (\n    (config.oauthAccount &&\n      config.oauthAccount.billingType !== undefined &&\n      config.oauthAccount.accountCreatedAt !== undefined &&\n      config.oauthAccount.subscriptionCreatedAt !== undefined &&\n      config.oauthAccount.ccOnboardingFlags !== undefined) ||\n    !isClaudeAISubscriber() ||\n    !hasProfileScope()\n  ) {\n    return false\n  }\n\n  const tokens = getClaudeAIOAuthTokens()\n  if (tokens?.accessToken) {\n    const profile = await getOauthProfileFromOauthToken(tokens.accessToken)\n    if (profile) {\n      if (hasEnvVars) {\n        logForDebugging('OAuth profile fetch succeeded, overriding env var account info', { level: 'info' })\n      }\n      storeOAuthAccountInfo({\n        accountUuid: profile.account.uuid,\n        emailAddress: profile.account.email,\n        organizationUuid: profile.organization.uuid,\n        displayName: profile.account.display_name || undefined,\n        hasExtraUsageEnabled: profile.organization.has_extra_usage_enabled ?? false,\n        billingType: profile.organization.billing_type ?? undefined,\n        accountCreatedAt: profile.account.created_at,\n        subscriptionCreatedAt: profile.organization.subscription_created_at ?? undefined,\n        ccOnboardingFlags: profile.organization?.cc_onboarding_flags ?? {},\n        claudeCodeTrialEndsAt: profile.organization?.claude_code_trial_ends_at ?? null,\n        claudeCodeTrialDurationDays: profile.organization?.claude_code_trial_duration_days ?? null,\n        seatTier: profile.organization?.seat_tier ?? null,\n      })\n      return true\n    }\n  }\n  return false\n}\n\nexport function storeOAuthAccountInfo({\n  accountUuid,\n  emailAddress,\n  organizationUuid,\n  displayName,\n  hasExtraUsageEnabled,\n  billingType,\n  accountCreatedAt,\n  subscriptionCreatedAt,\n  ccOnboardingFlags,\n  claudeCodeTrialEndsAt,\n  claudeCodeTrialDurationDays,\n  seatTier,\n}: {\n  accountUuid: string\n  emailAddress: string\n  organizationUuid: string | undefined\n  displayName?: string\n  hasExtraUsageEnabled?: boolean\n  billingType?: BillingType\n  accountCreatedAt?: string\n  subscriptionCreatedAt?: string\n  ccOnboardingFlags?: Record<string, unknown>\n  claudeCodeTrialEndsAt?: string | null\n  claudeCodeTrialDurationDays?: number | null\n  seatTier?: string | null\n}): void {\n  const accountInfo: AccountInfo = {\n    accountUuid,\n    emailAddress,\n    organizationUuid,\n    hasExtraUsageEnabled,\n    billingType,\n    accountCreatedAt,\n    subscriptionCreatedAt,\n    ccOnboardingFlags,\n    claudeCodeTrialEndsAt,\n    claudeCodeTrialDurationDays,\n    seatTier,\n  }\n  if (displayName) accountInfo.displayName = displayName\n\n  saveGlobalConfig(current => {\n    if (\n      current.oauthAccount?.accountUuid === accountInfo.accountUuid &&\n      current.oauthAccount?.emailAddress === accountInfo.emailAddress &&\n      current.oauthAccount?.organizationUuid === accountInfo.organizationUuid &&\n      current.oauthAccount?.displayName === accountInfo.displayName &&\n      current.oauthAccount?.hasExtraUsageEnabled === accountInfo.hasExtraUsageEnabled &&\n      current.oauthAccount?.billingType === accountInfo.billingType &&\n      current.oauthAccount?.accountCreatedAt === accountInfo.accountCreatedAt &&\n      current.oauthAccount?.subscriptionCreatedAt === accountInfo.subscriptionCreatedAt &&\n      current.oauthAccount?.claudeCodeTrialEndsAt === accountInfo.claudeCodeTrialEndsAt &&\n      current.oauthAccount?.claudeCodeTrialDurationDays === accountInfo.claudeCodeTrialDurationDays &&\n      current.oauthAccount?.seatTier === accountInfo.seatTier &&\n      JSON.stringify(current.oauthAccount?.ccOnboardingFlags) === JSON.stringify(accountInfo.ccOnboardingFlags)\n    ) {\n      return current\n    }\n    return { ...current, oauthAccount: accountInfo }\n  })\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts:52:26)
+(fail) refreshOAuthToken — clientId + expiresIn signature pins > request body includes expires_in ONLY when caller provides it [0.46ms]
+
+ 13 pass
+ 1 fail
+ 15 expect() calls
+Ran 14 tests across 1 file. [176.00ms]
+-- ROJO src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts:
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) isBgAgentPanelEnabled — ant F6H alignment > true in an interactive session (panel is the local_agent surface) [1285.41ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) isBgAgentPanelEnabled — ant F6H alignment > false in a non-interactive (headless) session — ant !nonInteractive guard [0.75ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) shouldHideTasksFooter — panel-agent exclusion > panel-agent is excluded from the footer when the panel is active [0.25ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+(fail) shouldHideTasksFooter — panel-agent exclusion > teammate task keeps the footer logic engaged (not a panel agent) [0.15ms]
+
+ 0 pass
+ 4 fail
+Ran 4 tests across 1 file. [1422.00ms]
+-- ROJO src/packages/storage/src/__tests__/extractGlobBaseDirectory.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/storage/src/__tests__/extractGlobBaseDirectory.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'normalizePatternsToPath' not found in module '/home/user/thyrox/src/packages/permission/src/filesystem.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [297.00ms]
+-- ROJO src/packages/swarm/__tests__/teammateInit.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/swarm/__tests__/teammateInit.test.ts:
+ENOENT: no such file or directory, rename '/dev/shm/tminit-uEyKxQ/teams/eq/config.json.tmp.5004.1790227283969.da85075f-cbf5-4348-b26a-d62ba56473c8' -> '/dev/shm/tminit-uEyKxQ/teams/eq/config.json'
+    path: "/dev/shm/tminit-uEyKxQ/teams/eq/config.json.tmp.5004.1790227283969.da85075f-cbf5-4348-b26a-d62ba56473c8",
+    dest: "/dev/shm/tminit-uEyKxQ/teams/eq/config.json",
+ syscall: "rename",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) el manejador de parada > 9. si el líder no está en el roster, cae al nombre reservado [2.22ms]
+
+# Unhandled error between tests
+-------------------------------
+262 |     })
+263 |     const manejador = hooks[0]!.manejador as (m: unknown[], s: unknown) => Promise<boolean>
+264 |     await manejador([], undefined)
+265 |     // Sin el respaldo, el aviso iría a un buzón llamado `undefined` y el líder
+266 |     // no se enteraría nunca de que su compañero terminó.
+267 |     expect(JSON.parse(readFileSync(buzon('team-lead'), 'utf-8')).length).toBe(1)
+                            ^
+ENOENT: no such file or directory, open '/dev/shm/tminit-OwiTcU/teams/eq/inboxes/team-lead.json'
+    path: "/dev/shm/tminit-OwiTcU/teams/eq/inboxes/team-lead.json",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/__tests__/teammateInit.test.ts:267:23)
+-------------------------------
+
+ENOENT: no such file or directory, rename '/dev/shm/tminit-Yvfz4a/teams/eq/config.json.tmp.5004.1790227283971.43f2a326-6620-4534-aa73-84cad0e63fa0' -> '/dev/shm/tminit-Yvfz4a/teams/eq/config.json'
+    path: "/dev/shm/tminit-Yvfz4a/teams/eq/config.json.tmp.5004.1790227283971.43f2a326-6620-4534-aa73-84cad0e63fa0",
+    dest: "/dev/shm/tminit-Yvfz4a/teams/eq/config.json",
+ syscall: "rename",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) el manejador de parada > 10. marca al compañero como ocioso en el archivo del equipo [2.45ms]
+ENOENT: no such file or directory, rename '/dev/shm/tminit-OwiTcU/teams/eq/config.json.tmp.5004.1790227283974.9b2676e7-8314-4aba-9a34-12441d8920fa' -> '/dev/shm/tminit-OwiTcU/teams/eq/config.json'
+    path: "/dev/shm/tminit-OwiTcU/teams/eq/config.json.tmp.5004.1790227283974.9b2676e7-8314-4aba-9a34-12441d8920fa",
+    dest: "/dev/shm/tminit-OwiTcU/teams/eq/config.json",
+ syscall: "rename",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) el manejador de parada > 11. el manejador NO bloquea la parada [0.84ms]
+
+# Unhandled error between tests
+-------------------------------
+196 |  */
+197 | type HostBinding = (...args: any[]) => any
+198 | 
+199 | function missingBinding(name: string): HostBinding {
+200 |   return () => {
+201 |     throw new Error(
+                    ^
+error: Swarm runtime binding "getErrnoCode" is unavailable. installSwarmAppRuntime() must run before using @thyrox/swarm runtime helpers.
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/adapters/appRuntime.ts:201:15)
+      at readTeamFileAsync (/home/user/thyrox/src/packages/swarm/src/core/teamHelpers.ts:219:9)
+      at async updateTeamFileAsync (/home/user/thyrox/src/packages/swarm/src/core/teamHelpers.ts:273:27)
+      at async setMemberActive (/home/user/thyrox/src/packages/swarm/src/core/teamHelpers.ts:576:9)
+-------------------------------
+
+
+ 8 pass
+ 3 fail
+ 2 errors
+ 20 expect() calls
+Ran 11 tests across 1 file. [1358.00ms]
+-- ROJO src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+      at requestImportModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1.63s]
+-- ROJO src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'createPermissionRequestMessage' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1393.00ms]
+-- ROJO src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'createAttachmentMessage' not found in module '/home/user/thyrox/src/packages/agent/attachments.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1428.00ms]
+-- ROJO src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1460.00ms]
+-- ROJO tests/integration/agent-loop.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/agent-loop.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) agent message queue e2e > enqueue + getCommandQueue round-trip [2749.08ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [2.89s]
+-- ROJO tests/integration/plugin-load.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/plugin-load.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) plugin loading e2e (guards against setter-shim regressions) > McpServerConfigSchema is a callable function (catches null-literal bug) [2454.77ms]
+
+ 5 pass
+ 1 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [2.65s]
+-- ROJO tests/integration/slash-commands.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/slash-commands.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) slash command popup e2e > getCommands returns at least built-in commands [2558.94ms]
+3169 |   // getInlinePlugins() is a synchronous state read with no dependency on
+3170 |   // marketplace loading, so these two sources can be fetched concurrently.
+3171 |   const inlinePlugins = getInlinePlugins()
+3172 |   const [marketplaceResult, sessionResult] = await Promise.all([
+3173 |     marketplaceLoader(),
+3174 |     inlinePlugins.length > 0
+           ^
+TypeError: undefined is not an object (evaluating 'inlinePlugins.length')
+      at assemblePluginLoadResult (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3174:5)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3149:12)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/loadPluginCommands.ts:424:37)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/tests/integration/slash-commands.test.ts:51:24)
+(fail) slash command popup e2e > getPluginCommands + getPluginSkills aggregate cleanly [14.28ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [2.73s]
+-- ROJO tests/smoke/bg-cycle-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/bg-cycle-smoke.test.ts:
+74 | describe('smoke:bg cycle (detached)', () => {
+75 |   let short: string | undefined
+76 | 
+77 |   test('--bg-detached spawns child + writes meta.json', async () => {
+78 |     const r = await runCli(['--bg-detached', 'echo smoke'], 25_000)
+79 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:79:24)
+(fail) smoke:bg cycle (detached) > --bg-detached spawns child + writes meta.json [37.32ms]
+100 |     expect(meta.status).toBe('running')
+101 |     expect(typeof meta.pid).toBe('number')
+102 |   }, 30_000)
+103 | 
+104 |   test('ps surfaces the new short', async () => {
+105 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:105:19)
+(fail) smoke:bg cycle (detached) > ps surfaces the new short [0.19ms]
+107 |     expect(r.exitCode).toBe(0)
+108 |     expect(r.stdout).toContain(short!)
+109 |   }, 20_000)
+110 | 
+111 |   test('rm removes the job dir', async () => {
+112 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:112:19)
+(fail) smoke:bg cycle (detached) > rm removes the job dir [0.18ms]
+141 | describe('smoke:bg argParse', () => {
+142 |   test('isolated home has been used (no leakage to ~/.claude/jobs)', () => {
+143 |     // The actual ~/.claude/jobs/ should not contain our smoke shorts.
+144 |     // We can't assert ABSENCE strictly (user may have other jobs) but
+145 |     // we can confirm our isolated home was where the cycle ran.
+146 |     expect(existsSync(join(ISOLATED_HOME, 'jobs'))).toBe(true)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:146:53)
+(fail) smoke:bg argParse > isolated home has been used (no leakage to ~/.claude/jobs) [0.07ms]
+
+ 1 pass
+ 4 fail
+ 4 expect() calls
+Ran 5 tests across 1 file. [165.00ms]
+-- ROJO tests/smoke/headless-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/headless-smoke.test.ts:
+61 | }
+62 | 
+63 | describe('smoke:headless boot', () => {
+64 |   test('--version prints something and exits 0', async () => {
+65 |     const r = await runCli(['--version'], 30_000)
+66 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:66:24)
+(fail) smoke:headless boot > --version prints something and exits 0 [64.65ms]
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+70 |   }, 35_000)
+71 | 
+72 |   test('--help exits 0 and prints usage', async () => {
+73 |     const r = await runCli(['--help'], 30_000)
+74 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:74:24)
+(fail) smoke:headless boot > --help exits 0 and prints usage [19.24ms]
+
+ 1 pass
+ 2 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [250.00ms]
+-- ROJO tests/smoke/live-fire-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/live-fire-smoke.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) (unnamed) [3824.08ms]
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [3.99s]
+-- ROJO tests/smoke/plugin-hooks-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/plugin-hooks-smoke.test.ts:
+23 |       'UserPromptSubmit',
+24 |       'PreCompact',
+25 |       'Notification',
+26 |     ]
+27 |     for (const e of queried) {
+28 |       expect(r.dispatch[e]).toBeDefined()
+                                 ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:28:29)
+(fail) smoke:plugin dispatch path > dispatch probe ran for every queried event [4358.23ms]
+ 99 |   test('no dispatch query throws (every event handler reachable)', async () => {
+100 |     const r = await probeRuntime()
+101 |     const threwEvents = Object.entries(r.dispatch)
+102 |       .filter(([_, v]) => v.matched === -1)
+103 |       .map(([k]) => k)
+104 |     expect(threwEvents).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "Stop",
++   "SubagentStop",
++   "SessionStart",
++   "PreToolUse",
++   "UserPromptSubmit",
++   "PreCompact",
++   "Notification",
++ ]
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:104:25)
+(fail) smoke:plugin dispatch path > no dispatch query throws (every event handler reachable) [0.54ms]
+
+ 3 pass
+ 2 fail
+ 2 expect() calls
+Ran 5 tests across 1 file. [4.59s]
+-- ROJO tests/smoke/repl-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/repl-smoke.test.ts:
+13 | import { probeRuntime } from './lib/runtime-probe.js'
+14 | 
+15 | describe('smoke:repl boot path', () => {
+16 |   test('bootstrap completes without errors', async () => {
+17 |     const r = await probeRuntime()
+18 |     expect(r.errors).toEqual([])
+                          ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "bootstrap import failed: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/repl-smoke.test.ts:18:22)
+(fail) smoke:repl boot path > bootstrap completes without errors [3797.09ms]
+
+ 4 pass
+ 1 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [4.00s]
+-- ROJO tests/smoke/resume-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/resume-smoke.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) smoke:resume session persistence > bootstrap loads storage subsystem [3673.60ms]
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) smoke:resume session persistence > write+flush+read roundtrip via storage API [0.66ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [3.85s]
+-- ROJO tests/smoke/swarm-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/swarm-smoke.test.ts:
+SyntaxError: Export named 'validatePath' not found in module '/home/user/thyrox/src/packages/permission/src/pathValidation.ts'.
+(fail) smoke:swarm boot > agentHostBindings teammate wires resolve to functions [3402.39ms]
+64 |     ]
+65 |     for (const name of requiredExports) {
+66 |       expect(
+67 |         typeof (mod as Record<string, unknown>)[name],
+68 |         `swarm.${name} should be a function`,
+69 |       ).toBe('function')
+             ^
+error: swarm.markMessagesAsReadByPredicate should be a function
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/swarm-smoke.test.ts:69:9)
+(fail) smoke:swarm boot > mailbox module loads without error [9.92ms]
+
+ 2 pass
+ 2 fail
+ 14 expect() calls
+Ran 4 tests across 1 file. [3.57s]
+-- ROJO tests/unit/state/replSelectors.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/state/replSelectors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'createAttachmentMessage' not found in module '/home/user/thyrox/src/packages/agent/attachments.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [2.65s]
+-- ROJO tests/unit/utils/glob.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/glob.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'normalizePatternsToPath' not found in module '/home/user/thyrox/src/packages/permission/src/filesystem.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [665.00ms]
+-- ROJO tests/unit/utils/messages.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/messages.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'normalizeMessagesForAPI' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [918.00ms]
+-- ROJO tests/verify/removeUnusedImports.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+(fail) removeUnusedImports > control del arnés: la fixture resuelve sus módulos [6277.02ms]
+  ^ this test timed out after 5000ms.
+
+ 11 pass
+ 1 fail
+ 15 expect() calls
+Ran 12 tests across 1 file. [32.82s]
+-- ROJO tests/verify/tscFixCensus.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+(fail) tscFixCensus > control del arnés: la fixture resuelve sus módulos [6420.88ms]
+  ^ this test timed out after 5000ms.
+
+ 10 pass
+ 1 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [29.55s]
+pass=14761 fail=42 errores=12 caidas=0 archivos=969 en_rojo=26
+__BG_EXIT__=1

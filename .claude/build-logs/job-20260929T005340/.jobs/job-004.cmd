@@ -1,0 +1,1 @@
+bash -c 'cd src/packages/provider && bunx tsc --noEmit -p tsconfig.build.json'

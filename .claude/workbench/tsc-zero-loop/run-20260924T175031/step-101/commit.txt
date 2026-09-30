@@ -1,0 +1,12 @@
+Remove four dead type clusters and two hand fixes
+
+Step 101 ran the new dead-declarations proposer with the source
+declared, plus two hand candidates for the last live instances of
+step-099 patterns: 1527 -> 1516 in 3 tsc passes.
+
+The four dead-declarations kept remove types only (the transpiled
+output is identical). query.ts reads agentDefinitions with the
+canonical ToolUseContext type; cli-arguments.test.ts reads options with
+commander's getOptionValue instead of opts(), whose type is {}.
+Seven more clusters stopped one level short and were rejected; the
+proposer now measures liveness against the source's own dead cluster.

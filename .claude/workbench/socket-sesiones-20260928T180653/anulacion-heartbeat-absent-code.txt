@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+56 | })
+57 | 
+58 | test('isAbsentParentError (fBe): fallo con código de telemetría AbsentParent', () => {
+59 |   expect(isAbsentParentError({ code: 'Failed', telemetryCode: 'AbsentParent' })).toBe(true)
+60 |   expect(isAbsentParentError({ code: 'Failed', telemetryCode: 'Other' })).toBe(false)
+61 |   expect(isAbsentParentError({ code: 'NotFound', telemetryCode: 'AbsentParent' })).toBe(false)
+                                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:61:84)
+(fail) isAbsentParentError (fBe): fallo con código de telemetría AbsentParent [0.38ms]
+
+ 10 pass
+ 1 fail
+ 41 expect() calls
+Ran 11 tests across 1 file. [122.00ms]

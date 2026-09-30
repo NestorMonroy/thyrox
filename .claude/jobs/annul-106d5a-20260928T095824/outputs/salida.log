@@ -1,0 +1,77 @@
+== 1: trae sin su vida por defecto
+   (src/accounts/oauth/flows/importedTokenFlows.ts)
+(fail) imported tokens > trae fills the SOLO identity with its defaults and fourteen days of validity [0.92ms]
+ 9 pass
+ 1 fail
+== 2: la región de IA no hereda la región
+   (src/accounts/oauth/flows/importedTokenFlows.ts)
+(fail) imported tokens > trae fills the SOLO identity with its defaults and fourteen days of validity [0.82ms]
+ 9 pass
+ 1 fail
+== 3: devin acepta un token corto
+   (src/accounts/oauth/flows/importedTokenFlows.ts)
+(fail) imported tokens > devin and zed validate the pasted token before taking it [0.54ms]
+ 9 pass
+ 1 fail
+== 4: un token en blanco no está vacío
+   (src/accounts/oauth/flows/importedTokenFlows.ts)
+(fail) imported tokens > devin and zed validate the pasted token before taking it [0.53ms]
+ 9 pass
+ 1 fail
+== 5: qoder sin secreto está activo
+   (src/accounts/oauth/flows/qoderFlow.ts)
+(fail) qoder > it exists only with the five variables declared, and says which ones [0.83ms]
+ 9 pass
+ 1 fail
+== 6: qoder sin autenticación básica
+   (src/accounts/oauth/flows/qoderFlow.ts)
+(fail) qoder > phone login URL; the exchange authenticates the client both ways; the user comes from its success wrapper [1.41ms]
+ 9 pass
+ 1 fail
+== 7: el usuario de qoder sin mirar su envoltura
+   (src/accounts/oauth/flows/qoderFlow.ts)
+(fail) qoder > phone login URL; the exchange authenticates the client both ways; the user comes from its success wrapper [2.23ms]
+ 9 pass
+ 1 fail
+== 8: demasiadas peticiones sin decirlo
+   (src/accounts/oauth/flows/kilocodeFlow.ts)
+(fail) kilo code > too many pending requests is said plainly [0.39ms]
+ 9 pass
+ 1 fail
+== 9: el rechazo de kilo es un fallo genérico
+   (src/accounts/oauth/flows/kilocodeFlow.ts)
+(fail) kilo code > the poll status says pending, denied, expired or granted [1.19ms]
+ 9 pass
+ 1 fail
+== 10: cualquier token es aprobación
+   (src/accounts/oauth/flows/kilocodeFlow.ts)
+(fail) kilo code > the poll status says pending, denied, expired or granted [0.82ms]
+ 9 pass
+ 1 fail
+== 11: el código de cline sin decodificar la URL
+   (src/accounts/oauth/flows/clineFlow.ts)
+ 10 pass
+ 0 fail
+== 12: el base64 sin relleno
+   (src/accounts/oauth/flows/clineFlow.ts)
+ 10 pass
+ 0 fail
+== 13: sin nombre, sin etiqueta
+   (src/accounts/oauth/flows/clineFlow.ts)
+(fail) cline > a code that is not embedded tokens is exchanged; without names the email is the label [0.47ms]
+ 9 pass
+ 1 fail
+== 14: la caducidad de cline siempre una hora
+   (src/accounts/oauth/flows/clineFlow.ts)
+(fail) cline > the tokens come inside the code, unpadded and URL-encoded [0.86ms]
+(fail) cline > a code that is not embedded tokens is exchanged; without names the email is the label [0.41ms]
+ 8 pass
+ 2 fail
+== restaurado
+?? src/packages/provider/src/accounts/oauth/flows/clineFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/importedTokenFlows.ts
+?? src/packages/provider/src/accounts/oauth/flows/kilocodeFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/qoderFlow.ts
+ 10 pass
+ 0 fail
+__BG_EXIT__=0

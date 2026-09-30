@@ -1,0 +1,24 @@
+// La build se deriva, no se nombra: el literal `2.1.281` quedó atrás al
+// extraer 2.1.282 y el test fallaba sin que `symbol` hubiera cambiado. El
+// chunk elegido existe en la última build y NO en la anterior, así que sólo
+// resuelve si `symbol` lee la última.
+const LATEST = corpusVersion(CORPUS_ROOT)
+const builds = existsSync(CORPUS_ROOT)
+  ? readdirSync(CORPUS_ROOT).filter(v => existsSync(join(CORPUS_ROOT, v, 'MANIFEST.tsv')))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+  : []
+const PREVIOUS = LATEST ? builds[builds.indexOf(LATEST) - 1] : undefined
+describe.skipIf(!LATEST || !PREVIOUS)('symbol sin --root', () => {
+  test('resuelve contra la última build del corpus', () => {
+    const latestRoot = join(CORPUS_ROOT, LATEST!, 'bunfs-root')
+    const file = readdirSync(latestRoot).find(f => /^chunk-.*\.js$/.test(f)
+      && !existsSync(join(CORPUS_ROOT, PREVIOUS!, 'bunfs-root', f))
+      && /^function ([\w$]+)\(/m.test(readFileSync(join(latestRoot, f), 'utf8')))!
+    const name = /function ([\w$]+)\(/.exec(readFileSync(join(latestRoot, file), 'utf8'))![1]!
+    const result = Bun.spawnSync([process.execPath, join(import.meta.dir, '../bin/binary.ts'), 'symbol', file, name], {
+      cwd: join(import.meta.dir, '../../../..'),
+    })
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout.toString()).toContain(`function ${name}(`)
+  })
+})

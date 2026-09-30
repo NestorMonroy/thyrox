@@ -1,0 +1,4 @@
+(fail) resolveCredential — la cadena jc()/Qf() de 2.1.282 con nombres THYROX > THYROX_CODE_OAUTH_TOKEN es OAuth: Bearer más la beta oauth [1.27ms]
+(fail) AnthropicHttpProvider con la cadena de credenciales > OAuth por entorno: Bearer y las dos betas juntas [1.26ms]
+ 13 pass
+ 2 fail

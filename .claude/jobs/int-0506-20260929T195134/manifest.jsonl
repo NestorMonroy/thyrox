@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/session/test-headless-pool-frozen-launcher.sh tests/session/test-headless-pool.sh tests/session/test-headless-pool-worktree.sh; do bash \"$t\" 2>&1 | tail -1 | sed \"s|^|$t :: |\"; done", "started_at": "2026-09-29T19:51:34+00:00"}

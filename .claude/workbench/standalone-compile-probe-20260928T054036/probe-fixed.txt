@@ -1,0 +1,5 @@
+52 [
+  [ "/$bunfs/root/thyrox", 28375497 ], [ "/$bunfs/root/image-processor-fyx7evpj.node",
+    1464760
+  ], [ "/$bunfs/root/stdin-7dk5ecrb.node", 413056 ]
+] null

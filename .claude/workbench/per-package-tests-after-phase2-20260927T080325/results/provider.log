@@ -1,0 +1,84 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/src/__tests__/buildRequestTools.test.ts:
+87 |     recordUnsupportedCapabilities('claude-sonnet-4-5', ['structured_outputs'])
+88 |     const schemas = await buildRequestTools([] as never, {
+89 |       ...(options as object),
+90 |       extraToolSchemas: [{ name: 'Salida', description: 's', input_schema: { type: 'object' }, strict: true }],
+91 |     } as never)
+92 |     expect(schemas).toEqual([{ name: 'Salida', description: 's', input_schema: { type: 'object' } }] as never)
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -7,3 +7,3 @@
+      "name": "Salida",
++     "strict": true,
+    },
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/buildRequestTools.test.ts:92:21)
+(fail) buildRequestTools > un despliegue que rechazó structured_outputs recibe los esquemas sin strict [0.36ms]
+
+src/packages/provider/src/__tests__/withRetryFoundryCapabilities.test.ts:
+25 |   }
+26 |   resetFoundryCapabilities()
+27 | })
+28 | 
+29 | const rejection = (message: string) =>
+30 |   new APIError(400, { error: { type: 'invalid_request_error', message } }, message, new Headers())
+           ^
+RetryError: 400 {"error":{"type":"invalid_request_error","message":"tool_search not supported in your workspace"}}
+ retryContext: {
+  model: "claude-sonnet-4-5",
+  thinkingConfig: [Object ...],
+  fastMode: undefined,
+},
+
+      at rejection (/home/user/thyrox/src/packages/provider/src/__tests__/withRetryFoundryCapabilities.test.ts:30:7)
+      at /home/user/thyrox/src/packages/provider/src/__tests__/withRetryFoundryCapabilities.test.ts:67:27
+      at withRetry (/home/user/thyrox/src/packages/provider/src/withRetry.ts:517:15)
+      at processTicksAndRejections (native:7:39)
+
+25 |   }
+26 |   resetFoundryCapabilities()
+27 | })
+28 | 
+29 | const rejection = (message: string) =>
+30 |   new APIError(400, { error: { type: 'invalid_request_error', message } }, message, new Headers())
+           ^
+error: 400 {"error":{"type":"invalid_request_error","message":"tool_search not supported in your workspace"}}
+     status: 400,
+    headers: Headers {},
+  requestID: null,
+ workspaceID: null,
+      error: {
+  error: [Object ...],
+},
+       type: null,
+
+      at rejection (/home/user/thyrox/src/packages/provider/src/__tests__/withRetryFoundryCapabilities.test.ts:30:7)
+      at /home/user/thyrox/src/packages/provider/src/__tests__/withRetryFoundryCapabilities.test.ts:67:27
+      at withRetry (/home/user/thyrox/src/packages/provider/src/withRetry.ts:517:15)
+      at processTicksAndRejections (native:7:39)
+(fail) withRetry ante un rechazo de capacidad de Foundry > registra la capacidad y reintenta una vez [2.04ms]
+71 |     )
+72 |     await expect(run).rejects.toBeInstanceOf(CannotRetryError)
+73 |     expect(calls).toBe(1)
+74 |     // Un 400 ya termina en CannotRetryError sin el cerrojo; lo que sólo el
+75 |     // cerrojo produce es el registro de la capacidad rechazada.
+76 |     expect(foundryDeploymentSupports('claude-sonnet-4-5', 'web_search')).toBe(false)
+                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/withRetryFoundryCapabilities.test.ts:76:74)
+(fail) withRetry ante un rechazo de capacidad de Foundry > la petición de búsqueda web no se reintenta [0.44ms]
+
+ 1813 pass
+ 3 fail
+ 3163 expect() calls
+Ran 1816 tests across 144 files. [3.66s]

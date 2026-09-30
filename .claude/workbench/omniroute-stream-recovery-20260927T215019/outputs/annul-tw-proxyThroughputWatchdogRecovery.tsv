@@ -1,0 +1,6 @@
+base	2 pass, 0 fail	—
+protected-reset	2 pass, 0 fail	—
+warmup	2 pass, 0 fail	—
+protected-blocks	2 pass, 0 fail	—
+measurable	2 pass, 0 fail	—
+window-cutoff	2 pass, 0 fail	—

@@ -1,0 +1,2 @@
+src/packages/command-runtime/src/skills/mcpSkillBuilders.ts(2,3): error TS2305: Module '"./loadSkillsDir.js"' has no exported member 'createSkillCommand'.
+src/packages/command-runtime/src/skills/mcpSkillBuilders.ts(3,3): error TS2305: Module '"./loadSkillsDir.js"' has no exported member 'parseSkillFrontmatterFields'.

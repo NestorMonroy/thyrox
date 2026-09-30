@@ -1,0 +1,25 @@
+== base
+ 33 pass
+ 0 fail
+== anulada: el puente no escribe la cabecera PROXY
+(fail) el puente acepta en el socket transparente y entrega a Bun el destino original y los bytes [5000.21ms]
+ 32 pass
+ 1 fail
+== anulada: la salida no pone SO_MARK
+(fail) la salida marcada conecta al destino anunciado con SO_MARK puesto [203.67ms]
+ 32 pass
+ 1 fail
+== anulada: stopRelay no cierra el socket a la escucha
+(fail) detenido el puente, su puerto deja de aceptar [5000.26ms]
+ 32 pass
+ 1 fail
+== anulada: la salida acepta una cabecera que no es PROXY
+(fail) la salida marcada conecta al destino anunciado con SO_MARK puesto [203.68ms]
+(fail) la salida marcada cierra una conexión cuya cabecera no es PROXY v1 [201.86ms]
+ 31 pass
+ 2 fail
+== restaurado
+ 33 pass
+ 0 fail
+ 1 file changed, 372 insertions(+), 56 deletions(-)
+binario distinto de HEAD (esperado: se recompiló con el puente)

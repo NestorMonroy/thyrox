@@ -1,0 +1,16 @@
+==== fj: 1 definicion(es) de nivel superior
+---- chunk-fmsbxtrp.js variable fj [9506,9532)
+fj="cross-session-message"
+==== Qce: 1 definicion(es) de nivel superior
+---- chunk-0grnxhq4.js function Qce [27132,27182)
+function Qce(u,d){return d.replace(h(u,!0),"<\\")}
+==== Wh: 1 definicion(es) de nivel superior
+---- chunk-yqm14hey.js function Wh [7205,7259)
+function Wh(t){return/(^|[\\/])\.\.([\\/]|$)/.test(t)}
+==== zF: 1 definicion(es) de nivel superior
+---- chunk-yqm14hey.js function zF [16157,16448)
+function zF(t){let e=t.split("/");if(e.length<5||e[0]!==""||N(e[1]??"")!=="system"||N(e[2]??"")!=="volumes"||N(e[3]??"")!=="data")return t;let n=e.slice(4);for(let r of wn){let o=r.split("/");if(n.length<o.length)continue;if(o.every((i,s)=>N(n[s]??"")===N(i)))return"/"+n.join("/")}return t}
+==== Ln: 1 definicion(es) de nivel superior
+---- chunk-yqm14hey.js function Ln [7157,7205)
+function Ln(t){return/^[\\/]{2}/.test(t)||_N(t)}
+symbol: 5 de 5 nombre(s) resueltos

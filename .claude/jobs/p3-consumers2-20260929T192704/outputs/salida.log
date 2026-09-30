@@ -1,0 +1,4 @@
+=== tests/verify/test_pool_pipeline.py
+=== tests/verify/test_tsc_cycle.py
+test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+__BG_EXIT__=0

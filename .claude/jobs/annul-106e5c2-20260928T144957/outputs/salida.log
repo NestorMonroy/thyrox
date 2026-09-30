@@ -1,0 +1,193 @@
+== 1: exp textual vale
+   (src/accounts/kimi/kimiJwt.ts)
+(fail) the expiry of a Kimi token > a token without a numeric expiry, or that is not a JWT, has none [0.28ms]
+ 24 pass
+ 1 fail
+== 2: iat sin validar
+   (src/accounts/kimi/kimiJwt.ts)
+ 25 pass
+ 0 fail
+== 3: caducado estricto
+   (src/accounts/kimi/kimiJwt.ts)
+(fail) the expiry of a Kimi token > an issue date that is not a number reads as zero, and a past expiry as expired [0.48ms]
+ 24 pass
+ 1 fail
+== 4: umbral estricto
+   (src/accounts/kimi/kimiJwt.ts)
+(fail) the expiry of a Kimi token > expires soon within the threshold, inclusive, and never without an expiry [0.31ms]
+ 24 pass
+ 1 fail
+== 5: sin caducidad caduca
+   (src/accounts/kimi/kimiJwt.ts)
+(fail) the expiry of a Kimi token > expires soon within the threshold, inclusive, and never without an expiry [0.32ms]
+ 24 pass
+ 1 fail
+== 6: umbral por defecto 0
+   (src/accounts/kimi/kimiJwt.ts)
+(fail) the expiry of a Kimi token > expires soon within the threshold, inclusive, and never without an expiry [0.29ms]
+ 24 pass
+ 1 fail
+== 7: reloj propio
+   (src/accounts/kimi/kimiJwt.ts)
+(fail) the expiry of a Kimi token > is read from the JWT against the given clock [1.03ms]
+(fail) the expiry of a Kimi token > an issue date that is not a number reads as zero, and a past expiry as expired [0.13ms]
+(fail) the expiry of a Kimi token > expires soon within the threshold, inclusive, and never without an expiry [0.13ms]
+(fail) the Kimi web health check > a token outside the window is left alone [0.23ms]
+ 21 pass
+ 4 fail
+== 8: variable ignorada
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) the Kimi web base URL > defaults to kimi.ai and is declared by THYROX_KIMI_WEB_BASE_URL without trailing slashes [0.31ms]
+(fail) exchanging a Kimi web refresh token > GETs the refresh endpoint with the token as bearer and reads the new expiry from the JWT [0.69ms]
+ 23 pass
+ 2 fail
+== 9: barras finales
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) the Kimi web base URL > defaults to kimi.ai and is declared by THYROX_KIMI_WEB_BASE_URL without trailing slashes [0.28ms]
+(fail) exchanging a Kimi web refresh token > GETs the refresh endpoint with the token as bearer and reads the new expiry from the JWT [0.85ms]
+(fail) exchanging a Kimi web refresh token > an explicit base URL wins over the environment [0.22ms]
+ 22 pass
+ 3 fail
+== 10: base explícita ignorada
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > an explicit base URL wins over the environment [0.33ms]
+ 24 pass
+ 1 fail
+== 11: token sin recortar
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > GETs the refresh endpoint with the token as bearer and reads the new expiry from the JWT [0.97ms]
+(fail) exchanging a Kimi web refresh token > an empty refresh token is refused without a request [0.25ms]
+ 23 pass
+ 2 fail
+== 12: vacío pide igual
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > an empty refresh token is refused without a request [0.38ms]
+ 24 pass
+ 1 fail
+== 13: POST
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > GETs the refresh endpoint with the token as bearer and reads the new expiry from the JWT [1.06ms]
+ 24 pass
+ 1 fail
+== 14: sin portador
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > GETs the refresh endpoint with the token as bearer and reads the new expiry from the JWT [1.36ms]
+ 24 pass
+ 1 fail
+== 15: sin origen
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > GETs the refresh endpoint with the token as bearer and reads the new expiry from the JWT [1.07ms]
+ 24 pass
+ 1 fail
+== 16: error sin sanear
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > an HTTP error carries its status and a sanitized body [0.30ms]
+ 24 pass
+ 1 fail
+== 17: HTTP sin estado
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > an HTTP error carries its status and a sanitized body [7.27ms]
+ 24 pass
+ 1 fail
+== 18: access no textual
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > a response without a string access token is invalid [0.57ms]
+ 24 pass
+ 1 fail
+== 19: vida opaca de 1 h
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > keeps the refresh token when none comes back, and an opaque token expires in fifteen minutes [0.38ms]
+ 24 pass
+ 1 fail
+== 20: refresh perdido
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > keeps the refresh token when none comes back, and an opaque token expires in fifteen minutes [0.45ms]
+ 24 pass
+ 1 fail
+== 21: red lanza
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) exchanging a Kimi web refresh token > a network failure is reported, not thrown [0.42ms]
+ 24 pass
+ 1 fail
+== 22: sin caducidad guardada
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) refreshing a stored Kimi web connection > exchanges its refresh token and persists the new tokens as active [0.77ms]
+(fail) the Kimi web health check > a token inside the window is refreshed and persisted as active [0.68ms]
+ 23 pass
+ 2 fail
+== 23: estado sin limpiar
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) refreshing a stored Kimi web connection > exchanges its refresh token and persists the new tokens as active [0.65ms]
+(fail) the Kimi web health check > a token inside the window is refreshed and persisted as active [0.67ms]
+ 23 pass
+ 2 fail
+== 24: sin respaldo en datos
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) refreshing a stored Kimi web connection > falls back to the refresh token kept in the provider data [0.31ms]
+(fail) the Kimi web health check > the access token stands in for the API key, and the provider data for the refresh token [0.23ms]
+ 23 pass
+ 2 fail
+== 25: fallo persiste
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) refreshing a stored Kimi web connection > an unknown connection or one without a refresh token is refused, and a failed exchange writes nothing [0.37ms]
+ 24 pass
+ 1 fail
+== 26: desconocida lanza
+   (src/accounts/kimi/kimiWebRefresh.ts)
+(fail) refreshing a stored Kimi web connection > an unknown connection or one without a refresh token is refused, and a failed exchange writes nothing [0.32ms]
+ 24 pass
+ 1 fail
+== 27: ventana fija
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the refresh window > spreads over [60, 240) seconds [0.25ms]
+ 24 pass
+ 1 fail
+== 28: otro proveedor pasa
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > another provider is not its business [0.24ms]
+ 24 pass
+ 1 fail
+== 29: sin minúsculas
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > the underscore spelling and any case are Kimi web too [0.26ms]
+ 24 pass
+ 1 fail
+== 30: sin refresh intenta
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > without a refresh token nothing is attempted [0.35ms]
+ 24 pass
+ 1 fail
+== 31: sin mirar caducidad
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > a token outside the window is left alone [0.29ms]
+ 24 pass
+ 1 fail
+== 32: sólo apiKey
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > the access token stands in for the API key, and the provider data for the refresh token [0.32ms]
+ 24 pass
+ 1 fail
+== 33: ventana ignorada
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > a token outside the window is left alone [0.25ms]
+ 24 pass
+ 1 fail
+== 34: éxito sin token
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > a success without an access token counts as a failure [0.25ms]
+ 24 pass
+ 1 fail
+== 35: fallo sin aviso
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > a failed refresh is warned and writes nothing [0.36ms]
+ 24 pass
+ 1 fail
+== 36: no persiste
+   (src/accounts/refresh/health/kimiWebHealthCheck.ts)
+(fail) the Kimi web health check > a token inside the window is refreshed and persisted as active [0.70ms]
+ 24 pass
+ 1 fail
+== restaurado
+ 25 pass
+ 0 fail
+__BG_EXIT__=0

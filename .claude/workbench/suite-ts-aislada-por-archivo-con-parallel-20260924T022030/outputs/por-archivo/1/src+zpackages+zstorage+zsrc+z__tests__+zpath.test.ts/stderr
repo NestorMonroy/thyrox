@@ -1,0 +1,49 @@
+
+src/packages/storage/src/__tests__/path.test.ts:
+37 |     expect(expandPath('./src', '/project')).toBe(
+38 |       `${sep}project${sep}src`,
+39 |     )
+40 |   })
+41 |   test('relative path defaults to mocked cwd', () => {
+42 |     expect(expandPath('./foo')).toBe(`${sep}test${sep}cwd${sep}foo`)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "/test/cwd/foo"
+Received: "/home/user/thyrox/foo"
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/path.test.ts:42:33)
+(fail) expandPath > relative path defaults to mocked cwd [0.24ms]
+59 |   })
+60 | })
+61 | 
+62 | describe('toRelativePath', () => {
+63 |   test('returns relative path when under cwd', () => {
+64 |     expect(toRelativePath('/test/cwd/foo/bar.ts')).toBe(`foo${sep}bar.ts`)
+                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "foo/bar.ts"
+Received: "/test/cwd/foo/bar.ts"
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/path.test.ts:64:52)
+(fail) toRelativePath > returns relative path when under cwd [0.13ms]
+65 |   })
+66 |   test('returns absolute path when outside cwd (would start with ..)', () => {
+67 |     expect(toRelativePath('/elsewhere/file.ts')).toBe('/elsewhere/file.ts')
+68 |   })
+69 |   test('returns empty string for cwd itself', () => {
+70 |     expect(toRelativePath('/test/cwd')).toBe('')
+                                             ^
+error: expect(received).toBe(expected)
+
+Expected: ""
+Received: "/test/cwd"
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/path.test.ts:70:41)
+(fail) toRelativePath > returns empty string for cwd itself [0.06ms]
+
+ 23 pass
+ 3 fail
+ 29 expect() calls
+Ran 26 tests across 1 file. [124.00ms]

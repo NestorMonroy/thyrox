@@ -1,0 +1,23 @@
+Close the pending pieces left by the zero-error pass
+
+The previous commit left the root typecheck at zero but the CLI gate
+at 3 errors per project, a load-order error and three stubs in the
+tool-search port. This closes them from the 2.1.282 binary:
+
+- The CLI gate is at 0 in both projects and its baseline goes from 78
+  to 0, so any new error fails the commit. updateTaskState constrains
+  T to the app's task union, the teammate helper uses the real swarm
+  task type, and two diff imports are type-only.
+- YOLO_CLASSIFIER_TOOL_NAME moves to a leaf module: classifierDecision
+  read it before yoloClassifier finished loading (ReferenceError,
+  reproduced by agentToolUtils.test.ts, now 10/10).
+- The Foundry capability latch is ported (TA, WQt, vh, jQt, qpe, GDn,
+  Apo): withRetry records a 400 that names a capability and retries,
+  the tool-search verdict consults it, and the request drops what the
+  deployment rejected.
+- The Anthropic runtime now sends the request's tools, with
+  defer_loading when tool search is on. It sent tool_choice without
+  tools, so the model had nothing to call.
+- W8 uses normalizeModelStringForAPI, which is what the binary's Jn is,
+  and the tool-search event carries mcpNonBlocking.
+- A source-pin test is re-anchored to the translated comment.

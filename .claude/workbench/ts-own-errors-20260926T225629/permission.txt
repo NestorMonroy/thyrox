@@ -1,0 +1,2 @@
+permission	src/internalPaths.ts(424,26): error TS2304: Cannot find name 'MACRO'.
+permission	src/internalPaths.ts(424,50): error TS2304: Cannot find name 'MACRO'.

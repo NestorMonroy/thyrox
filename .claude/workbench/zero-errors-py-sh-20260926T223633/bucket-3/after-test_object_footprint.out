@@ -1,0 +1,12 @@
+  ok   cuenta las 5 versiones del pathspec
+  ok   no cuenta el archivo ajeno
+  ok   el total de blobs es MAYOR que el del pathspec
+  ok   la cuota se deriva de los dos medidos
+  ok   separa suelto de empaquetado
+  ok   sin repack previo, todas las versiones estan sueltas
+  ok   tras repack -d ya no quedan sueltas del sujeto
+  ok   el repack no pierde versiones
+  ok   rehusa con codigo 2 fuera de un clon
+  ok   la rehusa NO emite conteo
+
+10 aprobada(s) · 0 fallida(s) (alcance medido: object_footprint.py)

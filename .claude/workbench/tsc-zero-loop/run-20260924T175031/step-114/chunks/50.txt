@@ -1,0 +1,2 @@
+src/packages/mcp-runtime/src/config.ts(1441,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+src/packages/mcp-runtime/src/config.ts(1465,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.

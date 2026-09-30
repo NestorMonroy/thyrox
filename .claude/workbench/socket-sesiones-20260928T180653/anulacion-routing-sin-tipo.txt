@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxRouting.test.ts:
+25 |   return kept.join('')
+26 | }
+27 | 
+28 | /** `se`/`pn`: cada racha hex larga, por `<hex:>` y los 12 primeros hex de su sha256. */
+29 | export function maskHexRuns(text: string): string {
+30 |   return text.replace(HEX_RUN, run => `<hex:${createHash('sha256').update(run).digest('hex').slice(0, 12)}>`)
+              ^
+TypeError: undefined is not an object (evaluating 'text.replace')
+      at maskHexRuns (/home/user/thyrox/src/packages/local-observability/src/uds/logRedaction.ts:30:10)
+      at withholdTokenText (/home/user/thyrox/src/packages/local-observability/src/uds/logRedaction.ts:42:29)
+      at handleInboxMessage (/home/user/thyrox/src/packages/local-observability/src/uds/inboxRouting.ts:82:65)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxRouting.test.ts:45:11)
+(fail) handleInboxMessage (be) > sin type de texto se ignora con aviso [0.49ms]
+
+ 11 pass
+ 1 fail
+ 19 expect() calls
+Ran 12 tests across 1 file. [113.00ms]

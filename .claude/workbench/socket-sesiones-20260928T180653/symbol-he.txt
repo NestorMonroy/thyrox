@@ -1,0 +1,4 @@
+==== he: 1 definicion(es) de nivel superior
+---- chunk-5mcqvwzx.js variable he [4303,4322)
+he=/^[0-9a-f]{32}$/
+symbol: 1 de 1 nombre(s) resueltos

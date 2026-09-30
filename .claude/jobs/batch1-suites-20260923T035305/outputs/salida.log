@@ -1,0 +1,33 @@
+run-task-pool: 3 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/batch1-20260923T035305
+  batch1-20260923T035305/src-packages-agent-__tests__-sdkCompatToolName-test-ts pid 3467    bun test src/packages/agent/__tests__/sdkCompatToolName.test.ts
+  batch1-20260923T035305/src-packages-provider-__tests__-claudeAiLimits-test-ts pid 3491    bun test src/packages/provider/__tests__/claudeAiLimits.test.ts
+  batch1-20260923T035305/tests-unit-facades-ts2305Batch1PublicSurface-test-ts pid 3511    bun test tests/unit/facades/ts2305Batch1PublicSurface.test.ts
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 900s)
+== 4 trabajos asentados ==
+OLVIDADO batch1-20260923T035305
+       | (vacío — no emitió nada)
+OK     batch1-20260923T035305_src-packages-agent-__tests__-sdkCompatToolName-test-ts
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  8 pass
+       |  0 fail
+       |  13 expect() calls
+       | Ran 8 tests across 1 file. [176.00ms]
+       | EXIT=0
+OK     batch1-20260923T035305_src-packages-provider-__tests__-claudeAiLimits-test-ts
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  51 pass
+       |  0 fail
+       |  59 expect() calls
+       | Ran 51 tests across 1 file. [1317.00ms]
+       | EXIT=0
+OK     batch1-20260923T035305_tests-unit-facades-ts2305Batch1PublicSurface-test-ts
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  11 pass
+       |  0 fail
+       |  11 expect() calls
+       | Ran 11 tests across 1 file. [1312.00ms]
+       | EXIT=0
+__BG_EXIT__=0

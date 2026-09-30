@@ -1,0 +1,21 @@
+ 0 fail
+ 15 expect() calls
+Ran 11 tests across 1 file. [156.00ms]
+      at main (/home/user/thyrox/src/typescript/buildJavascript.ts:455:26)
+      at /home/user/thyrox/src/typescript/bin/buildJavascript.ts:11:20
+
+Bun v1.3.11 (Linux x64)
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+app-host:  0 fail
+app-host:  612 expect() calls
+app-host: Ran 332 tests across 40 files. [1.64s]
+storage:  0 fail
+storage:  2675 expect() calls
+storage: Ran 1213 tests across 72 files. [6.49s]
+command-runtime:  0 fail
+command-runtime:  602 expect() calls
+command-runtime: Ran 327 tests across 26 files. [48.68s]
+repl:  0 fail
+repl:  1263 expect() calls
+repl: Ran 544 tests across 33 files. [1496.00ms]
+__BG_EXIT__=0

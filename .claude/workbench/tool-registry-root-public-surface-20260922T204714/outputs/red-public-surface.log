@@ -1,0 +1,14 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/tool-registry/src/__tests__/publicSurface.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'TOOL_PRESETS' not found in module '/workspace/kaupamex/thyrox/src/packages/tool-registry/src/index.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [65.00ms]

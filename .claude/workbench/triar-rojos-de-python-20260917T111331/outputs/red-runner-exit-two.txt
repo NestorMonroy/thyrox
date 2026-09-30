@@ -1,0 +1,49 @@
+test_counts_one_red_and_one_unmeasured (__main__.RunnerExitTwoTestCase.test_counts_one_red_and_one_unmeasured) ... FAIL
+test_names_the_refusal_as_unmeasured_not_red (__main__.RunnerExitTwoTestCase.test_names_the_refusal_as_unmeasured_not_red) ... FAIL
+test_still_names_the_real_red (__main__.RunnerExitTwoTestCase.test_still_names_the_real_red) ... ok
+test_the_refusal_alone_does_not_fail_the_run (__main__.RunnerExitTwoTestCase.test_the_refusal_alone_does_not_fail_the_run)
+Sin el rojo real, un rehuse NO puede hacer fallar la ejecucion. ... FAIL
+
+======================================================================
+FAIL: test_counts_one_red_and_one_unmeasured (__main__.RunnerExitTwoTestCase.test_counts_one_red_and_one_unmeasured)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/meta/test_runner_exit_two.py", line 80, in test_counts_one_red_and_one_unmeasured
+    self.assertIn('Python: 3 suite(s), 1 en rojo, 1 sin medir', proc.stdout)
+AssertionError: 'Python: 3 suite(s), 1 en rojo, 1 sin medir' not found in '== Python (stdlib) ==\n-- tests/test_green.py\ntest_green.py\n-- tests/test_red.py\ntest_red.py\n-- ROJO tests/test_red.py\n-- tests/test_refuses.py\ntest_refuses.py\n-- ROJO tests/test_refuses.py\n  (3 suite(s) de Python, 2 en rojo)\n\n\n== alcance ==\n  Python: 3 suite(s), 2 en rojo\n\nFALLA: 1 lengua(s) en rojo\n'
+
+======================================================================
+FAIL: test_names_the_refusal_as_unmeasured_not_red (__main__.RunnerExitTwoTestCase.test_names_the_refusal_as_unmeasured_not_red)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/meta/test_runner_exit_two.py", line 71, in test_names_the_refusal_as_unmeasured_not_red
+    self.assertIn('SIN MEDIR (exit 2) tests/test_refuses.py', proc.stdout)
+AssertionError: 'SIN MEDIR (exit 2) tests/test_refuses.py' not found in '== Python (stdlib) ==\n-- tests/test_green.py\ntest_green.py\n-- tests/test_red.py\ntest_red.py\n-- ROJO tests/test_red.py\n-- tests/test_refuses.py\ntest_refuses.py\n-- ROJO tests/test_refuses.py\n  (3 suite(s) de Python, 2 en rojo)\n\n\n== alcance ==\n  Python: 3 suite(s), 2 en rojo\n\nFALLA: 1 lengua(s) en rojo\n'
+
+======================================================================
+FAIL: test_the_refusal_alone_does_not_fail_the_run (__main__.RunnerExitTwoTestCase.test_the_refusal_alone_does_not_fail_the_run)
+Sin el rojo real, un rehuse NO puede hacer fallar la ejecucion.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/meta/test_runner_exit_two.py", line 90, in test_the_refusal_alone_does_not_fail_the_run
+    self.assertEqual(proc.returncode, 0, proc.stdout)
+AssertionError: 1 != 0 : == Python (stdlib) ==
+-- tests/test_green.py
+test_green.py
+-- tests/test_refuses.py
+test_refuses.py
+-- ROJO tests/test_refuses.py
+  (2 suite(s) de Python, 1 en rojo)
+
+
+== alcance ==
+  Python: 2 suite(s), 1 en rojo
+
+FALLA: 1 lengua(s) en rojo
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.166s
+
+FAILED (failures=3)
+exit=1

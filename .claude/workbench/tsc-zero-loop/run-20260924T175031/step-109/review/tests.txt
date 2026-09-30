@@ -1,0 +1,9 @@
+src/packages/agent/__tests__/basePrompt.test.ts
+src/packages/agent/__tests__/emit.test.ts
+src/packages/agent/__tests__/systemPrompt.test.ts
+src/packages/binary/__tests__/corpus.test.ts
+src/packages/permission/__tests__/permission.test.ts
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts
+src/packages/skills/__tests__/skillsFromDir.test.ts
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts
+tests/skills/markdown.test.ts

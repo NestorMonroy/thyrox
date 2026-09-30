@@ -1,0 +1,49 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check_bench_untracked: .claude/workbench/frontera-publica-de-paquetes-20260924T023459 deja fuera 40 archivo(s) nuevo(s):
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-ambas-guardas-del-dolar.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-ambas-guardas-del-dolar.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-conteo-sin-patch.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-conteo-sin-patch.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-escape-en-display.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-escape-en-display.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-frontera-de-compactacion.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-frontera-de-compactacion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-override-por-campo.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-override-por-campo.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-reemplazo-por-funcion.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-reemplazo-por-funcion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/attribution-before-frontera-de-compactacion.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/attribution-before-override-por-campo.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-ambas-guardas-del-dolar.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-conteo-sin-patch.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-escape-en-display.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-reemplazo-por-funcion.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/binario-atribucion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/binario-diff-modulo.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/binario-validacion-rutas.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/bloqueantes-swarm-smoke.tsv
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/cierre-swarm-smoke.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/primer-error-podados.tsv
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/rojos-atribucion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/rojos-diff.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/uno.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/anular-ambas-guardas.patch
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/attribution-cuerpo-previo.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/cierre-de-importaciones.ts
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-atribucion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-diff.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-ambas-guardas-del-dolar.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-conteo-sin-patch.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-escape-en-display.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-frontera-de-compactacion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-override-por-campo.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-reemplazo-por-funcion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-atribucion.txt
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-diff.txt
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 40 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+__BG_EXIT__=1

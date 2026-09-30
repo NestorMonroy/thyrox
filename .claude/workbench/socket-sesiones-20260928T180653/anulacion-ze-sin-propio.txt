@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+201 |     const closed = harness()
+202 |     closed.deps.state.activeSocketPath = undefined
+203 |     await deliverPeerUserMessage({ type: 'user', from: 'uds:/run/a/2.sock', message: { content: 'hola' } }, peer, closed.deps)
+204 |     const noPid = harness()
+205 |     await deliverPeerUserMessage({ type: 'user', from: 'uds:/run/a/2.sock', message: { content: 'hola' } }, { ...peer, pid: undefined }, noPid.deps)
+206 |     for (const run of [selfSent, bridge, elsewhere, closed, noPid]) expect(run.events.some(event => event.startsWith('correspondent:'))).toBe(false)
+                                                                                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:206:138)
+(fail) registro del correspondiente (Oe/aEn) > no se anota lo propio, lo que no es uds:, lo que no se puede responder ni sin buzón activo [0.79ms]
+
+ 15 pass
+ 1 fail
+ 34 expect() calls
+Ran 16 tests across 1 file. [63.00ms]

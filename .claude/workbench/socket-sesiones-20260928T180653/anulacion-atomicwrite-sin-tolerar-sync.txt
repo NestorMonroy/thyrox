@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+14 | beforeEach(() => {
+15 |   dir = mkdtempSync(join(tmpdir(), 'uds-atomic-'))
+16 | })
+17 | afterEach(() => rmSync(dir, { recursive: true, force: true }))
+18 | 
+19 | const errno = (code: string) => Object.assign(new Error(code), { code })
+                                                       ^
+error: EINVAL
+ code: "EINVAL"
+
+      at errno (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:19:51)
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:227:40)
+      at writeFileAtomicWithMode (/home/user/thyrox/src/packages/local-observability/src/uds/atomicWrite.ts:412:35)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:228:13)
+(fail) opciones completas de Jne > flush tolera un sync no admitido (EINVAL) y propaga un fallo real sin tocar el destino [1.66ms]
+
+ 26 pass
+ 1 fail
+ 68 expect() calls
+Ran 27 tests across 1 file. [174.00ms]

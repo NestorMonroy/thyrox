@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+42 | 
+43 |   test('no toca locales ni parámetros sin uso', () => {
+44 |     const out = run(
+45 |       "import { unused } from './dep'\nexport function f(p: number) { const l = 1; return 2 }\n",
+46 |     )
+47 |     expect(out).toContain('p: number')
+                     ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "p: number"
+Received: "export function f() {  return 2 }\n"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/removeUnusedImports.test.ts:47:17)
+(fail) removeUnusedImports > no toca locales ni parámetros sin uso [672.05ms]
+
+ 5 pass
+ 1 fail
+ 7 expect() calls
+Ran 6 tests across 1 file. [4.73s]

@@ -1,0 +1,17 @@
+
+src/packages/tool-registry/src/tools/shared/__tests__/ensureTeamFile.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'startInProcessTeammate' not found in module '/home/user/thyrox/src/packages/swarm/src/index.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [861.00ms]

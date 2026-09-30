@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+77 |     expect(parseRegistryRecord('no es json')).toBeNull()
+78 |     expect(parseRegistryRecord(JSON.stringify({ ...record(5), kind: 'otro' }))).toBeNull()
+79 |     expect(parseRegistryRecord(JSON.stringify({ ...record(5), pid: '5' }))).toBeNull()
+80 |     expect(parseRegistryRecord(JSON.stringify({ ...record(5), sessionId: 3 }))).toBeNull()
+81 |     expect(parseRegistryRecord(JSON.stringify({ ...record(5), startedAt: 'x' }))).toBeNull()
+82 |     expect(parseRegistryRecord(JSON.stringify({ ...record(5), cwd: 7 }))).toBeNull()
+                                                                               ^
+error: expect(received).toBeNull()
+
+Received: {
+  pid: 5,
+  sessionId: "s5",
+  startedAt: 1000,
+  kind: "interactive",
+  cwd: 7,
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:82:75)
+(fail) parseRegistryRecord (id) > rehúsa lo que no tiene la forma [0.50ms]
+
+ 27 pass
+ 1 fail
+ 80 expect() calls
+Ran 28 tests across 1 file. [233.00ms]

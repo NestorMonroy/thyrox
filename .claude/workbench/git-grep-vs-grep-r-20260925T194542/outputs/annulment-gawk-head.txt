@@ -1,0 +1,2 @@
+  FALLO esperaba exit 2 con instalador mentiroso, dio 0
+15 casos: 14 ok, 1 fallos

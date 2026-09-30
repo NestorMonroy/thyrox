@@ -1,0 +1,51 @@
+
+1. Con el directorio declarado, el fallo deja su entrada
+  ok    log_path cuelga del directorio declarado
+  ok    devuelve el CompletedProcess aunque falle
+  ok    el nombre del hook queda registrado
+  ok    el detalle del stderr queda registrado
+  ok    el returncode queda registrado
+  ok    control — un comando en verde no apenda nada
+
+2. Sin declarar, REHÚSA — no cae a un default de Path(__file__)
+  ok    results_dir rehúsa
+  ok    log_path rehúsa
+  ok    spool_path rehúsa
+
+3. El control que discrimina: sin parámetro no escribe, y AVISA
+  ok    no aparece ningún rastro en el árbol de THYROX
+  ok    el comando corrió igual — el hook no se rompe
+  ok    avisa nombrando la variable ausente
+
+4. La precedencia es cadena: proceso, después .env
+  ok    el proceso gana
+  ok    control — sin la del proceso cae al .env
+  ok    THYROX_RESULTS_DIR gana a la grafía heredada
+  ok    control — sin ella, la heredada resuelve
+
+5. El carrete: su ruta, su forma y su tope
+  ok    por defecto cuelga del directorio declarado
+  ok    HOOK_SPOOL_PATH la redirige — la forma de la fuente se conserva
+  ok    el cmd se encola como LISTA, reproducible tal cual
+  ok    el nombre del hook viaja con el evento
+  ok    nace con cero intentos
+  ok    con el tope alcanzado NO se encola un segundo evento
+  ok    y el descarte queda en el registro de prosa
+  ok    control — con el tope alto sí encola
+
+6. run_and_log nunca lanza — devuelve None sólo si no pudo arrancar
+  ok    un binario inexistente devuelve None
+  ok    y deja su causa registrada
+
+7. El puente para hooks de shell y sus tres códigos de salida
+  ok    sin separador -- devuelve 2
+  ok    sin comando tras -- devuelve 2
+  ok    propaga el returncode del comando
+  ok    127 cuando el proceso no pudo lanzarse
+
+8. El CLI, invocado como lo haría un hook de shell
+  ok    reemite el stdout del comando
+  ok    y sale con su código
+
+resultado: 32 de 32 aserciones en verde
+EXIT=0

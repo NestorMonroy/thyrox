@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/provider && bun test $(ls __tests__/proxy*.test.ts) 2>&1 | grep -E \"^\\(fail\\)|pass$|fail$|Ran \"", "started_at": "2026-09-27T23:07:39+00:00"}

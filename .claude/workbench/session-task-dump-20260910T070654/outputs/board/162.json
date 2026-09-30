@@ -1,0 +1,9 @@
+{
+  "id": "162",
+  "subject": "Analizar si los 10 baselines son parámetro del consumidor o viajan a thyrox",
+  "description": "La mudanza de .claude/scripts/ los dejó en kaupamex-docs/.claude/baselines/ bajo la premisa DEC-04: congelan la deuda heredada de ESTE corpus, así que son parámetro y no capacidad. El ejecutor lo acepta «por el momento» y pide análisis propio. Los diez: vocabulario_prosa_baseline.txt, vocabulario_prohibido.txt, evidence_tracked_baseline.txt, hallazgo_submodulo_baseline.txt, identifier_language_baseline_claude.txt, script_naming_language_baseline.txt, cifra_de_artefacto_vivo_baseline.txt, premise_drift_baseline.json, scripts_huerfanos_baseline.txt, addon-alias.txt. Al menos dos no encajan limpio en la premisa: vocabulario_prohibido.txt es la lista de formas vetadas que deriva de redaccion-tecnica-es.md (¿política del proyecto o del producto?) y addon-alias.txt es dato de corpus, no deuda. El análisis decide por archivo, no en bloque, y declara qué hace un gate de thyrox cuando su baseline vive en otro repo.",
+  "activeForm": "Analizando el veredicto de los baselines",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

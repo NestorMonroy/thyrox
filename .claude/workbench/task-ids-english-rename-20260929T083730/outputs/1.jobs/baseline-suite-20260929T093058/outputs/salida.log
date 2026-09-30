@@ -1,0 +1,2722 @@
+== TypeScript (bun) ==
+-- FAIL src/packages/agent/__tests__/flowHomes.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/flowHomes.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at homesMissingFromTree (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:158:53)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:45:12)
+(fail) FLOW_HOMES — el mapa flow → hogar como dato tipado (no prosa) > ningún hogar declarado apunta a un directorio inexistente [1.73ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at definitionsWithMissingHomes (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:195:18)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:102:12)
+(fail) definitionsWithMissingHomes — el gate DMAIC-control de T-006 (#54) > ninguna definicion del registro real declara un hogar inexistente [1.46ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at definitionsWithMissingHomes (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:195:18)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:130:12)
+(fail) definitionsWithMissingHomes — el gate DMAIC-control de T-006 (#54) > la misma definicion contra el arbol real no reporta ausentes [1.16ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at homesMissingFromTree (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/flowHomes.ts:158:53)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/agent/__tests__/flowHomes.test.ts:159:14)
+(fail) la raiz del arbol se resuelve por el alcance, no por una copia > honra la grafia canonica por raiz [2.00ms]
+
+ 9 pass
+ 4 fail
+ 77 expect() calls
+Ran 13 tests across 1 file. [237.00ms]
+-- FAIL src/packages/cli/__tests__/mitmCommands.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/mitmCommands.test.ts:
+123 |   let out = ''
+124 |   child.stdout.on('data', chunk => (out += chunk))
+125 |   const exited = new Promise<number | null>(resolve => child.once('exit', code => resolve(code)))
+126 |   const deadline = Date.now() + 20_000
+127 |   while (!/listening on http/.test(out) && Date.now() < deadline) await Bun.sleep(50)
+128 |   expect(out).toContain('MITM API listening on http://127.0.0.1:')
+                    ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "MITM API listening on http://127.0.0.1:"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/cli/__tests__/mitmCommands.test.ts:128:15)
+(fail) thyrox mitm serve runs through the real launcher and stops on SIGTERM [20054.48ms]
+
+ 15 pass
+ 1 fail
+ 59 expect() calls
+Ran 16 tests across 1 file. [21.27s]
+-- FAIL src/packages/cli/__tests__/rstTasks.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/rstTasks.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+474 | export function reachRoots(start?: string, declared?: string): string[] {
+475 |   const value = declared ?? envValue(REACH_ROOTS_VAR, start)
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+              ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:479:9)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/cli/__tests__/rstTasks.test.ts:24:3
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1.82s]
+-- FAIL src/packages/paths/__tests__/docs.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/paths/__tests__/docs.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:40:28)
+(fail) docsRoot — la raiz se descubre, no se escribe > sin variable, resuelve al repo que contiene source/gestion/pm [1.49ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:53:14)
+(fail) docsRoot — la raiz se descubre, no se escribe > honra las grafias canonicas del alcance, no solo la heredada [0.85ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at docsLayer (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:289:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:253:14)
+(fail) el catalogo flow -> hogar (#53) — declara que produce, la ruta la construye > cada capa se resuelve como docsLayer(l) y su directorio existe [0.48ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/docs.ts:130:26)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/paths/__tests__/docs.test.ts:262:38)
+(fail) el catalogo flow -> hogar (#53) — declara que produce, la ruta la construye > CONTROL bidireccional — DOCS_LAYERS es exactamente el disco (sin `_`) [0.30ms]
+
+ 27 pass
+ 4 fail
+ 74 expect() calls
+Ran 31 tests across 1 file. [203.00ms]
+-- FAIL src/packages/skills/__tests__/bundledSkills.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/skills/__tests__/bundledSkills.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at soloApoyoFromTriage (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:22:24)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:43:56)
+(fail) bundledSkills — la membresía sale del triaje, no de su propia lista > los nombres empaquetados == el conjunto sin clase a del triaje [4.21ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at cloneName (/home/user/thyrox/src/packages/paths/reach.ts:557:18)
+      at root (/home/user/thyrox/src/packages/paths/reach.ts:618:16)
+      at docsRoot (/home/user/thyrox/src/packages/paths/docs.ts:130:26)
+      at soloApoyoFromTriage (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:22:24)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/skills/__tests__/bundledSkills.test.ts:49:58)
+(fail) bundledSkills — la membresía sale del triaje, no de su propia lista > registerBundledSkills registra exactamente ese conjunto en un registry [9.57ms]
+
+ 1 pass
+ 2 fail
+ 2 expect() calls
+Ran 3 tests across 1 file. [210.00ms]
+-- FAIL src/packages/task/__tests__/schema.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/task/__tests__/schema.test.ts:
+48 |     ])
+49 |   })
+50 | 
+51 |   test('la base del Python declara 15 — el piso más las dos de capa', () => {
+52 |     const base = pythonBaseColumns()
+53 |     expect(base.length).toBe(15)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 15
+Received: 16
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/task/__tests__/schema.test.ts:53:25)
+(fail) las dos declaraciones del esquema de tareas > la base del Python declara 15 — el piso más las dos de capa [1.19ms]
+63 | })
+64 | 
+65 | describe('el invariante: piso ⊂ base, y el delta lo cubre un ALTER', () => {
+66 |   test('ninguna columna de la base queda fuera del piso sin ALTER que la añada', () => {
+67 |     const d = schemaDrift()
+68 |     expect(d.uncovered).toEqual([])
+                             ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "board_ordinal",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/task/__tests__/schema.test.ts:68:25)
+(fail) el invariante: piso ⊂ base, y el delta lo cubre un ALTER > ninguna columna de la base queda fuera del piso sin ALTER que la añada [9.80ms]
+77 |     expect(d.missingNotNull).toEqual([])
+78 |     expect(d.notNull.length).toBeGreaterThan(0)
+79 |   })
+80 | 
+81 |   test('el delta medido hoy son exactamente las dos columnas de capa', () => {
+82 |     expect(schemaDrift().onlyInBase.sort()).toEqual(['submodule', 'submodule_source'])
+                                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
++   "board_ordinal",
+    "submodule",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/packages/task/__tests__/schema.test.ts:82:45)
+(fail) el invariante: piso ⊂ base, y el delta lo cubre un ALTER > el delta medido hoy son exactamente las dos columnas de capa [3.87ms]
+
+ 12 pass
+ 3 fail
+ 30 expect() calls
+Ran 15 tests across 1 file. [178.00ms]
+-- FAIL tests/conformance/maintenance.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/conformance/maintenance.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:73:21)
+(fail) A.7.6 — memoria rancia > 1. nombra la que pasa la cota y NO la que no [78.33ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:85:12)
+(fail) A.7.6 — memoria rancia > 2. publica cuanto se pasa, no solo que se pasa [8.15ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:92:19)
+(fail) A.7.6 — skills invalidos > 3. un directorio sin SKILL.md es invalido, y se dice por que [12.84ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:103:19)
+(fail) A.7.6 — skills invalidos > 4. sin description, y con el name cambiado, tambien [15.20ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:121:12)
+(fail) A.7.6 — las DOS formas de frontmatter del arbol > 5. la cerca ```yml vale igual que los guiones: no es un defecto [1.46ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at maintenanceReport (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:165:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:127:15)
+(fail) A.7.6 — el estado del arbol real > 6. hoy no hay ninguna de las dos, y el conteo dice sobre que se midio [0.47ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:176:12)
+(fail) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 7. la memoria se busca en el segmento que el consumidor declara [7.07ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerSkillsDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/skills/paths.ts:88:16)
+      at invalidSkills (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:138:15)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:181:12)
+(fail) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 8. los skills tambien, y el denominador lo dice [0.94ms]
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at memoryPaths (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:82:21)
+      at staleMemory (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/conformance/maintenance.ts:93:22)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/conformance/maintenance.test.ts:194:19)
+(fail) A.7.6 — el hogar NO se cablea: lo declara el gobernador > 9. THYROX_RULES_DIR reapunta el hogar de las reglas, y se cita relativo [7.33ms]
+
+ 0 pass
+ 9 fail
+Ran 9 tests across 1 file. [1.70s]
+-- FAIL tests/reference/triple.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/reference/triple.test.ts:
+201 |     // clon presente, y las otras se declaran aparte.
+202 |     const clon = (ruta: string) => ruta.split('/').slice(0, 4).join('/')
+203 |     const alias = Object.keys(TRIPLES)
+204 |     const medibles = alias.filter((a) => existsSync(clon(resolveRoot(a))))
+205 |     const ausentes = medibles.filter((a) => !existsSync(resolveRoot(a)))
+206 |     expect({ ausentes, declaradas: alias.length }).toEqual({ ausentes: [], declaradas: 9 })
+                                                         ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,11 @@
+  {
+-   "ausentes": [],
++   "ausentes": [
++     "odoo19c",
++     "odoo19e",
++     "odoo18c",
++     "odoo18e",
++     "ccb",
++     "ccnmt",
++     "ui-core",
++   ],
+    "declaradas": 9,
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/reference/triple.test.ts:206:52)
+(fail) la raiz declarada tiene que existir y ser absoluta (#294) > toda raiz declarada resuelve a un directorio que existe [0.44ms]
+
+ 19 pass
+ 1 fail
+ 55 expect() calls
+Ran 20 tests across 1 file. [151.00ms]
+-- FAIL tests/rules/markdown.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/rules/markdown.test.ts:
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+480 |     `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+481 |   )
+        ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:481:3)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/markdown.test.ts:30:12)
+(fail) el hogar del consumidor > cae en el arbol del consumidor, no en el del proveedor [2.36ms]
+474 | export function reachRoots(start?: string, declared?: string): string[] {
+475 |   const value = declared ?? envValue(REACH_ROOTS_VAR, start)
+476 |   if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+477 |   const derived = deriveReachRoots(start)
+478 |   if (derived.length > 0) return derived
+479 |   throw new ReachRootError(
+              ^
+error: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada.
+      at reachRoots (/home/user/thyrox/src/packages/paths/reach.ts:479:9)
+      at roots (/home/user/thyrox/src/packages/paths/reach.ts:628:29)
+      at reach (/home/user/thyrox/src/packages/paths/reach.ts:656:15)
+      at repoOfRoot (/home/user/thyrox/src/packages/paths/reach.ts:680:45)
+      at consumerRulesDir (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/rules/paths.ts:80:16)
+      at <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/markdown.test.ts:157:27)
+(fail) el productor y el cargador coinciden > toda ruta que el emisor compone la reconoce isMemoryFilePath [1333.24ms]
+
+ 13 pass
+ 2 fail
+ 18 expect() calls
+Ran 15 tests across 1 file. [1.51s]
+-- FAIL tests/verify/checkEnvPrefix.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/verify/checkEnvPrefix.test.ts:
+(fail) el propio thyrox > ninguna lectura de entorno nueva fuera de THYROX_* y ninguna variable propia sin prueba [5819.23ms]
+  ^ this test timed out after 5000ms.
+
+ 15 pass
+ 1 fail
+ 30 expect() calls
+Ran 16 tests across 1 file. [6.26s]
+pass=21417 fail=28 errors=1 crashes=0 files=1484 failed=10
+
+== Python (stdlib) ==
+-- FAIL tests/agents/test_derive_submodule.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/agents/test_derive_submodule.py", line 42, in <module>
+    str(reach.root("docs") / ".claude" / "baselines" / "layer-signals.txt"))
+        ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/agents/test_document_root_default.py
+== 1. la bandera explicita manda ==
+  ok    con --repo-docs se usa tal cual
+== 2. sin bandera, se DERIVA del consumidor ya nombrado en --repo ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/agents/test_document_root_default.py", line 62, in <module>
+    check("--repo docs resuelve al arbol de docs", reach.root("docs"),
+                                                   ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/agents/test_store_dir_default.py
+test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor (__main__.TestDestinoPorDefecto.test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor)
+Falla si sigue rehusando. Es el cambio entero: el llamador deja de ... ok
+test_2_no_apunta_al_silo (__main__.TestDestinoPorDefecto.test_2_no_apunta_al_silo)
+Falla si el defecto vuelve por otra via. El nombre del clon esta ... ok
+test_3_claude_dir_sigue_ganando (__main__.TestDestinoPorDefecto.test_3_claude_dir_sigue_ganando)
+Falla si el peldano nuevo pisa al mas especifico. Una ruta explicita ... ok
+test_4_un_repo_declarado_a_proposito_sigue_resolviendo (__main__.TestDestinoPorDefecto.test_4_un_repo_declarado_a_proposito_sigue_resolviendo)
+Falla si el peldano nuevo retira la capacidad de apuntar a un clon. ... ERROR
+test_5_un_repo_invalido_sigue_rehusando (__main__.TestDestinoPorDefecto.test_5_un_repo_invalido_sigue_rehusando)
+Falla si el peldano nuevo se traga un error del llamador. ... ERROR
+test_1_el_default_de_repo_no_nombra_un_consumidor (__main__.TestParserDefault.test_1_el_default_de_repo_no_nombra_un_consumidor) ... ok
+test_2_el_destino_sin_banderas_es_el_hogar (__main__.TestParserDefault.test_2_el_destino_sin_banderas_es_el_hogar) ... ok
+test_3_el_destino_sin_banderas_no_cae_en_ningun_clon (__main__.TestParserDefault.test_3_el_destino_sin_banderas_no_cae_en_ningun_clon) ... ok
+test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+El par que impide arreglar un eje rompiendo el otro. ... ERROR
+
+======================================================================
+ERROR: test_4_un_repo_declarado_a_proposito_sigue_resolviendo (__main__.TestDestinoPorDefecto.test_4_un_repo_declarado_a_proposito_sigue_resolviendo)
+Falla si el peldano nuevo retira la capacidad de apuntar a un clon.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/agents/test_store_dir_default.py", line 93, in test_4_un_repo_declarado_a_proposito_sigue_resolviendo
+    d = agent_store.resolve_store_dir(_args(repo="docs"))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/agents/agent_store.py", line 502, in resolve_store_dir
+    repos = valid_repos()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/agents/agent_store.py", line 134, in valid_repos
+    return reach_roots.REACH_ROOTS
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach_roots.py", line 141, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_5_un_repo_invalido_sigue_rehusando (__main__.TestDestinoPorDefecto.test_5_un_repo_invalido_sigue_rehusando)
+Falla si el peldano nuevo se traga un error del llamador.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/agents/test_store_dir_default.py", line 106, in test_5_un_repo_invalido_sigue_rehusando
+    agent_store.resolve_store_dir(_args(repo="no-existe"))
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/agents/agent_store.py", line 502, in resolve_store_dir
+    repos = valid_repos()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/agents/agent_store.py", line 134, in valid_repos
+    return reach_roots.REACH_ROOTS
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach_roots.py", line 141, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+El par que impide arreglar un eje rompiendo el otro.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/agents/test_store_dir_default.py", line 153, in test_4_el_arbol_documental_no_se_rompe_con_repo_ausente
+    self.assertEqual(agent_store.document_root(argumentos),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/agents/agent_store.py", line 456, in document_root
+    return reach_roots.root(DOCS_CONSUMER)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.024s
+
+FAILED (errors=3)
+-- FAIL tests/agents/test_store_repo_path.py
+...E
+======================================================================
+ERROR: test_4_roster_name_still_resolves_by_name (__main__.RepoAsClonePath.test_4_roster_name_still_resolves_by_name)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/agents/test_store_repo_path.py", line 67, in test_4_roster_name_still_resolves_by_name
+    repo = next(iter(agent_store.valid_repos()), None)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/agents/agent_store.py", line 134, in valid_repos
+    return reach_roots.REACH_ROOTS
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach_roots.py", line 141, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.035s
+
+FAILED (errors=1)
+-- FAIL tests/corpus/test_censar_scripts.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/corpus/test_censar_scripts.py", line 51, in <module>
+    CONSUMER = reach.root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/corpus/test_censo_contraparte.py
+== 1. la declaración completa no deja ninguna unidad SIN-DECLARAR ==
+  ok    sale 0 con la declaración completa
+  ok    ninguna línea SIN-DECLARAR
+  ok    el directorio sin marcador no es unidad
+== 2. CONTROL POSITIVO: la declaración sin dos filas ==
+  ok    sale 1 cuando faltan las filas
+  ok    nombra a beta dentro de la línea
+  ok    nombra a delta dentro de la línea
+== 3. una raíz que no resuelve se AVISA, no se calla ==
+  ok    avisa de la raíz vacía
+== 4. sin ninguna fila raiz: el censo se REHÚSA a medir ==
+  ok    sale 2 sin raíces declaradas
+== 5. las filas de nivel MODELO se ignoran, y lo declara ==
+  ok    declara cuántas ignoró
+== 6. una CONSTANTE del dominio sin definir: rehúsa y se nombra ==
+  ok    sin THYROX_CENSUS_ROOT: exit 2
+  ok    sin THYROX_CENSUS_ROOT: el mensaje la nombra
+  ok    sin THYROX_CENSUS_ROOT: no emite resumen
+  ok    sin THYROX_CENSUS_UNIT_MARKER: exit 2
+  ok    sin THYROX_CENSUS_UNIT_MARKER: el mensaje la nombra
+  ok    sin THYROX_CENSUS_UNIT_MARKER: no emite resumen
+  ok    sin THYROX_CENSUS_UNIT_BASES: exit 2
+  ok    sin THYROX_CENSUS_UNIT_BASES: el mensaje la nombra
+  ok    sin THYROX_CENSUS_UNIT_BASES: no emite resumen
+  ok    sin THYROX_CENSUS_REFERENCE_ROOT: exit 2
+  ok    sin THYROX_CENSUS_REFERENCE_ROOT: el mensaje la nombra
+  ok    sin THYROX_CENSUS_REFERENCE_ROOT: no emite resumen
+== 7. la declaración sin hogar: rehúsa nombrando sus dos entradas ==
+  ok    nombra la entrada del VALOR
+  ok    y la entrada de la RUTA del archivo que la declara
+  ok    sin declarar REHÚSA con exit 2
+  ok    y el mensaje nombra la constante
+== 8. la referencia por ALIAS entra por el tramo extensible, o se rehúsa ==
+  FALLO sin la referencia en el alcance sale 2
+        esperado=[2] obtenido=[1]
+  FALLO y nombra la variable del tramo extra
+        esperado=[True] obtenido=[False]
+  FALLO declarada en el tramo extra, mide y sale 0
+        esperado=[0] obtenido=[1]
+== 9. CONTROL DE ANULACIÓN: con la declaración intacta el caso 2 cae ==
+  ok    con la declaración completa --strict vuelve a 0
+== 10. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==
+  ok    el repo censado no cae a un consumidor concreto
+  ok    el árbol de referencia no se nombra en el mecanismo
+  ok    qué marca la unidad censada se declara
+  ok    y su constante existe
+  ok    igual que la del árbol de referencia
+
+31 ok, 3 fallos
+-- FAIL tests/docs/test_unwrap_rst.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/docs/test_unwrap_rst.py", line 70, in <module>
+    CONSUMER = reach.root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/hooks/test_task_lifecycle.py
+test_task_lifecycle:
+
+== 1. el guard admite el EVENTO del hook, no solo el nombre del tool ==
+  ok    `TaskCreated` (el evento) esta en CREATION_EVENTS
+  ok    `TaskCreate` (el tool) sigue estando
+
+== 2. la OTRA mitad: lo que no crea sigue rechazado ==
+  ok    `TaskCompleted` NO acuña
+  ok    `TaskUpdate` NO acuña
+
+== 3. el hook lee el payload del cliente y acuña ==
+  ok    sale 0
+  ok    acuña exactamente una fila
+  ok    y su cita es de la capa declarada
+  ok    y lleva el sujeto de la tarjeta
+
+== 4. el evento de cierre NO acuña una fila mas ==
+  ok    sale 0 igualmente (no es un error)
+  ok    y el store sigue con UNA fila
+
+== 5. un payload roto no rompe el turno ==
+  ok    sale 0 ante JSON invalido
+  ok    sale 0 ante stdin vacio
+
+== 6. el cableado del usuario DECLARA el evento ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/hooks/test_task_lifecycle.py", line 181, in <module>
+    declared = user_wiring.declared_wiring(root=ROOT)["hooks"]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/session/user_wiring.py", line 127, in declared_wiring
+    for nombre, ruta in sorted(reach().items()))
+                               ^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- UNMEASURED (exit 2) tests/measurement/test_rejection_sampling_brief.py
+-- FAIL tests/paths/test_consumer_root_refuses_provider.py
+test_1_lo_declarado_manda (__main__.TestConsumerRootRefusesProvider.test_1_lo_declarado_manda)
+Ningun ascenso pisa una declaracion explicita. ... ok
+test_2_desde_la_raiz_del_proveedor_rehusa (__main__.TestConsumerRootRefusesProvider.test_2_desde_la_raiz_del_proveedor_rehusa)
+Falla si devuelve la raiz de thyrox. Devolverla es peor que no ... ok
+test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa (__main__.TestConsumerRootRefusesProvider.test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa)
+Falla si el guard solo mira la raiz. El ascenso desde `src/` llega ... ok
+test_4_un_consumidor_real_sigue_resolviendo (__main__.TestConsumerRootRefusesProvider.test_4_un_consumidor_real_sigue_resolviendo)
+El par que impide «arreglar» rehusando siempre. ... ERROR
+
+======================================================================
+ERROR: test_4_un_consumidor_real_sigue_resolviendo (__main__.TestConsumerRootRefusesProvider.test_4_un_consumidor_real_sigue_resolviendo)
+El par que impide «arreglar» rehusando siempre.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/paths/test_consumer_root_refuses_provider.py", line 75, in test_4_un_consumidor_real_sigue_resolviendo
+    consumidor = reach.root("docs")
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.006s
+
+FAILED (errors=1)
+-- FAIL tests/paths/test_reach.py
+
+1. La constante por raíz se LEE (H-DOCS-1070)
+  ok    THYROX_REACH_API gana sobre el árbol
+  ok    control — sin la constante por raíz cae al clon del árbol
+
+2. El proceso gana al archivo .env
+  ok    el proceso gana
+  ok    control — sin proceso, manda el .env
+
+3. El ascenso NO depende de la profundidad
+  ok    desde 2 niveles
+  ok    desde 5 niveles
+  ok    control — los dos coinciden (un offset fijo daría distinto)
+
+4. El .env se lee sin librería de terceros
+  ok    ignora el comentario y la línea en blanco
+  ok    acepta el prefijo export
+  ok    quita la comilla doble
+  ok    quita la comilla simple
+  ok    descarta la línea sin '='
+
+5. Las variables nombran al LECTOR, como el binario
+  ok    la primera es la del lector
+  ok    la heredada queda de segunda
+  ok    el tramo extra sigue la misma forma
+  ok    y su heredada
+  ok    la constante por raíz nombra al lector
+  ok    y admite la heredada
+  ok    gana la primera de la tupla
+  ok    control — retirada la primera, manda la segunda
+
+6. El tramo extra exige rutas absolutas
+  ok    una raíz extra absoluta entra
+  ok    una relativa rehúsa
+
+7. Rehúsa nombrando, nunca devuelve un conjunto corto
+  ok    raíz desconocida rehúsa
+  ok    require_all rehúsa si falta una raíz
+
+8. El CLI sobrevive a que le cierren la salida
+  ok    no vuelca traceback por stderr
+  ok    y sale sin error
+
+9. thyrox se localiza a SÍ MISMO por mecanismo, no por aritmética (#146)
+  ok    THYROX_ROOT declarada gana
+  ok    control — sin la variable, asciende hasta el marcador
+  ok    y acierta desde cualquier profundidad
+  ok    un directorio llamado thyrox sin el marcador no cuenta
+
+10. desde un consumidor, lo resuelve el MECANISMO multi-repo (#146)
+  ok    sin THYROX_ROOT, lo halla como hermano de los clones
+  ok    control — un hermano llamado thyrox sin marcador no basta
+
+11. El CLI publica la raíz de THYROX — el bootstrap que shell necesita
+  ok    desde su sitio, sale 0
+  FALLA y publica la raíz real de thyrox
+          esperado: '/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1'
+          real:     '/home/user/thyrox'
+  ok    la variable declarada gana sobre el ascenso
+  ok    una copia fuera del árbol halla al proveedor por el hermano
+  ok    y publica su raíz
+  ok    control — sin marcador en ningún hermano, rehúsa con 2
+  ok    control — y NO publica una ruta
+  ok    control — el motivo nombra el marcador, no «modo desconocido»
+
+12. --env se bootstrapea a sí mismo: exporta las dos entradas de DEC-04
+  ok    exporta THYROX_ROOT
+  ok    exporta THYROX_ENV_FILE
+  ok    sigue exportando una raíz por clon del roster
+== el prefijo de clon se declara o se deriva, no se codifica ==
+  ok    en un arbol ajeno DERIVA su prefijo, no el nuestro
+  ok    la declaracion GANA sobre la derivacion
+  ok    y ningun literal de multi-repo se ASIGNA en el mecanismo
+
+resultado: 45 de 46 aserciones en verde
+-- FAIL tests/paths/test_reach_roots_shim.py
+
+1. El stub declara a THYROX como dueño canónico
+  ok    nombra el árbol dueño
+  ok    nombra el módulo dueño
+  ok    declara que es un stub de reexportación
+
+2. La superficie que los 12 consumidores usan sigue entera
+  ok    reexporta require_all
+  ok    reexporta reach
+  ok    reexporta root
+  ok    reexporta roots
+  ok    reexporta paths
+  ok    reexporta clone_name
+  ok    reexporta clone_names
+  ok    reexporta extra_roots
+  ok    reexporta ReachRootError
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/paths/test_reach_roots_shim.py", line 76, in <module>
+    check(f"reexporta {name}", True, hasattr(reach_roots, name))
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach_roots.py", line 141, in __getattr__
+    return _owner.reach_roots()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/repo/test_citations.py
+  ok   evidencia  source/gestion/pm/docs/iniciativas/x/hallazgos/hallazgo-H-
+  ok   evidencia  source/gestion/pm/docs/audits/registro.rst
+  ok   evidencia  source/gestion/pm/docs/lecciones-aprendidas/l.rst
+  ok   evidencia  source/gestion/pm/docs/iniciativas/x/progreso-x.rst
+  ok   evidencia  source/gestion/pm/docs/iniciativas/x/analisis-x.rst
+  ok   evidencia  .claude/eventos/banco-20260101T000000/nota.md
+  ok   evidencia  _archived/.claude/scripts/viejo.sh
+  ok   viva       source/normativa/estandares/catalogo-de-scripts.rst
+  ok   viva       .claude/rules/git.md
+  ok   viva       src/verify/registry.py
+  ok   viva       .githooks/pre-commit
+  ok   cuenta 1 cita viva
+  ok   y 1 en evidencia
+  ok   y declara su denominador
+  ok   el informe marca cual reapuntar
+  ok   anulada la clasificacion, la evidencia se cuenta como viva
+  ok   y restaurada, vuelve a discriminar
+  ok   un directorio sin .git rehusa
+  ok   y dice que no emite conteo
+  ok   sin ningun clon alcanzable, rehusa
+  ok   y lo llama verde falso
+  FAIL --verify sale 0 sin citas vivas
+
+21 aprobada(s) · 1 fallida(s) (alcance medido: citations.py)
+-- FAIL tests/rules/test_paths_parity.py
+EE..EE.E..
+======================================================================
+ERROR: test_declarar_un_clon_no_mueve_a_los_demas (__main__.RulesPathsParity.test_declarar_un_clon_no_mueve_a_los_demas)
+El control que faltaba, y el defecto que ya ocurrió.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/test_paths_parity.py", line 110, in test_declarar_un_clon_no_mueve_a_los_demas
+    roots = reach.roots()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_el_hogar_del_consumidor_cae_dentro_del_consumidor (__main__.RulesPathsParity.test_el_hogar_del_consumidor_cae_dentro_del_consumidor)
+El defecto de #286: resolver el hogar del consumidor DENTRO del proveedor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/test_paths_parity.py", line 199, in test_el_hogar_del_consumidor_cae_dentro_del_consumidor
+    for repo, root in reach.roots().items():
+                      ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_clave_de_familia_absoluta_SI_colisiona (__main__.RulesPathsParity.test_la_clave_de_familia_absoluta_SI_colisiona)
+Y es correcto que lo haga — el control que impide sobre-afirmar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/test_paths_parity.py", line 165, in test_la_clave_de_familia_absoluta_SI_colisiona
+    roots = reach.roots()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_clave_de_familia_como_segmento_relativo_no_colisiona (__main__.RulesPathsParity.test_la_clave_de_familia_como_segmento_relativo_no_colisiona)
+La clave de FAMILIA con un segmento relativo dice lo correcto para todos.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/test_paths_parity.py", line 141, in test_la_clave_de_familia_como_segmento_relativo_no_colisiona
+    roots = reach.roots()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_familia_sigue_siendo_el_ultimo_recurso (__main__.RulesPathsParity.test_la_familia_sigue_siendo_el_ultimo_recurso)
+Sin clave por clon, la de familia manda — y eso NO es el defecto.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/test_paths_parity.py", line 187, in test_la_familia_sigue_siendo_el_ultimo_recurso
+    for repo, root in reach.roots().items():
+                      ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.015s
+
+FAILED (errors=5)
+-- FAIL tests/rules/test_provenance_parity.py
+E.......
+======================================================================
+ERROR: test_NO_reconoce_una_regla_real_que_nadie_emitio (__main__.EmittedBucketDiscriminates.test_NO_reconoce_una_regla_real_que_nadie_emitio)
+El control negativo, sobre una regla VIVA del árbol.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/rules/test_provenance_parity.py", line 100, in test_NO_reconoce_una_regla_real_que_nadie_emitio
+    for root in reach.roots().values()]
+                ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.004s
+
+FAILED (errors=1)
+-- UNMEASURED (exit 2) tests/session/hardware/test_gpu_admission_real.py
+-- FAIL tests/session/test_installed_hooks_resolve.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/session/test_installed_hooks_resolve.py", line 54, in <module>
+    CONSUMER = reach.root("docs")
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/session/test_session_restart.py
+=== 1. deriva el entorno del transcript ===
+  ok    lo halla
+  ok    sin ninguno, None
+=== 2. deriva repo y rama del arbol ===
+  ok    el repo sale del remoto
+  ok    y la rama del HEAD
+  ok    un directorio sin repo da None
+=== 3. REHUSA cuando falta una pieza ===
+  ok    sin entorno -> rehusa
+  ok    y NOMBRA la pieza que falta
+  ok    sin repo -> rehusa
+=== 4. la necesidad sale de los hooks que DISPARARON ===
+  ok    ningun gate del arbol disparo -> hace falta
+  ok    y lo dice con el conteo
+=== 5. la carga util lleva lo que create_session necesita ===
+  ok    lleva environment_id
+  ok    lleva source_url
+  ok    lleva source_revision
+  ok    lleva title
+  ok    lleva prompt
+  ok    la rama viaja como source_revision
+=== 6. ANULACION — con hooks disparando, el veredicto cambia ===
+  ok    ya no hace falta
+  ok    y los veredictos difieren
+=== 7. dos transcripts con el MISMO id: elige por evidencia ===
+  ok    elige el que tiene contenido
+  ok    y de ahi si sale el entorno
+=== 7b. sin ninguno, None y no una ruta inventada ===
+  ok    no compone una ruta
+=== 7c. ANULACION — tomar el primero daria el vacio ===
+  ok    el primero por orden es el vacio
+  ok    y el elegido NO es ese
+=== 8. la mencion en un COMANDO MIO no es un disparo ===
+  ok    mencionarlo en la linea NO cuenta como disparo
+  ok    y el conteo de coincidencias es 0
+=== 8b. y el disparo de verdad SI cuenta ===
+  ok    cuenta el comando, no la linea
+  ok    y lo cuenta una vez
+=== 8c. ANULACION — los dos casos NO dan lo mismo ===
+  ok    la forma con CLAVE gana a la mencionada antes
+  ok    una mencion SIN clave no se toma por declaracion
+  ok    sin transcript NO se afirma que haga falta
+  ok    y se declara que no se midio
+  ok    y el denominador sigue siendo cero
+  ok    con transcript SI se mide
+  ok    y ahi el veredicto es booleano
+  ok    mencion y disparo difieren
+=== 9. session.json: entorno y fuentes de get_session ===
+  ok    el entorno sale de ccr.environment_id
+  ok    sin ccr, None
+  ok    hay tres fuentes
+  ok    la primera trae su url
+  ok    y su revision REGISTRADA (no la rama real)
+  ok    la tercera no trae revision registrada
+=== 10. normaliza la URL para comparar contra el origin del clon ===
+  ok    sin .git final
+  ok    sin barra final
+  ok    las tres formas son iguales
+=== 11. la rama sale del CLON, nunca de la revision registrada ===
+  ok    el clon se localiza por su origin normalizado
+  ok    la rama REAL gana a la registrada
+  ok    y el registro no se descarta, solo no se usa para la rama
+=== 11b. un repo sin revision registrada toma la rama de su clon ===
+  ok    sin revision registrada, la rama sigue saliendo del clon
+=== 11c. ANULACION — HEAD separado no cuenta como rama ===
+  ok    git SI da un nombre para HEAD separado
+  ok    pero resolve_repo NO lo toma por rama
+  ok    y el clon si se encontro
+=== 12. repo sin clon: aviso BLOQUEANTE ===
+  ok    sin clon local, no hay clon
+  ok    ni rama
+  ok    hay exactamente un aviso
+  ok    y bloquea
+  ok    nombrando el repo
+=== 12b. clon sin rama tambien bloquea ===
+  ok    un aviso
+  ok    y bloquea
+=== 12c. lo que NO viaja avisa, pero NO bloquea ===
+  ok    tres avisos (settings, env, venv)
+  ok    ninguno bloquea
+  ok    el repo resuelto no genera aviso propio
+=== 12d. ANULACION — un clon completo no genera ningun aviso de repo ===
+  ok    sin settings/env/venv declarados, y clon completo: cero avisos
+=== 13. DECLARADO != INSTALADO != CARGADO: instalar antes que relevar ===
+  ok    hay un evento con algo solo declarado
+  ok    veredicto: instalar primero, aunque los hooks SI disparen
+=== 13b. sin brecha, el veredicto lo decide restart_needed ===
+  ok    sin brecha, el dict de deriva esta vacio
+  ok    ahi si se propone relevar
+  ok    o no hace falta, si ya disparan
+=== 13c. ANULACION — sin medir, ningun veredicto se afirma ===
+  ok    needed=None por no medido -> veredicto None
+=== 14. la carga util con VARIAS fuentes: una en la carga, el resto en el prompt ===
+  ok    la PRIMERA fuente va en la carga
+  ok    con su rama REAL
+  ok    https://github.com/jcg-admin/kaupamex-docs aparece en el prompt
+  ok    con su rama real (feature/kaupamex-l9) en el prompt
+  ok    https://github.com/jcg-admin/kaupamex-api aparece en el prompt
+  ok    con su rama real (develop) en el prompt
+  ok    el primer repo NO se repite como paso del prompt
+  ok    el prompt trae el setup: uv sync
+  ok    y la instalacion del cableado
+  ok    y la medicion con SU PROPIO transcript
+=== 14b. ANULACION — sin repos, build_multi_payload rehusa ===
+  ok    sin repos -> rehusa
+=== 14c. una fuente sin rama medida NO se disfraza de rama real ===
+  ok    no imprime la palabra None como si fuera una rama
+  ok    nombra que la rama no se pudo medir
+=== 15. main(): un aviso bloqueante sale 3, salvo --allow-partial ===
+  FALLO segundo repo sin clon: sale 3
+        esperado=[3] obtenido=[1]
+  FALLO repo sin clon: lo imprime como BLOQUEA
+        esperado=[True] obtenido=[False]
+  FALLO con --allow-partial: sale 0
+        esperado=[0] obtenido=[1]
+  FALLO con --allow-partial: el aviso sigue impreso
+        esperado=[True] obtenido=[False]
+
+OK=81 FAILED=4
+-- FAIL tests/session/test_user_wiring.py
+== 1. la declaracion existe y tiene la forma del settings del cliente ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/session/test_user_wiring.py", line 76, in <module>
+    d = w.declared_wiring()
+        ^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/session/user_wiring.py", line 127, in declared_wiring
+    for nombre, ruta in sorted(reach().items()))
+                               ^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/session/test_write_env.py
+  ok   escribe y sale 0
+  ok   declara THYROX_ROOT
+  ok   y su valor es la raíz real de thyrox
+  ok   NO es el árbol padre (el defecto que originó todo esto)
+  ok   declara los dos localizadores
+  ok   y el .env que escribe lo puede leer reach.py
+  ok   un .env existente NO se pisa
+  ok   y conserva su contenido
+  ok   --force sí lo reescribe
+  ok   y ahora lleva el valor derivado
+  ok   una opción desconocida rehúsa con 2
+  ok   y no crea el archivo
+  ok   sin marcador alcanzable, rehúsa con 2
+  ok   y NO deja un .env a medias
+  ok   y dice por qué
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/session/test_write_env.py", line 209, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/session/test_write_env.py", line 132, in main
+    for l in propio.read_text().splitlines()),
+             ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/.env'
+-- FAIL tests/task/test_census_open_tasks.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/task/test_census_open_tasks.py", line 184, in <module>
+    _evidence = cot.reach.root(cot.reach.reach_roots()[0]) / "scripts" / "evidence"
+                               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_check_lint_zero.py
+== case_clean_shell_passes
+  FAIL un .sh limpio sale 0
+       check-lint-zero: falta el verificador `shellcheck`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL y publica el conteo con su denominador
+       
+== case_shell_warning_blocks
+  FAIL un .sh con variable sin uso sale 1
+       check-lint-zero: falta el verificador `shellcheck`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL y nombra el código y la línea
+       
+== case_python_undefined_name_blocks
+  FAIL un .py con nombre indefinido sale 1
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL ruff lo nombra (F821)
+       
+  FAIL pyright lo nombra
+       
+== case_python_type_error_blocks
+  FAIL un Optional sin estrechar sale 1 aunque ruff calle
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL y es pyright quien lo ve
+       
+== case_clean_python_passes
+  FAIL un .py limpio sale 0
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+  FAIL ruff publica su denominador
+       
+== case_pyright_warning_is_not_an_error
+  FAIL una advertencia de pyright no cuenta como error
+       check-lint-zero: falta el verificador `ruff`; instálalo con `uv sync --group lint`. NO se emite un conteo.
+
+== case_missing_tool_refuses
+  ok   sin shellcheck rehúsa con exit 2
+  ok   y NO publica un cero
+  ok   y nombra la herramienta y el remedio
+== case_other_files_ignored
+  ok   un archivo que no es .sh ni .py no se mide y sale 0
+  ok   y lo dice
+
+5 aprobada(s) · 12 fallida(s) (alcance medido: check_lint_zero.py)
+-- FAIL tests/verify/test_check_stale_divergence.py
+=== Caso 1: una ausencia declarada se reconoce como tal ===
+  OK    «que no esta en este arbol» es ABSENCE
+  OK    «ausente de este arbol» es ABSENCE
+=== Caso 2 (EL QUE DISCRIMINA): una decision de diseno NO es ausencia ===
+  OK    «BLOQUEADO por diseno» es DESIGN
+  OK    «es un PARAMETRO» es DESIGN
+  OK    con AMBAS frases gana diseno, no ausencia
+  OK    «ninguna» es NONE
+=== Caso 3: el referente sale del bloque, y es el que la ausencia nombra ===
+  OK    extrae el especificador de paquete
+  OK    extrae el paquete externo, no el simbolo que lo precede
+=== Caso 4: la vigencia se mide contra el arbol, no se supone ===
+  OK    un subpath declarado por un hermano RESUELVE hoy
+  FALLO  un paquete que el arbol declara ausente y SI esta, resuelve
+  OK    un especificador genuinamente ausente NO resuelve
+  OK    un simbolo exportado por un hermano RESUELVE
+=== Caso 4-bis: las dos cegueras que el censo destapo ===
+  OK    el alcance PRE-renombre resuelve contra el nombre de hoy
+  OK    nombra el contenedor Y el simbolo; se devuelven los dos
+=== Caso 5: rehusa en vez de publicar un cero ===
+  OK    sin referente extraible, INDECIDIBLE y no False
+
+1 fallo(s)
+-- FAIL tests/verify/test_consumer_copies.py
+  ok   ve la copia identica
+  ok   el divergente NO es copia: es fork
+  ok   el propio del consumidor no entra
+  ok   publica su denominador
+  ok   nombra la copia en su salida
+  ok   --strict sale 1 con copias
+  ok   un consumidor sin copias sale 0 con --strict
+  ok   rehusa con exit 2 si falta una raiz
+  ok   y NO emite conteo al rehusar
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_consumer_copies.py", line 101, in <module>
+    CONSUMER = reach.root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_docs_root_resolution.py
+test_it_does_not_die_importing_from_a_foreign_cwd (__main__.DocsRootResolutionTest.test_it_does_not_die_importing_from_a_foreign_cwd)
+El corredor lo invoca con cwd = el consumidor. ... FAIL
+test_the_clone_list_is_asked_for_not_written (__main__.DocsRootResolutionTest.test_the_clone_list_is_asked_for_not_written)
+#170 — un consumidor que enumera los cinco literalmente. ... ok
+
+======================================================================
+FAIL: test_it_does_not_die_importing_from_a_foreign_cwd (__main__.DocsRootResolutionTest.test_it_does_not_die_importing_from_a_foreign_cwd)
+El corredor lo invoca con cwd = el consumidor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_docs_root_resolution.py", line 34, in test_it_does_not_die_importing_from_a_foreign_cwd
+    self.assertNotIn('Traceback', r.stderr, r.stderr[-600:])
+AssertionError: 'Traceback' unexpectedly found in 'Traceback (most recent call last):\n  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_binary_literal_citations.py", line 60, in <module>\n    REPO_ROOTS = tuple(reach.roots().values())\n                       ^^^^^^^^^^^^^\n  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots\n    return {r: root(r, start) for r in reach_roots(start)}\n                                       ^^^^^^^^^^^^^^^^^^\n  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots\n    raise ReachRootError(\npaths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.\n' : rox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.094s
+
+FAILED (failures=1)
+-- FAIL tests/verify/test_error_catalog.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_error_catalog.py", line 57, in <module>
+    CONSUMER = reach.root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_finding_id_unique.py
+  ok   la fila sin .rst se reporta
+  ok   y --strict sale 1
+  ok   la fila CON .rst no se reporta
+  ok   el par 5/05 se reporta como colisión
+  ok   6 y 7 no son colisión
+  ok   la entrada congelada no bloquea
+  ok   y el denominador se publica igual
+  ok   rehúsa con exit 2
+  ok   y no emite ningún conteo
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_finding_id_unique.py", line 259, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_finding_id_unique.py", line 251, in main
+    test_the_real_padding_collisions_are_seen()
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_finding_id_unique.py", line 205, in test_the_real_padding_collisions_are_seen
+    consumer = reach.root("docs")
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_hallazgo_sucesor.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_hallazgo_sucesor.py", line 71, in <module>
+    DOCS = reach.root("docs")
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_path_arithmetic.py
+== 1. el árbol real, contra el baseline declarado ==
+  ok    midió archivos (un 0 aquí sería un verde ciego)
+  FALLO son EXACTAMENTE los del baseline declarado, ninguno mas
+        esperado=[{'.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3', '.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment.py:284', '.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', '.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment2.py:284', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13', '.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29', '.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21', 'tests/verify/test_rst_gate_root.py:57', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12'}] obtenido=[{'.claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21', '.claude/workbench/bin-alcanza-flujo-obligatorio-20260917T110325/generate_bin.pristine.py:189', '.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3', '.claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment.py:284', '.claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141', '.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11', 'tests/session/test_resource_admission.py:22', 'tests/session/test_session_restart.py:461', '.claude/workbench/tsconfig-build-20260926T222930/emit_declarations.pre-annulment2.py:284', '.claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57', 'tests/session/test_session_restart.py:466', '.claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51', '.claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13', '.claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29', '.claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21', 'tests/verify/test_rst_gate_root.py:57', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14', '.claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19', '.claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:12'}]
+
+2. CONTROL POSITIVO — la línea REAL que el árbol tenía antes de #228
+  ok    marca la aritmética vieja
+
+3. El GEMELO — la misma línea, ya arreglada, NO se marca
+  ok    el bootstrap admitido no genera hallazgo
+
+4. El bootstrap partido en DOS líneas SÍ se marca
+  ok    variable-y-luego-insert SÍ genera hallazgo
+
+5. La mención en PROSA no es un uso
+  ok    el docstring que lo menciona no cuenta
+
+6. Denominador y rehúse
+  ok    publica su alcance medido
+  ok    exit 0 con sólo lo congelado
+  ok    sin ninguna raíz medible, exit 2
+  ok    y NO emite conteo en stdout
+
+7. --strict / baseline / --quiet
+  ok    sin --strict, un incumplidor nuevo NO bloquea
+  ok    pero se nombra en la salida
+  ok    con --strict, el incumplidor nuevo bloquea
+  ok    --write-baseline sale 0
+  ok    y congela la entrada
+  ok    congelada, la deuda heredada NO bloquea
+  ok    --quiet publica sólo el conteo, pelado
+
+resultado: 16 de 17 aserciones en verde
+<unknown>:1: SyntaxWarning: invalid escape sequence '\('
+<unknown>:880: SyntaxWarning: invalid escape sequence '\d'
+<unknown>:129: SyntaxWarning: invalid escape sequence '\*'
+-- FAIL tests/verify/test_pre_commit_hook.py
+F.F.F....FFF
+======================================================================
+FAIL: test_a_named_import_between_packages_passes (__main__.PreCommitHook.test_a_named_import_between_packages_passes)
+El control: el mismo acoplamiento por el nombre del paquete no es cruce.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_pre_commit_hook.py", line 286, in test_a_named_import_between_packages_passes
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-hTLLWO/tmp4vsdguwb/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-hTLLWO/tmp4vsdguwb/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+ERROR — el recorrido de los .ts salió 1: 48 |   return undefined
+49 | }
+50 | 
+51 | function identifiersOf(path: string): FileIdentifiers {
+52 |   const text = readFileSync(path, 'utf8')
+53 |   const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, scriptKindOf(path))
+                                                   . NO se emite un veredicto: un .ts sin recorrer no está medido.
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 1 especificador(es) en 2 archivo(s) de 2 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-hTLLWO/tmp4vsdguwb/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 57 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 32 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-hTLLWO/tmp4vsdguwb/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-hTLLWO/tmp4vsdguwb/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_el_clon_real_lo_tiene_activado (__main__.PreCommitHook.test_el_clon_real_lo_tiene_activado)
+`core.hooksPath` no se versiona: se comprueba que este clon lo fijo.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_pre_commit_hook.py", line 295, in test_el_clon_real_lo_tiene_activado
+    self.assertEqual((THYROX / configured).resolve(), HOOK.parent.resolve(),
+AssertionError: PosixPath('/home/user/thyrox/.githooks') != PosixPath('/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/.githooks') : core.hooksPath no apunta al .githooks de este clon
+
+======================================================================
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+El positivo: sin bancos propios, el hook no estorba.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_pre_commit_hook.py", line 170, in test_sin_bancos_el_commit_pasa
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-hTLLWO/tmpmuir1s2j/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-hTLLWO/tmpmuir1s2j/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-hTLLWO/tmpmuir1s2j/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 54 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 30 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-hTLLWO/tmpmuir1s2j/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-hTLLWO/tmpmuir1s2j/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_pre_commit_hook.py", line 162, in test_undeclared_identity_warns_without_blocking
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-hTLLWO/tmpeygxl57m/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-hTLLWO/tmpeygxl57m/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-hTLLWO/tmpeygxl57m/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 54 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 30 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-hTLLWO/tmpeygxl57m/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-hTLLWO/tmpeygxl57m/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_pre_commit_hook.py", line 401, in test_the_store_arrives_reconciled_to_commit
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-hTLLWO/tmpl876qdy2/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-hTLLWO/tmpl876qdy2/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-hTLLWO/tmpl876qdy2/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 58 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 48 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-hTLLWO/tmpl876qdy2/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-hTLLWO/tmpl876qdy2/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+reconciliar-todo: raiz /tmp/thyrox-tests-hTLLWO/tmpj5eigxgn
+  sesiones del store        1
+  omitidas (sin filas)      0
+    44444444-4444-4444-4444-444444444444  1 fila(s) con deriva de 1 tarjeta(s)
+  del store: 2 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
+  escritas: 1 fila(s)
+
+
+======================================================================
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_pre_commit_hook.py", line 422, in test_without_the_store_in_the_commit_not_se_reconciles
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/thyrox-tests-hTLLWO/tmp39xju2xo/.claude/eventos)
+  hogar del banco: /tmp/thyrox-tests-hTLLWO/tmp39xju2xo/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/thyrox-tests-hTLLWO/tmp39xju2xo/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 59 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 48 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/thyrox-tests-hTLLWO/tmp39xju2xo/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/thyrox-tests-hTLLWO/tmp39xju2xo/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 17.455s
+
+FAILED (failures=6)
+-- FAIL tests/verify/test_reference_root_resolution.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_reference_root_resolution.py", line 43, in <module>
+    CONTROL = (reach.root("docs") / ".claude" / "eventos"
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_rst_gate_interpreter.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rst_gate_interpreter.py", line 56, in <module>
+    CONSUMER = reach.root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test_rst_gate_root.py
+  ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+  FALLA test_la_aritmetica_vieja_da_un_veredicto_DISTINTO: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  FALLA test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  FALLA test_la_raiz_derivada_tiene_lo_que_el_gate_toca: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+1/4 aserciones verdes
+-- FAIL tests/verify/test_rule_divergence.py
+EEEEE
+======================================================================
+ERROR: test_anular_el_detector_mueve_solo_a_las_que_lo_declaran (__main__.RuleDivergence.test_anular_el_detector_mueve_solo_a_las_que_lo_declaran)
+La anulacion: sin marcador, caen las cheat-sheet y NADIE mas.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_cada_copia_recibe_exactamente_un_veredicto (__main__.RuleDivergence.test_cada_copia_recibe_exactamente_un_veredicto)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_el_universo_tiene_denominador (__main__.RuleDivergence.test_el_universo_tiene_denominador)
+Un conteo sin denominador no es un resultado.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_todo_nombre_compartido_vive_en_dos_arboles_o_mas (__main__.RuleDivergence.test_todo_nombre_compartido_vive_en_dos_arboles_o_mas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_una_subsumida_no_aporta_ninguna_linea_propia (__main__.RuleDivergence.test_una_subsumida_no_aporta_ninguna_linea_propia)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 39, in setUp
+    self.shared, self.measured = survey()
+                                 ^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_rule_divergence.py", line 32, in survey
+    roots = dict(gate.reach.roots())
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.013s
+
+FAILED (errors=5)
+-- FAIL tests/verify/test_script_naming_scope.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/tests/verify/test_script_naming_scope.py", line 39, in <module>
+    CONSUMER = clone_root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  (286 suite(s) de Python, 33 en rojo, 2 sin medir)
+
+== shell (bash) ==
+-- FAIL tests/agents/test-agent-store-render-tablero.sh
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. dos sesiones en el store: la activa y una anterior ==
+  ok    el store tiene las 3 tareas de las dos sesiones
+== 3. el render escribe el archivo y describe AMBAS sesiones ==
+  ok    render-tablero sale 0
+  ok    el archivo existe
+  ok    la tarea de la sesión ACTIVA aparece
+  ok    la tarea de la sesión ANTERIOR aparece (el punto de #435)
+  ok    la etiqueta canónica se conserva
+  ok    declara su generador real
+== 4. la firma de estados coincide con la de bash (si no, drift eterno) ==
+  ok    la firma emitida es la del directorio VIVO, idéntica a la de snapshot-tasks.sh
+== 5. el saneo sobrevive al markup RST: el gate de sintaxis no protesta ==
+  FALLO check_rst_sintaxis.py acepta el tablero generado
+        esperado=[0] obtenido=[1]
+        Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_rst_sintaxis.py", line 88, in <module>
+    RAIZ = reach.root('docs')
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1186, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 683, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  FALLO y lo midio de verdad: el denominador declara el archivo
+        esperado=[1] obtenido=[0]
+== 5-bis. CONTROL — el mismo exit 0 con CERO archivos revisados ==
+  FALLO la ruta sin nada que revisar tambien sale 0
+        esperado=[1] obtenido=[0]
+  FALLO pero su denominador declara CERO archivos medidos
+        esperado=[1] obtenido=[0]
+== 6. sin --tasks-dir sigue rindiendo (uso manual, sin sesión activa) ==
+  ok    render sin sesión activa sale 0
+  ok    y sigue describiendo las dos sesiones
+== 7. store vacío: no revienta, deja constancia ==
+  ok    un store sin tareas sale 0
+== 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+  ok    cambiar el subject mueve la firma
+  ok    sin tocar nada la firma es estable
+
+14 ok, 4 fallos
+-- FAIL tests/corpus/test-markdown-to-rst.sh
+  FALLA: caso 1 produce RST válido
+  FALLA: caso 2 produce RST válido
+  FALLA: caso 3 produce RST válido
+  FALLA: caso 4 produce RST válido
+  FALLA: el literal con espacio inicial no rompe el parseo
+  FALLA: un fragmento real del corpus heng convierte y valida
+  FALLA: una celda con tubería escapada no desalinea la list-table
+  OMITIDO: /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/recommended-practice-ccsd-650.0-m-3/modelo-funcional.rst ausente — el control positivo no se pudo correr
+  FALLA: caso 9 produce RST válido
+  FALLA: caso 9-bis produce RST válido
+  FALLA: caso 9-ter produce RST válido
+  FALLA: caso 10 produce RST válido
+test-markdown-to-rst: 19 aserciones OK, 11 fallidas
+-- FAIL tests/hooks/test-bridge-hooks.sh
+== bridge_hooks ==
+  ok    preserva advisorModel al escribir
+  FALLO declara la clave hooks
+        esperado=[True] obtenido=[False]
+  FALLO re-aplicar es no-op
+        esperado=[1] obtenido=[0]
+  ok    no-op deja el mtime intacto
+  ok    las dos copias divergentes se puentean
+  FALLO Stop NO se puentea por defecto
+        esperado=[False] obtenido=[]
+  FALLO Stop entra con --include-stop
+        esperado=[True] obtenido=[]
+  FALLO --include-stop suma comandos
+        esperado=[1] obtenido=[0]
+  ok    dry-run no escribe (control)
+  FALLO dry-run anuncia que no escribió
+        esperado=[1] obtenido=[0]
+  FALLO dry-run muestra el diff
+        esperado=[1] obtenido=[0]
+
+aserciones: 11  ok: 4  fallo: 7
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 235, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 169, in main
+    merged, skipped = bridged_hooks(args.include_stop)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 130, in bridged_hooks
+    for root in reach_roots.require_all().values():
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1249, in require_all
+    mapping = reach(start)
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 235, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 169, in main
+    merged, skipped = bridged_hooks(args.include_stop)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 130, in bridged_hooks
+    for root in reach_roots.require_all().values():
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1249, in require_all
+    mapping = reach(start)
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'hooks'
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 235, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 169, in main
+    merged, skipped = bridged_hooks(args.include_stop)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 130, in bridged_hooks
+    for root in reach_roots.require_all().values():
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1249, in require_all
+    mapping = reach(start)
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'hooks'
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 235, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 169, in main
+    merged, skipped = bridged_hooks(args.include_stop)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/hooks/bridge_hooks.py", line 130, in bridged_hooks
+    for root in reach_roots.require_all().values():
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1249, in require_all
+    mapping = reach(start)
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/lib/test-node-resolution.sh
+OK   sube desde un nieto al node_modules del abuelo
+OK   el node_modules mas cercano gana
+OK   sin node_modules en la cadena: exit 1
+OK   sin node_modules en la cadena: no emite ruta
+OK   resuelve el directorio del paquete
+OK   arbol real: el duenyo es alcanzable desde src/packages/agent
+FALLA arbol real: el duenyo esta anclado al store de la raiz — esperado 'anclado', obtenido 'no'
+OK   izado: el duenyo es la raiz, acepta
+OK   aislado que ancla en la raiz: acepta
+OK   aislado que ancla en la raiz ANIDADA: rehusa
+OK   jardin sin entradas: rehusa, no publica un cero
+OK   solo hermanos de workspace: rehusa (no son entradas del store)
+OK   izado con anidado que el lockfile de la raiz declara: acepta
+OK   izado con anidado que el lockfile de la raiz NO declara: rehusa
+
+aserciones: 13 de 14 · fallos: 1
+-- FAIL tests/lib/test-script-deprecated.sh
+  ok   rehúsa sin declaración (exit 3)
+  ok   y NO ejecuta el cuerpo
+  ok   corre con la declaración (exit 0)
+  ok   y ejecuta el cuerpo
+  ok   la declaración de OTRO script no vale
+  ok   el aviso no contamina stdout
+  ok   el aviso sale por stderr
+  ok   el aviso nombra al sucesor
+  ok   el aviso cita el hallazgo
+  ok   gate: no marca el bien formado
+  ok   gate: ve la cabecera sin guard
+  ok   gate: nombra el archivo
+  ok   gate: ve el guard sin cabecera
+  ok   gate: ve la cabecera sin SUCESOR
+  ok   gate: un script sin marcadores no es infractor
+  ok   --strict sale 0 sin infractores
+  ok   --strict sale 1 con un infractor
+  ok   el reporte declara el alcance medido
+  ok   el repo real no tiene infractores
+  ok   guard .py: rehusa por omision
+  ok   guard .py: corre con la declaracion
+  ok   gate: la declaracion .py completa no es infractora
+  ok   gate: ve la cabecera .py sin HALLAZGO
+  FALLA gate: sin argumentos mide TODAS las raices del alcance — esperado [0] obtenido []
+  FALLA gate: publica el desglose por raiz aunque el total sea cero — esperado [1] obtenido [0]
+  ok   gate: una raiz ausente rehusa con 2
+  ok   gate: al rehusar NO emite cifra de infractores
+
+25 ok · 2 falla(s)
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach_roots.py", line 135, in <module>
+    raise SystemExit(_owner._run(sys.argv))
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1468, in _run
+    code = main(argv)
+           ^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1293, in main
+    for path in paths():
+                ^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1238, in paths
+    return tuple(reach(start).values())
+                 ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/lib/test-toolchain-consumer-env.sh
+  FALLO 1. esperaba del-consumidor, vi <unset>
+  ok    2. el proceso gana
+  ok    3. una clave fijada vacía se respeta
+  ok    4. otro prefijo no se carga
+  ok    5. fuera de un clon y sellado, no hay clave
+
+5 casos: 4 ok, 1 fallos
+-- FAIL tests/lib/test-toolchain-degraded.sh
+  ok    las tres piezas existen en la biblioteca
+  ok    el aviso abre con IMPORTANT
+  ok    nombra la herramienta dos veces (al pedirla y al seguir sin ella)
+  ok    nombra la precondicion a corregir
+  ok    declara que se continua sin la herramienta
+  ok    el aviso varia con sus argumentos — no es una constante
+  ok    rehusa sin argumentos (exit 2)
+  ok    el lector de SQLite resuelve en este arbol (con el CLI ausente)
+  ok    rehusa con exit 2 cuando el interprete no resuelve
+  ok    el rechazo del lector emite el aviso degradado
+  ok    bun ausente: rehusa con 2 y emite el aviso degradado
+  ok    bun presente sin node_modules: rehusa nombrando bun install
+  FALLO rehusa con bun 1.3.x presente y node_modules poblado
+  ok    la precondicion de sqlite es ejecutable sin declarar nada
+  ok    la precondicion de bun-ausente es ejecutable sin declarar nada
+  ok    la precondicion de bun-sin-modulos es ejecutable sin declarar nada
+
+16 casos: 15 ok, 1 fallos
+-- FAIL tests/lib/test-toolchain-sh.sh
+  ok    el selector existe
+  ok    el proveedor usa su propio entorno
+  ok    sin entorno rehusa y nombra uv sync
+  FALLO esperaba 'uv run --project  python', dio ''
+  ok    proveedor y consumidor son entornos distintos
+  ok    un consumidor desconocido se rehusa
+
+6 casos: 5 ok, 1 fallos
+-- FAIL tests/lib/test-workbench-sh.sh
+  ok    compone la ruta dentro del run
+  ok    no crea el archivo, solo su ruta
+  ok    REHUSA si el run no existe, en vez de crearlo
+  ok    y no lo deja creado
+  ok    rehusa un nombre con separador — escaparia del run
+  ok    rehusa sin nombre
+  ok    rehusa sin run
+  ok    se exporta a procesos hijos
+  FALLO acuna un identificador con sufijo ISO basico
+        esperado=[si]
+        obtenido=[no]
+  ok    acunar NO crea nada en el hogar
+  FALLO el andamiaje crea el run bajo el hogar declarado
+        esperado=[si]
+        obtenido=[no]
+  ok    y el resolutor lo encuentra sin puntero
+  FALLO el archivo de trabajo nace DENTRO del run
+        esperado=[contenido]
+        obtenido=[]
+  FALLO sin runs devuelve 1, no una ruta inventada
+        esperado=[1]
+        obtenido=[2]
+  ok    rehusa sin slug
+  ok    el resolutor tambien se exporta a procesos hijos
+
+16 casos: 12 ok, 4 fallos
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1
+environment: line 3: THYROX_SH_MARKER: unbound variable
+workbench.sh: no se hallo la raiz de THYROX ascendiendo desde /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1
+thyrox_work_file: se exigen el run y el nombre
+tests/lib/test-workbench-sh.sh: line 95: : No such file or directory
+cat: /nota.txt: No such file or directory
+-- UNMEASURED (exit 2) tests/session/hardware/test-gpu-pools-real.sh
+-- FAIL tests/session/test-headless-pool-thyrox-p.sh
+  FALLA el pool sale 0 — esperado [0] obtenido [1]
+  FALLA resumen del pool — esperado [items=2 ok=2 fallidos=0] obtenido [items=2 ok=0 fallidos=2]
+  ok   un .json por ítem
+  FALLA el .json es la línea result, de éxito — esperado [result/success] obtenido []
+  FALLA con el texto del modelo — esperado [concepto: admisión] obtenido []
+  FALLA el stream abre con system/init — esperado [system/init] obtenido []
+  FALLA las herramientas del pool llegan acotadas — esperado [["Read"]] obtenido []
+  FALLA una línea assistant por petición, con su uso — esperado [2x500] obtenido []
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/thyrox-tests-hTLLWO/tmp.8rPdv40E3s/thyrox-p en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+-- FALLIDO beta
+-- FALLIDO alfa
+items=2 ok=0 fallidos=2
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+  FALLA por el túnel: el pool sale 0 — esperado [0] obtenido [2]
+  FALLA por el túnel: el ítem termina bien — esperado [items=1 ok=1 fallidos=0] obtenido []
+  FALLA por el túnel: el servicio recibe la llave que puso el proxy — esperado [auth=x-api-key] obtenido []
+  ok   por el túnel: el socket no queda al terminar
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/bin/cli en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+headless-pool: REHUSA — el proxy de credencial no arrancó (/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/bin/provider-credential-proxy): thyrox_toolchain: 'bun' resuelve, y /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/node_modules esta ausente o vacio. IMPORTANT si desea usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli es necesario corregir cd /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1 && bun install por el momento, continua sin usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli 
+
+2 ok · 10 falla(s) (alcance medido: headless-pool con thyrox -p)
+gawk: fatal: cannot open file `/tmp/thyrox-tests-hTLLWO/tmp.8rPdv40E3s/requests.log' for reading: No such file or directory
+-- FAIL tests/session/test-jobs-ledger-home.sh
+  ok    el hogar de las corridas NO mueve el ledger
+  FALLA el .job cae bajo la raíz del ledger, en su sesión, y nada en las corridas — esperado 'si 0', obtenido 'no 0'
+  ok    THYROX_SESSION_LEDGER_DIR es el ledger de la sesión, tal cual
+
+2 ok, 1 fallos
+-- FAIL tests/session/test-pool-calibrate.sh
+  FALLA 1. sale 0 — esperado [0] obtenido [2]
+  FALLA 2. una fila por ejecución, de thyrox -p — esperado [2x/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/bin/cli] obtenido []
+  FALLA 2b. con la huella de la plantilla — esperado [7ea109993456144eeeb024da5c78d0605b71b61b3fdbe5e5a967ce90b716fae9] obtenido []
+  FALLA 3. cada ítem llegó al proxy con el marcador local, no con la credencial del anfitrión — esperado [4xauth=x-api-key] obtenido []
+  ok   4. el proxy no queda vivo
+  FALLA 4b. lo dice: peticiones y filas — esperado [1] obtenido [0]
+  FALLA 5. sin peticiones al proxy: exit 1 — esperado [1] obtenido [2]
+  FALLA 5b. lo nombra — esperado [1] obtenido [0]
+  ok   6. sin GNU Time: exit 2
+  ok   6b. sin filas
+
+3 ok · 7 falla(s) (alcance medido: pool-calibrate contra el proxy local)
+-- FAIL tests/session/test-wait-jobs-ledger-home.sh
+== 1. el .env del consumer declara THYROX_JOBS_LEDGER_DIR ==
+  FALLA ledger-home es la raiz declarada
+        esperado: /tmp/thyrox-tests-hTLLWO/tmp.wHu5Pw7hC9/ledgers
+        obtenido: /home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.ledger
+  FALLA register escribe el .job bajo <raiz>/<sesion>/
+        esperado: si
+        obtenido: no
+== 2. dos sesiones, dos ledgers ==
+  FALLA la segunda sesion no pisa el .job de la primera
+        esperado: 2
+        obtenido: 0
+== 3. la clave nueva exportada en el proceso, sin .env ==
+  FALLA ledger-home sale del proceso
+        esperado: /tmp/thyrox-tests-hTLLWO/tmp.wHu5Pw7hC9/from-process
+        obtenido: /home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.ledger
+== 4. THYROX_SESSION_LEDGER_DIR exportada fija el ledger tal cual ==
+  ok    el ledger de sesión gana
+  FALLA y THYROX_JOBS_DIR exportada ya no es el ledger
+        esperado: /tmp/thyrox-tests-hTLLWO/tmp.wHu5Pw7hC9/ledgers
+        obtenido: /home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.ledger
+== 5. CONTROL — THYROX_JOBS_DIR en el .env NO es el ledger ==
+  FALLA sin la clave nueva, el ledger queda en su default
+        esperado: /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/.claude/jobs-ledger
+        obtenido: /home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.ledger
+  ok    y el hogar de runs no recibe un ledger
+== 6. un valor relativo se resuelve contra la raíz, como todo hogar ==
+  FALLA cuelga de la raíz de thyrox
+        esperado: /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/relative/ledgers
+        obtenido: /home/user/thyrox/.claude/workbench/task-ids-english-rename-20260929T083730/outputs/1.ledger
+resultado: 2 ok · 7 falla(s)
+find: '/tmp/thyrox-tests-hTLLWO/tmp.wHu5Pw7hC9/ledgers': No such file or directory
+-- FAIL tests/session/test-wait-jobs.sh
+== 1. sintaxis ==
+  ok    wait-jobs.sh parsea
+  ok    stop_gate.py parsea
+== 2. barrera positiva: N trabajos que terminan bien ==
+  ok    N trabajos OK -> exit 0
+  ok    ledger vacío tras recoger
+== 3. un trabajo muere sin marcador ==
+  ok    un BAIL -> exit 2
+  ok    nombra al que murió
+  ok    no arrastra al que sí terminó
+  ok    el que terminó bien lleva exit=0
+  ok    un BAIL no inventa salida: no hay marcador
+  ok    sin salidas distintas de 0 no hay pie
+== 4. CONTROL POSITIVO — el episodio H-DOCS-155 ==
+  ok    terminado y SIN RECOGER -> el gate bloquea
+  ok    la recogida IMPRIME el resultado
+  ok    la cabecera lleva la salida del marcador
+  ok    el pie cuenta las salidas distintas de 0
+  ok    tras recoger, el gate calla
+== 5. el gate no estorba ni reincide ==
+  ok    sin trabajos -> no bloquea
+  ok    vivo sin marcador -> bloquea
+  ok    stop_hook_active=true -> no reincide
+  ok    abandono declarado -> el gate lo suelta
+== 6. archivar empaqueta el ledger en <id>.tar.gz (T-096) ==
+  FALLO el .tar.gz existe
+        esperado=[0] obtenido=[1]
+  FALLO el archivo trae el .job
+        esperado=[demo] obtenido=[]
+  ok    el ledger vivo se vació de .job
+  ok    archivar en vacío es no-op (exit 0)
+== 7. adopción de un huérfano real (TASK-DOCS-0377) ==
+  ok    el .job registra cmd=
+  ok    el .job registra proc_start=
+  ok    tras forget el ledger queda vacío
+  ok    pero el proceso sigue vivo (eso ES el huérfano)
+  ok    adopt anota la RAÍZ del árbol, no cada proceso
+  ok    adopt lo devuelve al ledger
+  ok    adopt recupera el log por /proc/<pid>/fd/1
+  ok    adoptar dos veces no duplica
+  ok    adopt no se auto-adopta
+== 8. proc_start distingue un pid RECICLADO (control anulado) ==
+  ok    con el proc_start real -> VIVO
+  ok    con el proc_start falseado -> RECICLADO
+  ok    wait consume el eje: reciclado -> exit 2, no timeout 3
+== 9. la salida de estado no arrastra el token del renombre (ERR-028) ==
+  ok    el resumen dice 'estado:'
+== 10. status DISCRIMINA: un VIVO sano no es 'Exit code 1' (H-THYROX-04) ==
+  ok    un VIVO sano -> status exit 0
+  ok    un BAIL real -> status sigue en exit 1
+  ok    nombre corto sin ambiguedad: suelta el ledger
+  ok    ambiguo: nombra el primer candidato
+  ok    ambiguo: nombra el segundo candidato
+  ok    ambiguo: los dos siguen anotados
+  ok    etiqueta completa: queda solo el otro
+  ok    etiqueta completa: el que queda es el que no se nombro
+  ok    latido: wait sigue saliendo 0
+  ok    latido: stdout conserva su cabecera
+  ok    latido: stderr anuncia el primero que asienta
+  ok    latido: stderr late mientras uno sigue vivo
+  ok    latido: nada de progreso contamina stdout
+
+47 ok, 2 fallos
+asentado: t1 -> OK (1 de 2)
+asentado: t2 -> OK (2 de 2)
+asentado: muerto -> BAIL (1 de 2)
+asentado: vivo -> OK (2 de 2)
+asentado: suite-api -> OK (1 de 1)
+olvidado: largo (abandono declarado; anotar el motivo en el progreso)
+tar (child): /tmp/thyrox-tests-hTLLWO/fixture-du0qlA/sesion-x.tar.gz: Cannot open: No such file or directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
+tar: Error is not recoverable: exiting now
+-- FAIL tests/task/test-closure-graph.sh
+caso 1: el guion existe y responde --help
+  FALLA: no responde --help
+caso 2: extrae la arista en las seis formas de declarar sucesor
+  FALLA: no vio el sucesor #101
+  FALLA: no vio el sucesor #102
+  FALLA: no vio el sucesor #103
+  FALLA: no vio el sucesor #104
+  FALLA: no vio el sucesor #105
+  FALLA: no vio el sucesor #106
+caso 3: no confunde una cita de tarea con una declaracion de sucesor
+caso 4: el ranking publica cuantos nodos midio
+  FALLA: el reporte no declara su denominador
+caso 5: un ciclo termina, y da el mismo resultado dos veces
+  FALLA: no termino sobre un grafo con ciclo (exit 1)
+caso 6: sin arista de vuelta, el reporte declara que el cero no es evidencia
+  FALLA: publico ciclos: 0 sin declarar que el grafo no puede tenerlos
+caso 7: con arista de vuelta, el reporte publica su cobertura
+  FALLA: no publico la cobertura de la arista de vuelta
+caso 8: ordena por lo que desbloquea, no por el numero de la tarea
+  FALLA: la hoja quedo antes que la raiz que desbloquea a tres
+caso 9: un DESCONOCIDO va antes que un pendiente comun del mismo peso
+  FALLA: el DESCONOCIDO no gano al pendiente comun de igual peso
+caso 10: un nodo aislado recibe masa, que es lo que hace el reparto del sumidero
+  FALLA: algun nodo quedo en rango cero: el sumidero no repartio
+caso 11: ordena por alcanzabilidad cuando el rango dice lo contrario
+  FALLA: el nodo de rango alto y alcance cero gano al que desbloquea a cuatro
+caso 12: publica la ambiguedad del id de tarea, y sin store dice que no pudo
+  FALLA: el reporte no dice nada sobre la resolucion del id de tarea
+  FALLA: sin store devolvio '' en vez de None: un 0 seria verde falso
+caso 13: el default del store es absoluto y no depende del cwd
+  FALLA: TASK_STORE no es absoluta (): su resolucion depende del cwd
+  FALLA: desde otro cwd el default devolvio '': mide por cwd
+
+FAIL: 13 casos, 19 fallo(s)
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/usr/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+  File "/usr/lib/python3.11/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+-- FAIL tests/task/test-implementation-order.sh
+== 1. sintaxis ==
+  ok    implementation_order.py parsea
+== 2. el universo controlado ==
+  ok    corre sobre el universo
+== 3. cabecera: tamano del graph y su procedencia ==
+  ok    cuenta las 16 tareas
+  ok    13 edges: 12 del tablero + 1 de prosa
+== 4. Tarjan: los cycles se detectan y se condensan ==
+  ok    tres cycles
+  ok    el cycle de dos es {4,5}
+  ok    el cycle de tres es {11,12,13}
+  ok    el cycle bloqueado es {15,16}
+  ok    12 componentes tras condensar (16 nodos - 1 - 2 - 1)
+== 5. Kahn: ready es 'sin bloqueador ABIERTO', no 'sin bloqueador' ==
+  ok    9 de 15 no cerradas estan ready
+== 5-bis. el bloqueo externo es del COMPONENTE, no del miembro (#533) ==
+  ok    #15 NO esta ready
+  ok    #16 NO esta ready (el bloqueo es del cycle entero)
+  ok    #14, su bloqueador externo, SI esta ready
+  ok    los tres del cycle sin bloqueador externo SI estan ready
+== 6. unblock count: descendientes en el reverse graph ==
+  ok    #1 destraba 3
+  ok      … y nombra a #2
+  ok      … y a #3
+  ok      … y a #8 (via prosa)
+  ok    #4 declara su cycle con #5
+  ok    el SCC {4,5} destraba 1 (#6)
+  ok    #7 es hoja del graph declarado
+== 7. el ranking pone primero al que mas destraba ==
+  ok    el top-1 es #1
+== 8. control negativo: id fuera del universo ==
+  ok    --explain de un id ausente sale 1
+== 8-bis. etapa 5: la premisa se verifica antes de despachar ==
+  ok    la etapa 5 corre desde el pipeline
+  FALLO sin el clon de la aplicacion, la etapa 5 nombra su negativa
+        esperado=[1] obtenido=[0]
+== 9. universo vacio: no revienta ==
+  ok    directorio sin tareas sale 0
+== 10. el sustrato lo decide el llamador: el mismo universo por stdin (#579) ==
+  ok    por stdin cuenta las mismas 16 tareas
+  ok    por stdin arma el mismo graph (13 edges, 3 cycles)
+
+test-implementation-order.sh: 27 ok · 1 fallo(s)
+-- FAIL tests/task/test-refresh-board.sh
+caso 1 — estado PLENO: sin citas acuñadas, el volcado no mueve nada
+  ok   — el .rst NO lleva el aviso de degradación (control positivo)
+caso 2 — estado DECLARADO: una cita acuñada cuyo sujeto cambia debajo
+caso 3 — --strict convierte la degradación en fallo para el llamador
+caso 4 — estado REHUSADO: sin directorio vivo
+  ok   — sale 2 sin directorio vivo
+  ok   — sale 2 con un team que no existe
+
+test-refresh-board: 3 ok, 7 falla(s)
+  FALLA — sale 0
+grep: /tmp/thyrox-tests-hTLLWO/tmp.jMBO4zMR5O/tablero.rst: No such file or directory
+grep: /tmp/thyrox-tests-hTLLWO/tmp.jMBO4zMR5O/tablero.rst: No such file or directory
+  FALLA — el .rst incorporó la tarea viva
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+StopIteration
+  FALLA — sale 0: el tablero SÍ se produce, degradado y declarado
+grep: /tmp/thyrox-tests-hTLLWO/tmp.jMBO4zMR5O/tablero.rst: No such file or directory
+  FALLA — el .rst lleva el aviso de degradación
+grep: /tmp/thyrox-tests-hTLLWO/tmp.jMBO4zMR5O/tablero.rst: No such file or directory
+  FALLA — el aviso NOMBRA la cita que habría cambiado de sujeto
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+StopIteration
+  FALLA — el store conserva el sujeto acuñado: no se escribió nada
+  FALLA — sale 5 con --strict
+-- FAIL tests/verify/test-cross-model-read.sh
+FALLA archivo real del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules en la cadena: exit 2
+OK   guard sin node_modules: nombra lo que falta
+OK   guard con un duenyo que no es la raiz: exit 2
+OK   ningun echo del gate lleva sustitucion viva
+
+aserciones: 5 de 6 · fallos: 1
+-- FAIL tests/verify/test-eventos-hook.sh
+  FALLA el arbol vivo no declara ningun evento desconocido — esperado [0] obtenido [1]
+  ok   un evento con typo sale con codigo 1
+  ok   la caja distinta sale con codigo 1
+  ok   un evento valido no bloquea
+  ok   sin universo derivable sale con codigo 2
+  FALLA el reporte declara ambos universos — esperado [1] obtenido [0]
+  FALLA el reporte nombra los eventos sin consumir — esperado [1] obtenido [0]
+  ok   SIN MEDIR — el contenedor no tiene /home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/.claude/settings.local.json
+  ok   SIN MEDIR — ningun evento es exclusivo del archivo externo
+  ok   el árbol declarado entra en el alcance: su typo sale con código 1
+  ok   y nombra su settings.local.json
+
+8 ok · 3 falla(s)
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_eventos_hook.py", line 179, in <module>
+    raise SystemExit(main(sys.argv))
+                     ^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_eventos_hook.py", line 140, in main
+    raices = raices_medidas()
+             ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_eventos_hook.py", line 44, in raices_medidas
+    raices = [str(p) for p in reach.roots().values()]
+                              ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_eventos_hook.py", line 179, in <module>
+    raise SystemExit(main(sys.argv))
+                     ^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_eventos_hook.py", line 140, in main
+    raices = raices_medidas()
+             ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_eventos_hook.py", line 44, in raices_medidas
+    raices = [str(p) for p in reach.roots().values()]
+                              ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test-gitattributes.sh
+test-gitattributes: 19 de 21 aserciones en verde
+FALLO: 5a. el arbol real pasa el gate
+  esperado: 0
+  obtenido: 1
+AVISO: 0 repos medidos — el caso 5 no midio nada
+-- FAIL tests/verify/test-hook-script-token.sh
+test-hook-script-token: 11 de 21 aserciones en verde
+FALLO: 1a. interprete + script
+  esperado: 0
+  obtenido: 1
+FALLO: 1b. script directo con argumento
+  esperado: 0
+  obtenido: 1
+FALLO: 2a'. la forma se nombra
+  esperado: sin_ruta
+  obtenido: 
+FALLO: 2b'. la forma se nombra
+  esperado: varios_scripts
+  obtenido: 
+FALLO: 2c'. la forma se nombra
+  esperado: varios_scripts
+  obtenido: 
+FALLO: 2d'. la forma se nombra
+  esperado: ruta_en_cadena
+  obtenido: 
+FALLO: 2e'. la forma se nombra
+  esperado: ruta_tras_opcion
+  obtenido: 
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1238, in paths
+    return tuple(reach(start).values())
+                 ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+FALLO: 5a. los cinco repos reales pasan el gate
+  esperado: 0
+  obtenido: 1
+AVISO: 0 comandos medidos — el caso 5 no midio nada
+FALLO: 6a. sin settings, el gate lo declara
+  esperado: si
+  obtenido: no
+-- FAIL tests/verify/test-pre-commit-docs.sh
+  ok   sin archivos de prosa: exit 0
+  ok   sin archivos de prosa: no gasta tiempo en gates
+  ok   forma vetada nueva: bloquea
+  ok   forma vetada nueva: la nombra
+  ok   sintaxis RST rota: bloquea
+  FALLA prosa limpia: pasa — esperado [0] obtenido [1]
+  ok   el archivo mas citado del repo NO bloquea
+  ok   un .md tambien se mide
+  ok   el bloqueo nombra el escape hatch
+
+8 ok · 1 falla(s)
+-- FAIL tests/verify/test-premise-drift.sh
+== sin el clon de la aplicacion: el gate REHUSA
+  FAIL exit 2 sin el clon de la aplicacion
+       esperaba 2, obtuvo 1
+  FAIL nombra la raiz que falta
+       esperaba si, obtuvo no
+SIN MEDIR: falta el clon de la aplicacion
+-- FAIL tests/verify/test-suite-discrimina.sh
+== 1. sintaxis ==
+  ok    check_suite_discrimina.py parsea
+== 2. CONTROL POSITIVO del detector — _verdict, la funcion de H-DOCS-224 ==
+  ok    _verdict: el literal sale de 3 sitios de retorno
+== 3. la mutacion va DESPUES del docstring, y el archivo sigue parseando ==
+  ok    la mutacion no pisa el docstring y el archivo parsea
+== 4. suites_naming es cota SUPERIOR: nombrar no es ejecutar ==
+  ok    una suite que solo MENCIONA el archivo entra en la cota superior
+== 5. el juez NO reporta lo que ya se cerro (register_agent_session) ==
+  ok    register_agent_session: 0 sin discriminar
+== 6. CONTROL NEGATIVO — el juez SI reporta un positivo real del repo ==
+  FALLO classify_agents se reporta SIN COBERTURA (el juez puede fallar)
+        esperado=[3] obtenido=[0]
+  FALLO el titular concuerda con las filas que imprime
+        esperado=[1] obtenido=[0]
+== 7. el barrido no deja mutantes: el arbol queda como estaba ==
+  ok    el barrido no cambia el estado del arbol
+  FALLO ningun MUTANTE insertado sobrevive al barrido
+        esperado=[0] obtenido=[2]
+== 8. CONTROL ANULADO — se simula el proceso muerto de H-DOCS-307 ==
+  FALLO un mutante vivo hace fallar a --verificar
+        esperado=[1] obtenido=[2]
+  FALLO y lo nombra VIVO, con su fecha de insercion
+        esperado=[1] obtenido=[0]
+== 9. el barrido de la marca ve lo que el ledger no anoto ==
+  FALLO sin entrada en el ledger, el barrido lo sigue viendo
+        esperado=[1] obtenido=[2]
+  FALLO y declara que su anotacion falta
+        esperado=[1] obtenido=[0]
+== 10. una entrada sobre archivo limpio es residual, no un mutante vivo ==
+  FALLO una entrada huerfana no hace fallar el gate
+        esperado=[0] obtenido=[2]
+  FALLO y se reporta como residual
+        esperado=[1] obtenido=[0]
+== 11. la marca INSERTADA no es la DEFINICION del marcador ==
+  FALLO declarar el marcador no cuenta como mutante
+        esperado=[0] obtenido=[2]
+== 12. la entrada de un archivo AUSENTE se poda; la de uno limpio no ==
+  FALLO queda exactamente la entrada del archivo presente
+        esperado=[1] obtenido=[2]
+  FALLO y la que sobrevive es la del archivo limpio
+        esperado=[api_error] obtenido=[f]
+== 14. CONTROL — una suite YA ROJA en arbol limpio no es control ==
+  FALLO una suite ya roja se reporta BASELINE ROJO, no ok
+        esperado=[1] obtenido=[0]
+  FALLO y el titular la cuenta aparte
+        esperado=[1] obtenido=[0]
+== 13. el arbol real esta limpio y publica su denominador ==
+  FALLO --verificar sobre el arbol real sale 0
+        esperado=[0] obtenido=[2]
+  FALLO el titular publica su alcance medido
+        esperado=[1] obtenido=[0]
+== 15. --limit acota los candidatos por ejecucion ==
+  FALLO con --limit 1 se juzga exactamente uno
+        esperado=[1] obtenido=[]
+  FALLO el corte se declara con exit 3, no con un verde
+        esperado=[3] obtenido=[2]
+  FALLO y el titular nombra la cota con su denominador
+        esperado=[1] obtenido=[0]
+  FALLO al cortar no queda ningun mutante en vuelo
+        esperado=[0] obtenido=[2]
+== 16. la segunda ejecucion AVANZA: no re-juzga lo ya juzgado ==
+  FALLO la segunda tanda juzga OTRO candidato
+        esperado=[distinto] obtenido=[igual:/]
+  FALLO y el titular sigue declarando el universo entero
+        esperado=[1] obtenido=[0]
+== 17. ANULACION de la cota — sin tope, los tres en una tanda ==
+  FALLO sin --limit se juzgan los tres
+        esperado=[3] obtenido=[]
+  ok    y no se declara ningun corte
+  FALLO el exit vuelve a ser el del veredicto, no el del corte
+        esperado=[0] obtenido=[2]
+== 18. el cursor CADUCA cuando el archivo cambia ==
+  FALLO sin cambios, la segunda tanda no vuelve a juzgar
+        esperado=[0] obtenido=[]
+  FALLO editado uno, vuelve exactamente ese
+        esperado=[1] obtenido=[]
+  FALLO y es el editado, no otro
+        esperado=[1] obtenido=[0]
+== 19. --budget corta por reloj, y tampoco deja nada en vuelo ==
+  FALLO el presupuesto agotado declara su corte con exit 3
+        esperado=[3] obtenido=[2]
+  FALLO y nombra el reloj, no el conteo
+        esperado=[1] obtenido=[0]
+  FALLO tras el corte por reloj no queda nada en vuelo
+        esperado=[0] obtenido=[2]
+== 20. el ledger es JSONL: se AÑADE, no se reescribe ==
+  FALLO el ledger de una tanda existe
+        esperado=[1] obtenido=[0]
+  FALLO cada linea es un objeto JSON
+        esperado=[1] obtenido=[]
+  FALLO con mas de un registro, el archivo ENTERO no es JSON
+        esperado=[1] obtenido=[]
+  FALLO un ledger heredado en .json se sigue leyendo
+        esperado=[1] obtenido=[0]
+== 21. --solo IGNORA el cursor: es una peticion explicita ==
+  FALLO la SEGUNDA corrida de --solo vuelve a juzgar
+        esperado=[1] obtenido=[]
+  FALLO sin --solo, ese mismo candidato si se salta
+        esperado=[1] obtenido=[0]
+
+7 ok, 36 fallos
+fatal: Unable to read current working directory: No such file or directory
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/usr/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/thyrox-tests-hTLLWO/tmp.OeGrzfYntT/ledger17.jsonl'
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/usr/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/thyrox-tests-hTLLWO/tmp.OeGrzfYntT/ledger17.jsonl'
+-- FAIL tests/verify/test-unreachable-rules.sh
+  ok   el arbol vivo tiene al menos una regla inalcanzable
+  FALLA el reporte nombra la regla de build/ cubierta por rm -rf — esperado [1] obtenido [0]
+  ok   un allow ajeno al deny no bloquea
+  ok   un deny de herramienta entera cubre al allow especifico
+  ok   un ask de herramienta entera cubre al allow especifico
+  ok   un deny mas estrecho que el allow NO lo cubre
+  ok   sin reglas que medir sale con codigo 2
+  FALLA el reporte declara los archivos leidos — esperado [1] obtenido [0]
+  FALLA el reporte declara cuantas reglas midio — esperado [1] obtenido [0]
+  ok   el comodin intermedio se declara indecidible
+  ok   el deny alcanza al subcomando, no solo a la cadena entera
+  ok   la variable antepuesta no evade el deny
+  ok   un deny estrecho no cubre al subcomando ancho
+
+10 ok · 3 falla(s)
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 239, in <module>
+    raise SystemExit(main(sys.argv))
+                     ^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 206, in main
+    roots = raices_medidas()
+            ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 56, in raices_medidas
+    raices = [str(p) for p in reach.roots().values()]
+                              ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 239, in <module>
+    raise SystemExit(main(sys.argv))
+                     ^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 206, in main
+    roots = raices_medidas()
+            ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 56, in raices_medidas
+    raices = [str(p) for p in reach.roots().values()]
+                              ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 239, in <module>
+    raise SystemExit(main(sys.argv))
+                     ^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 206, in main
+    roots = raices_medidas()
+            ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_unreachable_rules.py", line 56, in raices_medidas
+    raices = [str(p) for p in reach.roots().values()]
+                              ^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+-- FAIL tests/verify/test-verificar-premisa.sh
+== 1. sintaxis ==
+  ok    verificar_premisa.py parsea
+== 2'. sin el clon de la aplicacion: el gate REHUSA ==
+  FALLO sale con 2, no con un veredicto
+        esperado=[2] obtenido=[1]
+  FALLO   … y nombra la raiz que falta
+        esperado=[1] obtenido=[0]
+
+1 ok · 2 fallo(s) · SIN MEDIR: falta el clon de la aplicacion
+-- FAIL tests/verify/test-vocabulario-prosa.sh
+  ok   guard de librería: exit 2, no 0
+  ok   guard de librería: no emite cifra
+  ok   guard de librería: nombra la librería
+  ok   el detector ve el control positivo real (democión)
+  ok   el baseline del fixture tiene una entrada
+  ok   el baseline silencia lo congelado
+  ok   no marca la palabra real (degradación)
+  ok   --strict sale 1 con un inventado
+  ok   --strict sale 0 sin inventados
+  ok   mide el arbol real del consumidor (0 o 1, no 2)
+  ok   el reporte declara el alcance medido
+  FALLA y el denominador cuenta archivos, no hallazgos — esperado [1] obtenido [0]
+  FALLA ve corrida y tanda en prosa nueva — esperado [2] obtenido []
+  FALLA NO veta guion ni lote — su sentido legítimo domina — esperado [0] obtenido []
+  FALLA ruta absoluta: lo congelado sigue congelado — esperado [0] obtenido []
+  FALLA ruta relativa a la raiz: mismo veredicto — esperado [0] obtenido []
+  FALLA ruta con ./ delante: mismo veredicto — esperado [0] obtenido []
+  FALLA ruta con .. desde otro directorio: mismo veredicto — esperado [0] obtenido []
+  FALLA un archivo nuevo SI reporta, por ruta absoluta — esperado [1] obtenido []
+  FALLA un archivo nuevo SI reporta, por ruta relativa — esperado [1] obtenido []
+  FALLA guard del lexico: los 3 desenlaces, ninguno termina en cero — esperado [0] obtenido []
+  FALLA load_forbidden separa forma y sustituto — esperado [librería|biblioteca;libreria|biblioteca;removido|retirado;removidos|retirados] obtenido []
+  FALLA el gate ve el falso amigo real (librería) — esperado [1] obtenido []
+  FALLA el reporte publica el sustituto — esperado [1] obtenido [0]
+  FALLA el gate ve el segundo falso amigo real (removido) — esperado [1] obtenido []
+  FALLA la palabra correcta NO se marca — esperado [0] obtenido []
+  FALLA una forma sin flecha sigue casando — esperado [1] obtenido []
+  FALLA un bloque cercado de Markdown es cita, no prosa — esperado [0] obtenido []
+  FALLA la misma línea fuera del cerco sí se mide — esperado [1] obtenido []
+  FALLA una comilla invertida en Markdown es mención — esperado [0] obtenido []
+  FALLA en RST la comilla invertida simple no es literal — esperado [1] obtenido []
+
+11 ok · 20 falla(s)
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1073, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1130, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/user/thyrox/.thyrox/pool-worktrees/24b8b408faa2/1/src/verify/check_vocabulario_prosa.py'
+  (149 suite(s) de shell, 27 en rojo, 1 sin medir)
+
+== alcance ==
+  TypeScript: 1484 archivo(s), EN ROJO
+  Python: 286 suite(s), 33 en rojo, 2 sin medir
+  shell: 149 suite(s), 27 en rojo, 1 sin medir
+
+FALLA: 3 lengua(s) en rojo
+
+ÁRBOL MUTADO durante la medición: el veredicto no es atribuible a ningún estado.
+  habría sido: rojo
+  (huella al empezar f7b2d9ecad4d, al terminar )
+__BG_EXIT__=3

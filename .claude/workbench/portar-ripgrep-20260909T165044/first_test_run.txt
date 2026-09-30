@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/ripgrep.test.ts:
+133 |     const out = await ripGrep(
+134 |       ['--files', '--glob', '!nested/**'],
+135 |       filesDir,
+136 |       new AbortController().signal,
+137 |     )
+138 |     expect(out.some(p => p.endsWith('gamma.txt'))).toBe(false)
+                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:138:52)
+(fail) ripGrep — modo --files > 4. respeta --glob de exclusión sobre el subdirectorio [7.42ms]
+143 | describe('ripGrep — búsqueda de contenido, modo default', () => {
+144 |   test('5. cada línea de resultado tiene forma path:line:content', async () => {
+145 |     const { ripGrep } = await import('../ripgrep.ts')
+146 |     const target = join(root, 'search.txt')
+147 |     const out = await ripGrep(['-e', 'hello'], target, new AbortController().signal)
+148 |     expect(out.length).toBe(2)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/ripgrep.test.ts:148:24)
+(fail) ripGrep — búsqueda de contenido, modo default > 5. cada línea de resultado tiene forma path:line:content [5.46ms]
+
+ 18 pass
+ 2 fail
+ 35 expect() calls
+Ran 20 tests across 1 file. [149.00ms]

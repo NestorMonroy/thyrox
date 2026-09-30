@@ -1,0 +1,74 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts(36,36): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.
+  --- código src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts:26-46 ---
+     26  
+     27  describe('send/onmessage — message delivery', () => {
+     28    test('a.send delivers to b.onmessage', async () => {
+     29      const [a, b] = createLinkedTransportPair()
+     30      const handler = mock(() => {})
+     31      b.onmessage = handler
+     32      await a.send({ jsonrpc: '2.0', method: 'ping', id: 1 } as never)
+     33      // queueMicrotask delivery — wait for next tick
+     34      await new Promise(resolve => queueMicrotask(() => resolve(undefined)))
+     35      expect(handler).toHaveBeenCalledTimes(1)
+     36>     expect(handler.mock.calls[0]?.[0]).toEqual({
+     37        jsonrpc: '2.0',
+     38        method: 'ping',
+     39        id: 1,
+     40      })
+     41    })
+     42  
+     43    test('b.send delivers to a.onmessage (bidirectional)', async () => {
+     44      const [a, b] = createLinkedTransportPair()
+     45      const handler = mock(() => {})
+     46      a.onmessage = handler
+src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts(166,38): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.
+  --- código src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts:156-176 ---
+    156      const [a2, b2] = createLinkedTransportPair()
+    157      const b1Handler = mock(() => {})
+    158      const b2Handler = mock(() => {})
+    159      b1.onmessage = b1Handler
+    160      b2.onmessage = b2Handler
+    161      await a1.send({ jsonrpc: '2.0', method: 'p1', id: 1 } as never)
+    162      await a2.send({ jsonrpc: '2.0', method: 'p2', id: 2 } as never)
+    163      await new Promise(resolve => queueMicrotask(() => resolve(undefined)))
+    164      expect(b1Handler).toHaveBeenCalledTimes(1)
+    165      expect(b2Handler).toHaveBeenCalledTimes(1)
+    166>     expect(b1Handler.mock.calls[0]?.[0]).toEqual({
+    167        jsonrpc: '2.0',
+    168        method: 'p1',
+    169        id: 1,
+    170      })
+    171      expect(b2Handler.mock.calls[0]?.[0]).toEqual({
+    172        jsonrpc: '2.0',
+    173        method: 'p2',
+    174        id: 2,
+    175      })
+    176    })
+src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts(171,38): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.
+  --- código src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts:161-181 ---
+    161      await a1.send({ jsonrpc: '2.0', method: 'p1', id: 1 } as never)
+    162      await a2.send({ jsonrpc: '2.0', method: 'p2', id: 2 } as never)
+    163      await new Promise(resolve => queueMicrotask(() => resolve(undefined)))
+    164      expect(b1Handler).toHaveBeenCalledTimes(1)
+    165      expect(b2Handler).toHaveBeenCalledTimes(1)
+    166      expect(b1Handler.mock.calls[0]?.[0]).toEqual({
+    167        jsonrpc: '2.0',
+    168        method: 'p1',
+    169        id: 1,
+    170      })
+    171>     expect(b2Handler.mock.calls[0]?.[0]).toEqual({
+    172        jsonrpc: '2.0',
+    173        method: 'p2',
+    174        id: 2,
+    175      })
+    176    })
+    177  
+    178    test('closing one pair does not close the other', async () => {
+    179      const [a1, b1] = createLinkedTransportPair()
+    180      const [a2, b2] = createLinkedTransportPair()
+    181      const b1Handler = mock(() => {})

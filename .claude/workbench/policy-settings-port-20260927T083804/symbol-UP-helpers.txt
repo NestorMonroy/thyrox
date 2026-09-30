@@ -1,0 +1,94 @@
+==== BL: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function BL [398829,399300)
+function BL(e){let n=e.helper?.()??null;if(!n)return{composes:"none"};let s=e.helperArmedFromRemote?.()===!1?"tier":"remoteSlot";if(e.helperMergesOutput?.()!==!0)return{composes:s,helper:n,mergedOver:null};if(!e.store.policy.mergedHelper){let{base:r,mergedOver:i}=s==="remoteSlot"?{base:Qq(e).settings,mergedOver:"remote"}:Id(e);e.store.policy.mergedHelper={helper:eVo(r,n),mergedOver:Object.keys(Nd(r)).length>0?i:null}}return{composes:s,...e.store.policy.mergedHelper}}
+==== _s: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function _s [396100,396139)
+function _s(e){return e&&cft(e)?e:null}
+==== mUe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function mUe [396139,396217)
+function mUe(e){return e.settings!==null&&ggn(e.settings)&&!e.onlySubstitutes}
+==== bs: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function bs [396217,396287)
+function bs(e,n){if(e===null)return-1;if(n)return 2;return ggn(e)?1:0}
+==== aft: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function aft [369822,370155)
+function aft(e){if(O()==="wsl"){let n=dft(Os(e));if(e.wslInherits?.()){let s=njr(C0,e.store);if(dft(s)||n)return s;let r=njr(Jk(),e.store);return{...r,errors:[...s.errors,...r.errors],loadState:Yye(s.loadState,r.loadState)}}if(n)return{settings:null,errors:[],documentHasPolicyContent:!1,loadState:"absent"}}return njr(Jk(),e.store)}
+==== ggn: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function ggn [396020,396100)
+function ggn(e){return Object.entries(e).some(([n,s])=>!lt.includes(n)&&!Lt(s))}
+==== lft: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function lft [375750,376185)
+function lft(e){let n=e.parentManaged;if(!n||Object.keys(n).length===0)return{settings:null,errors:[]};let s=HRe(n,_8e);for(let r of dgn)if(s.settings?.[r]!==void 0&&!MRe(r))s.errors.push({file:_8e,path:r,message:`"${r}" is only honored from the organization's managed settings sources (server-managed, MDM, managed-settings.json), not from settings a host passes in, and was ignored here.`,severity:"warning",statusOnly:!0});return s}
+==== A$o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function A$o [383420,383508)
+function A$o(e){return(e.parentSettingsBehavior??(Rz()?"merge":"first-wins"))==="merge"}
+==== By: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function By [397539,397664)
+function By(e,n,s){if(e===null||!n)return e;let r=Fy.filter((i)=>s.some((d)=>d?.[i]!==void 0));return r.length===0?e:ss(e,r)}
+==== AJ: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable AJ [332470,332475)
+AJ=vh
+==== jy: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function jy [395115,395781)
+function jy(e,n,s,r){let i=e[0];if(!i)return{admin:null,merged:!1};let{managedSourcesBehavior:d,...c}=i,p=n==="merge"&&e.length>=2;if(!p&&r===0)return{admin:d===void 0?i:c,merged:!1};let g=e.slice(p?1:e.length-r).map((m,S)=>{let y=p&&s&&S===0,E=y?{...m}:ss(m,R$o());if(!y){for(let I of X2o)if(Ee(E,I)!==void 0)Ve(E,I,void 0)}let C=Ee(E.sandbox,["enabledPlatforms"]);if(Array.isArray(C)&&C.includes(O()))Ve(E,["sandbox","enabledPlatforms"],void 0);else if(C!==void 0)delete E.sandbox;return E});if(!p)return _d(c,[i,...g]),{admin:c,merged:!1};let h={};for(let m of[...g].reverse())W1(h,m,ks);return W1(h,c,s?Wy:ks),_d(h,[i,...g]),Ky(h,[i,...g],s),{admin:h,merged:!0}}
+==== gUe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function gUe [396399,396487)
+function gUe(e){return e.documentHasPolicyContent??(e.settings!==null&&cft(e.settings))}
+==== ss: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable ss [332338,332343)
+ss=wh
+==== R$o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function R$o [403402,403428)
+function R$o(){return tVo}
+==== uUe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function uUe [343302,343428)
+function uUe({slot:e,adminTiers:n}){return e?.allowManagedMcpServersOnly===!0||n.some((s)=>s.allowManagedMcpServersOnly===!0)}
+==== h8e: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function h8e [343428,343554)
+function h8e({slot:e,adminTiers:n}){return e?.allowedMcpServers??n.find((s)=>s.allowedMcpServers!==void 0)?.allowedMcpServers}
+==== Y2o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Y2o [383508,383549)
+function Y2o(e,n=!1){return!e||A$o(e)||n}
+==== J2o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function J2o [383845,387328)
+function J2o(e,n){let s={};if(e.allowManagedHooksOnly===!0)s.allowManagedHooksOnly=!0;if(e.disableCommandPluginSources===!0)s.disableCommandPluginSources=!0;if(e.allowManagedMcpServersOnly===!0)s.allowManagedMcpServersOnly=!0;if(e.disableClaudeAiConnectors===!0)s.disableClaudeAiConnectors=!0;if(e.syncClaudeAiSkills===!1)s.syncClaudeAiSkills=!1;if(e.syncClaudeAiPlugins===!1)s.syncClaudeAiPlugins=!1;if(e.remoteTools?.allowUnattendedServing===!1)s.remoteTools={...s.remoteTools,allowUnattendedServing:!1};if(e.allowManagedPermissionRulesOnly===!0)s.allowManagedPermissionRulesOnly=!0;if(e.disableAutoMode==="disable")s.disableAutoMode="disable";let r=e.remoteControl?.shareHostProfile;if(r==="off"||r==="basic")s.remoteControl={...s.remoteControl,shareHostProfile:r};if(Zl(e.attribution,e.includeCoAuthoredBy)==="disabled")s.attribution={...s.attribution,commitTrailers:!1};if(e.attribution?.sessionUrl===!1)s.attribution={...s.attribution,sessionUrl:!1};let i=e.strictPluginOnlyCustomization;if(i===!0||Array.isArray(i)&&i.length>0)s.strictPluginOnlyCustomization=i;if(e.deniedMcpServers)s.deniedMcpServers=e.deniedMcpServers;if(e.blockedMarketplaces?.length)s.blockedMarketplaces=e.blockedMarketplaces;if(e.deniedModels&&e.deniedModels.length>0)s.deniedModels=e.deniedModels;if(n.forceLoginOrgUUID===void 0&&e.forceLoginOrgUUID)s.forceLoginOrgUUID=e.forceLoginOrgUUID;for(let d of Es)if(n[d]===void 0&&e[d])Object.assign(s,{[d]:e[d]});if(e.enforceAvailableModels===!0)s.enforceAvailableModels=!0;if(e.availableModelsMatch==="exact")s.availableModelsMatch="exact";if(e.permissions){let d=AJ(e.permissions,["deny","ask"]);for(let c of["deny","ask"]){let p=d[c];if(p!==void 0)d[c]=p.filter((g)=>{if(!G5n.test(g))return!0;return t(`Ignoring ${c} rule "${g}" from the parent process's managed settings: a rule starting with "!" removes paths from the rules listed before it instead of restricting anything, so it is not merged into the policy rules. Spell the deny without the exception instead.`,{level:"warn"}),!1})}if(e.permissions.disableBypassPermissionsMode==="disable")d.disableBypassPermissionsMode="disable";if(e.permissions.disableAutoMode==="disable")d.disableAutoMode="disable";if(e.permissions.blockReadsOutsideWorkingDirectories===!0)d.blockReadsOutsideWorkingDirectories=!0;if(n.allowManagedPermissionRulesOnly!==!0){let{allow:c,additionalDirectories:p}=e.permissions;if(c&&n.sandbox?.network?.allowManagedDomainsOnly!==!0)d.allow=c;if(p)d.additionalDirectories=p}if(Object.keys(d).length>0)s.permissions=d}if(e.sandbox){let{network:d,filesystem:c,credentials:p}=e.sandbox,g={},h=d?AJ(d,["deniedDomains"]):{},m=c?AJ(c,["denyRead","denyWrite"]):{};if(d){if(n.sandbox?.network?.allowManagedDomainsOnly!==!0&&d.allowedDomains)h.allowedDomains=d.allowedDomains}if(Object.keys(h).length>0)g.network=h;if(c){if(n.sandbox?.filesystem?.allowManagedReadPathsOnly!==!0&&c.allowRead)m.allowRead=c.allowRead}if(Object.keys(m).length>0)g.filesystem=m;if(p){let S=(p.files??[]).map((C)=>C.mode==="deny"?{path:C.path,mode:"deny"}:{path:C.path,mode:"mask",injectHosts:[]}),y=(p.envVars??[]).filter((C)=>C.mode==="deny").map((C)=>({name:C.name,mode:"deny"})),E={...S.length>0&&{files:S},...y.length>0&&{envVars:y}};if(p.sigv4){let C={};for(let I of["streaming","presigned","sigv4a"])if(p.sigv4[I]==="deny")C[I]="deny";E.sigv4=C}{let C=Pd(p.awsPairs??[],[]);if(C.length>0)E.awsPairs=C}if(Object.keys(E).length>0)g.credentials=E}if(W1(g,Hy(e)),Object.keys(g).length>0)s.sandbox=g}return s}
+==== Z2o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function Z2o [387833,388448)
+function Z2o(e,n){if(!n||!e)return null;let s={};if(e.model!==void 0)s.model=e.model;if(e.availableModels!==void 0)s.availableModels=e.availableModels;if(e.availableModelsMatch==="exact"||e.availableModelsMatch!==void 0&&e.availableModels!==void 0)s.availableModelsMatch=e.availableModelsMatch;if(e.enforceAvailableModels!==void 0)s.enforceAvailableModels=e.enforceAvailableModels;if(e.deniedModels!==void 0&&e.deniedModels.length>0)s.deniedModels=e.deniedModels;if(e.fallbackModel!==void 0)s.fallbackModel=e.fallbackModel;if(e.modelPicker!==void 0)s.modelPicker=e.modelPicker;return Object.keys(s).length>0?s:null}
+==== HRe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function HRe [372645,372784)
+function HRe(e,n){let s=md.get(e),r=s?.get(n);if(r)return gd(r);let i=Ty(e,n);if(s)s.set(n,i);else md.set(e,new Map([[n,i]]));return gd(i)}
+==== S$o: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function S$o [315341,315403)
+function S$o(e){return e!==null&&le().projectedView?.view===e}
+==== pUe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function pUe [345204,345237)
+function pUe(e){return e.map(Qh)}
+==== B5n: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function B5n [379965,380082)
+function B5n(e,n){if(!e.some(fd))return e;if(!mUe(n()))return e;return e.map((s)=>fd(s)?{...s,severity:"warning"}:s)}
+==== WUt: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function WUt [396487,396561)
+function WUt(e){return e.loadState??(e.settings!==null?"loaded":"absent")}
+==== MRe: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function MRe [373926,374018)
+function MRe(e){return ixe()&&(e==="managedMcpServers"||e.startsWith("managedMcpServers."))}
+==== agn: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function agn [323182,323395)
+function agn(){let e=lgn();if(e===null||Ka(le(),e))return!1;if(Ta(e))return!0;let n=ls(e);if(n.length===0)return!1;let{chain:s}=Cne();return n.some(([r,i])=>{let d=fa(r);return(d===void 0||s.includes(d))&&Ta(i)})}
+==== jx: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js function jx [315120,315161)
+function jx(){return le().lastLoadStatus}
+==== Kye: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Kye [395822,395954)
+Kye={remote:"server-managed settings",plist:"the managed preferences plist",hklm:"the HKLM policy key",file:"managed-settings.json"}
+==== mjr: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable mjr [395785,395821)
+mjr=["policyHelper","policyHelpers"]
+==== lt: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable lt [263746,263804)
+lt=["managedSourcesBehavior","wslInheritsWindowsSettings"]
+==== Es: 1 definicion(es) de nivel superior
+---- chunk-379zyrv7.js variable Es [397470,397538)
+Es=["allowedMcpServers","availableModels","strictKnownMarketplaces"]
+symbol: 31 de 31 nombre(s) resueltos

@@ -1,0 +1,14 @@
+Wire the refusal restore and port the UDS client
+
+App-host R-2d: 2.1.283 subscribes the refusal-fallback restore to the
+interactive store right after creating it and hooks the headless store
+to the same signal. Both wirings now exist; an annulment control that
+turns the REPL subscription into a no-op drops exactly its test.
+
+UDS C: the client and receipts module of chunk-qcy58j4w.js lands in
+udsClient.ts, with the live session registry and the peer loop guard
+it needs. The pool left type errors that its own verify did not run
+tsc for; fixed here: the former-name guard narrows to its checked
+shape, recordInPidDomain asks only for the fields it reads, the guard
+bucket receives the clock it calls, and RegistryStorage is re-exported
+for the client. THYROX_CODE_HARBOR_KITE_PACING_OFF is declared.

@@ -1,0 +1,22 @@
+Resolve seven config-home sites through getConfigHomeDir
+
+TASK-THYROX-0266. Each site computed homedir()/.claude by hand, so
+on a fresh install its data landed outside ~/.thyrox while the rest
+of thyrox used the canonical home. A worktree pool measured each one
+against 2.1.283 before touching it:
+
+- moved to the canonical home, as the reference resolves them with
+  Se(): memory paths, plans directory, Chrome native-host debug log,
+  local telemetry (new THYROX_CODE_LOCAL_TELEMETRY_DIR), the settings
+  and storage CLIs, and the permission state directory.
+- left as they are, because the reference builds them from homedir()
+  on purpose: the npm-install cleanup (Ygr, ~/.claude/local), the
+  doctor's displayed local path, and isInGlobalClaudeFolder; a test
+  now pins the last one.
+
+Derived suite 106 of 106 over 13 files; typecheck 0 across the seven
+packages. Annulment: reverting plan/src/mode.ts fails exactly its
+config-home case (1 of 12).
+
+isInGlobalClaudeFolder is renamed isInGlobalConfigFolder: the new test
+would otherwise add product-name debt, and its only caller is local.

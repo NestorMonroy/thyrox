@@ -1,0 +1,6 @@
+      3 src/packages/voice/src/voiceStreamSTT.ts
+      2 src/packages/voice/src/hooks/useVoiceEnabled.ts
+      1 src/packages/voice/src/voice.ts
+--- total errores en voice:
+6
+__BG_EXIT__=0

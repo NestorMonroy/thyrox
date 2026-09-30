@@ -1,0 +1,39 @@
+@dataclass(frozen=True)
+class GpuReading:
+    """Los TRES estados de un ``<n>.gpu``, que no se colapsan: ``measured``
+    (incluido el cero, que es una medida), ``absent`` (no se midió) y
+    ``error`` (se intentó y falló)."""
+    state: str
+    summary: Summary | None = None
+    reason: str | None = None
+
+
+def read_gpu_file(path: Path) -> GpuReading:
+    try:
+        text = Path(path).read_text(errors="replace").strip()
+    except FileNotFoundError:
+        return GpuReading("absent")
+    if text.startswith("error"):
+        return GpuReading("error", reason=text[len("error"):].strip())
+    fields = text.split()
+    if len(fields) == 4 and all(f.isdigit() for f in fields):
+        return GpuReading("measured", Summary(*(int(f) for f in fields)))
+    return GpuReading("error", reason=f"ilegible: {text[:80]!r}")
+
+
+def wait_free(need_mib: int, nvidia_smi: str = "nvidia-smi", timeout_s: float = 600.0,
+              interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+    """La admisión por VRAM que GNU Parallel no tiene: espera a que la GPU con
+    más espacio tenga ``need_mib`` libres. La VRAM libre cambia mientras los
+    trabajos arrancan, así que leerla una vez al principio no basta."""
+    deadline = time.monotonic() + timeout_s
+    while True:
+        free = free_vram_mib(nvidia_smi)
+        if free is not None and free >= need_mib:
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(interval_s)
+
+
+def main(argv: list[str]) -> int:

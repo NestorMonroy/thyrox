@@ -1,0 +1,132 @@
+tests/integration/message-pipeline.test.ts(13,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:3-23 ---
+      3    createUserMessage,
+      4    createAssistantMessage,
+      5    normalizeMessages,
+      6    extractTag,
+      7  } from '@thyrox/agent/messages.js'
+      8  
+      9  // ─── Message Structure ────────────────────────────────────────────────
+     10  
+     11  describe('Message pipeline: message structure', () => {
+     12    test("createUserMessage returns a Message with type 'user'", () => {
+     13>     const msg = createUserMessage('hello')
+     14      expect(msg.type).toBe('user')
+     15      expect(msg.message.role).toBe('user')
+     16      expect(msg.uuid).toBeTruthy()
+     17      expect(msg.timestamp).toBeTruthy()
+     18    })
+     19  
+     20    test("createAssistantMessage returns a Message with type 'assistant'", () => {
+     21      const msg = createAssistantMessage('response')
+     22      expect(msg.type).toBe('assistant')
+     23      expect(msg.message.role).toBe('assistant')
+tests/integration/message-pipeline.test.ts(21,40): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | BetaContentBlock[]; usage?: BetaUsage | undefined; isVirtual?: true | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:11-31 ---
+     11  describe('Message pipeline: message structure', () => {
+     12    test("createUserMessage returns a Message with type 'user'", () => {
+     13      const msg = createUserMessage('hello')
+     14      expect(msg.type).toBe('user')
+     15      expect(msg.message.role).toBe('user')
+     16      expect(msg.uuid).toBeTruthy()
+     17      expect(msg.timestamp).toBeTruthy()
+     18    })
+     19  
+     20    test("createAssistantMessage returns a Message with type 'assistant'", () => {
+     21>     const msg = createAssistantMessage('response')
+     22      expect(msg.type).toBe('assistant')
+     23      expect(msg.message.role).toBe('assistant')
+     24      expect(msg.uuid).toBeTruthy()
+     25    })
+     26  
+     27    test('user and assistant messages have different UUIDs', () => {
+     28      const user = createUserMessage('hello')
+     29      const assistant = createAssistantMessage('response')
+     30      expect(user.uuid).not.toBe(assistant.uuid)
+     31    })
+tests/integration/message-pipeline.test.ts(28,36): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:18-38 ---
+     18    })
+     19  
+     20    test("createAssistantMessage returns a Message with type 'assistant'", () => {
+     21      const msg = createAssistantMessage('response')
+     22      expect(msg.type).toBe('assistant')
+     23      expect(msg.message.role).toBe('assistant')
+     24      expect(msg.uuid).toBeTruthy()
+     25    })
+     26  
+     27    test('user and assistant messages have different UUIDs', () => {
+     28>     const user = createUserMessage('hello')
+     29      const assistant = createAssistantMessage('response')
+     30      expect(user.uuid).not.toBe(assistant.uuid)
+     31    })
+     32  })
+     33  
+     34  // ─── Tag Extraction ───────────────────────────────────────────────────
+     35  
+     36  describe('Message pipeline: tag extraction', () => {
+     37    test('extractTag returns null for non-matching tag', () => {
+     38      expect(extractTag('no tags here', 'think')).toBeNull()
+tests/integration/message-pipeline.test.ts(29,46): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | BetaContentBlock[]; usage?: BetaUsage | undefined; isVirtual?: true | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:19-39 ---
+     19  
+     20    test("createAssistantMessage returns a Message with type 'assistant'", () => {
+     21      const msg = createAssistantMessage('response')
+     22      expect(msg.type).toBe('assistant')
+     23      expect(msg.message.role).toBe('assistant')
+     24      expect(msg.uuid).toBeTruthy()
+     25    })
+     26  
+     27    test('user and assistant messages have different UUIDs', () => {
+     28      const user = createUserMessage('hello')
+     29>     const assistant = createAssistantMessage('response')
+     30      expect(user.uuid).not.toBe(assistant.uuid)
+     31    })
+     32  })
+     33  
+     34  // ─── Tag Extraction ───────────────────────────────────────────────────
+     35  
+     36  describe('Message pipeline: tag extraction', () => {
+     37    test('extractTag returns null for non-matching tag', () => {
+     38      expect(extractTag('no tags here', 'think')).toBeNull()
+     39    })
+tests/integration/message-pipeline.test.ts(55,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:45-65 ---
+     45    test('extractTag requires tagName parameter', () => {
+     46      // Calling without tagName throws
+     47      expect(() => (extractTag as any)('hello')).toThrow()
+     48    })
+     49  })
+     50  
+     51  // ─── Normalization ────────────────────────────────────────────────────
+     52  
+     53  describe('Message pipeline: normalization', () => {
+     54    test('normalizeMessages returns an array', () => {
+     55>     const msg = createUserMessage('hello')
+     56      const result = normalizeMessages([msg])
+     57      expect(Array.isArray(result)).toBe(true)
+     58    })
+     59  
+     60    test('normalizeMessages preserves at least one message for simple input', () => {
+     61      const msg = createUserMessage('hello')
+     62      const result = normalizeMessages([msg])
+     63      expect(result.length).toBeGreaterThanOrEqual(1)
+     64    })
+     65  })
+tests/integration/message-pipeline.test.ts(61,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:51-65 ---
+     51  // ─── Normalization ────────────────────────────────────────────────────
+     52  
+     53  describe('Message pipeline: normalization', () => {
+     54    test('normalizeMessages returns an array', () => {
+     55      const msg = createUserMessage('hello')
+     56      const result = normalizeMessages([msg])
+     57      expect(Array.isArray(result)).toBe(true)
+     58    })
+     59  
+     60    test('normalizeMessages preserves at least one message for simple input', () => {
+     61>     const msg = createUserMessage('hello')
+     62      const result = normalizeMessages([msg])
+     63      expect(result.length).toBeGreaterThanOrEqual(1)
+     64    })
+     65  })

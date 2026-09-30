@@ -1,0 +1,7 @@
+antes (tsrev): 5684 unicos
+ahora (tsstrict): 5683 unicos
+
+== DESAPARECIERON ==
+src/packages/cli/src/headless/sdk/session/run.ts(180,33): error TS2345: Argument of type '(f: (prev: AppStateLike) => AppStateLike) => void' is not assignable to parameter of type '(f: (prev: SettingsChangeTarget) => SettingsChangeTarget) => void'.
+
+== APARECIERON ==

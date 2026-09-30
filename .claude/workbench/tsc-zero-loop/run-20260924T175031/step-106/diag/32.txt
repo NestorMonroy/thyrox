@@ -1,0 +1,8 @@
+src/packages/provider/src/referral.ts(117,11): error TS2339: Property 'eligible' does not exist on type '{ timestamp: number; }'.
+src/packages/provider/src/referral.ts(140,35): error TS18046: 'reward' is of type 'unknown'.
+src/packages/provider/src/referral.ts(140,58): error TS18046: 'reward' is of type 'unknown'.
+src/packages/provider/src/referral.ts(141,18): error TS18046: 'reward' is of type 'unknown'.
+src/packages/provider/src/referral.ts(155,23): error TS2339: Property 'referrer_reward' does not exist on type '{ timestamp: number; }'.
+src/packages/provider/src/referral.ts(167,23): error TS2339: Property 'remaining_passes' does not exist on type '{ timestamp: number; }'.
+src/packages/provider/src/referral.ts(193,9): error TS2698: Spread types may only be created from object types.
+src/packages/provider/src/referral.ts(206,56): error TS18046: 'response' is of type 'unknown'.

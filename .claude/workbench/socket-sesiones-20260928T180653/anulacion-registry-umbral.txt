@@ -1,0 +1,50 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistryState.test.ts:
+63 |     expect(state.heldNames).toEqual(new Map([['foo', 'user']]))
+64 |     expect(state.formerNames).toEqual([{ name: 'foo', until: 11000, sessionId: 's1' }])
+65 |     expect(state.registeredName).toEqual({ name: 'bar', source: 'collision', since: 11000, sessionId: 's1' })
+66 |     clock += 1
+67 |     state.setRegisteredName('baz', 'user')
+68 |     expect(state.formerNames).toEqual([{ name: 'foo', until: 11000, sessionId: 's1' }])
+                                   ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,7 @@
+    {
++     "name": "bar",
++     "sessionId": "s1",
++     "until": 11001,
++   },
++   {
+      "name": "foo",
+
+- Expected  - 0
++ Received  + 5
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts:68:31)
+(fail) setRegisteredName > cambiar de nombre aparta el anterior y lo recuerda si se tuvo al menos diez segundos [0.53ms]
+86 |     expect(state.formerNames).toEqual([])
+87 |     stable = true
+88 |     state.setRegisteredName('d2', 'derived')
+89 |     clock += 20000
+90 |     state.setRegisteredName('y', 'user')
+91 |     expect(state.formerNames.map(former => former.name)).toEqual(['d2'])
+                                                              ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "d2",
++   "x",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistryState.test.ts:91:58)
+(fail) setRegisteredName > un nombre derivado sólo se recuerda con la dirección estable activa [0.33ms]
+
+ 12 pass
+ 2 fail
+ 36 expect() calls
+Ran 14 tests across 1 file. [76.00ms]

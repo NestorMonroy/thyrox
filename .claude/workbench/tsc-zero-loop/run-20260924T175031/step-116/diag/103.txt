@@ -1,0 +1,23 @@
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(592,11): error TS2739: Type 'ToolPermissionContext' is missing the following properties from type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }': mode, additionalWorkingDirectories, isBypassPermissionsModeAvailable
+  --- código src/packages/permission/src/components/rules/PermissionRuleList.tsx:582-602 ---
+    582        }
+    583      }
+    584      setLastFocusedRuleKey(nextFocusKey)
+    585  
+    586      void deletePermissionRule({
+    587        rule: selectedRule,
+    588        initialContext: toolPermissionContext,
+    589        setToolPermissionContext(toolPermissionContext) {
+    590          setAppState(prev => ({
+    591            ...prev,
+    592>           toolPermissionContext,
+    593          }))
+    594        },
+    595      })
+    596  
+    597      setChanges(prev => [
+    598        ...prev,
+    599        `Deleted ${selectedRule.ruleBehavior} rule ${chalk.bold(permissionRuleValueToString(selectedRule.ruleValue))}`,
+    600      ])
+    601      setSelectedRule(undefined)
+    602    }

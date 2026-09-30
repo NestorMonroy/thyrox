@@ -1,0 +1,11 @@
+    #: El menor de los topes medidos; ``None`` si no hubo ninguno.
+    width_cap: int | None = None
+    #: Cuántos ítems caben a la vez en la RAM disponible y en la VRAM libre.
+    ram_cap: int | None = None
+    vram_cap: int | None = None
+
+
+def effective_width(configured: int, decision: Decision) -> int:
+    """La anchura con que se lanza: la configurada, acotada por cada tope
+    medido — ``min(configurada, RAM, VRAM)``."""
+    return min(configured, decision.width_cap) if decision.width_cap else configured

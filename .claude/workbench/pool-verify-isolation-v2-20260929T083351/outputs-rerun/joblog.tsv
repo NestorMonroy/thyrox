@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790672620.221	   728.338	0	0	0	0	_headless_item 1 'src/session/item_worktree.sh tests/session/test-headless-pool-worktree.sh'

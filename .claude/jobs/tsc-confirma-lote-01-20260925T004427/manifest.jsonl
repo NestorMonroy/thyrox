@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > .claude/workbench/copia-desde-ccnmt/lote-01/confirma-tras-pruebas.log 2>&1; bun src/verify/message_shape_audit.ts > .claude/workbench/copia-desde-ccnmt/lote-01/shape-tras-pruebas.log 2>&1; echo listo", "started_at": "2026-09-25T00:44:27+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-25T00:45:17+00:00", "duration_seconds": 50.226985}

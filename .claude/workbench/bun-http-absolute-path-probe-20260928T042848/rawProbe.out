@@ -1,0 +1,1 @@
+{"got":"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nDate: Mon, 28 Sep 2026 04:29:21 GMT\r\nContent-Length: 5\r\n\r\nhello","ended":false,"buffer":[[200,null]]}

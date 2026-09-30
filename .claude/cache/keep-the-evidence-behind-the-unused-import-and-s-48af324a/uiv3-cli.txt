@@ -1,0 +1,4 @@
+src/packages/cli/__tests__/workbench.test.ts
+src/packages/cli/src/handlers/mcp.tsx
+src/packages/cli/src/headless.ts
+src/packages/cli/src/headless/sdk/session/run-streaming.ts

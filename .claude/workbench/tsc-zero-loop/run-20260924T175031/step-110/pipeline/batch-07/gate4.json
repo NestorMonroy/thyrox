@@ -1,0 +1,106 @@
+{
+ "reviewed": [
+  {
+   "pattern": "shell-command-field-narrowed-to-base-contract",
+   "files": [
+    "src/packages/tool-registry/src/tools/TaskOutputTool/TaskOutputTool.tsx"
+   ]
+  },
+  {
+   "pattern": "check-permissions-called-with-unused-context-arg",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts"
+   ]
+  },
+  {
+   "pattern": "inline-array-literal-widens-status-to-string",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts"
+   ]
+  },
+  {
+   "pattern": "cast-de-union-de-message-a-objeto-literal-sin-miembro-que-declare-la-propiedad",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/utils.test.ts"
+   ]
+  },
+  {
+   "pattern": "literal-uuid-de-prueba-no-calza-el-tipo-plantilla-uuid",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/utils.test.ts"
+   ]
+  },
+  {
+   "pattern": "objeto-de-prueba-casteado-a-message-sin-uuid-requerido",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/utils.test.ts"
+   ]
+  },
+  {
+   "pattern": "tobe-generic-literal-outside-closed-union-return",
+   "files": [
+    "src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts"
+   ]
+  },
+  {
+   "pattern": "queued-command-literal-uses-removed-text-images-fields",
+   "files": [
+    "tests/integration/agent-loop.test.ts"
+   ]
+  },
+  {
+   "pattern": "string-literal-uuid-not-matching-template-type",
+   "files": [
+    "tests/integration/agent-loop.test.ts"
+   ]
+  },
+  {
+   "pattern": "guarded-index-access-needs-assertion",
+   "files": [
+    "tests/unit/gemini/streamAdapter.test.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-access-narrowed-by-length-check-not-value-check",
+   "files": [
+    "tests/unit/openai/streamAdapter.test.ts"
+   ]
+  },
+  {
+   "pattern": "renderable-message-union-collapses-to-unknown-on-attachment",
+   "files": [
+    "tests/unit/utils/collapseTeammateShutdowns.test.ts"
+   ]
+  },
+  {
+   "pattern": "toequal-against-mutated-object-literal-type",
+   "files": [
+    "tests/unit/utils/controlMessageCompat.test.ts"
+   ]
+  },
+  {
+   "pattern": "object-literal-array-widens-literal-union-field",
+   "files": [
+    "tests/unit/utils/notebook.test.ts"
+   ]
+  },
+  {
+   "pattern": "array-or-string-union-narrowed-before-array-method",
+   "files": [
+    "tests/unit/utils/notebook.test.ts"
+   ]
+  },
+  {
+   "pattern": "async-function-return-type-missing-promise-wrapper",
+   "files": [
+    "tests/unit/utils/sequential.test.ts"
+   ]
+  },
+  {
+   "pattern": "test-literal-not-a-member-of-keyof-theme-union",
+   "files": [
+    "tests/unit/utils/textHighlighting.test.ts"
+   ]
+  }
+ ]
+}

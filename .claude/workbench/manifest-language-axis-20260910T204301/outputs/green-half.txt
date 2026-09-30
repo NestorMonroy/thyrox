@@ -1,0 +1,26 @@
+=== Caso 1: el corpus esta, o el gate no puede medir ===
+  ok    el lexico carga
+=== Caso 2: la clave anidada se ve (EL QUE EXIGE RECURSION) ===
+  ok    la clave anidada entra al universo
+  ok    y se marca como espanol
+=== Caso 3: el filtro descarta lo que no puede ser un nombre ===
+  ok    NO ve el nombre de archivo
+  ok    NO ve la frase con parentesis
+  ok    SI ve la clave espanola
+  ok    SI ve la clave inglesa (no filtra por idioma aqui)
+=== Caso 4: las cinco claves obligatorias son inglesas ===
+  ok    ninguna de las obligatorias cae
+=== Caso 5: el gate mide manifiestos de verdad (control positivo) ===
+  ok    el universo no esta vacio
+  ok    y encuentra las claves espanolas del banco
+  ok    lo congelado no vuelve a reportarse
+=== Caso 6: una entrada del baseline no bloquea; una nueva si ===
+  ok    sin baseline la clave nueva bloquea
+  ok    y la nombra
+  ok    congelada, no bloquea
+=== Caso 7: sin lexico REHUSA — no publica un cero ===
+  ok    rehusa con 2
+  ok    NO publica un conteo de manifiestos
+
+16 ok, 0 fallos (alcance medido: 16 aserciones sobre /home/user/thyrox/src/verify/check_manifest_language.py)
+EXIT=0

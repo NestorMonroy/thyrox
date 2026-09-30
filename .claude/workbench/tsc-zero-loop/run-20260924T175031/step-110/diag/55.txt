@@ -1,0 +1,89 @@
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(18,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:8-28 ---
+      8  const originalSpawn = Bun.spawn
+      9  
+     10  afterEach(() => {
+     11    Bun.which = originalWhich
+     12    Bun.spawn = originalSpawn
+     13  })
+     14  
+     15  describe('getGhAuthStatus — gh no instalado', () => {
+     16    test('Bun.which no encuentra gh → not_installed, sin invocar spawn', async () => {
+     17      let spawnLlamado = false
+     18>     // @ts-expect-error — sólo se necesita la forma que which() usa aquí
+     19      Bun.which = () => null
+     20      // @ts-expect-error — no debería llamarse en esta rama
+     21      Bun.spawn = () => {
+     22        spawnLlamado = true
+     23        throw new Error('no debería spawnearse sin gh instalado')
+     24      }
+     25      const estado = await getGhAuthStatus()
+     26      expect(estado).toBe('not_installed')
+     27      expect(spawnLlamado).toBe(false)
+     28    })
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(20,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:10-30 ---
+     10  afterEach(() => {
+     11    Bun.which = originalWhich
+     12    Bun.spawn = originalSpawn
+     13  })
+     14  
+     15  describe('getGhAuthStatus — gh no instalado', () => {
+     16    test('Bun.which no encuentra gh → not_installed, sin invocar spawn', async () => {
+     17      let spawnLlamado = false
+     18      // @ts-expect-error — sólo se necesita la forma que which() usa aquí
+     19      Bun.which = () => null
+     20>     // @ts-expect-error — no debería llamarse en esta rama
+     21      Bun.spawn = () => {
+     22        spawnLlamado = true
+     23        throw new Error('no debería spawnearse sin gh instalado')
+     24      }
+     25      const estado = await getGhAuthStatus()
+     26      expect(estado).toBe('not_installed')
+     27      expect(spawnLlamado).toBe(false)
+     28    })
+     29  })
+     30  
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(33,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:23-43 ---
+     23        throw new Error('no debería spawnearse sin gh instalado')
+     24      }
+     25      const estado = await getGhAuthStatus()
+     26      expect(estado).toBe('not_installed')
+     27      expect(spawnLlamado).toBe(false)
+     28    })
+     29  })
+     30  
+     31  describe('getGhAuthStatus — gh instalado', () => {
+     32    test('exit code 0 de `gh auth token` → authenticated', async () => {
+     33>     // @ts-expect-error — stub mínimo
+     34      Bun.which = () => '/usr/bin/gh'
+     35      // @ts-expect-error — stub mínimo del subprocess
+     36      Bun.spawn = (cmd: string[]) => {
+     37        expect(cmd).toEqual(['gh', 'auth', 'token'])
+     38        return { exited: Promise.resolve(0) }
+     39      }
+     40      const estado = await getGhAuthStatus()
+     41      expect(estado).toBe('authenticated')
+     42    })
+     43  
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(45,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:35-52 ---
+     35      // @ts-expect-error — stub mínimo del subprocess
+     36      Bun.spawn = (cmd: string[]) => {
+     37        expect(cmd).toEqual(['gh', 'auth', 'token'])
+     38        return { exited: Promise.resolve(0) }
+     39      }
+     40      const estado = await getGhAuthStatus()
+     41      expect(estado).toBe('authenticated')
+     42    })
+     43  
+     44    test('exit code distinto de 0 → not_authenticated', async () => {
+     45>     // @ts-expect-error — stub mínimo
+     46      Bun.which = () => '/usr/bin/gh'
+     47      // @ts-expect-error — stub mínimo del subprocess
+     48      Bun.spawn = () => ({ exited: Promise.resolve(1) })
+     49      const estado = await getGhAuthStatus()
+     50      expect(estado).toBe('not_authenticated')
+     51    })
+     52  })

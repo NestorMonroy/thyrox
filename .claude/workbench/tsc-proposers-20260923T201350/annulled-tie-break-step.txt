@@ -1,0 +1,20 @@
+test_tsc_zero_step:
+  ok    la aceptada queda aplicada
+  ok    la rechazada se revierte
+  ok    la de base vieja no se aplica
+  ok    el registro lleva los tres veredictos
+  ok    el total confirmado baja de 4 a 3
+  ok    revertir exige una pasada de confirmación
+  ok    el paso con alguna aceptada progresa
+  ok    el log final queda en el banco para el paso siguiente
+  ok    sin nada que revertir no hay pasada de confirmación
+  ok    sin ninguna aceptada el lazo se detiene
+  ok    y el árbol queda como estaba
+  ok    tsc sale 0 sin diagnósticos: tsc cero
+  ok    un tsc que falla sin diagnósticos rehúsa
+  ok    la confirmación trae un diagnóstico nuevo: se revierte todo
+  ok    y el total final es el de antes
+  FALLA dos inserciones en un punto conservan su orden — esperado '(b: T) => 5\n', obtenido '(b): T => 5\n'
+test_tsc_zero_step: 16 aserciones — 15 ok, 1 falla(s)
+
+[exit=1]

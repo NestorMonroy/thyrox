@@ -1,0 +1,12 @@
+Restore USER_TYPE where the build literal leaked in
+
+Eight files carried "external" !== 'ant', the compiled form with the
+build constant already substituted, while the rest of the tree reads
+process.env.USER_TYPE. The literal comparison is impossible for the
+type checker. The env read keeps the external branch in this build
+(USER_TYPE is unset, so it is not 'ant').
+
+A sweep of every tracked .ts/.tsx for either literal form found no
+other case, and the same sweep finds both in HEAD's chrome.tsx.
+
+tsc: 2533 -> 2524 (accepted-net).

@@ -1,0 +1,1 @@
+python3 tests/session/test_user_wiring.py

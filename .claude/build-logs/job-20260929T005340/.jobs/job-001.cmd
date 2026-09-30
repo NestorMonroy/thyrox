@@ -1,0 +1,1 @@
+bash -c 'cd src/packages/provider && bun test src/__tests__ __tests__'

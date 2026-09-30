@@ -1,0 +1,1 @@
+function Hm(e,n){if(!e)return;let r=e;if(n&&(r.startsWith("~/")||r.startsWith("~\\"))){let g=r.slice(2),h=ic(g||".");if(h==="."||h===".."||h.startsWith(`..${Qi}`)||h.startsWith("../")||h.startsWith("..\\"))return;r=Ji($pe(),g)}let s=ic(r).replace(/[/\\]+$/,"");if(kB(s))return;return(s+Qi).normalize("NFC")}

@@ -1,0 +1,1 @@
+        used = sum(current.vram_by_pid.values())

@@ -1,0 +1,18 @@
+export HP_TIME
+
+# La VRAM de cada item, si hay GPU (`gpu_monitor.py`). `--memfree` es memoria
+# del SISTEMA; la de la GPU es otro recurso. Con `claude -p` el modelo corre en
+# el servidor y la GPU local no se usa: medirla informa cuando el pool corre
+# trabajo local con CUDA. Sin nvidia-smi se declara, igual que sin GNU Time.
+NVIDIA_SMI_BIN="${HEADLESS_POOL_NVIDIA_SMI:-nvidia-smi}"
+HP_GPU_PY="$HP_HERE/gpu_monitor.py"
+HP_PYPATH="$HP_HERE/..${PYTHONPATH:+:$PYTHONPATH}"
+HP_GPU_INTERVAL="${HEADLESS_POOL_GPU_INTERVAL:-0.5}"
+HP_NVIDIA_SMI=""
+if PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" available --nvidia-smi "$NVIDIA_SMI_BIN" 2>/dev/null; then
+    HP_NVIDIA_SMI="$NVIDIA_SMI_BIN"
+    echo "gpu: se mide la VRAM de cada item con $NVIDIA_SMI_BIN (<n>.gpu)"
+else
+    echo "gpu: sin nvidia-smi ($NVIDIA_SMI_BIN): no se mide la VRAM de los items"
+fi
+export HP_NVIDIA_SMI HP_GPU_PY HP_PYPATH HP_GPU_INTERVAL

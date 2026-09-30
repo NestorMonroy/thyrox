@@ -1,0 +1,8 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790370373.389	    37.976	0	0	0	0	_headless_item 1 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/1.txt'
+2	:	1790370373.402	    58.495	0	0	0	0	_headless_item 2 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/2.txt'
+3	:	1790370411.385	    31.628	0	0	0	0	_headless_item 3 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/3.txt'
+5	:	1790370443.028	    47.433	0	0	0	0	_headless_item 5 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/5.txt'
+6	:	1790370490.478	    37.299	0	0	0	0	_headless_item 6 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/6.txt'
+4	:	1790370431.911	   103.914	0	0	0	0	_headless_item 4 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/4.txt'
+7	:	1790370527.792	    29.556	0	0	0	0	_headless_item 7 'module:src/packages/command-runtime/src/skills/loadSkillsDir.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-139/items/7.txt'

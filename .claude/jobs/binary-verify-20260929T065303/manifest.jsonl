@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/binary && bun test < /dev/null 2>&1 | tail -4; cd /home/user/thyrox && bash bin/check_package_typecheck --strict binary < /dev/null 2>&1 | tail -2", "started_at": "2026-09-29T06:53:03+00:00"}

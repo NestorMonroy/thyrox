@@ -1,0 +1,2 @@
+src/packages/agent/inProcessTeammateHelpers.ts(92,19): error TS2344: Type 'InProcessTeammateTaskState' does not satisfy the constraint 'TaskState'.
+  Property 'status' is missing in type 'InProcessTeammateTaskState' but required in type 'TaskState'.

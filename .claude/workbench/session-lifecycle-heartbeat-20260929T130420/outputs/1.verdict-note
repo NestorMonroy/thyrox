@@ -1,0 +1,3 @@
+rechazado originalmente por una premisa falsa del verify (exigía el latido en el arranque).
+Medido en 2.1.283: touchFleetViewHeartbeat sólo se llama en load() del store de FleetView (chunk-9d5amed5.js, tras tengu_fleetview_peers).
+Re-verificado con el verify corregido en un worktree aislado desde HEAD: VERIFY OK (1.reverify.log).

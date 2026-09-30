@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2691, "total_final": 2672, "tsc_runs": 1, "accepted": ["agent:plugin-deps-arity"], "files_kept": ["src/packages/app-host/src/runtime/installPluginBindings.ts", "src/packages/config/plugin/_deps.ts"], "outcomes": {"agent:plugin-deps-arity": "accepted-net"}}

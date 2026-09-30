@@ -1,0 +1,9 @@
+{
+  "id": "84",
+  "subject": "Decidir el prefijo de política y, si se adopta, el gate de capa triple",
+  "description": "ID: TASK-API-0038\n\nDecisión del ejecutor + implementación condicional. Dos partes:\n\n(a) DECISIÓN — el prefijo `P-` está sobrecargado: nombra políticas en `pm/api/iniciativas/completar-raiz-orm` (P-1..P-7, políticas de porte) y Problema/Punto en `pm/api/iniciativas/corregir-checkout-onsite-mercadopago` (P-01..P-10). Medido: 683 ocurrencias en 113 archivos .rst; `POL-` mide 0 (espacio libre). La colisión es de CLASE, no de ámbito: añadir la capa al medio dejaría ambos como `P-API-N`. IACT-docs lo evita con el prefijo de tres letras `POL` (TPL_POL_Politicas_1_0_0.rst, iact-docs@8673e59). Restricción dura: P-1..P-7 NO se renumeran (retrofit prospectivo, criterio DEC-R-01 / DEC-SM-01).\n\n(b) IMPLEMENTACIÓN CONDICIONAL — si se adopta el esquema `<PREFIJO>-<CAPA>-<N>`, extender a las políticas la declaración triple que `hallazgos-documentacion-obligatoria.md` ya exige para hallazgos: ID + `:submodulo:` + segmento de ruta, con su hook `PreToolUse` y su gate, equivalentes a `inject_hallazgo_submodulo.py` / `check_hallazgo_submodulo.py`. El ámbito NO necesita separador nuevo: `LAYERS` (kx_ids.py:94) es vocabulario cerrado sin guiones, así que el guion basta.\n\nTercera pregunta abierta que la decisión arrastra: si las políticas genéricas (P-1..P-7 no tienen nada propio de su iniciativa) se mudan a un hogar canónico. `source/normativa/` tiene estandares/, principios/, procedimientos/ y restricciones/, y NO tiene politicas/; IACT las pondría en `normativa/politicas/`.\n\nEvidencia: docs `source/gestion/pm/docs/iniciativas/implementar-knn-vecinos-mas-cercanos/analisis-tipos-de-politica-clase-y-ambito.rst` y su hallazgo H-DOCS-1034. No implementar sin la decisión (a).",
+  "activeForm": "Decidiendo el prefijo de política",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

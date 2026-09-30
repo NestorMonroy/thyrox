@@ -1,0 +1,61 @@
+../tool-registry/src/tools/AgentTool/loadAgentsDir.ts(342,17): error TS7006: Parameter 'agent' implicitly has an 'any' type.
+../tool-registry/src/tools/AgentTool/loadAgentsDir.ts(432,18): error TS2349: This expression is not callable.
+  Type 'ZodObject<{ SessionStart: ZodOptional<ZodArray<ZodObject<{ matcher: ZodOptional<ZodString>; hooks: ZodArray<ZodObject<{ type: ZodLiteral<"command">; command: ZodString; timeout: ZodOptional<ZodNumber>; }, $strip>>; }, $strip>>>; ... 10 more ...; PostCompact: ZodOptional<...>; }, $strict>' has no call signatures.
+../tool-registry/src/tools/AgentTool/loadAgentsDir.ts(714,11): error TS2322: Type '{ isolation?: IsolationMode | undefined; memory?: AgentMemoryScope | undefined; background?: true | undefined; maxTurns?: {} | null | undefined; ... 15 more ...; whenToUse: string; }' is not assignable to type 'CustomAgentDefinition'.
+  Type '{ isolation?: IsolationMode | undefined; memory?: AgentMemoryScope | undefined; background?: true | undefined; maxTurns?: {} | null | undefined; ... 15 more ...; whenToUse: string; }' is not assignable to type 'BaseAgentDefinition'.
+    Types of property 'maxTurns' are incompatible.
+      Type '{} | null | undefined' is not assignable to type 'number | undefined'.
+        Type 'null' is not assignable to type 'number | undefined'.
+../tool-registry/src/tools/BashTool/bashCommandHelpers.ts(14,10): error TS2305: Module '"@thyrox/permission/permissions"' has no exported member 'createPermissionRequestMessage'.
+../tool-registry/src/tools/BashTool/bashCommandHelpers.ts(15,26): error TS6142: Module './BashTool.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/BashTool/BashTool.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/BashTool/bashPermissions.ts(27,10): error TS2305: Module '"@thyrox/shell/bash/shellQuote.js"' has no exported member 'tryParseShellCommand'.
+../tool-registry/src/tools/BashTool/bashPermissions.ts(55,3): error TS2305: Module '"@thyrox/permission/permissions"' has no exported member 'createPermissionRequestMessage'.
+../tool-registry/src/tools/BashTool/bashPermissions.ts(70,26): error TS6142: Module './BashTool.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/BashTool/BashTool.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/BashTool/bashSecurity.ts(5,3): error TS2305: Module '"@thyrox/shell/bash/shellQuote.js"' has no exported member 'hasMalformedTokens'.
+../tool-registry/src/tools/BashTool/bashSecurity.ts(6,3): error TS2305: Module '"@thyrox/shell/bash/shellQuote.js"' has no exported member 'hasShellQuoteSingleQuoteBug'.
+../tool-registry/src/tools/BashTool/bashSecurity.ts(7,3): error TS2305: Module '"@thyrox/shell/bash/shellQuote.js"' has no exported member 'tryParseShellCommand'.
+../tool-registry/src/tools/BashTool/bashSecurity.ts(1101,5): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+../tool-registry/src/tools/BashTool/modeValidation.ts(5,31): error TS6142: Module './BashTool.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/BashTool/BashTool.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/BashTool/pathValidation.ts(10,10): error TS2305: Module '"@thyrox/shell/bash/shellQuote.js"' has no exported member 'tryParseShellCommand'.
+../tool-registry/src/tools/BashTool/pathValidation.ts(11,10): error TS2305: Module '"@thyrox/storage/path.js"' has no exported member 'getDirectoryForPath'.
+../tool-registry/src/tools/BashTool/pathValidation.ts(20,3): error TS2305: Module '"@thyrox/permission/pathValidation.js"' has no exported member 'isDangerousRemovalPath'.
+../tool-registry/src/tools/BashTool/pathValidation.ts(21,3): error TS2305: Module '"@thyrox/permission/pathValidation.js"' has no exported member 'validatePath'.
+../tool-registry/src/tools/BashTool/pathValidation.ts(23,31): error TS6142: Module './BashTool.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/BashTool/BashTool.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/BashTool/pathValidation.ts(793,49): error TS7006: Parameter 'env' implicitly has an 'any' type.
+../tool-registry/src/tools/BashTool/pathValidation.ts(932,31): error TS2345: Argument of type 'boolean | undefined' is not assignable to parameter of type 'boolean'.
+  Type 'undefined' is not assignable to type 'boolean'.
+../tool-registry/src/tools/BashTool/sedValidation.ts(3,10): error TS2305: Module '"@thyrox/shell/bash/shellQuote.js"' has no exported member 'tryParseShellCommand'.
+../tool-registry/src/tools/BashTool/shouldUseSandbox.ts(54,50): error TS2339: Property 'excludedCommands' does not exist on type '{}'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(20,3): error TS2305: Module '"@thyrox/agent/tokenEstimation.js"' has no exported member 'countTokensWithAPI'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(24,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'activateConditionalSkillsForPaths'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(25,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'addSkillDirectories'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(26,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'discoverSkillDirsForPaths'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(63,3): error TS2305: Module '"@thyrox/storage/pdfUtils.js"' has no exported member 'isPDFSupported'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(67,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'checkReadPermissionForTool'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(68,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'matchingRuleForInput'.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(72,33): error TS2307: Cannot find module '@thyrox/repl/readFileInRange.js' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(93,8): error TS6142: Module './UI.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/FileReadTool/UI.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(1182,73): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/FileReadTool.ts(1183,43): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/imageProcessor.ts(75,37): error TS2307: Cannot find module 'image-processor-napi' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/imageProcessor.ts(91,34): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/imageProcessor.ts(107,34): error TS2307: Cannot find module 'sharp' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/limits.ts(15,21): error TS2307: Cannot find module 'lodash-es/memoize.js' or its corresponding type declarations.
+../tool-registry/src/tools/FileReadTool/prompt.ts(1,10): error TS2305: Module '"@thyrox/storage/pdfUtils.js"' has no exported member 'isPDFSupported'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(11,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'activateConditionalSkillsForPaths'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(12,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'addSkillDirectories'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(13,3): error TS2305: Module '"@thyrox/command-runtime/skills/loadSkillsDir.js"' has no exported member 'discoverSkillDirsForPaths'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(19,10): error TS2305: Module '"@thyrox/agent/diff.js"' has no exported member 'countLinesChanged'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(19,29): error TS2305: Module '"@thyrox/agent/diff.js"' has no exported member 'getPatchForDisplay'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(26,8): error TS2307: Cannot find module '@thyrox/agent/file-history' or its corresponding type declarations.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(38,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'checkWritePermissionForTool'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(39,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'matchingRuleForInput'.
+../tool-registry/src/tools/FileWriteTool/FileWriteTool.ts(54,8): error TS6142: Module './UI.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/FileWriteTool/UI.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/GlobTool/GlobTool.ts(11,10): error TS2305: Module '"@thyrox/storage/glob.js"' has no exported member 'glob'.
+../tool-registry/src/tools/GlobTool/GlobTool.ts(14,10): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'checkReadPermissionForTool'.
+../tool-registry/src/tools/GlobTool/GlobTool.ts(24,8): error TS6142: Module './UI.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/GlobTool/UI.tsx', but '--jsx' is not set.
+../tool-registry/src/tools/GrepTool/GrepTool.ts(14,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'checkReadPermissionForTool'.
+../tool-registry/src/tools/GrepTool/GrepTool.ts(15,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'getFileReadIgnorePatterns'.
+../tool-registry/src/tools/GrepTool/GrepTool.ts(16,3): error TS2305: Module '"@thyrox/permission/filesystem"' has no exported member 'normalizePatternsToPath'.
+../tool-registry/src/tools/GrepTool/GrepTool.ts(31,8): error TS6142: Module './UI.js' was resolved to '/home/user/thyrox/src/packages/tool-registry/src/tools/GrepTool/UI.tsx', but '--jsx' is not set.
+__BG_EXIT__=0

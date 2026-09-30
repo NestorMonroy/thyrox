@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+120 |       nameSince: 1000,
+121 |     })
+122 |     expect(statSync(sessionsDir()).mode & 0o777).toBe(0o700)
+123 |     expect(state.registered).toBe(true)
+124 |     expect(state.registeredName).toEqual({ name: 'app-s1', source: 'derived', since: 1000, sessionId: 's1' })
+125 |     expect(state.liveSessionId).toBe('s1')
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "s1"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:125:33)
+(fail) registerSession (nD) > una sesión interactiva se publica con nombre derivado y su directorio 0700 [2.86ms]
+273 |     state.conversationNames.set('s2', { name: 'guardado', source: 'user' })
+274 |     const restored: string[] = []
+275 |     state.restoreSetAsideName = (name, source) => void restored.push(`${name}/${source}`)
+276 |     switchListeners[0]!('s2', 'hydrate')
+277 |     await flush()
+278 |     expect(state.conversationNames.get('s1')).toEqual({ name: 'propio', source: 'user' })
+                                                    ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "name": "propio",
+-   "source": "user",
+- }
++ undefined
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:278:47)
+(fail) los cambios de sesión y de directorio > un nombre de usuario de otra conversación se aparta y vuelve el de la adoptada [6.26ms]
+
+ 21 pass
+ 2 fail
+ 84 expect() calls
+Ran 23 tests across 1 file. [183.00ms]

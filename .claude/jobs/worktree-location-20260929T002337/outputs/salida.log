@@ -1,0 +1,31 @@
+run-task-pool: 5 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260929T002337
+  job-20260929T002337/job-001 bash tests/session/test-item-worktree-location.sh > .claude/workbench/worktree-location-20260929T002337/location.txt 2>&1; echo EXIT=$? >> .claude/workbench/worktree-location-20260929T002337/location.txt
+  job-20260929T002337/job-002 bash tests/session/test-item-worktree-lock.sh > .claude/workbench/worktree-location-20260929T002337/lock.txt 2>&1; echo EXIT=$? >> .claude/workbench/worktree-location-20260929T002337/lock.txt
+  job-20260929T002337/job-003 bash tests/session/test-headless-pool-worktree.sh > .claude/workbench/worktree-location-20260929T002337/pool-worktree.txt 2>&1; echo EXIT=$? >> .claude/workbench/worktree-location-20260929T002337/pool-worktree.txt
+  job-20260929T002337/job-004 cd src/packages/agent && bun test __tests__/modelScope.test.ts > ../../../.claude/workbench/worktree-location-20260929T002337/modelScope.txt 2>&1; echo EXIT=$? >> ../../../.claude/workbench/worktree-location-20260929T002337/modelScope.txt
+  job-20260929T002337/job-005 cd src/packages/agent && bunx tsc --noEmit -p tsconfig.build.json > ../../../.claude/workbench/worktree-location-20260929T002337/tsc-agent-build.txt 2>&1; echo EXIT=$? >> ../../../.claude/workbench/worktree-location-20260929T002337/tsc-agent-build.txt
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1784s)
+asentado: job-20260929T002337_job-001 -> OK (2 de 6)
+asentado: job-20260929T002337_job-002 -> OK (3 de 6)
+asentado: job-20260929T002337_job-003 -> OK (4 de 6)
+asentado: job-20260929T002337_job-004 -> OK (5 de 6)
+asentado: job-20260929T002337_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260929T002337
+       | (vacío — no emitió nada)
+OK     job-20260929T002337_job-001 exit=0
+       | EXIT=0
+       memoria pico: 26908 KB (26 MB) · pared 0.35s
+OK     job-20260929T002337_job-002 exit=0
+       | EXIT=0
+       memoria pico: 27312 KB (27 MB) · pared 16.40s
+OK     job-20260929T002337_job-003 exit=0
+       | EXIT=0
+       memoria pico: 27576 KB (27 MB) · pared 2.29s
+OK     job-20260929T002337_job-004 exit=0
+       | EXIT=0
+       memoria pico: 49940 KB (49 MB) · pared 0.11s
+OK     job-20260929T002337_job-005 exit=0
+       | EXIT=0
+       memoria pico: 743972 KB (727 MB) · pared 8.54s
+__BG_EXIT__=0

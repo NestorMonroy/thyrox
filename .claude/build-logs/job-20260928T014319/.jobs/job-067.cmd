@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/session/test-headless-pool-worktree.sh

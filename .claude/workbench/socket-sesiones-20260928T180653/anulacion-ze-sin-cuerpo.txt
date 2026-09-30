@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+127 |     const { deps, enqueued } = harness({
+128 |       receive: async () => ({ content: 'reescrito', queueing: { queued() {}, [Symbol.dispose]() {} } }),
+129 |     })
+130 |     await deliverPeerUserMessage({ type: 'user', message: { content: '<cross-session-message from="uds:/r.sock">\nhola\n</cross-session-message>' } }, peer, deps)
+131 |     expect(enqueued[0]!.value).toBe('reescrito')
+132 |     expect(enqueued[0]!.origin.body).toBeUndefined()
+                                           ^
+error: expect(received).toBeUndefined()
+
+Received: "hola"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:132:38)
+(fail) deliverPeerUserMessage (ze) > el cuerpo del sobre se retira si el hook reescribió el texto [0.63ms]
+
+ 15 pass
+ 1 fail
+ 38 expect() calls
+Ran 16 tests across 1 file. [61.00ms]

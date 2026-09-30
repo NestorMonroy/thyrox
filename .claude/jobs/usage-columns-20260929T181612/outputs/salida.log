@@ -1,0 +1,238 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+  ok    register_agent_session.py parsea
+== 2. migración: base con esquema VIEJO (sin columnas de uso) gana las columnas al reconectar ==
+  ok    esquema viejo tiene 8 columnas
+  ok    tras reconectar están TODAS las columnas declaradas por el migrado
+== 3. dedup por message.id: 2 líneas con el MISMO id cuentan como 1 turno ==
+  ok    dedup por message.id: 1 turno, no 2, equiv_cost=160
+== 4. hook completo (funciones + CLI): extrae uso + meta.json y actualiza agent_sessions ==
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1907, in cmd_update_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+Traceback (most recent call last):
+  File "<stdin>", line 30, in <module>
+  File "/usr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/usr/local/bin/python3', 'src/agents/agent_store.py', 'actualizar-sesion', '--claude-dir', '/tmp/tmp.wvFm3u7jnB/.claude/agent-results', '--agent-id', 'AGD', '--status', 'completed', '--turns', '1', '--input-tokens', '10', '--cache-creation-tokens', '100', '--cache-read-tokens', '0', '--output-tokens', '5', '--equiv-cost', '160', '--model-alias', 'sonnet', '--description', 'prueba sintetica']' returned non-zero exit status 1.
+  FALLO status queda completed
+        esperado=[completed] obtenido=[<NULO>]
+  ok    un alias del sidecar NO entra en model
+  FALLO el alias del sidecar entra en model_alias
+        esperado=[sonnet] obtenido=[<NULO>]
+  FALLO description se pobló desde meta.json
+        esperado=[prueba sintetica] obtenido=[<NULO>]
+  FALLO equiv_cost quedó en la fila
+        esperado=[160] obtenido=[<NULO>]
+  FALLO turns quedó en la fila (1, no 2)
+        esperado=[1] obtenido=[<NULO>]
+== 5. sin transcript_path, actualizar-sesion no rompe (columnas quedan NULL) ==
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1907, in cmd_update_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  FALLO sin datos de uso, status igual cierra
+        esperado=[completed] obtenido=[<NULO>]
+  ok    sin datos de uso, equiv_cost queda NULO
+== 6. procedencia: source, tool_use_id y metadata_json (H-DOCS-178) ==
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  stderr del hook (AGP):
+        error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+        error_log: el directorio de salida no está declarado. Declara THYROX_RESULTS_DIR en el proceso o en el .env del repo que hospeda. NO se deriva de la ubicación de este archivo: derivarlo escribiría en el árbol de THYROX y el drenador del repo consumidor no lo vería nunca (H-DOCS-1080).
+  FALLO source registra la vía de captura (hook)
+        esperado=[hook] obtenido=[<NULO>]
+  FALLO tool_use_id sale del toolUseId del sidecar
+        esperado=[toolu_XYZ] obtenido=[<NULO>]
+  FALLO una clave desconocida del sidecar NO se pierde: va a metadata_json
+        no contiene=[{"claveNueva": "que-el-harness-agregue"}] en=[<NULO>]
+  FALLO el perfil de ejecución comparte ranura sin pisar al sidecar
+        no contiene=[{"perfil_ejecucion": {"turnos_sinteticos": 1}}] en=[<NULO>]
+  FALLO el sidecar rellena subagent_type cuando el alta dijo 'desconocido'
+        esperado=[general-purpose] obtenido=[<NULO>]
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1907, in cmd_update_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  FALLO NULLIF protege un subagent_type ya correcto
+        esperado=[Explore] obtenido=[<NULO>]
+== 7. CONTROL — el modelo lo manda el transcript, no el sidecar (H-DOCS-219/220) ==
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  FALLO model sale del transcript, verbatim
+        esperado=[claude-opus-5] obtenido=[<NULO>]
+  FALLO el alias del sidecar no pisa al identificador
+        esperado=[sonnet] obtenido=[<NULO>]
+== 8. CONTROL — la causa de muerte declarada por el transcript (#600) ==
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  FALLO api_error_status sale del apiErrorStatus declarado
+        esperado=[429] obtenido=[<NULO>]
+  FALLO rate_limit_type sale del quotaLimits rechazado
+        esperado=[five_hour] obtenido=[<NULO>]
+  FALLO el <synthetic> del error no entra en model
+        esperado=[claude-opus-5] obtenido=[<NULO>]
+== 9. CONTROL POSITIVO REAL — transcript versionado, no fabricado (#657) ==
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  FALLO el 429 real llega a api_error_status
+        esperado=[429] obtenido=[<NULO>]
+  ok    rate_limit_type queda NULO: el real no trae quotaLimits
+  FALLO client_version sale del nivel superior de la línea
+        esperado=[2.1.224] obtenido=[<NULO>]
+AVISO: FTS5 no disponible en este SQLite (no such table: main.findings_history) — buscar-hallazgos/auto-recall quedan deshabilitados; registrar-sesion/agregar-hallazgo no se ven afectados.
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4278, in <module>
+    main()
+  File "/home/user/thyrox/src/agents/agent_store.py", line 4269, in main
+    args.func(args)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1827, in cmd_register_session
+    with connect(store_dir) as conn:
+         ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1614, in connect
+    _resync_fts(conn)
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1710, in _resync_fts
+    history_count = conn.execute("SELECT COUNT(*) FROM findings_history").fetchone()[0]
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: findings_history
+  FALLO equiv_cost del transcript real
+        esperado=[595654] obtenido=[<NULO>]
+  FALLO turnos del transcript real
+        esperado=[10] obtenido=[<NULO>]
+== 10. denominador: la suma declara sobre cuántos mensajes se computó (#899) ==
+  ok    el alcance separa las dos causas del hueco
+  ok    transcript real: 10 de 16, todo el hueco es dedup
+
+10 ok, 21 fallos
+__BG_EXIT__=1

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsFleetHeartbeat.test.ts:
+149 |     times = [10_000, 16_000]
+150 |     expect(await isWatchedFromStorage(storageWith(async () => ({ ok: true, value: { mtimeMs: 11_001 } })), deps())).toBe(true)
+151 |     expect(state.watchedCache).toEqual({ at: 16_000, value: true })
+152 |     state.watchedCache = undefined
+153 |     times = [10_000, 16_000]
+154 |     expect(await isWatchedFromStorage(storageWith(async () => ({ ok: true, value: { mtimeMs: 11_000 } })), deps())).toBe(false)
+                                                                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsFleetHeartbeat.test.ts:154:117)
+(fail) isWatchedFromStorage (qNt) > mide la edad con la hora de después de preguntar [0.81ms]
+
+ 10 pass
+ 1 fail
+ 42 expect() calls
+Ran 11 tests across 1 file. [123.00ms]

@@ -1,0 +1,5 @@
+Record the traces of the phase B and proxy commits
+
+Job runs, commit messages and logs of the two commits, the file lists
+the rename used, the product-word rename instrument, and the agent
+store rows written by this session.

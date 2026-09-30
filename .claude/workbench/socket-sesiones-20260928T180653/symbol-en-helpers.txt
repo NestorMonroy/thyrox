@@ -1,0 +1,25 @@
+==== lsn: 1 definicion(es) de nivel superior
+---- chunk-qcy58j4w.js function lsn [2384,2700)
+function lsn(e){if(O()==="windows")return;let n=te(e);try{let r=n<0?null:Bun.ant.getPeerPid(n);if(r!==null&&r>0)return r;t(`[peer-cred] peer pid unavailable (fd=${n}, got=${r})`,{level:"warn"});return}catch(r){t(`[peer-cred] peer pid lookup failed: ${r instanceof Error?r.message:String(r)}`,{level:"warn"});return}}
+==== Yce: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function Yce [3706,3840)
+function Yce(e){try{let n=ce().readFileSync(`/proc/${e}/stat`,{encoding:"utf8"}),r=Zne(n);return r&&r.length>0?r:void 0}catch{return}}
+==== unr: 1 definicion(es) de nivel superior
+---- chunk-dv9ctjss.js function unr [5439,5540)
+function unr(){if(zje()!==void 0)return!1;let e=C();if(e===null||!y.has(e.mode))return!1;return S(e)}
+==== aUr: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function aUr [3840,4115)
+function aUr(e,n=12){let r=[],i=e;for(let s=0;s<n;s++){let o=0;try{let u=ce().readFileSync(`/proc/${i}/stat`,{encoding:"utf8"}),a=u.lastIndexOf(")"),l=u.slice(a+2).split(" ");o=Number(l[1])}catch{break}if(!Number.isInteger(o)||o<1)break;if(r.push(o),o===1)break;i=o}return r}
+==== WOt: 1 definicion(es) de nivel superior
+---- chunk-qcy58j4w.js variable WOt [2938,2949)
+WOt=1048576
+==== TB: 1 definicion(es) de nivel superior
+---- chunk-qcy58j4w.js function TB [9382,9491)
+function TB(e){if(/token/i.test(e))return"(redacted: fragment may carry an auth token)";return Kr(se(e),200)}
+==== Bf: 1 definicion(es) de nivel superior
+---- chunk-qcy58j4w.js function Bf [9303,9382)
+function Bf(e,n=120){if(/token/i.test(e))return"(withheld)";return Kr(se(e),n)}
+==== Qe: 1 definicion(es) de nivel superior
+---- chunk-yg53q7yp.js function Qe [11807,12208)
+function Qe(e,n,i,r,d){if(le(e)&&(e.type==="control"&&e.action!=="notify_when_idle"||e.type==="user"&&e.priority==="now"&&e.file_attachments===void 0)){be(e,n,i,r,d).catch((s)=>{t(`[uds-messaging] Failed to process message: ${s}`,{level:"warn"})});return}c().processingChain=c().processingChain.then(()=>be(e,n,i,r,d)).catch((s)=>{t(`[uds-messaging] Failed to process message: ${s}`,{level:"warn"})})}
+symbol: 8 de 8 nombre(s) resueltos

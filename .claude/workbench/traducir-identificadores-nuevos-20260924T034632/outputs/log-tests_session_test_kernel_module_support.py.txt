@@ -1,0 +1,18 @@
+  ok   x86_64 resuelve a 175
+  ok   aarch64 resuelve a 105
+  ok   una arquitectura desconocida REHUSA, no adivina
+  ok   ENOSYS -> ausente
+  ok   EPERM -> presente (falta permiso, no interfaz)
+  ok   EFAULT -> presente (puntero invalido, que es lo que pasamos)
+  ok   ENOEXEC -> presente (imagen invalida)
+  ok   un errno que no esperamos NO se clasifica
+  ok   el informe separa la conducta de los indicios
+  ok   el veredicto sale del errno
+  ok   y los indicios son rutas, no el veredicto
+  ok   la sonda declara argumentos vacios
+  ok   una llamada implementada contra ruta ausente da ENOENT
+  ok   y contra una ruta real no da error
+  ok   asi que un ENOSYS del sujeto es del KERNEL, no del instrumento
+  ok   las dos de la familia dan el mismo veredicto
+
+16 aprobada(s) · 0 fallida(s) (alcance medido: session/kernel_modules.py)

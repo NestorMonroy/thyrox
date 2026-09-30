@@ -1,0 +1,47 @@
+== case_resolved_passes
+  FAIL un types que existe sale 0
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+  FAIL y publica su denominador
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+== case_missing_declaration_fails
+  FAIL un types al vacio sale 1
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+  FAIL y nombra paquete y subpath
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+== case_wildcard_partial_fails
+  FAIL un comodin con una declaracion de dos sale 1
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+== case_missing_build_project_fails
+  FAIL declarar dist/ sin tsconfig.build.json sale 1
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+  FAIL y nombra los dos proyectos que faltan
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+== case_source_only_without_projects_fails
+  FAIL un paquete sólo-fuente sin proyectos sale 1
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+  FAIL y nombra los dos proyectos que faltan
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+  FAIL y SÍ cuenta como medido
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+== case_discovery_ignores_workspaces
+  FAIL un paquete que workspaces no lista se mide igual
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+  FAIL y cuenta uno: ni el agregador ni node_modules
+       check_exports_types: ningun paquete con exports bajo src/; no se mide
+
+== case_nothing_to_measure_refuses
+  ok   sin paquetes rehúsa con 2
+  ok   y sin publicar un conteo
+
+test_check_exports_types: 2 ok, 12 falla(s)

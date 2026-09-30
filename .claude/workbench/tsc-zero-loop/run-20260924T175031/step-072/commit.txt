@@ -1,0 +1,20 @@
+Port the stream handler and real stream message shapes
+
+The REPL, the remote session and the agent hooks import
+handleMessageFromStream, StreamingToolUse, StreamingThinking and
+hasSuccessfulToolCall from messages.js, and none of them existed.
+They are now implemented natively with the positional contract of
+the source (ccnmt v2.1.88, utils/messages.ts): stream events drive
+the spinner mode, the streamed tool uses, the thinking and text
+previews; complete messages are delivered, except tombstones, which
+retract, and SDK tool summaries, which the REPL ignores.
+
+That handler needs to tell those items apart, and it could not:
+TombstoneMessage and ToolUseSummaryMessage were aliases of Message,
+and StreamEvent and RequestStartEvent were open shapes, so no
+discriminant narrowed. They now declare their literal type and their
+fields. That also fits createToolUseSummaryMessage, whose result did
+not fit Message, and runAgent's recordable-message guard now takes
+the minimal shape it reads instead of a union of those aliases.
+
+tsc: 2401 -> 2390. Shape audit: 0 findings.

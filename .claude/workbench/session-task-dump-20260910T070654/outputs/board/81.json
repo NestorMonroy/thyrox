@@ -1,0 +1,19 @@
+{
+  "id": "81",
+  "subject": "Reasignar src/gates: la mitad de src/packages/harness ya cerro",
+  "description": "Medido 2026-09-09 contra la referencia, que es lo que faltaba para decidir: en TODO ccnmt (sin node_modules ni .git) existe **exactamente un** `gates` — `packages/@ant/computer-use-mcp/src/legacy/gates.ts`, 70 líneas — y **no es un gate de verificación**: es el lector de feature flags de Computer Use (`getChicagoEnabled`, `readConfig` sobre `tengu_malort_pedway`, `CuSubGates`). Cero directorios llamados `gates`.\n\nAsí que nuestro `src/gates/` —60+ guiones de verificación en Python y shell— no tiene contraparte en la referencia, y el sustantivo que usa colisiona con el sentido que la referencia le da. Es significante contra significado: adoptamos «gate» para «control que rehúsa» y la fuente lo usa para «bandera que habilita».\n\nDirectiva del ejecutor 2026-09-09: *«lo que mencionas de gates se tiene que reintegrar, porque el único gates que vive tiene que ser lo que está en /home/user/thyrox/packages/@ant/computer-use-mcp/src/legacy/**»*. O sea: `src/gates/` se reparte a los hogares que le correspondan por dominio, y el nombre `gates` queda reservado para el porte del feature-gating de computer-use-mcp.\n\nAntes de mover: censar quién invoca cada guion (hooks, `src/gates/thyrox-audit.sh`, `.githooks/pre-commit`, `pre-push.sh`, `tests/gates/**`) — un reparto que rompa el cableado deja gates que nadie corre, que es la deuda que #245 ya nombra.",
+  "activeForm": "Portando los gates de fidelidad de porte al harness",
+  "status": "pending",
+  "blocks": [
+    "265"
+  ],
+  "blockedBy": [
+    "266"
+  ],
+  "metadata": {
+    "iniciativa": "construir-harness-propio",
+    "analisis": "analisis-scripts-de-api-candidatos-al-harness",
+    "fuente": "17 gates: check_porte_completo, compare_reference_symbols, check_mirrored_roots, check_fidelidad_declarada, check_bloqueo_*, census_declining_prose",
+    "constante": "referencia = binario minificado, no fuente limpia"
+  }
+}

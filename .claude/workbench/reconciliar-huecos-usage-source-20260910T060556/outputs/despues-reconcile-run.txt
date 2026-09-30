@@ -1,0 +1,5 @@
+  ~ a06c62889a9f039fb
+  ~ a6a905782eb778a17
+  ~ aee846c7197786167
+  ~ afb3f2c3792326f16
+reconciliar-store: 0 registrados, 4 completados, 0 sin cambios, 0 fallidos, 137 ya presentes, 19 declarados no medidos, 0 nivelados (alcance medido: 137 transcripts en disco)

@@ -1,0 +1,58 @@
+    21  .claude/skills/dmaic-improve/references/doe-guide.md::corridas
+     8  .claude/skills/dmaic-improve/references/doe-guide.md::corrida
+     7  postcondiciones .claude/skills/ba-requirements-analysis/SKILL.md
+     6  sobreprocesamiento .claude/skills/dmaic-improve/references/lean-tools-guide.md
+     6  alcanzabilidad .claude/skills/pps-target/SKILL.md
+     4  .claude/skills/pdca-check/references/measurement-tools.md::corridas
+     4  observabilidad .claude/skills/thyrox/references/methodology-selection-guide.md
+     3  enrevisión .claude/skills/ba-requirements-lifecycle/SKILL.md
+     3  autonomación .claude/skills/dmaic-improve/SKILL.md
+     2  .claude/skills/cosmic/references/calibration.md::corridas
+     2  .claude/skills/dmaic-control/references/control-chart-guide.md::corrida
+     2  .claude/skills/pdca-check/SKILL.md::corridas
+     2  resolubilidad .claude/skills/pps-clarify/SKILL.md
+     2  .claude/skills/python-mcp/SKILL.md::librería  → biblioteca
+     2  elicitaciones .claude/skills/rm-elicitation/SKILL.md
+     2  .claude/skills/scrum-definition-of-done/SKILL.md::regla de oro
+     1  .claude/rules/search-the-git-index.md::corrida
+     1  traceabilidad .claude/skills/ba-requirements-lifecycle/assets/requirements-lifecycle-template.md
+     1  .claude/skills/bpa-design/references/redesign-principles.md::remover  → retirar
+     1  .claude/skills/bpa-implement/SKILL.md::remover  → retirar
+     1  .claude/skills/bpa-map/references/bpmn-guide.md::librería  → biblioteca
+     1  ersión .claude/skills/cosmic/references/manual/early-sizing-practitioners-guide.md
+     1  cenamiento .claude/skills/cosmic/references/manual/part2-guidelines.md
+     1  ecesidades .claude/skills/cosmic/references/manual/part2-guidelines.md
+     1  .claude/skills/cosmic/references/manual/part2-guidelines.md::a grandes rasgos
+     1  criptación .claude/skills/cosmic/references/manual/part3-rules.md
+     1  específicación .claude/skills/cosmic/references/manual/part3-rules.md
+     1  .claude/skills/dmaic-control/references/control-chart-guide.md::corridas
+     1  nsolución .claude/skills/dmaic-define/SKILL.md
+     1  nsostenibilidad .claude/skills/dmaic-define/SKILL.md
+     1  .claude/skills/dmaic-define/references/voc-techniques.md::regla de oro
+     1  .claude/skills/dmaic-improve/references/doe-guide.md::correr la
+     1  .claude/skills/pdca-check/references/measurement-tools.md::corrida
+     1  incrementalidad .claude/skills/pdca-do/SKILL.md
+     1  .claude/skills/pdca-plan/references/problem-analysis-techniques.md::regla de oro
+     1  supuesición .claude/skills/pps-analyze/assets/five-whys-template.md
+     1  .claude/skills/pps-countermeasures/SKILL.md::remover  → retirar
+     1  .claude/skills/pps-countermeasures/references/countermeasures-guide.md::remover  → retirar
+     1  escalaciones .claude/skills/pps-implement/assets/implementation-log-template.md
+     1  idempotencia .claude/skills/rup-construction/references/ioc-criteria.md
+     1  .claude/skills/rup-elaboration/references/architecture-baseline.md::librería  → biblioteca
+     1  testabilidad .claude/skills/rup-elaboration/references/lca-criteria.md
+     1  .claude/skills/scrum-daily-standup/SKILL.md::removerlo  → retirarlo
+     1  .claude/skills/scrum-daily-standup/SKILL.md::removido  → retirado
+     1  nmisión .claude/skills/sp-context/SKILL.md
+     1  nadaptación .claude/skills/sp-context/SKILL.md
+     1  .claude/skills/sp-execute/SKILL.md::remover  → retirar
+     1  .claude/skills/sp-formulate/assets/okr-template.md::regla de oro
+     1  prioritización .claude/skills/workflow-audit/references/audit-scoring.md
+     1  .claude/skills/workflow-audit/references/audit-scoring.md::removidos  → retirados
+     1  .claude/skills/workflow-discover/references/constraints.md::correr el
+     1  .claude/skills/workflow-discover/references/requirements-analysis.md::remover  → retirar
+     1  .claude/skills/workflow-structure/references/spec-driven-development.md::regla de oro
+     1  .claude/skills/workflow-track/references/incremental-correction.md::regla de oro
+     1  .claude/skills/workflow-track/references/incremental-correction.md::al final del día
+     1  README.md::correr las
+     1  README.md::librería  → biblioteca
+57 hallazgo(s) nuevo(s): 24 inventado(s) · 33 prohibido(s) (alcance medido: 289 archivo(s); 57 hallazgo(s) en total; 0 en baseline; léxico: 1000000 formas; vetadas: 53)

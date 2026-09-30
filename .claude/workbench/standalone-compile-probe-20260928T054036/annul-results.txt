@@ -1,0 +1,18 @@
+== base
+ 7 pass
+ 0 fail
+== anulada: la rama de apendice
+(fail) locatePayload — forma de apéndice (Bun 1.3) > localiza el payload por el largo que declara Offsets, no por el magic [0.94ms]
+(fail) locatePayload — forma de apéndice (Bun 1.3) > la tabla de módulos se lee sobre el payload localizado [0.30ms]
+ 5 pass
+ 2 fail
+== anulada: los limites del encabezado ELF
+(fail) locatePayload — forma de apéndice (Bun 1.3) > localiza el payload por el largo que declara Offsets, no por el magic [1.04ms]
+(fail) findSection ante un ELF truncado > un encabezado con el magic y sin tabla de secciones no lanza [0.45ms]
+(fail) findSection ante un ELF truncado > un e_shoff que apunta fuera del archivo se lee como ausencia [0.27ms]
+ 4 pass
+ 3 fail
+== restaurado
+ 7 pass
+ 0 fail
+ 1 file changed, 7 insertions(+), 1 deletion(-)

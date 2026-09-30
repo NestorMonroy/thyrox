@@ -1,0 +1,8 @@
+[
+  [ 127670926, "/$bunfs/root/image-processor-fyx7evpj.node" ], [ 129135730, "/$bunfs/root/stdin-7dk5ecrb.node" ]
+] {
+  byteCount: 30253569,
+  fin: 129549009,
+}
+base si nombre=28375518: 99295408 si 29840322: 97830604
+base si nombre=28375518: 100760212 si 29840322: 99295408

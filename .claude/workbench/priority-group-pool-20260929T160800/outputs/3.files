@@ -1,0 +1,5 @@
+src/hooks/detect_library_path_invocation.py
+src/hooks/detect_rst_validation.py
+src/hooks/tool_use_preflight.py
+tests/hooks/test_detect_library_path_invocation.py
+tests/hooks/test_detect_rst_validation.py

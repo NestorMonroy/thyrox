@@ -1,0 +1,9 @@
+=== 1. Node es sólo datos ===
+  ok    required por defecto
+  ok    campos accesibles
+=== 2. render_manifest escapa el pipe ===
+  ok    titulo con pipe escapado
+  ok    titulo con pipe crudo NO aparece
+
+OK=4 FAILED=0
+EXIT=0

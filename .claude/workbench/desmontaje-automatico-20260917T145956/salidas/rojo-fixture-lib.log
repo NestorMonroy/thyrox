@@ -1,0 +1,27 @@
+== 1. fixture_dir crea un directorio bajo TMPDIR ==
+  FALLO el directorio existe mientras la sonda vive
+        esperado=[1] obtenido=[0]
+  FALLO y cae bajo TMPDIR
+        esperado=[1] obtenido=[0]
+== 2. al salir la sonda, el directorio se ha retirado ==
+  ok    la ruta se retiro al salir
+== 3. fixture_file hace lo propio con un archivo ==
+  ok    el archivo se retiro al salir
+== 4. COMPOSICION: el trap propio de la suite SOBREVIVE ==
+  ok    el trap propio de la suite corrio
+  ok    y el fixture se retiro igual
+== 5. fixture_teardown es idempotente y se puede llamar a mano ==
+  FALLO dos desmontajes seguidos no fallan
+        esperado=[1] obtenido=[0]
+== 6. ANULACION: sin composicion, el trap propio de la suite se pierde ==
+sed: can't read src/lib/fixture.sh: No such file or directory
+diff: src/lib/fixture.sh: No such file or directory
+  FALLO la anulacion modifico el guion
+        esperado=[1] obtenido=[2]
+  FALLO sin composicion el trap propio NO corre
+        esperado=[0] obtenido=[1]
+== 7. la suite no deja nada en el directorio compartido ==
+  ok    TMPDIR de la sonda vacio al terminar
+
+ok=5 fallo=5
+EXIT=1

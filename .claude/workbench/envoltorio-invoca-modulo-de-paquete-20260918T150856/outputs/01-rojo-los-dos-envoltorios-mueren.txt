@@ -1,0 +1,16 @@
+=== 2026-09-18T15:09:26 — ROJO: los dos envoltorios mueren ===
+--- bin/cache_probe --help ---
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/transcript/cache_probe.py", line 81, in <module>
+    from .thread import main_chain_of
+ImportError: attempted relative import with no known parent package
+exit=1
+cache_probe exit real=1
+--- bin/manifest --help ---
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/workbench/manifest.py", line 42, in <module>
+    from . import paths
+ImportError: attempted relative import with no known parent package
+manifest exit real=1
+--- control sano: bin/census_findings ---
+census_findings exit real=0

@@ -1,0 +1,2 @@
+ROJO tests/lib/test-script-deprecated.sh
+EXIT=0

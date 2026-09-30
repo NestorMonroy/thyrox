@@ -1,0 +1,9 @@
+EXIT=1 reg-001.log	src/packages/agent/__tests__/models.test.ts
+EXIT=0 reg-002.log	src/packages/agent/__tests__/registry.test.ts
+EXIT=0 reg-003.log	tests/agents/test_balanced_block.py
+EXIT=0 reg-004.log	tests/repo/test_citations.py
+EXIT=0 reg-005.log	tests/verify/test_audit_delegates.sh
+EXIT=0 reg-006.log	tests/verify/test_class_header.py
+EXIT=0 reg-007.log	tests/verify/test_counterpart_body.py
+EXIT=0 reg-008.log	tests/verify/test_runner.py
+EXIT=0 reg-009.log	tests/verify/test_symbol_presence.py

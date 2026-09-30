@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/productName.test.ts:
+37 |   test('2. ningún texto de código nombra a Claude Code', () => {
+38 |     const offenders = sources(SRC).flatMap(file =>
+39 |       codeLines(readFileSync(file, 'utf8'))
+40 |         .filter(line => line.includes('Claude Code'))
+41 |         .map(line => `${relative(SRC, file)}: ${line.trim()}`))
+42 |     expect(offenders).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "commands/misc-commands.ts: `Install Claude Code native build. Use [target] to specify version (stable, latest, or specific version)`,",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/productName.test.ts:42:23)
+(fail) el nombre del producto en la cli > 2. ningún texto de código nombra a Claude Code [13.08ms]
+
+ 2 pass
+ 1 fail
+ 4 expect() calls
+Ran 3 tests across 1 file. [37.00ms]

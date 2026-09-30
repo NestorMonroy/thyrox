@@ -1,0 +1,30 @@
+run-task-pool: 5 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T024414
+  job-20260927T024414/job-001 pid 18540   bash bin/emit_declarations --repoint paths > .claude/workbench/frontera-publica-20260927T023207/move/emit-paths.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-paths.out
+  job-20260927T024414/job-002 pid 18561   bash bin/emit_declarations --repoint store > .claude/workbench/frontera-publica-20260927T023207/move/emit-store.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-store.out
+  job-20260927T024414/job-003 pid 18670   bash bin/emit_declarations --repoint task > .claude/workbench/frontera-publica-20260927T023207/move/emit-task.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-task.out
+  job-20260927T024414/job-004 pid 18688   bash bin/emit_declarations --repoint coordination > .claude/workbench/frontera-publica-20260927T023207/move/emit-coordination.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-coordination.out
+  job-20260927T024414/job-005 pid 18788   bash bin/emit_declarations --repoint workbench > .claude/workbench/frontera-publica-20260927T023207/move/emit-workbench.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/emit-workbench.out
+run-task-pool: lanzados 5 de 5; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T024414_job-001 -> OK (2 de 6)
+asentado: job-20260927T024414_job-002 -> OK (3 de 6)
+asentado: job-20260927T024414_job-003 -> OK (4 de 6)
+asentado: job-20260927T024414_job-004 -> OK (5 de 6)
+asentado: job-20260927T024414_job-005 -> OK (6 de 6)
+== 6 trabajos asentados ==
+OLVIDADO job-20260927T024414
+       | (vacío — no emitió nada)
+OK     job-20260927T024414_job-001
+       | EXIT=0
+       memoria pico: 236420 KB (231 MB) · pared 2.46s
+OK     job-20260927T024414_job-002
+       | EXIT=0
+       memoria pico: 227488 KB (222 MB) · pared 2.33s
+OK     job-20260927T024414_job-003
+       | EXIT=0
+       memoria pico: 235916 KB (230 MB) · pared 2.41s
+OK     job-20260927T024414_job-004
+       | EXIT=0
+       memoria pico: 237464 KB (232 MB) · pared 2.48s
+OK     job-20260927T024414_job-005
+       | EXIT=0
+       memoria pico: 233364 KB (228 MB) · pared 1.80s

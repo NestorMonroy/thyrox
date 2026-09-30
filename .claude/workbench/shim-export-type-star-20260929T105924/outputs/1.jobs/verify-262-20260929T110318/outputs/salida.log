@@ -1,0 +1,3 @@
+src/packages/repl/src/fastMode.ts: faltan 6 [_resetFastModeOrgStatusForTesting, _setFastModeOrgStatusForTesting, processFastModeAvailabilityContext, processFastModeSelectionContext, rearmFastModeCreditsExhaustedNotice] · sobran 0 []
+expandStarShims: 1 shim(s) desalineado(s) (alcance medido: 32 shim(s) de 32 archivo(s))
+__BG_EXIT__=1

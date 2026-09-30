@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeSelection.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../fastModeSelection.js' from '/home/user/thyrox/.git/pool-worktrees/241ea3c28f54/1/src/packages/provider/src/__tests__/fastModeSelection.test.ts'
+-------------------------------
+
+
+ 1098 pass
+ 1 fail
+ 1 error
+ 1664 expect() calls
+Ran 1099 tests across 100 files. [1.61s]

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+44 |   test('isBackgroundSession (vt) e isDetachedBackgroundSession (Ip)', () => {
+45 |     const bg = { env: { THYROX_CODE_SESSION_KIND: 'bg' } }
+46 |     expect(isBackgroundSession(host(bg))).toBe(true)
+47 |     expect(isBackgroundSession(host({ env: { THYROX_CODE_SESSION_KIND: 'daemon' } }))).toBe(false)
+48 |     expect(isDetachedBackgroundSession(host(bg))).toBe(true)
+49 |     expect(isDetachedBackgroundSession(host({ ...bg, attacherCaps: () => ({ tty: true }) }))).toBe(false)
+                                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:49:95)
+(fail) sessionKind (oJ) y los predicados por tipo > isBackgroundSession (vt) e isDetachedBackgroundSession (Ip) [0.35ms]
+
+ 8 pass
+ 1 fail
+ 36 expect() calls
+Ran 9 tests across 1 file. [46.00ms]

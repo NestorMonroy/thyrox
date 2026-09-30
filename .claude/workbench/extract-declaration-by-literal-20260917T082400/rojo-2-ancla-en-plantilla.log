@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declaration.test.ts:
+118 |     //   e.get(`anthropic-ratelimit-unified-${s}-utilization`)
+119 |     // El prefijo es el TemplateHead. Es el ancla que una sesion futura
+120 |     // alcanzaria primero, y sin el la funcion que lee las tres cabeceras no
+121 |     // se puede recuperar por ningun literal suyo.
+122 |     const ds = extractByLiteral(src, 'anthropic-ratelimit-unified-')
+123 |     expect(ds.length).toBeGreaterThan(0)
+                            ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/declaration.test.ts:123:23)
+(fail) contra el corpus REAL de 2.1.274 > el prefijo de cabecera se recupera aunque viva en una plantilla [1811.16ms]
+
+ 12 pass
+ 1 fail
+ 21 expect() calls
+Ran 13 tests across 1 file. [7.23s]

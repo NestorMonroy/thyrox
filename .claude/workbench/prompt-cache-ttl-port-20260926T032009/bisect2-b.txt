@@ -1,0 +1,1 @@
+src/packages/permission/src/__tests__/permissions.test.ts

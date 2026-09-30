@@ -1,0 +1,19 @@
+=== 1. probe_candidates ===
+  ok    título sin forma de ruta -> un solo candidato
+  ok    título con forma de ruta -> título + nombre + stem
+=== 2. find_missing cita el ID exacto ===
+  ok    un solo nodo requerido falta, citado por ID
+=== 3. required_only=False agrega opcionales ausentes ===
+  ok    por defecto NO cuenta el opcional ausente
+  ok    con required_only=False SÍ lo cuenta
+=== 4. coverage_report sobre manifiesto vacío ===
+  ok    manifiesto vacío -> ValueError
+=== 5. coverage_report — conteo completo ===
+  ok    total
+  ok    required
+  ok    optional
+  ok    covered
+  ok    missing_ids
+
+OK=11 FAILED=0
+EXIT=0

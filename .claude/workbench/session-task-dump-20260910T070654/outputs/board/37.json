@@ -1,0 +1,9 @@
+{
+  "id": "37",
+  "subject": "Convertir un attachment del transcript de vuelta a payload al reanudar",
+  "description": "readTranscript salta las lineas attachment: al reanudar, el contexto que un hook inyecto no vuelve. Exige decidir que miembros sobreviven a una reanudacion — la referencia declara que varios no (`if(e.renderedByBatchHead)return[]`, `if(i_()||!LM())return[]`). Declarado en el docstring de readTranscript.",
+  "activeForm": "Reanudando attachments a payload",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

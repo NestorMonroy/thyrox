@@ -1,0 +1,3 @@
+bash bin/check_package_typecheck --strict --jobs 2 config permission tool-registry repl
+cd src/packages/permission && set -o pipefail && bun test 2>&1 | tail -6
+cd src/packages/config && set -o pipefail && bun test 2>&1 | tail -6

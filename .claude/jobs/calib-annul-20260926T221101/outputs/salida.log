@@ -1,0 +1,39 @@
+## verde
+test_pool_history: 55 ok, 0 falla(s)
+OK   GNU time real: el .time trae cuatro cifras
+OK   GNU time real: no declara que falte
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido ''
+FALLA reserva: los items admitidos arrancan — esperado 'items=2 ok=2 fallidos=0', obtenido 'items=2 ok=0 fallidos=2'
+FALLA reserva: el registro queda vacio al terminar — esperado '0', obtenido ''
+FALLA dos pools: la ejecución de medida deja el pico del ítem — esperado '400', obtenido ''
+FALLA dos pools: los dos items terminan — esperado 'items=1 ok=1 fallidos=0', obtenido 'items=1 ok=0 fallidos=1'
+FALLA dos pools: nunca corren juntos (máximo simultáneo 1) — esperado '1', obtenido '0'
+FALLA dos pools: el registro queda vacío — esperado '0', obtenido ''
+FALLA dos pools: la ejecución concurrente también se mide (una fila por pool) — esperado '3', obtenido ''
+OK   pico 0 sin calibrar: los dos terminan
+OK   pico 0 sin calibrar: nunca corren juntos
+OK   pico 0 sin calibrar: lo dice
+aserciones: 76 de 84 · fallos: 8
+## anulación always-calibrated
+FALLA pico 0 sin calibrar: nunca corren juntos — esperado '1', obtenido '2'
+FALLA pico 0 sin calibrar: lo dice — esperado '1', obtenido '0'
+aserciones: 82 de 84 · fallos: 2
+## anulación no-exclusive
+  FALLA H-THYROX-192: pico 0 de ítems demasiado cortos -> pide la GPU entera — esperado 12000, obtenido None
+  FALLA sin historial y con GPU: exclusiva y de a uno — esperado (12000, 1), obtenido (None, 1)
+  FALLA anchura 1 y la GPU entera — esperado ['1', '12000'], obtenido ['1', '-']
+test_pool_history: 52 ok, 3 falla(s)
+FALLA pico 0 sin calibrar: nunca corren juntos — esperado '1', obtenido '2'
+aserciones: 83 de 84 · fallos: 1
+## anulación no-coverage
+  FALLA 12000 libres / (3000 x 2) -> 2 a la vez — esperado 2, obtenido 1
+  FALLA si ni uno cabe, el tope es 1 y se dice — esperado (1, True), obtenido (1, False)
+  FALLA tope de VRAM — esperado 3, obtenido 1
+  FALLA el efectivo es el menor de los topes — esperado 3, obtenido 1
+  FALLA con configurada 8: min(8, 6, 3) = 3 — esperado 3, obtenido 1
+  FALLA con configurada 2 manda la configurada — esperado 2, obtenido 1
+  FALLA anchura efectiva y VRAM por ítem — esperado ['3', '3200'], obtenido ['1', '12000']
+  FALLA ítems con VRAM medida (el del error no cuenta) — esperado 1, obtenido None
+test_pool_history: 47 ok, 8 falla(s)
+restaurado
+__BG_EXIT__=0

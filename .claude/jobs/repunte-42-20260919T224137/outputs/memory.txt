@@ -1,0 +1,3 @@
+memory: emitio pese a 173 errores (85 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 173 error(es) que siguen vivos en su propio paquete

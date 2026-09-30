@@ -1,0 +1,197 @@
+-- FAIL tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+207 |     test(`${m.name}: todo import externo resuelve`, () => {
+208 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+209 |         .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+210 |           && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
+211 |         .sort()
+212 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "${DEF}",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:212:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/binary: todo import externo resuelve [5.48ms]
+
+ 101 pass
+ 1 fail
+ 103 expect() calls
+Ran 102 tests across 1 file. [3.04s]
+-- FAIL tests/package/exports.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/exports.test.ts:
+162 |   test('cada modulo .ts de src/ resuelve a si mismo por el mapa', () => {
+163 |     const exports = manifest().exports as Record<string, string>
+164 |     const sinCubrir = sourceModules().filter(
+165 |       (m) => resolveSubpath(exports, subpathFor(m)) !== './' + m,
+166 |     )
+167 |     expect(sinCubrir).toEqual([])
+                            ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "src/packages/provider/src/proxy/translators/index.ts",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/exports.test.ts:167:23)
+(fail) 2 — el mapa esta completo y su forma se deriva > cada modulo .ts de src/ resuelve a si mismo por el mapa [201.93ms]
+
+ 6 pass
+ 1 fail
+ 560 expect() calls
+Ran 7 tests across 1 file. [392.00ms]
+-- FAIL tests/unit/utils/envUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/envUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getClaudeConfigHomeDir' not found in module '/home/user/thyrox/src/packages/config/env/utils.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [156.00ms]
+-- FAIL tests/verify/checkEnvPrefix.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/verify/checkEnvPrefix.test.ts:
+186 | 
+187 | describe('el propio thyrox', () => {
+188 |   test('ninguna lectura de entorno nueva fuera de THYROX_* y ninguna variable propia sin prueba', () => {
+189 |     const p = Bun.spawnSync(['bun', GATE, '--root', REPO, '--strict'])
+190 |     const out = new TextDecoder().decode(p.stdout) + new TextDecoder().decode(p.stderr)
+191 |     expect({ code: p.exitCode, out }).toEqual({ code: 0, out: expect.any(String) })
+                                            ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "code": 0,
+-   "out": Any<String>,
++   "code": 1,
++   "out": 
++ "  entrada obsoleta del baseline de prefijo: src/packages/agent/background/fleet/fleetStore.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/agent/background/fleet/renameFleetJob.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/agent/background/fleet/rvServer.ts	CLAUDE_BG_RENDEZVOUS_SOCK
++   entrada obsoleta del baseline de prefijo: src/packages/agent/background/fleet/rvServer.ts	CLAUDE_BG_STARTUP_WEDGE_MS
++   entrada obsoleta del baseline de prefijo: src/packages/agent/background/fleet/rvServer.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/agent/claudeInChrome/mcpServer.ts	CLAUDE_CHROME_PERMISSION_MODE
++   entrada obsoleta del baseline de prefijo: src/packages/agent/compaction/autoCompact.ts	CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
++   entrada obsoleta del baseline de prefijo: src/packages/agent/hooks.ts	CLAUDE_TRANSCRIPT_PATH
++   entrada obsoleta del baseline de prefijo: src/packages/agent/internal/stopHooksCore.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/agent/loop/context/contextLevel.ts	CLAUDE_AUTOCOMPACT_PCT_OVERRIDE
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/bridgeConfig.ts	CLAUDE_BRIDGE_BASE_URL
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/bridgeConfig.ts	CLAUDE_BRIDGE_OAUTH_TOKEN
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/bridgeMain.ts	CLAUDE_BRIDGE_SESSION_INGRESS_URL
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/bridgeMain.ts	CLAUDE_BRIDGE_USE_CCR_V2
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/initReplBridge.ts	CLAUDE_BRIDGE_SESSION_INGRESS_URL
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/replBridge.ts	CLAUDE_BRIDGE_USE_CCR_V2
++   entrada obsoleta del baseline de prefijo: src/packages/bridge/src/trustedDevice.ts	CLAUDE_TRUSTED_DEVICE_TOKEN
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/bg.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/bg/agentActionEvent.ts	CLAUDE_BG_SOURCE
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/bg/fleetReplyHelpers.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/bg/openAgentsFromRepl.ts	CLAUDE_AGENTS_SELECT
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/bg/openAgentsFromRepl.ts	CLAUDE_BG_SOURCE
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/bg/sparePool.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/handlers/agentFleetAttach.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/handlers/agentsFleet.ts	CLAUDE_AGENTS_SELECT
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/handlers/agentsFleet.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/handlers/agentsFleet.ts	CLAUDE_SESSION_ID
++   entrada obsoleta del baseline de prefijo: src/packages/cli/src/utils/warningHandler.ts	CLAUDE_DEBUG
++   entrada obsoleta del baseline de prefijo: src/packages/config/bin/settings.ts	CLAUDE_CONFIG_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/config/env/paths.ts	CLAUDE_CONFIG_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/config/env/utils.ts	CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/daemon/src/bgWorkerRegistry.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/daemon/src/classifier/orchestrator.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/daemon/src/classifier/stateFile.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/daemon/src/internal/pendingCrossPackageDeps.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/daemon/src/socketPaths.ts	CLAUDE_CONFIG_HOME
++   entrada obsoleta del baseline de prefijo: src/packages/mcp-runtime/src/clientRuntime.ts	CLAUDE_AGENT_SDK_MCP_NO_PREFIX
++   entrada obsoleta del baseline de prefijo: src/packages/mcp-runtime/src/macOsKeychainHelpers.ts	CLAUDE_CONFIG_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/memory/src/agentMemory.ts	CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES
++   entrada obsoleta del baseline de prefijo: src/packages/memory/src/memdir.ts	CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES
++   entrada obsoleta del baseline de prefijo: src/packages/memory/src/paths.ts	CLAUDE_CONFIG_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/memory/src/paths.ts	CLAUDE_COWORK_MEMORY_PATH_OVERRIDE
++   entrada obsoleta del baseline de prefijo: src/packages/permission/src/internalPaths.ts	CLAUDE_COWORK_MEMORY_PATH_OVERRIDE
++   entrada obsoleta del baseline de prefijo: src/packages/permission/src/internalPaths.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/anthropic/client.ts	CLAUDE_AGENT_SDK_CLIENT_APP
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/http.ts	CLAUDE_AGENT_SDK_CLIENT_APP
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/http.ts	CLAUDE_AGENT_SDK_VERSION
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/mockRateLimits.ts	CLAUDE_MOCK_HEADERLESS_429
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/oauthConstants.ts	CLAUDE_LOCAL_OAUTH_API_BASE
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/oauthConstants.ts	CLAUDE_LOCAL_OAUTH_APPS_BASE
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/oauthConstants.ts	CLAUDE_LOCAL_OAUTH_CONSOLE_BASE
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/sessionIngress.ts	CLAUDE_AFTER_LAST_COMPACT
++   entrada obsoleta del baseline de prefijo: src/packages/provider/src/sessionIngressAuth.ts	CLAUDE_SESSION_INGRESS_TOKEN_FILE
++   entrada obsoleta del baseline de prefijo: src/packages/repl/src/screens/repl/bgDetachSignal.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/repl/src/screens/repl/useBgFleetStateSync.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/repl/src/screens/repl/useBgRendezvousServer.ts	CLAUDE_BG_RENDEZVOUS_SOCK
++   entrada obsoleta del baseline de prefijo: src/packages/repl/src/screens/repl/useReplEnvFlags.ts	CLAUDE_MORERIGHT
++   entrada obsoleta del baseline de prefijo: src/packages/repl/src/screens/repl/useSpareReadyMarker.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/shell/src/process.ts	CLAUDE_JOB_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/storage/bin/storage.ts	CLAUDE_CONFIG_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/storage/src/secureStorage/plainTextStorage.ts	CLAUDE_CONFIG_DIR
++   entrada obsoleta del baseline de prefijo: src/packages/storage/src/sessionEnvironment.ts	CLAUDE_ENV_FILE
++   entrada obsoleta del baseline de prefijo: src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx	CLAUDE_AUTO_BACKGROUND_TASKS
++   entrada obsoleta del baseline de prefijo: src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts	CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS
++   entrada obsoleta del baseline de prefijo: src/packages/tool-registry/src/tools/REPLTool/constants.ts	CLAUDE_REPL_MODE
++   variable propia sin prueba: THYROX_AFTER_LAST_COMPACT
++   variable propia sin prueba: THYROX_AGENTS_SELECT
++   variable propia sin prueba: THYROX_AGENT_SDK_DISABLE_BUILTIN_AGENTS
++   variable propia sin prueba: THYROX_AGENT_SDK_MCP_NO_PREFIX
++   variable propia sin prueba: THYROX_AGENT_SDK_VERSION
++   variable propia sin prueba: THYROX_AUTO_BACKGROUND_TASKS
++   variable propia sin prueba: THYROX_BG_STARTUP_WEDGE_MS
++   variable propia sin prueba: THYROX_BRIDGE_BASE_URL
++   variable propia sin prueba: THYROX_BRIDGE_OAUTH_TOKEN
++   variable propia sin prueba: THYROX_BRIDGE_SESSION_INGRESS_URL
++   variable propia sin prueba: THYROX_BRIDGE_USE_CCR_V2
++   variable propia sin prueba: THYROX_CHROME_PERMISSION_MODE
++   variable propia sin prueba: THYROX_COWORK_MEMORY_EXTRA_GUIDELINES
++   variable propia sin prueba: THYROX_COWORK_MEMORY_PATH_OVERRIDE
++   variable propia sin prueba: THYROX_DEBUG
++   variable propia sin prueba: THYROX_LOCAL_OAUTH_API_BASE
++   variable propia sin prueba: THYROX_LOCAL_OAUTH_APPS_BASE
++   variable propia sin prueba: THYROX_LOCAL_OAUTH_CONSOLE_BASE
++   variable propia sin prueba: THYROX_MOCK_HEADERLESS_429
++   variable propia sin prueba: THYROX_MORERIGHT
++   variable propia sin prueba: THYROX_REPL_MODE
++   variable propia sin prueba: THYROX_TRANSCRIPT_PATH
++ checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 65 obsoleta(s) (alcance medido: 1804 lectura(s) en 3493 archivo(s) de producción — propias 773, proveedor 93, cliente ajeno 17, sin prefijo 921)
++ checkEnvPrefix: 22 variable(s) THYROX_* sin prueba nueva(s), 144 congelada(s), 0 obsoleta(s) (alcance medido: 305 variable(s) propia(s), 1619 archivo(s) de prueba)
++ "
++ ,
+  }
+
+- Expected  - 2
++ Received  + 93
+
+      at <anonymous> (/home/user/thyrox/tests/verify/checkEnvPrefix.test.ts:191:39)
+(fail) el propio thyrox > ninguna lectura de entorno nueva fuera de THYROX_* y ninguna variable propia sin prueba [4554.66ms]
+
+ 15 pass
+ 1 fail
+ 30 expect() calls
+Ran 16 tests across 1 file. [4.93s]
+pass=16048 fail=4 errors=1 crashes=0 files=1106 failed=4

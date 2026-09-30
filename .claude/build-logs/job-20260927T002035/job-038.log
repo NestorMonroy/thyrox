@@ -1,0 +1,25 @@
+== A. El destino es PARÁMETRO, no una constante del mecanismo ==
+  ok    un repo nombrado se compone como --repo
+  ok    un directorio explícito gana sobre el repo
+  ok    sin ninguno, rehúsa en vez de inventar un default
+== B. La normalización del modelo viaja intacta ==
+  ok    un identificador completo se conserva
+  ok    un alias NO es un identificador
+  ok    y el alias se normaliza por su propia vía
+== C. La invocación del store se COMPONE, no se ejecuta ==
+  ok    nombra el subcomando del store
+  ok    lleva el destino inyectado
+  ok    y el agent-id del payload
+  ok    sin agent_id NO compone comando
+== D. La procedencia del tipo se distingue de su valor ==
+  ok    con valor, la procedencia es el payload
+  ok    con la clave vacía, el vacío viene del origen
+  ok    sin la clave, está ausente
+== E. equiv_cost con los cocientes del tier del modelo (catálogo 2.1.282) ==
+  ok    Opus 5.5: la lectura de caché pesa 0.05× (10 + 125 + 50 + 100)
+  ok    y el perfil declara el tier con que se ponderó
+  ok    Sonnet 5 (tier 2/10): mismos cocientes que la fórmula fija (10 + 125 + 100 + 100)
+  ok    fuera del catálogo: la fórmula fija, declarada como tal
+
+17 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts:
+[file-persistence] Persistence aborted before processing
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+[file-persistence] No files found in outputs directory
+[file-persistence] No modified files to persist
+[file-persistence] Found 10001 modified files since turn start (scanned 10001 total)
+[file-persistence] Found 10001 modified files
+[file-persistence] File count limit exceeded: 10001 > 10000
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] File persistence failed: Error: la Files API esta caida
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+
+ 12 pass
+ 0 fail
+ 28 expect() calls
+Ran 12 tests across 1 file. [1.70s]
+exit=0

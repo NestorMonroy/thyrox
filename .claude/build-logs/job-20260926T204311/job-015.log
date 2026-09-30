@@ -1,0 +1,6 @@
+test_rejection_sampling_brief: falta `numpy`, que vive en el grupo
+                               `verify` de pyproject.toml.
+                               Instalalo con `uv sync --group verify`.
+                               NO se emite conteo: un cero aqui seria
+                               un verde falso.
+EXIT=2

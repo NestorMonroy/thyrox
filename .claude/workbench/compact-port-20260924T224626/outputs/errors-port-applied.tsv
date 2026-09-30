@@ -1,0 +1,40 @@
+anadido	getPdfTooLargeErrorMessage
+anadido	getPdfPasswordProtectedErrorMessage
+anadido	getPdfInvalidErrorMessage
+anadido	getImageTooLargeErrorMessage
+anadido	getRequestTooLargeErrorMessage
+anadido	getTokenRevokedErrorMessage
+anadido	getOauthOrgNotAllowedErrorMessage
+anadido	isCCRMode
+anadido	logToolUseToolResultMismatch
+anadido	isValidAPIMessage
+anadido	AmazonError
+anadido	extractUnknownErrorFormat
+anadido	getAssistantMessageFromError
+anadido	get3PModelFallbackSuggestion
+anadido	categorizeRetryableAPIError
+anadido	getErrorMessageIfRefusal
+import	import { APIConnectionError, APIConnectionTimeoutError, APIError } from '@anthropic-ai/sdk'
+import	import type { BetaMessage, BetaStopReason } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import	import { AFK_MODE_BETA_HEADER } from './betasConstants.js'
+import	import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import	import type { AssistantMessage, Message, UserMessage } from '@thyrox/agent/messageShapes'
+import	import { getAnthropicApiKeyWithSource, getClaudeAIOAuthTokens, getOauthAccountInfo, isClaudeAISubscriber } from './authAlias.js'
+import	import { createAssistantAPIErrorMessage, NO_RESPONSE_REQUESTED } from '@thyrox/agent/messages.js'
+import	import { getDefaultMainLoopModelSetting, isNonCustomOpusModel } from './model.js'
+import	import { getModelStrings } from './modelStrings.js'
+import	import { getAPIProvider } from './providers.js'
+import	import { resolveConnectionForModel } from './providers.js'
+import	import { isFirstPartyAnthropicConnection, unpackModelId } from './connections.js'
+import	import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
+import	import { API_PDF_MAX_PAGES, PDF_TARGET_RAW_SIZE } from './apiLimits.js'
+import	import { isEnvTruthy } from '@thyrox/config/env/utils'
+import	import { formatFileSize } from '@thyrox/output/formatters'
+import	import { ImageResizeError } from '@thyrox/storage/imageResizer.js'
+import	import { ImageSizeError } from '@thyrox/storage/imageValidation.js'
+import	import { logEvent } from '@thyrox/local-observability'
+import	import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
+import	import { type ClaudeAILimits, getRateLimitErrorMessage, type OverageDisabledReason } from './claudeAiLimits.js'
+import	import { shouldProcessRateLimits } from './rateLimitMocking.js'
+import	import { formatAPIError } from './errorUtils.js'
+import	import { readEnv } from '@thyrox/config/env'

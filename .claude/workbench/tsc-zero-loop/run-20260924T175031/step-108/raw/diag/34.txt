@@ -1,0 +1,5 @@
+src/packages/repl/src/fileIndex/index.ts(118,14): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+src/packages/repl/src/fileIndex/index.ts(127,10): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+src/packages/repl/src/fileIndex/index.ts(136,10): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+src/packages/repl/src/fileIndex/index.ts(145,10): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+src/packages/repl/src/fileIndex/index.ts(202,52): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.

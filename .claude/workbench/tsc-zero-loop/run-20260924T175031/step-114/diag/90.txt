@@ -1,0 +1,46 @@
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(31,3): error TS6133: 'onCancel' is declared but its value is never read.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:21-41 ---
+     21    tools: Tools
+     22    existingAgents: AgentDefinition[]
+     23    onComplete: (message: string) => void
+     24    onCancel: () => void
+     25  }
+     26  
+     27  export function CreateAgentWizard({
+     28    tools,
+     29    existingAgents,
+     30    onComplete,
+     31>   onCancel,
+     32  }: Props): ReactNode {
+     33    // Create step components with props
+     34    const steps: WizardStepComponent<AgentWizardData>[] = [
+     35      LocationStep, // 0
+     36      MethodStep, // 1
+     37      GenerateStep, // 2
+     38      () => <TypeStep existingAgents={existingAgents} />, // 3
+     39      PromptStep, // 4
+     40      DescriptionStep, // 5
+     41      () => <ToolsStep tools={tools} />, // 6
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34,9): error TS6133: 'steps' is declared but its value is never read.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:24-44 ---
+     24    onCancel: () => void
+     25  }
+     26  
+     27  export function CreateAgentWizard({
+     28    tools,
+     29    existingAgents,
+     30    onComplete,
+     31    onCancel,
+     32  }: Props): ReactNode {
+     33    // Create step components with props
+     34>   const steps: WizardStepComponent<AgentWizardData>[] = [
+     35      LocationStep, // 0
+     36      MethodStep, // 1
+     37      GenerateStep, // 2
+     38      () => <TypeStep existingAgents={existingAgents} />, // 3
+     39      PromptStep, // 4
+     40      DescriptionStep, // 5
+     41      () => <ToolsStep tools={tools} />, // 6
+     42      ModelStep, // 7
+     43      ColorStep, // 8
+     44      // MemoryStep is conditionally included based on GrowthBook gate

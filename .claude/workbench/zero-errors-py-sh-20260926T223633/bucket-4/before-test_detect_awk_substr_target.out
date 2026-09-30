@@ -1,0 +1,25 @@
+== 1. substr() como destino -> aviso ==
+  ok    gsub con substr como tercer argumento
+  ok    sub también
+  ok    por la variable de la cadena
+== 2. EL QUE DISCRIMINA: comas que no separan argumentos ==
+  ok    coma dentro de un literal /regex/
+  ok    coma dentro de una cadena
+== 3. formas válidas -> silencio ==
+  ok    la variable, como manda la regla
+  ok    gensub devuelve, no modifica
+  ok    dos argumentos
+  ok    una variable que empieza por substr
+  ok    re.sub de Python en la tubería no es awk
+  ok    la forma escrita como texto, sin awk
+  ok    otra herramienta
+== 4. el aviso nombra la salida ==
+  ok    nombra gensub
+  ok    nombra la regla
+== 5. anulación: cada mitad de juicio hace caer exactamente sus casos ==
+  ok    sin el ancla de awk cae sólo el texto
+  ok    sin excluir el método .sub cae sólo python
+  ok    sin saltar literales /regex/ cae sólo regex
+  ok    sin saltar cadenas cae sólo cadena
+
+18 ok, 0 fallos

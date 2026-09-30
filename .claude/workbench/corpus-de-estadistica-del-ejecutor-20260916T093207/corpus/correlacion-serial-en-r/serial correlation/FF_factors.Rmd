@@ -1,0 +1,258 @@
+---
+title: "FF Factors"
+author: "Menghan Yuan"
+date: "18/09/2024"
+output: 
+    bookdown::html_document2:
+        toc: true
+        toc_float: true
+        toc_depth: 4
+        number_sections: false
+        css: style.css
+bibliography: bibli.bib
+link-citations: yes
+biblio-style: apalike
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 100% !important;
+  margin: auto;
+}
+</style>
+
+
+```{r load-packages, include=F}
+library(knitr)
+library(kableExtra)
+library(bookdown)
+library(tidyverse)
+```
+
+```{r, child="_chunk-opt.Rmd", include=FALSE}
+```
+
+
+## Descriptive analysis 
+
+We have Fama-French pricing factor data from 2000-01 to 2024-06. 
+We want to have a look at its descriptive statistics.
+
+```{r}
+data <- read_csv("data/FF_3Factors_US_monthly.csv")
+get_stat <- function(x, q_list=c(0.025, 0.5, 0.975)){
+    ## Return extended summary statistics with quantiles and sd.
+    #    @q_list: vector of quantiles to calculate;
+    x <- na.omit(x)
+    c(summary(x), quantile(x, q_list), "sd"=sd(x) )
+}
+```
+
+
+### Descriptive statistics
+```{r descrptive-analysis}
+apply(data[,-1], 2, get_stat)
+```
+
+### Histogram of SMB
+```{r}
+ggplot(data) +
+    geom_histogram(aes(x=SMB, y=..density..), 
+                   fill="#BDBCBC", 
+                   color="black", 
+                   binwidth = 2, 
+                   boundary=0) +
+    labs(x="Small minus big, SMB")
+```
+
+### Histogram of HML
+```{r}
+ggplot(data) +
+    geom_histogram(aes(x=HML, y=..density..), 
+                   fill="#BDBCBC", 
+                   color="black", 
+                   binwidth = 2, 
+                   boundary=0) +
+    labs(x="High minus low, HML")
+```
+
+___
+
+## Risk Free Rate (RFR)
+
+- Before 2013 NIBOR: [Norges Bank](https://www.norges-bank.no/en/topics/Statistics/Historical-monetary-statistics/)
+
+- After 2013 Norwegian Overnight Weighted Average rate: [Norske Finansielle Referenser AS (NoRe)](https://nore-benchmarks.com)
+
+- [Titlon](https://titlon.uit.no/tabledefs.php): 3 months Norwegian Government Bills, from the `bondindex` table, `CloseYield field`.
+
+
+Financial service companies publish surveys about financial data. For instance, PwC Norge.
+
+- Here is their annual report about RFF: <https://www.pwc.no/no/publikasjoner/risikopremien.html>
+
+___
+
+## AAPL case study
+
+```{r}
+library(quantmod)
+aapl <- getSymbols("AAPL", 
+           src = 'yahoo', 
+           from = "2014-08-01", 
+           to = "2024-09-17",   
+           auto.assign = FALSE
+           )
+aapl
+```
+
+
+Candlestick Plot
+
+```{r}
+chartSeries(aapl, subset="2024-09", theme=chartTheme('white',up.col='green',dn.col='red'))
+```
+
+Calculate monthly return, $r_t = \frac{P_t-P_{t-1}}{P_{t-1}} = \frac{P_t}{P_{t-1}}-1$.
+
+You may either use the function `quantmod::monthlyReturn()` or calculate manually.
+```{r}
+aapl <- aapl %>% 
+    apply.monthly(last)
+aapl$return <- monthlyReturn(aapl$AAPL.Adjusted, type='arithmetic')
+aapl <- head(aapl, -1)
+aapl
+```
+
+```{r}
+# calculate manually
+with(aapl, AAPL.Adjusted/lag(AAPL.Adjusted)-1)
+```
+
+
+Merge equity data with FF factors.
+```{r}
+reg_data <- aapl %>% 
+    as_tibble() %>% 
+    add_column(Date=index(aapl), .before = 1)
+reg_data <- reg_data %>% 
+    mutate(year=year(Date),
+           mon=month(Date))
+data <- data %>% mutate_at(vars(-Date), ~./100)
+data <- data %>% 
+    mutate(year=year(Date),
+           mon=month(Date))
+reg_data <- reg_data %>% 
+    left_join(data[,-1], by=c("year","mon"))
+reg_data
+```
+
+Calculate excess return.
+```{r}
+# calculate excess return
+reg_data <- reg_data %>% 
+    mutate(eRi = return-RF) %>% 
+    rename(rmrf=`Mkt-RF`)
+reg_data  %>% 
+    select(-year,-mon) %>% 
+    knitr::kable(floating.environment="sidewaystable", digits = 5, escape=F) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = F, latex_options="scale_down") %>% 
+    scroll_box(width = "100%", height = "500px")
+```
+
+
+Calculate annualized average excess return.
+
+$$
+\begin{aligned}
+r^A &= \big(1+\text{HPR}(T)\big)^{\frac{12}{T}}-1 \\
+&= \left[\prod_{t=1}^T (1+r_{t}) \right]^{\frac{12}{T}}-1
+\end{aligned}
+$$
+Note that the formula indicates $\text{HPR}(T) = \left[\prod_{t=1}^T (1+r_{t}) \right]-1$, which is the holding period return for $T$-period.
+
+
+```{r}
+n <- nrow(reg_data)-1 # number of months
+r_A <- prod(reg_data$eRi+1, na.rm = TRUE)^{12/n}-1
+r_A
+```
+
+Plot excess return and ERP.
+```{r fig.keep=2}
+library(xts)
+plot_data <- xts(reg_data[,c("eRi","rmrf")], order.by = reg_data$Date)
+plot_data
+col_vec <- c("black", "red")
+plot.xts(plot_data, col = col_vec, main = "Excess Returns on Asset and Market")
+addLegend("topright", 
+          legend.names = c("META", "Equity Risk Premium"), 
+          lty = c(1, 1), 
+          lwd = c(2, 2),
+          col = col_vec,
+          bg = "white",
+          box.col = "white")
+```
+
+___
+
+### CAPM
+
+CAPM as a regression can be expressed as
+
+$$
+r_{t} - r_{f,t} = \alpha + \beta (r_{m,t}-r_{f,t}) + \varepsilon_{t}
+$$ 
+where $\alpha$ (intercept) and $\beta$ (slope) are the parameters to estimate.
+
+We use the following data to estimate the parameters.
+
+-   $r_t$ is the return on the asset at time $t$;
+-   $r_{m,t}$ is the return on the market portfolio;
+-   $r_{f,t}$ is the risk free rate of interest; 
+-   $r_t-r_{f,t}$ is the excess return on the asset;
+-   $r_m-r_{f,t}$ is the Equity Risk Premium.
+
+```{r}
+capm_ml <- lm(eRi~rmrf, data=reg_data)
+summary(capm_ml)
+```
+
+___
+
+### FF 3-factor
+
+The Fama-French three-factor model as a regression can be expressed as
+
+$$
+r_{t} - r_{f,t} = \alpha + \beta^{RMRF} (r_{m,t}-r_{f,t}) + \beta^{SMB}SMB_t + \beta^{HML}HML_t + \varepsilon_{t}
+$$ 
+
+```{r}
+FF_ml <- lm(eRi~rmrf+SMB+HML, data=reg_data)
+summary(FF_ml)
+```
+
+Merge the two models in one table.
+```{r, results='asis'}
+library(stargazer)
+stargazer(capm_ml, FF_ml, type="html", 
+          title="Regression Results for AAPL", 
+          align = TRUE,
+          notes = "<span>&#42;</span>: p<0.1; <span>&#42;&#42;</span>: <strong>p<0.05</strong>; <span>&#42;&#42;&#42;</span>: p<0.01 <br> Standard errors in parentheses.",
+          notes.append = F)
+```
+
+&nbsp;
+
+___
+
+### Excel options
+
+*Excel* can achieve the same results. You use `Analysis ToolPak` $\rightarrow$ `Regression` to conduct the regression. It will generate similar regression tables for you.
+
+- How to load `Analysis ToolPak`: \
+<https://www.goskills.com/Excel/Resources/Excel-data-analysis-toolpak>
+
+
+

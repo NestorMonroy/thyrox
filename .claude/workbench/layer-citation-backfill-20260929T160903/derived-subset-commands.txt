@@ -1,0 +1,16 @@
+uv run --quiet python tests/task/test_task_ids.py
+uv run --quiet python tests/task/test_task_ids_cli_names.py
+uv run --quiet python tests/task/test_task_source_citas.py
+uv run --quiet python tests/task/test_board_ordinal_identity.py
+uv run --quiet python tests/task/test_board_sync.py
+uv run --quiet python tests/task/test_census_open_tasks.py
+uv run --quiet python tests/task/test_layer_axis.py
+bash tests/task/test-refresh-board.sh
+uv run --quiet python tests/hooks/test_task_lifecycle.py
+uv run --quiet python tests/verify/test_citation_resolution.py
+uv run --quiet python tests/verify/test_pre_commit_hook.py
+bash tests/verify/test-commit-msg-citation.sh
+bash tests/agents/test-agent-store-reassignment-guard.sh
+bash tests/agents/test-agent-store-tareas.sh
+uv run --quiet python tests/agents/test_merge_stores.py
+uv run --quiet python tests/agents/test_store_home.py

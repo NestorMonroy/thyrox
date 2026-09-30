@@ -1,0 +1,13 @@
+src/packages/agent/commands/tasks/tasks.tsx(10,33): error TS2740: Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.
+  --- código src/packages/agent/commands/tasks/tasks.tsx:1-11 ---
+      1  import * as React from 'react'
+      2  import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
+      3  import { BackgroundTasksDialog } from '@thyrox/repl/components/tasks/BackgroundTasksDialog.js'
+      4  import type { LocalJSXCommandOnDone } from '../../command.js'
+      5  
+      6  export async function call(
+      7    onDone: LocalJSXCommandOnDone,
+      8    context: LocalJSXCommandContext,
+      9  ): Promise<React.ReactNode> {
+     10>   return <BackgroundTasksDialog toolUseContext={context} onDone={onDone} />
+     11  }

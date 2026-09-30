@@ -1,0 +1,21 @@
+== 1. la traza: fases, asignado por paso y liberación al salir ==
+  ok    fases en orden
+  ok    asignado por paso
+  ok    uso según nvidia-smi al asentarse cada paso
+  ok    libre al asentarse cada paso
+  ok    la traza se relee igual (TSV)
+== 2. contra el fake tal cual, sus supuestos se cumplen ==
+  ok    todos los supuestos se cumplen
+  ok    calibración: sin sobrecarga de contexto
+== 3. un hardware con sobrecarga de contexto: el comparador pide corregir el fake ==
+  ok    no_context_overhead se viola
+  ok    la corrección nombra el parámetro y su valor
+  ok    el uso sigue lo asignado con desfase constante
+  ok    calibración: 300 MiB
+== 4. PIDs invisibles (otro espacio de nombres): pid_visible se viola ==
+  ok    pid_visible se viola
+  ok    sin uso por PID, lo que depende de él no se mide
+== 5. una traza sin filas en marcha no concluye nada: unmeasured, no holds ==
+  ok    todo unmeasured
+test_gpu_trace: 14 ok, 0 falla(s)
+EXIT=0

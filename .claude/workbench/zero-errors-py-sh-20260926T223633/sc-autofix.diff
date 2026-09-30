@@ -1,0 +1,186 @@
+--- a/src/verify/check-artefactos-minimos.sh
++++ b/src/verify/check-artefactos-minimos.sh
+@@ -26,7 +26,7 @@
+ #   bash .claude/scripts/gates/check-artefactos-minimos.sh --quiet  # solo el conteo
+ # =============================================================================
+ set -uo pipefail
+-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; cd "$ROOT"
++ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; cd "$ROOT" || exit
+ STRICT=false; QUIET=false
+ for a in "$@"; do
+   [[ "$a" == "--strict" ]] && STRICT=true
+
+--- a/src/verify/check-fr-admin-coverage.sh
++++ b/src/verify/check-fr-admin-coverage.sh
+@@ -19,7 +19,7 @@
+ #   bash .claude/scripts/gates/check-fr-admin-coverage.sh --quiet  # solo el conteo
+ # =============================================================================
+ set -uo pipefail
+-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; cd "$ROOT"
++ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; cd "$ROOT" || exit
+ STRICT=false; QUIET=false
+ for a in "$@"; do
+   [[ "$a" == "--strict" ]] && STRICT=true
+
+--- a/src/verify/check-hallazgo-sucesor.sh
++++ b/src/verify/check-hallazgo-sucesor.sh
+@@ -25,7 +25,7 @@
+     esac
+ done
+ 
+-cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
++cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit
+ 
+ # La regla enumera CUATRO formas de declarar alcance abierto. Tres son de
+ # prosa; la cuarta —"un ``Estado:`` distinto de RESUELTO/CORREGIDO"— es
+
+--- a/src/verify/check-ids-duplicados.sh
++++ b/src/verify/check-ids-duplicados.sh
+@@ -41,7 +41,7 @@
+     esac
+ done
+ 
+-cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
++cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit
+ 
+ # ---------------------------------------------------------------------------
+ # A. Etiquetas de hallazgo duplicadas
+
+--- a/src/verify/check-workflow-refutacion.sh
++++ b/src/verify/check-workflow-refutacion.sh
+@@ -27,7 +27,7 @@
+     esac
+ done
+ 
+-cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
++cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit
+ 
+ # ---------------------------------------------------------------------------
+ # Por qué DECLARADO y no inferido
+
+--- a/src/verify/thyrox-audit.sh
++++ b/src/verify/thyrox-audit.sh
+@@ -26,7 +26,7 @@
+ # invocara: medido, desde el repo daba 9 PASS · 0 FAIL · 12 WARN y desde
+ # `/home/user` —el directorio primario de una sesión multi-repo— daba
+ # 3 PASS · 1 FAIL · 17 WARN sobre un árbol que no es éste. Ver H-DOCS-292.
+-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$ROOT"
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$ROOT" || exit
+ # La raiz de IMPORTACION se declara aqui y NO se hereda de `reach.sh`: este
+ # guion resuelve su propia raiz por la razon medida de arriba (H-DOCS-292), y
+ # sourcear `reach.sh` le traeria ademas SU resolucion. Se compone sobre el
+
+--- a/tests/run.sh
++++ b/tests/run.sh
+@@ -22,7 +22,7 @@
+ # igual. Ese acoplamiento es el punto — es lo que hace del `--list` un
+ # instrumento y no una promesa.
+ set -uo pipefail
+-cd "$(dirname "$0")/.."
++cd "$(dirname "$0")/.." || exit
+ 
+ # El checkout que contiene este runner es el sujeto. Una variable o un `.env`
+ # heredado no puede redirigir la medición hacia otro clon.
+
+--- a/tests/session/test-bg-familia.sh
++++ b/tests/session/test-bg-familia.sh
+@@ -11,7 +11,7 @@
+ # no distinguiría el mecanismo de su ausencia.
+ # =============================================================================
+ set -uo pipefail
+-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
++cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit
+ BG=src/session/bg.sh
+ ok=0; fallo=0
+ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
+
+--- a/tests/session/test-bg-name-flag.sh
++++ b/tests/session/test-bg-name-flag.sh
+@@ -20,7 +20,7 @@
+ # mecanismo inservible — un test que solo mirara el rechazo no los separa.
+ # =============================================================================
+ set -uo pipefail
+-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
++cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit
+ BG=src/session/bg.sh
+ ok=0; fallo=0
+ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
+
+--- a/tests/session/test-gnu-time-launchers.sh
++++ b/tests/session/test-gnu-time-launchers.sh
+@@ -14,7 +14,7 @@
+ #     es un cero;
+ #   - `wait-jobs wait` publica la memoria pico junto al veredicto.
+ set -uo pipefail
+-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
++cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit
+ ok=0; fallo=0
+ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
+         else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; fallo=$((fallo+1)); fi; }
+
+--- a/tests/session/test-tmpdir-faucet.sh
++++ b/tests/session/test-tmpdir-faucet.sh
+@@ -26,7 +26,7 @@
+ # la redireccion de la EJECUCION y no la del preload — el mismo verde con y sin
+ # `bunfig.toml`. Se aisla el sujeto, no se confia en el entorno del llamador.
+ set -uo pipefail
+-cd "$(dirname "$0")/../.."
++cd "$(dirname "$0")/../.." || exit
+ RAIZ="$PWD"
+ 
+ SUJETO="src/packages/cli/__tests__/impactCli.test.ts"
+
+--- a/tests/verify/test-assert-no-writes.sh
++++ b/tests/verify/test-assert-no-writes.sh
+@@ -18,7 +18,7 @@
+ #
+ # Uso:  bash tests/verify/test-assert-no-writes.sh
+ set -uo pipefail
+-cd "$(dirname "$0")/../.."
++cd "$(dirname "$0")/../.." || exit
+ 
+ SUJETO="src/verify/assert_no_writes.sh"
+ fallos=0
+
+--- a/tests/verify/test-generator-determinism.sh
++++ b/tests/verify/test-generator-determinism.sh
+@@ -47,7 +47,7 @@
+   fi
+ }
+ 
+-cd "$REPO"
++cd "$REPO" || exit
+ 
+ # El SUJETO mide el CONSUMIDOR y esta suite corre desde el PROVEEDOR. Sin
+ # declararlo, `reach.consumer_root()` REHUSA —y hace bien: componer un hogar
+
+--- a/tests/verify/test-ids-entre-ramas.sh
++++ b/tests/verify/test-ids-entre-ramas.sh
+@@ -43,7 +43,7 @@
+ ORIGEN="$TMP/origen"; CLON="$TMP/clon"
+ git init -q --bare "$ORIGEN"
+ git init -q "$TMP/semilla"
+-cd "$TMP/semilla"
++cd "$TMP/semilla" || exit
+ git config user.email t@t; git config user.name t
+ mkdir -p source/a source/b
+ printf '.. _h-docs-100:\n\nCompartida\n==========\n' > source/a/compartida.rst
+@@ -62,7 +62,7 @@
+ git add -A; git commit -qm b; git push -q origin feature/b
+ 
+ git clone -q "$ORIGEN" "$CLON"
+-cd "$CLON"; git fetch -q origin
++cd "$CLON" || exit; git fetch -q origin
+ 
+ echo "=== Caso 1: la colision entre dos ramas se ve ==="
+ salida="$(python3 "$GATE" --strict 2>&1)"; rc=$?
+@@ -108,7 +108,7 @@
+                 || bad "una capa inventada deberia rehusarse, dio $rc"
+ 
+ echo "=== Caso 4 (positivo real): la colision medida en kaupamex-docs ==="
+-cd "$RAIZ"
++cd "$RAIZ" || exit
+ n="$(python3 "$GATE" --quiet 2>/dev/null)"
+ if [[ -z "$n" ]]; then
+     bad "el gate no devolvio conteo sobre el repo real"
+

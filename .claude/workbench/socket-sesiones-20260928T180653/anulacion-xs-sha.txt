@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+148 | })
+149 | 
+150 | describe('derivedSessionName (xs)', () => {
+151 |   test('con dirección estable: el slug de la carpeta y el del sha256 de la sesión', () => {
+152 |     const seed = createHash('sha256').update('sess_1').digest()
+153 |     expect(derivedSessionName('/home/u/Mi Proyecto', 'sess_1', true)).toBe(`mi-proyecto-${shortWordSlugFromSeed(seed)}`)
+                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "mi-proyecto-nimble-bridge"
+Received: "mi-proyecto-fleet-meadow"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:153:71)
+(fail) derivedSessionName (xs) > con dirección estable: el slug de la carpeta y el del sha256 de la sesión [0.43ms]
+
+ 18 pass
+ 1 fail
+ 198 expect() calls
+Ran 19 tests across 1 file. [73.00ms]

@@ -1,0 +1,23 @@
+src/packages/repl/src/screens/REPLView.tsx(348,10): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'partialCompactConversation'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:338-358 ---
+    338  } from '@thyrox/storage/sessionStorage.js';
+    339  import { deserializeMessages } from '../conversationRecovery.js';
+    340  import { extractReadFilesFromMessages, extractBashToolsFromMessages } from '../queryHelpers.js';
+    341  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js';
+    342  import { runPostCompactCleanup } from '@thyrox/agent/compaction/postCompactCleanup.js';
+    343  import {
+    344    provisionContentReplacementState,
+    345    reconstructContentReplacementState,
+    346    type ContentReplacementRecord,
+    347  } from '@thyrox/storage/toolResultStorage.js';
+    348> import { partialCompactConversation } from '@thyrox/agent/compaction/compact.js';
+    349  import type { LogOption } from '@thyrox/agent/logsTypes.js';
+    350  import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js';
+    351  import {
+    352    fileHistoryMakeSnapshot,
+    353    type FileHistoryState,
+    354    fileHistoryRewind,
+    355    type FileHistorySnapshot,
+    356    copyFileHistoryForResume,
+    357    fileHistoryEnabled,
+    358    fileHistoryHasAnyChanges,

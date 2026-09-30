@@ -1,0 +1,32 @@
+test_1_lo_declarado_manda (__main__.TestConsumerRootRefusesProvider.test_1_lo_declarado_manda)
+Ningun ascenso pisa una declaracion explicita. ... ok
+test_2_desde_la_raiz_del_proveedor_rehusa (__main__.TestConsumerRootRefusesProvider.test_2_desde_la_raiz_del_proveedor_rehusa)
+Falla si devuelve la raiz de thyrox. Devolverla es peor que no ... ok
+test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa (__main__.TestConsumerRootRefusesProvider.test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa)
+Falla si el guard solo mira la raiz. El ascenso desde `src/` llega ... ok
+test_4_un_consumidor_real_sigue_resolviendo (__main__.TestConsumerRootRefusesProvider.test_4_un_consumidor_real_sigue_resolviendo)
+El par que impide «arreglar» rehusando siempre. ... ERROR
+
+======================================================================
+ERROR: test_4_un_consumidor_real_sigue_resolviendo (__main__.TestConsumerRootRefusesProvider.test_4_un_consumidor_real_sigue_resolviendo)
+El par que impide «arreglar» rehusando siempre.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_consumer_root_refuses_provider.py", line 75, in test_4_un_consumidor_real_sigue_resolviendo
+    consumidor = reach.root("docs")
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+FAILED (errors=1)
+EXIT=1

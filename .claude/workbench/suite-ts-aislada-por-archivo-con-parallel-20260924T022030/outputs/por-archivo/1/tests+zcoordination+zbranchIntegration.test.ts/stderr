@@ -1,0 +1,12 @@
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-114Bp8/integ-2gxXST/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-114Bp8/integ-x7oR0A/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+
+ 11 pass
+ 2 skip
+ 0 fail
+ 51 expect() calls
+Ran 13 tests across 1 file. [3.86s]

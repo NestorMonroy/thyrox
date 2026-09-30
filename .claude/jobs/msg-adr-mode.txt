@@ -1,0 +1,8 @@
+Split shared-state failure behavior by proxy mode
+
+The in-flight failure row degraded every operation to local memory,
+which in multi-proxy mode leaves each proxy with its own view and
+breaks the lease on token refresh. The mode is now declared; in
+multi-proxy mode a global-view operation refuses explicitly. R5 is
+scoped to wiring, lifecycle and that behavior, not new domains, and
+the single-consumer statement is framed as the current contract.

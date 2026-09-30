@@ -1,0 +1,2 @@
+# al lado). Lo declarado —opción o entorno— gana siempre; sin historial no se
+# inventa nada, y la salida lo dice.

@@ -1,0 +1,31 @@
+Patrón: stale-prop-not-in-narrowed-component-props
+Señal del verificador: (?:TS2322: Type 'StandaloneAgentContext \| undefined' is not assignable to type '\{ name: string; color\?: AgentColorName \| undefined; \} \| undefined'\.|TS2322: Type '\{ mode: \{\}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; \.\.\. 7 more \.\.\.; prePlanMode\?: PermissionMode; \}' is not assignable to type '\{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; \.\.\. 7 more \.\.\.; prePlanMode\?: InternalPermissionMode \| undefined; \}'\.|TS2322: Type '\{ mode: SpinnerMode; spinnerTip: string \| undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<\{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; \}\[\]>; \.\.\. 9 more \.\.\.; leaderIsIdle: boolean; \}' is not assignable to type 'IntrinsicAttributes & Props'\.)
+Arreglo genérico: Ubicar la declaración de `Props` del componente destino; si el prop que tsc marca no aparece ahí, comprobar si el propio componente lo consume (grep de su nombre en el cuerpo). Si no lo consume — típico de un refactor que lo quitó del tipo pero dejó al llamador pasándolo — quitar el prop del sitio de la llamada no cambia la conducta en ejecución.
+Ya aplicado en: src/packages/repl/src/screens/REPLView.tsx
+Archivos donde la señal sigue viva: src/packages/repl/src/screens/REPLView.tsx
+
+src/packages/repl/src/screens/REPLView.tsx(4008,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3998-4018 ---
+   3998          (
+   3999            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   4000          ).resetContextCollapse();
+   4001          /* eslint-enable @typescript-eslint/no-require-imports */
+   4002        }
+   4003  
+   4004        // Restore state from the message we're rewinding to
+   4005        setAppState(prev => ({
+   4006          ...prev,
+   4007          // Restore permission mode from the message
+   4008>         toolPermissionContext:
+   4009            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   4010              ? {
+   4011                  ...prev.toolPermissionContext,
+   4012                  mode: message.permissionMode,
+   4013                }
+   4014              : prev.toolPermissionContext,
+   4015          // Clear stale prompt suggestion from previous conversation state
+   4016          promptSuggestion: {
+   4017            text: null,
+   4018            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.

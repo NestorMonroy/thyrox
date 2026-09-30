@@ -1,0 +1,46 @@
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(90,61): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:80-100 ---
+     80      expect(TaskGetTool.isEnabled()).toBe(false)
+     81    })
+     82  
+     83    test('3. es de sólo lectura y seguro ante concurrencia', () => {
+     84      expect(TaskGetTool.isReadOnly()).toBe(true)
+     85      expect(TaskGetTool.isConcurrencySafe()).toBe(true)
+     86    })
+     87  
+     88    test('4. una tarea que existe vuelve con sus seis campos', async () => {
+     89      const id = await crear('arreglar el login')
+     90>     const { data } = await TaskGetTool.call({ taskId: id }, CTX)
+     91      expect(data.task).toEqual({
+     92        id,
+     93        subject: 'arreglar el login',
+     94        description: 'descripción de arreglar el login',
+     95        status: 'pending',
+     96        blocks: [],
+     97        blockedBy: [],
+     98      })
+     99    })
+    100  
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(102,65): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:92-112 ---
+     92        id,
+     93        subject: 'arreglar el login',
+     94        description: 'descripción de arreglar el login',
+     95        status: 'pending',
+     96        blocks: [],
+     97        blockedBy: [],
+     98      })
+     99    })
+    100  
+    101    test('5. una tarea que NO existe vuelve nula, no revienta', async () => {
+    102>     const { data } = await TaskGetTool.call({ taskId: '9999' }, CTX)
+    103      expect(data.task).toBeNull()
+    104    })
+    105  
+    106    test('6. el bloque de resultado lo dice cuando no la halla', () => {
+    107      const bloque = TaskGetTool.mapToolResultToToolResultBlockParam(
+    108        { task: null },
+    109        'uso-1',
+    110      )
+    111      expect(bloque.content).toBe('Task not found')
+    112      expect(bloque.tool_use_id).toBe('uso-1')

@@ -1,0 +1,29 @@
+test_counts_diagnostics_not_output_lines (__main__.TypeScriptDiagnosticAnalysisTest.test_counts_diagnostics_not_output_lines) ... ok
+test_diagnostic_identity_ignores_coordinates_and_preserves_count (__main__.TypeScriptDiagnosticAnalysisTest.test_diagnostic_identity_ignores_coordinates_and_preserves_count) ... ok
+test_extracts_missing_export_relationship (__main__.TypeScriptDiagnosticAnalysisTest.test_extracts_missing_export_relationship) ... ok
+test_refuses_a_log_without_diagnostics (__main__.TypeScriptDiagnosticAnalysisTest.test_refuses_a_log_without_diagnostics) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.523s
+
+OK
+test_batch_verification:
+  ok    alpha llega a cero: aceptada
+  ok    gamma baja sin llegar a cero: parcial
+  ok    delta no tenia aristas: sin objeto, no aceptada
+  ok    las aristas antes y despues de gamma
+  ok    alpha = aceptadas / propuestas con objeto
+  ok    el total baja de 6 a 4
+  ok    el diagnostico nuevo se reporta aunque el total baje
+  ok    el lote no es limpio: una parcial y un diagnostico nuevo
+  ok    dos propuestas a cero y nada nuevo: lote limpio
+  ok    con las dos aceptadas alpha vale 1
+  ok    un log previo sin diagnosticos rehusa
+  ok    mover líneas no fabrica diagnósticos nuevos
+  ok    un proponente general cierra su objetivo
+  ok    y el movimiento de la línea ajena no ensucia el lote
+  ok    un diagnóstico nuevo en el archivo tocado rechaza la propuesta
+  ok    el veredicto atribuye el diagnóstico nuevo
+  ok    el manifiesto JSONL general conserva id y proponente
+  ok    el manifiesto conserva objetivos y archivos como conjuntos
+test_batch_verification: 18 aserciones — 18 ok, 0 falla(s)

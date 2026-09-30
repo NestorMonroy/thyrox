@@ -1,0 +1,1 @@
+check-path-arithmetic: 33 incumplidor(es) nuevo(s), 1 congelado(s) (alcance medido: 408 archivo(s) en src, tests, .claude)

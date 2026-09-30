@@ -1,0 +1,3 @@
+bc14e81afd794197ccab5fbeced77378c6cf1a6ed1670c07768eb564c02aaf8e  /home/user/thyrox/src/packages/tool-registry/src/ripgrep.ts
+bc14e81afd794197ccab5fbeced77378c6cf1a6ed1670c07768eb564c02aaf8e  src/ripgrep.ts
+bc14e81afd794197ccab5fbeced77378c6cf1a6ed1670c07768eb564c02aaf8e  src/ripgrep.ts

@@ -1,0 +1,9 @@
+check_bench_untracked: .claude/workbench/check-bench-untracked-cost-20260929T080344 deja fuera 4 archivo(s) nuevo(s):
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/measure-after-v2.err
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/measure-after.err
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/measure-after.txt
+  .claude/workbench/check-bench-untracked-cost-20260929T080344/profile-after.out
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 4 archivo(s) fuera (alcance medido: 1836 banco(s) tocado(s))
+Command exited with non-zero status 1
+después-v2: pared=30.75s rss=252496KB

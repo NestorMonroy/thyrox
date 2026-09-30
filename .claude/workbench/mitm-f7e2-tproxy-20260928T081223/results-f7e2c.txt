@@ -1,0 +1,30 @@
+== 1: OUTPUT sin excluir la marca propia
+   (src/tproxy/commands.ts)
+(fail) apply installs the mark, the policy rule, the local route and the TPROXY rule [65.58ms]
+ 3 pass
+ 1 fail
+== 2: revertir sin retirar la regla de política
+   (src/tproxy/commands.ts)
+(fail) revert leaves the namespace as it was before apply [104.41ms]
+(fail) an apply that fails halfway leaves nothing behind [103.58ms]
+ 2 pass
+ 2 fail
+== 3: revertir sin retirar la ruta local
+   (src/tproxy/commands.ts)
+(fail) revert leaves the namespace as it was before apply [120.32ms]
+(fail) an apply that fails halfway leaves nothing behind [108.12ms]
+ 2 pass
+ 2 fail
+== 4: un apply que falla sin revertir
+   (src/tproxy/setup.ts)
+(fail) an apply that fails halfway leaves nothing behind [58.50ms]
+ 3 pass
+ 1 fail
+== 5: revertir parando en el primer paso ausente
+   (src/tproxy/setup.ts)
+(fail) an apply that fails halfway leaves nothing behind [53.27ms]
+ 3 pass
+ 1 fail
+== restaurado
+ 4 pass
+ 0 fail

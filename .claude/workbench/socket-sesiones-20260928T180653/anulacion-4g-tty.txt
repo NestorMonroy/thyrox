@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+133 |   })
+134 | 
+135 |   test('cada condición la apaga', () => {
+136 |     setAmbientMarkerProbe(() => false)
+137 |     expect(isHeadlessToolCallOfAgentSession(host({ ...headless, env: {} }))).toBe(false)
+138 |     expect(isHeadlessToolCallOfAgentSession(host({ ...headless, stdinIsTTY: true }))).toBe(false)
+                                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:138:87)
+(fail) isHeadlessToolCallOfAgentSession (nUr) > cada condición la apaga [0.21ms]
+
+ 17 pass
+ 1 fail
+ 37 expect() calls
+Ran 18 tests across 1 file. [120.00ms]

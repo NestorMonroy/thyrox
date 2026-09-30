@@ -1,0 +1,12 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+4	:	1790541863.106	     0.144	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-004
+3	:	1790541863.103	     0.189	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-003
+2	:	1790541863.100	     0.196	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-002
+5	:	1790541863.257	     0.112	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-005
+6	:	1790541863.296	     0.165	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-006
+7	:	1790541863.303	     0.212	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-007
+8	:	1790541863.376	     0.216	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-008
+10	:	1790541863.526	     0.889	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-010
+1	:	1790541863.097	     1.754	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-001
+11	:	1790541863.597	     2.070	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-011
+9	:	1790541863.466	    20.204	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260927T204422 job-20260927T204422 job-009

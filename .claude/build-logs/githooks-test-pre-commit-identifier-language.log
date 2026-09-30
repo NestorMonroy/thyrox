@@ -1,0 +1,6 @@
+test-pre-commit-identifier-language:
+  ok    con el gate en verde, el hook sale 0
+  ok    recibe los .py staged de src/ y tests/
+  ok    su rechazo detiene el commit
+  ok    sin .py de src/ ni tests/ staged, no se invoca
+test-pre-commit-identifier-language: 4 aserciones — 4 ok, 0 falla(s)

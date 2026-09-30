@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/printDelegation.test.ts:
+19 |   test('sin credencial propia y con claude en el PATH, delega', () => {
+20 |     expect(decidePrintDelegation(['-p', 'hola'], {}, found, noFd)).toEqual({ delegate: true, claudePath: '/usr/local/bin/claude' })
+21 |   })
+22 |   test('con credencial propia, thyrox atiende la invocación', () => {
+23 |     const decision = decidePrintDelegation(['-p', 'hola'], { ANTHROPIC_API_KEY: 'sk-propia' }, found, noFd)
+24 |     expect(decision.delegate).toBe(false)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/printDelegation.test.ts:24:31)
+(fail) decidePrintDelegation — cuándo thyrox -p delega en claude -p > con credencial propia, thyrox atiende la invocación [0.20ms]
+thyrox -p: la bandera --bogus no se admite. Se admiten: -p, --print, --no-session-persistence, --verbose, --model, --max-turns, --setting-sources, --tools, --allowedTools, --allowed-tools, --output-format, --provider, --grabacion, --system, --connection, --store
+
+ 8 pass
+ 1 fail
+ 16 expect() calls
+Ran 9 tests across 1 file. [1207.00ms]

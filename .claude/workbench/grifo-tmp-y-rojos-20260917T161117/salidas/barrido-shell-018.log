@@ -1,0 +1,2 @@
+VERDE tests/agents/test-merge-sqlite-union.sh
+EXIT=0

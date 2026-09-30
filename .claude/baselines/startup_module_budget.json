@@ -1,0 +1,16 @@
+{
+  "paths": {
+    "providers": {
+      "entry": "src/packages/cli/src/commands/providers-commands.ts",
+      "budget": 90
+    },
+    "mitm": {
+      "entry": "src/packages/cli/src/commands/mitm-commands.ts",
+      "budget": 1018
+    },
+    "bootstrap": {
+      "entry": "src/packages/app-host/src/runtime/bootstrap.ts",
+      "budget": 2903
+    }
+  }
+}

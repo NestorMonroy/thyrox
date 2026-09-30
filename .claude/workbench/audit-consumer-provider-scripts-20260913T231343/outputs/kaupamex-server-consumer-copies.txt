@@ -1,0 +1,3 @@
+=== kaupamex-server ===
+check-consumer-copies: 0 copia(s) · 0 fork(s) (alcance medido: 0 archivo(s) de kaupamex-server/.claude)
+rc=0

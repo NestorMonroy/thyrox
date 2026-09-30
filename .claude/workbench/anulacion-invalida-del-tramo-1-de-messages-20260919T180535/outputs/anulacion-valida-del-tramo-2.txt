@@ -1,0 +1,19 @@
+Control de anulacion del TRAMO 2 de TASK-THYROX-0212
+Fecha: 2026-09-19T18:21:43
+
+Procedimiento: los DOS archivos del tramo vuelven a HEAD, se corre el
+subconjunto derivado, se restauran desde copia y se re-corre. La
+restauracion se comprueba con cmp, no con git diff.
+
+=== ANULADO (git show HEAD:...) ===
+SyntaxError: Export named 'normalizeMessages' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+ 0 pass
+ 1 fail
+
+=== RESTAURADO ===
+ 8 pass
+ 0 fail
+
+=== Restauracion byte a byte ===
+cmp messages.ts        -> identico
+cmp messageShapes.ts   -> identico

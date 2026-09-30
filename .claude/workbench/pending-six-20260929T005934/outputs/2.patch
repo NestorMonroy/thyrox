@@ -1,0 +1,207 @@
+diff --git a/src/packages/provider/src/__tests__/credentialsConnectionStore.test.ts b/src/packages/provider/src/__tests__/credentialsConnectionStore.test.ts
+new file mode 100644
+index 00000000..20cc69f0
+--- /dev/null
++++ b/src/packages/provider/src/__tests__/credentialsConnectionStore.test.ts
+@@ -0,0 +1,95 @@
++/**
++ * C2: `resolveCredential` cae a `provider_connections` cuando ninguna
++ * variable de entorno resuelve credencial. El store y su cifrado son
++ * siempre temporales aquí — nunca el store real ni `process.env` —, con
++ * `createConnectionStore`/`createFieldCipher` de `accounts/`.
++ */
++import { Database } from 'bun:sqlite'
++import { beforeEach, describe, expect, test } from 'bun:test'
++
++import { createConnectionStore, type ConnectionStore } from '../accounts/connectionStore.ts'
++import { createFieldCipher, looksEncrypted, STORAGE_KEY_VARIABLE } from '../accounts/fieldCipher.ts'
++import { resolveCredential } from '../credentials.ts'
++
++const sinFd = () => {
++  throw new Error('no se esperaba leer un fd')
++}
++
++let db: Database
++
++beforeEach(() => {
++  db = new Database(':memory:')
++})
++
++function storeWith(secret: string, options: { encryptionKey?: string; authType?: 'apikey' | 'oauth' } = {}): ConnectionStore {
++  const cipher = createFieldCipher(options.encryptionKey ?? 'test-store-secret', () => {})
++  const store = createConnectionStore({ db, cipher })
++  const authType = options.authType ?? 'apikey'
++  store.create({
++    provider: 'claude',
++    authType,
++    name: 'c2-test',
++    isActive: true,
++    ...(authType === 'oauth' ? { accessToken: secret, refreshToken: 'r' } : { apiKey: secret }),
++  })
++  return store
++}
++
++describe('resolveCredential — provider_connections como última fuente de la cadena', () => {
++  test('sin store no cambia nada: sigue en none', () => {
++    expect(resolveCredential({}, sinFd)).toEqual({ source: 'none' })
++  })
++
++  test('con env vacío y una conexión apikey activa, la credencial sale del store', () => {
++    const store = storeWith('sk-de-la-conexion')
++    const c = resolveCredential({}, sinFd, store)
++    expect(c).toEqual({ source: 'PROVIDER_CONNECTION', kind: 'api_key', secret: 'sk-de-la-conexion' })
++  })
++
++  test('una conexión oauth resuelve como oauth', () => {
++    const store = storeWith('token-de-la-conexion', { authType: 'oauth' })
++    const c = resolveCredential({}, sinFd, store)
++    expect(c).toEqual({ source: 'PROVIDER_CONNECTION', kind: 'oauth', secret: 'token-de-la-conexion' })
++  })
++
++  test('una variable de entorno gana al store aunque el store tenga conexión', () => {
++    const store = storeWith('sk-de-la-conexion')
++    const c = resolveCredential({ ANTHROPIC_API_KEY: 'sk-del-entorno' }, sinFd, store)
++    expect(c).toEqual({ source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: 'sk-del-entorno' })
++  })
++
++  test('sin conexión activa para el proveedor, sigue en none', () => {
++    const cipher = createFieldCipher('test-store-secret', () => {})
++    const store = createConnectionStore({ db, cipher })
++    store.create({ provider: 'openai', authType: 'apikey', name: 'otro', apiKey: 'sk-otro-proveedor' })
++    expect(resolveCredential({}, sinFd, store)).toEqual({ source: 'none' })
++  })
++
++  test('con la clave de cifrado equivocada, rehúsa diciendo la causa — no degrada a "sin credencial"', () => {
++    const store = storeWith('sk-de-la-conexion')
++    const wrongKeyStore = createConnectionStore({ db, cipher: createFieldCipher('otra-clave-distinta', () => {}) })
++    void store
++    const c = resolveCredential({}, sinFd, wrongKeyStore)
++    expect(c.source).toBe('none')
++    expect(c.error).toContain('no se pudo descifrar')
++    expect(c.secret).toBeUndefined()
++  })
++
++  test('sin ninguna clave de cifrado declarada, rehúsa diciendo la causa', () => {
++    const store = storeWith('sk-de-la-conexion')
++    void store
++    const plaintextlessStore = createConnectionStore({ db, cipher: createFieldCipher(undefined, () => {}) })
++    const c = resolveCredential({}, sinFd, plaintextlessStore)
++    expect(c.source).toBe('none')
++    expect(c.error).toContain(STORAGE_KEY_VARIABLE)
++    expect(c.secret).toBeUndefined()
++  })
++
++  test('la fila cifrada sigue con su prefijo cuando no hay clave — el store nunca queda en claro', () => {
++    const cipher = createFieldCipher('test-store-secret', () => {})
++    const store = createConnectionStore({ db, cipher })
++    store.create({ provider: 'claude', authType: 'apikey', name: 'c', apiKey: 'sk-real' })
++    const row = db.query('SELECT api_key FROM provider_connections').get() as { api_key: string }
++    expect(looksEncrypted(row.api_key)).toBe(true)
++  })
++})
+diff --git a/src/packages/provider/src/credentials.ts b/src/packages/provider/src/credentials.ts
+index 1543c5eb..19f734ca 100644
+--- a/src/packages/provider/src/credentials.ts
++++ b/src/packages/provider/src/credentials.ts
+@@ -15,10 +15,21 @@
+  *   almacén de credenciales; esas ramas de `jc()` no se portan;
+  * - el descriptor se lee una vez y no se reescribe a disco (`k()` del binario
+  *   lo copia a `~/.claude/.oauth_token`); persistir un secreto no se decide
+- *   aquí.
++ *   aquí;
++ * - la conexión de `provider_connections` (C2) sólo entra a la cadena si
++ *   quien llama pasa el store: `resolveCredential` no abre por su cuenta el
++ *   store real del disco (`accounts/connectionStoreHome.ts`), porque eso
++ *   introduciría E/S de archivo por defecto en toda llamada sin credencial de
++ *   entorno, incluidas las que hoy son puras. Cablear ese store por defecto
++ *   en cada punto de llamada (`anthropicHttp.ts`, `agent/cacheTtl.ts`, …)
++ *   queda fuera de este pase — sus archivos no son míos aquí.
+  */
+ import { readFileSync } from 'node:fs'
+ 
++import type { ConnectionStore } from './accounts/connectionStore.ts'
++import { looksEncrypted, STORAGE_KEY_VARIABLE } from './accounts/fieldCipher.ts'
++import { ANTHROPIC_PROVIDER_ID } from './accounts/imports/anthropicAuthFile.ts'
++
+ /** Beta que el servicio exige con un token OAuth (`ep` en chunk-d6bkh9x7). */
+ export const OAUTH_BETA = 'oauth-2025-04-20'
+ 
+@@ -28,6 +39,7 @@ export type CredentialSource =
+   | 'THYROX_CODE_OAUTH_TOKEN'
+   | 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
+   | 'ANTHROPIC_API_KEY'
++  | 'PROVIDER_CONNECTION'
+   | 'none'
+ 
+ export type Credential = {
+@@ -84,11 +96,54 @@ export function tunnelSocket(env: Env = process.env): string | undefined {
+ }
+ 
+ /**
+- * El orden de `jc()` para el token y, al final, la llave de `Qf()`. En
+- * túnel la fuente es `proxy` y no hay secreto: la credencial la pone quien
+- * escucha en el socket (`dt`/`at` de 2.1.283).
++ * Lo que aporta la conexión de mayor prioridad de `provider_connections`
++ * (C2, tarea `#244`): un secreto listo para usar, o una causa que explica
++ * por qué esa conexión no dio ninguno. `{}` es "no hay conexión utilizable
++ * para este proveedor" — distinto de un `error`, que es "había una conexión
++ * y su credencial no se dejó leer".
++ */
++type ConnectionAttempt = { secret?: string; kind?: 'api_key' | 'oauth'; error?: string }
++
++/** El campo de la fila que lleva el secreto, según el tipo de autenticación de la conexión. */
++function connectionCredentialField(authType: unknown): 'accessToken' | 'apiKey' {
++  return authType === 'oauth' ? 'accessToken' : 'apiKey'
++}
++
++/**
++ * La conexión activa de mayor prioridad para Anthropic (`ANTHROPIC_PROVIDER_ID`)
++ * en el store recibido. Una credencial que sigue cifrada porque falta
++ * `THYROX_STORAGE_ENCRYPTION_KEY`, o que no descifra con la que hay, se
++ * declara como error — nunca como si la conexión no existiera.
++ */
++function connectionCredential(store: ConnectionStore): ConnectionAttempt {
++  const candidate = store
++    .listRaw({ provider: ANTHROPIC_PROVIDER_ID, isActive: true })
++    .find(row => row.authType === 'apikey' || row.authType === 'oauth')
++  if (!candidate) return {}
++  const row = store.getById(candidate.id as string)
++  if (!row) return {}
++  const label = typeof row.name === 'string' && row.name ? row.name : String(row.id)
++  if (row.credentialDecryptFailed) {
++    return { error: `provider_connections: la conexión "${label}" no se pudo descifrar. Revisa ${STORAGE_KEY_VARIABLE}.` }
++  }
++  const field = connectionCredentialField(row.authType)
++  const value = row[field]
++  if (typeof value === 'string' && looksEncrypted(value)) {
++    return { error: `provider_connections: la conexión "${label}" está cifrada y ${STORAGE_KEY_VARIABLE} no está definida.` }
++  }
++  const secret = typeof value === 'string' ? value.trim() : ''
++  if (!secret) return {}
++  return { secret, kind: field === 'accessToken' ? 'oauth' : 'api_key' }
++}
++
++/**
++ * El orden de `jc()` para el token, la conexión de `provider_connections`
++ * (C2) y, al final, la llave de `Qf()`. En túnel la fuente es `proxy` y no
++ * hay secreto: la credencial la pone quien escucha en el socket (`dt`/`at`
++ * de 2.1.283). `store` es opcional y sólo se consulta si llega: quien la
++ * invoca sin store se comporta exactamente como antes de C2.
+  */
+-export function resolveCredential(env: Env = process.env, readFd: ReadFd = readFdFromProc): Credential {
++export function resolveCredential(env: Env = process.env, readFd: ReadFd = readFdFromProc, store?: ConnectionStore): Credential {
+   const tunnel = tunnelSocket(env)
+   if (tunnel) return { source: 'proxy', unixSocket: tunnel }
+   const unixSocket = env.ANTHROPIC_UNIX_SOCKET?.trim() || undefined
+@@ -102,7 +157,10 @@ export function resolveCredential(env: Env = process.env, readFd: ReadFd = readF
+   const err = fd.error ? { error: fd.error } : {}
+   const apiKey = env.ANTHROPIC_API_KEY?.trim()
+   if (apiKey) return { ...base, ...err, source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: apiKey }
+-  return { ...base, ...err, source: 'none' }
++  const connection = store ? connectionCredential(store) : {}
++  if (connection.secret) return { ...base, source: 'PROVIDER_CONNECTION', kind: connection.kind, secret: connection.secret }
++  const finalErr = connection.error ? { error: connection.error } : err
++  return { ...base, ...finalErr, source: 'none' }
+ }
+ 
+ /** Las cabeceras de autenticación de una credencial resuelta. */

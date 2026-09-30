@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/cli && for p in tsconfig.json tsconfig.tests.json; do printf \"%s %s\\n\" \"$p\" \"$(bunx tsc --noEmit -p \"$p\" </dev/null 2>&1 | grep -c \"error TS\")\"; done", "started_at": "2026-09-23T15:34:28+00:00"}

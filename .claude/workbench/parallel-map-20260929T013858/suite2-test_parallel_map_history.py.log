@@ -1,0 +1,24 @@
+caso 1 — un historial por texto de comando
+  ok    el mismo comando da el mismo historial
+  ok    otro comando da otro historial
+  ok    vive bajo la base
+caso 2 — la base se declara por entorno
+  ok    THYROX_PARALLEL_MAP_HISTORY_DIR gana
+  ok    sin declararla cae en la caché del repo
+caso 3 — sin historial, derive_memory no inventa
+  ok    sin memfree
+  ok    sin tope de RAM
+  ok    dice por qué
+caso 4 — con una ejecución medida, memfree y tope de anchura
+  ok    memfree = pico × 2, hacia arriba
+  ok    tope = RAM disponible / (pico × 2)
+  ok    cita el pico
+  ok    la reserva por ítem en kB = pico × 2
+caso 5 — derive sigue dando el mismo memfree
+  ok    derive y derive_memory coinciden
+caso 6 — la CLI: dir, record y derive por tabuladores
+  ok    sale 0
+  ok    memfree, tope y reserva en kB
+  ok    sin historial imprime campos vacíos
+  ok    dir imprime el historial del comando
+test_parallel_map_history: 17 ok, 0 fallos

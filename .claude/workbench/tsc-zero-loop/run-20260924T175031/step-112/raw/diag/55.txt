@@ -1,0 +1,2 @@
+src/packages/agent/query.ts(1565,25): error TS18048: 'toolResult.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1566,15): error TS18048: 'toolResult.message' is possibly 'undefined'.

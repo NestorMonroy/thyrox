@@ -1,0 +1,99 @@
+== 1: los perfiles antiguos no son cli
+   (src/accounts/antigravity/clientIdentity.ts)
+(fail) client identity > the profile is ide or cli; the old synthetic names read as cli [0.40ms]
+ 19 pass
+ 1 fail
+== 2: linux sin su enum
+   (src/accounts/antigravity/clientIdentity.ts)
+(fail) client identity > the metadata carries numeric enums for the host platform [0.39ms]
+(fail) antigravity flow > an account with a project: exchange with the secret, discover the project, record the issuing client [1.93ms]
+ 18 pass
+ 2 fail
+== 3: la versión no es la más nueva
+   (src/accounts/antigravity/clientVersion.ts)
+(fail) client version > the newest release wins over the fallback, and is cached [1.48ms]
+ 19 pass
+ 1 fail
+== 4: la caché no caduca
+   (src/accounts/antigravity/clientVersion.ts)
+(fail) client version > the cache expires after six hours [0.83ms]
+ 19 pass
+ 1 fail
+== 5: un feed inalcanzable se da por resuelto
+   (src/accounts/antigravity/clientVersion.ts)
+(fail) client version > an unreachable feed keeps the fallback and is retried next time [0.57ms]
+ 19 pass
+ 1 fail
+== 6: el tier actual aunque la cuenta no sea elegible
+   (src/accounts/antigravity/codeAssistTier.ts)
+(fail) code assist tier > onboarding tier: paid, then current if eligible, then the default allowed one, then legacy [0.48ms]
+ 19 pass
+ 1 fail
+== 7: sin el tier por defecto
+   (src/accounts/antigravity/codeAssistTier.ts)
+(fail) code assist tier > onboarding tier: paid, then current if eligible, then the default allowed one, then legacy [0.44ms]
+ 19 pass
+ 1 fail
+== 8: el restringido sin marca
+   (src/accounts/antigravity/codeAssistTier.ts)
+(fail) code assist tier > display tier: a restricted account shows its default as restricted [0.33ms]
+ 19 pass
+ 1 fail
+== 9: sin secreto se intercambia igual
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+(fail) antigravity flow > without the client secret the flow refuses by naming it [504.95ms]
+ 19 pass
+ 1 fail
+== 10: sin consentimiento offline
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+(fail) antigravity flow > the authorize URL asks for offline consent, without PKCE [0.98ms]
+ 19 pass
+ 1 fail
+== 11: el perfil IDE sin su cliente Node
+   (src/accounts/antigravity/clientIdentity.ts)
+(fail) antigravity flow > an account with a project: exchange with the secret, discover the project, record the issuing client [1.64ms]
+ 19 pass
+ 1 fail
+== 12: tras el onboarding no se vuelve a consultar
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+ 20 pass
+ 0 fail
+== 13: el proyecto de la respuesta del onboarding se ignora
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+(fail) antigravity flow > no project in discovery but one in the onboarding answer: it is taken [0.62ms]
+ 19 pass
+ 1 fail
+== 14: todo fallo es un proyecto manual
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+(fail) antigravity flow > discovery and onboarding both failing is a failed discovery, not a manual project [1.08ms]
+ 19 pass
+ 1 fail
+== 15: el onboarding en segundo plano sin tope
+   (src/accounts/oauth/flows/antigravityFlow.ts)
+(fail) antigravity flow > background onboarding of an account with a project is bounded [12.94ms]
+ 19 pass
+ 1 fail
+== 16: la cuenta sin proyecto se guarda activa
+   (src/accounts/oauth/oauthPersistence.ts)
+(fail) degraded project > persisting a login without a project stores it degraded; a later one with a project restores it [57.01ms]
+ 19 pass
+ 1 fail
+== 17: cualquier redirección se sube a la URL pública
+   (src/accounts/oauth/browserRedirect.ts)
+(fail) browser redirect > anything else is left as it is [0.38ms]
+ 19 pass
+ 1 fail
+== 18: sin cliente propio también se sube
+   (src/accounts/oauth/browserRedirect.ts)
+(fail) browser redirect > anything else is left as it is [0.34ms]
+ 19 pass
+ 1 fail
+== restaurado
+ M src/packages/provider/src/accounts/oauth/oauthPersistence.ts
+?? src/packages/provider/src/accounts/antigravity/
+?? src/packages/provider/src/accounts/oauth/antigravityProjectGate.ts
+?? src/packages/provider/src/accounts/oauth/browserRedirect.ts
+?? src/packages/provider/src/accounts/oauth/flows/antigravityFlow.ts
+ 20 pass
+ 0 fail
+__BG_EXIT__=0

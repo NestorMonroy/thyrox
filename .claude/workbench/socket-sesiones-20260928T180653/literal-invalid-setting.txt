@@ -1,0 +1,8 @@
+werCase():void 0,r=[RC,wC,SC],n=[vC,_C,IC],o=[];if(t)switch(t){case"dev":o=r;break;case"prod":o=n;break;default:{let s=`Invalid value for AZURE_TOKEN_CREDENTIALS = ${process.env.AZURE_TOKEN_CREDENTIALS}. Valid values are 'prod' or 'dev'.
+void 0&&MEr(r[s],g)){let w=r[s]?.default,M=w===void 0?"unset":`the default, ${String(w)}`;_W(e,`option ${s} in settings is not one of ${h.join(
+0&&(typeof w!=="string"||!Ibo(w))){let Ne=typeof w==="string"?JSON.stringify(w):VG(w);return`Button "${g}" action ${Ne} is not one of the engine's keybinding actions (app:cycleDiffBase, app:diffFileListDown)
+.isArray(l)&&l.length>0&&je(g)&&!l.some((_)=>_===g))return{reason:"const_mismatch",message:`${s} has a const value that is not one of its enum values, so no value can satisfy it
+ce(7):C;throw new XG(`Invalid Authorization header value${no[L]}: ${on(B)}.`,"Authorization",L)}if(T!==-1)throw new XG(`Invalid value for ${P}: ${on(C)}.
+s&&P.data.reason==="agent_not_added")return{err:`this artifact is restricted to specific people, and this ${W}'s Claude is not one of them: ${me}
+ if(typeof n==="object")await Promise.all(Object.entries(n).map(([o,i])=>Gn(e,`${r}[${o}]`,i,s)));else throw TypeError(`Invalid value given to form, expected a string, number, boolean, object, Array, File or Blob but got ${n} instead
+valid-name":typeof n!=="string"?"non-string-value":n.includes("\x00")?"nul-in-value":void 0}var Hct={"invalid-name":"it isn't a valid environment variable name

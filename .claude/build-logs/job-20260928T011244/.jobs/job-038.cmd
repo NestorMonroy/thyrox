@@ -1,0 +1,1 @@
+cd src/packages/storage && bun test 2>&1 | tail -n 4

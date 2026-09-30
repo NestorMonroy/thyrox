@@ -1,0 +1,28 @@
+toolchain.sh:35 lleva una guarda de idempotencia:
+
+  if ( type thyrox_toolchain_provider_python &>/dev/null ); then return 0; fi
+
+Sus funciones viajan al hijo por `export -f`. Entonces un
+`bash -c 'source toolchain.sh'` lanzado desde una suite que YA sourceó el
+sujeto re-sourcea EN NO-OP. Medido por traza:
+
+  $ source src/lib/toolchain.sh
+  $ THYROX_TOOLCHAIN_AWK_BIN= bash -xc 'source src/lib/toolchain.sh' 2>&1
+  + source /home/user/thyrox/src/lib/toolchain.sh
+  ++ type thyrox_toolchain_provider_python
+  ++ return 0
+  (3 lineas en total: ninguna asignacion se ejecuta)
+
+  $ ... bash -c '...; declare -p THYROX_TOOLCHAIN_AWK_BIN'
+  declare -x THYROX_TOOLCHAIN_AWK_BIN=""      <- el entorno heredado, no el archivo
+
+Con el entorno limpio el sujeto SI se ejecuta:
+
+  $ env -i PATH="$PATH" THYROX_TOOLCHAIN_AWK_BIN= bash -c \
+      'source src/lib/toolchain.sh; printf "[%s]\n" "$THYROX_TOOLCHAIN_AWK_BIN"'
+  [awk]
+
+Consecuencia general, mas alla de este caso: una suite que sourcea un modulo de
+shell con `export -f` y despues lanza hijos para medir un DEFAULT esta midiendo
+el entorno heredado, no el archivo. El sintoma es mudo — publica el valor
+inyectado sin error alguno.

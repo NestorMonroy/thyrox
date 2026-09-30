@@ -1,0 +1,1 @@
+src/packages/agent/hooks/execPromptHook.ts(535,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.

@@ -1,0 +1,2 @@
+VERDE tests/session/test-wait-jobs.sh
+EXIT=0

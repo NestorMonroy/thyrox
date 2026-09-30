@@ -1,0 +1,36 @@
+=== (1) CORRECCION POR DECLARACION: un NULL declarado no es un hueco ===
+    universo: 1722 filas de agent_sessions
+
+  turns          NULL=1250  declarado por usage_source   =1137  MUDO=113
+  stop_reason    NULL=1329  declarado por outcome_source =101   MUDO=1228
+  subagent_type  NULL=0     declarado por type_source    =0     MUDO=0
+
+  procedencia poblada, por columna:
+    usage_source     no-NULL=1609
+    outcome_source   no-NULL=494
+    type_source      no-NULL=934
+
+=== (2) las columnas >50% NULL de agent_sessions, por cubo ===
+  error/limite (esperado raro): 3
+  telemetria de uso (TASK-GEN-0211): 6
+  procedencia del hook (TASK-DOCS-0432): 5
+  SIN CLASIFICAR (>50% NULL): 13
+      output_key             1722/1722
+      timeout_at             1722/1722
+      model                  1292/1722
+      description            1351/1722
+      duration_s             1285/1722
+      tool_uses_total        1297/1722
+      tool_uses_json         1297/1722
+      prompt                 1285/1722
+      effort                 1295/1722
+      client_version         1286/1722
+      service_tier           1295/1722
+      stop_reason            1329/1722
+      outcome_source         1228/1722
+
+=== (3) tasks.submodule NULL: ¿GEN por diseno, o capa concreta sin derivar? ===
+  submodule NULL y sin cita                             0
+  submodule NULL y cita GEN (derivar-capa pendiente)    404
+  submodule NULL y cita de CAPA CONCRETA -> hueco       0
+  total submodule NULL = 404 de 1740

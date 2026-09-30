@@ -1,0 +1,8 @@
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+tests/integration/agent-loop.test.ts
+tests/integration/plugin-load.test.ts
+tests/integration/slash-commands.test.ts
+tests/smoke/live-fire-smoke.test.ts
+tests/smoke/resume-smoke.test.ts
+tests/smoke/swarm-smoke.test.ts

@@ -1,0 +1,2 @@
+{"status": "stalled", "total_before": 1896, "total_final": 1896, "tsc_runs": 1, "accepted": [], "files_kept": [], "outcomes": {"agent:agent:real-types-in-cli-agent-provider-adapters": "rejected"}}
+__BG_EXIT__=0

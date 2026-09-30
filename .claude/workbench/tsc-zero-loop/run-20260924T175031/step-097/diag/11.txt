@@ -1,0 +1,16 @@
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(157,10): error TS6133: 'requireNumber' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(956,7): error TS6133: 'dialogFlags' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1075,32): error TS2339: Property 'label' does not exist on type 'DisplayGeometry'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1075,53): error TS2339: Property 'isPrimary' does not exist on type 'DisplayGeometry'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1980,20): error TS2339: Property 'label' does not exist on type 'DisplayGeometry'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2088,14): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2126,16): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2127,33): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2146,7): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2215,5): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(3054,7): error TS2345: Argument of type '"launch_failed"' is not assignable to parameter of type 'CuErrorKind | undefined'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(3124,11): error TS2345: Argument of type '"element_not_found"' is not assignable to parameter of type 'CuErrorKind | undefined'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(3161,7): error TS2345: Argument of type '"element_not_found"' is not assignable to parameter of type 'CuErrorKind | undefined'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(3186,7): error TS2345: Argument of type '"element_not_found"' is not assignable to parameter of type 'CuErrorKind | undefined'.

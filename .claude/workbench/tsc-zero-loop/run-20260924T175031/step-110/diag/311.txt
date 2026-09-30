@@ -1,0 +1,40 @@
+tests/unit/utils/sequential.test.ts(93,27): error TS2345: Argument of type '(x: number) => string | number' is not assignable to parameter of type '(x: number) => Promise<unknown>'.
+  --- código tests/unit/utils/sequential.test.ts:83-99 ---
+     83      })
+     84  
+     85      await Promise.all([fn('a'), fn('b')])
+     86      expect(log[0]).toBe('start:a')
+     87      expect(log[1]).toBe('end:a')
+     88      expect(log[2]).toBe('start:b')
+     89      expect(log[3]).toBe('end:b')
+     90    })
+     91  
+     92    test('works with functions returning different types', async () => {
+     93>     const fn = sequential(async (x: number): string | number => {
+     94        return x > 0 ? 'positive' : x
+     95      })
+     96      expect(await fn(5)).toBe('positive')
+     97      expect(await fn(-1)).toBe(-1)
+     98    })
+     99  })
+  Type 'string | number' is not assignable to type 'Promise<unknown>'.
+    Type 'string' is not assignable to type 'Promise<unknown>'.
+tests/unit/utils/sequential.test.ts(93,46): error TS1064: The return type of an async function or method must be the global Promise<T> type. Did you mean to write 'Promise<string | number>'?
+  --- código tests/unit/utils/sequential.test.ts:83-99 ---
+     83      })
+     84  
+     85      await Promise.all([fn('a'), fn('b')])
+     86      expect(log[0]).toBe('start:a')
+     87      expect(log[1]).toBe('end:a')
+     88      expect(log[2]).toBe('start:b')
+     89      expect(log[3]).toBe('end:b')
+     90    })
+     91  
+     92    test('works with functions returning different types', async () => {
+     93>     const fn = sequential(async (x: number): string | number => {
+     94        return x > 0 ? 'positive' : x
+     95      })
+     96      expect(await fn(5)).toBe('positive')
+     97      expect(await fn(-1)).toBe(-1)
+     98    })
+     99  })

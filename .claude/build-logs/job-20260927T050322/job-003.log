@@ -1,0 +1,15 @@
+  ok    perl -i con s{…}{…} y metacaracteres escapados avisa
+  ok    un heredoc de Python con .replace y write_text avisa
+  ok    sed -i con un punto escapado avisa
+  ok    perl -i con un literal sin metacaracteres avisa
+  ok    perl -pe a stdout no reescribe un archivo: calla
+  ok    un heredoc de Python sin write_text calla
+  ok    sed -i con una clase de caracteres calla
+  ok    perl -i con un grupo y cuantificador calla
+  ok    perl -i anclado a la línea calla
+  ok    un re.sub de Python no es .replace: calla
+  ok    bin/replace_literal no se avisa a sí mismo
+  ok    otro programa calla
+  ok    el aviso nombra la herramienta
+test_detect_literal_replacement: 13 aserciones — 13 ok, 0 falla(s)
+EXIT=0

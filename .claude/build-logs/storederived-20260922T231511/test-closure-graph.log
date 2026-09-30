@@ -1,0 +1,60 @@
+caso 1: el guion existe y responde --help
+  FALLA: no responde --help
+caso 2: extrae la arista en las seis formas de declarar sucesor
+  FALLA: no vio el sucesor #101
+  FALLA: no vio el sucesor #102
+  FALLA: no vio el sucesor #103
+  FALLA: no vio el sucesor #104
+  FALLA: no vio el sucesor #105
+  FALLA: no vio el sucesor #106
+caso 3: no confunde una cita de tarea con una declaracion de sucesor
+caso 4: el ranking publica cuantos nodos midio
+  FALLA: el reporte no declara su denominador
+caso 5: un ciclo termina, y da el mismo resultado dos veces
+  FALLA: no termino sobre un grafo con ciclo (exit 1)
+caso 6: sin arista de vuelta, el reporte declara que el cero no es evidencia
+  FALLA: publico ciclos: 0 sin declarar que el grafo no puede tenerlos
+caso 7: con arista de vuelta, el reporte publica su cobertura
+  FALLA: no publico la cobertura de la arista de vuelta
+caso 8: ordena por lo que desbloquea, no por el numero de la tarea
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/usr/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+  FALLA: la hoja quedo antes que la raiz que desbloquea a tres
+caso 9: un DESCONOCIDO va antes que un pendiente comun del mismo peso
+  FALLA: el DESCONOCIDO no gano al pendiente comun de igual peso
+caso 10: un nodo aislado recibe masa, que es lo que hace el reparto del sumidero
+Traceback (most recent call last):
+  File "<string>", line 3, in <module>
+  File "/usr/lib/python3.11/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+  FALLA: algun nodo quedo en rango cero: el sumidero no repartio
+caso 11: ordena por alcanzabilidad cuando el rango dice lo contrario
+  FALLA: el nodo de rango alto y alcance cero gano al que desbloquea a cuatro
+caso 12: publica la ambiguedad del id de tarea, y sin store dice que no pudo
+  FALLA: el reporte no dice nada sobre la resolucion del id de tarea
+  FALLA: sin store devolvio '' en vez de None: un 0 seria verde falso
+caso 13: el default del store es absoluto y no depende del cwd
+  FALLA: TASK_STORE no es absoluta (): su resolucion depende del cwd
+  FALLA: desde otro cwd el default devolvio '': mide por cwd
+
+FAIL: 13 casos, 19 fallo(s)
+EXIT=1

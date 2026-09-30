@@ -1,0 +1,16 @@
+Port generateSessionTitle from 2.1.275
+
+The REPL, the remote session hook, the SDK stream and the bridge all
+import generateSessionTitle, which sessionTitle.ts declared omitted.
+It is ported from chunk-tzezahz4.js (XJ, w, y): the same naming prompt,
+the session wrapped in <session> tags, a JSON schema with a single
+title field, and the language instruction from settings. Descriptions
+under ten characters make no request, and the function never throws.
+
+One divergence: reading the language setting is guarded, because the
+first test showed that settings without host bindings turned every
+title into null. The binary also passes its agent context and the
+connection credentials; this tree uses the session's.
+
+Annulled in turn, the minimum length, the catch and the trim each
+dropped exactly their dependent tests.

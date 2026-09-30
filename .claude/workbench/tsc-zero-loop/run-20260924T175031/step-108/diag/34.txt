@@ -1,0 +1,115 @@
+src/packages/repl/src/fileIndex/index.ts(118,14): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+  --- código src/packages/repl/src/fileIndex/index.ts:108-128 ---
+    108        }
+    109      }
+    110  
+    111      this.resetArrays(paths)
+    112  
+    113      chunkStart = performance.now()
+    114      let firstChunk = true
+    115      for (let i = 0; i < paths.length; i++) {
+    116        this.indexPath(i)
+    117        if ((i & 0xff) === 0xff && performance.now() - chunkStart > CHUNK_MS) {
+    118>         this.readyCount = i + 1
+    119          if (firstChunk) {
+    120            markQueryable()
+    121            firstChunk = false
+    122          }
+    123          await yieldToEventLoop()
+    124          chunkStart = performance.now()
+    125        }
+    126      }
+    127      this.readyCount = paths.length
+    128      markQueryable()
+src/packages/repl/src/fileIndex/index.ts(127,10): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+  --- código src/packages/repl/src/fileIndex/index.ts:117-137 ---
+    117        if ((i & 0xff) === 0xff && performance.now() - chunkStart > CHUNK_MS) {
+    118          this.readyCount = i + 1
+    119          if (firstChunk) {
+    120            markQueryable()
+    121            firstChunk = false
+    122          }
+    123          await yieldToEventLoop()
+    124          chunkStart = performance.now()
+    125        }
+    126      }
+    127>     this.readyCount = paths.length
+    128      markQueryable()
+    129    }
+    130  
+    131    private buildIndex(paths: string[]): void {
+    132      this.resetArrays(paths)
+    133      for (let i = 0; i < paths.length; i++) {
+    134        this.indexPath(i)
+    135      }
+    136      this.readyCount = paths.length
+    137    }
+src/packages/repl/src/fileIndex/index.ts(136,10): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+  --- código src/packages/repl/src/fileIndex/index.ts:126-146 ---
+    126      }
+    127      this.readyCount = paths.length
+    128      markQueryable()
+    129    }
+    130  
+    131    private buildIndex(paths: string[]): void {
+    132      this.resetArrays(paths)
+    133      for (let i = 0; i < paths.length; i++) {
+    134        this.indexPath(i)
+    135      }
+    136>     this.readyCount = paths.length
+    137    }
+    138  
+    139    private resetArrays(paths: string[]): void {
+    140      const n = paths.length
+    141      this.paths = paths
+    142      this.lowerPaths = new Array(n)
+    143      this.charBits = new Int32Array(n)
+    144      this.pathLens = new Uint16Array(n)
+    145      this.readyCount = 0
+    146      this.topLevelCache = computeTopLevelEntries(paths, TOP_LEVEL_CACHE_LIMIT)
+src/packages/repl/src/fileIndex/index.ts(145,10): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+  --- código src/packages/repl/src/fileIndex/index.ts:135-155 ---
+    135      }
+    136      this.readyCount = paths.length
+    137    }
+    138  
+    139    private resetArrays(paths: string[]): void {
+    140      const n = paths.length
+    141      this.paths = paths
+    142      this.lowerPaths = new Array(n)
+    143      this.charBits = new Int32Array(n)
+    144      this.pathLens = new Uint16Array(n)
+    145>     this.readyCount = 0
+    146      this.topLevelCache = computeTopLevelEntries(paths, TOP_LEVEL_CACHE_LIMIT)
+    147    }
+    148  
+    149    // Precompute: lowercase, a–z bitmap, length. Bitmap gives O(1) rejection
+    150    // of paths missing any needle letter (89% survival for broad queries like
+    151    // "test" → still a 10%+ free win; 90%+ rejection for rare chars).
+    152    private indexPath(i: number): void {
+    153      const lp = this.paths[i]!.toLowerCase()
+    154      this.lowerPaths[i] = lp
+    155      const len = lp.length
+src/packages/repl/src/fileIndex/index.ts(202,52): error TS2339: Property 'readyCount' does not exist on type 'FileIndex'.
+  --- código src/packages/repl/src/fileIndex/index.ts:192-212 ---
+    192      // Used to reject paths whose gap penalties alone make them unable to beat
+    193      // the current top-k threshold, before the charCodeAt-heavy boundary pass.
+    194      const scoreCeiling =
+    195        nLen * (SCORE_MATCH + BONUS_BOUNDARY) + BONUS_FIRST_CHAR + 32
+    196  
+    197      // Top-k: maintain a sorted-ascending array of the best `limit` matches.
+    198      // Avoids O(n log n) sort of all matches when we only need `limit` of them.
+    199      const topK: { path: string; fuzzScore: number }[] = []
+    200      let threshold = -Infinity
+    201  
+    202>     const { paths, lowerPaths, charBits, pathLens, readyCount } = this
+    203  
+    204      for (let i = 0; i < readyCount; i++) {
+    205        // O(1) bitmap reject: path must contain every letter in the needle
+    206        if ((charBits[i]! & needleBitmap) !== needleBitmap) continue
+    207  
+    208        const haystack = caseSensitive ? paths[i]! : lowerPaths[i]!
+    209  
+    210        // Greedy-leftmost indexOf gives fast but suboptimal positions when the
+    211        // first needle char appears early (e.g. 's' in "src/") while the real
+    212        // match lives deeper (e.g. "settings/"). We score from multiple start

@@ -1,0 +1,32 @@
+== tests/cache/test_home_resolution.py
+Ran 9 tests in 0.051s
+
+OK
+== tests/cache/test_work_cache.py
+  ok   has_changes: un salto transitorio no es un cambio
+  ok   has_changes: un alta si lo es
+test_work_cache: 23 aserciones — 23 ok, 0 falla(s)
+== declarations (consumidor del record_fallback) ==
+docs.test.ts
+reach.test.ts
+test_config_home_cli.py
+test_consumer_root.py
+test_consumer_root_refuses_provider.py
+test_declaration_port.py
+test_deferred_names_not_used_bare.py
+test_reach.py
+test_reach_roots_declared.py
+test_reach_roots_shim.py
+test_surface.py
+== tests/paths/test_declaration_port.py
+Ran 5 tests in 0.000s
+
+OK
+== tests/paths/test_consumer_root.py
+Ran 4 tests in 0.002s
+
+OK
+== tests/paths/test_consumer_root_refuses_provider.py
+Ran 4 tests in 0.002s
+
+OK

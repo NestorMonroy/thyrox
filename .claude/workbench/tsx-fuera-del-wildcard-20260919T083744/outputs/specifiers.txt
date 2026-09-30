@@ -1,0 +1,17 @@
+@thyrox/agent/claudeInChrome/toolRendering.js
+@thyrox/agent/localAgentTask.js
+@thyrox/agent/services/mcpServerApproval.js
+@thyrox/agent/statusAlias.js
+@thyrox/agent/tasks/LocalMainSessionTask.js
+@thyrox/agent/tasks/LocalShellTask.js
+@thyrox/app-host/context/QueuedMessageContext.js
+@thyrox/config/plugin/core/performStartupChecks.js
+@thyrox/permission/components/ComputerUseApproval/ComputerUseApproval.js
+@thyrox/permission/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js
+@thyrox/permission/components/FilePermissionDialog/permissionOptions.js
+@thyrox/permission/components/PermissionDialog.js
+@thyrox/permission/components/PermissionRequest.js
+@thyrox/permission/components/SandboxPermissionRequest.js
+@thyrox/permission/components/WorkerPendingPermission.js
+@thyrox/permission/components/rules/AddWorkspaceDirectory.js
+@thyrox/provider/commands/logout/logout.js

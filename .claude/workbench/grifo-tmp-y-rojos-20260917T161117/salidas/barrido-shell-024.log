@@ -1,0 +1,2 @@
+VERDE tests/agents/test-register-agent-session.sh
+EXIT=0

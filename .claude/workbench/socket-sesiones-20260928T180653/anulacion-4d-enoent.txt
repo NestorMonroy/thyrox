@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsRegistrySweep.test.ts:
+280 |   })
+281 | 
+282 |   test('sin directorio devuelve 0 y sólo avisa si no es ENOENT', async () => {
+283 |     const d = deps({ sessionsDir: () => join(dir, 'no') })
+284 |     expect(await sweepRegistry(undefined, d)).toBe(0)
+285 |     expect(d.recorded.logs).toEqual([])
+                                  ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "[concurrentSessions] readdir failed: ENOENT: no such file or directory, scandir '/tmp/thyrox-tests-WCJdFN/registry-sweep-Ru3Tvn/no'",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsRegistrySweep.test.ts:285:29)
+(fail) sweepRegistry (xut) > sin directorio devuelve 0 y sólo avisa si no es ENOENT [1.11ms]
+
+ 27 pass
+ 1 fail
+ 81 expect() calls
+Ran 28 tests across 1 file. [213.00ms]

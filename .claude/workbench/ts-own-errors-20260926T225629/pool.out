@@ -1,0 +1,73 @@
+run-task-pool: 11 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260926T225630
+  job-20260926T225630/job-001 pid 30509   PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/config > .claude/workbench/ts-own-errors-20260926T225629/config.txt 2> .claude/workbench/ts-own-errors-20260926T225629/config.err
+  job-20260926T225630/job-002 pid 30626   PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/local-observability > .claude/workbench/ts-own-errors-20260926T225629/local-observability.txt 2> .claude/workbench/ts-own-errors-20260926T225629/local-observability.err
+  job-20260926T225630/job-003 pid 32247   PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/permission > .claude/workbench/ts-own-errors-20260926T225629/permission.txt 2> .claude/workbench/ts-own-errors-20260926T225629/permission.err
+  job-20260926T225630/job-004 pid 660     PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/storage > .claude/workbench/ts-own-errors-20260926T225629/storage.txt 2> .claude/workbench/ts-own-errors-20260926T225629/storage.err
+  job-20260926T225630/job-005 pid 4161    PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/app-host > .claude/workbench/ts-own-errors-20260926T225629/app-host.txt 2> .claude/workbench/ts-own-errors-20260926T225629/app-host.err
+  job-20260926T225630/job-006 pid 4428    PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/bridge > .claude/workbench/ts-own-errors-20260926T225629/bridge.txt 2> .claude/workbench/ts-own-errors-20260926T225629/bridge.err
+  job-20260926T225630/job-007 pid 7952    PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/mcp-runtime > .claude/workbench/ts-own-errors-20260926T225629/mcp-runtime.txt 2> .claude/workbench/ts-own-errors-20260926T225629/mcp-runtime.err
+  job-20260926T225630/job-008 pid 8476    PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/provider > .claude/workbench/ts-own-errors-20260926T225629/provider.txt 2> .claude/workbench/ts-own-errors-20260926T225629/provider.err
+  job-20260926T225630/job-009 pid 11184   PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/command-runtime > .claude/workbench/ts-own-errors-20260926T225629/command-runtime.txt 2> .claude/workbench/ts-own-errors-20260926T225629/command-runtime.err
+  job-20260926T225630/job-010 pid 11868   PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/repl > .claude/workbench/ts-own-errors-20260926T225629/repl.txt 2> .claude/workbench/ts-own-errors-20260926T225629/repl.err
+  job-20260926T225630/job-011 pid 14248   PYTHONPATH=src python3 .claude/workbench/ts-own-errors-20260926T225629/own_errors.py src/packages/tool-registry > .claude/workbench/ts-own-errors-20260926T225629/tool-registry.txt 2> .claude/workbench/ts-own-errors-20260926T225629/tool-registry.err
+run-task-pool: lanzados 11 de 11; esperando en PRIMER PLANO (timeout 900s)
+asentado: job-20260926T225630_job-001 -> OK (2 de 12)
+asentado: job-20260926T225630_job-002 -> OK (3 de 12)
+asentado: job-20260926T225630_job-003 -> OK (4 de 12)
+asentado: job-20260926T225630_job-004 -> OK (5 de 12)
+asentado: job-20260926T225630_job-005 -> OK (6 de 12)
+asentado: job-20260926T225630_job-006 -> OK (7 de 12)
+asentado: job-20260926T225630_job-007 -> OK (8 de 12)
+asentado: job-20260926T225630_job-008 -> OK (9 de 12)
+asentado: job-20260926T225630_job-009 -> OK (10 de 12)
+esperando: 10 de 12 asentados, 30s; vivos: job-20260926T225630_job-010 job-20260926T225630_job-011
+sonda job-20260926T225630_job-010: 11868 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-010: 11872 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-010: 11878 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-010: 11879 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.03s
+sonda job-20260926T225630_job-010: 11941 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-010: 11948 node stdin=devnull(/dev/null) escritores=- estado=S cpu=28.56s
+sonda job-20260926T225630_job-011: 14248 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-011: 14252 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-011: 14256 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-011: 14257 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.03s
+sonda job-20260926T225630_job-011: 14301 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260926T225630_job-011: 14303 node stdin=devnull(/dev/null) escritores=- estado=R cpu=14.92s
+asentado: job-20260926T225630_job-010 -> OK (11 de 12)
+asentado: job-20260926T225630_job-011 -> OK (12 de 12)
+== 12 trabajos asentados ==
+OLVIDADO job-20260926T225630
+       | (vacío — no emitió nada)
+OK     job-20260926T225630_job-001
+       | EXIT=0
+       memoria pico: 728776 KB (712 MB) · pared 28.78s
+OK     job-20260926T225630_job-002
+       | EXIT=0
+       memoria pico: 682684 KB (667 MB) · pared 25.51s
+OK     job-20260926T225630_job-003
+       | EXIT=0
+       memoria pico: 748836 KB (731 MB) · pared 26.37s
+OK     job-20260926T225630_job-004
+       | EXIT=0
+       memoria pico: 687348 KB (671 MB) · pared 25.76s
+OK     job-20260926T225630_job-005
+       | EXIT=0
+       memoria pico: 872024 KB (852 MB) · pared 41.33s
+OK     job-20260926T225630_job-006
+       | EXIT=0
+       memoria pico: 726372 KB (709 MB) · pared 33.58s
+OK     job-20260926T225630_job-007
+       | EXIT=0
+       memoria pico: 766548 KB (749 MB) · pared 33.71s
+OK     job-20260926T225630_job-008
+       | EXIT=0
+       memoria pico: 816180 KB (797 MB) · pared 37.53s
+OK     job-20260926T225630_job-009
+       | EXIT=0
+       memoria pico: 772116 KB (754 MB) · pared 38.66s
+OK     job-20260926T225630_job-010
+       | EXIT=0
+       memoria pico: 1087688 KB (1062 MB) · pared 62.82s
+OK     job-20260926T225630_job-011
+       | EXIT=0
+       memoria pico: 885248 KB (864 MB) · pared 53.57s

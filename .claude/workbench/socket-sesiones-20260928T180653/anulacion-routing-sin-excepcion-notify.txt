@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxRouting.test.ts:
+136 |     routeInboxMessage({ type: 'control', action: 'peer_message_status' }, PEER, deps)
+137 |     routeInboxMessage({ type: 'user', tag: 'now', priority: 'now' }, PEER, deps)
+138 |     routeInboxMessage({ type: 'user', tag: 'now-with-files', priority: 'now', file_attachments: [] }, PEER, deps)
+139 |     routeInboxMessage({ type: 'control', action: 'notify_when_idle' }, PEER, deps)
+140 |     await Bun.sleep(5)
+141 |     expect(order).toEqual(['control', 'now'])
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "now",
++   "notify",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxRouting.test.ts:141:19)
+(fail) routeInboxMessage (Qe) > un control (salvo notify_when_idle) y un user con prioridad now sin adjuntos se atienden sin esperar la cadena [5.88ms]
+
+ 11 pass
+ 1 fail
+ 20 expect() calls
+Ran 12 tests across 1 file. [75.00ms]

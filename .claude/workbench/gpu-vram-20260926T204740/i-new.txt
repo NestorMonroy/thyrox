@@ -1,0 +1,13 @@
+      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err" &
+    local pid=$! monitor=""
+    # La VRAM del item: GNU Time mide su RAM y no ve la GPU. El monitor
+    # muestrea el ARBOL de `pid` (el item y `claude`) mientras vive y deja
+    # <n>.gpu; sin nvidia-smi no se lanza y el pool ya lo declaro.
+    if [[ -n "$HP_NVIDIA_SMI" ]]; then
+        PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" watch "$pid" "$HP_OUT/$n.gpu" \
+            --nvidia-smi "$HP_NVIDIA_SMI" --interval "$HP_GPU_INTERVAL" &
+        monitor=$!
+    fi
+    wait "$pid"
+    local rc=$?
+    [[ -z "$monitor" ]] || wait "$monitor"

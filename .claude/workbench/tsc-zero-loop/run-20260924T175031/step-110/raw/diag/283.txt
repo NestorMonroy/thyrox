@@ -1,0 +1,1 @@
+src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts(145,21): error TS2339: Property 'cache' does not exist on type '() => string'.

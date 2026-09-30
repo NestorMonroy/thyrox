@@ -1,0 +1,120 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/getMemoryFiles.test.ts:
+120 |     writeFileSync(join(sub, 'excluido', 'CLAUDE.md'), 'EXCLUIDO')
+121 |     setOriginalCwd(join(sub, 'excluido'))
+122 |     try {
+123 |       resetGetMemoryFilesCache('test')
+124 |       expect((await contents()).some(c => c.startsWith('SUB'))).toBe(true)
+125 |       expect(await contents()).not.toContain('EXCLUIDO')
+                                         ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "EXCLUIDO"
+Received: [ "USUARIO", "REGLA-USUARIO", "RAIZ\n\nver @./pkg/incluido.md y @./hermano.md",
+  "PUNTO-CLAUDE", "REGLA-ANIDADA", "REGLA-PROYECTO", "LOCAL\n\nvisible", "SUB @../fuera-no.md @/home/user/thyrox/.claude/cache/claudemd-aAqXgS/fuera/externo.md\n\nen línea ` @./en-codigo.md `\n\n```\n@./en-cerca.md\n```\n\n@/home/user/thyrox/.claude/cache/claudemd-aAqXgS/fuera/enlace-entra.md @./enlace-sale.md",
+  "EXCLUIDO"
+]
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/getMemoryFiles.test.ts:125:36)
+(fail) getMemoryFiles > claudeMdExcludes deja fuera lo que casa [14.07ms]
+
+src/__tests__/agentMetadata.test.ts:
+listRemoteAgentMetadata: skipping remote-agent-task-corrupto.meta.json: SyntaxError: JSON Parse error: Expected '}'
+
+src/__tests__/sessionStart.test.ts:
+Skipping plugin hooks - allowManagedHooksOnly is enabled
+175 | 
+176 |     expect(loadPluginHooksCalled).toBe(false)
+177 |   })
+178 | 
+179 |   test('si loadPluginHooks falla, NO propaga el error — sigue ejecutando los hooks', async () => {
+180 |     setLoadPluginHooksFn(() => Promise.reject(new Error('ETIMEDOUT')))
+                                                        ^
+error: Failed to load plugin hooks during startup: ETIMEDOUT
+      at /home/user/thyrox/src/packages/storage/src/__tests__/sessionStart.test.ts:180:51
+      at withDiagnosticsTiming (/home/user/thyrox/src/packages/storage/src/sessionStart.ts:185:10)
+      at processSessionStartHooks (/home/user/thyrox/src/packages/storage/src/sessionStart.ts:272:13)
+      at /home/user/thyrox/src/packages/storage/src/__tests__/sessionStart.test.ts:185:26
+
+Warning: Failed to load plugin hooks. SessionStart hooks from plugins will not execute. Error: ETIMEDOUT. This appears to be a network issue. Check your internet connection and try again.
+Warning: Failed to load plugin hooks. Setup hooks from plugins will not execute. Error: boom
+
+src/__tests__/sessionEnvironment.test.ts:
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment not yet supported on Windows
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from CLAUDE_ENV_FILE: /tmp/session-environment-xixZMI/env-padre.sh (20 chars)
+Session environment loaded from 3 hook file(s)
+Session environment script ready (63 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+Session environment script ready (14 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 2 hook file(s)
+Session environment script ready (26 chars total)
+Invalidating session environment cache
+
+src/__tests__/fileEncoding.test.ts:
+detectFileEncoding failed for expected reason: ENOENT
+49 |     // Fuerza que readSync lance un error sin `code` — no matchea ningun
+50 |     // caso de isFsInaccessible, asi que toma la rama logError().
+51 |     const fake = {
+52 |       ...NodeFsOperations,
+53 |       readSync(): never {
+54 |         throw new Error('boom sin code')
+                       ^
+error: boom sin code
+      at readSync (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:54:19)
+      at detectEncodingForResolvedPath (/home/user/thyrox/src/packages/storage/src/fileRead.ts:23:55)
+      at detectFileEncoding (/home/user/thyrox/src/packages/storage/src/fileEncoding.ts:61:12)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:60:12)
+
+
+src/__tests__/plans.test.ts:
+200 | 
+201 |     // Valida que la ruta se mantenga dentro de la raíz del proyecto,
+202 |     // para prevenir path traversal.
+203 |     if (!resolved.startsWith(cwd + sep) && resolved !== cwd) {
+204 |       logError(
+205 |         new Error(`plansDirectory must be within project root: ${settingsDir}`),
+                  ^
+error: plansDirectory must be within project root: ../fuera-del-proyecto
+      at getPlansDirectory (/home/user/thyrox/src/packages/storage/src/plans.ts:205:13)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/plans.test.ts:69:17)
+
+Plan file missing during resume: /tmp/plans-8ttzai/plans/slug-recuperado-snap.md. Attempting recovery.
+Plan recovered from file snapshot, 16 chars
+Plan file missing during resume: /tmp/plans-GsKpEL/plans/slug-recuperado-tooluse.md. Attempting recovery.
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/plans-605pwD/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/plans-cKymwZ/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/plans-iMuF0O/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+
+ 1191 pass
+ 1 fail
+ 2647 expect() calls
+Ran 1192 tests across 71 files. [7.60s]

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+148 |   test('la lista de tareas avisa al soltar el equipo líder, y sólo si había uno', () => {
+149 |     const state = new MessagingState()
+150 |     let updates = 0
+151 |     state.taskList.updated.subscribe(() => void updates++)
+152 |     state.taskList.reset()
+153 |     expect(updates).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:153:21)
+(fail) MessagingState (g) y messagingState (ti) > la lista de tareas avisa al soltar el equipo líder, y sólo si había uno [0.31ms]
+
+ 9 pass
+ 1 fail
+ 36 expect() calls
+Ran 10 tests across 1 file. [54.00ms]

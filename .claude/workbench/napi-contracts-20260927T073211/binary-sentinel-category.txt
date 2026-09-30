@@ -1,0 +1,17 @@
+==== LB: 1 definicion(es) de nivel superior
+---- chunk-de3xpxbw.js function LB [989445,989789)
+function LB(h){if($Ge.has(h))return"shell";if(VGe.has(h))return"filesystem";if(KGe.has(h))return"system_settings";if(Qzt.some((E)=>h.startsWith(E)))return"shell";if(Zzt.some((E)=>h.startsWith(E)))return"system_settings";let M=Vzt(h);if(Gzt.has(M))return"shell";if(zzt.has(M))return"filesystem";if(Jzt.has(M))return"system_settings";return null}
+symbol: 1 de 1 nombre(s) resueltos
+chunk-de3xpxbw.js FunctionDeclaration nQe - @994227
+chunk-de3xpxbw.js FunctionDeclaration rQe - @994485
+chunk-de3xpxbw.js FunctionDeclaration Xue - @997802
+references: 3 uso(s) de LB en 1 chunk(s), exportado como (no se exporta) (alcance medido: 2138 chunk(s))
+references: 0 uso(s) de tKn en 0 chunk(s), exportado como (no se exporta) (alcance medido: 2138 chunk(s))
+==== nQe: 1 definicion(es) de nivel superior
+---- chunk-de3xpxbw.js function nQe [994166,994431)
+function nQe(h){function M(z){if(!z.resolved)return 0;let ee=LB(z.resolved.bundleId)?1:0;return 4+(z.alreadyGranted?0:2)+ee}let E=new Map;for(let z of h){let ee=z.resolved?.bundleId??z.requestedName,Se=E.get(ee);if(!Se||M(z)>M(Se))E.set(ee,z)}return[...E.values()]}
+==== rQe: 1 definicion(es) de nivel superior
+---- chunk-de3xpxbw.js function rQe [994431,994513)
+function rQe(h){return h.resolved&&!h.alreadyGranted&&LB(h.resolved.bundleId)?2:1}
+symbol: 2 de 2 nombre(s) resueltos
+ installed)"})]},wn.requestedName)}if(wn.alreadyGranted){return r(n,{dimColor:!0,children:["  ",Z.tick," ",jb(Jn.displayName)," ",e(n,{dimColor:!0,children:"(already granted)"})]},Jn.bundleId)}let An=LB(Jn.bundleId);let Ln=Kt.has(Jn.bundleId);return r(s,{flexDirection:"column",children:[r(n,{children:["  ",Ln?Z.circleFilled:Z.circle," ",jb(Jn.displayName)]}),An?r(n,{bold:!0,children:["    ",Z.warning

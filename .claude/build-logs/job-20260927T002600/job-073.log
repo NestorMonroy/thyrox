@@ -1,0 +1,59 @@
+== 1. tokenize/build_vectors — el adaptador ==
+  ok    tokenize conserva el identificador entero
+  ok    tokenize tambien parte por guion/punto
+  ok    tokenize descarta partes de 1-2 caracteres
+  ok    build_vectors produce un vector por documento
+  ok    cada vector no vacio esta normalizado a L2 (norma ~1)
+  ok    idf castiga un termino compartido frente a uno exclusivo
+
+== 2. cosine_distance — bordes ==
+  ok    distancia de un vector a si mismo es 0
+  ok    distancia entre docs sin terminos comunes es 1.0 (ortogonales)
+  ok    la distancia nunca es negativa (acotada por max(0, ...))
+
+== 3. choose_algorithm — el heuristico auto, condicion por condicion ==
+  ok    entrada dispersa -> brute
+  ok    metrica precomputed -> brute
+  ok    metrica no valida para arbol (coseno) -> brute
+  ok    D > 15 -> brute
+  ok    k >= N/2 -> brute
+  ok    D bajo + metrica de arbol + k chico -> kd_tree (unica rama no-brute)
+
+== 4. NearestNeighbors — el motor ==
+  ok    el heuristico elige brute (entrada dispersa)
+  ok    algorithm != 'auto' y != 'brute' -> NotImplementedError (declarado, no silencioso)
+  ok    kd_tree pedido explicitamente sin construir -> lanza
+  ok    kneighbors(doc0) excluye el propio indice 0
+  ok    kneighbors(doc0) devuelve el doc1 (mismo tema auth) mas cerca que doc2
+  ok    kneighbors devuelve las distancias ordenadas ascendente
+  ok    radius_neighbors con radio bajo excluye al vecino ortogonal (doc2, dist=1.0)
+  ok    radius_neighbors con radio amplio incluye a todos los demas
+  ok    weigh uniform ignora la distancia
+  ok    weigh distance pondera mas al vecino cercano
+  ok    weigh distance con coincidencia exacta (dist=0) se lleva todo el peso
+  ok    kneighbors con k > n_samples -> ValueError (contrato de la fuente)
+  ok    kneighbors con k == n_samples sigue permitido (la consulta del CLI)
+  ok    postings y par-a-par cubren los mismos indices
+  ok    postings y par-a-par coinciden en cada distancia (tolerancia 1e-9)
+
+== 5. kneighbors_graph + check_graph_contract — positivo y negativo ==
+  ok    kneighbors_graph produce una fila por documento
+  ok    el grafo real (positivo) no viola su propio contrato
+  ok    el contrato detecta indices duplicados
+  ok    el contrato detecta distancias sin ordenar
+  ok    el contrato detecta una distancia negativa (violaria el acotado de cosine_distance)
+
+== 6. CLI end-to-end — tareas fixture en un directorio temporal ==
+  ok    load_tasks lee las 4 tareas fixture, ordenadas por id
+  ok    main(#1, status=pending) sale con exit 0
+  ok    main(#1) devuelve la vecina #2 (mismo tema auth)
+  ok    main(#1, status=pending) excluye #3 (completed, filtrado por --status)
+  ok    main(#1, status=todos) sale con exit 0
+  ok    main(#1, status=todos) SI incluye #3
+  ok    main(--check-graph, k=2) sale con exit 0 (contrato OK)
+  ok    main(--check-graph, k=2) reporta el contrato OK
+vecinos-de-tarea: 4 tareas · vocabulario 16 términos · algoritmo brute (entrada dispersa)
+  ok    main con id inexistente lanza SystemExit
+
+resultado: 44 de 44 aserciones en verde
+EXIT=0

@@ -1,0 +1,6 @@
+asentado: tr-full -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     tr-full exit=0
+       | EXIT=1
+       | __BG_EXIT__=0
+       memoria pico: 255256 KB (249 MB) · pared 7.32s

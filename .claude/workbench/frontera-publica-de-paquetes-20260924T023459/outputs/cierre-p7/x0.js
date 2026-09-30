@@ -1,0 +1,2 @@
+function x0(e){if(typeof e==="string")return e;if(Array.isArray(e))return e.filter((n)=>typeof n==="object"&&n!==null&&("type"in n)&&n.type==="text"&&("text"in n)&&typeof n.text==="string").map((n)=>n.text).join(`
+`);return""}

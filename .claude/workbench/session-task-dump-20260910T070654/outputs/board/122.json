@@ -1,0 +1,8 @@
+{
+  "id": "122",
+  "subject": "Reparar el REcompile() panic de check-hallazgo-sucesor.sh",
+  "description": "ID: TASK-DOCS-0390\n\nCERRADA 2026-09-05 en docs@757d23be2. Ver H-DOCS-1068.\n\nCausa: mawk 1.3.4 revienta ante un cuantificador de intervalo seguido de un\ngrupo (`a.{0,3}(x)` -> REcompile() panic, exit 100). Una sola de las ocho\nalternativas de ABIERTO tenía esa forma y mataba toda la invocación de awk,\narchivo por archivo, con stdout vacío. El bucle leía esa nada como «no declara\napertura»: la rama de prosa del universo quedó muda entera.\n\nCoste medido: el gate publicaba 6 incumplidores sobre 377 archivos. La medición\nreal es 13 sobre 1002.\n\nEntregado:\n  - ABIERTO distribuye la alternación sobre el prefijo, preservando la cota de\n    12 caracteres. NO se cambió a `.*`: eso habría ensanchado el universo a la\n    línea completa y alterado lo que el gate mide.\n  - Guard de compilación: los tres patrones se prueban antes del barrido; si\n    alguno no compila el gate sale 2 SIN cifra. Control que discrimina, medido\n    anulando el guard: sin él exit 0 con salida '0'; con él exit 2 y salida ''.\n  - Suite: 11 aserciones (eran 7), con stub de awk que revienta.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

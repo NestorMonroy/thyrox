@@ -1,0 +1,54 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 46 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 46 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 46 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+[feature/thyrox-l6 4c8a34ae] Port isDangerousRemovalPath from the binary
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 46 files changed, 2519 insertions(+), 10 deletions(-)
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-ambas-guardas-del-dolar.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-ambas-guardas-del-dolar.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-conteo-sin-patch.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-conteo-sin-patch.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-escape-en-display.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-escape-en-display.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-frontera-de-compactacion.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-frontera-de-compactacion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-override-por-campo.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-override-por-campo.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-reemplazo-por-funcion.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-reemplazo-por-funcion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/attribution-before-frontera-de-compactacion.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/attribution-before-override-por-campo.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-ambas-guardas-del-dolar.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-conteo-sin-patch.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-escape-en-display.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/diff-before-reemplazo-por-funcion.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/binario-atribucion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/binario-diff-modulo.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/binario-validacion-rutas.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/bloqueantes-swarm-smoke.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/cierre-swarm-smoke.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/primer-error-podados.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/rojos-atribucion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/rojos-diff.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/rojos-ruta-peligrosa.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/uno.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/anular-ambas-guardas.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/attribution-cuerpo-previo.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/cierre-de-importaciones.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/extraer-funcion.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-atribucion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-diff.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-ambas-guardas-del-dolar.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-conteo-sin-patch.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-escape-en-display.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-frontera-de-compactacion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-override-por-campo.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-reemplazo-por-funcion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-atribucion.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-diff.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-ruta-peligrosa.txt
+ create mode 100644 src/packages/permission/src/__tests__/isDangerousRemovalPath.test.ts
+__BG_EXIT__=0

@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,22): error TS7006: Parameter 'message' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:782-802 ---
+    782          if (!currentServerNames.has(client.name)) {
+    783            if (client.type === 'connected') {
+    784              await client.cleanup()
+    785            }
+    786          }
+    787        }
+    788  
+    789        // Re-initialize all SDK MCP servers with current config
+    790        const sdkSetup = await setupSdkMcpClients(
+    791          sdkMcpConfigs,
+    792>         (serverName, message) =>
+    793            structuredIO.sendMcpMessage(serverName, message),
+    794        )
+    795        sdkClients = sdkSetup.clients
+    796        sdkTools = sdkSetup.tools
+    797  
+    798        // Store SDK MCP tools in appState so subagents can access them via
+    799        // assembleToolPool. Only tools are stored here — SDK clients are already
+    800        // merged separately in the query loop (allMcpClients) and mcp_status handler.
+    801        // Use both old (connectedServerNames) and new (currentServerNames) to remove
+    802        // stale SDK tools when servers are added or removed.

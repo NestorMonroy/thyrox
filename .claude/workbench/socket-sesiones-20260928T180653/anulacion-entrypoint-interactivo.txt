@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+136 |       CLAUDECODE: '1',
+137 |       THYROX_CODE_COWORK_FRAME_ARTIFACTS: 'true',
+138 |       THYROX_CODE_HOST_SCHEDULED_RUN: 'on',
+139 |     })
+140 |     initializeEntrypointHostState(true, ctx)
+141 |     expect(ctx.state.interactive).toBe(false)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:141:35)
+(fail) initializeEntrypointHostState (NUo) y resolveEntrypoint (D) > lee THYROX_CODE_SESSION_ATTENDED (tres estados), THYROX_CODE_CHILD_SESSION, CLAUDECODE, THYROX_CODE_COWORK_FRAME_ARTIFACTS y THYROX_CODE_HOST_SCHEDULED_RUN [0.62ms]
+
+ 15 pass
+ 1 fail
+ 82 expect() calls
+Ran 16 tests across 1 file. [68.00ms]

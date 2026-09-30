@@ -1,0 +1,50 @@
+=== app-host ===
+ 223 pass
+ 0 fail
+EXIT=0
+=== command-runtime ===
+ 256 pass
+ 0 fail
+EXIT=0
+=== context-compression ===
+ 33 pass
+ 0 fail
+EXIT=0
+=== ide ===
+ 21 pass
+ 0 fail
+EXIT=0
+=== provider ===
+ 640 pass
+ 0 fail
+EXIT=0
+=== shell ===
+ 203 pass
+ 0 fail
+EXIT=0
+=== storage ===
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+ 1167 pass
+ 0 fail
+EXIT=0
+=== swarm ===
+ 609 pass
+ 0 fail
+EXIT=0
+=== teleport ===
+ 14 pass
+ 0 fail
+EXIT=0
+=== tool-registry ===
+ 446 pass
+ 0 fail
+EXIT=0
+=== updater ===
+ 57 pass
+ 0 fail
+EXIT=0
+=== voice ===
+ 27 pass
+ 0 fail
+EXIT=0

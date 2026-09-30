@@ -1,0 +1,5 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(636,41): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(855,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.

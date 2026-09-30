@@ -1,0 +1,7 @@
+: bun build salió 1
+87 | import { createStore } from './store.ts'
+              ^
+error: No matching export in "src/state/store.ts" for import "createStore"
+    at /home/user/thyrox/src/packages/app-host/src/state/AppState.tsx:87:10
+
+build_javascript: 1 paquete(s) con fallo (alcance medido: 1 paquete(s))

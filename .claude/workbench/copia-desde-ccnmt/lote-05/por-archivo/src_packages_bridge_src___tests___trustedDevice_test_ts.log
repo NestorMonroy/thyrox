@@ -1,0 +1,119 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/bridge/src/__tests__/trustedDevice.test.ts:
+110 | 
+111 |   test('returns token when both gate AND policy are on', () => {
+112 |     flagState.gates[GATE] = true
+113 |     flagState.policy[POLICY] = true
+114 |     storageState.data = { trustedDeviceToken: 'x' }
+115 |     expect(getTrustedDeviceToken()).toBe('x')
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "x"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:115:37)
+(fail) isTrustedDeviceGateEnabled (ant wgH) > returns token when both gate AND policy are on [9.35ms]
+117 | 
+118 |   test('policy absent (undefined) defaults to allow (fail-open)', () => {
+119 |     flagState.gates[GATE] = true
+120 |     // policy NOT set → isPolicyAllowed returns true by ant convention
+121 |     storageState.data = { trustedDeviceToken: 'x' }
+122 |     expect(getTrustedDeviceToken()).toBe('x')
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "x"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:122:37)
+(fail) isTrustedDeviceGateEnabled (ant wgH) > policy absent (undefined) defaults to allow (fail-open) [0.11ms]
+127 |   test('CLAUDE_TRUSTED_DEVICE_TOKEN env var shadows keychain', () => {
+128 |     flagState.gates[GATE] = true
+129 |     storageState.data = { trustedDeviceToken: 'from-keychain' }
+130 |     process.env.CLAUDE_TRUSTED_DEVICE_TOKEN = 'from-env'
+131 |     clearTrustedDeviceTokenCache()
+132 |     expect(getTrustedDeviceToken()).toBe('from-env')
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "from-env"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:132:37)
+(fail) readStoredTrustedDeviceToken — env-var precedence > CLAUDE_TRUSTED_DEVICE_TOKEN env var shadows keychain [0.05ms]
+146 |   })
+147 | 
+148 |   test('returns true when gate is on AND token absent', () => {
+149 |     flagState.gates[GATE] = true
+150 |     storageState.data = {}
+151 |     expect(isTrustedDeviceUnenrolled()).toBe(true)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:151:41)
+(fail) isTrustedDeviceUnenrolled (ant t66) > returns true when gate is on AND token absent [0.03ms]
+166 | 
+167 |   test('returns proactive-disabled message when kill-switch is on', () => {
+168 |     flagState.gates[GATE] = true
+169 |     flagState.gates[PROACTIVE_DISABLE_GATE] = true
+170 |     storageState.data = {}
+171 |     expect(getTrustedDeviceUnenrolledReason()).toBe(
+                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "Your organization requires Trusted Devices for Remote Control, but enrollment is temporarily disabled. Please try again later, or contact your administrator."
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:171:48)
+(fail) getTrustedDeviceUnenrolledReason (ant U$5) > returns proactive-disabled message when kill-switch is on [0.04ms]
+174 |   })
+175 | 
+176 |   test('returns standard message when no kill-switch', () => {
+177 |     flagState.gates[GATE] = true
+178 |     storageState.data = {}
+179 |     expect(getTrustedDeviceUnenrolledReason()).toBe(
+                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: "Your organization requires Trusted Devices for Remote Control, but this device is not enrolled. Please run `/login` in Claude Code to enroll this device."
+Received: null
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:179:48)
+(fail) getTrustedDeviceUnenrolledReason (ant U$5) > returns standard message when no kill-switch [0.03ms]
+199 |     storageState.data = {
+200 |       trustedDeviceToken: 'remove-me',
+201 |       other: 'preserve',
+202 |     }
+203 |     clearTrustedDeviceToken()
+204 |     expect(storageState.data?.trustedDeviceToken).toBeUndefined()
+                                                        ^
+error: expect(received).toBeUndefined()
+
+Received: "remove-me"
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:204:51)
+(fail) clearTrustedDeviceToken (ant kJ8) — kill-switch override > clears token when kill-switch is off [0.18ms]
+215 |     // flipped from on→off between sessions, we still need to clean up
+216 |     // the stale token from the keychain.
+217 |     flagState.gates[GATE] = false
+218 |     storageState.data = { trustedDeviceToken: 'stale' }
+219 |     clearTrustedDeviceToken()
+220 |     expect(storageState.data?.trustedDeviceToken).toBeUndefined()
+                                                        ^
+error: expect(received).toBeUndefined()
+
+Received: "stale"
+
+      at <anonymous> (/home/user/thyrox/src/packages/bridge/src/__tests__/trustedDevice.test.ts:220:51)
+(fail) clearTrustedDeviceToken (ant kJ8) — kill-switch override > does NOT key off the GrowthBook gate (clearing must work even when off) [0.06ms]
+
+ 8 pass
+ 8 fail
+ 16 expect() calls
+Ran 16 tests across 1 file. [796.00ms]
+exit=1

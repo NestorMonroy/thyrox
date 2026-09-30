@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsCappedText.test.ts:
+79 |   test('firstLineSummary (lfn) salta las líneas vacías tras transformar y corta a 512', () => {
+80 |     const identity = (text: string) => text
+81 |     expect(firstLineSummary('\n  \nsegunda  línea\ntercera', identity)).toBe('segunda línea')
+82 |     expect(firstLineSummary('\n\n', identity)).toBe('')
+83 |     expect(firstLineSummary('x'.repeat(600), identity)).toBe(`${'x'.repeat(512)}…`)
+84 |     expect(firstLineSummary(`${' '.repeat(2049)}\nb`, identity)).toBe('…')
+                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: "…"
+Received: "b"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsCappedText.test.ts:84:66)
+(fail) resumen de una línea > firstLineSummary (lfn) salta las líneas vacías tras transformar y corta a 512 [1.15ms]
+
+ 6 pass
+ 1 fail
+ 29 expect() calls
+Ran 7 tests across 1 file. [49.00ms]

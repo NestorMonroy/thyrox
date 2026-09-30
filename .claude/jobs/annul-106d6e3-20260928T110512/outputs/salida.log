@@ -1,0 +1,94 @@
+== 1: otra caducidad
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > a new ticket is pending for fifteen minutes [0.70ms]
+ 8 pass
+ 1 fail
+== 2: un token corto
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > the default token is 32 random bytes in base64url [2.17ms]
+ 8 pass
+ 1 fail
+== 3: el token en base64
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > the default token is 32 random bytes in base64url [0.48ms]
+ 8 pass
+ 1 fail
+== 4: la caducidad no inclusiva
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > a ticket expires at its deadline, not after [0.34ms]
+(fail) device flow tickets > an expired ticket cannot be claimed [0.13ms]
+(fail) device flow tickets > creating a ticket prunes the expired ones [0.23ms]
+ 6 pass
+ 3 fail
+== 5: sin podar al crear
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > creating a ticket prunes the expired ones [0.28ms]
+ 8 pass
+ 1 fail
+== 6: sin la conexión destino
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > a new ticket is pending for fifteen minutes [0.70ms]
+ 8 pass
+ 1 fail
+== 7: peek sin caducidad
+   (src/accounts/oauth/deviceFlowTickets.ts)
+ 9 pass
+ 0 fail
+== 8: cualquier proveedor reclama
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > only a pending ticket of the same provider can be claimed, and only once [0.30ms]
+ 8 pass
+ 1 fail
+== 9: se reclama dos veces
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > only a pending ticket of the same provider can be claimed, and only once [0.42ms]
+(fail) device flow tickets > completion records the connection; a completed ticket is not released or reclaimed [0.83ms]
+ 7 pass
+ 2 fail
+== 10: reclamar no marca
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > only a pending ticket of the same provider can be claimed, and only once [0.31ms]
+(fail) device flow tickets > a failed attempt releases the claim so the visitor can retry [0.17ms]
+ 7 pass
+ 2 fail
+== 11: completar sin resultado
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > completion records the connection; a completed ticket is not released or reclaimed [0.39ms]
+ 8 pass
+ 1 fail
+== 12: completar sin estado
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > completion records the connection; a completed ticket is not released or reclaimed [0.36ms]
+ 8 pass
+ 1 fail
+== 13: liberar cualquier estado
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > completion records the connection; a completed ticket is not released or reclaimed [0.37ms]
+ 8 pass
+ 1 fail
+== 14: sin liberar
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > a failed attempt releases the claim so the visitor can retry [0.43ms]
+ 8 pass
+ 1 fail
+== 15: el estado sin resultado
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > completion records the connection; a completed ticket is not released or reclaimed [0.37ms]
+ 8 pass
+ 1 fail
+== 16: sin expirado
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > a ticket expires at its deadline, not after [1.96ms]
+(fail) device flow tickets > completion records the connection; a completed ticket is not released or reclaimed [1.32ms]
+ 7 pass
+ 2 fail
+== 17: tickets compartidos
+   (src/accounts/oauth/deviceFlowTickets.ts)
+(fail) device flow tickets > creating a ticket prunes the expired ones [0.26ms]
+(fail) device flow tickets > two stores do not share tickets [0.12ms]
+ 7 pass
+ 2 fail
+== restaurado
+ 9 pass
+ 0 fail
+__BG_EXIT__=0

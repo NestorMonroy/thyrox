@@ -1,0 +1,1 @@
+src/packages/agent/statusAlias.tsx(339,27): error TS2339: Property 'codex' does not exist on type '{ bedrock: string; vertex: string; foundry: string; gemini: string; openai: string; }'.

@@ -1,0 +1,44 @@
+== 1. repositorio -> viva: el hook nuevo llega ABSOLUTIZADO ==
+  ok    propagación -> exit 0
+  ok    declara el bloque aplicado
+  ok    el comando llega con ruta absoluta, contra el clon de --repo
+  ok    los disparadores citan el --repo de esta invocación
+  ok    y el --viva de esta invocación
+  ok    ninguno conserva el clon con que se escribieron los datos
+  ok    los 5 disparadores siguen en la copia viva
+== 2. el segundo disparo no encuentra nada que hacer (idempotencia) ==
+  ok    segundo disparo -> exit 0
+  ok    no hay diferencias
+== 3. control positivo REAL: la regresión de H-DOCS-288 ==
+  ok    permissions no viaja -> exit 0
+  ok    no lo reporta por el canal de error
+  ok    la política curada queda byte a byte idéntica
+== 4. el control del control: con el dueño cambiado, SÍ se destruye ==
+  ok    sin la protección, las 4 claves caen a 1
+  ok    sin la protección, la política curada desaparece
+== 5. un conflicto se REPORTA, no se resuelve ==
+  ok    conflicto -> exit 1
+  ok    lo nombra conflicto
+  ok    no escribe ninguna de las dos copias
+== 6. una edición por el lado que NO es dueño se reporta ==
+  ok    edición por el lado equivocado -> exit 1
+  ok    nombra al dueño real
+  ok    la edición ajena no se pisa
+== 7. sin --aplicar el guion REPORTA y no escribe ==
+  ok    sin --aplicar -> exit 0
+  ok    declara lo que haría
+  ok    la copia viva queda intacta
+== 8. --registrar-vigilancia emite ruta ABSOLUTA y no toca archivo ==
+  ok    registrar-vigilancia -> exit 0
+  ok    la ruta vigilada es absoluta
+  ok    no escribe nada en este modo
+== 9. un bloque sin dueño declarado se reporta, no se adivina ==
+  ok    bloque sin dueño -> exit 1
+  ok    dice por qué no lo toca
+== 10. el disparador cita al PROVEEDOR, y su marcador queda resuelto ==
+  ok    ningun comando conserva el marcador
+  ok    todos citan un script que existe
+  ok    sin resolver, los 5 comandos lo conservan
+
+resultado: 31 aserciones en verde, 0 en rojo
+EXIT=0

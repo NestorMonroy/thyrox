@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerFiles.test.ts:
+218 |     const flags = (values: Record<string, boolean>) => (name: string, fallback: boolean) => values[name] ?? fallback
+219 |     expect(isSessionMessagingEnabled({ env: { THYROX_CODE_HARBOR_KITE: '1' }, platform: 'linux', flag: flags({ tengu_harbor_kite: false }) })).toBe(true)
+220 |     expect(isSessionMessagingEnabled({ env: { THYROX_CODE_HARBOR_KITE: '0' }, platform: 'linux', flag: flags({}) })).toBe(false)
+221 |     expect(isSessionMessagingEnabled({ env: {}, platform: 'linux', flag: flags({}) })).toBe(true)
+222 |     expect(isSessionMessagingEnabled({ env: {}, platform: 'linux', flag: flags({ tengu_harbor_kite: false }) })).toBe(false)
+223 |     expect(isSessionMessagingEnabled({ env: {}, platform: 'windows', flag: flags({ tengu_harbor_kite_win: false }) })).toBe(false)
+                                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerFiles.test.ts:223:120)
+(fail) telemetría y bandera > isSessionMessagingEnabled (Ws): THYROX_CODE_HARBOR_KITE manda; si no, las banderas [0.49ms]
+
+ 16 pass
+ 1 fail
+ 57 expect() calls
+Ran 17 tests across 1 file. [136.00ms]

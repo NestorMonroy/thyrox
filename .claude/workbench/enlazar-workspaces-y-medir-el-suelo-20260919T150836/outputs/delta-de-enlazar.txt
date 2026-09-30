@@ -1,0 +1,44 @@
+QUE SE MIDIO
+  node_modules/@thyrox/ estaba VACIO (n=0) con `workspaces` declarando
+  ['src/packages/*', 'src/packages/@ant/*'] y 42 paquetes reales.
+  Los enlaces de workspace nunca se crearon. Se crearon 40 symlinks
+  (2 ya estaban) con probes/link_workspaces.py. Coste en disco: 0.
+  NO se corrio `bun install` — el disco estaba al 98 %.
+
+EL CORREDOR JUZGA `bun test`, NO `tsc`  (tests/run.sh:166-176)
+  Esto invalida la forma en que se venia publicando «la mitad TypeScript»:
+  los 5395 errores de tsc NO son el veredicto del corredor.
+
+  bun test                  antes      despues    delta
+    pass                    12318      13609      +1291
+    fail                      327        261        -66
+    errors                    131         53        -78
+    tests ejecutados        12650      13875      +1225
+    @thyrox/ sin resolver     117          2       -115
+  De los 131 errors iniciales, 117 eran `Cannot find module '@thyrox/...'`.
+
+tsc --noEmit             antes      despues    delta
+    errores                  5395       5296        -99
+    archivos                 1062        992        -70
+    TS2307 (no resuelve)      207         35       -172
+    TS2305 (sin exportar)     777        805        +28
+
+  El +28 de TS2305 NO es una regresion: es la cascada. Mientras el modulo
+  no resolvia, TS no llegaba a comprobar sus miembros; al resolver, los
+  miembros ausentes salen a la luz. El neto sigue siendo negativo.
+
+EL SUELO ESTRUCTURAL (control de anulacion: strict y los tres flags fuera)
+  tsc con --strict false --noUnusedLocals false --noUnusedParameters false
+  --noUncheckedIndexedAccess false  ->  3767 errores en 769 archivos.
+
+  5395 - 3767 = 1628 es COTA de la parte de rigor, no un conteo: la
+  anulacion no resta limpio. TS2339 SUBE de 543 a 1433 al quitar strict.
+  TS2305 da 777 en las DOS corridas: es la senal estructural mas pura.
+
+  La fuente compila con `strict: false` (ccnmt tsconfig.json:7) y nosotros
+  con `strict` MAS tres flags que ella no fija. Son cuatro ejes, no uno.
+
+Metrica: `bunx tsc --noEmit` y `bash tests/run.sh --ts-only`, agrupados por
+codigo y por ruta, antes y despues de crear los 40 symlinks.
+Ciega a: la descomposicion causal del neto -99 en tsc — que el +28 de TS2305
+sea cascada del -172 de TS2307 es INFERRED, no medido por archivo.

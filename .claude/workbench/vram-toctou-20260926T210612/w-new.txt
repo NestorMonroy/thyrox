@@ -1,0 +1,9 @@
+    # La media NO se fija en 300: entre que el hijo termina y el padre sale hay
+    # una ventana de milisegundos, y una muestra ahí mide 0 MiB, que es verdad
+    # (el árbol no usaba VRAM en ese instante). Fijarla en 300 suponía una
+    # sincronización que el test no controla: salió 262 de forma intermitente.
+    check("media: positiva y no mayor que el pico", True, 0 < summary.avg_mib <= 300)
+    check("uso pico de GPU", 91, summary.peak_util_pct)
+    check("varias muestras", True, summary.samples >= 3)
+    check("para al terminar el árbol, no después", True, elapsed < 3.0)
+    check("<n>.gpu con las cuatro cifras", f"300 {summary.avg_mib} 91 {summary.samples}", out.read_text().strip())

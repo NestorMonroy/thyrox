@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/verify/test_pool_pipeline.py tests/verify/test_tsc_cycle.py; do echo \"=== $t\"; PYTHONPATH=src timeout 600 python3 $t 2>&1 | grep -E \"FALL|Error|aserciones|falla\" | tail -15; done", "started_at": "2026-09-29T19:27:04+00:00"}

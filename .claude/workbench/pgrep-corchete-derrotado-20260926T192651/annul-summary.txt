@@ -1,0 +1,5 @@
+A1-sin-resto-del-comando: avisa sobre el episodio de la ola 6; 16 ok, 1 fallos
+A2-sin-dotall: avisa sobre el episodio de la ola 6; 16 ok, 1 fallos
+A3-solo-la-palabra: calla si la palabra aparece pero el patron entero no casa; 16 ok, 1 fallos
+== pgrep y el salto de línea (medido)
+pgrep -fc 'alfa_qq.*beta_qq' -> 3

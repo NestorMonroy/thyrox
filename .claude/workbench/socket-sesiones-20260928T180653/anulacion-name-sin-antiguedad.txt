@@ -1,0 +1,46 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionNameState.test.ts:
+116 |     expect(decideNameCollision({ desiredName: '​', self, live: [self, older], moment: 'rename', slug: nextSlug })).toEqual({ kind: 'keep' })
+117 |   })
+118 | 
+119 |   test('al arrancar cede sólo ante una sesión más antigua', () => {
+120 |     const decision = decideNameCollision({ desiredName: 'work', self, live: [self, older, newer], moment: 'startup', slug: () => 'calm-fox' })
+121 |     expect(decision).toEqual({ kind: 'yield', newName: 'work-calm-fox', holders: [older] })
+                           ^
+error: expect(received).toEqual(expected)
+
+@@ -8,3 +8,8 @@
+      },
++     {
++       "name": "work",
++       "pid": 12,
++       "procStart": "s12",
++       "startedAt": 300,
++     },
+    ],
+
+- Expected  - 0
++ Received  + 6
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:121:22)
+(fail) decideNameCollision (B) > al arrancar cede sólo ante una sesión más antigua [0.62ms]
+131 |   test('un rival sin procStart o sin nombre no cuenta; el desempate es inicio, procStart y pid', () => {
+132 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, { ...older, procStart: undefined }], moment: 'rename', slug: () => 'x-y' })).toEqual({ kind: 'keep' })
+133 |     const tie: LiveSession = { pid: 9, name: 'work', procStart: 's10', startedAt: 200 }
+134 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, tie], moment: 'startup', slug: () => 'x-y' }).kind).toBe('yield')
+135 |     const tieLaterStart: LiveSession = { pid: 9, name: 'work', procStart: 's11', startedAt: 200 }
+136 |     expect(decideNameCollision({ desiredName: 'work', self, live: [self, tieLaterStart], moment: 'startup', slug: () => 'x-y' }).kind).toBe('keep')
+                                                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "keep"
+Received: "yield"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionNameState.test.ts:136:136)
+(fail) decideNameCollision (B) > un rival sin procStart o sin nombre no cuenta; el desempate es inicio, procStart y pid [0.20ms]
+
+ 13 pass
+ 2 fail
+ 44 expect() calls
+Ran 15 tests across 1 file. [52.00ms]

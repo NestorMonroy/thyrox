@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 1 .claude/cache/annul-worktree-pool.txt", "started_at": "2026-09-27T20:29:22+00:00"}

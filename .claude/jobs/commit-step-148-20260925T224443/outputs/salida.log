@@ -1,0 +1,8 @@
+check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+check-cli-typecheck: tsconfig.json baja: 158 bajo un baseline de 161 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: tsconfig.tests.json baja: 158 bajo un baseline de 161 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: proyectos medidos: 2 de 2
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 3 banco(s) tocado(s))
+4ee1cf68 Port two modules hooks.ts needs (step 148, 196 to 193)
+__BG_EXIT__=0

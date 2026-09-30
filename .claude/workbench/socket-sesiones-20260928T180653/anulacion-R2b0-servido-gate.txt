@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCapabilities.test.ts:
+ 97 |     setServedCapabilityLookup((capability, models) => (asked.push([capability, models]), true))
+ 98 |     expect(modelHasCapability('claude-fable-5-1[1m]', 'fast_mode', 'fable')).toBe(true)
+ 99 |     expect(asked).toEqual([['fast_mode', ['fable', 'claude-fable-5-1']]])
+100 |     expect(modelHasCapability('claude-fable-5-1', 'per_turn_effort', 'fable')).toBe(true)
+101 |     setFeatureGateLookup(() => false)
+102 |     expect(modelHasCapability('claude-haiku-4-5', 'per_turn_effort', 'haiku')).toBeUndefined()
+                                                                                     ^
+error: expect(received).toBeUndefined()
+
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/modelCapabilities.test.ts:102:80)
+(fail) modelHasCapability ($h) > la consulta servida afirma con el modelo pedido y el canónico, si su bandera lo permite [0.29ms]
+
+ 10 pass
+ 1 fail
+ 29 expect() calls
+Ran 11 tests across 1 file. [73.00ms]

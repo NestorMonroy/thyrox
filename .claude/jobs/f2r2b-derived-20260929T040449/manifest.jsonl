@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/run_ts_isolated < .claude/jobs/f2r2b-tests.txt", "started_at": "2026-09-29T04:04:49+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T04:06:02+00:00", "duration_seconds": 73.034104}

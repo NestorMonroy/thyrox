@@ -1,0 +1,258 @@
+== 1: código anidado ignorado
+   (src/accounts/refresh/providers/refreshResult.ts)
+(fail) codex > a reused, invalid or expired token is dead, nested or flat [0.73ms]
+(fail) openference > invalid, expired or unknown-401 tokens are dead; a reused one is not special here [0.47ms]
+ 25 pass
+ 2 fail
+== 2: código plano ignorado
+   (src/accounts/refresh/providers/refreshResult.ts)
+(fail) codex > a reused, invalid or expired token is dead, nested or flat [0.79ms]
+(fail) codex > any 401 is dead; other failures and the network are transient [0.42ms]
+ 25 pass
+ 2 fail
+== 3: rotatorio sin códigos muertos
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > a reused, invalid or expired token is dead, nested or flat [1.39ms]
+(fail) openference > invalid, expired or unknown-401 tokens are dead; a reused one is not special here [0.48ms]
+ 25 pass
+ 2 fail
+== 4: rotatorio 401 pasajero
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > any 401 is dead; other failures and the network are transient [0.58ms]
+(fail) openference > invalid, expired or unknown-401 tokens are dead; a reused one is not special here [0.51ms]
+ 25 pass
+ 2 fail
+== 5: rotatorio 401 sin código propio
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > any 401 is dead; other failures and the network are transient [0.62ms]
+ 26 pass
+ 1 fail
+== 6: rotatorio sin cliente exigido
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > without a client id the refresh refuses naming the variable [0.45ms]
+ 26 pass
+ 1 fail
+== 7: rotatorio la red lanza
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > any 401 is dead; other failures and the network are transient [1.30ms]
+(fail) openference > invalid, expired or unknown-401 tokens are dead; a reused one is not special here [0.43ms]
+ 25 pass
+ 2 fail
+== 8: rotatorio sin refresh rotado
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > the refresh omits the scope so sibling token families survive [1.04ms]
+(fail) openference > the refresh rotates the oar token [0.31ms]
+ 25 pass
+ 2 fail
+== 9: rotatorio pide scope
+   (src/accounts/refresh/providers/rotatingTokenRefresh.ts)
+(fail) codex > the refresh omits the scope so sibling token families survive [1.17ms]
+(fail) openference > the refresh rotates the oar token [0.33ms]
+ 25 pass
+ 2 fail
+== 10: codex sin reused
+   (src/accounts/refresh/providers/codexRefresh.ts)
+(fail) codex > a reused, invalid or expired token is dead, nested or flat [0.69ms]
+ 26 pass
+ 1 fail
+== 11: codex url fija
+   (src/accounts/refresh/providers/codexRefresh.ts)
+ 27 pass
+ 0 fail
+== 12: openference sin token_expired
+   (src/accounts/refresh/providers/openferenceRefresh.ts)
+(fail) openference > invalid, expired or unknown-401 tokens are dead; a reused one is not special here [0.70ms]
+ 26 pass
+ 1 fail
+== 13: cursor sin reintentar 429
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > throttling and server errors are retried with jittered exponential backoff [0.42ms]
+(fail) Cursor > network failures are retried; the last attempt gives up [0.55ms]
+ 25 pass
+ 2 fail
+== 14: cursor 403 pasajero
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > no refresh token, a rejection or a missing access token end without retrying [0.99ms]
+ 26 pass
+ 1 fail
+== 15: cursor sin rechazo
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > no refresh token, a rejection or a missing access token end without retrying [0.62ms]
+ 26 pass
+ 1 fail
+== 16: cursor sin jitter
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > the jitter spreads the delay between 80% and 120% [0.73ms]
+ 26 pass
+ 1 fail
+== 17: cursor sin exponencial
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > throttling and server errors are retried with jittered exponential backoff [0.99ms]
+(fail) Cursor > network failures are retried; the last attempt gives up [0.47ms]
+ 25 pass
+ 2 fail
+== 18: cursor sin margen
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > the refresh token is the bearer and the expiry comes from the new token, minus a margin [1.55ms]
+ 26 pass
+ 1 fail
+== 19: cursor ttl de reserva 0
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > an opaque token lasts an hour from now; the old refresh token is kept [0.57ms]
+ 26 pass
+ 1 fail
+== 20: cursor acepta sin access token
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > no refresh token, a rejection or a missing access token end without retrying [0.59ms]
+ 26 pass
+ 1 fail
+== 21: cursor sin refresh vacío muerto
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > no refresh token, a rejection or a missing access token end without retrying [0.78ms]
+ 26 pass
+ 1 fail
+== 22: cursor intentos fijos
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > network failures are retried; the last attempt gives up [0.70ms]
+ 26 pass
+ 1 fail
+== 23: cursor la red no reintenta
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > network failures are retried; the last attempt gives up [0.55ms]
+ 26 pass
+ 1 fail
+== 24: cursor reintento en el último
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+ 27 pass
+ 0 fail
+== 25: cursor sin refresh rotado
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > the refresh token is the bearer and the expiry comes from the new token, minus a margin [1.38ms]
+ 26 pass
+ 1 fail
+== 26: kimi id derivado cambia
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > without a stored identity the device id derives from the token and the host describes itself [1.77ms]
+ 26 pass
+ 1 fail
+== 27: kimi ignora el id guardado
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > the stored device identity is sent with the refresh [1.69ms]
+ 26 pass
+ 1 fail
+== 28: kimi nombre del host ignorado
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > the stored device identity is sent with the refresh [1.45ms]
+ 26 pass
+ 1 fail
+== 29: kimi sin cabeceras de identidad
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > the stored device identity is sent with the refresh [1.80ms]
+(fail) Kimi Coding > without a stored identity the device id derives from the token and the host describes itself [2.49ms]
+ 25 pass
+ 2 fail
+== 30: kimi versión sin entorno
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > the stored device identity is sent with the refresh [1.75ms]
+ 26 pass
+ 1 fail
+== 31: kimi sin clasificar
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > a JSON invalid grant or request is dead; the rest is transient [0.93ms]
+ 26 pass
+ 1 fail
+== 32: kimi sin tokenType
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > the stored device identity is sent with the refresh [4.09ms]
+ 26 pass
+ 1 fail
+== 33: kimi sin scope
+   (src/accounts/refresh/providers/kimiCodingRefresh.ts)
+(fail) Kimi Coding > the stored device identity is sent with the refresh [1.14ms]
+ 26 pass
+ 1 fail
+== 34: muse sin dca guardado
+   (src/accounts/refresh/providers/museCodeRefresh.ts)
+(fail) Muse Code > the key is reminted with the device token and the account data refreshed [1.29ms]
+ 26 pass
+ 1 fail
+== 35: muse acepta cualquier refresh
+   (src/accounts/refresh/providers/museCodeRefresh.ts)
+(fail) Muse Code > without a device token or when the mint fails there is nothing to use [0.46ms]
+ 26 pass
+ 1 fail
+== 36: muse pierde datos previos
+   (src/accounts/refresh/providers/museCodeRefresh.ts)
+(fail) Muse Code > the key is reminted with the device token and the account data refreshed [1.31ms]
+ 26 pass
+ 1 fail
+== 37: muse sin reloj
+   (src/accounts/refresh/providers/museCodeRefresh.ts)
+(fail) Muse Code > the key is reminted with the device token and the account data refreshed [1.19ms]
+ 26 pass
+ 1 fail
+== 38: muse fallo de acuñado lanza
+   (src/accounts/refresh/providers/museCodeRefresh.ts)
+(fail) Muse Code > without a device token or when the mint fails there is nothing to use [0.45ms]
+ 26 pass
+ 1 fail
+== 39: kiro idp config lanza
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+ 27 pass
+ 0 fail
+== 40: kiro idp sin invalid_client
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > an external IdP with a bad endpoint is not attempted; invalid grant or client is dead [1.06ms]
+ 26 pass
+ 1 fail
+== 41: kiro idp sin caducidad de reserva
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > an external IdP token refreshes against its own endpoint [2.10ms]
+ 26 pass
+ 1 fail
+== 42: kiro región sin validar
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > a region that is not an AWS region is never put in a URL [0.44ms]
+ 26 pass
+ 1 fail
+== 43: kiro aws sin muertos
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > an AWS dead-token error is final: no re-registration is attempted [1.04ms]
+(fail) Kiro > a relayed AWS dead-token error on the social path is dead; the rest is transient [0.35ms]
+ 25 pass
+ 2 fail
+== 44: kiro sin __type
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > an AWS dead-token error is final: no re-registration is attempted [0.95ms]
+(fail) Kiro > a relayed AWS dead-token error on the social path is dead; the rest is transient [0.41ms]
+ 25 pass
+ 2 fail
+== 45: kiro sin re-registro
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > another OIDC failure re-registers a client and retries once [1.43ms]
+ 26 pass
+ 1 fail
+== 46: kiro sin newClient
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > another OIDC failure re-registers a client and retries once [0.87ms]
+ 26 pass
+ 1 fail
+== 47: kiro importado por aws
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > a social or imported token refreshes at the Kiro auth service [0.53ms]
+ 26 pass
+ 1 fail
+== 48: kiro social sin muertos
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > a relayed AWS dead-token error on the social path is dead; the rest is transient [0.54ms]
+ 26 pass
+ 1 fail
+== 49: kiro región por defecto
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > a Builder ID token refreshes against AWS OIDC in its region [0.60ms]
+ 26 pass
+ 1 fail
+== restaurado
+ 27 pass
+ 0 fail
+__BG_EXIT__=0

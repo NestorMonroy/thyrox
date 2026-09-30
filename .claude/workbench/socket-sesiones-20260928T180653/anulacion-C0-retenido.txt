@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+58 | 
+59 |   test('un buzón retenido no tiene tope', () => {
+60 |     const ledger = new MailboxWriteLedger()
+61 |     ledger.retain('box', new Set())
+62 |     for (let index = 0; index <= MAILBOX_LEDGER_LIMIT; index++) ledger.record('box', entry(String(index)))
+63 |     expect(ledger.wrote('box', entry('0'))).toBe(true)
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:63:45)
+(fail) MailboxWriteLedger (i) > un buzón retenido no tiene tope [5.35ms]
+
+ 9 pass
+ 1 fail
+ 37 expect() calls
+Ran 10 tests across 1 file. [70.00ms]

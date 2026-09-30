@@ -1,0 +1,6 @@
+test-pre-commit-identifier-language:
+  FALLA con el gate en verde, el hook sale 0 — esperado [0], obtenido [1]
+  ok    recibe los .py staged de src/ y tests/
+  ok    su rechazo detiene el commit
+  ok    sin .py de src/ ni tests/ staged, no se invoca
+test-pre-commit-identifier-language: 4 aserciones — 3 ok, 1 falla(s)

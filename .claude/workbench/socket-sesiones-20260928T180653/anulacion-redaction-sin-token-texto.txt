@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsLogRedaction.test.ts:
+28 | })
+29 | 
+30 | describe('redactLogFragment (TB) y withholdTokenText (Bf)', () => {
+31 |   test('un fragmento que menciona token no se registra', () => {
+32 |     expect(redactLogFragment('{"Token":"x"}')).toBe('(redacted: fragment may carry an auth token)')
+33 |     expect(withholdTokenText('my_token')).toBe('(withheld)')
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: "(withheld)"
+Received: "my_token"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsLogRedaction.test.ts:33:43)
+(fail) redactLogFragment (TB) y withholdTokenText (Bf) > un fragmento que menciona token no se registra [0.26ms]
+
+ 5 pass
+ 1 fail
+ 16 expect() calls
+Ran 6 tests across 1 file. [37.00ms]

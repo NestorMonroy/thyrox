@@ -1,0 +1,16 @@
+SessionRecordsUnreadableError	src/packages/local-observability/src/uds/liveSessionRegistry.ts src/packages/local-observability/src/uds/udsClient.ts 
+session records directory unreadable	src/packages/local-observability/src/uds/liveSessionRegistry.ts 
+tengu_session_stable_address	src/packages/local-observability/src/uds/sessionRegistryState.ts 
+tengu_harbor_kite	src/packages/local-observability/src/uds/inboundGate.ts src/packages/local-observability/src/uds/peerFiles.ts src/packages/local-observability/src/uds/peerLoopGuard.ts 
+cloud-session	src/packages/permission/src/internalPaths.ts src/packages/repl/src/components/tasks/RemoteSessionProgress.tsx 
+bridge-session	src/packages/bridge/src/bridgeMain.ts src/packages/bridge/src/sessionRunner.ts src/packages/bridge/testing/index.ts 
+untitled session	
+[TeammateTool] Failed to read team file	src/packages/swarm/src/core/teamHelpers.ts 
+[bridge:population]	
+primePeerIdentityOwner	
+listBridgePeerSessions	
+hasCloudPeerAccess	
+dynamicTeamContext	src/packages/agent/attachments/mailbox.ts src/packages/swarm/src/core/reconnection.ts src/packages/swarm/src/teammateContextAlias.ts 
+registeredName	src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts src/packages/local-observability/src/uds/launchRegistration.ts src/packages/local-observability/src/uds/pidFileRecord.ts 
+environmentKind	src/packages/storage/src/filePersistence/filePersistence.ts 
+bridgeSessionId	src/packages/bridge/src/contracts.ts src/packages/bridge/src/initReplBridge.ts src/packages/bridge/src/peerSessions.ts 

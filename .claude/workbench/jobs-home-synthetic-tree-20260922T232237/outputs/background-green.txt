@@ -1,0 +1,15 @@
+test_composes_the_per_clone_name (__main__.FamilyName.test_composes_the_per_clone_name) ... ok
+test_the_clone_hyphen_becomes_underscore (__main__.FamilyName.test_the_clone_hyphen_becomes_underscore) ... ok
+test_reads_the_declaration_from_the_env_file (__main__.FileDeclaration.test_reads_the_declaration_from_the_env_file) ... ok
+test_a_relative_segment_composes_under_the_clone (__main__.PerCloneHome.test_a_relative_segment_composes_under_the_clone)
+Sin `resolve_home`, un segmento resolvia contra el CWD. ... ok
+test_each_clone_resolves_its_own_home (__main__.PerCloneHome.test_each_clone_resolves_its_own_home)
+La razon de ser de la familia, comparando los DOS entre si. ... ok
+test_the_per_clone_key_wins_over_the_global (__main__.PerCloneHome.test_the_per_clone_key_wins_over_the_global)
+EL QUE DISCRIMINA: sin la rama gana la global y api cae fuera. ... ok
+test_refuses_when_neither_spelling_is_declared (__main__.StillRefuses.test_refuses_when_neither_spelling_is_declared) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.005s
+
+OK

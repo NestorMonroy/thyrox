@@ -1,0 +1,174 @@
+src/packages/agent/messages/mappers.ts(34,11): error TS2352: Conversion of type '{ type: "assistant"; message: BetaMessage; uuid: string; requestId: undefined; timestamp: string; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/messages/mappers.ts:24-44 ---
+     24  import { createAssistantMessage } from '../messages.js'
+     25  import { getPlan } from '@thyrox/storage/plans.js'
+     26  
+     27  export function toInternalMessages(
+     28    messages: readonly DeepImmutable<SDKMessage>[],
+     29  ): Message[] {
+     30    return messages.flatMap(message => {
+     31      switch (message.type) {
+     32        case 'assistant':
+     33          return [
+     34>           {
+     35              type: 'assistant',
+     36              message: message.message,
+     37              uuid: message.uuid,
+     38              requestId: undefined,
+     39              timestamp: new Date().toISOString(),
+     40            } as Message,
+     41          ]
+     42        case 'user':
+     43          return [
+     44            {
+  Type '{ type: "assistant"; message: BetaMessage; uuid: string; requestId: undefined; timestamp: string; }' is not comparable to type 'AssistantMessage'.
+    Type '{ type: "assistant"; message: BetaMessage; uuid: string; requestId: undefined; timestamp: string; }' is not comparable to type 'MessageBase'.
+      Types of property 'message' are incompatible.
+        Type 'BetaMessage' is not comparable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }'.
+          Index signature for type 'string' is missing in type 'BetaMessage'.
+src/packages/agent/messages/mappers.ts(44,11): error TS2352: Conversion of type '{ type: "user"; message: MessageParam; uuid: string; timestamp: string; isMeta: boolean | undefined; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/messages/mappers.ts:34-54 ---
+     34            {
+     35              type: 'assistant',
+     36              message: message.message,
+     37              uuid: message.uuid,
+     38              requestId: undefined,
+     39              timestamp: new Date().toISOString(),
+     40            } as Message,
+     41          ]
+     42        case 'user':
+     43          return [
+     44>           {
+     45              type: 'user',
+     46              message: message.message,
+     47              uuid: message.uuid ?? randomUUID(),
+     48              timestamp: message.timestamp ?? new Date().toISOString(),
+     49              isMeta: message.isSynthetic,
+     50            } as Message,
+     51          ]
+     52        case 'system':
+     53          // Handle compact boundary messages
+     54          if (message.subtype === 'compact_boundary') {
+  Type '{ type: "user"; message: MessageParam; uuid: string; timestamp: string; isMeta: boolean | undefined; }' is not comparable to type 'UserMessage'.
+    Type '{ type: "user"; message: MessageParam; uuid: string; timestamp: string; isMeta: boolean | undefined; }' is not comparable to type 'MessageBase'.
+      Types of property 'message' are incompatible.
+        Type 'MessageParam' is not comparable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }'.
+          Index signature for type 'string' is missing in type 'MessageParam'.
+src/packages/agent/messages/mappers.ts(123,13): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+  --- código src/packages/agent/messages/mappers.ts:113-133 ---
+    113    }
+    114  }
+    115  
+    116  export function toSDKMessages(messages: Message[]): SDKMessage[] {
+    117    return messages.flatMap((message): SDKMessage[] => {
+    118      switch (message.type) {
+    119        case 'assistant':
+    120          return [
+    121            {
+    122              type: 'assistant',
+    123>             message: normalizeAssistantMessageForSDK(message as AssistantMessage),
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127              error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+src/packages/agent/messages/mappers.ts(127,13): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+  --- código src/packages/agent/messages/mappers.ts:117-137 ---
+    117    return messages.flatMap((message): SDKMessage[] => {
+    118      switch (message.type) {
+    119        case 'assistant':
+    120          return [
+    121            {
+    122              type: 'assistant',
+    123              message: normalizeAssistantMessageForSDK(message as AssistantMessage),
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127>             error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134              message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+src/packages/agent/messages/mappers.ts(134,13): error TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.
+  --- código src/packages/agent/messages/mappers.ts:124-144 ---
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127              error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134>             message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+    138              timestamp: message.timestamp,
+    139              isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+    140              // Structured tool output (not the string content sent to the
+    141              // model — the full Output object). Rides the protobuf catchall
+    142              // so web viewers can read things like BriefTool's file_uuid
+    143              // without it polluting model context.
+    144              ...(message.toolUseResult !== undefined
+  Types of property 'content' are incompatible.
+    Type 'MessageContent | undefined' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'undefined' is not assignable to type 'string | ContentBlockParam[]'.
+src/packages/agent/messages/mappers.ts(138,13): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/messages/mappers.ts:128-148 ---
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134              message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+    138>             timestamp: message.timestamp,
+    139              isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+    140              // Structured tool output (not the string content sent to the
+    141              // model — the full Output object). Rides the protobuf catchall
+    142              // so web viewers can read things like BriefTool's file_uuid
+    143              // without it polluting model context.
+    144              ...(message.toolUseResult !== undefined
+    145                ? { tool_use_result: message.toolUseResult }
+    146                : {}),
+    147            },
+    148          ]
+src/packages/agent/messages/mappers.ts(212,5): error TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+  --- código src/packages/agent/messages/mappers.ts:202-222 ---
+    202      .replace(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/, '$1')
+    203      .replace(/<local-command-stderr>([\s\S]*?)<\/local-command-stderr>/, '$1')
+    204      .trim()
+    205    // createAssistantMessage builds a complete APIAssistantMessage with id, type,
+    206    // model: SYNTHETIC_MODEL, role, stop_reason, usage — all fields required by
+    207    // downstream deserializers like Android's SdkAssistantMessage.
+    208    const synthetic = createAssistantMessage({ content: cleanContent })
+    209    return {
+    210      type: 'assistant',
+    211      content: synthetic.message?.content,
+    212>     message: synthetic.message,
+    213      parent_tool_use_id: null,
+    214      session_id: getSessionId(),
+    215      uuid,
+    216    }
+    217  }
+    218  
+    219  /**
+    220   * Maps internal ClaudeAILimits to the SDK-facing SDKRateLimitInfo type,
+    221   * stripping internal-only fields like unifiedRateLimitFallbackAvailable.
+    222   */

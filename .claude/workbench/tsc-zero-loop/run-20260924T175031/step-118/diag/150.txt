@@ -1,0 +1,24 @@
+src/packages/repl/src/components/Message.tsx(158,22): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/components/Message.tsx:148-168 ---
+    148        }
+    149        // Precompute the imageIndex prop for each content block. The previous
+    150        // version incremented a counter inside the .map() callback, which
+    151        // React Compiler bails on ("UpdateExpression to variables captured
+    152        // within lambdas"). A plain for loop keeps the mutation out of a
+    153        // closure so the compiler can memoize MessageImpl.
+    154        const imageIndices: number[] = []
+    155        let imagePosition = 0
+    156        for (const param of message.message.content) {
+    157          if (param.type === 'image') {
+    158>           const id = message.imagePasteIds?.[imagePosition]
+    159            imagePosition++
+    160            imageIndices.push(id ?? imagePosition)
+    161          } else {
+    162            imageIndices.push(imagePosition)
+    163          }
+    164        }
+    165        // Check if this message is the latest bash output - if so, wrap content
+    166        // with provider so OutputLine can show full output via context
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+  No index signature with a parameter of type 'number' was found on type '{}'.

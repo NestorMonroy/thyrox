@@ -1,0 +1,19 @@
+== 1. bg.sh: el trabajo deja su memoria pico ==
+  ok    deja <log>.time
+  ok    la memoria pico ve los 200 MB
+== 2. bg.sh: el código de salida llega intacto al marcador ==
+  ok    el marcador lleva el 7
+  ok    y la medida sigue legible
+== 3. run-task-pool.sh: cada trabajo deja su memoria pico ==
+  ok    el primero deja <log>.time
+  ok    y ve los 200 MB
+  ok    el segundo conserva su EXIT=7
+== 4. wait-jobs publica la memoria pico junto al veredicto ==
+  ok    la linea de memoria sale en la barrera
+== 5. sin GNU Time: corre igual, no deja .time y lo declara ==
+  ok    el trabajo terminó con su marcador
+  ok    no deja .time
+  ok    y declara que no midió
+
+test-gnu-time-launchers: 11 ok, 0 falla(s)
+EXIT=0

@@ -1,0 +1,20 @@
+  ok    test_stays_silent_on_ordinary_commands
+  ok    test_stays_silent_without_a_command
+  ok    test_the_bound_discount_carries_its_own_weight
+  ok    test_the_dispatcher_registry_declares_this_detector
+  ok    test_the_heavy_root_axis_carries_its_own_weight
+  ok    test_the_notice_names_the_mechanism_and_the_floor
+  ok    test_the_process_family_alone_is_not_the_subject
+  ok    test_the_ripgrep_discount_carries_its_own_weight
+  ok    test_the_symlink_axis_carries_its_own_weight
+  ok    test_the_symlink_family_separates_r_from_R
+  ok    test_the_timeout_discount_carries_its_own_weight
+  ok    test_warns_on_a_symlink_follower_over_a_LIGHT_root
+  ok    test_warns_on_an_unbounded_find_over_a_heavy_root
+  ok    test_warns_on_an_unbounded_xargs_fed_by_find
+  ok    test_warns_on_the_real_runaway_command
+  ok    test_warns_on_the_shell_recursive_expansion_that_feeds_awk
+  ok    test_warns_when_the_root_comes_from_the_provider_variable
+  ok    test_warns_when_the_same_shape_points_at_a_heavy_root
+resumen: 0 fallo(s)
+EXIT=0

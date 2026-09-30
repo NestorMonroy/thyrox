@@ -1,0 +1,6 @@
+    Argument of type 'string' is not assignable to parameter of type 'Uuid'.
+      Type 'string' is not assignable to type '{ readonly __brand: "Uuid"; }'.
+tests/workbench/paths.test.ts(41,29): error TS6133: 'WorkbenchHomeError' is declared but its value is never read.
+TOTAL=5373
+MESSAGES_TS=0
+__BG_EXIT__=0

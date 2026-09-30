@@ -1,0 +1,158 @@
+-- FAIL src/packages/agent/__tests__/compactDeltaAttachments.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/compactDeltaAttachments.test.ts:
+ 95 | 
+ 96 |   test('en modo compact devuelve el archivo leído con su contenido y su ruta', async () => {
+ 97 |     const path = join(dir, 'nota.txt')
+ 98 |     writeFileSync(path, 'primera línea\nsegunda línea\n')
+ 99 |     const attachment = await generateFileAttachment(path, fileContext(), 'ok_event', 'error_event', 'compact')
+100 |     expect(attachment).toMatchObject({ type: 'file', filename: path })
+                             ^
+error: expect(received).toMatchObject(expected)
+
+Matcher error: received value must be a non-null object
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/compactDeltaAttachments.test.ts:100:24)
+(fail) generateFileAttachment > en modo compact devuelve el archivo leído con su contenido y su ruta [40.85ms]
+
+ 6 pass
+ 1 fail
+ 9 expect() calls
+Ran 7 tests across 1 file. [6.30s]
+-- FAIL src/packages/binary/__tests__/declaration.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declaration.test.ts:
+(fail) contra el corpus REAL de 2.1.274 > la tabla de ventanas se recupera sin conocer su binding [9488.23ms]
+  ^ this test timed out after 5000ms.
+
+ 12 pass
+ 1 fail
+ 22 expect() calls
+Ran 13 tests across 1 file. [12.85s]
+-- FAIL src/packages/cli/__tests__/bin.test.ts
+bun test v1.3.11 (af24e281)
+killed 1 dangling process
+
+src/packages/cli/__tests__/bin.test.ts:
+(fail) src/entry/main.ts (T-009) — un ciclo completo de punta a punta > con turnos grabados ejecuta una herramienta real y devuelve el texto [6365.57ms]
+  ^ this test timed out after 5000ms.
+
+ 19 pass
+ 1 fail
+ 54 expect() calls
+Ran 20 tests across 1 file. [43.44s]
+-- FAIL src/packages/cli/__tests__/workbench.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/workbench.test.ts:
+(fail) la CLI — andamiar y medir desde fuera > --workbench-new emite el contrato del SUCESOR, no el superado [6071.17ms]
+  ^ this test timed out after 5000ms.
+killed 1 dangling process
+(fail) la CLI — andamiar y medir desde fuera > --workbench-check no bloquea por defecto y si con --strict [9083.63ms]
+  ^ this test timed out after 5000ms.
+
+ 18 pass
+ 2 fail
+ 41 expect() calls
+Ran 20 tests across 1 file. [15.54s]
+-- FAIL src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:
+147 |     // The allowlist check is `.toUpperCase()` — so 'claude_code_use_bedrock'
+148 |     // (lowercase) should still match the safe list.
+149 |     const result = extractDangerousSettings({
+150 |       env: { claude_code_use_bedrock: '1' },
+151 |     } as SettingsJson)
+152 |     expect(result.envVars).toEqual({})
+                                 ^
+error: expect(received).toEqual(expected)
+
+- {}
++ {
++   "claude_code_use_bedrock": "1",
++ }
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:152:28)
+(fail) extractDangerousSettings — env vars (deny by default) > env vars are matched case-insensitively against allowlist [0.26ms]
+
+ 32 pass
+ 1 fail
+ 44 expect() calls
+Ran 33 tests across 1 file. [389.00ms]
+-- FAIL tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+207 |     test(`${m.name}: todo import externo resuelve`, () => {
+208 |       const nuevos = [...clasificar(dir, conocidas).noResuelven]
+209 |         .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+210 |           && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
+211 |         .sort()
+212 |       expect(nuevos).toEqual([])
+                           ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "${DEF}",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:212:22)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/binary: todo import externo resuelve [9.56ms]
+
+ 101 pass
+ 1 fail
+ 103 expect() calls
+Ran 102 tests across 1 file. [6.59s]
+-- FAIL tests/smoke/headless-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/headless-smoke.test.ts:
+64 |   test('--version prints something and exits 0', async () => {
+65 |     const r = await runCli(['--version'], 30_000)
+66 |     expect(r.exitCode).toBe(0)
+67 |     expect(r.stdout.length).toBeGreaterThan(0)
+68 |     // Should look like a semver-ish string
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+                          ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /\d+\.\d+\.\d+/
+Received: "1.carus.000 (thyrox)\n"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:69:22)
+(fail) smoke:headless boot > --version prints something and exits 0 [129.85ms]
+
+ 2 pass
+ 1 fail
+ 6 expect() calls
+Ran 3 tests across 1 file. [3.42s]
+-- FAIL tests/unit/utils/envUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/envUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getClaudeConfigHomeDir' not found in module '/home/user/thyrox/src/packages/config/env/utils.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [280.00ms]
+pass=190 fail=9 errors=1 crashes=0 files=8 failed=8

@@ -1,0 +1,39 @@
+{
+  "consumers": [
+    {
+      "consumer": "kaupamex-api",
+      "copies": 17,
+      "forks": 18,
+      "measured_files": 38
+    },
+    {
+      "consumer": "kaupamex-db",
+      "copies": 0,
+      "forks": 0,
+      "measured_files": 0
+    },
+    {
+      "consumer": "kaupamex-docs",
+      "copies": 1,
+      "forks": 10,
+      "measured_files": 381
+    },
+    {
+      "consumer": "kaupamex-server",
+      "copies": 0,
+      "forks": 0,
+      "measured_files": 0
+    },
+    {
+      "consumer": "kaupamex-ui",
+      "copies": 17,
+      "forks": 18,
+      "measured_files": 39
+    }
+  ],
+  "totals": {
+    "copies": 35,
+    "forks": 46,
+    "measured_files": 458
+  }
+}

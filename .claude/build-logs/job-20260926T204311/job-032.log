@@ -1,0 +1,20 @@
+  ok    el registro nombra modelo, scaffold con su sha256, verificador y política
+  ok    es estable: los mismos insumos dan el mismo id
+  ok    cambiar el modelo cambia el id
+  ok    cambiar el verificador cambia el id
+  ok    cambiar la política cambia el id
+  ok    cambiar la ruta cambia el id
+  ok    mover el scaffold sin cambiar su contenido no cambia el id
+  ok    cambiar el CONTENIDO del scaffold, con la misma ruta, cambia el id
+  ok    sin el scaffold no hay configuración que registrar: rehúsa
+  ok    register devuelve el id y no duplica
+  ok    el registro guardado es el mismo
+  ok    por configuración: intentos y media de Laplace
+  ok    los códigos que introducen los rechazos, material para revisar el scaffold
+  ok    las filas sin configuración se cuentan aparte, no se descartan
+  ok    la mejor configuración de la ruta, entre las que tienen evidencia
+  ok    sin evidencia suficiente no se elige ninguna
+  ok    los ocho procesos terminan bien
+  ok    ocho escritores concurrentes: cada setup una sola vez
+test_step_setup: 18 aserciones — 18 ok, 0 falla(s)
+EXIT=0

@@ -1,0 +1,4 @@
+Keep the run history of the R3-R4 pool template
+
+The next pool on this template derives its cache TTL and memory
+reservation from that history.

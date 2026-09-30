@@ -1,0 +1,11 @@
+  src/packages/bridge/bun.lock: lockfile fuera de la raiz
+  src/packages/bun.lock: lockfile fuera de la raiz
+  src/packages/daemon/bun.lock: lockfile fuera de la raiz
+  src/packages/headless-sdk/bun.lock: lockfile fuera de la raiz
+  src/packages/ide/bun.lock: lockfile fuera de la raiz
+  src/packages/package.json: manifiesto con workspaces fuera de la raiz
+  src/packages/server/bun.lock: lockfile fuera de la raiz
+check-single-workspace-root: 7 segunda(s) raiz(ces) (alcance medido: 52608 ruta(s) versionada(s), 0 admitida(s))
+  El workspace, sus dependencias y su lockfile viven en la raiz. Para
+  admitir uno, nombralo con su razon en .claude/baselines/nested_workspace_allowlist.txt.
+exit=1

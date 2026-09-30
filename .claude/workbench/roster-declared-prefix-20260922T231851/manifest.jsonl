@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿El roster respeta el prefijo declarado cuando la mayoria de hermanos apunta a otro?","instrument":"fixture de varios clones con anulacion del prefijo declarado","metric":"roster derivado","blind_to":"prefijo declarado sin ningun hermano"}

@@ -1,0 +1,9 @@
+{
+  "id": "82",
+  "subject": "Añadir a task_ids un check de doble citation_id por subject dentro de una sesión",
+  "description": "ID: TASK-DB-0002\n\nEl módulo se llama ahora `task_ids.py` (era `kx_ids.py`) y su esquema es `TASK-<CAPA>-NNNN` (era `KX-`), por decisión del ejecutor 2026-09-04.\n\nEL RIESGO SE MATERIALIZÓ EN ESTA SESIÓN, y se esquivó a mano: al volcar el tablero vivo bajo un session_id de volcado, 1 de las 89 tareas tenía un subject que YA estaba acuñado (`Decidir la conducta del harness ante thinking_delta`, con TASK-DOCS-0332). Acuñarla otra vez habría dado dos ids a la misma tarea.\n\nY el esquema NO deja repararlo reusando el id: `citation_id` tiene UNIQUE, así que una cita = una fila. La única salida fue RETIRAR esa fila del volcado.\n\nEso da la forma del check: antes de acuñar, si un subject del lote ya tiene citation_id en cualquier sesión, REHUSAR y nombrarlo — no acuñar y avisar después. Con su control positivo: el caso real de esta sesión.\n\nACTUALIZADO 2026-09-05 (#104 / TASK-API-0050): `mint()` ya resuelve por sujeto y lleva un conjunto `usados` para que un id no sirva a dos referencias EN LA MISMA llamada. Lo que este check añade sigue vivo: el cruce CONTRA OTRAS SESIONES antes de acuñar, que `mint()` no hace.",
+  "activeForm": "Registrando el sucesor del riesgo de doble KX id",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

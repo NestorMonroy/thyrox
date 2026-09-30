@@ -1,0 +1,11 @@
+{
+  "id": "39",
+  "subject": "Aplicar el sustrato a los skills que citan el hogar inexistente, en los tres repos",
+  "description": "ID: TASK-GEN-0012\n\nRepuntada 2026-09-02 por directiva del ejecutor: «no solo es eso, porque es implementarlos en el harness de manera correcta, ya teníamos análisis». Ver analisis-divergencia-de-skills-entre-repos.rst.\n\nLo que la versión anterior («corregir las 165 citas en 32 skills») no veía, medido:\n\n- La corrección YA EXISTE y sólo en `api`: H-API-622 la aplicó a los 13 `workflow-*/SKILL.md` el 2026-08-15 (api@1e71fa3), con su nota «Adaptación kaupamex». Hoy: api 13 citas / 13 con nota; docs 32 / 0; ui 32 / 0.\n- Los 13 archivos tienen TRES hashes distintos, uno por repo. La divergencia es general: de 97 skills, 87 están en más de un repo y 24 divergen (11 con docs contra api=ui; 13 con un hash por repo).\n- El instrumento que hizo el arreglo en api (`fix-workflow-thyrox-refs.py`) NO existe en el árbol — fue efímero, así que no se puede reusar.\n\nPor eso corregir docs a mano deja ui roto, api con una tercera redacción, y el literal en el mismo sustrato que lo hizo divergir. Bloqueada por #15 (las constantes: la ruta la construye una función) y #14 (la migración al sustrato de código, que es cuando la cita literal deja de existir). Su trabajo es la pasada de aplicación, con instrumento versionado y sobre los tres repos a la vez.\n\nReconciliación de cifra: «165 citas en 32 skills» del original; re-medido con patrón declarado (`.thyrox/context` · `context/now.md` · `context/focus`) sobre docs/.claude/skills/ = 153 apariciones en 30 archivos. La diferencia son las formas de `now` sueltas del patrón original.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "15",
+    "14"
+  ]
+}

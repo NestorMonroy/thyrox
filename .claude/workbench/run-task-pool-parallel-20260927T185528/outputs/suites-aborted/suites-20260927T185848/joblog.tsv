@@ -1,0 +1,5 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+3	:	1790535529.316	     5.831	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox//home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/suites/suites-20260927T185848 suites-20260927T185848 test-run-task-pool-scope
+4	:	1790535529.322	     9.193	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox//home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/suites/suites-20260927T185848 suites-20260927T185848 test-run-task-pool-isolation
+2	:	1790535529.313	    10.292	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox//home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/suites/suites-20260927T185848 suites-20260927T185848 test-run-task-pool-memfree
+1	:	1790535529.310	    29.506	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox//home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/suites/suites-20260927T185848 suites-20260927T185848 test-run-task-pool

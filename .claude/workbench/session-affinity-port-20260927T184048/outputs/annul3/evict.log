@@ -1,0 +1,6 @@
+(fail) SessionCache: capacidad > desaloja el grupo más viejo al superar la capacidad [1.22ms]
+(fail) SessionCache: capacidad > un grupo de varios alias se desaloja entero [0.18ms]
+(fail) SessionCache: capacidad > diez mil escrituras sobre capacidad mil conservan las últimas [33.93ms]
+(fail) SessionCache: capacidad > ocho escritores intercalados no superan la capacidad [22.87ms]
+ 9 pass
+ 4 fail

@@ -1,0 +1,24 @@
+src/packages/repl/src/screens/REPLView.tsx(2800,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2790-2810 ---
+   2790  
+   2791        // Extract a session title from the first real user message. One-shot
+   2792        // via ref (was tengu_birch_mist experiment: first-message-only to save
+   2793        // Haiku calls). The ref replaces the old `messages.length <= 1` check,
+   2794        // which was broken by SessionStart hook messages (prepended via
+   2795        // useDeferredHookMessages) and attachment messages (appended by
+   2796        // processTextPrompt) — both pushed length past 1 on turn one, so the
+   2797        // title silently fell through to the "Claude Code" default.
+   2798        if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+   2799          const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+   2800>         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+   2801          // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+   2802          // expansions (/commit → <command-message>), local-command headers
+   2803          // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+   2804          // None of these are the user's topic; wait for real prose.
+   2805          if (
+   2806            text &&
+   2807            !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) &&
+   2808            !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) &&
+   2809            !text.startsWith(`<${COMMAND_NAME_TAG}>`) &&
+   2810            !text.startsWith(`<${BASH_INPUT_TAG}>`)
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.

@@ -1,0 +1,65 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/impactCli.test.ts:
+112 | 
+113 |   test('imprime el comando derivado SIN ejecutarlo, con denominador y ceguera', () => {
+114 |     const d = conSettings(repo())
+115 |     writeFileSync(join(d, 'src', 'loop.ts'), 'export const a = 4\n')
+116 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--select-tests', '--cwd', d])
+117 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/impactCli.test.ts:117:24)
+(fail) src/entry/main.ts --select-tests > imprime el comando derivado SIN ejecutarlo, con denominador y ceguera [1000.67ms]
+122 |     expect(s).toMatch(/Métrica:/)
+123 |   })
+124 | 
+125 |   test('sin cambios lo dice en vez de proponer un comando vacío', () => {
+126 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--select-tests', '--cwd', conSettings(repo())])
+127 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/impactCli.test.ts:127:24)
+(fail) src/entry/main.ts --select-tests > sin cambios lo dice en vez de proponer un comando vacío [946.23ms]
+131 | 
+132 |   test('un cambio transversal propone la suite completa y dice por qué', () => {
+133 |     const d = conSettings(repo())
+134 |     writeFileSync(join(d, 'src', 'types.ts'), 'export type T = 3\n')
+135 |     const s = Bun.spawnSync(['bun', 'run', BIN, '--select-tests', '--cwd', d]).stdout.toString()
+136 |     expect(s).toContain('src/types.ts')
+                    ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "src/types.ts"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/impactCli.test.ts:136:15)
+(fail) src/entry/main.ts --select-tests > un cambio transversal propone la suite completa y dice por qué [940.32ms]
+141 |   // convención que este repo puede no seguir, y su subconjunto se leería como
+142 |   // derivado cuando sería adivinado.
+143 |   test('sin testImpact en settings rehúsa y dice qué falta', () => {
+144 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--select-tests', '--cwd', repo()])
+145 |     expect(p.exitCode).not.toBe(0)
+146 |     expect(p.stderr.toString()).toContain('testImpact')
+                                      ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "testImpact"
+Received: "1 | })\n2 | {\n    ^\nSyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.11 (Linux x64)\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/impactCli.test.ts:146:33)
+(fail) src/entry/main.ts --select-tests > sin testImpact en settings rehúsa y dice qué falta [858.74ms]
+
+ 8 pass
+ 4 fail
+ 17 expect() calls
+Ran 12 tests across 1 file. [4.65s]
+exit=1

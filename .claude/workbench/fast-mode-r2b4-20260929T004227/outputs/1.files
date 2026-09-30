@@ -1,0 +1,3 @@
+src/packages/agent/prompts.ts
+src/packages/provider/src/__tests__/fastModeModel.test.ts
+src/packages/provider/src/fastMode.ts

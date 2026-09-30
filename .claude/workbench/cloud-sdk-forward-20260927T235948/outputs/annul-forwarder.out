@@ -1,0 +1,8 @@
+base	5 pass, 0 fail	—
+no-cloud-route	1 pass, 4 fail	reparto > un upstream de nube va por su SDK con la beta, la señal y el identificador | reparto > el cliente se construye una vez por upstream | reparto > una construcción que falla se reintenta en la siguiente petición | reparto > una ruta que no es de mensajes responde que el upstream no la admite
+no-cache	4 pass, 1 fail	reparto > el cliente se construye una vez por upstream
+no-evict	4 pass, 1 fail	reparto > una construcción que falla se reintenta en la siguiente petición
+no-beta	4 pass, 1 fail	reparto > un upstream de nube va por su SDK con la beta, la señal y el identificador
+no-signal	4 pass, 1 fail	reparto > un upstream de nube va por su SDK con la beta, la señal y el identificador
+no-501	4 pass, 1 fail	reparto > una ruta que no es de mensajes responde que el upstream no la admite
+no-request-id-501	4 pass, 1 fail	reparto > una ruta que no es de mensajes responde que el upstream no la admite

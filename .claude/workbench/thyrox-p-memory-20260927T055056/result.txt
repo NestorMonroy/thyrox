@@ -1,0 +1,10 @@
+ejecuciones con medida: 12 · ítems: 96
+pico por ejecución (MB): 229 229 228 229 229 227 227 224 226 229 229 228
+  min 224 · mediana 228 · max 229
+dentro de una ejecución, pico / mediana de sus ítems: mediana 1.01 · max 1.02 (n=12)
+last       predicciones 11 · por debajo del real  5 (45.5 %) · sobrecoste medio cuando cubre 1.00x
+max_3      predicciones 11 · por debajo del real  3 (27.3 %) · sobrecoste medio cuando cubre 1.01x
+max_5      predicciones 11 · por debajo del real  2 (18.2 %) · sobrecoste medio cuando cubre 1.01x
+max_all    predicciones 11 · por debajo del real  2 (18.2 %) · sobrecoste medio cuando cubre 1.01x
+p90_items  predicciones 11 · por debajo del real  6 (54.5 %) · sobrecoste medio cuando cubre 1.01x
+last_x2    predicciones 11 · por debajo del real  0 ( 0.0 %) · sobrecoste medio cuando cubre 2.00x

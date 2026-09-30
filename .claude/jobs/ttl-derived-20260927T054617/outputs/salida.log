@@ -1,0 +1,99 @@
+run-task-pool: 6 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T054617
+  job-20260927T054617/job-001 pid 22641   cd src/packages/agent && bun test __tests__/attachments.test.ts __tests__/cacheRoutes.test.ts __tests__/cacheTtl.test.ts __tests__/causalChain.test.ts __tests__/compat.test.ts __tests__/contextCompressionWiring.test.ts __tests__/contextGovernance.test.ts __tests__/contextPressure.test.ts __tests__/emit.test.ts __tests__/equivalentTokens.test.ts __tests__/hooksEvents.test.ts __tests__/loop.test.ts __tests__/loopCacheTtl.test.ts __tests__/stream.test.ts __tests__/taskReminder.test.ts __tests__/tokenBudgetLoop.test.ts
+  job-20260927T054617/job-002 pid 22664   cd src/packages/cli && bun test __tests__/bin.test.ts __tests__/cli.test.ts __tests__/compressToolResultsWiring.test.ts __tests__/impact.test.ts __tests__/loopStreaming.test.ts __tests__/systemPromptLayering.test.ts __tests__/thinking.test.ts
+  job-20260927T054617/job-003 pid 22700   cd src/packages/provider && bun test __tests__/compaction.test.ts __tests__/cost.test.ts __tests__/credentials.test.ts __tests__/provider.test.ts __tests__/providerStreaming.test.ts
+  job-20260927T054617/job-004 pid 22729   bash tests/session/test-headless-pool.sh
+  job-20260927T054617/job-005 pid 29500   bash tests/session/test-headless-pool-thyrox-p.sh
+  job-20260927T054617/job-006 pid 29908   uv run --frozen python tests/session/test_pool_history.py
+run-task-pool: lanzados 6 de 6; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T054617_job-001 -> OK (2 de 7)
+asentado: job-20260927T054617_job-003 -> OK (3 de 7)
+asentado: job-20260927T054617_job-005 -> OK (4 de 7)
+asentado: job-20260927T054617_job-006 -> OK (5 de 7)
+asentado: job-20260927T054617_job-002 -> OK (3 de 7)
+esperando: 6 de 7 asentados, 31s; vivos: job-20260927T054617_job-004
+sonda job-20260927T054617_job-004: 22729 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 22733 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 22735 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.05s
+sonda job-20260927T054617_job-004: 2326 bash stdin=channel(pipe:[176170]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 2523 parallel stdin=channel(pipe:[176170]) sin escritor estado=S cpu=0.28s
+sonda job-20260927T054617_job-004: 2550 bash stdin=channel(pipe:[174676]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 4172 bash stdin=channel(pipe:[178658]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 4175 timeout stdin=channel(pipe:[178658]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 4176 bash stdin=channel(pipe:[178658]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 4179 sleep stdin=channel(pipe:[178658]) sin escritor estado=S cpu=0.00s
+sonda job-20260927T054617_job-004: 4174 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.06s
+asentado: job-20260927T054617_job-004 -> OK (5 de 7)
+== 7 trabajos asentados ==
+OLVIDADO job-20260927T054617
+       | (vacío — no emitió nada)
+OK     job-20260927T054617_job-001 exit=1
+       | Received: "5m"
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/loopCacheTtl.test.ts:35:29)
+       | (fail) runLoop — el TTL de caché de cada petición > 1. sin nada declarado, el origen por defecto (sdk) pide 1h [1.46ms]
+       | 
+       |  169 pass
+       |  1 fail
+       |  629 expect() calls
+       | Ran 170 tests across 16 files. [12.02s]
+       | EXIT=1
+       memoria pico: 224416 KB (219 MB) · pared 12.04s
+OK     job-20260927T054617_job-002 exit=0
+       | bun test v1.3.11 (af24e281)
+       | listo
+       | listo
+       | 
+       |  77 pass
+       |  0 fail
+       |  173 expect() calls
+       | Ran 77 tests across 7 files. [42.63s]
+       | EXIT=0
+       memoria pico: 246088 KB (240 MB) · pared 42.65s
+OK     job-20260927T054617_job-003 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  88 pass
+       |  0 fail
+       |  217 expect() calls
+       | Ran 88 tests across 5 files. [179.00ms]
+       | EXIT=0
+       memoria pico: 70820 KB (69 MB) · pared 0.18s
+OK     job-20260927T054617_job-004 exit=0
+       | OK   una plantilla, un solo historial
+       | OK   otro binario: no deriva memfree de su fila
+       | OK   otro binario: lo dice
+       | OK   otro modelo: no deriva memfree de su fila
+       | OK   otro modelo: lo dice
+       | OK   sin historial, la reserva sola es la cota
+       | OK   reserva ilegible: exit 2
+       | 
+       | aserciones: 97 de 97 · fallos: 0
+       | EXIT=0
+       memoria pico: 22332 KB (22 MB) · pared 64.51s
+OK     job-20260927T054617_job-005 exit=0
+       |   ok   resumen del pool
+       |   ok   un .json por ítem
+       |   ok   el .json es la línea result, de éxito
+       |   ok   con el texto del modelo
+       |   ok   el stream abre con system/init
+       |   ok   las herramientas del pool llegan acotadas
+       |   ok   una línea assistant por petición, con su uso
+       | 
+       | 8 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+       | EXIT=0
+       memoria pico: 227040 KB (222 MB) · pared 2.79s
+OK     job-20260927T054617_job-006 exit=0
+       |   ok    sin límite declarado, la edad no cuenta
+       |   ok    derive con pocos ítems: pide la GPU entera, de a uno
+       | == 27. la CLI recibe la plantilla, los ítems mínimos y la edad máxima ==
+       |   ok    record --template guarda la huella
+       |   ok    ... y la fecha
+       |   ok    derive --template con OTRA plantilla: la GPU entera
+       |   ok    ... con la MISMA plantilla: el pico medido
+       | 
+       | test_pool_history: 89 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 35900 KB (35 MB) · pared 0.16s
+salida distinta de 0: 1 (job-20260927T054617_job-001)
+__BG_EXIT__=0

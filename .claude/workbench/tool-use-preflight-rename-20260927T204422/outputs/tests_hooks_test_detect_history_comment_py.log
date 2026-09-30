@@ -1,0 +1,46 @@
+marcadores de historial en un comentario nuevo
+  ok    fecha ISO en //
+  ok    bitácora en #
+  ok    «antes vivía» en docstring
+  ok    «la versión anterior» en *
+  ok    ronda N
+  ok    episodio
+  ok    id de hallazgo
+  ok    sólo una fecha
+  ok    docstring de varias líneas cerrado: lo que sigue es código
+  ok    sin extensión, primera línea que nombra python sin shebang
+la intención con palabras parecidas no avisa
+  ok    «antes de llamar»
+  ok    procedencia de un porte
+  ok    un «ya no» de conducta actual
+el código no es comentario
+  ok    fecha en una cadena
+  ok    fecha tras un # dentro de una cadena de python
+  ok    shebang
+  ok    docstring cerrado: lo que sigue es código
+sólo archivos de código
+  ok    un .rst lleva fechas por diseño
+  ok    un .md tampoco
+en Edit, sólo lo que se añade
+  ok    el historial que ya estaba no avisa
+  ok    el que se añade sí
+heredoc de Bash que escribe un archivo de código
+  ok    cat > a.ts <<EOF
+  ok    heredoc hacia un .md
+  ok    heredoc que no escribe archivo
+  ok    la línea de comando no es comentario
+cada lenguaje, con sus formas de comentario
+  ok    ts: bloque /* */ de una línea
+  ok    ts: JSDoc de varias líneas
+  ok    mts y cts
+  ok    py: docstring con comillas simples
+  ok    py: comentario tras un docstring cerrado
+  ok    sh y bash
+  ok    sin extensión, shebang de bash
+  ok    sin extensión, shebang de python
+  ok    sin extensión y sin shebang: no es código
+  ok    heredoc hacia un script sin extensión
+el aviso nombra la línea
+  ok    cita el texto
+test_detect_history_comment: 36 aserciones — 36 ok, 0 falla(s)
+EXIT=0

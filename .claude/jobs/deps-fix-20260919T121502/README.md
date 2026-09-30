@@ -1,0 +1,16 @@
+# deps-fix
+
+## Qué se lanzó
+
+```
+python3 .claude/workbench/izar-dependencias-a-la-raiz-20260919T103301/probes/classify_undeclared_deps.py
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

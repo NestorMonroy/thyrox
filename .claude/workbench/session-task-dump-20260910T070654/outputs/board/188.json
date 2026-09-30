@@ -1,0 +1,8 @@
+{
+  "id": "188",
+  "subject": "Dar productor en src/ a los 84 skills que siguen en thyrox/.claude/skills",
+  "description": "CERRADA 2026-09-06, verificada a nivel 2 por instrumento independiente del testimonio del agente: thyrox@a85055c4 (\"Add TS producer for the 71 methodology-namespace SKILL.md files\") y kaupamex-docs@337c7786e existen, y `bun run src/skills/bin/emit.ts --check` publica «71 definición(es); 0 con diferencia (alcance medido: /home/user/thyrox/.claude/skills)». Los 84 del título eran 71 del espacio de metodología más los ya cubiertos.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

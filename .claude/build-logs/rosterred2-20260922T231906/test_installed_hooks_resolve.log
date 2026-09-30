@@ -1,0 +1,13 @@
+test_every_command_names_a_file_that_exists (__main__.InstalledHooksResolve.test_every_command_names_a_file_that_exists) ... ok
+test_it_emits_exactly_what_the_producer_declares (__main__.InstalledHooksResolve.test_it_emits_exactly_what_the_producer_declares)
+La FUENTE del cableado es una sola: `declared_wiring()`. ... ok
+test_it_emits_the_declared_event_set (__main__.InstalledHooksResolve.test_it_emits_the_declared_event_set)
+Sin esto, un instalador que no escribiera nada daría verde. ... ok
+test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.426s
+
+OK
+EXIT=0

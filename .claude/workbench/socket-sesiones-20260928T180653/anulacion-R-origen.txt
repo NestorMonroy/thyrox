@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+68 |   })
+69 | 
+70 |   test('armar la cabecera fija el origen si nadie lo fijó', () => {
+71 |     armRefusalFallbackHeader('req_h')
+72 |     markRefusalFallbackOccurred('req_m')
+73 |     expect(getRefusalFallbackLatchOriginRequestId()).toBe('req_h')
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "req_h"
+Received: "req_m"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:73:54)
+(fail) las marcas del rechazo (o2r, xmt, s2r, l2r) > armar la cabecera fija el origen si nadie lo fijó [0.30ms]
+
+ 25 pass
+ 1 fail
+ 53 expect() calls
+Ran 26 tests across 2 files. [56.00ms]

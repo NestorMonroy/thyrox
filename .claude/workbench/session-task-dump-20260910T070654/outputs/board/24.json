@@ -1,0 +1,11 @@
+{
+  "id": "24",
+  "subject": "Portar el guard antithrashing: hoy el harness puede compactar en bucle",
+  "description": "`function rxe(e){let n=N9r(e); return {action: n>=3?\"trip\":\"proceed\", …}}` con `function N9r(e){return e?.compacted===!0 && e.turnCounter<3 ? (e?.consecutiveRapidRefills??0)+1 : 0}` y `var YZt=3` (2.1.258).\n\nEl harness no lleva estado de compactación, así que si el contexto vuelve a llenarse enseguida vuelve a compactar, sin tope. El ejecutable corta a la tercera recarga rápida seguida y su mensaje nombra la causa —que **no** es la compactación:\n\n  \"Autocompact is thrashing: the context refilled to the limit within 3 turns of\n   the previous compact, 3 times in a row. A file being read or a tool output is\n   likely too large for the context window. Try reading in smaller chunks.\"\n\nCondición de cierre: el estado `{compacted, turnId, turnCounter, consecutiveRapidRefills}` con su transición (`kZe` lo reinicia al compactar), el veredicto `trip`, y el mensaje citado verbatim — porque su valor es que nombra la causa real, y parafrasearlo la pierde.",
+  "activeForm": "Portando el guard antithrashing",
+  "status": "completed",
+  "blocks": [
+    "25"
+  ],
+  "blockedBy": []
+}

@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3745, "total_final": 3733, "tsc_runs": 1, "accepted": ["agent:app-state-canonico-tool-registry"], "files_kept": ["src/packages/tool-registry/src/appStateTypes.ts"], "outcomes": {"agent:app-state-canonico-tool-registry": "accepted-net"}}

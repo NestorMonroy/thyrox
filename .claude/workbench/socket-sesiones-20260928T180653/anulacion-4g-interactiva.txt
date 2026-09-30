@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+112 | 
+113 |   test('forzar la persistencia, no ser hija o no ser interactiva lo apaga', () => {
+114 |     setAmbientMarkerProbe(() => false)
+115 |     expect(isNestedInteractiveSession(host({ env: { THYROX_CODE_CHILD_SESSION: '1', THYROX_CODE_FORCE_SESSION_PERSISTENCE: 'yes' } }))).toBe(false)
+116 |     expect(isNestedInteractiveSession(host())).toBe(false)
+117 |     expect(isNestedInteractiveSession(host({ env: { THYROX_CODE_CHILD_SESSION: '1' }, isInteractive: false }))).toBe(false)
+                                                                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:117:113)
+(fail) isNestedInteractiveSession (kFe) > forzar la persistencia, no ser hija o no ser interactiva lo apaga [0.26ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [142.00ms]

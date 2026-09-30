@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for p in mitm transparent-napi; do (cd src/packages/$p && bunx tsc -p tsconfig.build.json --noEmit; echo \"$p BUILD=$?\"; bunx tsc -p tsconfig.test.json --noEmit; echo \"$p TEST=$?\"); done", "started_at": "2026-09-28T08:44:18+00:00"}

@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketsDir.test.ts:
+(fail) prepareSocketsDirectory (Re) > un bucle de enlaces se declara bucle [5000.20ms]
+  ^ this test timed out after 5000ms.
+
+ 17 pass
+ 1 fail
+ 32 expect() calls
+Ran 18 tests across 1 file. [5.06s]

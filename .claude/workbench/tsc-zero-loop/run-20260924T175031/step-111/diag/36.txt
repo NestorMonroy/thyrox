@@ -1,0 +1,24 @@
+src/packages/agent/loop/context/autocompact.ts(91,27): error TS2345: Argument of type 'Message | undefined' is not assignable to parameter of type 'Message'.
+  --- código src/packages/agent/loop/context/autocompact.ts:81-101 ---
+     81  export type CompactResult = { messages: Message[]; boundary: number; compacted: number }
+     82  
+     83  const bloques = (m: Message, tipo: ContentBlock['type']) => m.content.some((b) => b.type === tipo)
+     84  
+     85  /**
+     86   * Corre la frontera hacia atrás hasta que la cola no empiece con un
+     87   * `tool_result` huérfano — su `tool_use` vive en el mensaje anterior.
+     88   */
+     89  function fronteraSegura(messages: Message[], propuesta: number): number {
+     90    let i = propuesta
+     91>   while (i > 0 && bloques(messages[i], 'tool_result')) i -= 1
+     92    return i
+     93  }
+     94  
+     95  /** Sustituye todo lo anterior a la frontera por un único mensaje de resumen. */
+     96  export function compactMessages(messages: Message[], opts: CompactOptions): CompactResult {
+     97    if (messages.length <= opts.keepLast) {
+     98      return { messages, boundary: 0, compacted: 0 }
+     99    }
+    100    const boundary = fronteraSegura(messages, messages.length - opts.keepLast)
+    101    if (boundary <= 0) {
+  Type 'undefined' is not assignable to type 'Message'.

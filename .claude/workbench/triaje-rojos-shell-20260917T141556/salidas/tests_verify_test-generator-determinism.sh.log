@@ -1,0 +1,41 @@
+== caso 1: el árbol limpio pasa, y publica su denominador
+  FALLA exit 0
+       esperado: 0
+       obtenido: 1
+  FALLA publica el alcance medido
+       esperado: 1
+       obtenido: 0
+  FALLA nombra generadores, no ejecutables
+       esperado: 1
+       obtenido: 0
+== caso 2: rehúsa SIN emitir conteo si la raíz de eventos no existe
+   (un 0 ahí no distingue «no hay defectos» de «no pude medir»)
+  ok   exit 2
+  ok   nombra la raíz ausente
+  ok   NO emite conteo
+== caso 3: --strict sobre el árbol limpio sigue en 0
+  FALLA exit 0 con --strict
+       esperado: 0
+       obtenido: 1
+== caso 4: CONTROL POSITIVO — la forma real que vive en el repo
+  FALLA la forma existe en el repo (no es fabricada)
+       esperado: si
+       obtenido: no
+  ok   exit 1 ante el incumplidor
+  FALLA nombra el archivo
+       esperado: 1
+       obtenido: 0
+  FALLA nombra la forma que lo delata
+       esperado: 1
+       obtenido: 0
+== caso 5: el que NO escribe en source/ queda fuera del universo
+   (una sonda que imprime a stdout no rompe la reproducción del artefacto)
+  FALLA la sonda no lo hace fallar
+       esperado: 0
+       obtenido: 1
+== caso 6: el árbol vendorizado de un tercero queda fuera
+  FALLA extraido/ no cuenta como código nuestro
+       esperado: 0
+       obtenido: 1
+
+4 ok · 9 falla(s)

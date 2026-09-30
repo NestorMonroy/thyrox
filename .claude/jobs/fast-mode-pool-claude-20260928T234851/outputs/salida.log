@@ -1,0 +1,5 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de claude en esta plantilla (1 fila(s) de otro binario o sin binario registrado); ninguna con el modelo claude-sonnet-5: nada que derivar
+/home/user/thyrox/src/session/headless-pool.sh: line 467: syntax error near unexpected token `('
+/home/user/thyrox/src/session/headless-pool.sh: line 467: `sale del joblog (columna Exitval), emparejado con el indice por'
+__BG_EXIT__=2

@@ -1,0 +1,9 @@
+{
+  "id": "30",
+  "subject": "Portar la rama remota de `Fte` y el tercer override de bloqueo",
+  "description": "El harness portaba `fZe` y no `Fte`, su llamador. Faltaban tres cosas medidas en 2.1.258 (`chunk-vw215j9f.js`): (1) `MF` y `zZt` son DOS ventanas —compactación y bloqueo— y el porte usaba una; (2) `CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE` (`testBlockingOverride` de `SZe`) sustituye el tope duro entero y no estaba; (3) la rama `remoteAutocompactState`, que adopta ventana/umbral/enabled del servidor y DESCARTA los dos overrides de entorno, derivando el bloqueo localmente con `zZt(n)`.",
+  "activeForm": "Portando la rama remota de Fte",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

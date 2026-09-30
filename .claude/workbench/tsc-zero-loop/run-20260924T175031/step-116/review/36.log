@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+slash-commands.test.ts:
+161 |       },
+162 |       installToolRegistryBindings: () => {
+163 |         // eslint-disable-next-line @typescript-eslint/no-require-imports
+164 |         require('./installToolRegistryBindings.js')
+165 |       },
+166 |       installCommandRuntimeBindings: () => {
+                                                 ^
+SyntaxError: Export named 'getSkillDirCommands' not found in module '/home/user/thyrox/src/packages/command-runtime/src/skills/loadSkillsDir.ts'.
+      at installCommandRuntimeBindings (/home/user/thyrox/src/packages/app-host/src/runtime/bootstrap.ts:166:44)
+      at installHostBindings (/home/user/thyrox/src/packages/app-host/src/host.ts:25:14)
+      at installPackageHostBindings (/home/user/thyrox/src/packages/app-host/src/packageHostSetup.ts:179:3)
+      at installRuntimeSkeletonBindings (/home/user/thyrox/src/packages/app-host/src/runtime/bootstrap.ts:129:3)
+      at /home/user/thyrox/src/packages/app-host/src/runtime/bootstrap.ts:205:1
+      at requestImportModule (2:1)
+(fail) slash command popup e2e > getCommands returns at least built-in commands [2061.75ms]
+
+ 1 pass
+ 1 fail
+ 2 expect() calls
+Ran 2 tests across 1 file. [2.09s]

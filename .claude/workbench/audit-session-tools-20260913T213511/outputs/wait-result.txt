@@ -1,0 +1,3 @@
+== 1 trabajos asentados ==
+OK     audit-worker
+       | EXIT=0

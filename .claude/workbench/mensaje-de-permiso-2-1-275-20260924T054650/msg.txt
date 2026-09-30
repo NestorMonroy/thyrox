@@ -1,0 +1,24 @@
+Port three missing exports; add a default agent prompt
+
+Once validatePath resolved, the tool-registry, repl and agent suites
+failed at the next missing export in their import chains.
+
+- createPermissionRequestMessage (su in chunk-q2gh92k2.js): the
+  approval text for each decision reason, with the generic message as
+  fallback. Only the subcommands that ask or pass through are listed,
+  and in Bash without their output redirections. PermissionMode.ts
+  imports bun:bundle, so the mode title loads lazily.
+- createAttachmentMessage (Kd in chunk-mdt3sxrw.js): an attachment
+  wrapped as a transcript message with its own uuid and ISO timestamp.
+  It returns the AttachmentMessage type the callers already use; a new
+  type of its own raised the tests typecheck by four.
+- DEFAULT_AGENT_PROMPT, which runAgent passes to a subagent without a
+  definition. The binary's literal is its own prose, so the text here
+  is written for this tree; the test pins the contract (finish the
+  task with the tools, report briefly to the caller) and that the
+  binary's wording is not copied.
+
+Annulment: without stripping redirections exactly the subcommand case
+fails.
+
+The tsc baseline drops to the 2385 both projects now measure.

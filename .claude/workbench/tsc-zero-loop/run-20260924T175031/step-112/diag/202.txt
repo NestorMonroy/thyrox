@@ -1,0 +1,49 @@
+src/packages/repl/src/screens/REPLView.tsx(2022,5): error TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2012-2032 ---
+   2012      exitFlow,
+   2013      isMessageSelectorVisible,
+   2014      isPromptInputActive,
+   2015      hasSandboxPermissionRequest: Boolean(sandboxPermissionRequestQueue[0]),
+   2016      allowDialogsWithAnimation,
+   2017      hasToolUseConfirm: Boolean(toolUseConfirmQueue[0]),
+   2018      hasPromptQueue: Boolean(promptQueue[0]),
+   2019      hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
+   2020      hasElicitation: Boolean(elicitation.queue[0]),
+   2021      showingCostDialog,
+   2022>     idleReturnPending,
+   2023      isLoading,
+   2024      ultraplanPendingChoice,
+   2025      ultraplanLaunchPending,
+   2026      showIdeOnboarding,
+   2027      showModelSwitchCallout,
+   2028      showUndercoverCallout,
+   2029      showEffortCallout,
+   2030      showRemoteCallout,
+   2031      lspRecommendation,
+   2032      hintRecommendation,
+  Type 'null' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2371-2391 ---
+   2371            });
+   2372            return currentQueue;
+   2373          });
+   2374        }, setToolUseConfirmQueue);
+   2375      },
+   2376      [setAppState, setToolUseConfirmQueue],
+   2377    );
+   2378  
+   2379    // Register the leader's setToolPermissionContext for in-process teammates
+   2380    useEffect(() => {
+   2381>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2382      return () => unregisterLeaderSetToolPermissionContext();
+   2383    }, [setToolPermissionContext]);
+   2384  
+   2385    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2386  
+   2387    const requestPrompt = useCallback(
+   2388      (title: string, toolInputSummary?: string | null) =>
+   2389        (request: PromptRequest): Promise<PromptResponse> =>
+   2390          new Promise<PromptResponse>((resolve, reject) => {
+   2391            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.

@@ -1,0 +1,25 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(583,7): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:573-593 ---
+    573        })
+    574      }
+    575    }
+    576  
+    577    // Regular user prompt
+    578    return addImageMetadataMessage(
+    579      processTextPrompt(
+    580        normalizedInput,
+    581        imageContentBlocks,
+    582        imagePasteIds,
+    583>       attachmentMessages,
+    584        uuid,
+    585        permissionMode,
+    586        isMeta,
+    587      ),
+    588      imageMetadataTexts,
+    589    )
+    590  }
+    591  
+    592  // Adds image metadata texts as isMeta message to result
+    593  function addImageMetadataMessage(
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.

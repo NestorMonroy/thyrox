@@ -1,0 +1,24 @@
+..FF...
+======================================================================
+FAIL: test_la_poblacion_medible_alcanza_para_la_afirmacion (__main__.WorkbenchHomeResolution.test_la_poblacion_medible_alcanza_para_la_afirmacion)
+Sin al menos dos clones, «un hogar POR CLON» no se puede observar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 86, in test_la_poblacion_medible_alcanza_para_la_afirmacion
+    self.assertGreaterEqual(len(_sin_clave_por_clon()), 2)
+AssertionError: 1 not greater than or equal to 2
+
+======================================================================
+FAIL: test_las_dos_familias_resuelven_igual (__main__.WorkbenchHomeResolution.test_las_dos_familias_resuelven_igual)
+`rules` ya lo hacía y `workbench` no — la asimetría que se cerró.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 176, in test_las_dos_familias_resuelven_igual
+    self.assertGreaterEqual(
+AssertionError: 1 not greater than or equal to 2 : sin dos clones sin clave por clon en NINGUNA de las dos familias, «las dos resuelven igual» no se puede afirmar
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.013s
+
+FAILED (failures=2)
+EXIT=1

@@ -1,0 +1,38 @@
+src/packages/tool-registry/src/runtime.ts(146,26): error TS2304: Cannot find name 'ToolLike'.
+  --- código src/packages/tool-registry/src/runtime.ts:136-156 ---
+    136    ) as unknown as Tools
+    137  }
+    138  
+    139  export function assembleToolPool(
+    140    permissionContext: ToolPermissionContext,
+    141    mcpTools: Tools,
+    142  ): Tools {
+    143    ensureToolRegistryRuntimeInstalled()
+    144    return assembleToolPoolFromPackage(
+    145      permissionContext as ToolPermissionContextLike,
+    146>     mcpTools as readonly ToolLike[],
+    147    ) as unknown as Tools
+    148  }
+    149  
+    150  export function getMergedTools(
+    151    permissionContext: ToolPermissionContext,
+    152    mcpTools: Tools,
+    153  ): Tools {
+    154    ensureToolRegistryRuntimeInstalled()
+    155    return getMergedToolsFromPackage(
+    156      permissionContext as ToolPermissionContextLike,
+src/packages/tool-registry/src/runtime.ts(157,26): error TS2304: Cannot find name 'ToolLike'.
+  --- código src/packages/tool-registry/src/runtime.ts:147-159 ---
+    147    ) as unknown as Tools
+    148  }
+    149  
+    150  export function getMergedTools(
+    151    permissionContext: ToolPermissionContext,
+    152    mcpTools: Tools,
+    153  ): Tools {
+    154    ensureToolRegistryRuntimeInstalled()
+    155    return getMergedToolsFromPackage(
+    156      permissionContext as ToolPermissionContextLike,
+    157>     mcpTools as readonly ToolLike[],
+    158    ) as unknown as Tools
+    159  }

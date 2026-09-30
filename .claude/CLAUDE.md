@@ -1,51 +1,117 @@
-```yml
-Tipo: Contexto Persistente
-Versión: 3.0
-Fecha actualización: 2026-03-28
-```
-
 # CLAUDE.md — THYROX
 
-**Level 2 — Puente entre [SKILL](skills/pm-thyrox/SKILL.md) (Level 1) y proyecto.**
+El producto vive en `src/`, su suite en `tests/`, y **este directorio es el
+estado**: lo que la sesión lee y escribe. La partición es la DEC-01, con
+`claw-code` como precedente medido — su `.claude/` contiene `sessions/` y nada
+más.
 
-## Locked Decisions (no revisitar)
+`_references/` es el material contra el que se construye: los cinco corpus
+vendorizados (`ccb`, `claude-code`, `harness-books`, `harness-engineering`,
+`how-claude-code-works`, cada uno con su `PROVENANCE.md`) más 55 documentos de
+autoría propia sobre la plataforma. **No es producto ni estado** — es apoyo a
+la construcción, el mismo papel que `odoo-tools` cumple para el producto de
+kaupamex, y por eso vive en la raíz y no bajo `src/` ni bajo `.claude/`.
+Directiva del ejecutor 2026-09-05.
 
-1. **ANALYZE first** — No planificar sin entender primero (ADR-010)
-2. **Anatomía oficial** — SKILL.md + scripts/ + references/ + assets/ (ADR-011)
-3. **Git as persistence** — Zero archivos backup, historial en git (ADR-008)
-4. **Markdown only** — Sin bases de datos, sin formatos propietarios (ADR-001)
-5. **Single skill** — Un pm-thyrox con references, no 15 skills separados (ADR-004)
-6. **Work packages with timestamp** — context/work/YYYY-MM-DD-HH-MM-SS-nombre/
-7. **Conventional Commits** — `type(scope): description` (ADR-003)
+`_archived/` es el THYROX anterior (DEC-02). **No se lee como si fuera vigente**:
+se consulta una pieza sólo si hace falta verla, y lo que se recupere se porta
+con su procedencia declarada, no se restaura.
 
-## Estructura
+Qué hay hoy, y su suite, está en [README.md](../README.md) — no se duplica aquí.
 
-```
-.claude/
-├── CLAUDE.md              ← Este archivo (Level 2)
-├── context/
-│   ├── project-state.md   ← Metadata del proyecto
-│   ├── focus.md           ← Dirección actual
-│   ├── now.md             ← Estado de sesión (YAML)
-│   ├── decisions/         ← ADRs
-│   └── work/              ← Paquetes de trabajo (YYYY-MM-DD-HH-MM-SS-nombre/)
-└── skills/pm-thyrox/      ← El SKILL (Level 1)
-    ├── SKILL.md            Motor — metodología 7 fases
-    ├── references/         Documentación bajo demanda
-    ├── scripts/            Código ejecutable
-    └── assets/             Templates de output
-```
+## Por qué este archivo es corto
+
+Medido en `kaupamex-docs` (:ref:`h-docs-104`): **113 reglas, 697 179 bytes, cero
+con `paths:`**, o sea ~126 000 tokens de piso que **cada subagente vuelve a
+pagar**. THYROX no repite eso. Una regla entra aquí sólo si gobierna **todo**
+trabajo en este árbol; si gobierna un dominio, lleva `paths:` y carga sólo ahí;
+si describe cómo funciona una pieza, va en la cabecera de la pieza.
 
 ## Flujo de sesión
 
-1. **Inicio** — Leer focus.md + now.md. Revisar ROADMAP.md.
-2. **Contexto** — Identificar fase actual. Consultar [SKILL](skills/pm-thyrox/SKILL.md).
-3. **Trabajar** — Seguir la fase. Commits convencionales. Actualizar ROADMAP.md.
-4. **Cierre** — Actualizar focus.md + now.md.
+1. Leer el `README.md` — qué existe y cómo se corre.
+2. Correr `bash tests/run.sh` antes de tocar nada: el estado de partida se mide,
+   no se asume.
+3. Trabajar en TDD, con la mitad roja persistida y su control de anulación.
+4. **Antes de citar una tarea propia** en un commit, un banco o un hallazgo:
+   acuñar su cita durable con `bin/task_ids ingest-board <session_id>
+   <ordinal> --layer thyrox`. El `#NNN` que el cliente asigna a una tarjeta del
+   board **reinicia por sesión** (332 de 337 ids miden colisión entre dos
+   sesiones, `task_ids.py`) — citarlo en texto que sobrevive al turno es
+   fabricar una referencia rota desde el primer commit. `TASK-THYROX-NNNN` es
+   la única forma que resuelve siempre a la misma tarea.
+5. **Cuando el trabajo destape algo que no era obvio antes de medir** —una
+   cifra que resultó otra, una premisa que resultó falsa, una decisión de
+   diseño ajena que explica un comportamiento— se registra con
+   `bin/agent_store agregar-hallazgo` (el envoltorio: el `.py` es biblioteca e invocado por su ruta muere con `ModuleNotFoundError: agents`), citando en `--source-ref` el
+   archivo que es la fuente de verdad. El banco (`.claude/workbench/`) y el
+   job (`.claude/jobs/`) documentan *cómo* se ejecutó el trabajo; un hallazgo
+   documenta *qué se aprendió* y es lo único que queda indexado y buscable
+   entre sesiones (`bin/agent_store buscar-hallazgos`). No todo trabajo
+   produce uno — sólo el que corrige algo que alguien podría volver a asumir.
+   **Cuando el hallazgo es del consumidor** —un ``H-<PREFIJO>-NNNN`` que vive
+   como ``.rst`` en `kaupamex-docs`— el número lo propone
+   `bin/hallazgo_ids propose-id <PREFIJO>` (el mayor usado más uno, **sin
+   reservarlo**: queda asignado al registrar su fila), nunca a mano con un
+   `ls`/`grep` acotado a una sola iniciativa. Ese acotado fue exactamente el
+   error que originó este mecanismo: `H-API-1112` documenta el episodio.
 
-## Para más contexto
+   **Y ese hallazgo tiene DOS caras, no una — cuál gobierna está declarado.**
+   La redacción anterior decía *«no una fila de este store»*, y esa
+   disyunción es falsa: el hallazgo del consumidor es a la vez su ``.rst`` y
+   su fila. Lo que hay entre las dos no es competencia sino dirección, medida
+   antes de declararla — de los seis prefijos del corpus, los números que
+   vivían **sólo** como fila eran cero en cinco y tres en el sexto:
 
-- Metodología completa: [SKILL](skills/pm-thyrox/SKILL.md)
-- Estado del proyecto: [project-state](context/project-state.md)
-- Decisiones: [decisions](context/decisions.md)
-- Convenciones: [conventions](skills/pm-thyrox/references/conventions.md)
+   - **el ``.rst`` es el artefacto de gobierno** — lleva el cuerpo, su
+     etiqueta ``:ref:`` y su fila en el índice de la iniciativa;
+   - **la fila es su índice de búsqueda** entre sesiones, y no lo sustituye;
+   - **la ventana entre registrar la fila y escribir el archivo es legítima
+     mientras dura.** Por eso `propose-id` consulta las dos fuentes por
+     defecto: un número libre en los ``.rst`` puede estar ocupado por una
+     fila escrita hace un minuto. Congelada, esa ventana es deuda, y quien la
+     mide es `src/verify/check_finding_id_unique.py`.
+
+   El episodio que lo obligó a declararse es ``H-THYROX-26``: dos hallazgos
+   distintos acabaron bajo el mismo número y el segundo pisó al primero **sin
+   emitir un byte**.
+6. Commitear por pathspec y publicar. El árbol no se deja sucio entre turnos.
+
+Los pasos 4 y 5 no estaban aquí hasta que su ausencia costó un episodio real:
+un turno completo citó `#9`/`#10` en dos commits y el banco de evidencia sin
+acuñar su `TASK-THYROX-NNNN`, y una discrepancia de cifra medida (9 paquetes
+citados al abrir la tarea contra 12 medidos al cerrarla) quedó sólo en la
+prosa del banco, no en el registro buscable — hasta que el ejecutor preguntó
+por qué. `README.md` no mencionaba ninguno de los dos mecanismos (medido:
+`grep -c "task_ids\|agregar-hallazgo" README.md` → 0), así que una sesión que
+sólo leía el flujo de arriba no tenía cómo saber que existían.
+
+**El paso 4 tiene gate, y no es sólo prosa esta vez.**
+`src/hooks/detect_ephemeral_citation.py` (séptimo detector de
+`tool_use_preflight.py`) avisa cuando un `git commit` o un archivo de
+`.claude/workbench/`/`.claude/jobs/` cita `board #N`/`T-N` sin una cita
+durable en el mismo texto — el defecto exacto del episodio de arriba, esta
+vez detectable antes de que aterrice. Avisa, no bloquea, por la misma razón
+que sus seis hermanos: un patrón léxico no distingue una cita legítima al
+ordinal (para lectura humana) de una que lo usa como única identidad. Sus
+dos mitades de juicio —el ancla de palabra y el ancla de ruta del banco— se
+probaron por anulación: retirar cada una hace caer exactamente lo que
+depende de ella (`tests/hooks/test_detect_ephemeral_citation.py`).
+
+**El paso 5 también, desde que un hallazgo se publicó sin buscar si ya
+existía.** `src/hooks/detect_topic_duplication.py` (octavo detector) avisa,
+al escribir un `hallazgo-H-<PREFIJO>-*.rst` nuevo, si comparte identificadores
+(`THYROX_WORKBENCH_DIR`, no palabras sueltas — medido: los títulos del caso
+real que lo origina no comparten ni una palabra) con archivos de OTRA
+iniciativa de `pm/`. Es el gate que la lección **L-032**
+(`kaupamex-docs: source/gestion/pm/thyrox/lecciones-aprendidas/
+claim-tratado-como-observation-en-una-sesion-de-documentacion-2026-09-13.rst`)
+nombró como su condición de cierre. Sus dos mitades de juicio —el ancla de
+identificador con guion bajo y el tope de frecuencia— se probaron por
+anulación (`tests/hooks/test_detect_topic_duplication.py`).
+
+## Lo que este árbol NO decide por su cuenta
+
+Nada que contradiga una decisión ya registrada en
+`kaupamex-docs: source/gestion/pm/docs/iniciativas/actualizar-agentic-ai-thyrox/`.
+Ese es el registro de gobierno; aquí vive el código que lo implementa.

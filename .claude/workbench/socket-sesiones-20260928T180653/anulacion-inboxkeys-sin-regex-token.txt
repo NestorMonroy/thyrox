@@ -1,0 +1,61 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+127 |     const badToken = join(sessionsDir, 'b')
+128 |     writeFileSync(badToken, JSON.stringify({ peerToken: 'XYZ', pidDomain: 'd' }))
+129 |     const big = join(sessionsDir, 'big')
+130 |     writeFileSync(big, JSON.stringify({ peerToken: TOKEN, pidDomain: 'd', pad: 'x'.repeat(5000) }))
+131 |     expect(await readKeyPidDomain(good)).toBe('d')
+132 |     expect(await readKeyPidDomain(badToken)).toBeUndefined()
+                                                   ^
+error: expect(received).toBeUndefined()
+
+Received: "d"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:132:46)
+(fail) sweepStaleKeyTemps (be) y readKeyPidDomain (ifn) > readKeyPidDomain lee el dominio sólo de un registro válido [1.46ms]
+165 |     expect(await readPeerToken(ADDRESS, undefined, deps())).toEqual({ kind: 'token', token: TOKEN })
+166 |   })
+167 | 
+168 |   test('una sola clave ilegible: unusable', async () => {
+169 |     keyFile(9, { peerToken: 'no-hex' })
+170 |     expect(await readPeerToken(ADDRESS, undefined, deps())).toEqual({ kind: 'unusable' })
+                                                                  ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "kind": "unusable",
++   "kind": "token",
++   "token": "no-hex",
+  }
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:170:61)
+(fail) readPeerToken (QDo) > una sola clave ilegible: unusable [1.10ms]
+202 |   })
+203 | 
+204 |   test('varias claves ilegibles: unusable', async () => {
+205 |     keyFile(10, { peerToken: 'x' })
+206 |     keyFile(11, { nada: 1 })
+207 |     expect(await readPeerToken(ADDRESS, undefined, deps())).toEqual({ kind: 'unusable' })
+                                                                  ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "kind": "unusable",
++   "kind": "token",
++   "token": "x",
+  }
+
+- Expected  - 1
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:207:61)
+(fail) readPeerToken (QDo) > varias claves ilegibles: unusable [0.82ms]
+
+ 21 pass
+ 3 fail
+ 30 expect() calls
+Ran 24 tests across 1 file. [116.00ms]

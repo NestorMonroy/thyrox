@@ -1,0 +1,26 @@
+== 1. la familia: el log nace DENTRO del run ==
+  ok    start publica su RUN
+  ok    el log vive en outputs/ del run
+== 2. el manifiesto declara el instrumento y OMITE lo que no consta ==
+  ok    declara instrument
+  ok    asienta el exit_code
+  ok    OMITE question (un run sin recoger no es conforme)
+== 3. EL QUE DISCRIMINA: dos ejecuciones del mismo nombre ==
+  ok    la familia conserva las DOS
+  ok    y el primer run conserva su 5
+== 4. CONTROL de retrocompatibilidad: BG_DIR declarado gana ==
+  ok    forma plana intacta
+  ok    y su log es el plano de siempre
+== 5. CONTROL de anulacion del descuento: sin BG_DIR NO cae al plano ==
+  ok    el hogar de la familia manda
+
+aserciones: 10  ok: 10  fallo: 0
+== 5. la democion: start no obliga a saber de antemano si es largo ==
+  FALLA un trabajo corto devuelve SU codigo de salida — esperado [7] obtenido [0]
+  ok    un trabajo corto NO se anuncia como demotido
+  FALLA un trabajo largo devuelve 125 (demotido), no el codigo del trabajo — esperado [125] obtenido [0]
+  FALLA y lo dice, en vez de callarlo — esperado [si] obtenido [no]
+  ok    publica su RUN para poder recogerlo despues
+  ok    y el trabajo SIGUE VIVO: la democion no lo mata
+  FALLA el default de gracia es el de la referencia, no 1800 — esperado [120] obtenido []
+EXIT=0

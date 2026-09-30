@@ -1,0 +1,28 @@
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(88,5): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:78-98 ---
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83        filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88>     resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+     94      ? await fsp.stat(meta.worktreePath).then(
+     95          s => (s.isDirectory() ? meta.worktreePath : undefined),
+     96          () => {
+     97            logForDebugging(
+     98              `Resumed worktree ${meta.worktreePath} no longer exists; falling back to parent cwd`,
+  Type 'AnyMessage' is not assignable to type 'Message'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/sessionSignals.test.ts:
+94 | describe('switchSession fija las rutas y olvida el slug de plan', () => {
+95 |   test('projectRoot y cwd se fijan en NFC sin avisar de originalCwd', () => {
+96 |     const cwds = recordCwds()
+97 |     switchSession(id('r'), 'remote_attach', null, { projectRoot: '/raiz/ré', cwd: '/dir/ré' })
+98 |     expect(getProjectRoot()).toBe('/raiz/ré')
+99 |     expect(getCwdState()).toBe('/dir/ré')
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: "/dir/ré"
+Received: "/home/user/thyrox/src/packages/app-host"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/sessionSignals.test.ts:99:27)
+(fail) switchSession fija las rutas y olvida el slug de plan > projectRoot y cwd se fijan en NFC sin avisar de originalCwd [0.46ms]
+
+ 9 pass
+ 1 fail
+ 16 expect() calls
+Ran 10 tests across 1 file. [56.00ms]

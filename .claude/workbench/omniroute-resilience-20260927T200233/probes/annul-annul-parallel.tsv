@@ -1,0 +1,5 @@
+shadowlinks	s/      \[\[ "\$name" == "\$part" || "\$name" == __pycache__ \]\] || ln -s "\$entry" "\$dst\/\$name"/      :/
+shadowplace	s/^  copy="\$(shadow_tree "\$dir\/tree")"/  shadow_tree "$dir\/tree" >\/dev\/null; copy="$dir\/$(basename "$MODULE")"/
+pyrunner	s/    \*.py) out=.*/    *.py) out="$(env "$ENV_VAR=$module" timeout 300 bun test "$TEST" 2>\&1)" || status=$? ;;/
+fallanames	s/sub(\/:\.\*\$\/, "", line)/line = line/
+abort	s/if (status != 0 \&\& f + 0 == 0 \&\& names == "")/if (0)/

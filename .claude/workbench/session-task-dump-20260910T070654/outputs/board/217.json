@@ -1,0 +1,8 @@
+{
+  "id": "217",
+  "subject": "Decidir la política de `stop-tests-scripts.sh`: hoy corre la suite de thyrox en",
+  "description": "Decidir la política de `stop-tests-scripts.sh`: hoy corre la suite de thyrox en cada cierre de turno. La recursión que eso abría está CERRADA (H-DOCS-1127, thyrox@7cb3318f: guard por marcador de proceso). Lo que queda abierto es la política: ¿debe el hook Stub del consumidor correr la suite del PROVEEDOR? Y el gate de la clase: nada detecta que un corredor declarado contenga al test que invoca al declarante.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

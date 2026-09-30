@@ -1,0 +1,19 @@
+# Version de cada dependencia segun los HERMANOS de este arbol
+# (no segun la raiz de ccnmt: el lock resolvio NUESTRAS versiones)
+# medido: 2026-09-19T08:22:44
+
+react                        dependencies:^19.0.0 x4 | dependencies:^19.2.4 x1
+figures                      dependencies:^6.1.0 x1
+@anthropic-ai/sdk            dependencies:^0.124.0 x11 | devDependencies:^0.124.0 x1
+chalk                        dependencies:^6.0.0 x6 | dependencies:^4.1.2 x1 | dependencies:^5.6.2 x1
+lodash-es                    dependencies:^4.18.1 x9 | dependencies:^4.17.23 x1
+usehooks-ts                  dependencies:^3.1.1 x1
+diff                         dependencies:^7.0.0 x1
+strip-ansi                   dependencies:^7.2.0 x1
+zod                          dependencies:^4.3.6 x14
+execa                        dependencies:^9.0.0 x1
+qrcode                       dependencies:^1.5.4 x1
+ignore                       dependencies:^7.0.8 x2
+semver                       dependencies:^7.6.0 x2 | dependencies:^7.8.5 x1
+@modelcontextprotocol/sdk    dependencies:^1.29.0 x2 | dependencies:^1.0.0 x1 | devDependencies:^1.29.0 x1
+lru-cache                    dependencies:^11.0.0 x2

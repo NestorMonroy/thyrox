@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+133 |     expect(describeFastModeUnavailability('disabled_by_env', ctx)).toBe('Fast mode is not available')
+134 |     expect(describeFastModeUnavailability('model_not_allowed', ctx)).toBe("Opus 5 is not in your organization's allowed models")
+135 |     expect(describeFastModeUnavailability('sdk_opt_in_required', ctx)).toBe('Fast mode is not available in the Agent SDK')
+136 |     expect(describeFastModeUnavailability('pending', ctx)).toBe('Checking fast mode availability')
+137 |     expect(describeFastModeUnavailability('unknown', ctx)).toBe('Fast mode is currently unavailable')
+138 |     expect(describeFastModeUnavailability('unknown', context({ penguinsOffMessage: 'apagado' }))).toBe('apagado')
+                                                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "apagado"
+Received: "Fast mode is currently unavailable"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:138:99)
+(fail) los mensajes ($g, Wg, aC) > describeFastModeUnavailability (aC) [0.35ms]
+
+ 13 pass
+ 1 fail
+ 52 expect() calls
+Ran 14 tests across 1 file. [58.00ms]

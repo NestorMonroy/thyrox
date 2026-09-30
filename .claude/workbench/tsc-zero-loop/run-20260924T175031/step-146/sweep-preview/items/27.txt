@@ -1,0 +1,366 @@
+Patrón: write-only-module-state-never-read
+Señal del verificador: TS6133: '\w+' is declared but its value is never read
+Arreglo genérico: Cuando una variable de módulo (`let`) sólo recibe asignaciones y ningún lector la consulta en ningún punto del archivo (verificado con grep del identificador en todo el árbol), se elimina la declaración y cada asignación write-only; no cambia la conducta en ejecución porque el valor nunca se consumía.
+Ya aplicado en: src/packages/config/global/config.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts, src/packages/agent/messages.ts, src/packages/storage/src/claudemd.ts
+
+src/packages/agent/hooks.ts(1851,16): error TS6133: 'executeEnvHooks' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:1841-1861 ---
+   1841      if (parsed.blockingError) {
+   1842        blockingError = parsed.blockingError
+   1843      }
+   1844      if (parsed.response) {
+   1845        elicitationResultResponse = parsed.response
+   1846      }
+   1847    }
+   1848  
+   1849    return { elicitationResultResponse, blockingError }
+   1850  }
+   1851> async function executeEnvHooks(
+   1852    hookInput: HookInput,
+   1853    timeoutMs: number,
+   1854  ): Promise<{
+   1855    results: HookOutsideReplResult[]
+   1856    watchPaths: string[]
+   1857    systemMessages: string[]
+   1858  }> {
+   1859    const results = await executeHooksOutsideREPL({ hookInput, timeoutMs })
+   1860    if (results.length > 0) {
+   1861      invalidateSessionEnvCache()
+src/packages/agent/hooks.ts(1867,16): error TS6133: 'executeFunctionHook' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:1857-1877 ---
+   1857    systemMessages: string[]
+   1858  }> {
+   1859    const results = await executeHooksOutsideREPL({ hookInput, timeoutMs })
+   1860    if (results.length > 0) {
+   1861      invalidateSessionEnvCache()
+   1862    }
+   1863    const watchPaths = results.flatMap((r) => r.watchPaths ?? [])
+   1864    const systemMessages = results.map((r) => r.systemMessage).filter((m): m is string => !!m)
+   1865    return { results, watchPaths, systemMessages }
+   1866  }
+   1867> async function executeFunctionHook({
+   1868    hook,
+   1869    messages,
+   1870    hookName,
+   1871    toolUseID,
+   1872    hookEvent,
+   1873    timeoutMs,
+   1874    signal,
+   1875  }: {
+   1876    hook: FunctionHook
+   1877    messages: Message[]
+src/packages/agent/hooks.ts(1966,16): error TS6133: 'executeHookCallback' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:1956-1976 ---
+   1956          content:
+   1957            error instanceof Error
+   1958              ? error.message
+   1959              : 'Function hook execution error',
+   1960        }),
+   1961        outcome: 'non_blocking_error',
+   1962        hook,
+   1963      }
+   1964    }
+   1965  }
+   1966> async function executeHookCallback({
+   1967    toolUseID,
+   1968    hook,
+   1969    hookEvent,
+   1970    hookInput,
+   1971    signal,
+   1972    hookIndex,
+   1973    toolUseContext,
+   1974  }: {
+   1975    toolUseID: string
+   1976    hook: HookCallback
+src/packages/agent/hooks.ts(2323,10): error TS6133: 'getHookDefinitionsForTelemetry' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2313-2333 ---
+   2313      team_name: teamName,
+   2314    }
+   2315  
+   2316    yield* executeHooks({
+   2317      hookInput,
+   2318      toolUseID: crypto.randomUUID(),
+   2319      signal,
+   2320      timeoutMs,
+   2321    })
+   2322  }
+   2323> function getHookDefinitionsForTelemetry(
+   2324    matchedHooks: MatchedHook[],
+   2325  ): Array<{ type: string; command?: string; prompt?: string; name?: string }> {
+   2326    return matchedHooks.map(({ hook }) => {
+   2327      if (hook.type === 'command') {
+   2328        return { type: 'command', command: hook.command }
+   2329      } else if (hook.type === 'prompt') {
+   2330        return { type: 'prompt', prompt: hook.prompt }
+   2331      } else if (hook.type === 'http') {
+   2332        return { type: 'http', command: hook.url }
+   2333      } else if (hook.type === 'function') {
+src/packages/agent/hooks.ts(2344,10): error TS6133: 'getHookTypeCounts' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2334-2354 ---
+   2334        return { type: 'function', name: 'function' }
+   2335      } else if (hook.type === 'callback') {
+   2336        return { type: 'callback', name: 'callback' }
+   2337      }
+   2338      return { type: 'unknown' }
+   2339    })
+   2340  }
+   2341  /**
+   2342   * Construye un mapa {hookType: conteo} a partir de los hooks emparejados.
+   2343   */
+   2344> function getHookTypeCounts(hooks: MatchedHook[]): Record<string, number> {
+   2345    const counts: Record<string, number> = {}
+   2346    for (const h of hooks) {
+   2347      counts[h.hook.type] = (counts[h.hook.type] || 0) + 1
+   2348    }
+   2349    return counts
+   2350  }
+   2351  function getHooksConfig(
+   2352    appState: AppState | undefined,
+   2353    sessionId: string,
+   2354    hookEvent: HookEvent,
+src/packages/agent/hooks.ts(2725,10): error TS6133: 'getPluginHookCounts' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2715-2735 ---
+   2715      )
+   2716      return filteredHooks
+   2717    } catch {
+   2718      return []
+   2719    }
+   2720  }
+   2721  /**
+   2722   * Build a map of {sanitizedPluginName: hookCount} from matched hooks.
+   2723   * Only logs actual names for official marketplace plugins; others become 'third-party'.
+   2724   */
+   2725> function getPluginHookCounts(
+   2726    hooks: MatchedHook[],
+   2727  ): Record<string, number> | undefined {
+   2728    const pluginHooks = hooks.filter(h => h.pluginId)
+   2729    if (pluginHooks.length === 0) {
+   2730      return undefined
+   2731    }
+   2732    const counts: Record<string, number> = {}
+   2733    for (const h of pluginHooks) {
+   2734      const atIndex = h.pluginId!.lastIndexOf('@')
+   2735      const isOfficial =
+src/packages/agent/hooks.ts(2761,10): error TS6133: 'isInternalHook' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2751-2771 ---
+   2751   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2752   * internos y no se comprueban.
+   2753   */
+   2754  export function hasInstructionsLoadedHook(): boolean {
+   2755    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2756    if (snapshotHooks && snapshotHooks.length > 0) return true
+   2757    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2758    if (registeredHooks && registeredHooks.length > 0) return true
+   2759    return false
+   2760  }
+   2761> function isInternalHook(matched: MatchedHook): boolean {
+   2762    return matched.hook.type === 'callback' && matched.hook.internal === true
+   2763  }
+   2764  /**
+   2765   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2766   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')
+   2767   * @param matcher El patrón del matcher - puede ser:
+   2768   *   - Cadena simple para coincidencia exacta (p.ej. 'Write')
+   2769   *   - Lista separada por pipes para varias coincidencias exactas (p.ej. 'Write|Edit')
+   2770   *   - Patrón regex (p.ej. '^Write.*', '.*', '^(Write|Edit)$')
+   2771   * @returns true si la query coincide con el patrón
+src/packages/agent/hooks.ts(2899,10): error TS6133: 'parseHookOutput' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2889-2909 ---
+   2889              : 'Elicitation result blocked by hook'),
+   2890          command: result.command,
+   2891        }
+   2892      }
+   2893  
+   2894      return out
+   2895    } catch {
+   2896      return {}
+   2897    }
+   2898  }
+   2899> function parseHookOutput(stdout: string): {
+   2900    json?: HookJSONOutput
+   2901    plainText?: string
+   2902    validationError?: string
+   2903  } {
+   2904    const trimmed = stdout.trim()
+   2905    if (!trimmed.startsWith('{')) {
+   2906      logForDebugging('Hook output does not start with {, treating as plain text')
+   2907      return { plainText: stdout }
+   2908    }
+   2909  
+src/packages/agent/hooks.ts(2963,10): error TS6133: 'parseHttpHookOutput' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2953-2973 ---
+   2953        null,
+   2954        2,
+   2955      )}`
+   2956      logForDebugging(errorMessage)
+   2957      return { plainText: stdout, validationError: errorMessage }
+   2958    } catch (e) {
+   2959      logForDebugging(`Failed to parse hook output as JSON: ${e}`)
+   2960      return { plainText: stdout }
+   2961    }
+   2962  }
+   2963> function parseHttpHookOutput(body: string): {
+   2964    json?: HookJSONOutput
+   2965    validationError?: string
+   2966  } {
+   2967    const trimmed = body.trim()
+   2968  
+   2969    if (trimmed === '') {
+   2970      const validation = hookJSONOutputSchema().safeParse({})
+   2971      if (validation.success) {
+   2972        logForDebugging(
+   2973          'HTTP hook returned empty body, treating as empty JSON object',
+
+src/packages/agent/messages.ts(3971,10): error TS6133: 'createToolResultMessage' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:3961-3981 ---
+   3961        if (hasToolUse) {
+   3962          count++
+   3963          if (maxCount && count >= maxCount) {
+   3964            return count
+   3965          }
+   3966        }
+   3967      }
+   3968    }
+   3969    return count
+   3970  }
+   3971> function createToolResultMessage<Output>(
+   3972    tool: Tool<AnyObject, Output>,
+   3973    toolUseResult: Output,
+   3974  ): UserMessage {
+   3975    try {
+   3976      const result = tool.mapToolResultToToolResultBlockParam(toolUseResult, '1')
+   3977  
+   3978      // If the result contains image content blocks, preserve them as is
+   3979      if (
+   3980        Array.isArray(result.content) &&
+   3981        result.content.some(block => block.type === 'image')
+src/packages/agent/messages.ts(4007,10): error TS6133: 'createToolUseMessage' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:3997-4017 ---
+   3997        content: `Result of calling the ${tool.name} tool:\n${contentStr}`,
+   3998        isMeta: true,
+   3999      })
+   4000    } catch {
+   4001      return createUserMessage({
+   4002        content: `Result of calling the ${tool.name} tool: Error`,
+   4003        isMeta: true,
+   4004      })
+   4005    }
+   4006  }
+   4007> function createToolUseMessage(
+   4008    toolName: string,
+   4009    input: { [key: string]: string | number },
+   4010  ): UserMessage {
+   4011    return createUserMessage({
+   4012      content: `Called the ${toolName} tool with the following input: ${jsonStringify(input)}`,
+   4013      isMeta: true,
+   4014    })
+   4015  }
+   4016  /**
+   4017   * Validacion defensiva: asegura que el emparejado tool_use/tool_result sea
+src/packages/agent/messages.ts(4380,10): error TS6133: 'getAutoModeInstructions' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:4370-4390 ---
+   4370  >(messages: T[]): number {
+   4371    // Scan backwards to find the most recent compact boundary
+   4372    for (let i = messages.length - 1; i >= 0; i--) {
+   4373      const message = messages[i]
+   4374      if (message && isCompactBoundaryMessage(message)) {
+   4375        return i
+   4376      }
+   4377    }
+   4378    return -1 // No boundary found
+   4379  }
+   4380> function getAutoModeInstructions(attachment: {
+   4381    reminderType: 'full' | 'sparse'
+   4382  }): UserMessage[] {
+   4383    if (attachment.reminderType === 'sparse') {
+   4384      return getAutoModeSparseInstructions()
+   4385    }
+   4386    return getAutoModeFullInstructions()
+   4387  }
+   4388  
+   4389  function getAutoModeFullInstructions(): UserMessage[] {
+   4390    const content = `## Auto Mode Active
+src/packages/agent/messages.ts(4495,10): error TS6133: 'getPlanModeInstructions' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:4485-4505 ---
+   4485      hookEvent,
+   4486    )
+   4487    const resolvedHookCount = getResolvedHookCount(messages, toolUseID, hookEvent)
+   4488  
+   4489    if (inProgressHookCount > resolvedHookCount) {
+   4490      return true
+   4491    }
+   4492  
+   4493    return false
+   4494  }
+   4495> function getPlanModeInstructions(attachment: {
+   4496    reminderType: 'full' | 'sparse'
+   4497    isSubAgent?: boolean
+   4498    planFilePath: string
+   4499    planExists: boolean
+   4500  }): UserMessage[] {
+   4501    if (attachment.isSubAgent) {
+   4502      return getPlanModeV2SubAgentInstructions(attachment)
+   4503    }
+   4504    if (attachment.reminderType === 'sparse') {
+   4505      return getPlanModeV2SparseInstructions(attachment)
+src/packages/agent/messages.ts(4770,10): error TS6133: 'getTeammateMailbox' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:4760-4780 ---
+   4760  
+   4761    return new Set(
+   4762      siblingMessages.flatMap(_ =>
+   4763        Array.isArray(_.message.content)
+   4764          ? _.message.content.filter(_ => _.type === 'tool_use').map(_ => (_ as ToolUseBlock).id)
+   4765          : [],
+   4766      ),
+   4767    )
+   4768  }
+   4769  // Import diferido para evitar una dependencia circular, manteniendo la propiedad de swarm en el paquete.
+   4770> function getTeammateMailbox(): typeof import('@thyrox/swarm') {
+   4771    // eslint-disable-next-line @typescript-eslint/no-require-imports
+   4772    return require('@thyrox/swarm')
+   4773  }
+   4774  /**
+   4775   * Comprueba si un mensaje de asistente sólo tiene bloques de contenido de texto
+   4776   * con espacios en blanco. Devuelve `true` si todos los bloques son de texto con
+   4777   * sólo espacios en blanco. Devuelve `false` si hay algún bloque no textual (como
+   4778   * `tool_use`) o texto con contenido real.
+   4779   */
+   4780  function hasOnlyWhitespaceTextContent(
+src/packages/agent/messages.ts(4780,10): error TS6133: 'hasOnlyWhitespaceTextContent' is declared but its value is never read.
+  --- código src/packages/agent/messages.ts:4770-4790 ---
+   4770  function getTeammateMailbox(): typeof import('@thyrox/swarm') {
+   4771    // eslint-disable-next-line @typescript-eslint/no-require-imports
+   4772    return require('@thyrox/swarm')
+   4773  }
+   4774  /**
+   4775   * Comprueba si un mensaje de asistente sólo tiene bloques de contenido de texto
+   4776   * con espacios en blanco. Devuelve `true` si todos los bloques son de texto con
+   4777   * sólo espacios en blanco. Devuelve `false` si hay algún bloque no textual (como
+   4778   * `tool_use`) o texto con contenido real.
+   4779   */
+   4780> function hasOnlyWhitespaceTextContent(
+   4781    content: Array<{ type: string; text?: string }>,
+   4782  ): boolean {
+   4783    if (content.length === 0) {
+   4784      return false
+   4785    }
+   4786  
+   4787    for (const block of content) {
+   4788      if (block.type !== 'text') {
+   4789        return false
+   4790      }
+
+src/packages/storage/src/claudemd.ts(1161,5): error TS6133: 'hasLoggedInitialLoad' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:1151-1161 ---
+   1151          expanded.push(resolvedPattern)
+   1152        }
+   1153      } catch {
+   1154        // El directorio no existe; se omite la resolución para este patrón
+   1155      }
+   1156    }
+   1157  
+   1158    return expanded
+   1159  }
+   1160  
+   1161> let hasLoggedInitialLoad = false

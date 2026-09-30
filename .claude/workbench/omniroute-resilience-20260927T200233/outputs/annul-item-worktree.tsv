@@ -1,0 +1,8 @@
+base	20 pass, 0 fail	—
+noremove	19 pass, 1 fail	sin barrido, el worktree ya no está
+nofailed	18 pass, 2 fail	veredictos en orden | la línea de resumen cuenta los veredictos
+noempty	17 pass, 3 fail	veredictos en orden | la línea de resumen cuenta los veredictos | resume la integración
+noverifyempty	18 pass, 2 fail	veredicto sin-verificar | no se aplica sin --unverified
+verifyalways	16 pass, 4 fail	veredictos en orden | la línea de resumen cuenta los veredictos | no aplica lo rechazado | resume la integración
+noaddall	9 pass, 11 fail	veredictos en orden | el parche nombra su archivo | la línea de resumen cuenta los veredictos | aplica a.txt con el texto del primero | aplica b.txt | el sexto es conflicto con el primero | sale 1 si algo con cambios no se integró | resume la integración | veredicto sin-verificar | con --unverified se aplica | su parche nombra el archivo
+nosweep	19 pass, 1 fail	el pool deja sólo el árbol principal

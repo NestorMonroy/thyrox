@@ -1,0 +1,8 @@
+run-task-pool: 4 trabajo(s), anchura 4, logs en /home/user/thyrox//home/user/thyrox/.claude/workbench/run-task-pool-parallel-20260927T185528/outputs/suites/suites-20260927T185848
+  suites-20260927T185848/test-run-task-pool bash tests/session/test-run-task-pool.sh
+  suites-20260927T185848/test-run-task-pool-memfree bash tests/session/test-run-task-pool-memfree.sh
+  suites-20260927T185848/test-run-task-pool-scope bash tests/session/test-run-task-pool-scope.sh
+  suites-20260927T185848/test-run-task-pool-isolation bash tests/session/test-run-task-pool-isolation.sh
+/home/user/thyrox/src/session/run-task-pool.sh: line 427: S_DIR/test-run-task-pool-isolation.attempts): No such file or directory
+/home/user/thyrox/src/session/run-task-pool.sh: line 428: syntax error near unexpected token `elif'
+/home/user/thyrox/src/session/run-task-pool.sh: line 428: `    elif ! kill -0 "$SCHEDULER" 2>/dev/null; then'

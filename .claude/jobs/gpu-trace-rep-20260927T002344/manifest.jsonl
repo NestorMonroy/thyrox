@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --timeout 200 .claude/workbench/zero-errors-py-sh-20260926T223633/gpu-trace-rep.cmds", "started_at": "2026-09-27T00:23:44+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T00:25:12+00:00", "duration_seconds": 88.235427}

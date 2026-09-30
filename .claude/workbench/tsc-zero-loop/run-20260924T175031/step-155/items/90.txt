@@ -1,0 +1,27 @@
+src/packages/tool-registry/src/services/toolHooks.ts(390,16): error TS2322: Type 'import("/home/user/thyrox-control/src/packages/permission/src/ruleBasedPermissions").PermissionDecision' is not assignable to type 'import("/home/user/thyrox-control/src/packages/permission/src/permissionTypes").PermissionDecision'.
+  --- código src/packages/tool-registry/src/services/toolHooks.ts:380-400 ---
+    380          interactionSatisfied
+    381            ? `Hook satisfied user interaction for ${tool.name} via updatedInput`
+    382            : `Hook approved tool use for ${tool.name}, bypassing permission prompt`,
+    383        )
+    384        return { decision: hookPermissionResult, input: hookInput }
+    385      }
+    386      if (ruleCheck.behavior === 'deny') {
+    387        logForDebugging(
+    388          `Hook approved tool use for ${tool.name}, but deny rule overrides: ${ruleCheck.message}`,
+    389        )
+    390>       return { decision: ruleCheck, input: hookInput }
+    391      }
+    392      // ask rule — dialog required despite hook approval
+    393      logForDebugging(
+    394        `Hook approved tool use for ${tool.name}, but ask rule requires prompt`,
+    395      )
+    396      return {
+    397        decision: await canUseTool(
+    398          tool,
+    399          hookInput,
+    400          toolUseContext,
+  Type 'PermissionDecision' is not assignable to type 'PermissionAskDecision<{ [key: string]: unknown; }>'.
+    Types of property 'behavior' are incompatible.
+      Type '"allow" | "ask" | "deny" | "passthrough"' is not assignable to type '"ask"'.
+        Type '"allow"' is not assignable to type '"ask"'.

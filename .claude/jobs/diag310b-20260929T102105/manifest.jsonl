@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/parallel_map bash .claude/workbench/board-sync-english-cli-20260929T095950/diagnose-in-pool-dir.sh {} ::: head-only with-patch", "started_at": "2026-09-29T10:21:05+00:00"}

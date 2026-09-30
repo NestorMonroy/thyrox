@@ -1,0 +1,18 @@
+=== 1. failing_axes cita eje + umbral + medido ===
+  ok    dos ejes fallan, citados por nombre
+  ok    cada fallo trae su umbral y su valor medido
+=== 2. grade con tiers ascendentes por CONJUNTO de ejes ===
+  ok    BASICO exige boxes; boxes falla -> ningun tier
+  ok    boxes y figs pasan, prosa no -> ESTANDAR, no EXCELENTE
+  ok    los tres pasan -> EXCELENTE (el tier mas alto)
+=== 3. grade sobre resultados vacíos ===
+  ok    vacío -> ValueError
+=== 4. format_report — texto plano, sin glifos decorativos ===
+  ok    sin caracteres fuera de ASCII imprimible
+  ok    idioma OK/FAIL, no emoji
+  ok    el eje reprobado nombra su umbral
+=== 5. ANULACIÓN — bajar UN umbral cambia SOLO ese fallo ===
+  ok    con el umbral de boxes bajado, sólo figs sigue fallando — nada más cambió
+
+OK=10 FAILED=0
+EXIT=0

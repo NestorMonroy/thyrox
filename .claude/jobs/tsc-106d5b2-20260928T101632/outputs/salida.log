@@ -1,0 +1,8 @@
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootD
+__tests__/accounts/oauth/zedGrokXaiFlows.test.ts(188,36): error TS2345: Argument of type 'string' is not assignable to parameter of type 'JsonRecord'.
+__tests__/accounts/oauth/zedGrokXaiFlows.test.ts(203,27): error TS2345: Argument of type 'string' is not assignable to parameter of type 'JsonRecord'.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'root
+ 527 expect() calls
+Ran 171 tests across 10 files. [3.26s]
+__BG_EXIT__=0

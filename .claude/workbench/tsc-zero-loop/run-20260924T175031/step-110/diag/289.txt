@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/TaskOutputTool/TaskOutputTool.tsx(75,50): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/TaskOutputTool/TaskOutputTool.tsx:65-85 ---
+     65  }
+     66  
+     67  // Re-export Progress from centralized types to break import cycles
+     68  export type { TaskOutputProgress as Progress } from '../../progressTypes.js'
+     69  
+     70  // Get output for any task type
+     71  async function getTaskOutputData(task: TaskState): Promise<TaskOutput> {
+     72    let output: string
+     73    if (task.type === 'local_bash') {
+     74      const bashTask = task as LocalShellTaskState
+     75>     const taskOutputObj = bashTask.shellCommand?.taskOutput
+     76      if (taskOutputObj) {
+     77        const stdout = await taskOutputObj.getStdout()
+     78        const stderr = taskOutputObj.getStderr()
+     79        output = [stdout, stderr].filter(Boolean).join('\n')
+     80      } else {
+     81        output = await getTaskOutput(task.id)
+     82      }
+     83    } else {
+     84      output = await getTaskOutput(task.id)
+     85    }

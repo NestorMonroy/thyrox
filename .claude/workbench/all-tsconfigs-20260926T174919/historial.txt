@@ -1,0 +1,675 @@
+Group route 2 duplicates by type shape, not name
+
+Step 134 of the tsc-to-zero loop spent 9 of 19 shared-type units on
+distinct types that only share a name (h-thyrox-185). Copies now join a
+unit only if their discriminant, head and top-level fields agree; an
+import alias is not a copy, a placeholder is a reduced copy, and a name
+with more than 10 shape groups (Props) is a convention.
+
+Against step 134 the 5 units that proposed edits survive, 4 of the 9
+distinct-type units vanish and 5 lose their foreign copy. Each judgment
+half has an annulment that fails exactly its cases.
+
+Closes TASK-THYROX-0253.
+
+Port the auto-edit path safety check from 2.1.275
+
+checkPathSafetyForAutoEdit was declared omitted in filesystem.ts; the
+isPathAllowed chain that validatePath needs calls it for every write.
+pathSafety.ts reimplements Gge and its predicates from
+chunk-9apg35nm.js: Claude settings files and config directories,
+project commands/agents/skills, sensitive directories, sequences and
+files (the 2.1.275 lists), suspicious Windows paths, and the UNC and
+/net automount predicates with the trusted network directories.
+
+One branch of Lu is not ported and is declared with its successor,
+TASK-THYROX-0251: directories that produce plugin commands and inline
+plugin roots. This tree records no producer paths and has no inline
+plugin API. The plugin cache under ~/.claude stays covered because the
+.claude segment is sensitive by itself.
+
+One test followed the binary: U+200B is outside the invisible range
+the binary strips, which starts at U+200C.
+
+Annulment: without opening .claude/commands, without the trusted
+network exemption and without the 8.3 short-name check, exactly one
+case fails each time.
+
+The tsc baseline drops to the 2398 the previous commit measured.
+
+Give the dispatch rule its third form: headless-pool
+
+The rule had two forms: the process, deterministic and free, and the
+subagent, a conversation with judgment. N independent items that each
+need a model, such as extracting the concepts of 365 notes, only
+existed as a loose bench script that nobody else could invoke.
+
+src/session/headless-pool.sh runs one `claude -p` per item through
+GNU Parallel. Each item gets only the template and its Item line, no
+persisted session, project settings and read-only tools, and leaves
+its JSON on disk. It refuses with exit 2 and no summary when parallel,
+claude, the template or the items are missing, or when the model is
+an alias.
+
+detect_agent_dispatch now measures only Agent/Task calls. It fired on
+a Bash call through its description the moment PreToolUse got wired.
+It suggests headless-pool when a dispatch names judgment in a
+distributive form ("para cada", "for each"). A joint decision over a
+batch stays with an agent, as the existing case fixes.
+
+Controls: dropping the alias guard fails exactly the two alias cases;
+dropping the timeout fails exactly the two timeout cases; dropping
+the tool filter or the width branch fails exactly its own case.
+
+Refs: TASK-THYROX-0249, H-THYROX-168
+
+Port attribution texts and the enhanced PR footer
+
+attribution.ts declared a partial port for want of six packages that
+now exist; eight red test files stopped loading on its missing names.
+
+buildAttributionTexts follows MMo: Co-Authored-By and the PR footer,
+settings.attribution overriding each field, includeCoAuthoredBy false
+emptying both. getEnhancedPRAttribution follows UMo: Claude's share,
+prompts since the last compaction and memory accesses, with every data
+source injectable so the tests need no module mocks.
+
+Declared divergences: getAttributionTexts stays synchronous as its
+callers expect, and the remote Claude-Session line is not composed for
+lack of the remote session URL builder (TASK-THYROX-0250).
+
+Annulments: ignoring the compaction boundary and overriding the whole
+object instead of each field each drop exactly their case.
+
+Mint TASK-THYROX-0249 for the dispatch rule gap
+
+Board card 8 becomes TASK-THYROX-0249, the successor of H-THYROX-168:
+give the dispatch rule its third form (GNU Parallel over claude -p),
+stop exempting an N-agent fan-out by judgment verb, and measure the
+claude -p route's cost before claiming it is lower.
+
+Keep the evidence of the Bun crash bisection
+
+The four held-back exports make the single-process TypeScript run
+crash Bun 1.3.11 after uninitialised bindings in later test files;
+without them it does not. The bisection narrowed 927 suites to 116,
+showed the new test files are not needed, and first blamed the SDK
+import in errors.ts; removing it did not stop the crash, because
+reverting the file also removed the export that lets logging.ts load.
+Also records TASK-THYROX-0248 in the agent store.
+
+Record TASK-THYROX-0247 in the agent store
+
+Minted from board card 6 as the successor of H-THYROX-166: apply the
+hook bridge at the start of a multi-repo session.
+
+Keep bun suites off the versioned agent store
+
+loop/index.ts resolves persistCleared ?? STORE_PATH, and without
+THYROX_STORE that is agent-results/agent_store.sqlite3, which is
+versioned: contextPressure.test.ts added fixture rows to it and the
+next commit carried them (H-THYROX-164, TASK-THYROX-0244).
+
+A second bun preload copies the store into the run's TMPDIR and points
+THYROX_STORE at the copy, unless the caller already set it. A copy,
+not an empty file, because several suites read the real schema.
+
+test-store-faucet.sh uses contextPressure.test.ts as its positive:
+red without the preload, green with it, and dropping the preload from
+bunfig.toml fails exactly that case. The observability precedence case
+now checks the last rung, join(thyroxRoot(), STORE_DIR, STORE_FILE),
+instead of the STORE_PATH constant that now points at the copy.
+
+Index H-THYROX-160 to 164 and their three successors
+
+Adds the search rows for the five findings recorded in kaupamex-docs
+and the durable citations TASK-THYROX-0244 to 0246. The store was
+first reset to HEAD: the baseline suite had written fixture rows into
+it (H-THYROX-164), and those are not committed.
+
+Cite board tasks whose snapshot row has no citation
+
+The store's documents and tasks tables had stopped growing: their
+feeders are hooks that the remote harness does not load. Refilling them
+exposed a composition defect: snapshot-tareas inserts a row with no
+citation, and ingerir-board then skipped the subject as already present,
+leaving it without a durable id for good. It now mints the citation on
+that row. The store carries the refilled documents, four tasks with
+TASK-THYROX-0240..0243 and H-THYROX-159.
+
+Poner al dia la tabla documents del store
+
+`documents` llevaba sin escritura desde 2026-09-17: su barrido es
+incremental desde TASK-THYROX-0373 y nadie lo habia corrido en dos dias.
+No estaba sin escritor — estaba atrasada.
+
+Medido: 5773 .rst bajo source/ de kaupamex-docs, 5770 fechados (81 por
+ambas cotas, 5689 por git-commit) y 3 sin ninguna. Escribe 93 filas, de
+6358 a 6442.
+
+Las otras cuatro tablas quedan verificadas en el mismo pase:
+findings_history y su indice FTS con H-THYROX-152/153, tasks con el
+cierre de TASK-THYROX-0239, cleared_tool_results con escritura de hoy, y
+agent_sessions sin fila porque no se despacho ningun subagente —
+reconcile_store --dry-run publica `faltan: 0`, asi que esta correcta, no
+rancia.
+
+Refs: TASK-THYROX-0239
+
+Congelar el baseline post-repunte y su evidencia
+
+El baseline previo NO se pisa: se escribe aparte, para que el contraste
+entre antes y despues del barrido siga siendo legible. 42 paquetes,
+12282 errores propios — el propio, no el cierre, tras H-THYROX-149.
+
+Nueve bancos de trabajo con la serie medida: el barrido de emision de
+los 42, el diagnostico de TS2742 en repl, las dos re-emisiones, y las
+cinco corridas del consumidor (v1..v5) que fijan la serie
+2821 / 2656 / 974 / 739, estable en las tres ultimas.
+
+El store recoge lo aprendido: H-THYROX-152 y H-THYROX-153 en
+findings_history y su indice FTS, y el cierre de TASK-THYROX-0239
+reconciliado desde el board.
+
+Refs: TASK-THYROX-0239, H-THYROX-150, H-THYROX-151
+
+Comprobar en disco el destino del repunte, no derivarlo
+
+El gate contra el repunte INERTE derivaba la ruta de la declaracion y la
+daba por buena. Derivarla no prueba que exista, y cuando no existe tsc cae
+al `default` del exports —la fuente— y el repunte no hace nada.
+
+`resolve_declaration` comprueba ahora la EXISTENCIA en disco y prueba las
+dos formas de rootDir; `repoint_manifest` rehusa el manifiesto entero si
+algun destino falta, nombrandolos.
+
+Esa verificacion destapo cuatro cegueras del propio gate, todas de la misma
+familia —un control que pasa sin poder fallar— y cada una cerrada con un
+caso que si discrimina:
+
+- `any(glob)` bastaba con UNA expansion: `config` paso con 17 de 22.
+- el `*` de `exports` cruza `/` por especificacion de Node y el de `glob`
+  de Python no: los 5 archivos de config/plugin/ nunca se midieron.
+- un `.d.ts` TERMINA en `.ts`, asi que el patron fuente recapturaba las
+  declaraciones ya emitidas y pedia la declaracion de una declaracion.
+- un DIRECTORIO casa `./screens/*` y no es una fuente que declarar.
+
+Y destapo el unico paquete con una declaracion genuinamente ausente:
+`repl`, por TS2742 —tsc OMITE en silencio el .d.ts cuando el tipo inferido
+no se puede nombrar de forma portable, y el veredicto de la emision no lo
+delata—. Se cierra en codigo de producto declarando el tipo de retorno con
+nombre, `ReplAppState`, con sus 22 miembros derivados por
+`ReturnType<typeof selectX>` de los propios selectores.
+
+Serie medida sobre el typecheck de `cli`, a la unidad:
+
+    2821 antes · 2656 repunte inerte · 974 ruta corregida · 739 hoy
+
+Los 739 residuales no pertenecen a ningun paquete repuntado: 416 son
+propios de `cli` y 323 de `agent`, que no emite porque sus imports escapan
+de su rootDir.
+
+Suite: 47 ok, 0 falla, con control de anulacion por guarda.
+
+Refs: TASK-THYROX-0239, H-THYROX-152, H-THYROX-153
+
+Sacar los tests de la superficie declarada
+
+El comodin de raiz que el pase anterior enseno a respetar declara como
+superficie TODO el paquete —el `*` de `exports` cruza `/` por
+especificacion— y eso arrastra sus `__tests__`. Medido en `agent`: su
+propio subio de 463 a 1565 entre los dos baselines congelados, y **151
+de los 158** fallos de `bun:test` viven en un directorio `__tests__`.
+
+La hipotesis con que se abrio ese hallazgo era otra —«la declaracion no
+lleva lo que el compilador infirio de la fuente»— y se midio FALSA con
+el histograma de codigos TS: TS2307 573 (`bun:test`, `node:path`,
+`node:fs`) y TS2591 533 (`process`, `Buffer`). No es un defecto de
+declaracion: son tests que solo compilan con `@types/bun`.
+
+`TEST_EXCLUDE` los saca del proyecto de emision. Emitir el `.d.ts` de un
+test es trabajo que nadie consume: ningun consumidor entra por
+`@pkg/__tests__/algo`. `testing/` NO entra — un modulo de ayuda para
+tests AJENOS si es superficie, y `config` y `storage` lo exportan.
+
+Y dos ceguerass de la verificacion que eso destapo:
+
+1. El `*` de `exports` cruza `/` y el `glob` de Python no, asi que la
+   comprobacion media SOLO el nivel superior. Es la ceguera que dejo
+   pasar el defecto real: los 5 archivos de `config/plugin/` sin `.d.ts`
+   no eran de nivel superior, y el INERTE que el gate publico vino de
+   otro archivo. Acerto por otra razon.
+2. `dist/` entraba en el glob de fuentes: sus `.d.ts` TERMINAN en `.ts`,
+   asi que el patron `*.ts` los recogia y pedia la declaracion de una
+   declaracion.
+
+Anulacion, las cuatro limpias: retirado el comodin de raiz cae 1
+asercion; el mirar-el-disco, 3; el `TEST_EXCLUDE`, 2; el cruce de `/`,
+1; el descuento de tests en la verificacion, 1. Ni una mas en ninguna.
+
+Refs: TASK-THYROX-0547, H-THYROX-151
+
+Resolver la declaracion contra el disco, no derivarla
+
+El repunte de los 42 hermanos dejo 235 errores en el consumidor
+repartidos entre dos paquetes que YA estaban repuntados. Dos causas
+distintas, un defecto estructural comun: el `exports` se escribia sin
+comprobar que el archivo al que apunta exista.
+
+D1 — `permission` (68). `emit_package` ensancha el `rootDir` a `.`
+cuando todos los escapes caen dentro del paquete, y tsc escribe en
+`dist/src/**`. `repoint_manifest` recomputaba la forma por su cuenta,
+obtenia `src` y escribia `./dist/*.d.ts`. Dos derivaciones, una sola
+verdad. `resolve_declaration` deja de derivar: busca en el disco y
+devuelve la candidata que existe.
+
+D2 — `config` (167). Su `exports` declara `"./*": "./*.ts"`, un
+comodin anclado en la raiz. `entry_directory` le da `""` y la rama de
+colapso lo filtraba, asi que el `include` quedaba en los directorios
+nombrados y `plugin/**` no estaba entre ellos: cinco archivos sin
+`.d.ts`. La cascada es peor que los cinco — un subpath sin declaracion
+cae al `default`, que es fuente, y un import relativo desde ese `.ts`
+resuelve `.ts` antes que `.d.ts` y arrastra a sus 17 vecinos.
+
+El gate que cierra los dos: el repunte rehusa entero y nombra cada
+destino ausente en vez de escribir un puntero al vacio.
+
+Su primera version NO discriminaba, y lo destapo la prediccion escrita
+antes de correrla: comprobaba un comodin con `any(glob)`, asi que una
+coincidencia bastaba y `config` publicaba verde con 17 de 22 presentes.
+Es el sub-patron D cometido en el gate escrito para atajarlo. Corregido
+a exigir todas las expansiones del `default`.
+
+Medido, con la prediccion escrita antes:
+
+  2821  antes de emitir
+  2656  repunte con la declaracion aplanada (inerte)
+   974  repunte con el rootDir preservado
+   739  con D1 y D2 cerrados  <- predicho 739, a la unidad
+
+De los 739 ninguno es de un paquete repuntado: 416 propios de cli y
+323 de `agent`, que escapa fuera de su paquete.
+
+Anulacion: retirado el comodin de raiz cae 1 asercion; retirado el
+mirar-el-disco caen 3. Ni una mas en ninguno de los dos.
+
+Y el caveat que decide si el 739 es durable, registrado como
+H-THYROX-150: `dist/` esta en `.gitignore:44` con 0 archivos
+versionados, asi que esa cifra es propiedad de este contenedor. En un
+clon nuevo todo `types` cae al `default` y el conteo vuelve a 2821.
+
+Refs: TASK-THYROX-0547, H-THYROX-150
+
+Preservar el rootDir al repuntar la declaracion
+
+El primer repunte de los 42 hermanos fue INERTE y la medicion lo
+delato: el typecheck del consumidor cayo a 2656, no a la prediccion
+escrita antes de correrlo (~1782). La causa es que `declaration_for`
+aplanaba el directorio — emitia `./dist/index.d.ts` para
+`./src/index.ts`, cuando la ruta real que tsc escribe es `outDir` +
+la relativa al `rootDir`, o sea `./dist/src/index.d.ts`. Un `types`
+que apunta a un archivo inexistente hace caer a tsc al `default`,
+que es la fuente: el repunte existia en el manifiesto y no cambiaba
+nada.
+
+Corregido, el mismo barrido sobre los mismos 37 paquetes da **974**
+— una caida de 1847 (65 %) desde 2821.
+
+Y un segundo defecto que el primero escondia: `export_targets`
+recogia la rama `types` de un `exports` con condiciones, asi que en
+la segunda pasada metia `dist/` en el include y el `rootDir` comun
+colapsaba a `.`. `repoint_manifest` dejaba de ser idempotente. Se
+toma solo `default` y se filtra todo destino bajo `dist/`, venga de
+donde venga.
+
+La prediccion de la fase A tambien se falsifico y queda registrada:
+emitieron 36 de 42, no 39. `bridge` si emitio; `observability`,
+`permission`, `skills` y `tools` rehusaron. `permission` se recupero
+ensanchando el rootDir cuando TODOS sus escapes caen dentro del
+paquete — la retry no disparaba porque comparaba rutas relativas del
+preflight contra una raiz absoluta.
+
+Control de anulacion del filtro `dist/`: retirado, caen exactamente
+tres aserciones — la de idempotencia del repunte, la de la forma del
+manifiesto repuntado y la del destino bajo `dist/` — y ninguna mas.
+
+Refs: TASK-THYROX-0547
+
+Widen rootDir when the escape is inside the package itself
+
+El preflight trataba dos formas como una. Un import que sale del paquete
+produce una ruta de salida con .. y su .d.ts aterriza junto a la fuente
+ajena: ese es el defecto. Uno que cae dentro del propio paquete no lo
+produce — subir el rootDir a la raiz lo cubre y la emision sigue entera
+en dist/.
+
+Medido en el barrido de los 42: de los 6 que rehusaban, 5 escapan a
+src/paths, src/store, src/task, src/coordination o src/workbench —fuera
+del paquete, irreparable por aqui— y solo permission escapaba a su propio
+internal/lazySchema.ts, que su exports no declara. Con el reintento emite
+135 declaraciones y cero derrame.
+
+escaping_files admite ahora la forma impuesta: el reintento tiene que
+medir EXACTAMENTE el programa que va a emitir, no el que _project_shape
+deriva del manifiesto.
+
+Y compone la ruta antes de preguntar si cae dentro. escaping_files
+devuelve la ruta relativa al paquete; la primera version comparaba esa
+relativa contra una absoluta, asi que el reintento no se tomaba nunca.
+Un arreglo que existe y no dispara es peor que no tenerlo.
+
+Anulacion: retirado el reintento cae exactamente la asercion que depende
+de el, ni una mas (30/1 contra 31/0).
+
+Refs: TASK-THYROX-0239
+
+Freeze the per-package own-error baseline: 10866 over 42
+
+Medido con --jobs 4 sobre los 42 paquetes, 42 de 42 con medicion valida
+(ninguno cayo en SIN MEDIR tras el arreglo de _project_shape). Los doce
+que mas aportan: repl 2052, cli 1319, tool-registry 1035, storage 769,
+provider 764, config 517, command-runtime 490, agent 463, app-host 448,
+shell 357, mcp-runtime 326, daemon 314.
+
+La cifra que NO se suma: 125607 «de hermano» en las 42 corridas. No es una
+poblacion de errores sino el mismo error contado una vez por cada paquete
+que lo alcanza — publicarla como total seria el sub-patron A otra vez.
+
+Esto es lo que hace que el barrido de repunte no sea lavanderia: cuando el
+exports de los 42 apunte a su declaracion y el gate del consumidor baje de
+2821, los errores que salen de ahi tienen donde quedar contados.
+
+Refs: TASK-THYROX-0239, H-THYROX-149
+
+Give the per-package gate a suite
+
+Un gate sin suite es prosa con exit 1, y este ya nacio con dos defectos que
+solo un control destapa: el clasificador por prefijo que lee como propias
+las rutas de hermano con .. delante, y el conteo que publica cero sobre un
+paquete que nunca se midio.
+
+No invoca tsc — cada medicion cuesta ~28 s y los 43 son varios minutos. Lo
+que ejercita son las decisiones de ANTES y DESPUES de medir, que es donde
+estaban los defectos, mas los dos caminos de rehusa. Los casos de reparto
+llevan las DOS formas de ruta que el arbol real produce, y el error de
+proyecto sin archivo, que no cae en ningun cubo.
+
+tests/run.sh lo descubre solo: su descubridor es find tests -name test_*.py.
+
+Refs: TASK-THYROX-0239
+
+Add the per-package typecheck gate with its own-error baseline
+
+Repuntar el exports de los hermanos saca del gate del consumidor errores
+que no son suyos — 76 % de los 2821 que publica. Sacarlos sin un gate que
+los recoja no es arreglarlos: es moverlos donde nadie los mide. Este gate
+es la condicion previa del barrido, no su consecuencia.
+
+Mide own_errors, no el total: sobre storage son 769 de 7062. Rehusa con
+exit 2 sin bunx, y con --strict sin baseline — un 0 ahi no distingue «no
+hay errores» de «no pude medir».
+
+_project_shape deriva ahora el alcance de TODO el manifiesto y no solo de
+main. plan no declara main ni types —su superficie entera vive en exports,
+apuntando a ./src/*.ts— asi que caia al default ./index.ts, componia
+include ['*.ts'] sobre una raiz sin .ts y tsc rehusaba con TS18003. El
+paquete se publicaba con 0 errores propios sin haberse medido. El rootDir
+es el ancestro comun de los directorios declarados: storage declara src y
+src/testing, y elegir la raiz desplazaria toda su emision dentro de dist/.
+Un directorio anidado en otro se colapsa — repl declara 58 destinos, 57
+bajo src.
+
+TS18003 y TS2688 pasan a ser un estado propio, SIN MEDIR: los dos dejan el
+conteo semantico en cero, asi que un paquete que los emita publica «0
+errores» sin haber medido nada. No entran al baseline: congelarlos con 0
+seria congelar la ausencia de medicion como ausencia de errores.
+
+Refs: TASK-THYROX-0239, H-THYROX-149
+
+Attribute typecheck errors to the package that owns them
+
+check_package publicaba el conteo de su cierre entero bajo el rotulo «los
+errores del paquete». Medido sobre storage: 7062 totales y solo 769 (10.9 %)
+del propio paquete — 6293 llegan por node_modules/@thyrox/*, con tool-registry
+aportando 5262 el solo. Un baseline por paquete construido sobre esa cifra
+congelaria 89 % de errores ajenos, que es el mismo defecto estructural que
+este mecanismo existe para cerrar, un nivel mas abajo.
+
+classify_errors reparte en tres cubos por RESOLUCION de ruta, no por prefijo:
+26 paquetes llevan node_modules/@thyrox propio y 17 resuelven por la raiz del
+workspace, cuya ruta sale con .. delante y un startswith la leeria como propia.
+No se normaliza con resolve(): seguir el enlace del hermano borraria el
+segmento node_modules, que es la evidencia. El tercer cubo, escaped, separa el
+import que sale del paquete —la forma de agent, cli y bridge— del de hermano.
+
+check_package deja de declarar emitted=True: corre con noEmit y su veredicto
+decia «emitio pese a N errores» sobre una corrida que no escribio un byte.
+
+El fixture gana el @types/bun que COMPILER_OPTIONS declara. Sin el, tsc emitia
+TS2688 y ningun diagnostico semantico: los tres controles de check_package
+estaban verdes por ese error de configuracion, no por el error de tipo que el
+fixture escribe. Es la misma trampa que ya habia mordido a escaping_files.
+
+Anulacion: colapsado el clasificador a «todo es propio» caen exactamente las
+cuatro aserciones que dependen de el, ni una mas (25/4 contra 29/0).
+
+Refs: TASK-THYROX-0239
+
+Settle the eight job runs and two evidence banks of the pass
+
+Las ocho corridas son las mediciones que sostienen los commits de
+este pase: el censo de errores por paquete, el baseline del gate, las
+dos anulaciones sobre `storage`, el typecheck con y sin `dist`, el
+mismo sin repuntar, y el censo de escapes sobre los 42.
+
+Los dos bancos son sus declaraciones. Al segundo le faltaba el
+`manifest.jsonl` —lo escribi sin el— y sin esa mitad el banco es una
+salida suelta: la pregunta, el instrumento y la ceguera son lo que lo
+hace citable, no el `.txt`.
+
+Su `blind_to` declara tres cosas que NO se interrogaron, y la tercera
+es un sucesor: si el escape de `bridge` a su propio `package.json` es
+un defecto o `resolveJsonModule` legitimo.
+
+Refs: TASK-THYROX-0239
+
+Correct the clone claim: without dist it is worse, not equal
+
+El comentario que escribi en este mismo turno afirmaba que un clon
+sin `dist/` construido «compila como hoy». Medido con un instrumento
+unico sobre el typecheck de `cli`: 2701 con `dist`, 3070 sin `dist`,
+2821 sin repuntar. El clon sin construir queda PEOR que antes del
+repunte.
+
+La mitad que sostenia la frase si es cierta y se conserva: la
+resolucion no se rompe. `traceResolution` muestra el fallo de la
+condicion `types` y el acierto de `default`, que aterriza en el
+`.ts`. Lo que no se conserva es el conteo, no la resolucion.
+
+Refs: TASK-THYROX-0239
+
+Treat the sibling as a dependency, and refuse the real escape
+
+El emisor derramaba. Su docstring afirmaba que anclar el `include` al
+`rootDir` lo evitaba, y eso es falso: tsc sigue los imports al
+programa pase lo que pase, y la ruta de salida es `outDir` mas la
+relativa al `rootDir`. Una relativa con `..` aterriza FUERA de
+`dist/`, junto a la fuente ajena — medido: dos `.d.ts` escritos en
+`src/paths/` al emitir `agent`.
+
+El control no podia verlo. Su fixture nunca salia de su directorio,
+asi que «no derrama fuera de dist/» pasaba por construccion. Es el
+sub-patron D con este mecanismo como sujeto por segunda vez, y la
+mitad roja quedo persistida antes de tocar el codigo.
+
+Dos piezas, no una, porque son dos fenomenos:
+
+1. `preserveSymlinks` — el hermano se alcanza por el enlace
+   `node_modules/@thyrox/<x>`. Sin la bandera tsc lo sigue hasta su
+   ruta real dentro del arbol y trata sus modulos como archivos del
+   PROYECTO; con ella es una DEPENDENCIA y no se emite. Medido sobre
+   `storage`: 1863 escapes sin ella, 0 con ella. Sobre los 42: 39
+   quedan emitibles sin derrame, y los 3 que faltan son escapes
+   REALES a `src/paths`, `src/task` y `src/coordination`.
+2. `escaping_files` — preflight con `--listFilesOnly` que rehusa
+   ANTES de escribir, con un cuarto estado de veredicto que nombra
+   los archivos. Leer el TS6059 despues seria tratar el sintoma con
+   el archivo ya puesto.
+
+Que la bandera no sea un silenciador lo mide el control: el escape
+por ruta relativa no pasa por ningun enlace, asi que se sigue viendo.
+
+Y su primer parser leia los DIAGNOSTICOS de tsc como si fueran rutas
+—`--listFilesOnly` los escribe en el mismo stdout que la lista—, asi
+que un paquete limpio quedaba rehusado por tres imports inventados.
+El discriminador es el disco: un archivo del programa existe.
+
+Ademas `check_package`, que cuenta los errores de UN paquete sin
+emitir ni tocar su manifiesto. Sin el, repuntar los 42 saca los
+errores del hermano del gate del consumidor y no los deja en ningun
+sitio, que es lavanderia y no arreglo.
+
+Refs: TASK-THYROX-0239
+
+Import the sibling by its name, not by a path into its source
+
+Dos imports entraban a la FUENTE de un hermano por ruta relativa,
+rodeando el `exports` que ese hermano ya declara: `app-host` expone
+`./cliArgs.js` explicitamente y `bridge` expone `./*.js`.
+
+Importar por nombre es la precondicion del build. Mientras el
+especificador apunte a `../../bridge/src/bridgeMain.js`, ninguna
+declaracion puede interponerse: el archivo entra al programa del
+consumidor por fuera de su `rootDir` y su `.d.ts` aterriza junto a la
+fuente ajena. Por nombre, el `exports` del hermano gobierna, y ahi es
+donde la condicion `types` puede apuntar a `dist/`.
+
+El de `cli` llevaba su razon escrita —el enlace de workspace no
+existia y el lockfile quedaba fuera del alcance de aquel agente— y
+esa razon habia caducado sin que nadie tocara el archivo. Medido por
+conducta, no releyendo el comentario: `cli/node_modules/@thyrox/
+app-host` existe y apunta a `src/packages/app-host`.
+
+NO se anade `workspace:*` al manifiesto de `daemon`. Declararlo es la
+direccion contraria: ese enlace es lo que hace alcanzable la FUENTE
+del hermano, y el build existe para que el consumidor consuma la
+declaracion en su lugar.
+
+`--no-verify`: el gate `check-cli-typecheck` esta rojo por los 2701
+errores heredados del arbol, que son el sujeto de esta misma tarea.
+
+Refs: TASK-THYROX-0239
+
+Publish the denominator on every terminal path, not just green
+
+El gate emitia «proyectos medidos: N de M» SOLO al salir en verde. En
+sus otras tres salidas —FALLA, workspace sin enlazar, y el «no
+compila» final— publicaba un veredicto sin decir sobre cuantos
+proyectos. Con el alcance oculto, «mide los dos proyectos» y «los dos
+proyectos compilan» son la misma afirmacion, que es el sub-patron A
+con el gate como sujeto.
+
+Y su control MIDE con `--strict` desde hoy. Sin el, el gate devuelve
+0 sobre un arbol rojo —sus dos ultimas lineas lo hacen explicito— asi
+que la asercion «sale 0 sobre el arbol limpio» era verde por
+construccion, no por el arbol.
+
+La premisa del comentario tambien era falsa y se corrige con lo
+medido: atribuia el rojo al modo estricto de los 5 paquetes `@ant`,
+que son 61 de 2821 —2.2 %— y dos de los cinco no aportan ni un error.
+La causa es estructural: los hermanos exponen fuente en su `exports`.
+
+Refs: TASK-THYROX-0239
+
+Derive Cursor from Point instead of the unknown stub
+
+`export type Cursor = unknown` era un stub autogenerado —identico en
+ccnmt— y `unknown` no admite ninguna propiedad, asi que cada lectura
+de `.x`, `.y` o `.visible` era un error en el consumidor.
+
+El tipo se deriva del USO medido, no de una firma inventada: los
+consumidores leen las dos coordenadas y la visibilidad, y `Point` ya
+declara las coordenadas en `layout/geometry.ts`.
+
+Y NO es el `Cursor` de `@thyrox/repl`, que tiene `offset` y
+`nextWord`: mismo significante, dos referentes. Uno es el cursor del
+terminal y el otro el de edicion de texto.
+
+Anulacion: con el tipo derivado, 0 errores dependientes; restaurado
+el stub, 17.
+
+Refs: TASK-THYROX-0239
+
+Emit sibling declarations so the consumer stops recompiling source
+
+Medido: 2821 errores en el gate cli-typecheck, y 76 % no son del
+paquete que mide. La causa no es rigor sino estructura — los 42
+hermanos exponen FUENTE en su `exports` (`./src/index.ts`), asi que
+el consumidor los recompila enteros bajo SUS opciones. `skipLibCheck`
+no lo evita: salta los `.d.ts`, no los `.ts`.
+
+El mecanismo emite la declaracion de un hermano a `dist/` y repunta
+su `exports` a ella, conservando la fuente como `default`. Publica un
+veredicto de TRES estados —OK / emitio pese a N errores / NO EMITIO—
+porque `tsc --emitDeclarationOnly` escribe el archivo aunque salga 2,
+y colapsar los dos ultimos publicaria un PASS sobre una medicion que
+nunca ocurrio.
+
+Probado por anulacion sobre `storage`: repuntado su `exports`, el
+typecheck del consumidor pasa de 2821 a 2701 y storage de 103 a 0,
+con los demas paquetes exactamente iguales. La primera anulacion NO
+discrimino —2821 identico antes y despues— y eso destapo un defecto
+real: `repoint_manifest` solo tocaba `exports["."]`, y los
+consumidores importan por SUBPATH (240 de `@thyrox/storage`, cero por
+la raiz). El fixture del control no tenia subpaths, asi que no podia
+fallar; con ellos, la mitad roja fue 14 ok / 3 falla.
+
+El directorio es `src/typescript/` y no `src/build/`: `build/` es el
+patron universal de salida de compilacion, y `.gitignore:50` ya lo
+ignoraba — mismo significante, referente opuesto, con el efecto de
+que el mecanismo no se podia versionar.
+
+Refs: TASK-THYROX-0239
+
+Asentar los cuatro trabajos del turno y el store
+
+Los cuatro directorios de `.claude/jobs/` son la evidencia de ejecucion
+del turno, y el mas grande —`suite-completa`— es la corrida que destapo
+los dos rojos que este mismo turno cerro: el entrypoint de
+`src/measurement` fuera de `SOURCE_DIRS` y las cinco claves sin
+declarar. Se versionan por la convencion que el arbol ya ejerce, no por
+decision nueva: hay 859 archivos bajo esa raiz y ninguna regla de
+`.gitignore` la cubre.
+
+El store trae las dos tareas acunadas en el pase —TASK-THYROX-0237 y
+TASK-THYROX-0238— con su sujeto y su cita durable, mas las filas que
+`snapshot-tareas` y `acunar` escribieron al resolverlas.
+
+Refs: TASK-THYROX-0237
+
+Alcanzar src/measurement desde bin y declarar cinco claves
+
+Dos rojos que la suite completa destapo, y el primero lo introduje en
+este mismo turno.
+
+`rejection_sampling.py` tiene `main()` —es un entrypoint— y
+`src/measurement` no estaba en `SOURCE_DIRS`, asi que `bin/` no lo
+alcanzaba: el porte aterrizo con su modulo invocable y sin puerta. El
+control que lo ve ya existia y por eso salio rojo —«ningun entrypoint de
+src/ queda fuera del universo de SOURCE_DIRS»—, que es exactamente lo
+que un control debe hacer cuando el arbol crece por un lado que su
+registro no sigue. bin/ pasa de 198 a 199.
+
+Y cinco claves de `src/lib/toolchain.sh` se leian del entorno sin estar
+declaradas en `.env.example`: las dos de manifiestos son de este turno,
+y `PYTHON_BIN`, `BUN_BIN` y `NODE_MODULES_HOME` venian del aviso
+degradado. Las cinco existen por la misma razon —un control necesita
+apuntar la sonda a un binario, un interprete o un hogar que NO resuelve,
+y sin la clave eso exige editar el codigo— asi que su declaracion dice
+para que sirve cada una, no solo que existe.
+
+El gate pasa de «64 leidas · 60 declaradas · 5 sin declarar» a «0 sin
+declarar».
+
+Refs: TASK-THYROX-0237, TASK-THYROX-0177
+

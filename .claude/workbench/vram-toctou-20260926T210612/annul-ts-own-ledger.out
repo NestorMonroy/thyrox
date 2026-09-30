@@ -1,0 +1,4 @@
+(fail) admitVram > Python y TS a la vez, 3000 cada uno con 5000 libres: entra uno solo [165.46ms]
+(fail) admitVram > la reserva de TS la ve Python, y soltarla le deja sitio [205.43ms]
+ 2 pass
+ 2 fail

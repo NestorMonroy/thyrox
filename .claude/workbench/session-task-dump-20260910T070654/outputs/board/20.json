@@ -1,0 +1,9 @@
+{
+  "id": "20",
+  "subject": "Portar la decisión de compactación del binario y costear no comprimir",
+  "description": "Pregunta del ejecutor 2026-09-02: «¿qué pasa si no comprimimos la sesión? ¿se gastan más tokens? ¿cómo afecta a la calidad y la memoria?».\n\nMedido en 2.1.258 (`chunk-vw215j9f.js`), la decisión es una función de cuatro niveles y NO da contexto infinito al desactivarla:\n\n- ventana efectiva `MF(e,n)` = `window - min(maxOutputTokens, 20000)`\n- umbral `nxe(e,n)` = ventanaEfectiva - 13000\n- `fZe(...)` da `ok | warn | compact | blocked`; con autocompact apagado el nivel `compact` NO se emite y se va directo de `warn` (efectiva-20000) a `blocked` (efectiva-3000), que es parada dura\n- `Qp()` = `autoCompactEnabled`, default true; `DISABLE_COMPACT`/`DISABLE_AUTO_COMPACT` lo apagan\n- guard antithrashing `rxe`: 3 recargas rápidas seguidas → \"trip\"\n- microcompact (`tengu_time_based_microcompact`) es OTRO mecanismo: purga resultados de herramienta, no resume\n\nCondición de cierre: el porte en `@kaupamex/agent` con las cuatro citas del estándar (build+chunk en cabecera, describe con el símbolo, aserción que fija el valor, comentario con la fuente), su suite, y el cálculo del coste de comprimir contra no comprimir usando el catálogo vendorizado — no una estimación. Más el análisis en la iniciativa.",
+  "activeForm": "Portando la decisión de compactación y su coste",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

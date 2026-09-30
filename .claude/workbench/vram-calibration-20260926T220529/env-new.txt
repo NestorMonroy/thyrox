@@ -1,0 +1,9 @@
+HEADLESS_POOL_VRAM_LEDGER=
+
+# El piso de VRAM (MiB enteros) que pide cada ítem aunque el historial diga
+# menos, y lo que pide mientras el historial no esté calibrado (la última
+# ejecución no midió la VRAM de todos sus ítems, o alguno duró menos de dos
+# muestras). Sin piso, un historial sin calibrar pide la GPU entera —de a uno,
+# también entre pools— hasta que una ejecución lo calibre (H-THYROX-192).
+# Default: 0.
+HEADLESS_POOL_VRAM_MIN_MIB=

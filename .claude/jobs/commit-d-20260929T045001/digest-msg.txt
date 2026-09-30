@@ -1,0 +1,12 @@
+Keep the digest unsealed on a partial emission
+
+emit_declarations sealed .source-digest whenever dist/ held any .d.ts.
+When tsc reports TS5055 or TS5033 it leaves that declaration unwritten
+and dist/ keeps the one from the previous source, so --stale then
+judged a frozen declaration fresh. That is how store/dist/db.d.ts
+went on exporting openStore after the rename to openLocal.
+
+The seal now waits for an emission with no unwritten declaration, and
+the verdict says why it was withheld. Annulment: dropping the check
+fails exactly the TS5055 and TS5033 cases of the freshness test; the
+clean case still seals.

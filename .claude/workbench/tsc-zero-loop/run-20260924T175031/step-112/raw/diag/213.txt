@@ -1,0 +1,4 @@
+src/packages/repl/src/screens/REPLView.tsx(4017,26): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/screens/REPLView.tsx(5028,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.

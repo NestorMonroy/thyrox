@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+51 |   })
+52 | 
+53 |   test('isRemoteDrivenSession (fm): puente del REPL, sesión de fondo o teammate', () => {
+54 |     expect(isRemoteDrivenSession(host())).toBe(false)
+55 |     expect(isRemoteDrivenSession(host({ replBridgeActive: () => true }))).toBe(true)
+56 |     expect(isRemoteDrivenSession(host({ env: { THYROX_CODE_SESSION_KIND: 'bg' } }))).toBe(true)
+                                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:56:86)
+(fail) sessionKind (oJ) y los predicados por tipo > isRemoteDrivenSession (fm): puente del REPL, sesión de fondo o teammate [0.24ms]
+
+ 8 pass
+ 1 fail
+ 35 expect() calls
+Ran 9 tests across 1 file. [40.00ms]

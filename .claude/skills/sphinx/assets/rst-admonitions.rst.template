@@ -1,0 +1,160 @@
+.. Template — reStructuredText admonitions and structural asides.
+..
+.. Copy the form you need. The selection table at the bottom is the part worth
+.. reading: the forms are trivial, choosing the wrong one is not.
+..
+.. Generic reStructuredText/Sphinx. A project that restricts which admonitions
+.. it allows states that in its own conventions and points here for the syntax.
+
+
+The nine typed admonitions
+===========================
+
+Each renders with a fixed, translated title. You do not supply the title.
+
+.. note::
+
+   Information the reader needs but that does not change what they do.
+
+.. warning::
+
+   Something that can break, lose data, or cost money if ignored.
+
+.. tip::
+
+   A shortcut or better way. Removing it costs nothing.
+
+.. important::
+
+   A precondition the reader must satisfy to succeed.
+
+.. caution::
+
+   Proceed, but slowly — the operation is easy to get subtly wrong.
+
+.. attention::
+
+   Redirects the eye. Rarely the right pick: prefer ``important`` (precondition)
+   or ``warning`` (consequence), which say *why* you are being interrupted.
+
+.. danger::
+
+   Irreversible damage or a safety hazard. If nothing is destroyed, it is a
+   ``warning``.
+
+.. error::
+
+   Describes a failure state, typically alongside its message.
+
+.. hint::
+
+   A nudge toward the answer without giving it. Almost always ``tip`` is meant.
+
+
+Custom title
+=============
+
+When none of the nine names the thing, supply your own title:
+
+.. admonition:: Measured 2026-01-01
+
+   The generic form. Use it for a titled aside whose category is one-off —
+   a measurement, a caveat, a decision record. Do not use it to work around
+   picking the right typed admonition.
+
+.. admonition:: Prerequisites
+   :class: important
+
+   ``:class:`` borrows another admonition's styling while keeping your title.
+
+
+``seealso`` — the cross-reference aside
+========================================
+
+.. seealso::
+
+   Not an admonition about *this* content: a pointer to other documents that
+   the reader may want next. Renders as its own titled block.
+
+Its body is normally a list of cross-references — shown here as source, since a
+template has no real targets to point at and a dangling ``:doc:`` is a build
+warning:
+
+.. code-block:: rst
+
+   .. seealso::
+
+      - :doc:`/some/other/document`
+      - :ref:`some-label`
+
+
+``rubric`` — a heading that is not a section
+=============================================
+
+.. rubric:: Not in the table of contents
+
+A ``rubric`` is a bold title with no section semantics: it does not enter the
+toctree, does not get a label, and does not affect the document hierarchy. Use
+it for a heading *inside* a section — the closing note of a table, the title of
+a short list — where a real section heading would pollute the outline.
+
+
+Nesting
+========
+
+Admonitions take arbitrary body content, including each other. Indentation
+alone delimits them:
+
+.. warning::
+
+   The outer body.
+
+   .. code-block:: bash
+
+      command --that --illustrates
+
+   .. note::
+
+      A nested admonition. Legal, and almost always a sign the outer one is
+      trying to say two things.
+
+
+Selection table
+================
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 82
+
+   * - Form
+     - Pick it when
+   * - ``note``
+     - the reader should know this, but does nothing differently
+   * - ``important``
+     - there is a **precondition** — do this first or the rest fails
+   * - ``warning``
+     - there is a **consequence** — breakage, data loss, cost
+   * - ``danger``
+     - the consequence is **irreversible** or unsafe
+   * - ``tip``
+     - a better way exists; ignoring it costs nothing
+   * - ``caution``
+     - the step works but is easy to get subtly wrong
+   * - ``error``
+     - you are describing a failure state, usually with its message
+   * - ``admonition``
+     - the category is one-off and deserves its own title
+   * - ``seealso``
+     - you are pointing **out of** this document, not commenting on it
+   * - ``rubric``
+     - you need a heading that must stay out of the toctree
+
+Two failure modes are worth naming, because both make the markup stop working:
+
+- **Everything is a note.** When every aside is a ``note``, the reader learns
+  the block carries no signal and skips all of them — including the one that
+  said data would be lost. The typed names exist to spend attention where it
+  matters.
+- **Warning inflation.** A ``warning`` for something that merely surprises the
+  reader trains them to read past the next one. If nothing breaks, it is a
+  ``note`` or a ``caution``.

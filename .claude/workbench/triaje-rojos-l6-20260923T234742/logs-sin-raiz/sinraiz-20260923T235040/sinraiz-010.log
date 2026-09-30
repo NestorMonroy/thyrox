@@ -1,0 +1,44 @@
+== 1. sintaxis ==
+  ok    implementation_order.py parsea
+== 2. el universo controlado ==
+  ok    corre sobre el universo
+== 3. cabecera: tamano del graph y su procedencia ==
+  ok    cuenta las 16 tareas
+  ok    13 edges: 12 del tablero + 1 de prosa
+== 4. Tarjan: los cycles se detectan y se condensan ==
+  ok    tres cycles
+  ok    el cycle de dos es {4,5}
+  ok    el cycle de tres es {11,12,13}
+  ok    el cycle bloqueado es {15,16}
+  ok    12 componentes tras condensar (16 nodos - 1 - 2 - 1)
+== 5. Kahn: ready es 'sin bloqueador ABIERTO', no 'sin bloqueador' ==
+  ok    9 de 15 no cerradas estan ready
+== 5-bis. el bloqueo externo es del COMPONENTE, no del miembro (#533) ==
+  ok    #15 NO esta ready
+  ok    #16 NO esta ready (el bloqueo es del cycle entero)
+  ok    #14, su bloqueador externo, SI esta ready
+  ok    los tres del cycle sin bloqueador externo SI estan ready
+== 6. unblock count: descendientes en el reverse graph ==
+  ok    #1 destraba 3
+  ok      … y nombra a #2
+  ok      … y a #3
+  ok      … y a #8 (via prosa)
+  ok    #4 declara su cycle con #5
+  ok    el SCC {4,5} destraba 1 (#6)
+  ok    #7 es hoja del graph declarado
+== 7. el ranking pone primero al que mas destraba ==
+  ok    el top-1 es #1
+== 8. control negativo: id fuera del universo ==
+  ok    --explain de un id ausente sale 1
+== 8-bis. etapa 5: la premisa se verifica antes de despachar ==
+  ok    la etapa 5 corre desde el pipeline
+  FALLO y publica su denominador
+        esperado=[1] obtenido=[0]
+== 9. universo vacio: no revienta ==
+  ok    directorio sin tareas sale 0
+== 10. el sustrato lo decide el llamador: el mismo universo por stdin (#579) ==
+  ok    por stdin cuenta las mismas 16 tareas
+  ok    por stdin arma el mismo graph (13 edges, 3 cycles)
+
+test-implementation-order.sh: 27 ok · 1 fallo(s)
+EXIT=1

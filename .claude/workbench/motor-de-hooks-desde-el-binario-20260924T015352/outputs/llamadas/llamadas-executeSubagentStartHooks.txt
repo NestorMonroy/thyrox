@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:515:  for await (const hookResult of executeSubagentStartHooks(
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-516-    agentId,
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-517-    agentDefinition.agentType,
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-518-    agentAbortController.signal,
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-519-  )) {
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-520-    if (
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-521-      hookResult.additionalContexts &&
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-522-      hookResult.additionalContexts.length > 0
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-523-    ) {
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-524-      additionalContexts.push(...hookResult.additionalContexts)
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-525-    }
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-526-  }
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-527-
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-528-  // Add SubagentStart hook context as a user message (consistent with SessionStart/UserPromptSubmit)
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts-529-  if (additionalContexts.length > 0) {

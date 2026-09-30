@@ -1,0 +1,21 @@
+test_a_relative_segment_composes_one_home_per_clone (__main__.CacheHomeResolution.test_a_relative_segment_composes_one_home_per_clone) ... ok
+test_an_absolute_DOES_collide_and_that_is_correct (__main__.CacheHomeResolution.test_an_absolute_DOES_collide_and_that_is_correct)
+Quien escribe una absoluta nombra un sitio, no un patron. ... ok
+test_the_composed_default_anchors_at_the_consumer_root (__main__.CacheHomeResolution.test_the_composed_default_anchors_at_the_consumer_root)
+DEFECTO 1: hoy compone sobre el ancla que el llamador trajo. ... ok
+test_the_default_is_recorded_not_silent (__main__.CacheHomeResolution.test_the_default_is_recorded_not_silent) ... ok
+test_the_measurable_population_supports_the_claim (__main__.CacheHomeResolution.test_the_measurable_population_supports_the_claim)
+Sin al menos dos clones, «un hogar POR CLON» no se puede observar. ... ok
+test_the_per_clone_key_also_resolves (__main__.CacheHomeResolution.test_the_per_clone_key_also_resolves) ... ok
+test_the_provider_default_is_decided_not_inherited (__main__.CacheHomeResolution.test_the_provider_default_is_decided_not_inherited)
+Ahi ``consumer_root`` rehusa y esta familia no puede rehusar. ... ok
+test_the_three_families_compose_the_same_segment_alike (__main__.CacheHomeResolution.test_the_three_families_compose_the_same_segment_alike)
+`rules` y `workbench` ya lo hacian y `cache` no — la asimetria. ... ok
+test_without_a_resolvable_root_the_relative_is_returned_raw (__main__.CacheHomeResolution.test_without_a_resolvable_root_the_relative_is_returned_raw)
+CONTROL DE ANULACION del caso 2. ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.050s
+
+OK
+EXIT=0

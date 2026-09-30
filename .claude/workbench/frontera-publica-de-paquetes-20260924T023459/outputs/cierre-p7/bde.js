@@ -1,0 +1,2 @@
+function bde(e,n){try{let r=e.mapToolResultToToolResultBlockParam(n,"1");if(Array.isArray(r.content)&&r.content.some((g)=>g.type==="image"))return Ae({content:r.content,isMeta:!0});let s=typeof r.content==="string"?r.content:S(r.content);return Ae({content:`Result of calling the ${e.name} tool:
+${s}`,isMeta:!0})}catch{return Ae({content:`Result of calling the ${e.name} tool: Error`,isMeta:!0})}}

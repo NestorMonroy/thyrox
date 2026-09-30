@@ -1,0 +1,2 @@
+ROJO tests/verify/test-generator-determinism.sh
+EXIT=0

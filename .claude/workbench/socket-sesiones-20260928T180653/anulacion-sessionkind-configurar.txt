@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionKind.test.ts:
+106 |       if (saved === undefined) delete process.env.THYROX_CODE_SESSION_KIND
+107 |       else process.env.THYROX_CODE_SESSION_KIND = saved
+108 |     }
+109 |     expect(processSessionKindHost.bgTakeover()).toBeNull()
+110 |     configureSessionKindHost({ bgTakeover: () => ({ jobDir: '/tomado' }) })
+111 |     expect(currentJobDir()).toBe('/tomado')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "/tomado"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionKind.test.ts:111:29)
+(fail) el anfitrión del proceso > lee process.env y deja configurar lo que vive en otros paquetes [0.43ms]
+
+ 8 pass
+ 1 fail
+ 36 expect() calls
+Ran 9 tests across 1 file. [41.00ms]

@@ -1,0 +1,15 @@
+src/packages/repl/src/processUserInput/processUserInput.ts:197:      const blockingMessage = getUserPromptSubmitHookBlockingMessage(
+src/packages/repl/src/processUserInput/processUserInput.ts-198-        hookResult.blockingError,
+src/packages/repl/src/processUserInput/processUserInput.ts-199-      )
+src/packages/repl/src/processUserInput/processUserInput.ts-200-      return {
+src/packages/repl/src/processUserInput/processUserInput.ts-201-        messages: [
+src/packages/repl/src/processUserInput/processUserInput.ts-202-          // TODO: Make this an attachment message
+src/packages/repl/src/processUserInput/processUserInput.ts-203-          createSystemMessage(
+src/packages/repl/src/processUserInput/processUserInput.ts-204-            `${blockingMessage}\n\nOriginal prompt: ${input}`,
+src/packages/repl/src/processUserInput/processUserInput.ts-205-            'warning',
+src/packages/repl/src/processUserInput/processUserInput.ts-206-          ),
+src/packages/repl/src/processUserInput/processUserInput.ts-207-        ],
+src/packages/repl/src/processUserInput/processUserInput.ts-208-        shouldQuery: false,
+src/packages/repl/src/processUserInput/processUserInput.ts-209-        allowedTools: result.allowedTools,
+src/packages/repl/src/processUserInput/processUserInput.ts-210-      }
+src/packages/repl/src/processUserInput/processUserInput.ts-211-    }

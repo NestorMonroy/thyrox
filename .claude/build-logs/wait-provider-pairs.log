@@ -1,0 +1,6 @@
+asentado: provider-pairs -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     provider-pairs exit=0
+       | __BG_EXIT__=0
+       memoria pico: 144484 KB (141 MB) · pared 12.11s
+EXIT=0

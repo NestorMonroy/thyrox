@@ -1,0 +1,11 @@
+{
+  "id": "166",
+  "subject": "Cerrar el grifo de /tmp: la directiva es prosa y 130 archivos la midieron",
+  "description": "ERR-29 / H-DOCS-1095. Medido 2026-09-05: 130 archivos de trabajo de esta sesión aterrizaron en /tmp con la directiva del ejecutor cargada y con el mecanismo correcto (.ruta-del-evento dentro del evento) ya construido por mí dos eventos antes.\n\nEl coste no es uniforme y la tarea debe distinguirlo:\n- mensaje de commit (-F /tmp/msg-*.txt, ~44): andamio, el mensaje aterriza en el objeto de git;\n- acarreo de ruta: sustituye un mecanismo que existe;\n- EVIDENCIA de verificación (esperado.txt/real.txt): el diff que sostiene una afirmación publicada. Muere con el contenedor — build-logs.md lo prohíbe y H-DOCS-120 es el precedente.\n\nInstrumento propuesto: hook PreToolUse sobre Bash que avise ante una redirección a /tmp o al scratchpad, con el mismo patrón que inject_hallazgo_submodulo.py — avisar ANTES de que la escritura aterrice, no auditar después. Avisa, no bloquea: un heredoc a /tmp para una sonda desechable es legítimo, y un aviso que sale siempre se aprende a ignorar.\n\nAntes de cablearlo, decidir qué distingue el andamio de la evidencia. Un emparejador literal sobre «/tmp/» no lo separa; es la misma ceguera que el gate de vocabulario declara para el significante contra el significado. Si no hay discriminador, se declara DESCONOCIDO con su condición de cierre en vez de cablear un gate que avise sobre las tres clases por igual.\n\nPrecondición medida: el gate PreToolUse de este repo hoy está inerte bajo el harness remoto (H-DOCS-1010, tarea #107/#108) — el cableado es TASK-DOCS-0406.",
+  "activeForm": "Cerrando el grifo de /tmp",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": [
+    "161"
+  ]
+}

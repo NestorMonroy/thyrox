@@ -1,0 +1,8 @@
+{
+  "id": "29",
+  "subject": "Publicar tokens equivalentes también en `policy.ts`, que hoy sólo da USD",
+  "description": "`@kaupamex/agent` → `src/cost/policy.ts` calcula el coste de una ruta de cambio de modelo en `rewriteUsd5m`, `rewriteUsd1h` y `readUsdFrom` — sólo USD. Es el mismo defecto que se corrigió en `compactionCost()`: la unidad primaria del proyecto es el **token equivalente** (no depende de la tabla de precios de la build, así que dos ejecuciones se comparan aunque la tarifa cambie), y el USD es la derivada para hablar con quien paga. Cambiar `policy.ts` a acumular en equivalentes y derivar el USD con el escalar del token de entrada, con el mismo control: el veredicto tiene que ser invariante entre las dos unidades. `ratio5m`/`ratio1h` ya son adimensionales y no cambian.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,15 @@
+Assert undefined-only arguments in copied tests
+
+Step 083 of the tsc-zero loop: 2018 -> 1991 in two tsc passes.
+
+The non-null-in-tests proposer now also takes TS2345 and TS2769 whose
+message chain blames undefined, such as
+expect(getSessionCounter()).toBe(produced[0]). Twelve test files kept
+the edit.
+
+Every edited file transpiles byte-identical to HEAD with Bun's
+transpiler (transpiled.log in the bench), so no test changes
+behaviour.
+
+Memory (gate 3b): the new pattern undefined-only-argument-in-test and
+possibly-undefined-in-test name the twelve files.

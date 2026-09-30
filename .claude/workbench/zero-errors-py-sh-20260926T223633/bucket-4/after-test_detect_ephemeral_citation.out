@@ -1,0 +1,13 @@
+  ok    test_evidence_surface_fires_on_workbench_and_jobs
+  ok    test_stays_silent_on_a_hash_with_no_task_word
+  ok    test_stays_silent_on_non_commit_bash_commands
+  ok    test_stays_silent_outside_the_evidence_path
+  ok    test_stays_silent_when_the_durable_citation_is_present_too
+  ok    test_stays_silent_without_a_task_word_present
+  ok    test_stays_silent_without_command_or_content
+  ok    test_the_dispatcher_registers_it
+  ok    test_the_evidence_path_anchor_carries_its_own_weight
+  ok    test_the_word_anchor_carries_its_own_weight
+  ok    test_warns_on_a_bare_board_ordinal_in_a_commit_message
+  ok    test_warns_on_board_hash_form
+resumen: 0 fallo(s)

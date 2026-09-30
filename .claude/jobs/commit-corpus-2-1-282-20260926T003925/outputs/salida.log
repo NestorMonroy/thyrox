@@ -1,0 +1,6 @@
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 4 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)
+93e88b5d Vendor the claude-code 2.1.282 corpus
+remote: warning: File _references/claude-code-bin/2.1.282/claude_strings.txt is 51.71 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB        
+remote: warning: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
+__BG_EXIT__=0

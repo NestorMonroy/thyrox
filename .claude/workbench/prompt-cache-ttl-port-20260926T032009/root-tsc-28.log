@@ -1,0 +1,14 @@
+src/packages/agent/sessionTools/analyzeContext.ts(358,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+src/packages/agent/sessionTools/analyzeContext.ts(633,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+src/packages/cli/src/entry/run-program.ts(414,23): error TS2345: Argument of type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to parameter of type 'Command<[], {}, {}>'.
+  Types of property 'processedArgs' are incompatible.
+    Type '[string | undefined]' is not assignable to type '[]'.
+      Source has 1 element(s) but target allows only 0.
+src/packages/cli/src/entry/run-program.ts(417,24): error TS2345: Argument of type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to parameter of type 'Command<[], {}, {}>'.
+  Types of property 'processedArgs' are incompatible.
+    Type '[string | undefined]' is not assignable to type '[]'.
+      Source has 1 element(s) but target allows only 0.
+src/packages/cli/src/entry/run-program.ts(420,27): error TS2345: Argument of type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to parameter of type 'Command<[], {}, {}>'.
+  Types of property 'processedArgs' are incompatible.
+    Type '[string | undefined]' is not assignable to type '[]'.
+      Source has 1 element(s) but target allows only 0.

@@ -1,0 +1,9 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 193 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 193 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 193 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 37 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)
+EXIT=0
+__BG_EXIT__=0

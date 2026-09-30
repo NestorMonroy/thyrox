@@ -1,0 +1,47 @@
+src/packages/config/plugin/mcpbHandler.ts(424,5): error TS2322: Type 'string[]' is not assignable to type 'Record<string, string>'.
+  --- código src/packages/config/plugin/mcpbHandler.ts:414-434 ---
+    414    manifest: McpbManifest,
+    415    extractedPath: string,
+    416    userConfig: UserConfigValues = {},
+    417  ): Promise<McpServerConfig> {
+    418    // Lazy import: @anthropic-ai/mcpb barrel pulls in zod v3 schemas (~700KB of
+    419    // bound closures). See dxt/helpers.ts for details.
+    420    const { getMcpConfigForManifest } = await import('@anthropic-ai/mcpb')
+    421    const mcpConfig = await getMcpConfigForManifest({
+    422      manifest,
+    423      extensionPath: extractedPath,
+    424>     systemDirs: getSystemDirectories(),
+    425      userConfig,
+    426      pathSeparator: '/',
+    427    })
+    428  
+    429    if (!mcpConfig) {
+    430      const error = new Error(
+    431        `Failed to generate MCP server configuration from manifest "${manifest.name}"`,
+    432      )
+    433      logError(error)
+    434      throw error
+  Index signature for type 'string' is missing in type 'string[]'.
+src/packages/config/plugin/mcpbHandler.ts(870,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, number>'.
+  --- código src/packages/config/plugin/mcpbHandler.ts:860-880 ---
+    860    if (!manifest.server) {
+    861      const error = new Error(
+    862        `MCPB manifest for "${manifest.name}" does not define a server configuration`,
+    863      )
+    864      logError(error)
+    865      throw error
+    866    }
+    867  
+    868    // Extract to cache directory
+    869    const extractPath = join(cacheDir, contentHash)
+    870>   await extractMcpbContents(unzipped, extractPath, modes, onProgress)
+    871  
+    872    // Check for user_config requirement
+    873    if (manifest.user_config && Object.keys(manifest.user_config).length > 0) {
+    874      // Server name from DXT manifest
+    875      const serverName = manifest.name
+    876  
+    877      // Try to load existing config from settings.json or use provided config
+    878      const savedConfig = loadMcpServerUserConfig(pluginId, serverName)
+    879      const userConfig = providedUserConfig || savedConfig || {}
+    880  

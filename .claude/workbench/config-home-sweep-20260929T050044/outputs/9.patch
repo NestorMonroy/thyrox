@@ -1,0 +1,84 @@
+diff --git a/src/packages/storage/bin/__tests__/storage.test.ts b/src/packages/storage/bin/__tests__/storage.test.ts
+index 79e08b2b..9a862ff0 100644
+--- a/src/packages/storage/bin/__tests__/storage.test.ts
++++ b/src/packages/storage/bin/__tests__/storage.test.ts
+@@ -13,7 +13,7 @@
+  * segundo leería la caché del primero.
+  */
+ import { afterEach, describe, expect, test } from 'bun:test'
+-import { mkdtempSync, writeFileSync } from 'node:fs'
++import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import {
+@@ -24,7 +24,7 @@ import {
+ } from '../../src/index.ts'
+ import { getProjectDir, setOriginalCwd, setSessionId } from '../../src/sessionPaths.ts'
+ import { appendTaskOutput, flushTaskOutput } from '../../src/task/diskOutput.ts'
+-import { main } from '../storage.ts'
++import { applyStateRoot, main } from '../storage.ts'
+ 
+ const backend = new LocalFileStorageBackend()
+ 
+@@ -294,3 +294,30 @@ describe('la raíz del estado es un parámetro, con dos entradas de precedencia'
+     expect(r.out).toContain(declaredRoot)
+   })
+ })
++
++describe('sin flag ni variable, el hogar de configuración es el canónico (getConfigHomeDir), no ~/.claude a mano', () => {
++  test('THYROX_CONFIG_DIR apuntando a un mkdtemp: applyStateRoot usa exactamente ese directorio', () => {
++    delete process.env.THYROX_CONFIG_DIR
++    const declaredRoot = tmp('applied-root')
++    process.env.THYROX_CONFIG_DIR = declaredRoot
++
++    expect(applyStateRoot([])).toBe(declaredRoot)
++  })
++
++  test('sin THYROX_CONFIG_DIR: cae a ~/.thyrox del hogar inyectado cuando existe, no a ~/.claude', () => {
++    delete process.env.THYROX_CONFIG_DIR
++    const home = tmp('home')
++    mkdirSync(join(home, '.thyrox'))
++    mkdirSync(join(home, '.claude'))
++
++    expect(applyStateRoot([], home)).toBe(join(home, '.thyrox'))
++  })
++
++  test('sin THYROX_CONFIG_DIR ni ~/.thyrox: respaldo heredado ~/.claude si existe', () => {
++    delete process.env.THYROX_CONFIG_DIR
++    const home = tmp('home-legacy')
++    mkdirSync(join(home, '.claude'))
++
++    expect(applyStateRoot([], home)).toBe(join(home, '.claude'))
++  })
++})
+diff --git a/src/packages/storage/bin/storage.ts b/src/packages/storage/bin/storage.ts
+index 91129dce..0fbc0d40 100644
+--- a/src/packages/storage/bin/storage.ts
++++ b/src/packages/storage/bin/storage.ts
+@@ -33,6 +33,7 @@
+ import { existsSync, readdirSync } from 'node:fs'
+ import { homedir } from 'node:os'
+ import { join } from 'node:path'
++import { resolveConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { envValue } from '@thyrox/paths/reach.ts'
+ import { CACHE_PATHS, setCwdFn } from '../src/cache-paths.ts'
+ import { BackendArtifactStore, FileSessionMetadataStore, FileTranscriptStore, LocalFileStorageBackend } from '../src/index.ts'
+@@ -94,10 +95,16 @@ function arg(argv: string[], name: string): string | undefined {
+  * para que `sessionPaths.ts` (que SÍ es el mecanismo real, no una copia)
+  * la vea y derive `getProjectDir`/`getTranscriptPath` sobre ella. Evita una
+  * segunda fuente de verdad para la misma resolución de ruta.
++ *
++ * Sin `--state-root` ni `STATE_ROOT_VAR` declarada, la raíz cae al hogar de
++ * configuración canónico (`resolveConfigHomeDir`: ~/.thyrox, o ~/.claude
++ * heredado si sólo ese existe) — nunca a un `join(homedir(), '.claude')`
++ * fijo, que en una instalación nueva apunta a un directorio distinto del
++ * resto de thyrox. `home` es un parámetro inyectable sólo para pruebas.
+  */
+-function applyStateRoot(argv: string[]): string {
++export function applyStateRoot(argv: string[], home: string = homedir()): string {
+   const declared = arg(argv, 'state-root')
+-  const value = declared ?? envValue(STATE_ROOT_VAR) ?? join(homedir(), '.claude')
++  const value = declared ?? envValue(STATE_ROOT_VAR) ?? resolveConfigHomeDir({ env: process.env, home, exists: existsSync })
+   process.env[STATE_ROOT_VAR] = value
+   return value
+ }

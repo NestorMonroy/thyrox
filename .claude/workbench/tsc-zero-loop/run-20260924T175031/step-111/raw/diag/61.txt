@@ -1,0 +1,10 @@
+src/packages/cli/src/bg.ts(906,48): error TS2345: Argument of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: JobMeta) => void; }' is not assignable to parameter of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: RespawnJobMeta) => void; }'.
+  Types of property 'writeJobMeta' are incompatible.
+    Type '(meta: JobMeta) => void' is not assignable to type '(meta: RespawnJobMeta) => void'.
+      Types of parameters 'meta' and 'meta' are incompatible.
+        Property 'startedAt' is missing in type 'RespawnJobMeta' but required in type 'JobMeta'.
+src/packages/cli/src/bg.ts(921,39): error TS2345: Argument of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: JobMeta) => void; }' is not assignable to parameter of type '{ getJobDir: (short: string) => string; generateShortId: () => string; spawnBgJob: (opts: { flags: readonly string[]; directive: string; cwd: string; }) => Promise<string>; writeJobMeta: (meta: RespawnJobMeta) => void; }'.
+  Types of property 'writeJobMeta' are incompatible.
+    Type '(meta: JobMeta) => void' is not assignable to type '(meta: RespawnJobMeta) => void'.
+      Types of parameters 'meta' and 'meta' are incompatible.
+        Property 'startedAt' is missing in type 'RespawnJobMeta' but required in type 'JobMeta'.

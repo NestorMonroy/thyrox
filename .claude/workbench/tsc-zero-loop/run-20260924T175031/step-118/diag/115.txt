@@ -1,0 +1,23 @@
+src/packages/mcp-runtime/src/clientRuntime.ts(1576,21): error TS2322: Type '"started"' is not assignable to type '"progress"'.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:1566-1586 ---
+   1566                const meta = toolUseId
+   1567                  ? { 'claudecode/toolUseId': toolUseId }
+   1568                  : {}
+   1569  
+   1570                // Emit progress when tool starts
+   1571                if (onProgress && toolUseId) {
+   1572                  onProgress({
+   1573                    toolUseID: toolUseId,
+   1574                    data: {
+   1575                      type: 'mcp_progress',
+   1576>                     status: 'started',
+   1577                      serverName: client.name,
+   1578                      toolName: tool.name,
+   1579                    },
+   1580                  })
+   1581                }
+   1582  
+   1583                const startTime = Date.now()
+   1584                const MAX_SESSION_RETRIES = 1
+   1585                for (let attempt = 0; ; attempt++) {
+   1586                  try {

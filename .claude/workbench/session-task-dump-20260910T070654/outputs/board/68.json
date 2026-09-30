@@ -1,0 +1,8 @@
+{
+  "id": "68",
+  "subject": "T-105 Sostener los controles positivos de git-real con timeout 60000",
+  "description": "Los dos test.if(hasRef(...)) de git-real morían por el timeout por-test de bun (5000 ms), no por lógica (6423 ms y 18831 ms medidos). Añadir tercer arg { timeout: 60000 } a los cuatro tests de git-real de claims.test.ts y branchIntegration.test.ts. Sucesor de #63.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

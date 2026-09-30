@@ -1,0 +1,10 @@
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/accounts/refresh/health/checkPlan.test.ts(54,13): error TS2352: Conversion of type 'CheckPlan' to type '{ update: { lastError: string; }; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+__tests__/accounts/refresh/health/checkPlan.test.ts(194,13): error TS2352: Conversion of type 'UnrecoverableOutcome' to type '{ update: { lastError: string; }; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+TEST_DONE
+ 0 fail
+ 1709 expect() calls
+Ran 494 tests across 29 files. [6.44s]
+__BG_EXIT__=0

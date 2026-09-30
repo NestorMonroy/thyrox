@@ -1,0 +1,40 @@
+tests/integration/message-pipeline.test.ts(55,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:45-65 ---
+     45    test('extractTag requires tagName parameter', () => {
+     46      // Calling without tagName throws
+     47      expect(() => (extractTag as any)('hello')).toThrow()
+     48    })
+     49  })
+     50  
+     51  // ─── Normalization ────────────────────────────────────────────────────
+     52  
+     53  describe('Message pipeline: normalization', () => {
+     54    test('normalizeMessages returns an array', () => {
+     55>     const msg = createUserMessage('hello')
+     56      const result = normalizeMessages([msg])
+     57      expect(Array.isArray(result)).toBe(true)
+     58    })
+     59  
+     60    test('normalizeMessages preserves at least one message for simple input', () => {
+     61      const msg = createUserMessage('hello')
+     62      const result = normalizeMessages([msg])
+     63      expect(result.length).toBeGreaterThanOrEqual(1)
+     64    })
+     65  })
+tests/integration/message-pipeline.test.ts(61,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:51-65 ---
+     51  // ─── Normalization ────────────────────────────────────────────────────
+     52  
+     53  describe('Message pipeline: normalization', () => {
+     54    test('normalizeMessages returns an array', () => {
+     55      const msg = createUserMessage('hello')
+     56      const result = normalizeMessages([msg])
+     57      expect(Array.isArray(result)).toBe(true)
+     58    })
+     59  
+     60    test('normalizeMessages preserves at least one message for simple input', () => {
+     61>     const msg = createUserMessage('hello')
+     62      const result = normalizeMessages([msg])
+     63      expect(result.length).toBeGreaterThanOrEqual(1)
+     64    })
+     65  })

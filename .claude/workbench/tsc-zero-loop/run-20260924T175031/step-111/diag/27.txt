@@ -1,0 +1,138 @@
+src/packages/agent/hooks/AsyncHookRegistry.ts(64,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:54-74 ---
+     54    toolName?: string
+     55    pluginId?: string
+     56  }): void {
+     57    const timeout = asyncResponse.asyncTimeout || 15000 // Default 15s
+     58    logForDebugging(
+     59      `Hooks: Registering async hook ${processId} (${hookName}) with timeout ${timeout}ms`,
+     60    )
+     61    const stopProgressInterval = startHookProgressInterval({
+     62      hookId,
+     63      hookName,
+     64>     hookEvent,
+     65      getOutput: async () => {
+     66        const taskOutput = pendingHooks.get(processId)?.shellCommand?.taskOutput
+     67        if (!taskOutput) {
+     68          return { stdout: '', stderr: '', output: '' }
+     69        }
+     70        const stdout = await taskOutput.getStdout()
+     71        const stderr = taskOutput.getStderr()
+     72        return { stdout, stderr, output: stdout + stderr }
+     73      },
+     74    })
+src/packages/agent/hooks/AsyncHookRegistry.ts(66,69): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:56-76 ---
+     56  }): void {
+     57    const timeout = asyncResponse.asyncTimeout || 15000 // Default 15s
+     58    logForDebugging(
+     59      `Hooks: Registering async hook ${processId} (${hookName}) with timeout ${timeout}ms`,
+     60    )
+     61    const stopProgressInterval = startHookProgressInterval({
+     62      hookId,
+     63      hookName,
+     64      hookEvent,
+     65      getOutput: async () => {
+     66>       const taskOutput = pendingHooks.get(processId)?.shellCommand?.taskOutput
+     67        if (!taskOutput) {
+     68          return { stdout: '', stderr: '', output: '' }
+     69        }
+     70        const stdout = await taskOutput.getStdout()
+     71        const stderr = taskOutput.getStderr()
+     72        return { stdout, stderr, output: stdout + stderr }
+     73      },
+     74    })
+     75    pendingHooks.set(processId, {
+     76      processId,
+src/packages/agent/hooks/AsyncHookRegistry.ts(103,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:93-113 ---
+     93      hook => !hook.responseAttachmentSent,
+     94    )
+     95  }
+     96  
+     97  async function finalizeHook(
+     98    hook: PendingAsyncHook,
+     99    exitCode: number,
+    100    outcome: 'success' | 'error' | 'cancelled',
+    101  ): Promise<void> {
+    102    hook.stopProgressInterval()
+    103>   const taskOutput = hook.shellCommand?.taskOutput
+    104    const stdout = taskOutput ? await taskOutput.getStdout() : ''
+    105    const stderr = taskOutput?.getStderr() ?? ''
+    106    hook.shellCommand?.cleanup()
+    107    emitHookResponse({
+    108      hookId: hook.hookId,
+    109      hookName: hook.hookName,
+    110      hookEvent: hook.hookEvent,
+    111      output: stdout + stderr,
+    112      stdout,
+    113      stderr,
+src/packages/agent/hooks/AsyncHookRegistry.ts(110,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:100-120 ---
+    100    outcome: 'success' | 'error' | 'cancelled',
+    101  ): Promise<void> {
+    102    hook.stopProgressInterval()
+    103    const taskOutput = hook.shellCommand?.taskOutput
+    104    const stdout = taskOutput ? await taskOutput.getStdout() : ''
+    105    const stderr = taskOutput?.getStderr() ?? ''
+    106    hook.shellCommand?.cleanup()
+    107    emitHookResponse({
+    108      hookId: hook.hookId,
+    109      hookName: hook.hookName,
+    110>     hookEvent: hook.hookEvent,
+    111      output: stdout + stderr,
+    112      stdout,
+    113      stderr,
+    114      exitCode,
+    115      outcome,
+    116    })
+    117  }
+    118  
+    119  export async function checkForAsyncHookResponses(): Promise<
+    120    Array<{
+src/packages/agent/hooks/AsyncHookRegistry.ts(152,48): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:142-162 ---
+    142    }[] = []
+    143  
+    144    const pendingCount = pendingHooks.size
+    145    logForDebugging(`Hooks: Found ${pendingCount} total hooks in registry`)
+    146  
+    147    // Snapshot hooks before processing — we'll mutate the map after.
+    148    const hooks = Array.from(pendingHooks.values())
+    149  
+    150    const settled = await Promise.allSettled(
+    151      hooks.map(async hook => {
+    152>       const stdout = (await hook.shellCommand?.taskOutput.getStdout()) ?? ''
+    153        const stderr = hook.shellCommand?.taskOutput.getStderr() ?? ''
+    154        logForDebugging(
+    155          `Hooks: Checking hook ${hook.processId} (${hook.hookName}) - attachmentSent: ${hook.responseAttachmentSent}, stdout length: ${stdout.length}`,
+    156        )
+    157  
+    158        if (!hook.shellCommand) {
+    159          logForDebugging(
+    160            `Hooks: Hook ${hook.processId} has no shell command, removing from registry`,
+    161          )
+    162          hook.stopProgressInterval()
+src/packages/agent/hooks/AsyncHookRegistry.ts(153,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/agent/hooks/AsyncHookRegistry.ts:143-163 ---
+    143  
+    144    const pendingCount = pendingHooks.size
+    145    logForDebugging(`Hooks: Found ${pendingCount} total hooks in registry`)
+    146  
+    147    // Snapshot hooks before processing — we'll mutate the map after.
+    148    const hooks = Array.from(pendingHooks.values())
+    149  
+    150    const settled = await Promise.allSettled(
+    151      hooks.map(async hook => {
+    152        const stdout = (await hook.shellCommand?.taskOutput.getStdout()) ?? ''
+    153>       const stderr = hook.shellCommand?.taskOutput.getStderr() ?? ''
+    154        logForDebugging(
+    155          `Hooks: Checking hook ${hook.processId} (${hook.hookName}) - attachmentSent: ${hook.responseAttachmentSent}, stdout length: ${stdout.length}`,
+    156        )
+    157  
+    158        if (!hook.shellCommand) {
+    159          logForDebugging(
+    160            `Hooks: Hook ${hook.processId} has no shell command, removing from registry`,
+    161          )
+    162          hook.stopProgressInterval()
+    163          return { type: 'remove' as const, processId: hook.processId }

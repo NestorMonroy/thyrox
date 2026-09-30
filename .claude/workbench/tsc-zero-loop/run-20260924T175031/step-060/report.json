@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2494, "total_final": 2481, "tsc_runs": 1, "accepted": ["agent:align-anthropic-sdk"], "files_kept": ["bun.lock", "package.json"], "outcomes": {"agent:align-anthropic-sdk": "accepted-net"}}

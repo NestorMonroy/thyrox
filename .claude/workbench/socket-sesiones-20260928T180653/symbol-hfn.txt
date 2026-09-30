@@ -1,0 +1,5 @@
+==== hfn: 1 definicion(es) de nivel superior
+---- chunk-x5vr5vwm.js function hfn [4175,4747)
+async function hfn(e,n=10){let r=`pid=${String(e)}; for i in $(seq 1 ${n}); do ppid=$(ps -o ppid= -p $pid 2>/dev/null | tr -d ' '); if [ -z "$ppid" ]; then echo FAIL; exit 0; fi; if [ "$ppid" = "0" ] || [ "$ppid" = "1" ]; then echo END; exit 0; fi; echo $ppid; pid=$ppid; done`,i=await Ve("sh",["-c",r],{timeout:3000}),s=(i.stdout??"").trim().split(`
+`).filter(Boolean);return{ancestors:s.filter((o)=>o!=="END"&&o!=="FAIL").map((o)=>parseInt(o,10)).filter((o)=>!isNaN(o)),readFailed:i.code!==0||s.at(-1)==="FAIL",truncated:i.code===0&&s.at(-1)!=="END"&&s.at(-1)!=="FAIL"}}
+symbol: 1 de 1 nombre(s) resueltos

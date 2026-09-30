@@ -1,0 +1,16 @@
+== A1 bypass sin transacción
+(fail) bypass — a failed replacement leaves the previous user patterns [1.02ms]
+ 17 pass
+ 1 fail
+== A2 alias sin la guarda de agentes
+(fail) mappings — sync writes the alias only for agents with an alias key [1.05ms]
+ 17 pass
+ 1 fail
+== A3 upsert que reescribe la fila entera
+(fail) state — upsert on an existing row only touches the given fields [0.67ms]
+(fail) state — setLastStarted and setLastError upsert without clobbering [0.68ms]
+ 16 pass
+ 2 fail
+== restored
+ 18 pass
+ 0 fail

@@ -1,0 +1,35 @@
+asentado: job-20260927T082158_job-001 -> OK (1 de 3)
+asentado: job-20260927T082158_job-002 -> OK (2 de 3)
+esperando: 2 de 3 asentados, 31s; vivos: order-leaks
+sonda order-leaks: 25815 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 25820 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 25822 run-task-pool.s stdin=devnull(/dev/null) escritores=- estado=S cpu=0.04s
+sonda order-leaks: 27953 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 27957 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 27958 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 27960 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=4.55s
+sonda order-leaks: 27973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 27977 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 27978 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda order-leaks: 27979 bun stdin=devnull(/dev/null) escritores=- estado=R cpu=4.46s
+sonda order-leaks: 27998 wait-jobs.sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.02s
+sonda order-leaks: 28297 sleep stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+asentado: order-leaks -> OK (3 de 3)
+== 3 trabajos asentados ==
+OK     job-20260927T082158_job-001
+       | (vacío — no emitió nada)
+OK     job-20260927T082158_job-002
+       | (vacío — no emitió nada)
+OK     order-leaks exit=0
+       | OK     job-20260927T082158_job-010 exit=0
+       |        | EXIT=0
+       |        memoria pico: 253040 KB (247 MB) · pared 7.97s
+       | OK     job-20260927T082158_job-011 exit=0
+       |        | EXIT=0
+       |        memoria pico: 251688 KB (246 MB) · pared 7.91s
+       | OK     job-20260927T082158_job-012 exit=0
+       |        | EXIT=0
+       |        memoria pico: 250864 KB (245 MB) · pared 8.09s
+       | __BG_EXIT__=0
+       memoria pico: 280824 KB (274 MB) · pared 40.25s
+EXIT=0

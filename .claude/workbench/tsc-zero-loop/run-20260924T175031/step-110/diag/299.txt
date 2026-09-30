@@ -1,0 +1,138 @@
+tests/integration/agent-loop.test.ts(35,7): error TS2322: Type '"test-uuid-1"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código tests/integration/agent-loop.test.ts:25-45 ---
+     25  
+     26      // Queue should be empty at start (or contain only stale entries
+     27      // from earlier tests; clear them).
+     28      removeByFilter(() => true)
+     29      expect(getCommandQueueLength()).toBe(0)
+     30  
+     31      enqueue({
+     32        mode: 'prompt',
+     33        text: 'hello',
+     34        images: [],
+     35>       uuid: 'test-uuid-1',
+     36      })
+     37  
+     38      expect(getCommandQueueLength()).toBe(1)
+     39      const q = getCommandQueue()
+     40      expect(q.length).toBe(1)
+     41      expect(q[0]?.text).toBe('hello')
+     42      expect(q[0]?.mode).toBe('prompt')
+     43  
+     44      // Cleanup
+     45      removeByFilter(() => true)
+tests/integration/agent-loop.test.ts(41,18): error TS2339: Property 'text' does not exist on type 'QueuedCommand'.
+  --- código tests/integration/agent-loop.test.ts:31-51 ---
+     31      enqueue({
+     32        mode: 'prompt',
+     33        text: 'hello',
+     34        images: [],
+     35        uuid: 'test-uuid-1',
+     36      })
+     37  
+     38      expect(getCommandQueueLength()).toBe(1)
+     39      const q = getCommandQueue()
+     40      expect(q.length).toBe(1)
+     41>     expect(q[0]?.text).toBe('hello')
+     42      expect(q[0]?.mode).toBe('prompt')
+     43  
+     44      // Cleanup
+     45      removeByFilter(() => true)
+     46    })
+     47  
+     48    test('removeByFilter strips matching entries', async () => {
+     49      await import('@thyrox/app-host/runtime/bootstrap.js')
+     50      const { enqueue, getCommandQueueLength, removeByFilter } = await import(
+     51        '@thyrox/agent/messageQueueManager.js'
+tests/integration/agent-loop.test.ts(55,54): error TS2322: Type '"a"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código tests/integration/agent-loop.test.ts:45-65 ---
+     45      removeByFilter(() => true)
+     46    })
+     47  
+     48    test('removeByFilter strips matching entries', async () => {
+     49      await import('@thyrox/app-host/runtime/bootstrap.js')
+     50      const { enqueue, getCommandQueueLength, removeByFilter } = await import(
+     51        '@thyrox/agent/messageQueueManager.js'
+     52      )
+     53  
+     54      removeByFilter(() => true)
+     55>     enqueue({ mode: 'prompt', text: 'A', images: [], uuid: 'a' })
+     56      enqueue({
+     57        mode: 'task-notification',
+     58        text: 'B',
+     59        images: [],
+     60        uuid: 'b',
+     61      })
+     62      enqueue({ mode: 'prompt', text: 'C', images: [], uuid: 'c' })
+     63  
+     64      expect(getCommandQueueLength()).toBe(3)
+     65  
+tests/integration/agent-loop.test.ts(60,7): error TS2322: Type '"b"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código tests/integration/agent-loop.test.ts:50-70 ---
+     50      const { enqueue, getCommandQueueLength, removeByFilter } = await import(
+     51        '@thyrox/agent/messageQueueManager.js'
+     52      )
+     53  
+     54      removeByFilter(() => true)
+     55      enqueue({ mode: 'prompt', text: 'A', images: [], uuid: 'a' })
+     56      enqueue({
+     57        mode: 'task-notification',
+     58        text: 'B',
+     59        images: [],
+     60>       uuid: 'b',
+     61      })
+     62      enqueue({ mode: 'prompt', text: 'C', images: [], uuid: 'c' })
+     63  
+     64      expect(getCommandQueueLength()).toBe(3)
+     65  
+     66      const removed = removeByFilter(c => c.mode === 'task-notification')
+     67      expect(removed.length).toBe(1)
+     68      expect(removed[0]?.text).toBe('B')
+     69      expect(getCommandQueueLength()).toBe(2)
+     70  
+tests/integration/agent-loop.test.ts(62,54): error TS2322: Type '"c"' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código tests/integration/agent-loop.test.ts:52-72 ---
+     52      )
+     53  
+     54      removeByFilter(() => true)
+     55      enqueue({ mode: 'prompt', text: 'A', images: [], uuid: 'a' })
+     56      enqueue({
+     57        mode: 'task-notification',
+     58        text: 'B',
+     59        images: [],
+     60        uuid: 'b',
+     61      })
+     62>     enqueue({ mode: 'prompt', text: 'C', images: [], uuid: 'c' })
+     63  
+     64      expect(getCommandQueueLength()).toBe(3)
+     65  
+     66      const removed = removeByFilter(c => c.mode === 'task-notification')
+     67      expect(removed.length).toBe(1)
+     68      expect(removed[0]?.text).toBe('B')
+     69      expect(getCommandQueueLength()).toBe(2)
+     70  
+     71      removeByFilter(() => true)
+     72    })
+tests/integration/agent-loop.test.ts(68,24): error TS2339: Property 'text' does not exist on type 'QueuedCommand'.
+  --- código tests/integration/agent-loop.test.ts:58-78 ---
+     58        text: 'B',
+     59        images: [],
+     60        uuid: 'b',
+     61      })
+     62      enqueue({ mode: 'prompt', text: 'C', images: [], uuid: 'c' })
+     63  
+     64      expect(getCommandQueueLength()).toBe(3)
+     65  
+     66      const removed = removeByFilter(c => c.mode === 'task-notification')
+     67      expect(removed.length).toBe(1)
+     68>     expect(removed[0]?.text).toBe('B')
+     69      expect(getCommandQueueLength()).toBe(2)
+     70  
+     71      removeByFilter(() => true)
+     72    })
+     73  
+     74    test('popAllEditable returns undefined when queue is empty', async () => {
+     75      await import('@thyrox/app-host/runtime/bootstrap.js')
+     76      const { popAllEditable, removeByFilter } = await import(
+     77        '@thyrox/agent/messageQueueManager.js'
+     78      )

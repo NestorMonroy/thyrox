@@ -1,0 +1,29 @@
+== 1. CONTROL POSITIVO REAL: cierre en parrafo aparte NO es apertura ==
+  ok    cierre en parrafo aparte NO cuenta como apertura
+== 2. CONTROL NEGATIVO: la misma seccion, abriendo de verdad ==
+  ok    apertura real sin sucesor SI se marca
+== 3. la misma apertura, con SOLO el ordinal (noveno cambio: ya no basta) ==
+  ok    apertura con SOLO #NNN, sin baseline, SI se marca
+== 4. la forma inline que el sexto arreglo introdujo ==
+  ok    cierre inline sigue descontandose
+== 5. el estado estructural manda sobre la prosa ==
+  ok    estado documentado sin sucesor SI se marca
+== 6. sin arbol que medir NO sale verde ==
+  ok    sin arbol que medir sale 2, no 0
+== 7. el reporte publica su denominador ==
+  ok    el reporte publica su denominador
+== 8. CONTROL POSITIVO REAL: la cita durable TASK-<CAPA>-NNNN ==
+  ok    el control positivo real NO cita ningun #NNN
+  ok    cita TASK-<CAPA>-NNNN cuenta como sucesor
+== 9. ANULACION: con un awk que no compila, el gate REHUSA ==
+  ok    con awk que no compila el gate sale 2
+  ok    y NO emite cifra alguna
+  ok    y con el awk sano el MISMO arbol da 0 — el control DISCRIMINA
+== 10. CONTROL POSITIVO REAL, SIN baseline: el ordinal solo YA falla ==
+  ok    el control positivo NO cita ninguna forma durable
+  ok    hallazgo real con SOLO ordinal, sin baseline, SI se marca
+== 11. MISMO contenido, CON su ruta en un baseline sintetico: pasa ==
+  ok    el mismo hallazgo, con su ruta baseline, NO se marca
+
+15 ok, 0 fallos
+EXIT=0

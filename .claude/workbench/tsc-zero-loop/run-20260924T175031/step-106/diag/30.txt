@@ -1,0 +1,8 @@
+src/packages/config/plugin/installedPluginsManager.ts(143,51): error TS2345: Argument of type '{ encoding: string; }' is not assignable to parameter of type '"utf8"'.
+src/packages/config/plugin/installedPluginsManager.ts(152,38): error TS2339: Property 'version' does not exist on type '{}'.
+src/packages/config/plugin/installedPluginsManager.ts(152,70): error TS2339: Property 'version' does not exist on type '{}'.
+src/packages/config/plugin/installedPluginsManager.ts(268,45): error TS2345: Argument of type '{ encoding: string; }' is not assignable to parameter of type '"utf8"'.
+src/packages/config/plugin/installedPluginsManager.ts(276,32): error TS2339: Property 'version' does not exist on type '{}'.
+src/packages/config/plugin/installedPluginsManager.ts(276,60): error TS2339: Property 'version' does not exist on type '{}'.
+src/packages/config/plugin/installedPluginsManager.ts(1017,59): error TS2345: Argument of type '{ encoding: string; }' is not assignable to parameter of type '"utf8"'.
+src/packages/config/plugin/installedPluginsManager.ts(1019,12): error TS18046: 'manifest' is of type 'unknown'.

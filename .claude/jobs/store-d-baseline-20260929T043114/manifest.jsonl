@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/run_ts_isolated < .claude/jobs/store-d-tests.txt", "started_at": "2026-09-29T04:31:14+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-29T04:31:54+00:00", "duration_seconds": 40.870947}

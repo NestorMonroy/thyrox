@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/tsc_proposers > .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/auto-candidates.jsonl 2> .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/proposers.stderr; wc -l < .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/auto-candidates.jsonl", "started_at": "2026-09-25T04:40:53+00:00"}

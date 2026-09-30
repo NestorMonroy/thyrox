@@ -1,0 +1,2 @@
+  *--query-gpu=index,utilization.gpu*)    echo "0, 77" ;;
+  *--query-gpu=index,memory.free*)        echo "0, ${FAKE_FREE_VRAM:-100000}" ;;

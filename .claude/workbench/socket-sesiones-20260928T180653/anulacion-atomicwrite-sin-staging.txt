@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+247 |       seen.push(from)
+248 |       const { rename } = await import('node:fs/promises')
+249 |       await rename(from, to)
+250 |     }
+251 |     await writeFileAtomicWithMode(target, 'x', { stagingDir: staging, renameFn })
+252 |     expect(isTempNameFor(seen[0]!, join(staging, 'k.json'))).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:252:62)
+(fail) opciones completas de Jne > stagingDir crea el temporal allí con el nombre base del destino; si no es un directorio, junto al destino [1.30ms]
+
+ 26 pass
+ 1 fail
+ 69 expect() calls
+Ran 27 tests across 1 file. [169.00ms]

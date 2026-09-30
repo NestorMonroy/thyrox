@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -lc cd /home/user/thyrox && bun install 2>&1", "started_at": "2026-09-19T01:04:22+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-19T01:04:40+00:00", "duration_seconds": 18.675236}

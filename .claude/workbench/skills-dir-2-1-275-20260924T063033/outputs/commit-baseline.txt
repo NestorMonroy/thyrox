@@ -1,0 +1,8 @@
+Lower the tsc baseline to 2324 and open the skills bench
+
+The last commit measured 2324 type errors against a baseline of 2331;
+the ratchet asks to lower it so the count cannot climb back.
+
+The bench holds the 2.1.275 extraction of the dynamic and conditional
+skill functions (Ajn, GUt, T3n, lfs, ifs), the start of the port of
+the missing loadSkillsDir exports.

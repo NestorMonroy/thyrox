@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeModelSupport.test.ts:
+39 |     expect(isFastModeEnabled()).toBe(false)
+40 |   })
+41 | 
+42 |   test('fuera de primera parte no hay modo rápido', () => {
+43 |     process.env.THYROX_CODE_USE_BEDROCK = '1'
+44 |     expect(isFastModeEnabled()).toBe(false)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeModelSupport.test.ts:44:33)
+(fail) isFastModeEnabled (mo) > fuera de primera parte no hay modo rápido [0.29ms]
+
+ 7 pass
+ 1 fail
+ 17 expect() calls
+Ran 8 tests across 1 file. [300.00ms]

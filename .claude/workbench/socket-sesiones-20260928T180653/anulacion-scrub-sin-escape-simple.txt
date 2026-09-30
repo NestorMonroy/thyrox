@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerTextScrub.test.ts:
+40 |     expect(scrubPeerText('{"a":"\\u003cagent-message>"}')).toBe('{"a":"\\u003c\\\\agent-message>"}')
+41 |     expect(scrubPeerText('"\\u003cagent-message>"')).toBe('"\\u003c\\\\agent-message>"')
+42 |   })
+43 | 
+44 |   test('una barra escapada antes de u003c no es un escape \\u', () => {
+45 |     expect(scrubPeerText('{"a":"\\\\u003cagent-message>"}')).toBe('{"a":"\\\\u003cagent-message>"}')
+                                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "{"a":"\\u003cagent-message>"}"
+Received: "{"a":"\\u003c\\agent-message>"}"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerTextScrub.test.ts:45:62)
+(fail) scrubPeerText (lYe) > una barra escapada antes de u003c no es un escape \u [0.27ms]
+
+ 17 pass
+ 1 fail
+ 25 expect() calls
+Ran 18 tests across 1 file. [50.00ms]

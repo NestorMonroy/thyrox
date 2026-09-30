@@ -1,0 +1,28 @@
+test_5_the_gap_is_preserved_as_an_empty_cell (__main__.TestCellPosition.test_5_the_gap_is_preserved_as_an_empty_cell) ... ok
+test_6_NULLIFICATION_reading_in_ORDER_shifts_the_table_left (__main__.TestCellPosition.test_6_NULLIFICATION_reading_in_ORDER_shifts_the_table_left)
+Control de anulacion de la trampa 2, y el defecto es silencioso: ... ok
+test_7_the_TWO_letter_column_lands_correctly (__main__.TestCellPosition.test_7_the_TWO_letter_column_lands_correctly)
+`AA` es la 27, no la 1+1. Una conversion que solo mire la ultima ... ok
+test_8_an_OMITTED_row_does_not_shift_the_following_ones (__main__.TestCellPosition.test_8_an_OMITTED_row_does_not_shift_the_following_ones)
+Lo mismo que el hueco de columna, en el otro eje. ... ok
+test_13_dumps_TSV_with_the_sheet_name_as_header (__main__.TestLineSurface.test_13_dumps_TSV_with_the_sheet_name_as_header) ... ok
+test_14_a_missing_origin_exits_2_and_emits_NO_count (__main__.TestLineSurface.test_14_a_missing_origin_exits_2_and_emits_NO_count) ... ok
+test_15_a_TAB_inside_a_cell_does_not_split_the_column (__main__.TestLineSurface.test_15_a_TAB_inside_a_cell_does_not_split_the_column)
+Un TSV cuyo separador aparezca en el dato es un TSV roto, y el ... ok
+test_1_a_shared_cell_returns_its_TEXT (__main__.TestSharedStrings.test_1_a_shared_cell_returns_its_TEXT) ... ok
+test_2_NULLIFICATION_reading_the_raw_value_yields_a_NUMBER_where_a_word_belongs (__main__.TestSharedStrings.test_2_NULLIFICATION_reading_the_raw_value_yields_a_NUMBER_where_a_word_belongs)
+Control de anulacion de la trampa 1. Es la mas traicionera del ... ok
+test_3_a_NUMERIC_cell_is_not_resolved_against_the_table (__main__.TestSharedStrings.test_3_a_NUMERIC_cell_is_not_resolved_against_the_table)
+La otra mitad, y es la que discrimina: si TODO se resolviera ... ok
+test_4_an_INLINE_string_also_comes_out (__main__.TestSharedStrings.test_4_an_INLINE_string_also_comes_out)
+`t="inlineStr"` no usa la tabla: el texto va dentro de la celda. ... ok
+test_10_NULLIFICATION_the_inner_FILE_name_is_not_the_name (__main__.TestSheetName.test_10_NULLIFICATION_the_inner_FILE_name_is_not_the_name) ... ok
+test_9_the_sheet_comes_out_with_its_VISIBLE_name (__main__.TestSheetName.test_9_the_sheet_comes_out_with_its_VISIBLE_name) ... ok
+test_11_a_zip_that_is_not_a_workbook_REFUSES (__main__.TestVerdict.test_11_a_zip_that_is_not_a_workbook_REFUSES)
+El objeto EXISTE y es un zip valido, asi que el rechazo lo produce ... ok
+test_12_what_is_not_a_ZIP_REFUSES (__main__.TestVerdict.test_12_what_is_not_a_ZIP_REFUSES) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.170s
+
+OK

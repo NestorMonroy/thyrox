@@ -1,0 +1,2 @@
+tests/integration/context-build.test.ts(31,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+tests/integration/context-build.test.ts(40,7): error TS2322: Type 'string' is not assignable to type 'string[]'.

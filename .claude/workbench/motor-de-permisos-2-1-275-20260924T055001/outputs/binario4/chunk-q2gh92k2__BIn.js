@@ -1,0 +1,1 @@
+function BIn(e){switch(e?.type){case"safetyCheck":return!e.classifierApprovable&&!bq(e);case"rule":return e.rule.ruleBehavior==="ask";case"subcommandResults":return[...e.reasons.values()].some((n)=>BIn(n.decisionReason));default:return!1}}

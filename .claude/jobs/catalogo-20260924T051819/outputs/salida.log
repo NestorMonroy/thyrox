@@ -1,0 +1,25 @@
+-- ROJO src/packages/agent/__tests__/models.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/models.test.ts:
+172 |     // el único camino a "sin precio" es un identificador que no existe.
+173 |     expect(() => usageCostUsd('claude-no-existe', porTurno)).toThrow()
+174 |   })
+175 | 
+176 |   test('effortCostIndex devuelve null donde el registro no lo declara', () => {
+177 |     expect(effortCostIndex('claude-fable-5-1', 'max')).toBe(1.91)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: 1.91
+Received: 1.74
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/models.test.ts:177:56)
+(fail) coste > effortCostIndex devuelve null donde el registro no lo declara [0.21ms]
+
+ 15 pass
+ 1 fail
+ 112 expect() calls
+Ran 16 tests across 1 file. [356.00ms]
+pass=92 fail=1 errores=0 caidas=0 archivos=6 en_rojo=1
+__BG_EXIT__=1

@@ -1,0 +1,21 @@
+src/packages/provider/src/commands/provider.ts(31,3): error TS2322: Type 'Record<string, string | undefined>' is not assignable to type 'Record<string, string>'.
+  'string' index signatures are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/provider/src/commands/provider.ts(47,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(48,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(49,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(50,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(51,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(111,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(112,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(113,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(114,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(115,12): error TS2703: The operand of a 'delete' operator must be a property reference.
+src/packages/provider/src/commands/provider.ts(145,15): error TS2322: Type 'Promise<{ call: LocalCommandCall; }>' is not assignable to type 'Promise<LocalCommandModule>'.
+  Type '{ call: LocalCommandCall; }' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

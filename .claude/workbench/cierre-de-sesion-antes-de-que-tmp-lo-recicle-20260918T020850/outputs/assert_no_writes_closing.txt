@@ -1,0 +1,1 @@
+assert_no_writes: OK — 0 escrituras (alcance medido: 446 linea(s) de traza, 1 proceso(s); subject_exit=0)

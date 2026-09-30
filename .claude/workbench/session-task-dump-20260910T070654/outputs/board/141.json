@@ -1,0 +1,10 @@
+{
+  "id": "141",
+  "subject": "Liberar la reserva que sobrevive a su rama fusionada",
+  "description": "El ledger de claims no libera al integrar: la reserva de una rama ya fusionada queda retenida indefinidamente. Medido 2026-09-05: la reserva de `.claude/packages` por `l2` (task 63, feature/kaupamex-l2) sigue abierta aunque `git merge-base --is-ancestor feature/kaupamex-l2 HEAD` da verdadero — su trabajo ya esta en HEAD. `release` existe como op y `whoHas` lo honra, pero ningun llamador lo emite: grep sobre packages/*/src da 0 llamadas fuera del propio claims.ts. Decidir el desenlace: (a) que integrate() emita release por la rama fusionada, (b) paso manual declarado en el procedimiento de integracion, o (c) que whoHas descarte una reserva cuya rama ya es ancestro de HEAD. La (c) es la unica que no exige que nadie se acuerde, y la unica que puede equivocarse si la rama se reabre. Ver H-DOCS-1078.",
+  "status": "pending",
+  "blocks": [
+    "138"
+  ],
+  "blockedBy": []
+}

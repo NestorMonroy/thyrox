@@ -1,0 +1,2 @@
+VERDE tests/verify/test-corpus-al-dia.sh
+EXIT=0

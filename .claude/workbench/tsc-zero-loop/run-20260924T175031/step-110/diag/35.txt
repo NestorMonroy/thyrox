@@ -1,0 +1,92 @@
+src/packages/agent/internal/stopHooksCore.ts(391,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:381-401 ---
+    381                const info = hookInfos.find(
+    382                  i => i.command === a.command && i.durationMs === undefined,
+    383                )
+    384                if (info) info.durationMs = a.durationMs as number
+    385              }
+    386            }
+    387          }
+    388        }
+    389  
+    390        if (result.blockingError) {
+    391>         const userMessage = host().createUserMessage?.({
+    392            content: host().getStopHookMessage?.(result.blockingError) ?? '',
+    393            isMeta: true, // Oculto en la interfaz — sale en el resumen.
+    394          })
+    395          if (userMessage) {
+    396            blockingErrors.push(userMessage)
+    397            yield userMessage
+    398          }
+    399          hasOutput = true
+    400  
+    401          // Un bloqueo de `/goal` NO contribuye a `hookErrors`: se renderiza
+src/packages/agent/internal/stopHooksCore.ts(455,37): error TS2339: Property 'createUserInterruptionMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:445-465 ---
+    445            message: stopReason,
+    446            hookName: 'Stop',
+    447            toolUseID: stopHookToolUseID,
+    448            hookEvent: 'Stop',
+    449          })
+    450          if (detenido) yield detenido
+    451        }
+    452  
+    453        if (toolUseContext.abortController.signal.aborted) {
+    454          host().logEvent?.('tengu_pre_stop_hooks_cancelled', {})
+    455>         const interrupcion = host().createUserInterruptionMessage?.({
+    456            toolUse: false,
+    457          })
+    458          if (interrupcion) yield interrupcion
+    459          return { blockingErrors: [], preventContinuation: true }
+    460        }
+    461      }
+    462  
+    463      if (hookCount > 0) {
+    464        const resumen = host().createStopHookSummaryMessage?.(
+    465          hookCount,
+src/packages/agent/internal/stopHooksCore.ts(508,24): error TS2339: Property 'createSystemMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:498-518 ---
+    498        return yield* hooksDeTeammate(permissionMode, toolUseContext)
+    499      }
+    500  
+    501      return { blockingErrors: [], preventContinuation: false }
+    502    } catch (error) {
+    503      host().logEvent?.('tengu_stop_hook_error', {
+    504        duration: Date.now() - hookStartTime,
+    505      })
+    506      // Un mensaje de sistema que el modelo NO ve, para que el usuario pueda
+    507      // depurar su hook.
+    508>     const sys = host().createSystemMessage?.(
+    509        `Stop hook failed: ${errorMessage(error)}`,
+    510        'warning',
+    511      )
+    512      if (sys) yield sys
+    513      return { blockingErrors: [], preventContinuation: false }
+    514    } finally {
+    515      // Se restaura el hook de objetivo diferido para que el turno siguiente
+    516      // reevalúe cuando el trabajo de fondo termine. Envuelto en `try` porque
+    517      // el `finally` corre también al abortar, y un fallo aquí nunca debe
+    518      // enmascarar el error original.
+src/packages/agent/internal/stopHooksCore.ts(651,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:641-661 ---
+    641      nombreDelHook: 'TaskCompleted' | 'TeammateIdle',
+    642      mensajeDeBloqueo: (e: unknown) => string,
+    643    ): AsyncGenerator<unknown, boolean> {
+    644      for await (const result of gen) {
+    645        if (result.message) {
+    646          const msg = result.message as { type: string; toolUseID?: string }
+    647          if (msg.type === 'progress' && msg.toolUseID) toolUseID = msg.toolUseID
+    648          yield result.message
+    649        }
+    650        if (result.blockingError) {
+    651>         const userMessage = host().createUserMessage?.({
+    652            content: mensajeDeBloqueo(result.blockingError),
+    653            isMeta: true,
+    654          })
+    655          if (userMessage) {
+    656            bloqueos.push(userMessage)
+    657            yield userMessage
+    658          }
+    659        }
+    660        if (result.preventContinuation) {
+    661          corta = true

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/bootstrap/__tests__/refusalFallback.test.ts:
+137 |   })
+138 | 
+139 |   test('si el usuario cambió de modelo, suelta sin restaurar', () => {
+140 |     latchRefusalFallbackModel(latch())
+141 |     setMainLoopModelOverride('claude-haiku-4-5')
+142 |     expect(restoreRefusalFallbackModel()).toBeUndefined()
+                                                ^
+error: expect(received).toBeUndefined()
+
+Received: {
+  appStateModel: "claude-fable-5-1",
+  forSessionValue: null,
+  overrideValue: "claude-fable-5-1",
+  restoredToExplicitOverride: true,
+  fallbackModel: "claude-opus-5",
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/refusalFallback.test.ts:142:43)
+(fail) restoreRefusalFallbackModel (mn) > si el usuario cambió de modelo, suelta sin restaurar [0.38ms]
+
+ 25 pass
+ 1 fail
+ 52 expect() calls
+Ran 26 tests across 2 files. [81.00ms]

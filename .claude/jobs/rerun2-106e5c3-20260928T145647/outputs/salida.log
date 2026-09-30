@@ -1,0 +1,14 @@
+== 9: prefijo Cookie
+   (src/accounts/webCookie/zaiToken.ts)
+(fail) the Z.ai web-session token > is read from JSON, a bearer line, a token cookie or a bare value [0.79ms]
+ 24 pass
+ 1 fail
+== 26: error sin sanear
+   (src/accounts/webCookie/webCookieProbe.ts)
+(fail) validating a web-cookie provider > a network failure is a sanitized error, never thrown [0.45ms]
+ 24 pass
+ 1 fail
+== restaurado
+ 25 pass
+ 0 fail
+__BG_EXIT__=0

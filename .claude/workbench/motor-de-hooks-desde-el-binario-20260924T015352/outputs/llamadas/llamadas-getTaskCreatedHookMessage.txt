@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts:136:        blockingErrors.push(getTaskCreatedHookMessage(result.blockingError))
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-137-      }
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-138-    }
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-139-
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-140-    if (blockingErrors.length > 0) {
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-141-      await deleteTask(taskListId, taskId)
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-142-      throw new Error(blockingErrors.join('\n'))
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-143-    }
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-144-
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-145-    // Auto-expand task list when creating tasks
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-146-    context.setAppState(prev => {
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-147-      if (prev.expandedView === 'tasks') return prev
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-148-      return { ...prev, expandedView: 'tasks' as const }
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-149-    })
+src/packages/tool-registry/src/tools/TaskCreateTool/TaskCreateTool.ts-150-

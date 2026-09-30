@@ -1,0 +1,35 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/observability.test.ts:
+239 | 
+240 |   test('sin la del store, el consumidor declarado compone la ruta', () => {
+241 |     delete process.env[STORE_PATH_VAR]
+242 |     const consumidor = raizTemporal()
+243 |     process.env[CONSUMER_ROOT_VAR] = consumidor
+244 |     expect(storePath()).toBe(join(consumidor, STORE_DIR, STORE_FILE))
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "/tmp/store-path-ws7GoJ/agent-results/agent_store.sqlite3"
+Received: "/tmp/store-path-ws7GoJ/.claude/agent-results/agent_store.sqlite3"
+
+      at <anonymous> (/home/user/thyrox/src/packages/observability/__tests__/observability.test.ts:244:25)
+(fail) storePath — el consumidor es parámetro, no el clon de docs > sin la del store, el consumidor declarado compone la ruta [0.53ms]
+255 |   // de arriba pasaría igual y el defecto reaparecería sin que nada lo dijera.
+256 |   test('el destino de escritura NO es el localizador del silo heredado', () => {
+257 |     delete process.env[STORE_PATH_VAR]
+258 |     const consumidor = raizTemporal()
+259 |     process.env[CONSUMER_ROOT_VAR] = consumidor
+260 |     expect(storePath()).not.toBe(
+                                  ^
+error: expect(received).not.toBe(expected)
+
+Expected: not "/tmp/store-path-649fZj/.claude/agent-results/agent_store.sqlite3"
+
+      at <anonymous> (/home/user/thyrox/src/packages/observability/__tests__/observability.test.ts:260:29)
+(fail) storePath — el consumidor es parámetro, no el clon de docs > el destino de escritura NO es el localizador del silo heredado [0.34ms]
+
+ 22 pass
+ 2 fail
+ 51 expect() calls
+Ran 24 tests across 1 file. [45.00ms]

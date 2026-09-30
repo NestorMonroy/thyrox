@@ -1,0 +1,1 @@
+src/packages/config/settings/inventory.ts(171,75): error TS2532: Object is possibly 'undefined'.

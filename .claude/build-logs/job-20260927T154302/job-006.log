@@ -1,0 +1,26 @@
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > --sessions lista lo que hay para reanudar, y sale sin correr el bucle [5325.52ms]
+  ^ this test timed out after 5000ms.
+
+__tests__/systemPromptLayering.test.ts:
+94 |   return promptRegistrado(tr)
+95 | }
+96 | 
+97 | describe('A.4.2 — el prompt de la CLI se arma por capas', () => {
+98 |   test('1. el CLAUDE.md del proyecto llega al modelo', () => {
+99 |     expect(correr(arbol())).toContain('MARCA-DEL-PROYECTO')
+                                 ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "MARCA-DEL-PROYECTO"
+Received: "Eres un agente que trabaja con herramientas sobre el árbol de un proyecto. Actúas sobre archivos y comandos reales: lo que haces queda.\n\nNinguna afirmación de estado sale de tu memoria. Un hecho —que un archivo existe, cuánto mide, qué dice, si un comando funcionó— se deriva de la salida de una herramienta ejecutada en este turno. Si no la ejecutaste, el estado es DESCONOCIDO, no «éxito»: el resultado esperado nunca es evidencia del real.\n\nSólo puedes llamar a las herramientas de la lista, con los campos que su esquema declara. Una llamada denegada es definitiva: no la repitas igual ni busques otra herramienta para conseguir lo mismo. Si algo te falta, dilo.\n\nResponde en español, sin relleno ni preámbulo. Cuando des una cifra, di de qué comando salió.\n\nMARCA-DEL-PISO: aplica a todo."
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:99:29)
+(fail) A.4.2 — el prompt de la CLI se arma por capas > 1. el CLAUDE.md del proyecto llega al modelo [1906.08ms]
+(was r0000001, now newshort)
+
+ 366 pass
+ 1 todo
+ 2 fail
+ 712 expect() calls
+Ran 369 tests across 34 files. [82.35s]
+EXIT=1

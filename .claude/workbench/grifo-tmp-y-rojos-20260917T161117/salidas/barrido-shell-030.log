@@ -1,0 +1,2 @@
+VERDE tests/hooks/test-hook-error-log.sh
+EXIT=0

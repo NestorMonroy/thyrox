@@ -1,0 +1,17 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+tests/unit/utils/treeify.test.ts(57,28): error TS2345: Argument of type 'Record<string, unknown>' is not assignable to parameter of type 'TreeNode'.
+  'string' index signatures are incompatible.
+    Type 'unknown' is not assignable to type 'string | TreeNode | undefined'.
+tests/unit/utils/treeify.test.ts(68,28): error TS2345: Argument of type '{ name: string; fn: () => void; }' is not assignable to parameter of type 'TreeNode'.
+  Property 'fn' is incompatible with index signature.
+    Type '() => void' is not assignable to type 'string | TreeNode | undefined'.
+tests/unit/utils/treeify.test.ts(82,28): error TS2345: Argument of type '{ fn: () => void; }' is not assignable to parameter of type 'TreeNode'.
+  Property 'fn' is incompatible with index signature.
+    Type '() => void' is not assignable to type 'string | TreeNode | undefined'.
+tests/unit/utils/treeify.test.ts(103,28): error TS2345: Argument of type '{ name: string; nested: { inner: string; }; count: number; }' is not assignable to parameter of type 'TreeNode'.
+  Property 'count' is incompatible with index signature.
+    Type 'number' is not assignable to type 'string | TreeNode | undefined'.

@@ -1,0 +1,34 @@
+== base mitm/tproxy
+ 11 pass
+ 0 fail
+== base transparent-napi
+ 20 pass
+ 0 fail
+== anulada: revert en el mismo orden que el apply
+(fail) revert is the exact inverse of apply, in reverse order [7.08ms]
+(fail) applyTproxy runs a best-effort full revert when a command fails mid-way [0.86ms]
+ 9 pass
+ 2 fail
+== anulada: sin revert tras un apply fallido
+(fail) applyTproxy runs a best-effort full revert when a command fails mid-way [1.77ms]
+ 10 pass
+ 1 fail
+== anulada: sin exclusión de bypassMark
+(fail) bypassMark adds the anti-loop exclusion to the OUTPUT rule [2.96ms]
+ 10 pass
+ 1 fail
+== anulada: sin comprobar la forma del addon
+(fail) un módulo sin createTransparentListener se rechaza [2.90ms]
+(fail) un módulo sin setSocketMark se rechaza [0.19ms]
+(fail) un módulo sin connectMarked se rechaza [0.12ms]
+ 17 pass
+ 3 fail
+== anulada: sin exigir encabezados de N-API
+(fail) sin encabezados de N-API no compila, y lo dice [1.25ms]
+ 19 pass
+ 1 fail
+== restaurado
+ 11 pass
+ 0 fail
+ 20 pass
+ 0 fail

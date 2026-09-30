@@ -1,0 +1,9 @@
+{
+  "id": "292",
+  "subject": "Completar agent/types/messages.ts: 5 de 10 símbolos ausentes (el bloqueo declarado era falso)",
+  "description": "CERRADA. Dos piezas, las dos medidas y publicadas.\n\nA — `coreMessages.ts` reconciliado con `ccnmt: packages/agent/types/messages.ts` (`thyrox@bc28cc3a`). El porte declaraba 8 nombres: 5 de la fuente y 3 inventados; faltaban 5 de los 10 simbolos. Control nuevo `agent/tsconfig.messages.json` (el `tsconfig.json` solo incluye `loop/**`, ciego a esta capa): baseline 6 errores en `AgentCore.updateState`, tras la reconciliacion 0. Anulacion: restaurado el porte minimo vuelven exactamente esos 6.\n\nB — `buildSwarmAgentDeps.ts` portado a swarm (`thyrox@8df16569`), el residuo que TASK-DOCS-0276 excluyo bajo un bloqueo falso. Los 6 tipos y los 4 simbolos de runtime ya estaban; solo faltaba declarar 5 tipos en el barrel de `@thyrox/agent` (cero colisiones medidas). Control nuevo `swarm/tsconfig.json` (el paquete no tenia): baseline 24 errores, ninguno bajo `src/`.\n\nEl control nombro 2 desajustes de forma, y los dos son errores latentes de la FUENTE: `systemPrompt` opcional en `agent/types/deps.ts:9` contra obligatorio en `swarm/src/types/deps.ts:8`, y `PermissionResult` union discriminada que su propio objeto plano no satisface. El puerto no los reproduce; ambas divergencias declaradas en el encabezado.\n\nAnulaciones: 5 sobre la logica (cada una tumba exactamente sus aserciones) y 2 sobre los tipos (retirada cada divergencia vuelve su error TS2345/TS2322). Restaurado con `cmp` byte a byte.\n\nVerde: swarm 609/0 (21 casos nuevos), agent 2244/0, tool-registry 426/0.",
+  "activeForm": "Portando la capa de tipos que bloquea buildSwarmAgentDeps",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

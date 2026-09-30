@@ -1,0 +1,8 @@
+{
+  "id": "270",
+  "subject": "Dar política de caducidad a la memoria rancia y a los skills inválidos",
+  "description": "A.7.6 del apéndice A pide «maintenance policy for stale memory, obsolete rules, and invalid skills» — tres sujetos, y sólo uno la tiene. Medido sobre los 71 gates de `src/gates/`: dos miran caducidad, `check_premise_drift.py` (premisas que dejaron de ser ciertas, con baseline) y `check_corpus_al_dia.py` (frescura del corpus vendorizado). No hay ninguna para MEMORIA rancia —`getLargeMemoryFiles` nombra las que se pasan de `MAX_MEMORY_CHARACTER_COUNT` y nada las retira ni las marca— ni para SKILLS inválidos: los 84 de `.claude/skills` no pasan por gate de validez (`lint_agents.py` mira agentes, no skills). Cierre: un gate que falle ante una memoria por encima de la cota sin declarar, y otro que rechace un skill cuyo destino o cuya herramienta no resuelvan, cada uno con su control de anulación. Es el segundo de los dos `unmet` del manifiesto de conformidad.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

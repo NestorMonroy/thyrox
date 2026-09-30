@@ -1,0 +1,4 @@
+src/packages/app-host/src/runtime/runtimeHandles.ts(143,59): error TS2322: Type 'PluginRuntimeSnapshot<unknown, unknown, unknown> | PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>' is not assignable to type 'PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>'.
+  Type 'PluginRuntimeSnapshot<unknown, unknown, unknown>' is not assignable to type 'PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>'.
+    Type 'unknown' is not assignable to type 'LoadedPlugin'.
+src/packages/app-host/src/runtime/runtimeHandles.ts(149,64): error TS2322: Type 'unknown' is not assignable to type 'AgentDefinitionsResult'.

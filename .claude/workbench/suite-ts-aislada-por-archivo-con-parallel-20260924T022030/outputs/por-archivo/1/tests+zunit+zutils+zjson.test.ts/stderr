@@ -1,0 +1,20 @@
+
+tests/unit/utils/json.test.ts:
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Expected '}'
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/json.test.ts:42:12)
+
+
+ 27 pass
+ 0 fail
+ 27 expect() calls
+Ran 27 tests across 1 file. [137.00ms]

@@ -1,0 +1,7 @@
+    pending = tsc_reflect.blocking_pending(run, log.splitlines(), [])
+    # Las instancias en archivos que otro paso tiene en vuelo (`excluded`) no
+    # bloquean: ése las resuelve, y este plan no las toca. Sin descontarlas,
+    # el solape (`local overlap`) rehusaba por trabajo que ya estaba en curso.
+    pending = {name: kept for name, found in pending.items()
+               if (kept := {file: n for file, n in found.items() if file not in excluded})}
+    if pending:

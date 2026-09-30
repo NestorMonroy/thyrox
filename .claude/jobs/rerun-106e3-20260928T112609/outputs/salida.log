@@ -1,0 +1,19 @@
+== 11: codex url fija
+   (src/accounts/refresh/providers/codexRefresh.ts)
+(fail) codex > the refresh omits the scope so sibling token families survive [1.33ms]
+ 26 pass
+ 1 fail
+== 24: cursor reintento en el último
+   (src/accounts/refresh/providers/cursorRefresh.ts)
+(fail) Cursor > network failures are retried; the last attempt gives up [0.70ms]
+ 26 pass
+ 1 fail
+== 39: kiro idp config lanza
+   (src/accounts/refresh/providers/kiroRefresh.ts)
+(fail) Kiro > an external IdP with a bad endpoint is not attempted; invalid grant or client is dead [1.18ms]
+ 26 pass
+ 1 fail
+== restaurado
+ 27 pass
+ 0 fail
+__BG_EXIT__=0

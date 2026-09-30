@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c strings -n 4 \"$(readlink -f \"$(command -v claude)\")\" > _references/claude-code-bin/2.1.282/claude_strings.txt && grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+' _references/claude-code-bin/2.1.282/claude_strings.txt | sort | uniq -c | sort -rn | head -3", "started_at": "2026-09-26T00:35:51+00:00"}

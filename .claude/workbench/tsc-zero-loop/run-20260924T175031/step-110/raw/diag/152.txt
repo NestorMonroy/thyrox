@@ -1,0 +1,1 @@
+src/packages/plan/src/mode.ts(126,51): error TS6138: Property 'options' is declared but its value is never read.

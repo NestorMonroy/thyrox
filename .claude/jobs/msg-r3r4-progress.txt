@@ -1,0 +1,4 @@
+Record in-flight output of the R3-R4 pool
+
+The pool is still running; its bench keeps the per-item streams and
+verdicts so far, so the run survives the container.

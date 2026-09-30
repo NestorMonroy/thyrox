@@ -1,0 +1,2 @@
+receta step-002: Point the local AppState aliases at the canonical type
+receta step-058: Use the canonical TaskStateBase in swarm

@@ -1,0 +1,33 @@
+
+7-Zip 23.01 (x64) : Copyright (c) 1999-2023 Igor Pavlov : 2023-06-20
+ 64-bit locale=C.UTF-8 Threads:4 OPEN_MAX:20000
+
+Scanning the drive for archives:
+1 file, 26214400 bytes (25 MiB)
+
+Extracting archive: /tmp/ccnmt-stage/claude-code-nestor-monroy-tools.7z.001
+--
+Path = /tmp/ccnmt-stage/claude-code-nestor-monroy-tools.7z.001
+Type = Split
+Physical Size = 26214400
+Volumes = 5
+Total Physical Size = 111629113
+----
+Path = claude-code-nestor-monroy-tools.7z
+Size = 111629113
+--
+Path = claude-code-nestor-monroy-tools.7z
+Type = 7z
+Physical Size = 111629113
+Headers Size = 54575
+Method = ARM64 LZMA2:27 BCJ
+Solid = +
+Blocks = 3
+
+Everything is Ok
+
+Folders: 664
+Files: 3897
+Size:       229732127
+Compressed: 111629113
+__BG_EXIT__=0

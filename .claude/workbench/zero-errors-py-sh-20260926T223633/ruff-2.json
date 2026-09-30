@@ -1,0 +1,2094 @@
+[
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 19,
+      "row": 96
+    },
+    "filename": "/home/user/thyrox/src/agents/agent_store.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from corpus.document_types import (  # noqa: E402\n    DOCUMENT_TYPE_UNKNOWN,\n    document_type as _document_type_projected,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 99
+          },
+          "location": {
+            "column": 1,
+            "row": 95
+          }
+        }
+      ],
+      "message": "Remove unused import: `corpus.document_types.DOCUMENT_TYPES`"
+    },
+    "location": {
+      "column": 5,
+      "row": 96
+    },
+    "message": "`corpus.document_types.DOCUMENT_TYPES` imported but unused",
+    "noqa_row": 96,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 34
+    },
+    "filename": "/home/user/thyrox/src/agents/model_catalog.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 35
+          },
+          "location": {
+            "column": 1,
+            "row": 34
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 34
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 34,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 57,
+      "row": 55
+    },
+    "filename": "/home/user/thyrox/src/board/graph.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Iterable, Iterator, Mapping",
+          "end_location": {
+            "column": 57,
+            "row": 55
+          },
+          "location": {
+            "column": 1,
+            "row": 55
+          }
+        }
+      ],
+      "message": "Remove unused import: `typing.Sequence`"
+    },
+    "location": {
+      "column": 49,
+      "row": 55
+    },
+    "message": "`typing.Sequence` imported but unused",
+    "noqa_row": 55,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 50,
+      "row": 66
+    },
+    "filename": "/home/user/thyrox/src/cache/work_cache.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from dataclasses import dataclass, field",
+          "end_location": {
+            "column": 50,
+            "row": 66
+          },
+          "location": {
+            "column": 1,
+            "row": 66
+          }
+        }
+      ],
+      "message": "Remove unused import: `dataclasses.replace`"
+    },
+    "location": {
+      "column": 43,
+      "row": 66
+    },
+    "message": "`dataclasses.replace` imported but unused",
+    "noqa_row": 66,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 30
+    },
+    "filename": "/home/user/thyrox/src/corpus/census_scripts.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 31
+          },
+          "location": {
+            "column": 1,
+            "row": 30
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib`"
+    },
+    "location": {
+      "column": 8,
+      "row": 30
+    },
+    "message": "`pathlib` imported but unused",
+    "noqa_row": 30,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 57
+    },
+    "filename": "/home/user/thyrox/src/corpus/pdf_to_text.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 58
+          },
+          "location": {
+            "column": 1,
+            "row": 57
+          }
+        }
+      ],
+      "message": "Remove unused import: `re`"
+    },
+    "location": {
+      "column": 8,
+      "row": 57
+    },
+    "message": "`re` imported but unused",
+    "noqa_row": 57,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 43
+    },
+    "filename": "/home/user/thyrox/src/docs/scaffold_initiative.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 44
+          },
+          "location": {
+            "column": 1,
+            "row": 43
+          }
+        }
+      ],
+      "message": "Remove unused import: `re`"
+    },
+    "location": {
+      "column": 8,
+      "row": 43
+    },
+    "message": "`re` imported but unused",
+    "noqa_row": 43,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 18
+    },
+    "filename": "/home/user/thyrox/src/hooks/detect_finding_layer.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 19
+          },
+          "location": {
+            "column": 1,
+            "row": 18
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib`"
+    },
+    "location": {
+      "column": 8,
+      "row": 18
+    },
+    "message": "`pathlib` imported but unused",
+    "noqa_row": 18,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 26
+    },
+    "filename": "/home/user/thyrox/src/hooks/detect_rst_validation.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 27
+          },
+          "location": {
+            "column": 1,
+            "row": 26
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib`"
+    },
+    "location": {
+      "column": 8,
+      "row": 26
+    },
+    "message": "`pathlib` imported but unused",
+    "noqa_row": 26,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 25,
+      "row": 60
+    },
+    "filename": "/home/user/thyrox/src/hooks/maintenance_chain.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 61
+          },
+          "location": {
+            "column": 1,
+            "row": 60
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib.Path`"
+    },
+    "location": {
+      "column": 21,
+      "row": 60
+    },
+    "message": "`pathlib.Path` imported but unused",
+    "noqa_row": 60,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 25,
+      "row": 27
+    },
+    "filename": "/home/user/thyrox/src/hooks/stop_pending_work.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 28
+          },
+          "location": {
+            "column": 1,
+            "row": 27
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib.Path`"
+    },
+    "location": {
+      "column": 21,
+      "row": 27
+    },
+    "message": "`pathlib.Path` imported but unused",
+    "noqa_row": 27,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 61,
+      "row": 341
+    },
+    "filename": "/home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 342
+          },
+          "location": {
+            "column": 1,
+            "row": 341
+          }
+        }
+      ],
+      "message": "Remove unused import: `pywinauto.controls.uiawrapper.UIAWrapper`"
+    },
+    "location": {
+      "column": 51,
+      "row": 341
+    },
+    "message": "`pywinauto.controls.uiawrapper.UIAWrapper` imported but unused",
+    "noqa_row": 341,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 26,
+      "row": 401
+    },
+    "filename": "/home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 26,
+            "row": 401
+          },
+          "location": {
+            "column": 21,
+            "row": 401
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `e`"
+    },
+    "location": {
+      "column": 25,
+      "row": 401
+    },
+    "message": "Local variable `e` is assigned to but never used",
+    "noqa_row": 401,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 22,
+      "row": 39
+    },
+    "filename": "/home/user/thyrox/src/paths/reach_roots.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 40
+          },
+          "location": {
+            "column": 1,
+            "row": 39
+          }
+        }
+      ],
+      "message": "Remove unused import: `importlib.util`"
+    },
+    "location": {
+      "column": 8,
+      "row": 39
+    },
+    "message": "`importlib.util` imported but unused",
+    "noqa_row": 39,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 8,
+      "row": 93
+    },
+    "filename": "/home/user/thyrox/src/paths/reach_roots.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 11,
+            "row": 93
+          },
+          "location": {
+            "column": 5,
+            "row": 93
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `src`"
+    },
+    "location": {
+      "column": 5,
+      "row": 93
+    },
+    "message": "Local variable `src` is assigned to but never used",
+    "noqa_row": 93,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 63
+    },
+    "filename": "/home/user/thyrox/src/repo/gitlink_bump.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 64
+          },
+          "location": {
+            "column": 1,
+            "row": 63
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 63
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 63,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 141
+    },
+    "filename": "/home/user/thyrox/src/session/instruction_floor.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 142
+          },
+          "location": {
+            "column": 1,
+            "row": 141
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 12,
+      "row": 141
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 141,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 33
+    },
+    "filename": "/home/user/thyrox/src/session/job_runs.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 34
+          },
+          "location": {
+            "column": 1,
+            "row": 33
+          }
+        }
+      ],
+      "message": "Remove unused import: `json`"
+    },
+    "location": {
+      "column": 8,
+      "row": 33
+    },
+    "message": "`json` imported but unused",
+    "noqa_row": 33,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 38,
+      "row": 49
+    },
+    "filename": "/home/user/thyrox/src/session/parallel.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Callable, Sequence, TypeVar",
+          "end_location": {
+            "column": 57,
+            "row": 49
+          },
+          "location": {
+            "column": 1,
+            "row": 49
+          }
+        }
+      ],
+      "message": "Remove unused import: `typing.Iterable`"
+    },
+    "location": {
+      "column": 30,
+      "row": 49
+    },
+    "message": "`typing.Iterable` imported but unused",
+    "noqa_row": 49,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 25,
+      "row": 27
+    },
+    "filename": "/home/user/thyrox/src/task/agrupar_tareas_por_familia.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 28
+          },
+          "location": {
+            "column": 1,
+            "row": 27
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib.Path`"
+    },
+    "location": {
+      "column": 21,
+      "row": 27
+    },
+    "message": "`pathlib.Path` imported but unused",
+    "noqa_row": 27,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 8,
+      "row": 85
+    },
+    "filename": "/home/user/thyrox/src/verify/check_gitattributes.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 11,
+            "row": 85
+          },
+          "location": {
+            "column": 5,
+            "row": 85
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `src`"
+    },
+    "location": {
+      "column": 5,
+      "row": 85
+    },
+    "message": "Local variable `src` is assigned to but never used",
+    "noqa_row": 85,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 8,
+      "row": 85
+    },
+    "filename": "/home/user/thyrox/src/verify/check_hook_script_token.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 11,
+            "row": 85
+          },
+          "location": {
+            "column": 5,
+            "row": 85
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `src`"
+    },
+    "location": {
+      "column": 5,
+      "row": 85
+    },
+    "message": "Local variable `src` is assigned to but never used",
+    "noqa_row": 85,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 21,
+      "row": 35
+    },
+    "filename": "/home/user/thyrox/src/verify/check_manifest_language.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from verify.check_identifier_language import (  # noqa: E402\n    refuse_without_corpus,\n    spanish_words_in,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 38
+          },
+          "location": {
+            "column": 1,
+            "row": 34
+          }
+        }
+      ],
+      "message": "Remove unused import: `verify.check_identifier_language.corpus_available`"
+    },
+    "location": {
+      "column": 5,
+      "row": 35
+    },
+    "message": "`verify.check_identifier_language.corpus_available` imported but unused",
+    "noqa_row": 35,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 41,
+      "row": 54
+    },
+    "filename": "/home/user/thyrox/src/verify/check_provider_evidence.py",
+    "fix": null,
+    "location": {
+      "column": 29,
+      "row": 54
+    },
+    "message": "`workbench.paths.evidence_dir` imported but unused; consider using `importlib.util.find_spec` to test for availability",
+    "noqa_row": 54,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 8,
+      "row": 77
+    },
+    "filename": "/home/user/thyrox/src/verify/check_script_deprecated.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 11,
+            "row": 77
+          },
+          "location": {
+            "column": 5,
+            "row": 77
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `src`"
+    },
+    "location": {
+      "column": 5,
+      "row": 77
+    },
+    "message": "Local variable `src` is assigned to but never used",
+    "noqa_row": 77,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F811",
+    "end_location": {
+      "column": 10,
+      "row": 160
+    },
+    "filename": "/home/user/thyrox/src/verify/check_vocabulario_prosa.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 161
+          },
+          "location": {
+            "column": 1,
+            "row": 160
+          }
+        }
+      ],
+      "message": "Remove definition: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 160
+    },
+    "message": "Redefinition of unused `os` from line 158: `os` redefined here",
+    "noqa_row": 160,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/redefined-while-unused"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 30,
+      "row": 318
+    },
+    "filename": "/home/user/thyrox/src/verify/detect_broken_references.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 30,
+            "row": 318
+          },
+          "location": {
+            "column": 25,
+            "row": 318
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `e`"
+    },
+    "location": {
+      "column": 29,
+      "row": 318
+    },
+    "message": "Local variable `e` is assigned to but never used",
+    "noqa_row": 318,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 293
+    },
+    "filename": "/home/user/thyrox/src/verify/member_port.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 294
+          },
+          "location": {
+            "column": 1,
+            "row": 293
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 12,
+      "row": 293
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 293,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 36
+    },
+    "filename": "/home/user/thyrox/src/verify/runner.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 37
+          },
+          "location": {
+            "column": 1,
+            "row": 36
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 36
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 36,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 39
+    },
+    "filename": "/home/user/thyrox/tests/agents/test_balanced_block.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 40
+          },
+          "location": {
+            "column": 1,
+            "row": 39
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 39
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 39,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 47
+    },
+    "filename": "/home/user/thyrox/tests/agents/test_derive_submodule.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 48
+          },
+          "location": {
+            "column": 1,
+            "row": 47
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib`"
+    },
+    "location": {
+      "column": 8,
+      "row": 47
+    },
+    "message": "`pathlib` imported but unused",
+    "noqa_row": 47,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 19
+    },
+    "filename": "/home/user/thyrox/tests/agents/test_document_root_default.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 20
+          },
+          "location": {
+            "column": 1,
+            "row": 19
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 19
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 19,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 18,
+      "row": 47
+    },
+    "filename": "/home/user/thyrox/tests/corpus/test_archive_build_corpus.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 48
+          },
+          "location": {
+            "column": 1,
+            "row": 47
+          }
+        }
+      ],
+      "message": "Remove unused import: `subprocess`"
+    },
+    "location": {
+      "column": 8,
+      "row": 47
+    },
+    "message": "`subprocess` imported but unused",
+    "noqa_row": 47,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 14,
+      "row": 21
+    },
+    "filename": "/home/user/thyrox/tests/corpus/test_archive_extract.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 22
+          },
+          "location": {
+            "column": 1,
+            "row": 21
+          }
+        }
+      ],
+      "message": "Remove unused import: `shutil`"
+    },
+    "location": {
+      "column": 8,
+      "row": 21
+    },
+    "message": "`shutil` imported but unused",
+    "noqa_row": 21,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 13
+    },
+    "filename": "/home/user/thyrox/tests/corpus/test_list_corpus_builds.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 13
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 13,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 17
+    },
+    "filename": "/home/user/thyrox/tests/hooks/test_detect_code_language.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 18
+          },
+          "location": {
+            "column": 1,
+            "row": 17
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib`"
+    },
+    "location": {
+      "column": 8,
+      "row": 17
+    },
+    "message": "`pathlib` imported but unused",
+    "noqa_row": 17,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 11
+    },
+    "filename": "/home/user/thyrox/tests/hooks/test_detect_dedicated_tool_usage.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 11
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib`"
+    },
+    "location": {
+      "column": 8,
+      "row": 11
+    },
+    "message": "`pathlib` imported but unused",
+    "noqa_row": 11,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 24
+    },
+    "filename": "/home/user/thyrox/tests/hooks/test_flow_selection.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 25
+          },
+          "location": {
+            "column": 1,
+            "row": 24
+          }
+        }
+      ],
+      "message": "Remove unused import: `io`"
+    },
+    "location": {
+      "column": 8,
+      "row": 24
+    },
+    "message": "`io` imported but unused",
+    "noqa_row": 24,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 39,
+      "row": 28
+    },
+    "filename": "/home/user/thyrox/tests/hooks/test_flow_selection.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 29
+          },
+          "location": {
+            "column": 1,
+            "row": 28
+          }
+        }
+      ],
+      "message": "Remove unused import: `contextlib.redirect_stderr`"
+    },
+    "location": {
+      "column": 24,
+      "row": 28
+    },
+    "message": "`contextlib.redirect_stderr` imported but unused",
+    "noqa_row": 28,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 28
+    },
+    "filename": "/home/user/thyrox/tests/hooks/test_stop_gate.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 29
+          },
+          "location": {
+            "column": 1,
+            "row": 28
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 28
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 28,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 30
+    },
+    "filename": "/home/user/thyrox/tests/measurement/test_distribution.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 31
+          },
+          "location": {
+            "column": 1,
+            "row": 30
+          }
+        }
+      ],
+      "message": "Remove unused import: `math`"
+    },
+    "location": {
+      "column": 8,
+      "row": 30
+    },
+    "message": "`math` imported but unused",
+    "noqa_row": 30,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 19
+    },
+    "filename": "/home/user/thyrox/tests/measurement/test_residual_structure.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 20
+          },
+          "location": {
+            "column": 1,
+            "row": 19
+          }
+        }
+      ],
+      "message": "Remove unused import: `math`"
+    },
+    "location": {
+      "column": 8,
+      "row": 19
+    },
+    "message": "`math` imported but unused",
+    "noqa_row": 19,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F811",
+    "end_location": {
+      "column": 18,
+      "row": 239
+    },
+    "filename": "/home/user/thyrox/tests/paths/test_reach.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 240
+          },
+          "location": {
+            "column": 1,
+            "row": 239
+          }
+        }
+      ],
+      "message": "Remove definition: `subprocess`"
+    },
+    "location": {
+      "column": 8,
+      "row": 239
+    },
+    "message": "Redefinition of unused `subprocess` from line 40: `subprocess` redefined here",
+    "noqa_row": 239,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/redefined-while-unused"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 18,
+      "row": 23
+    },
+    "filename": "/home/user/thyrox/tests/paths/test_reach_roots_declared.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 24
+          },
+          "location": {
+            "column": 1,
+            "row": 23
+          }
+        }
+      ],
+      "message": "Remove unused import: `subprocess`"
+    },
+    "location": {
+      "column": 8,
+      "row": 23
+    },
+    "message": "`subprocess` imported but unused",
+    "noqa_row": 23,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 24,
+      "row": 156
+    },
+    "filename": "/home/user/thyrox/tests/session/test_adopt_background.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 157
+          },
+          "location": {
+            "column": 1,
+            "row": 156
+          }
+        }
+      ],
+      "message": "Remove unused import: `paths.reach`"
+    },
+    "location": {
+      "column": 19,
+      "row": 156
+    },
+    "message": "`paths.reach` imported but unused",
+    "noqa_row": 156,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 34,
+      "row": 133
+    },
+    "filename": "/home/user/thyrox/tests/session/test_background.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 134
+          },
+          "location": {
+            "column": 1,
+            "row": 133
+          }
+        }
+      ],
+      "message": "Remove unused import: `session.task_pool`"
+    },
+    "location": {
+      "column": 25,
+      "row": 133
+    },
+    "message": "`session.task_pool` imported but unused",
+    "noqa_row": 133,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 81
+    },
+    "filename": "/home/user/thyrox/tests/session/test_job_runs.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 81
+          },
+          "location": {
+            "column": 9,
+            "row": 81
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `segundo`"
+    },
+    "location": {
+      "column": 9,
+      "row": 81
+    },
+    "message": "Local variable `segundo` is assigned to but never used",
+    "noqa_row": 81,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 140
+    },
+    "filename": "/home/user/thyrox/tests/session/test_session_restart.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import time",
+          "end_location": {
+            "column": 16,
+            "row": 140
+          },
+          "location": {
+            "column": 1,
+            "row": 140
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 140
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 140,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 90
+    },
+    "filename": "/home/user/thyrox/tests/store/test_agent_sessions.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 91
+          },
+          "location": {
+            "column": 1,
+            "row": 90
+          }
+        }
+      ],
+      "message": "Remove unused import: `sqlite3`"
+    },
+    "location": {
+      "column": 8,
+      "row": 90
+    },
+    "message": "`sqlite3` imported but unused",
+    "noqa_row": 90,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 93
+    },
+    "filename": "/home/user/thyrox/tests/task/test_layer_axis.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 94
+          },
+          "location": {
+            "column": 1,
+            "row": 93
+          }
+        }
+      ],
+      "message": "Remove unused import: `sqlite3`"
+    },
+    "location": {
+      "column": 16,
+      "row": 93
+    },
+    "message": "`sqlite3` imported but unused",
+    "noqa_row": 93,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 36
+    },
+    "filename": "/home/user/thyrox/tests/task/test_task_source_citas.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 37
+          },
+          "location": {
+            "column": 1,
+            "row": 36
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 36
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 36,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 28
+    },
+    "filename": "/home/user/thyrox/tests/typescript/test_emit_declarations.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 29
+          },
+          "location": {
+            "column": 1,
+            "row": 28
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 28
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 28,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 18,
+      "row": 29
+    },
+    "filename": "/home/user/thyrox/tests/typescript/test_emit_declarations.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 30
+          },
+          "location": {
+            "column": 1,
+            "row": 29
+          }
+        }
+      ],
+      "message": "Remove unused import: `subprocess`"
+    },
+    "location": {
+      "column": 8,
+      "row": 29
+    },
+    "message": "`subprocess` imported but unused",
+    "noqa_row": 29,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 13
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_annulment_control.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 13
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 13,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 25,
+      "row": 3
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_bun_linker.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 4
+          },
+          "location": {
+            "column": 1,
+            "row": 3
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib.Path`"
+    },
+    "location": {
+      "column": 21,
+      "row": 3
+    },
+    "message": "`pathlib.Path` imported but unused",
+    "noqa_row": 3,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 14,
+      "row": 22
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_doc_citations.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 23
+          },
+          "location": {
+            "column": 1,
+            "row": 22
+          }
+        }
+      ],
+      "message": "Remove unused import: `shutil`"
+    },
+    "location": {
+      "column": 8,
+      "row": 22
+    },
+    "message": "`shutil` imported but unused",
+    "noqa_row": 22,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 12
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_pathspec_commit.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 12
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 12,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 14,
+      "row": 19
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_pool_pipeline.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 20
+          },
+          "location": {
+            "column": 1,
+            "row": 19
+          }
+        }
+      ],
+      "message": "Remove unused import: `shutil`"
+    },
+    "location": {
+      "column": 8,
+      "row": 19
+    },
+    "message": "`shutil` imported but unused",
+    "noqa_row": 19,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 20
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_tree_fingerprint.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 21
+          },
+          "location": {
+            "column": 1,
+            "row": 20
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 20
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 20,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 23,
+      "row": 147
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_tsc_reflect.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 26,
+            "row": 147
+          },
+          "location": {
+            "column": 15,
+            "row": 147
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `root_mem`"
+    },
+    "location": {
+      "column": 15,
+      "row": 147
+    },
+    "message": "Local variable `root_mem` is assigned to but never used",
+    "noqa_row": 147,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 14,
+      "row": 15
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_tsc_schedule.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 16
+          },
+          "location": {
+            "column": 1,
+            "row": 15
+          }
+        }
+      ],
+      "message": "Remove unused import: `random`"
+    },
+    "location": {
+      "column": 8,
+      "row": 15
+    },
+    "message": "`random` imported but unused",
+    "noqa_row": 15,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 17
+    },
+    "filename": "/home/user/thyrox/tests/verify/test_tsc_sweep_breadth.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 18
+          },
+          "location": {
+            "column": 1,
+            "row": 17
+          }
+        }
+      ],
+      "message": "Remove unused import: `json`"
+    },
+    "location": {
+      "column": 8,
+      "row": 17
+    },
+    "message": "`json` imported but unused",
+    "noqa_row": 17,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  }
+]

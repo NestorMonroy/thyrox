@@ -1,0 +1,6 @@
+(fail) SessionAffinitySelector: LCP > la conversación que crece conserva la credencial y la sesión [8.91ms]
+(fail) SessionAffinitySelector: LCP > una bifurcación conserva la credencial y estrena sesión con su padre [1.33ms]
+(fail) SessionAffinitySelector: LCP > una compactación conserva la credencial y enlaza con la sesión anterior [1.84ms]
+(fail) SessionAffinitySelector: lookupAffinity sobre LCP > por id publicado, por hash sin prefijo, y sin refrescar mientras crece [3.96ms]
+ 96 pass
+ 4 fail

@@ -1,0 +1,12 @@
+DESPUES DEL MOVIMIENTO — cwd=thyrox, mismo sujeto fuera de todo consumidor
+exit=2
+ERROR — no se encontro vocabulario_prosa_baseline.txt.
+  Buscado: $VOCAB_GATE_BASELINE · /home/user/thyrox/src/verify · <consumidor>/.claude/baselines/
+  Ultimo candidato: /home/user/thyrox/src/verify/vocabulario_prosa_baseline.txt
+  NO se emite un conteo: sin baseline, toda la deuda heredada se
+  publicaria como nueva. Ver h-docs-1107.
+
+DESPUES, sin baseline (que SI es parametro del consumidor)
+exit=1
+     1  .claude/workbench/lista-vetada-al-proveedor-20260917T103652/sujeto/vetada.rst::corrida
+1 hallazgo(s) nuevo(s): 0 inventado(s) · 1 prohibido(s) (alcance medido: 1 archivo(s); 1 hallazgo(s) en total; 0 en baseline; léxico: 1000000 formas; vetadas: 51)

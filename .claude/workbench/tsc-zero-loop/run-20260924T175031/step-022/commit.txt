@@ -1,0 +1,6 @@
+Give the spinner types their binary shape
+
+Twenty-second step of the agent-compiler loop, accepted-net
+3059 -> 3044. Spinner/types.ts was a decompiled stub. SpinnerMode takes
+the five phases the 2.1.275 binary declares for its stream_mode event;
+RGBColor is the r/g/b triple utils.ts interpolates.

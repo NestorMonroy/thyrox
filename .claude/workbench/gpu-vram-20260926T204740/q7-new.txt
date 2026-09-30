@@ -1,0 +1,2 @@
+    print(f"{decision.cache_ttl or '-'}\t{decision.memfree or '-'}\t{width or '-'}\t"
+          f"{decision.vram_need_mib or '-'}\t{decision.why}")

@@ -1,0 +1,5 @@
+(fail) extractSessionInfo: todos los clientes > Codex bifurcado por X-Codex-Turn-Metadata [0.51ms]
+(fail) extractSessionInfo: todos los clientes > Codex bifurcado con Session-Id y Thread-Id [0.27ms]
+(fail) extractSessionInfo: todos los clientes > Codex: Session-Id en cabecera, hilo y bifurcación en el cuerpo [0.28ms]
+ 33 pass
+ 3 fail

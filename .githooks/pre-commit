@@ -1,0 +1,330 @@
+#!/usr/bin/env bash
+# THYROX — pre-commit. Corre TRES gates: el del banco de evidencia, que le dio
+# origen, y los dos de paquete que TASK-DOCS-0530 trajo del consumidor.
+#
+# Nacio por un episodio concreto.
+#
+# `check_provider_evidence.py` nacio el 2026-09-07T00:59:23 y, en las diecisiete
+# horas siguientes, once bancos de evidencia aterrizaron en el arbol que el gate
+# prohibe. El gate no fallo: nombraba los once y salia 1 con `--strict`. Lo que
+# faltaba era que alguien lo corriera — THYROX no tenia `.githooks/` ni
+# `core.hooksPath`, y el unico hook vivo del arbol corre seis gates AL COMMITEAR
+# EN EL CONSUMIDOR, que es otro repositorio. Ver L-028.
+#
+# La leccion que deja: escribir un gate no es integrarlo en el flujo. Un gate sin
+# invocador es prosa con `exit 1`. Y su corolario, que es lo que trajo a los dos
+# de paquete: un gate cableado a un invocador que NO ve su superficie tampoco la
+# mide — sólo lo dice mas bonito.
+#
+# Escape hatch: `git commit --no-verify`. Si se usa, el motivo va al `progreso`.
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+GATES="$ROOT/src/verify"
+# El invariante del arbol: todo modulo de `src/` se importa con `src` en el
+# path. Lo exportan los envoltorios de `bin/` y `tests/run.sh`; este hook NO
+# lo hacia, asi que `check_provider_evidence.py` moria en su `from workbench
+# .paths import ...` y NUNCA llego a medir nada. Su `ModuleNotFoundError`
+# salia con exit 1 —el codigo que Python da a toda excepcion no capturada— y
+# 1 es tambien el «hay bancos» del gate: el `case` de abajo imprimia la
+# receta de mover el banco sobre un traceback. El comentario de ese `case`
+# ya declaraba ese defecto como corregido; la conducta decia lo contrario.
+export PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
+CODE=0
+
+# Rehusar en vez de omitir. Un `exit 0` con los gates inalcanzables seria un
+# verde falso: no distinguiria «no hay defectos» de «no pude medir».
+if [[ ! -d "$GATES" ]]; then
+    echo "pre-commit: no se encontro $GATES — los gates no se pudieron correr." >&2
+    echo "  No se emite veredicto: un 0 aqui seria un verde falso." >&2
+    exit 1
+fi
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-commit: falta python3 — los gates no se pudieron correr." >&2
+    exit 1
+fi
+
+# Los dos gates de PAQUETE. Llegaron aqui el 2026-09-09 (TASK-DOCS-0530) desde el
+# pre-commit de kaupamex-docs, donde median una superficie que TASK-DOCS-0449
+# mudo a THYROX: alla imprimian «la superficie del paquete no cambia en este
+# commit» en CADA commit —un mensaje que no distingue «no cambio» de «no puede
+# cambiar aqui»— y aqui, donde la superficie SI esta, no los corria nadie.
+#
+# Se rehusan por ausencia igual que el gate de arriba: un gate declarado que no
+# esta en su sitio es un verde falso.
+GATE_AGENTS="$GATES/check-agent-artifacts.sh"
+GATE_TYPECHECK="$GATES/check-cli-typecheck.sh"
+GATE_XMODEL="$GATES/check-cross-model-read.sh"
+for gate in "$GATE_AGENTS" "$GATE_TYPECHECK"; do
+    [[ -f "$gate" ]] && continue
+    echo "pre-commit: $gate NO ENCONTRADO — el gate no se pudo correr." >&2
+    echo "  No se emite veredicto: un 0 aqui seria un verde falso." >&2
+    exit 1
+done
+
+# El banco de evidencia vive en el arbol del CONSUMIDOR. Mide el arbol entero,
+# no lo staged: un banco commiteado en un pase anterior sigue estando mal, y el
+# defecto que este hook cierra son once bancos que ya estaban en el arbol.
+#
+# SIN `--strict` desde 2026-09-09, por directiva del ejecutor: "ignora la regla,
+# no queremos perder el trabajo". El gate REPORTA y no detiene el commit.
+#
+# El motivo no es que el gate se equivoque, y por eso su alcance de arbol NO se
+# toca: es que ese alcance y la vida de un agente se cruzan mal. Un agente de
+# fondo que escribe su banco en `.claude/eventos/` bloquea a TODO escritor de
+# thyrox mientras siga vivo, y su banco no se puede reubicar hasta que termine
+# — moverlo a medio escribir es el episodio que ERR-040 registra. El coste de
+# bloquear es trabajo terminado que no se publica; el de reportar es un banco
+# mal ubicado que alguien tiene que leer. El segundo se recupera; el primero,
+# si el contenedor se recicla, no.
+#
+# Precedente en el multi-repo: `coherence-audit-gate.md` arranco igual
+# —surfacing no bloqueante— mientras hubiera deuda que el gate no causo.
+#
+# El `--strict` NO desaparece: sigue siendo el modo del gate, lo ejercitan tres
+# casos de tests/workbench/test_provider_evidence.py, y reponerlo aqui es
+# cambiar una palabra. La condicion para hacerlo es la de DEC-AM-01: que el
+# conteo de bancos este en 0 y no haya agentes vivos que lo repongan.
+python3 "$GATES/check_provider_evidence.py"
+GATE_STATUS=$?
+
+# Tres desenlaces, no dos. El gate declara 1 = hay bancos, 2 = no pudo medir; y
+# cualquier otro codigo es que reviento. Colapsarlos imprime el remedio del
+# banco ante un ImportError, que es el sub-patron D dentro del propio hook:
+# el mensaje no distingue «el gate dijo que no» de «el gate no pudo hablar».
+# Medido al escribirlo: con un `reach.py` incompleto, la primera version de
+# este hook publicaba la receta de mover el banco sobre un traceback.
+case $GATE_STATUS in
+    0) ;;
+    1)  CODE=1
+        echo >&2
+        echo "pre-commit: el commit se detiene. El banco no se mueve solo a proposito —" >&2
+        echo "  inventar un hogar por defecto decidiria por el consumidor donde van sus" >&2
+        echo "  piezas, que es la decision que el mecanismo le retira al emisor." >&2
+        echo "  Muevelo al arbol del consumidor, o declara THYROX_WORKBENCH_DIR." >&2
+        ;;
+    2)  CODE=1
+        echo >&2
+        echo "pre-commit: el gate NO PUDO MEDIR (exit 2). No es un hallazgo de banco:" >&2
+        echo "  no se sabe si los hay. Lee su mensaje de arriba antes de tocar nada." >&2
+        ;;
+    *)  CODE=1
+        echo >&2
+        echo "pre-commit: el gate termino con codigo $GATE_STATUS — reviento, no dictamino." >&2
+        echo "  El commit se detiene porque un veredicto ausente no es un verde." >&2
+        ;;
+esac
+
+# Cada gate SE ACOTA SOLO por la lista que recibe: comparan la ruta de cada
+# archivo staged contra su propio `PAQUETE_REL` y salen 0 sin medir si su
+# superficie no cambia. Por eso el hook no reparte la lista por superficie —
+# eso duplicaria aqui el criterio que ya vive en el gate, y las dos copias
+# divergirian. Con la lista vacia el gate mide TODO, que es mas estricto y no
+# menos: un `--allow-empty` paga el emisor y el compilador.
+#
+# El filtro incluye R: un renombre prepara su ruta de destino (la que
+# `--name-only` imprime). Sin R, un commit hecho sólo de `git mv` llegaba con
+# la lista vacía y los gates que se disparan por ruta no corrían (4357a89f).
+STAGED=()
+while IFS= read -r line; do
+    [[ -n "$line" ]] && STAGED+=("$ROOT/$line")
+done < <(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
+
+bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
+bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
+bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
+
+# Cero hallazgos de ShellCheck, ruff y pyright en los .sh y .py del producto
+# (`src/`, `tests/`) que este commit prepara. Bloquea con hallazgos (exit 1) y
+# también cuando falta un verificador (exit 2): sin él el commit no se midió.
+LINT=()
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.sh|src/*.py|tests/*.sh|tests/*.py) LINT+=("${f#"$ROOT"/}") ;;
+    esac
+done
+if [[ ${#LINT[@]} -gt 0 ]]; then
+    python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
+fi
+
+# Ningún .py staged lleva la marca de un mutante de check_suite_discrimina:
+# esa suite muta el árbol principal mientras corre, y un commit hecho en esa
+# ventana la arrastra. Vivía sólo en src/verify/pre-commit.sh (el hook del
+# consumidor), así que este árbol commiteó una: H-THYROX-279.
+MUTANT_CANDIDATES=()
+for f in "${STAGED[@]}"; do
+    [[ "$f" == *.py ]] && MUTANT_CANDIDATES+=("$f")
+done
+if [ "${#MUTANT_CANDIDATES[@]}" -gt 0 ]; then
+    python3 "$GATES/check_mutante_en_staging.py" "${MUTANT_CANDIDATES[@]}" || CODE=1
+fi
+
+# El idioma de los identificadores, sobre los .py y .ts staged de src/ y tests/.
+# El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
+# 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La
+# deuda heredada está congelada en el baseline que declara el .env; uno nuevo
+# se detiene aquí.
+IDENTIFIERS=()
+for f in "${LINT[@]}"; do
+    [[ "$f" == *.py ]] && IDENTIFIERS+=("$f")
+done
+# Y los .ts staged de src/ y tests/: el AST lo recorre el compilador del árbol
+# (`ts_declared_identifiers.ts`) y el léxico es el mismo. Sin `bun` rehúsa con
+# exit 2, que también bloquea.
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.ts|src/*.tsx|src/*.mts|tests/*.ts) [[ -f "$f" ]] && IDENTIFIERS+=("${f#"$ROOT"/}") ;;
+    esac
+done
+if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
+    (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
+fi
+
+# El vocabulario de la prosa del propio proveedor: reglas, skills, README y
+# CLAUDE.md staged. El gate medía sólo a los consumidores; la deuda heredada
+# del proveedor —términos de dominio como `idempotencia` o la «corrida» de un
+# diseño de experimentos— está congelada en `.claude/baselines/`. Sin léxico
+# rehúsa con exit 2, y eso también bloquea: el commit no se midió.
+PROSE=()
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        .claude/rules/*.md|.claude/skills/*.md|README.md|.claude/CLAUDE.md) [[ -f "$f" ]] && PROSE+=("$f") ;;
+    esac
+done
+if [[ ${#PROSE[@]} -gt 0 ]]; then
+    (cd "$ROOT" && python3 "$GATES/check_vocabulario_prosa.py" --strict --quiet "${PROSE[@]}") || CODE=1
+fi
+
+# Un paquete se entra por su `exports`, nunca por el `src/` del vecino. El gate
+# existía con su suite y ningún flujo lo corría. Mide `src/` entero —todo
+# `package.json` con `exports`, anidado o suelto— porque un cruce lo forman dos
+# archivos y el staged puede ser sólo uno. Corre sólo si el commit prepara
+# código o un manifiesto bajo `src/`: 4.8 s sobre el árbol, medidos.
+BOUNDARY=0
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.ts|src/*.tsx|src/*.mts|src/*.js|src/*.mjs|src/*/package.json) BOUNDARY=1; break ;;
+    esac
+done
+if [[ $BOUNDARY -eq 1 ]]; then
+    python3 "$GATES/package_boundary.py" --strict "$ROOT/src" || CODE=1
+fi
+
+# Un commit por pathspec de un banco commitea sólo lo que git ya sigue: un
+# archivo nuevo del banco sin `git add -N` se queda fuera EN SILENCIO. Mira
+# sólo los bancos que este commit toca, no los de otro escritor. Bloquea: el
+# remedio es un `add -N`, y el coste de no bloquear es evidencia citada que
+# no viajó. Sin rutas lee las staged del índice del propio commit.
+python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
+
+# Un archivo preparado que un proceso vivo sigue escribiendo —la salida de un
+# ítem de pool escrita directamente en un banco, un log que alguien anexa— se
+# commitearía cortado en un instante arbitrario. Bloquea: el remedio es esperar
+# a que el escritor termine, y 2 («no pude demostrar que nadie escribe») tampoco
+# es un verde.
+python3 "$GATES/check_staged_live_writers.py" --repo "$ROOT" || CODE=1
+
+# Cada unidad de `.claude/cache/` en su carpeta con un README que dice qué
+# guarda, de qué episodio sale y cómo se regenera. Estaba cableado sólo en el
+# pre-commit compartido de los consumidores (`src/verify/pre-commit.sh`), así
+# que el caché del propio proveedor no se validaba nunca. Sólo las unidades
+# que este commit prepara (`--staged`).
+python3 "$GATES/check_cache_layout.py" --root "$ROOT" --staged --strict || CODE=1
+
+# Una sola raiz de workspace: ni manifiesto con `workspaces` ni lockfile fuera
+# de la raiz (tarea #62). Mide el indice, asi que ve lo que este commit prepara.
+# Bloquea: una segunda raiz es una segunda fuente de verdad para dependencias,
+# y una admitida exige su razon en el allowlist, no un --no-verify.
+python3 "$GATES/check_single_workspace_root.py" --root "$ROOT" || CODE=1
+
+# «Claude» donde el producto se llama thyrox (tarea #67). Trinquete: la deuda
+# heredada está congelada por archivo en `product_word_baseline.tsv`, y un
+# archivo que crece o uno nuevo con la palabra bloquea. Los servicios ajenos
+# (claude.ai, Claude in Chrome, Claude Desktop, el consentimiento de
+# Anthropic) no cuentan; su lista y su razón están en el gate.
+python3 "$GATES/check_product_word.py" --repo "$ROOT" --strict || CODE=1
+
+# Cada enlace relativo de las skills y las reglas apunta a un archivo que
+# existe: una mudanza de directorio los rompe sin que nada falle.
+python3 "$GATES/check_md_relative_links.py" "$ROOT/.claude/skills" "$ROOT/.claude/rules" || CODE=1
+
+# La configuración de thyrox se lee como THYROX_*, y cada variable propia
+# tiene una prueba que la nombra. Trinquete: las lecturas CLAUDE_* heredadas
+# están congeladas por archivo en `env_prefix_baseline.tsv` (las paga el
+# renombre), y una nueva, una propia sin prueba o una entrada obsoleta
+# bloquean. Sin bun no se mide, y eso se dice en vez de pasar en verde.
+if command -v bun >/dev/null 2>&1; then
+    bun "$GATES/checkEnvPrefix.ts" --root "$ROOT" --strict || CODE=1
+else
+    echo "checkEnvPrefix: bun no está en el PATH; NO se midió el prefijo de entorno." >&2
+    CODE=1
+fi
+
+# Toda clave THYROX_* que el código lee figura en `.env.example`. Se miden los
+# archivos del commit; si el commit toca `.env.example`, el árbol entero,
+# porque retirar una clave del ejemplo deja sin declarar a lectores que el
+# commit no toca.
+if [[ ${#STAGED[@]} -gt 0 ]]; then
+    env_example_staged=""
+    for f in "${STAGED[@]}"; do [[ "$f" == "$ROOT/.env.example" ]] && env_example_staged=1; done
+    if [[ -n "$env_example_staged" ]]; then
+        python3 "$GATES/check_env_contract_keys.py" --root "$ROOT" --strict || CODE=1
+    else
+        python3 "$GATES/check_env_contract_keys.py" --root "$ROOT" --strict --files "${STAGED[@]}" || CODE=1
+    fi
+fi
+
+# Toda clave de `.env` y `.env.local`, que no se versionan, figura en
+# `.env.example`, que es lo que viaja. Compara nombres; no imprime valores.
+python3 "$GATES/check_env_example_coverage.py" --root "$ROOT" || CODE=1
+
+# La identidad del commit, contra la que el repositorio declara
+# (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
+# inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.
+#   exit 1 -> bloquea: la identidad efectiva difiere, o es la del agente.
+#   exit 2 -> avisa y NO bloquea: sin declaracion no hay contra que medir, y
+#             bloquear dejaria sin commit a todo clon que aun no declara. El
+#             aviso nombra SIN MEDIR para que no se lea como aprobado.
+python3 "$GATES/commit_identity.py" check --repo "$ROOT"
+case $? in
+    0|2) ;;
+    *)   CODE=1 ;;
+esac
+
+# El cableado de #184: si el store va en ESTE commit, llega reconciliado.
+#
+# `reconcile_all_sessions` existia y nadie lo corria — un mecanismo sin
+# invocador es prosa con exit 0. Se dispara SOLO cuando el store esta
+# preparado: reconciliar en todo commit escribiria telemetria en un pase que
+# no la pidio, y el `git add` posterior meteria al commit un archivo que su
+# autor no puso.
+#
+# El `case` no es estilo: `git ... | grep -q` bajo `pipefail` devuelve el 141
+# del SIGPIPE de git aunque grep haya encontrado la linea, y con eso el
+# veredicto sale invertido.
+STORE_REL="agent-results/agent_store.sqlite3"
+STAGED_LIST="$(printf '%s\n' "${STAGED[@]}")"
+case "$STAGED_LIST" in
+*"$STORE_REL"*)
+    # NO bloquea el commit. El store es telemetria: perder el turno por una
+    # reconciliacion fallida cuesta mas que una fila atrasada, que es el mismo
+    # criterio con que el gate del banco dejo de ser `--strict`. Pero el fallo
+    # se NOMBRA: un silencio no distingue «no habia deriva» de «no pude medir».
+    if python3 "$ROOT/src/task/board_sync.py" --store "$ROOT/$STORE_REL" \
+            reconciliar-todo --aplicar; then
+        # Re-preparar es la mitad que hace que el commit lo lleve: sin esto el
+        # disco converge y el blob commiteado se queda con la fila vieja.
+        git add -- "$ROOT/$STORE_REL"
+    else
+        # Se captura ANTES del primer `echo`: el `echo` pone `$?` a 0, y el
+        # hook publicaba «fallo (exit 0)», que no distingue nada.
+        RECONCILE_STATUS=$?
+        echo >&2
+        echo "pre-commit: la reconciliacion board->store fallo (exit $RECONCILE_STATUS)." >&2
+        echo "  El commit SIGUE: el store es telemetria y el trabajo no se" >&2
+        echo "  pierde por ella. La fila queda atrasada hasta el proximo pase." >&2
+    fi
+    ;;
+esac
+
+exit $CODE

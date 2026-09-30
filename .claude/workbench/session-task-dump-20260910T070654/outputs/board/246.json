@@ -1,0 +1,9 @@
+{
+  "id": "246",
+  "subject": "install.sh --check dice «5 de 5 sin declarar» y mide 1 clave de 27",
+  "description": "CERRADA 2026-09-07, `thyrox@305f9ef3`. El aviso ahora nombra la clave que mide y publica la cobertura del contrato del consumidor; las claves se leen de `.env.example` (fuente única, no lista embebida). Sin `.env.example` dice «contrato no legible» en vez de «0 de 0».\n\nY cuenta aparte las claves que el consumidor declara y el contrato no nombra literalmente — ahí cae la familia por clon `THYROX_WORKBENCH_<CLON>`, que se compone en tiempo de ejecución. El primer contador la daba por cero y publicaba «0 de 27» sobre `kaupamex-api`, que sí declara `THYROX_WORKBENCH_API`: medir el significante y concluir sobre el significado. Corregido con su control en la suite.\n\nSuite: 33 aserciones, 32 ok. La única roja es preexistente y quedó en #248 (medida antes de tocar nada: 28 aserciones, 27 ok, 1 fallida).",
+  "activeForm": "Decidiendo qué mide install --check",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,30 @@
+Test VRAM admission at three levels, not one
+
+The fake nvidia-smi is a model of how we believe an NVIDIA GPU behaves;
+a green suite against it proves the admission logic, not that the
+model matches hardware. This separates the levels and gives each its
+own evidence.
+
+Level 1, the fake, now has state: free VRAM is the total minus what
+live processes use, and a stepped allocator raises its use when the
+test says so. test_gpu_scenarios checks, phase by phase, used,
+pending, free and headroom while a reservation turns into use, plus
+overshoot, SIGKILL before release, a zombie owner, foreign VRAM, and
+two admissions released at once behind a barrier. Annulling the lock
+admits both in every round; counting the whole reservation or losing
+the descendants breaks the table; treating a zombie as alive keeps
+its reservation. headroom is split out of _try_admit as the query.
+
+The pool suite runs two real headless-pool processes on that GPU with
+one shared ledger. Its first run failed: the history carried a VRAM
+peak of 0 from a different item, so each item asked for nothing and
+both ran together. The case now measures its own item first; with a
+ledger per pool the two overlap again.
+
+Level 2 is gpu_trace: record a stepped allocator's trace and compare
+it with the fake's assumptions, naming the fake parameter a trace
+contradicts (context_overhead_mib, hide_pids). The comparator is
+tested by recording against a fake with overhead and hidden PIDs. The
+real-GPU harnesses for levels 2 and 3 refuse with exit 2 and no count
+here, where there is no GPU; that refusal is what this container can
+test.

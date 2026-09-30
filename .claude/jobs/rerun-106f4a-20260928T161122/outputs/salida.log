@@ -1,0 +1,9 @@
+== 16: sin página completa
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== 22: sin plazo
+   (src/accounts/oauth/loginRunner.ts)
+ 1 fail
+== restaurado
+ 0 fail
+__BG_EXIT__=0

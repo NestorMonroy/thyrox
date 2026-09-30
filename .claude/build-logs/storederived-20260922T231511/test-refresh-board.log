@@ -1,0 +1,27 @@
+caso 1 — estado PLENO: sin citas acuñadas, el volcado no mueve nada
+  FALLA — sale 0
+grep: /tmp/tmp.klByT5Bmqb/tablero.rst: No such file or directory
+  ok   — el .rst NO lleva el aviso de degradación (control positivo)
+grep: /tmp/tmp.klByT5Bmqb/tablero.rst: No such file or directory
+  FALLA — el .rst incorporó la tarea viva
+caso 2 — estado DECLARADO: una cita acuñada cuyo sujeto cambia debajo
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+StopIteration
+  FALLA — sale 0: el tablero SÍ se produce, degradado y declarado
+grep: /tmp/tmp.klByT5Bmqb/tablero.rst: No such file or directory
+  FALLA — el .rst lleva el aviso de degradación
+grep: /tmp/tmp.klByT5Bmqb/tablero.rst: No such file or directory
+  FALLA — el aviso NOMBRA la cita que habría cambiado de sujeto
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+StopIteration
+  FALLA — el store conserva el sujeto acuñado: no se escribió nada
+caso 3 — --strict convierte la degradación en fallo para el llamador
+  FALLA — sale 5 con --strict
+caso 4 — estado REHUSADO: sin directorio vivo
+  ok   — sale 2 sin directorio vivo
+  ok   — sale 2 con un team que no existe
+
+test-refresh-board: 3 ok, 7 falla(s)
+EXIT=1

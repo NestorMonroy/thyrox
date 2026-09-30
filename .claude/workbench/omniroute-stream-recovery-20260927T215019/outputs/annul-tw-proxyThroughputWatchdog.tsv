@@ -1,0 +1,6 @@
+base	6 pass, 0 fail	—
+protected-reset	5 pass, 1 fail	tool-call and reasoning phases suspend judgement until assistant text resumes
+warmup	5 pass, 1 fail	slow output aborts only after warm-up plus a complete window
+protected-blocks	5 pass, 1 fail	tool-call and reasoning phases suspend judgement until assistant text resumes
+measurable	6 pass, 0 fail	—
+window-cutoff	6 pass, 0 fail	—

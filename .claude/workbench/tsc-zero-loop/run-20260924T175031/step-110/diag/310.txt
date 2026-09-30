@@ -1,0 +1,199 @@
+tests/unit/utils/notebook.test.ts(65,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  --- código tests/unit/utils/notebook.test.ts:55-75 ---
+     55    test('returns tool result with correct tool_use_id', () => {
+     56      const data = [
+     57        {
+     58          cellType: 'code',
+     59          source: 'print("hello")',
+     60          cell_id: 'cell-0',
+     61          language: 'python',
+     62        },
+     63      ]
+     64  
+     65>     const result = mapNotebookCellsToToolResult(data, 'tool-123')
+     66      expect(result.tool_use_id).toBe('tool-123')
+     67      expect(result.type).toBe('tool_result')
+     68    })
+     69  
+     70    test('content array contains text blocks for cell content', () => {
+     71      const data = [
+     72        {
+     73          cellType: 'code',
+     74          source: 'x = 1',
+     75          cell_id: 'cell-0',
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(80,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  --- código tests/unit/utils/notebook.test.ts:70-90 ---
+     70    test('content array contains text blocks for cell content', () => {
+     71      const data = [
+     72        {
+     73          cellType: 'code',
+     74          source: 'x = 1',
+     75          cell_id: 'cell-0',
+     76          language: 'python',
+     77        },
+     78      ]
+     79  
+     80>     const result = mapNotebookCellsToToolResult(data, 'tool-1')
+     81      expect(result.content).toBeInstanceOf(Array)
+     82      expect(result.content!.length).toBeGreaterThanOrEqual(1)
+     83  
+     84      const firstBlock = result.content![0] as { type: string; text: string }
+     85      expect(firstBlock.type).toBe('text')
+     86      expect(firstBlock.text).toContain('cell id="cell-0"')
+     87      expect(firstBlock.text).toContain('x = 1')
+     88    })
+     89  
+     90    test('merges adjacent text blocks from multiple cells', () => {
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(106,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  --- código tests/unit/utils/notebook.test.ts:96-116 ---
+     96          language: 'python',
+     97        },
+     98        {
+     99          cellType: 'code',
+    100          source: 'b = 2',
+    101          cell_id: 'cell-1',
+    102          language: 'python',
+    103        },
+    104      ]
+    105  
+    106>     const result = mapNotebookCellsToToolResult(data, 'tool-2')
+    107      // Two adjacent text blocks should be merged into one
+    108      const textBlocks = result.content!.filter((b: any) => b.type === 'text')
+    109      expect(textBlocks).toHaveLength(1)
+    110    })
+    111  
+    112    test('preserves image blocks without merging', () => {
+    113      const data = [
+    114        {
+    115          cellType: 'code',
+    116          source: 'plot()',
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(108,40): error TS2339: Property 'filter' does not exist on type 'string | (TextBlockParam | ImageBlockParam | DocumentBlockParam | SearchResultBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[]'.
+  --- código tests/unit/utils/notebook.test.ts:98-118 ---
+     98        {
+     99          cellType: 'code',
+    100          source: 'b = 2',
+    101          cell_id: 'cell-1',
+    102          language: 'python',
+    103        },
+    104      ]
+    105  
+    106      const result = mapNotebookCellsToToolResult(data, 'tool-2')
+    107      // Two adjacent text blocks should be merged into one
+    108>     const textBlocks = result.content!.filter((b: any) => b.type === 'text')
+    109      expect(textBlocks).toHaveLength(1)
+    110    })
+    111  
+    112    test('preserves image blocks without merging', () => {
+    113      const data = [
+    114        {
+    115          cellType: 'code',
+    116          source: 'plot()',
+    117          cell_id: 'cell-0',
+    118          language: 'python',
+  Property 'filter' does not exist on type 'string'.
+tests/unit/utils/notebook.test.ts(138,49): error TS2345: Argument of type '({ cellType: string; source: string; cell_id: string; language: string; outputs: { output_type: string; text: string; image: { image_data: string; media_type: "image/png"; }; }[]; } | { cellType: string; source: string; cell_id: string; language: string; outputs?: undefined; })[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  --- código tests/unit/utils/notebook.test.ts:128-148 ---
+    128          ],
+    129        },
+    130        {
+    131          cellType: 'code',
+    132          source: 'print(1)',
+    133          cell_id: 'cell-1',
+    134          language: 'python',
+    135        },
+    136      ]
+    137  
+    138>     const result = mapNotebookCellsToToolResult(data, 'tool-3')
+    139      const types = result.content!.map((b: any) => b.type)
+    140      expect(types).toContain('image')
+    141    })
+    142  
+    143    test('markdown cell includes cell_type metadata', () => {
+    144      const data = [
+    145        {
+    146          cellType: 'markdown',
+    147          source: '# Title',
+    148          cell_id: 'cell-0',
+  Type '{ cellType: string; source: string; cell_id: string; language: string; outputs: { output_type: string; text: string; image: { image_data: string; media_type: "image/png"; }; }[]; } | { cellType: string; source: string; cell_id: string; language: string; outputs?: undefined; }' is not assignable to type 'NotebookCellSource'.
+    Type '{ cellType: string; source: string; cell_id: string; language: string; outputs: { output_type: string; text: string; image: { image_data: string; media_type: "image/png"; }; }[]; }' is not assignable to type 'NotebookCellSource'.
+      Types of property 'cellType' are incompatible.
+        Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(139,35): error TS2339: Property 'map' does not exist on type 'string | (TextBlockParam | ImageBlockParam | DocumentBlockParam | SearchResultBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[]'.
+  --- código tests/unit/utils/notebook.test.ts:129-149 ---
+    129        },
+    130        {
+    131          cellType: 'code',
+    132          source: 'print(1)',
+    133          cell_id: 'cell-1',
+    134          language: 'python',
+    135        },
+    136      ]
+    137  
+    138      const result = mapNotebookCellsToToolResult(data, 'tool-3')
+    139>     const types = result.content!.map((b: any) => b.type)
+    140      expect(types).toContain('image')
+    141    })
+    142  
+    143    test('markdown cell includes cell_type metadata', () => {
+    144      const data = [
+    145        {
+    146          cellType: 'markdown',
+    147          source: '# Title',
+    148          cell_id: 'cell-0',
+    149        },
+  Property 'map' does not exist on type 'string'.
+tests/unit/utils/notebook.test.ts(152,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  --- código tests/unit/utils/notebook.test.ts:142-162 ---
+    142  
+    143    test('markdown cell includes cell_type metadata', () => {
+    144      const data = [
+    145        {
+    146          cellType: 'markdown',
+    147          source: '# Title',
+    148          cell_id: 'cell-0',
+    149        },
+    150      ]
+    151  
+    152>     const result = mapNotebookCellsToToolResult(data, 'tool-4')
+    153      const textBlock = result.content![0] as { type: string; text: string }
+    154      expect(textBlock.text).toContain('<cell_type>markdown</cell_type>')
+    155    })
+    156  
+    157    test('non-python code cell includes language metadata', () => {
+    158      const data = [
+    159        {
+    160          cellType: 'code',
+    161          source: 'val x = 1',
+    162          cell_id: 'cell-0',
+  Type '{ cellType: string; source: string; cell_id: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.
+tests/unit/utils/notebook.test.ts(167,49): error TS2345: Argument of type '{ cellType: string; source: string; cell_id: string; language: string; }[]' is not assignable to parameter of type 'NotebookCellSource[]'.
+  --- código tests/unit/utils/notebook.test.ts:157-171 ---
+    157    test('non-python code cell includes language metadata', () => {
+    158      const data = [
+    159        {
+    160          cellType: 'code',
+    161          source: 'val x = 1',
+    162          cell_id: 'cell-0',
+    163          language: 'scala',
+    164        },
+    165      ]
+    166  
+    167>     const result = mapNotebookCellsToToolResult(data, 'tool-5')
+    168      const textBlock = result.content![0] as { type: string; text: string }
+    169      expect(textBlock.text).toContain('<language>scala</language>')
+    170    })
+    171  })
+  Type '{ cellType: string; source: string; cell_id: string; language: string; }' is not assignable to type 'NotebookCellSource'.
+    Types of property 'cellType' are incompatible.
+      Type 'string' is not assignable to type 'NotebookCellType'.

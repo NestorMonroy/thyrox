@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx(22,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx:12-32 ---
+     12  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+     13  import type { AgentWizardData } from '../types.js'
+     14  
+     15  type MemoryOption = {
+     16    label: string
+     17    value: AgentMemoryScope | 'none'
+     18  }
+     19  
+     20  export function MemoryStep(): ReactNode {
+     21    const { goNext, goBack, updateWizardData, wizardData } =
+     22>     useWizard<AgentWizardData>()
+     23  
+     24    useKeybinding('confirm:no', goBack, { context: 'Confirmation' })
+     25  
+     26    const isUserScope = wizardData.location === 'userSettings'
+     27  
+     28    // Build options with the recommended default first, then alternatives
+     29    // The recommended scope matches the agent's location (project agent → project memory, user agent → user memory)
+     30    const memoryOptions: MemoryOption[] = isUserScope
+     31      ? [
+     32          {

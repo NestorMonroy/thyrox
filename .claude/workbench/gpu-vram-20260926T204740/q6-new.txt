@@ -1,0 +1,4 @@
+    decision = derive(Path(args.history), args.model, catalog, args.margin, args.reserve_kb,
+                      free_vram_mib=args.free_vram_mib, vram_reserve_mib=args.vram_reserve_mib,
+                      available_ram_kb=args.available_ram_kb)
+    width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap

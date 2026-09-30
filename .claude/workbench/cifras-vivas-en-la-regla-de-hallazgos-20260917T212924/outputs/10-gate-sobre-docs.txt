@@ -1,0 +1,4 @@
+usage: check_cifra_de_artefacto_vivo.py [-h] [--strict] [--quiet]
+                                        [--no-baseline] [--write-baseline]
+                                        [raiz]
+check_cifra_de_artefacto_vivo.py: error: unrecognized arguments: --raiz

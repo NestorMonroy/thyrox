@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/facadeProposals.test.ts:
+57 | 
+58 |   test('two candidate declarations are judgment, not a facade', () => {
+59 |     const twice = { ...base, '/p/impl2.ts': 'export function helper(): number { return 2 }\n' }
+60 |     const rows = proposeInMemory(twice, Object.keys(twice).filter(f => f.endsWith('.ts')), '/p', OPTIONS)
+61 |       .filter(row => row.proposer === 'ts2305-facade')
+62 |     expect(rows.flatMap(row => row.edits.map(edit => edit.newText)).join('')).not.toContain('helper')
+                                                                                       ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "helper"
+Received: "export type { Shape } from './impl.js'\nexport { helper } from './impl.js'\n"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/facadeProposals.test.ts:62:83)
+(fail) ts2305 facades > two candidate declarations are judgment, not a facade [641.73ms]
+
+ 12 pass
+ 1 fail
+ 36 expect() calls
+Ran 13 tests across 2 files. [12.21s]
+
+[exit=1]

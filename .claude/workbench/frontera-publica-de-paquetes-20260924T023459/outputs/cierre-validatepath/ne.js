@@ -1,0 +1,1 @@
+function ne(){try{return bcr()}catch{return ye()}}

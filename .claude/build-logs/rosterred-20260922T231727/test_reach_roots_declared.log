@@ -1,0 +1,23 @@
+== 1. la constante nombra la variable ==
+  ok    nombra THYROX_REACH_ROOTS
+== 2. entrada A — la variable del proceso gana ==
+  ok    lee la lista declarada
+  ok    recorta el espacio alrededor de cada nombre
+== 3. entrada B — la declaracion del .env cuando el proceso calla ==
+  ok    lee la declaracion del archivo
+== 4. el proceso gana sobre el .env ==
+  ok    la invocacion corrige al archivo
+== 5. sin declaracion, DERIVA del arbol real ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 112, in <module>
+    with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
+  File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 74, in with_env
+    return fn()
+           ^^^^
+  File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 115, in <lambda>
+    reach.reach_roots()))
+    ^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+EXIT=1

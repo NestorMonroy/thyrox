@@ -1,0 +1,23 @@
+tests/unit/utils/messages.test.ts(25,3): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?
+  --- código tests/unit/utils/messages.test.ts:15-35 ---
+     15    createAssistantMessage,
+     16    createAssistantAPIErrorMessage,
+     17    createUserMessage,
+     18    createUserInterruptionMessage,
+     19    prepareUserContent,
+     20    createToolResultStopMessage,
+     21    extractTag,
+     22    isNotEmptyMessage,
+     23    deriveUUID,
+     24    normalizeMessages,
+     25>   normalizeMessagesForAPI,
+     26    isClassifierDenial,
+     27    buildYoloRejectionMessage,
+     28    buildClassifierUnavailableMessage,
+     29    AUTO_REJECT_MESSAGE,
+     30    DONT_ASK_REJECT_MESSAGE,
+     31    SYNTHETIC_MODEL,
+     32  } from '@thyrox/agent/messages.js'
+     33  import type {
+     34    AssistantMessage,
+     35    UserMessage,

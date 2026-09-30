@@ -1,0 +1,1 @@
+src/packages/config/plugin/loadPluginAgents.ts(303,36): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.

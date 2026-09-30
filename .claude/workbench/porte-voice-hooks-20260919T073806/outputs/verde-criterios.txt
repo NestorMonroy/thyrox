@@ -1,0 +1,9 @@
+== criterio 1: la cadena de bloqueo desaparecio (esperado 0 y 0)
+src/packages/voice/src/hooks/useVoice.ts:0
+src/packages/voice/src/hooks/useVoiceIntegration.tsx:0
+== criterio 2: paridad de exports contra la fuente
+useVoice.ts ausentes=[]
+useVoiceIntegration.tsx ausentes=[]
+== paridad de lineas contra la fuente (nuestro = fuente + header)
+useVoice.ts nuestro=1176 fuente=1144 delta=32
+useVoiceIntegration.tsx nuestro=745 fuente=720 delta=25

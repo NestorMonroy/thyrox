@@ -1,0 +1,8 @@
+  ok   agent-artifacts resuelve su paquete dentro del árbol
+  ok   cli-typecheck resuelve su paquete dentro del árbol
+  ok   cli-typecheck mide los dos proyectos del paquete
+  ok   cli-typecheck sale 0 sobre el arbol limpio
+  ok   la variable gana sobre la resolución por árbol
+
+test-package-root-resolution: 5 ok, 0 falla
+EXIT=0

@@ -1,0 +1,12 @@
+src/packages/provider/__tests__/accounts/connectionStore.test.ts
+src/packages/provider/__tests__/accounts/fieldCipher.test.ts
+src/packages/provider/__tests__/accounts/imports/agyAndCliProxyImport.test.ts
+src/packages/provider/__tests__/accounts/imports/anthropicAuthFile.test.ts
+src/packages/provider/__tests__/accounts/imports/codexAuthFile.test.ts
+src/packages/provider/__tests__/accounts/oauth/antigravityFlow.test.ts
+src/packages/provider/__tests__/accounts/oauth/kiroCursorFlows.test.ts
+src/packages/provider/__tests__/accounts/oauth/loginRunner.test.ts
+src/packages/provider/__tests__/accounts/oauth/oauthCore.test.ts
+src/packages/provider/__tests__/accounts/storageKeyRotation.test.ts
+src/packages/provider/src/__tests__/credentialsConnectionStore.test.ts
+src/packages/provider/src/__tests__/generateStorageKey.test.ts

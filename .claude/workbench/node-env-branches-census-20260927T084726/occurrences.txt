@@ -1,0 +1,54 @@
+src/packages/agent/attachments.ts:2852:  if (readEnv('NODE_ENV') === 'test') {
+src/packages/agent/messages.ts:3168:  if (feature('HISTORY_SNIP') && readEnv('NODE_ENV') !== 'test' && isSnipRuntimeEnabled()) {
+src/packages/agent/tokenEstimation.ts:174:// NODE_ENV==='test' || (USER_TYPE==='ant' && FORCE_VCR) and returns await f()
+src/packages/app-host/src/bootstrap/state.ts:760:  if (process.env.NODE_ENV !== 'test') {
+src/packages/cli/src/setup/setup.ts:432:  if (process.env.NODE_ENV === 'test') {
+src/packages/cli/src/utils/warningHandler.ts:63:    process.env.NODE_ENV === 'development' || isRunningFromBuildDirectory()
+src/packages/command-runtime/src/exampleCommands.ts:114:  if (process.env.NODE_ENV === 'test') return []
+src/packages/config/env/privacy.ts:31:    process.env.NODE_ENV === 'test' ||
+src/packages/config/gitFilesystem.ts:331:const WATCH_INTERVAL_MS = process.env.NODE_ENV === 'test' ? 10 : 1000
+src/packages/config/global/config.ts:46: * desvía a un objeto fijo cuando `NODE_ENV === 'test'` — o sea, en pruebas
+src/packages/config/global/config.ts:723:  if (!configReadingAllowed && process.env.NODE_ENV !== 'test') {
+src/packages/config/global/config.ts:843:  if (freshnessWatcherStarted || process.env.NODE_ENV === 'test') return
+src/packages/config/global/config.ts:889:  if (!filePath && process.env.NODE_ENV === 'test') {
+src/packages/config/global/config.ts:927:  if (!filePath && process.env.NODE_ENV === 'test') {
+src/packages/config/global/config.ts:1030: * `NODE_ENV=test` las dos funciones de abajo cortocircuitan a este objeto,
+src/packages/config/global/config.ts:1091:  if (process.env.NODE_ENV === 'test') {
+src/packages/config/global/config.ts:1126:  if (process.env.NODE_ENV === 'test') {
+src/packages/ink/src/core/ink.tsx:368:    if (process.env.NODE_ENV === 'development') {
+src/packages/ink/src/core/reconciler.ts:31:if (process.env.NODE_ENV === 'development') {
+src/packages/ink/src/core/reconciler.ts:33:    // eslint-disable-next-line custom-rules/no-top-level-dynamic-import -- dev-only; NODE_ENV check is DCE'd in production
+src/packages/ink/src/core/reconciler.ts:289:    if (process.env.NODE_ENV === 'test') {
+src/packages/local-observability/src/debug.ts:107:  if (process.env.NODE_ENV === 'test' && !isDebugToStdErr()) {
+src/packages/local-observability/src/sentry.ts:52:        : readEnv('NODE_ENV') || 'development',
+src/packages/local-observability/src/slowLoggingTag.ts:28:  if (process.env.NODE_ENV === 'development') {
+src/packages/provider/src/authAlias.ts:277:  if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+src/packages/provider/src/context.ts:38:  if (readEnv('NODE_ENV') === 'test') {
+src/packages/provider/src/legacy/api.ts:584:  if (readEnv('NODE_ENV') === 'test') {
+src/packages/provider/src/vcr.ts:29:  if (readEnv('NODE_ENV') === 'test') {
+src/packages/repl/src/components/AutoUpdater.tsx:74:      process.env.NODE_ENV === 'test' ||
+src/packages/repl/src/components/AutoUpdater.tsx:75:      process.env.NODE_ENV === 'development'
+src/packages/repl/src/components/DevBar.tsx:9:    process.env.NODE_ENV === 'development' || process.env.USER_TYPE === 'ant'
+src/packages/repl/src/components/NativeAutoUpdater.tsx:103:      process.env.NODE_ENV === 'test' ||
+src/packages/repl/src/components/NativeAutoUpdater.tsx:104:      process.env.NODE_ENV === 'development'
+src/packages/repl/src/components/PackageManagerAutoUpdater.tsx:150:      process.env.NODE_ENV === 'test' ||
+src/packages/repl/src/components/PackageManagerAutoUpdater.tsx:151:      process.env.NODE_ENV === 'development'
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:14:  if ((process.env.NODE_ENV as string) === 'development') {
+src/packages/repl/src/diagnostics/desktopDeepLink.ts:18:  // Local builds from build directories are dev mode even with NODE_ENV=production
+src/packages/repl/src/doctorDiagnostic.ts:91:  if (process.env.NODE_ENV === 'development') {
+src/packages/repl/src/doctorDiagnostic.ts:155:  if (process.env.NODE_ENV === 'development') {
+src/packages/repl/src/hooks/useNotifyAfterTimeout.ts:20:  return process.env.NODE_ENV !== 'test' && !hasRecentInteraction(threshold)
+src/packages/repl/src/hooks/useTypeahead.tsx:618:  // Skipped under NODE_ENV=test: REPL-mounting tests would spawn git ls-files
+src/packages/repl/src/hooks/useTypeahead.tsx:624:    if (process.env.NODE_ENV !== 'test') {
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx:161:    process.env.NODE_ENV === 'test' ||
+src/packages/shell/src/Shell.ts:135:  if (process.env.NODE_ENV !== 'test') {
+src/packages/shell/src/bash/commands.ts:482:- NODE_ENV=production npm start => none
+src/packages/shell/src/exec.ts:381:  if (process.env.NODE_ENV !== 'test') {
+src/packages/shell/src/legacy/prefix.ts:182:  if (process.env.NODE_ENV === 'test') {
+src/packages/storage/src/sessionStorage.ts:253:  return readEnv('NODE_ENV') || 'development'
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:146: *   'NODE_ENV=prod npm run build' → 'npm run' (NODE_ENV is safe)
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:312:  // not just "python3") and skips safe env var prefixes like "NODE_ENV=test".
+src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts:382:  'NODE_ENV',
+src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts:550:        if (process.env.NODE_ENV === 'test') {
+src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts:305:    if (process.env.NODE_ENV === 'test') {
+src/packages/updater/src/autoUpdater.ts:220:  if (process.env.NODE_ENV === 'test') {

@@ -1,0 +1,8 @@
+src/packages/agent/sessionStores.ts
+src/packages/bridge/src/internal/pendingCrossPackageDeps.ts
+src/packages/cli/README.md
+src/packages/daemon/src/internal/pendingCrossPackageDeps.ts
+src/packages/ide/src/ide.ts
+src/packages/ide/src/internal/pendingCrossPackageDeps.ts
+src/packages/server/src/internal/pendingCrossPackageDeps.ts
+src/typescript/emit_declarations.py

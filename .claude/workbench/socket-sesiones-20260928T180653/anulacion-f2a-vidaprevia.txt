@@ -1,0 +1,35 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsBind.test.ts:
+78 |     const intruder = createServer(socket => {
+79 |       reached.push('intruso')
+80 |       socket.end()
+81 |     })
+82 |     servers.push(intruder)
+83 |     expect(await listenOn(intruder, path)).toBe(false)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsBind.test.ts:83:44)
+(fail) listenOn (ne) > no le roba la ruta a un socket vivo: Bun no da EADDRINUSE (H-THYROX-239) [3.73ms]
+129 |     const path = join(tempDir(), '42.sock')
+130 |     await liveServer(path)
+131 |     const server = createServer()
+132 |     servers.push(server)
+133 |     const bound = await bindAutoSocket(server, path)
+134 |     expect(bound).not.toBe(path)
+                            ^
+error: expect(received).not.toBe(expected)
+
+Expected: not "/tmp/uds-bind-x34tZ7/42.sock"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsBind.test.ts:134:23)
+(fail) bindAutoSocket (rn) > si la ruta es el socket vivo de otra sesión, escucha en una apartada [3.41ms]
+
+ 8 pass
+ 2 fail
+ 17 expect() calls
+Ran 10 tests across 1 file. [129.00ms]

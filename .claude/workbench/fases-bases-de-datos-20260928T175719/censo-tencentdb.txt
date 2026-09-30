@@ -1,0 +1,51 @@
+## tencentdb-agent-memory 29bb8df 2026-09-28
+1103
+    400 MemoryCore
+    284 MemoryPanel
+    202 MemoryProxy
+     78 MemoryKnowledge
+     44 sdk
+     34 assets
+     21 agents
+     18 deploy
+      5 .github
+      4 adapters
+      1 ROADMAP_CN.md
+      1 ROADMAP.md
+      1 README_CN.md
+      1 README.md
+      1 README.docker.md
+      1 README.deployment.md
+      1 LICENSE
+      1 INSTALL_CN.md
+      1 INSTALL.md
+      1 CONTRIBUTING_CN.md
+## extensiones
+    735 ts
+     87 tsx
+     70 md
+     32 png
+     30 sh
+     30 css
+     26 json
+     21 py
+     14 yaml
+     10 mjs
+      6 gitignore
+      5 yml
+## archivos que nombran motores (por patron)
+pgvector: 0
+postgres: 2
+sqlite: 148
+mysql: 4
+'tencentdb|TDSQL|tcvector|VectorDB': 0
+/usr/bin/bash: line 1: TDSQL: command not found
+/usr/bin/bash: line 1: VectorDB: command not found
+/usr/bin/bash: line 1: tcvector: command not found
+'CREATE TABLE': 0
+fatal: ambiguous argument 'TABLE': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+embedding: 83
+'hnsw|ivfflat': 0
+/usr/bin/bash: line 1: ivfflat: command not found

@@ -1,0 +1,7 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 13.55 s, pico 258676 KB × 2 -> 506M; TTL 5m: turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada; RAM: (15227304 − 0) / (258676 × 2) -> 29
+cache-ttl: 5m (history)
+memfree: 506M (history)
+items=1 ok=1 fallidos=0
+verificados=1 rechazados=0 sin-cambios=0 fallidos=0
+__BG_EXIT__=0

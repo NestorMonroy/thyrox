@@ -1,0 +1,28 @@
+src/packages/agent/__tests__/productionWiring.test.ts(93,9): error TS2322: Type 'Mock<(messages: unknown[]) => Promise<{ compacted: boolean; messages: unknown[]; }>>' is not assignable to type '(messages: CoreMessage[], tokenCount: number) => Promise<CompactionResult>'.
+  --- código src/packages/agent/__tests__/productionWiring.test.ts:83-103 ---
+     83        },
+     84        hooks: {
+     85          onTurnStart: mock(async () => {}),
+     86          onTurnEnd: mock(async () => {}),
+     87          onStop: mock(async () => ({
+     88            blockingErrors: [],
+     89            preventContinuation: false,
+     90          })),
+     91        },
+     92        compaction: {
+     93>         maybeCompact: mock(async (messages: unknown[]) => ({
+     94            compacted: false,
+     95            messages,
+     96          })),
+     97        },
+     98      })
+     99  
+    100      const core = new AgentCore(deps)
+    101      const events = []
+    102      for await (const event of core.run({ messages: [], prompt: 'start' })) {
+    103        events.push(event)
+  Type 'Promise<{ compacted: boolean; messages: unknown[]; }>' is not assignable to type 'Promise<CompactionResult>'.
+    Type '{ compacted: boolean; messages: unknown[]; }' is not assignable to type 'CompactionResult'.
+      Types of property 'messages' are incompatible.
+        Type 'unknown[]' is not assignable to type 'CoreMessage[]'.
+          Type 'unknown' is not assignable to type 'CoreMessage'.

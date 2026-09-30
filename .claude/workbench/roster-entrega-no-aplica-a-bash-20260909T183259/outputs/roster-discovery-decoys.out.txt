@@ -1,0 +1,13 @@
+# Descubrimiento del roster: la heuristica de mtime contra el id de sesion
+# Medido 2026-09-09T18:59:33 sobre /tmp/claude-0
+
+## candidatos que la heuristica ve
+total: 57
+  18:59:32   266 entradas  /tmp/claude-0/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/tasks
+  18:42:38     1 entradas  /tmp/claude-0/-tmp-storage-cli-project-YRGDQ5/sess-1/tasks
+  12:41:51     1 entradas  /tmp/claude-0/-tmp-storage-cli-project-2coNbB/sess-1/tasks
+  10:22:04     1 entradas  /tmp/claude-0/-tmp-storage-cli-project-WnV276/sess-1/tasks
+  ... el resto son fixtures de nuestras suites (storage-cli-project-*, myproj)
+
+## origen que el guion publica AHORA sobre el roster real
+roster    : /tmp/claude-0/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/tasks  [sesion declarada]

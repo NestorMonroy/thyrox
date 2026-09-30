@@ -1,0 +1,25 @@
+== 1. un commit normal no se marca ==
+  ok    sale 0
+  ok    y publica 0 rutas sin publicar
+== 1-bis. la premisa de la ficha NO se reproduce, y se mide ==
+  ok    el blob NO sale vacio — la premisa de ERR-31 no aplica aqui
+  ok    y el gate no marca nada
+== 2. CONTROL: el defecto REAL — declarada y no publicada ==
+  ok    precondicion — la ruta no esta en HEAD
+  ok    precondicion — la otra SI entro
+  ok    sale 1
+  ok    nombra la ruta
+  ok    y publica su tamano en disco
+== 3. un archivo genuinamente vacio NO es el defecto ==
+  ok    sale 0 — un archivo vacio commiteado esta publicado
+== 4. sin repo REHUSA, no publica un 0 ==
+  ok    exit 2
+  ok    y NO emite conteo
+== 5. un commit que no resuelve REHUSA ==
+  ok    exit 2
+  ok    y lo dice
+== 6. --quiet publica el conteo y conserva el codigo ==
+  ok    exit 1
+  ok    y la salida es el conteo pelado
+
+16 ok, 0 fallos

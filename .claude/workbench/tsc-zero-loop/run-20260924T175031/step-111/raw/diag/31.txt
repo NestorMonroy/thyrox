@@ -1,0 +1,7 @@
+src/packages/agent/internal/cronSchedulerCore.ts(313,32): error TS2339: Property 'removeSessionCronTasks' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronSchedulerCore.ts(361,46): error TS2339: Property 'getSessionCronTasks' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronSchedulerCore.ts(460,80): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronSchedulerCore.ts(465,33): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronSchedulerCore.ts(468,32): error TS2339: Property 'setScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronSchedulerCore.ts(470,34): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/cronSchedulerCore.ts(476,38): error TS2339: Property 'getScheduledTasksEnabled' does not exist on type 'AgentHostBindings'.

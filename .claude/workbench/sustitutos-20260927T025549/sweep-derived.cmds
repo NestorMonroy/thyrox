@@ -1,0 +1,28 @@
+timeout 600 bash tests/agents/test-agent-store-clasificar-documentos.sh
+timeout 600 bash tests/agents/test-agent-store-fecha-documento.sh
+timeout 600 bash tests/agents/test-agent-store-usage-columns.sh
+timeout 600 bash tests/agents/test-costo-agente.sh
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_detect_agent_dispatch.py
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_stop_gate.py
+timeout 600 bash tests/install/test_install.sh
+timeout 600 bash tests/session/test-contrato-de-escotilla.sh
+timeout 600 bash tests/session/test-gnu-time-launchers.sh
+timeout 600 bash tests/session/test-gpu-admission-cli.sh
+timeout 600 bash tests/session/test-headless-pool-thyrox-p.sh
+timeout 600 bash tests/session/test-headless-pool.sh
+timeout 600 bash tests/session/test-process-group.sh
+timeout 600 bash tests/session/test-run-task-pool-isolation.sh
+timeout 600 bash tests/session/test-run-task-pool-memfree.sh
+timeout 600 bash tests/session/test-run-task-pool.sh
+timeout 600 bash tests/session/test-wait-jobs-probe.sh
+timeout 600 bash tests/session/test-wait-jobs.sh
+PYTHONPATH=src timeout 600 python3 tests/session/test_generate_bin.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_gpu_scenarios.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_pool_history.py
+timeout 600 bash tests/task/test-closure-graph.sh
+timeout 600 bash tests/verify/test-hallazgo-submodulo-baseline.sh
+timeout 600 bash tests/verify/test-verificar-premisa.sh
+timeout 600 bash tests/verify/test-vocabulario-baseline-resolucion.sh
+PYTHONPATH=src timeout 600 python3 tests/verify/test_tsc_cycle.py
+PYTHONPATH=src timeout 120 python3 tests/verify/test_unsized_writer_pipe.py
+PYTHONPATH=src timeout 120 python3 tests/verify/test_unbounded_pipe.py

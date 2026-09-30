@@ -1,0 +1,49 @@
+15 — El alcance 'packages/' también definía el denominador, un nivel más arriba
+==========================================================================
+
+Fecha: 2026-09-18T17:38:33
+Disparador: directiva del ejecutor «queremos que copies tambien los jsx y js»
+
+LO QUE SÍ ESTÁ CERRADO
+----------------------
+  .js/.jsx bajo packages/ ausentes en thyrox : 0
+  .js/.jsx versionados bajo src/packages     : 5
+    src/packages/config/remote/securityCheck.jsx
+    src/packages/tool-registry/src/tools/REPLTool/REPLTool.js
+    src/packages/tool-registry/src/tools/SuggestBackgroundPRTool/SuggestBackgroundPRTool.js
+    src/packages/tool-registry/src/tools/TungstenTool/TungstenTool.js
+    src/packages/tool-registry/src/tools/VerifyPlanExecutionTool/VerifyPlanExecutionTool.js
+
+LO QUE EL ALCANCE NUNCA VIO
+---------------------------
+Mi universo fue packages/. ccnmt tiene CINCO raíces de primer nivel:
+
+  raiz           archivos   peso  contenido
+  assets              3    72M  3	gif 	 
+  bun-demincer       37    28M  17	mjs 8	md 	6 
+  docs              161    44M  117	md 35	mdx 	9 
+  packages         3424    83M  2695	ts 598	tsx 42	md 
+  scripts           127   836K  	116 11	json ts	 
+  tests             117   780K  112	ts 	3 1	md 
+
+COBERTURA MEDIDA DE LAS DOS RAÍCES DE CÓDIGO
+---------------------------------------------
+Por MISMA RUTA, y también por NOMBRE DE ARCHIVO en todo thyrox/src+tests,
+porque un porte puede haber movido el archivo:
+
+  ccnmt/tests   112 .ts  ->  0 por misma ruta;  51 de 108 nombres únicos presentes,  57 ausentes
+  ccnmt/scripts 116 .ts  ->  0 por misma ruta;   0 de 116 nombres únicos presentes, 116 ausentes
+  bun-demincer   37      ->  el directorio NO EXISTE en thyrox (17 .mjs, 8 .md, 6 .sh, 3 .json, 1 .ts)
+
+scripts/ está SIN PORTAR por completo. bun-demincer también.
+
+LA FORMA, QUE ES LA MISMA DE H-THYROX-90
+-----------------------------------------
+H-THYROX-90 midió el defecto dentro de packages/: el filtro por extensión
+seleccionaba Y fijaba el denominador. Esto es el mismo defecto un nivel
+arriba: el filtro por DIRECTORIO (packages/) seleccionó Y fijó el
+denominador. «0 ausentes» era cierto de packages/ y de nada más.
+
+Ciega a: si scripts/ y bun-demincer DEBEN portarse — eso no lo decide una
+medición de presencia. La directiva de fase 2 dice packages/<x>/ explícito,
+así que estas dos raíces están FUERA de ella y su desenlace es decisión.

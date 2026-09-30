@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionReceive.test.ts:
+69 |   test('un hook que reescribe el texto lo entrega reescrito; con bloques, el texto nuevo y los no textuales', async () => {
+70 |     const hooks = site([async (event, next) => next({ ...event, text: 'nuevo' })])
+71 |     const plain = await runSessionReceive({ origin: { kind: 'peer' }, content: 'hola' }, hooks, () => {})
+72 |     expect(plain.consumed === undefined && plain.content).toBe('nuevo')
+73 |     const blocks = await runSessionReceive({ origin: { kind: 'peer' }, content: [{ type: 'text', text: 'hola' }, { type: 'image', data: 'x' }] }, hooks, () => {})
+74 |     expect(blocks.consumed === undefined && blocks.content).toEqual([{ type: 'text', text: 'nuevo' }, { type: 'image', data: 'x' }])
+                                                                 ^
+error: expect(received).toEqual(expected)
+
+@@ -5,6 +5,3 @@
+    },
+-   {
+-     "data": "x",
+-     "type": "image",
+-   },
+  ]
+
+- Expected  - 4
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:74:61)
+(fail) runSessionReceive (Aot) > un hook que reescribe el texto lo entrega reescrito; con bloques, el texto nuevo y los no textuales [0.53ms]
+
+ 6 pass
+ 1 fail
+ 16 expect() calls
+Ran 7 tests across 1 file. [42.00ms]

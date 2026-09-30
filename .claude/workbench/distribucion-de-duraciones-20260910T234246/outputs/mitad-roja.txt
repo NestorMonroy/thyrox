@@ -1,0 +1,67 @@
+  ok    test_a_scaffolded_run_is_NOT_conformant_yet
+  FALLO test_an_empty_population_refuses_instead_of_publishing_a_zero
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 161, in <module>
+    _caso()
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 141, in test_an_empty_population_refuses_instead_of_publishing_a_zero
+    job_runs.duration_distribution([])
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.job_runs' has no attribute 'duration_distribution'
+  ok    test_latest_run_finds_the_most_recent_of_a_slug
+  FALLO test_opposite_dispersion_with_the_SAME_total_gives_a_different_verdict
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 161, in <module>
+    _caso()
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 128, in test_opposite_dispersion_with_the_SAME_total_gives_a_different_verdict
+    uniforme = job_runs.duration_distribution([4.0, 4.0, 4.0, 4.0])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.job_runs' has no attribute 'duration_distribution'
+  ok    test_reuses_the_workbench_required_keys
+  ok    test_reuses_the_workbench_run_id_grammar
+  ok    test_scaffold_creates_one_directory_per_run
+  FALLO test_scaffold_records_when_the_job_started
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 161, in <module>
+    _caso()
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 105, in test_scaffold_records_when_the_job_started
+    assert "started_at" in m
+           ^^^^^^^^^^^^^^^^^
+AssertionError
+  FALLO test_settle_records_the_duration_not_only_the_exit_code
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 161, in <module>
+    _caso()
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 113, in test_settle_records_the_duration_not_only_the_exit_code
+    assert "finished_at" in m
+           ^^^^^^^^^^^^^^^^^^
+AssertionError
+  ok    test_settle_records_the_exit_code_where_the_manifest_can_be_read
+  FALLO test_the_distribution_publishes_its_operands_not_only_the_total
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 161, in <module>
+    _caso()
+  File "/home/user/thyrox/tests/session/test_job_runs.py", line 119, in test_the_distribution_publishes_its_operands_not_only_the_total
+    d = job_runs.duration_distribution([4.0, 4.0, 4.0, 4.0])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'session.job_runs' has no attribute 'duration_distribution'
+  ok    test_the_log_lives_inside_its_run_not_beside_it
+  ok    test_the_manifest_declares_the_instrument_and_OMITS_what_it_cannot_know
+resumen: 5 fallo(s)
+
+--- LECTURA — 2026-09-10T23:42:46 ---
+5 fallos de 13. Los cinco son las aserciones NUEVAS; ninguna pasa vacuamente.
+
+Y la mitad roja sólo se pudo VER tras cerrar un defecto del instrumento:
+`test_job_runs.py` no tenía bloque `__main__`, así que `python3 <suite>`
+—la forma en que tests/run.sh corre las suites de Python— sólo IMPORTABA el
+módulo. Las 13 funciones `test_*` no se invocaban y el corredor contaba la
+suite en verde.
+
+Medido sobre los 117 `test_*.py` del árbol:
+  83 sin bloque __main__
+   2 de esos definen funciones test_*  ->  20 funciones NUNCA invocadas
+  81 asertan a nivel de módulo, y ésas SÍ corren al importar
+
+El conteo grueso (83) habría exagerado 4x: la mayoría no tiene el defecto.
+Cerrado el instrumento, las 7 del otro archivo salieron verdes — el defecto
+era el corredor, no el código que medían.

@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+100 | })
+101 | 
+102 | describe('shortWordSlugFromSeed (TDo) — el slug corto que una semilla fija', () => {
+103 |   test('toma el adjetivo y el sustantivo de los dos primeros u32 big-endian', () => {
+104 |     const seed = new Uint8Array([0, 0, 0, 1, 0, 0, 0, 2])
+105 |     expect(shortWordSlugFromSeed(seed)).toBe(`${ADJECTIVES[1]}-${NOUNS[2]}`)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: "azure-aspen"
+Received: "azure-arbor"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:105:41)
+(fail) shortWordSlugFromSeed (TDo) — el slug corto que una semilla fija > toma el adjetivo y el sustantivo de los dos primeros u32 big-endian [0.35ms]
+109 |     expect(shortWordSlugFromSeed(wrap)).toBe(`${ADJECTIVES[3]}-${NOUNS[0]}`)
+110 |   })
+111 | 
+112 |   test('respeta el desplazamiento de la vista y exige ocho bytes', () => {
+113 |     const backing = new Uint8Array([9, 9, 0, 0, 0, 4, 0, 0, 0, 5])
+114 |     expect(shortWordSlugFromSeed(backing.subarray(2))).toBe(`${ADJECTIVES[4]}-${NOUNS[5]}`)
+                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: "brisk-bellows"
+Received: "brisk-beacon"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:114:56)
+(fail) shortWordSlugFromSeed (TDo) — el slug corto que una semilla fija > respeta el desplazamiento de la vista y exige ocho bytes [0.14ms]
+
+ 14 pass
+ 2 fail
+ 191 expect() calls
+Ran 16 tests across 1 file. [86.00ms]

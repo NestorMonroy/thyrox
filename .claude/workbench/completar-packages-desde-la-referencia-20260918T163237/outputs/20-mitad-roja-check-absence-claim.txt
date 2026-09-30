@@ -1,0 +1,10 @@
+# Mitad ROJA de check_absence_claim — persistida al producirse
+# Fecha: 2026-09-18T18:35:05
+# Comando: python3 tests/verify/test_check_absence_claim.py
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_check_absence_claim.py", line 36, in <module>
+    from verify import check_absence_claim as gate  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'check_absence_claim' from 'verify' (/home/user/thyrox/src/verify/__init__.py)
+EXIT=1

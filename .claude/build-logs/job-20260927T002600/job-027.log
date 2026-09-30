@@ -1,0 +1,57 @@
+== 1. los pasos corren en orden y cada uno trae su última línea ==
+  ok    dos resultados
+  ok    en el orden declarado
+  ok    cada uno con su última línea
+  ok    ninguno agotado
+  ok    ninguno en rojo
+== 2. un paso en rojo NO detiene la cadena ==
+  ok    los dos pasos corrieron
+  ok    el primero salió en rojo
+  ok    y el segundo entregó igual
+  ok    el rojo se nombra en stderr
+== 3. DISCRIMINA: un paso agotado se marca Y se nombra en stderr ==
+  ok    se marca como agotado
+  ok    el plazo se nombra en stderr
+  ok    y stderr dice cuántos segundos
+== 4. DISCRIMINA: la suma de plazos se comprueba contra el presupuesto ==
+  ok    la cadena se construye igual — avisar no es bloquear
+  ok    stderr nombra la suma
+  ok    stderr nombra el presupuesto
+== 5. dentro del presupuesto NO hay aviso ==
+  ok    stderr queda limpio
+== 6. render SessionStart: cada cola entra al additionalContext ==
+  ok    declara el evento
+  ok    trae la cola del primer paso
+  ok    trae la cola del segundo
+  ok    y el preámbulo del consumidor
+== 7. render Stop: descarta la salida y emite {} exacto ==
+  ok    emite el objeto vacío
+== 8. CONTROL: un comando inexistente no se lee como verde ==
+  ok    el paso NO reporta 0
+  ok    no se marca como agotado — murió, no se colgó
+  ok    y se nombra en stderr
+== 9. CONTROL: la cadena vacía rehúsa — no publica un verde sin pasos ==
+  ok    rehúsa sin pasos
+== 10. CLI: los pasos y el presupuesto se inyectan por argumento ==
+  ok    sale 0
+  ok    publica las dos colas
+  ok    y el preámbulo inyectado
+== 11. CLI: el render Stop emite {} y NUNCA rompe el turno ==
+  ok    sale 0 pese a los dos incidentes
+  ok    stdout es el objeto vacío
+  ok    stderr nombra el paso en rojo
+  ok    stderr nombra el paso agotado
+== 12. un paso SIN salida sigue apareciendo, nombrado ==
+  ok    el paso mudo aparece
+  ok    declarado como sin salida
+  ok    y el otro trae la suya
+== 13. si el paso ya se nombra a sí mismo, la etiqueta no se repite ==
+  ok    sin etiqueta repetida
+  ok    pero el resumen entero sigue ahí
+  ok    y el que no se nombra sí la lleva
+== 14. DISCRIMINA: un paso agotado NO deja el trabajo corriendo ==
+  ok    se reporta agotado
+  ok    y el trabajo NO siguio corriendo
+
+40 ok, 0 fallos
+EXIT=0

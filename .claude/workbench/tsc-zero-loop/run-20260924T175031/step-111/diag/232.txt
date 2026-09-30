@@ -1,0 +1,23 @@
+src/packages/repl/src/handlePromptSubmit.tsx(307,11): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/handlePromptSubmit.tsx:297-317 ---
+    297          }
+    298        }
+    299  
+    300        const impl = await immediateCommand.load()
+    301        const jsx = await impl.call(onDone, context, commandArgs)
+    302  
+    303        // Skip if onDone already fired — prevents stuck isLocalJSXCommand
+    304        // (see processSlashCommand.tsx local-jsx case for full mechanism).
+    305        if (jsx && !doneWasCalled) {
+    306          setToolJSX({
+    307>           jsx,
+    308            shouldHidePromptInput: false,
+    309            isLocalJSXCommand: true,
+    310            isImmediate: true,
+    311          })
+    312        }
+    313        return
+    314      }
+    315    }
+    316  
+    317    if (queryGuard.isActive || isExternalLoading) {

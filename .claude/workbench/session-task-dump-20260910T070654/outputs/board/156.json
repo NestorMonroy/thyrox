@@ -1,0 +1,9 @@
+{
+  "id": "156",
+  "subject": "Portar el pool acotado a thyrox: #150 cerró con 2 de sus 3 piezas",
+  "description": "#150 se tituló «Portar la familia session a thyrox — el pool, la barrera y el marcador» y se cerró con job_ledger.py, que cubre DOS: la barrera (wait sobre N) y el marcador (_has_marker + _recheck_after_death, que es la discriminación exit-0/2/3 de esperar-marcador.sh). El POOL no está: grep de width|nproc|pool sobre thyrox/src/**.py devuelve sólo «spool» de hooks/error_log.py, otro sentido.\n\nEl sujeto es docs: .claude/scripts/session/run-task-pool.sh (139 líneas). Su mecanismo, separado del parámetro (DEC-04): parsear la lista de comandos saltando vacías y comentarios; admisión con anchura acotada cosechando pids muertos con kill -0 —NO `wait -n`, porque los hijos van desprendidos y dejan de ser esperables—; lanzar con el envoltorio de marcador en shell EXTERIOR; registrar cada trabajo en el ledger; esperar en la barrera. Salidas 0/2/3/4.\n\nLo que se inyecta: anchura (default nproc), timeout, directorio de logs, prefijo, el lanzador y la sonda de vivacidad. Lo que se consume: JobLedger, ya en thyrox.\n\nLas sutilezas medidas que el porte tiene que conservar y su suite ejercitar: el marcador va en shell exterior porque `cmd; echo EXIT=$?` lo pierde cuando cmd llama a exit; anchura 0 o negativa se rechaza ruidosa en vez de colgar el bucle; 0 comandos sale 4.",
+  "activeForm": "Portando el pool acotado a thyrox",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

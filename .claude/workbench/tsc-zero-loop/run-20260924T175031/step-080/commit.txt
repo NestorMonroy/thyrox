@@ -1,0 +1,14 @@
+Copy cyclePermissionMode with the canonical context
+
+PromptInput imports cyclePermissionMode, which getNextPermissionMode.ts
+lacked. ccnmt declares it in the same file, typed with the canonical
+ToolPermissionContext from tool-registry; ours used a narrow local
+type with three fields, which transitionPermissionMode does not
+accept. The copy brings the function and the source's import in place
+of the local type. Both getNextPermissionMode test files pass.
+
+Two siblings in the batch were rejected and go on: the tokenEstimation
+copy needs its Content argument typed, and the runClaudeCode chain
+needs detectRuntimeMode in detect-mode.ts as well.
+
+tsc: 2368 -> 2367.

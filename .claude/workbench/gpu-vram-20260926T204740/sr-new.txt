@@ -1,0 +1,1 @@
+            "memory_kb": _memory(bench), "gpu": _gpu(bench)}

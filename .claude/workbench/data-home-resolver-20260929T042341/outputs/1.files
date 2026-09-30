@@ -1,0 +1,6 @@
+src/packages/config/__tests__/configHome.test.ts
+src/packages/config/env/configHome.ts
+src/packages/local-observability/src/errorStore/errorStoreHome.ts
+src/packages/mitm/__tests__/dataDir.test.ts
+src/packages/mitm/src/dataDir.ts
+src/packages/provider/src/accounts/connectionStoreHome.ts

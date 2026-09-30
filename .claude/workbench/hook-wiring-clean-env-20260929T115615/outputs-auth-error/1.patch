@@ -1,0 +1,77 @@
+diff --git a/src/session/user_wiring.py b/src/session/user_wiring.py
+index 0cf35c98..15bf921c 100644
+--- a/src/session/user_wiring.py
++++ b/src/session/user_wiring.py
+@@ -125,8 +125,8 @@ def declared_wiring(root: Path | None = None,
+     resultados = f"{consumer}/.claude/agent-results"
+     repos = " ".join(f"--repo {nombre}={ruta}"
+                      for nombre, ruta in sorted(reach().items()))
+-    delta = f"python3 {agentes}/measure_delta.py"
+-    registro = f"python3 {agentes}/register_session.py"
++    delta = f"bash {base}/bin/measure_delta"
++    registro = f"bash {base}/bin/register_session"
+     return {
+         "hooks": {
+             "SubagentStart": [{"hooks": [
+@@ -141,8 +141,7 @@ def declared_wiring(root: Path | None = None,
+             # aqui seria otra fuente de verdad del hogar.
+             "SessionStart": [{
+                 "matcher": "compact",
+-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+-                              f"{base}/src/hooks/compact_context.py "
++                "hooks": [cmd(f"bash {base}/bin/compact_context "
+                               + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
+                               timeout=20)],
+             }, {
+@@ -165,11 +164,11 @@ def declared_wiring(root: Path | None = None,
+             # mide; el preflight descarta en proceso lo que no le toca.
+             "PreToolUse": [{
+                 "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+-                # El PYTHONPATH va en el comando: el hook corre desde el cwd de
+-                # la sesion y sin el entorno del corredor, y sin el cuatro de
+-                # los diecisiete detectores no cargaban (su suite lo mide).
+-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+-                              f"{base}/src/hooks/tool_use_preflight.py",
++                # El envoltorio de `bin/` resuelve su propio PYTHONPATH: el
++                # hook corre desde el cwd de la sesion y sin el entorno del
++                # corredor, y sin el cuatro de los diecisiete detectores no
++                # cargaban (su suite lo mide).
++                "hooks": [cmd(f"bash {base}/bin/tool_use_preflight",
+                               timeout=10)],
+             }],
+             "SubagentStop": [{"hooks": [
+@@ -188,10 +187,10 @@ def declared_wiring(root: Path | None = None,
+             # produccion y la cita durable se acuñaba a mano y a posteriori,
+             # que es justo lo que TASK-DOCS-0404 existe para cerrar.
+             "TaskCreated": [{"hooks": [
+-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
++                cmd(f"bash {base}/bin/task_lifecycle"),
+             ]}],
+             "TaskCompleted": [{"hooks": [
+-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
++                cmd(f"bash {base}/bin/task_lifecycle"),
+             ]}],
+         },
+         "advisorModel": advisor or DEFAULT_ADVISOR,
+diff --git a/tests/session/test_user_wiring.py b/tests/session/test_user_wiring.py
+index faf6efa6..e6afe6b0 100644
+--- a/tests/session/test_user_wiring.py
++++ b/tests/session/test_user_wiring.py
+@@ -86,7 +86,7 @@ check("el matcher cubre Bash y Agent, los dos despachos que se miden",
+ check("el matcher cubre la escritura y la lectura de archivos",
+       True, {"Write", "Edit", "Read"} <= _matcher)
+ check("el comando es el preflight del proveedor", True,
+-      any(h["command"].endswith("src/hooks/tool_use_preflight.py")
++      any(h["command"].endswith("bin/tool_use_preflight")
+           for h in _pre.get("hooks", [])))
+ 
+ # El comando cableado corre desde el cwd de la sesion y sin el PYTHONPATH del
+@@ -107,7 +107,7 @@ check("SessionStart se declara con el matcher de la compactación", "compact",
+       _start.get("matcher"))
+ _cmd1 = next((h["command"] for h in _start.get("hooks", [])), "true")
+ check("el comando es el hook de restauración del proveedor", True,
+-      "src/hooks/compact_context.py" in _cmd1)
++      "bin/compact_context" in _cmd1)
+ _r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=True,
+                input='{"hook_event_name":"SessionStart","source":"startup","session_id":"x"}')
+ check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",

@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsMessagingState.test.ts:
+90 |     void locks.run('k', async () => {
+91 |       done.push(1)
+92 |       void locks.run('k2', () => new Promise<void>(resolve => setTimeout(() => (done.push(2), resolve()), 5)))
+93 |     })
+94 |     await locks.drain()
+95 |     expect(done).toEqual([1, 2])
+                      ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    1,
+-   2,
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsMessagingState.test.ts:95:18)
+(fail) createKeyedLocks (Fm) > drain espera también lo que se encola mientras drena, hasta cinco pasadas [0.54ms]
+
+ 9 pass
+ 1 fail
+ 35 expect() calls
+Ran 10 tests across 1 file. [55.00ms]

@@ -1,0 +1,2 @@
+    ram_cap: int | None = None
+    vram_cap: int | None = None

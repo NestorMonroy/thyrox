@@ -1,0 +1,133 @@
+F...F....FFF
+======================================================================
+FAIL: test_a_named_import_between_packages_passes (__main__.PreCommitHook.test_a_named_import_between_packages_passes)
+El control: el mismo acoplamiento por el nombre del paquete no es cruce.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 286, in test_a_named_import_between_packages_passes
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp9k90_8lb/.claude/eventos)
+  hogar del banco: /tmp/tmp9k90_8lb/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+OK: identificadores en inglés (2 archivos medidos, 0 en deuda heredada).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 1 especificador(es) en 2 archivo(s) de 2 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp9k90_8lb/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 61 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 32 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp9k90_8lb/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp9k90_8lb/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+El positivo: sin bancos propios, el hook no estorba.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 170, in test_sin_bancos_el_commit_pasa
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp1sj2zdy6/.claude/eventos)
+  hogar del banco: /tmp/tmp1sj2zdy6/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp1sj2zdy6/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 58 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 30 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp1sj2zdy6/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp1sj2zdy6/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 162, in test_undeclared_identity_warns_without_blocking
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp24nqwixd/.claude/eventos)
+  hogar del banco: /tmp/tmp24nqwixd/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp24nqwixd/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 58 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 30 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp24nqwixd/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp24nqwixd/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 401, in test_the_store_arrives_reconciled_to_commit
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpk32geseh/.claude/eventos)
+  hogar del banco: /tmp/tmpk32geseh/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmpk32geseh/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 58 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 48 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmpk32geseh/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmpk32geseh/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+reconciliar-todo: raiz /tmp/tmpri3773l8
+  sesiones del store        1
+  omitidas (sin filas)      0
+    44444444-4444-4444-4444-444444444444  1 fila(s) con deriva de 1 tarjeta(s)
+  del store: 2 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
+  escritas: 1 fila(s)
+
+
+======================================================================
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 422, in test_without_the_store_in_the_commit_not_se_reconciles
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmpm0s8g3hk/.claude/eventos)
+  hogar del banco: /tmp/tmpm0s8g3hk/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmpm0s8g3hk/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 59 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 48 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmpm0s8g3hk/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmpm0s8g3hk/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 69.903s
+
+FAILED (failures=5)
+EXIT=1

@@ -1,0 +1,7 @@
+accepted     2 -> 0    @thyrox/output/capture
+partial      7 -> 2    @thyrox/permission
+accepted     2 -> 0    @thyrox/provider/claudeAiLimits.js
+accepted     1 -> 0    @thyrox/shell
+nuevo     src/packages/cli/src/headless/sdk/control/handlers.ts(323,3): TS2739
+nuevo     src/packages/cli/src/headless/sdk/control/handlers.ts(327,7): TS2345
+batch_verification: alpha 0.75 · total 4797 -> 4787 · 2 diagnostico(s) nuevo(s) (alcance medido: 4 propuesta(s))

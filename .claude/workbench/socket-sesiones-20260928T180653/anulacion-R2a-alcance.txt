@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+157 |     const asked: unknown[] = []
+158 |     const { deps } = harness({ modelScope: model => (asked.push(model), 'other') })
+159 |     unsubscribers.push(subscribeRefusalFallbackReset(store({ mainLoopModel: null, mainLoopModelForSession: null }).setAppState, deps))
+160 |     latchAndDiverge()
+161 |     regenerateSessionId()
+162 |     expect(asked).toEqual(['claude-sonnet-5'])
+                        ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "claude-sonnet-5",
++   "claude-opus-5",
+  ]
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:162:19)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > el alcance del modelo se pide sobre el modelo de respaldo [0.80ms]
+
+ 10 pass
+ 1 fail
+ 20 expect() calls
+Ran 11 tests across 1 file. [89.00ms]

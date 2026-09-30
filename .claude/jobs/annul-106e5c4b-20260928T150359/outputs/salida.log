@@ -1,0 +1,198 @@
+== 1: sin compartir en vuelo
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > two concurrent status calls share one process, and a nudge is never coalesced into them [0.47ms]
+ 18 pass
+ 1 fail
+== 2: en vuelo sin olvidar
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > the cached answer lasts five minutes [0.61ms]
+(fail) whether cursor-agent is available > two concurrent status calls share one process, and a nudge is never coalesced into them [0.72ms]
+ 17 pass
+ 2 fail
+== 3: empujón como status
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > two concurrent status calls share one process, and a nudge is never coalesced into them [0.48ms]
+ 18 pass
+ 1 fail
+== 4: empujón con otra orden
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > two concurrent status calls share one process, and a nudge is never coalesced into them [0.55ms]
+(fail) whether cursor-agent is available > the nudge only ever lists models, with a ten-second deadline [0.22ms]
+ 17 pass
+ 2 fail
+== 5: sin SIGKILL posterior
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > reads its authenticated status as JSON, without PATH lookup [0.74ms]
+(fail) whether cursor-agent is available > the nudge only ever lists models, with a ten-second deadline [0.18ms]
+ 17 pass
+ 2 fail
+== 6: PATH permitido
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > reads its authenticated status as JSON, without PATH lookup [0.68ms]
+(fail) whether cursor-agent is available > an unauthenticated status, a missing binary or a failed spawn is unavailable [0.26ms]
+(fail) whether cursor-agent is available > output that is not JSON is available unless it says it is not logged in [0.17ms]
+(fail) whether cursor-agent is available > the cached answer lasts five minutes [0.30ms]
+(fail) whether cursor-agent is available > two concurrent status calls share one process, and a nudge is never coalesced into them [0.62ms]
+ 14 pass
+ 5 fail
+== 7: sin binario disponible
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > an unauthenticated status, a missing binary or a failed spawn is unavailable [0.36ms]
+ 18 pass
+ 1 fail
+== 8: spawn fallido lanza
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > an unauthenticated status, a missing binary or a failed spawn is unavailable [0.42ms]
+ 18 pass
+ 1 fail
+== 9: autenticado laxo
+   (src/accounts/cursor/cursorRenewal.ts)
+ 19 pass
+ 0 fail
+== 10: texto siempre disponible
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > output that is not JSON is available unless it says it is not logged in [0.31ms]
+ 18 pass
+ 1 fail
+== 11: stderr ignorado
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > output that is not JSON is available unless it says it is not logged in [0.38ms]
+ 18 pass
+ 1 fail
+== 12: caché sin caducar
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > the cached answer lasts five minutes [0.42ms]
+ 18 pass
+ 1 fail
+== 13: sin caché
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > the cached answer lasts five minutes [0.31ms]
+ 18 pass
+ 1 fail
+== 14: caché inclusiva
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) whether cursor-agent is available > the cached answer lasts five minutes [0.41ms]
+ 18 pass
+ 1 fail
+== 15: IDE sin compartir
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the IDE credential read by the sweep > is shared for five seconds per home, with a short lock wait [0.62ms]
+ 18 pass
+ 1 fail
+== 16: IDE ignora el home
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the IDE credential read by the sweep > is shared for five seconds per home, with a short lock wait [0.57ms]
+ 18 pass
+ 1 fail
+== 17: espera larga
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the IDE credential read by the sweep > is shared for five seconds per home, with a short lock wait [0.55ms]
+ 18 pass
+ 1 fail
+== 18: sin empujón
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > a newer IDE token wins, with its machine id, after nudging the agent [0.44ms]
+ 18 pass
+ 1 fail
+== 19: empuja no disponible
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > the agent token counts when the IDE has nothing newer, and an unavailable agent is not nudged [0.32ms]
+ 18 pass
+ 1 fail
+== 20: empujón fallido corta
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > a failed nudge does not stop the renewal [3.17ms]
+ 18 pass
+ 1 fail
+== 21: IDE igual renueva
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > the agent token counts when the IDE has nothing newer, and an unavailable agent is not nudged [0.31ms]
+(fail) renewing a Cursor connection > the same tokens, or none, leave it unchanged [0.20ms]
+ 17 pass
+ 2 fail
+== 22: sin agente
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > the agent token counts when the IDE has nothing newer, and an unavailable agent is not nudged [0.42ms]
+ 18 pass
+ 1 fail
+== 23: agente sin token renueva
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > the same tokens, or none, leave it unchanged [0.34ms]
+ 18 pass
+ 1 fail
+== 24: sin machineId
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > a newer IDE token wins, with its machine id, after nudging the agent [0.70ms]
+ 18 pass
+ 1 fail
+== 25: error sin sanear
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) renewing a Cursor connection > a failing credential source is a sanitized error [0.36ms]
+ 18 pass
+ 1 fail
+== 26: circuito conservado
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the update of a renewed connection > stores the token for a day, clears the error state and the circuit, and keeps the machine id [0.33ms]
+ 18 pass
+ 1 fail
+== 27: machineId no se guarda
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the update of a renewed connection > stores the token for a day, clears the error state and the circuit, and keeps the machine id [0.45ms]
+ 18 pass
+ 1 fail
+== 28: vida de una hora
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the update of a renewed connection > stores the token for a day, clears the error state and the circuit, and keeps the machine id [0.38ms]
+ 18 pass
+ 1 fail
+== 29: reintentos sin limpiar
+   (src/accounts/cursor/cursorRenewal.ts)
+(fail) the update of a renewed connection > stores the token for a day, clears the error state and the circuit, and keeps the machine id [0.39ms]
+ 18 pass
+ 1 fail
+== 30: sin candado
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+(fail) the Cursor health check > two checks of one connection run one after the other [5.57ms]
+ 18 pass
+ 1 fail
+== 31: machineId no se pasa
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+(fail) the Cursor health check > a renewed session is stored clean [0.91ms]
+ 18 pass
+ 1 fail
+== 32: renovada no se guarda
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+ 14 pass
+ 1 fail
+== 33: estancada caduca
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+ 19 pass
+ 0 fail
+== 34: sin código propio
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+(fail) the Cursor health check > an unchanged session stays active and advances the circuit, with a warning [0.57ms]
+ 18 pass
+ 1 fail
+== 35: error como aviso
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+(fail) the Cursor health check > a failed renewal is logged as an error [0.28ms]
+ 18 pass
+ 1 fail
+== 36: sin mensaje de error
+   (src/accounts/refresh/health/cursorHealthCheck.ts)
+(fail) the Cursor health check > a failed renewal is logged as an error [0.55ms]
+ 18 pass
+ 1 fail
+== restaurado
+ 19 pass
+ 0 fail
+src/accounts/refresh/health/cursorHealthCheck.ts(46,51): error TS2345: Argument of type 'RefreshFailureUpdate' is not assignable to parameter of type 'Row'.
+BUILD_DONE
+../command-runtime/src/internal/pendingCrossPackageDeps.ts(41,30): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/types.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+__tests__/claudeAiLimits.test.ts(549,7): error TS6059: File '/home/user/thyrox/src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts' is not under 'rootDir' '/home/user/thyrox/src/packages/provider'. 'rootDir' is expected to contain all source files.
+src/accounts/refresh/health/cursorHealthCheck.ts(46,51): error TS2345: Argument of type 'RefreshFailureUpdate' is not assignable to parameter of type 'Row'.
+TEST_DONE
+ 0 fail
+ 1965 expect() calls
+Ran 609 tests across 39 files. [5.33s]
+__BG_EXIT__=0

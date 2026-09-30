@@ -1,0 +1,9 @@
+finding: emitio pese a 1 errores (1 propio(s))
+mitm: emitio pese a 1 errores (1 propio(s))
+observability: emitio pese a 2 errores (2 propio(s))
+provider: emitio pese a 1 errores (1 propio(s))
+store: OK
+tools: OK
+
+emit_declarations: 6 paquete(s) medido(s), 5 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

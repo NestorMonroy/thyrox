@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2720, "total_final": 2718, "tsc_runs": 1, "accepted": ["agent:gitexe-sync"], "files_kept": ["src/packages/app-host/src/runtime/installPluginBindings.ts", "src/packages/config/plugin/_deps.ts"], "outcomes": {"agent:gitexe-sync": "accepted-net"}}

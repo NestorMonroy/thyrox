@@ -1,0 +1,24 @@
+src/packages/agent/query.ts(1122,64): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:1112-1132 ---
+   1112            if (params.taskBudget) {
+   1113              const preCompactContext =
+   1114                finalContextTokensFromLastResponse(messagesForQuery)
+   1115              taskBudgetRemaining = Math.max(
+   1116                0,
+   1117                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1118                  preCompactContext,
+   1119              )
+   1120            }
+   1121  
+   1122>           const postCompactMessages = buildPostCompactMessages(compacted)
+   1123            for (const msg of postCompactMessages) {
+   1124              yield msg
+   1125            }
+   1126            const next: State = {
+   1127              messages: postCompactMessages,
+   1128              toolUseContext,
+   1129              autoCompactTracking: undefined,
+   1130              maxOutputTokensRecoveryCount,
+   1131              hasAttemptedReactiveCompact: true,
+   1132              maxOutputTokensOverride: undefined,
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults

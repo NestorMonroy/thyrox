@@ -1,0 +1,8 @@
+# ShellCheck para los .sh de thyrox (plan de cero errores, severidad warning).
+#
+# SC1090 («can't follow non-constant source»): los guiones cargan sus
+# bibliotecas por `"$THYROX_ROOT/src/lib/..."` o por la ruta del propio
+# guion, que se resuelven en ejecución. Es el diseño, no un defecto: el
+# guion funciona desde cualquier clon. ShellCheck no puede seguir una ruta
+# que no conoce, así que la advertencia no distingue nada aquí.
+disable=SC1090

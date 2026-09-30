@@ -1,0 +1,39 @@
+# primera medición
+== 1: sin segundos -> 1
+== 2: cero es un instante -> 1
+== 3: texto numérico como fecha -> 2
+== 4: sin recortar -> 1
+== 5: fecha inválida pasa -> 1
+== 6: la conexión gana al token -> 1
+== 7: sin columna vieja de reintentos -> 1
+== 8: la columna vieja gana -> 0
+== 9: borrar muta el original -> 1
+== 10: sin ghe-copilot -> 1
+== 11: sin minúsculas -> 1
+== 12: token en blanco vale -> 1
+== 13: ghe sin /api/v3 -> 1
+== 14: expirado con otro error se limpia -> 1
+== 15: base de 10 min -> 3
+== 16: sin tope -> 1
+== 17: escalera desde el primero -> 3
+== 18: reintento de red de 5 min -> 2
+== 19: anthropic se descarta -> 1
+== 20: openference no rota -> 1
+== 21: espera inválida cuenta -> 1
+== 22: espera no texto cuenta -> 0
+== 23: expirado pasa a activo -> 1
+== 24: sin contar el reintento -> 2
+== 25: la escalera no crece -> 1
+== 26: sin anulaciones -> 1
+== 27: datos previos perdidos -> 1
+== 28: red alarga la escalera -> 2
+== 29: red pisa la espera larga -> 1
+== 30: espera malformada cuenta -> 1
+== 31: limpiar sin nada devuelve copia -> 1
+== 32: limpiar deja reintentos -> 1
+== restaurado -> 0
+
+# re-medición tras afinar
+== 8: la columna vieja gana -> 1
+== 22: espera no texto cuenta -> 1
+== restaurado -> 0

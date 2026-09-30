@@ -1,0 +1,2 @@
+git stash push -u -m verify-module-budget-baseline-9580da8a -- src/packages/app-host/src/startup/startupProfiler.ts src/packages/cli/src/entry/cli.tsx
+git stash list --format=%H %gs

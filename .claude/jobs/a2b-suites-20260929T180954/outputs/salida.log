@@ -1,0 +1,19 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+task:  40 pass
+task:  4 fail
+task:  95 expect() calls
+task: Ran 44 tests across 3 files. [77.00ms]
+tools:  76 pass
+tools:  0 fail
+tools:  226 expect() calls
+tools: Ran 76 tests across 8 files. [6.98s]
+agent:  2711 pass
+agent:  0 fail
+agent:  4989 expect() calls
+agent: Ran 2711 tests across 204 files. [24.42s]
+cli:  1 todo
+cli:  0 fail
+cli:  1155 expect() calls
+cli: Ran 500 tests across 53 files. [77.60s]
+resultado: 18 de 18 aserciones en verde
+__BG_EXIT__=0

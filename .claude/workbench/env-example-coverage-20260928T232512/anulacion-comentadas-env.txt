@@ -1,0 +1,13 @@
+.F.......
+======================================================================
+FAIL: test_comment_mentioning_a_key_is_not_a_key_of_env (__main__.CoverageTest.test_comment_mentioning_a_key_is_not_a_key_of_env)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_env_example_coverage.py", line 60, in test_comment_mentioning_a_key_is_not_a_key_of_env
+    self.assertEqual(run(self.root).returncode, 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.266s
+
+FAILED (failures=1)

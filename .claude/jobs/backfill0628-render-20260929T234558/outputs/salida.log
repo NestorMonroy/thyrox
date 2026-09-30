@@ -1,0 +1,444 @@
+run-task-pool: 73 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260929T234558
+  job-20260929T234558/job-001 bash bin/finding rst H-THYROX-138
+  job-20260929T234558/job-002 bash bin/finding rst H-THYROX-139
+  job-20260929T234558/job-003 bash bin/finding rst H-THYROX-140
+  job-20260929T234558/job-004 bash bin/finding rst H-THYROX-141
+  job-20260929T234558/job-005 bash bin/finding rst H-THYROX-142
+  job-20260929T234558/job-006 bash bin/finding rst H-THYROX-143
+  job-20260929T234558/job-007 bash bin/finding rst H-THYROX-147
+  job-20260929T234558/job-008 bash bin/finding rst H-THYROX-148
+  job-20260929T234558/job-009 bash bin/finding rst H-THYROX-149
+  job-20260929T234558/job-010 bash bin/finding rst H-THYROX-150
+  job-20260929T234558/job-011 bash bin/finding rst H-THYROX-151
+  job-20260929T234558/job-012 bash bin/finding rst H-THYROX-152
+  job-20260929T234558/job-013 bash bin/finding rst H-THYROX-153
+  job-20260929T234558/job-014 bash bin/finding rst H-THYROX-169
+  job-20260929T234558/job-015 bash bin/finding rst H-THYROX-170
+  job-20260929T234558/job-016 bash bin/finding rst H-THYROX-171
+  job-20260929T234558/job-017 bash bin/finding rst H-THYROX-172
+  job-20260929T234558/job-018 bash bin/finding rst H-THYROX-173
+  job-20260929T234558/job-019 bash bin/finding rst H-THYROX-174
+  job-20260929T234558/job-020 bash bin/finding rst H-THYROX-176
+  job-20260929T234558/job-021 bash bin/finding rst H-THYROX-177
+  job-20260929T234558/job-022 bash bin/finding rst H-THYROX-178
+  job-20260929T234558/job-023 bash bin/finding rst H-THYROX-179
+  job-20260929T234558/job-024 bash bin/finding rst H-THYROX-180
+  job-20260929T234558/job-025 bash bin/finding rst H-THYROX-181
+  job-20260929T234558/job-026 bash bin/finding rst H-THYROX-182
+  job-20260929T234558/job-027 bash bin/finding rst H-THYROX-183
+  job-20260929T234558/job-028 bash bin/finding rst H-THYROX-190
+  job-20260929T234558/job-029 bash bin/finding rst H-THYROX-191
+  job-20260929T234558/job-030 bash bin/finding rst H-THYROX-219
+  job-20260929T234558/job-031 bash bin/finding rst H-THYROX-220
+  job-20260929T234558/job-032 bash bin/finding rst H-THYROX-221
+  job-20260929T234558/job-033 bash bin/finding rst H-THYROX-222
+  job-20260929T234558/job-034 bash bin/finding rst H-THYROX-223
+  job-20260929T234558/job-035 bash bin/finding rst H-THYROX-224
+  job-20260929T234558/job-036 bash bin/finding rst H-THYROX-225
+  job-20260929T234558/job-037 bash bin/finding rst H-THYROX-226
+  job-20260929T234558/job-038 bash bin/finding rst H-THYROX-227
+  job-20260929T234558/job-039 bash bin/finding rst H-THYROX-228
+  job-20260929T234558/job-040 bash bin/finding rst H-THYROX-229
+  job-20260929T234558/job-041 bash bin/finding rst H-THYROX-232
+  job-20260929T234558/job-042 bash bin/finding rst H-THYROX-233
+  job-20260929T234558/job-043 bash bin/finding rst H-THYROX-234
+  job-20260929T234558/job-044 bash bin/finding rst H-THYROX-235
+  job-20260929T234558/job-045 bash bin/finding rst H-THYROX-236
+  job-20260929T234558/job-046 bash bin/finding rst H-THYROX-237
+  job-20260929T234558/job-047 bash bin/finding rst H-THYROX-238
+  job-20260929T234558/job-048 bash bin/finding rst H-THYROX-239
+  job-20260929T234558/job-049 bash bin/finding rst H-THYROX-240
+  job-20260929T234558/job-050 bash bin/finding rst H-THYROX-241
+  job-20260929T234558/job-051 bash bin/finding rst H-THYROX-242
+  job-20260929T234558/job-052 bash bin/finding rst H-THYROX-243
+  job-20260929T234558/job-053 bash bin/finding rst H-THYROX-244
+  job-20260929T234558/job-054 bash bin/finding rst H-THYROX-245
+  job-20260929T234558/job-055 bash bin/finding rst H-THYROX-246
+  job-20260929T234558/job-056 bash bin/finding rst H-THYROX-249
+  job-20260929T234558/job-057 bash bin/finding rst H-THYROX-250
+  job-20260929T234558/job-058 bash bin/finding rst H-THYROX-251
+  job-20260929T234558/job-059 bash bin/finding rst H-THYROX-252
+  job-20260929T234558/job-060 bash bin/finding rst H-THYROX-253
+  job-20260929T234558/job-061 bash bin/finding rst H-THYROX-254
+  job-20260929T234558/job-062 bash bin/finding rst H-THYROX-255
+  job-20260929T234558/job-063 bash bin/finding rst H-THYROX-256
+  job-20260929T234558/job-064 bash bin/finding rst H-THYROX-257
+  job-20260929T234558/job-065 bash bin/finding rst H-THYROX-258
+  job-20260929T234558/job-066 bash bin/finding rst H-THYROX-259
+  job-20260929T234558/job-067 bash bin/finding rst H-THYROX-260
+  job-20260929T234558/job-068 bash bin/finding rst H-THYROX-261
+  job-20260929T234558/job-069 bash bin/finding rst H-THYROX-262
+  job-20260929T234558/job-070 bash bin/finding rst H-THYROX-263
+  job-20260929T234558/job-071 bash bin/finding rst H-THYROX-264
+  job-20260929T234558/job-072 bash bin/finding rst H-THYROX-265
+  job-20260929T234558/job-073 bash bin/finding rst H-THYROX-266
+run-task-pool: lanzados 73 de 73; esperando en PRIMER PLANO (timeout 1796s)
+asentado: job-20260929T234558_job-001 -> OK (2 de 74)
+asentado: job-20260929T234558_job-002 -> OK (3 de 74)
+asentado: job-20260929T234558_job-003 -> OK (4 de 74)
+asentado: job-20260929T234558_job-004 -> OK (5 de 74)
+asentado: job-20260929T234558_job-005 -> OK (6 de 74)
+asentado: job-20260929T234558_job-006 -> OK (7 de 74)
+asentado: job-20260929T234558_job-007 -> OK (8 de 74)
+asentado: job-20260929T234558_job-008 -> OK (9 de 74)
+asentado: job-20260929T234558_job-009 -> OK (10 de 74)
+asentado: job-20260929T234558_job-010 -> OK (11 de 74)
+asentado: job-20260929T234558_job-011 -> OK (12 de 74)
+asentado: job-20260929T234558_job-012 -> OK (13 de 74)
+asentado: job-20260929T234558_job-013 -> OK (14 de 74)
+asentado: job-20260929T234558_job-014 -> OK (15 de 74)
+asentado: job-20260929T234558_job-015 -> OK (16 de 74)
+asentado: job-20260929T234558_job-016 -> OK (17 de 74)
+asentado: job-20260929T234558_job-017 -> OK (18 de 74)
+asentado: job-20260929T234558_job-018 -> OK (19 de 74)
+asentado: job-20260929T234558_job-019 -> OK (20 de 74)
+asentado: job-20260929T234558_job-020 -> OK (21 de 74)
+asentado: job-20260929T234558_job-021 -> OK (22 de 74)
+asentado: job-20260929T234558_job-022 -> OK (23 de 74)
+asentado: job-20260929T234558_job-023 -> OK (24 de 74)
+asentado: job-20260929T234558_job-024 -> OK (25 de 74)
+asentado: job-20260929T234558_job-025 -> OK (26 de 74)
+asentado: job-20260929T234558_job-026 -> OK (27 de 74)
+asentado: job-20260929T234558_job-027 -> OK (28 de 74)
+asentado: job-20260929T234558_job-028 -> OK (29 de 74)
+asentado: job-20260929T234558_job-029 -> OK (30 de 74)
+asentado: job-20260929T234558_job-030 -> OK (31 de 74)
+asentado: job-20260929T234558_job-031 -> OK (32 de 74)
+asentado: job-20260929T234558_job-032 -> OK (33 de 74)
+asentado: job-20260929T234558_job-033 -> OK (34 de 74)
+asentado: job-20260929T234558_job-034 -> OK (35 de 74)
+asentado: job-20260929T234558_job-035 -> OK (36 de 74)
+asentado: job-20260929T234558_job-036 -> OK (37 de 74)
+asentado: job-20260929T234558_job-037 -> OK (38 de 74)
+asentado: job-20260929T234558_job-038 -> OK (39 de 74)
+asentado: job-20260929T234558_job-039 -> OK (40 de 74)
+asentado: job-20260929T234558_job-040 -> OK (41 de 74)
+asentado: job-20260929T234558_job-041 -> OK (42 de 74)
+asentado: job-20260929T234558_job-042 -> OK (43 de 74)
+asentado: job-20260929T234558_job-043 -> OK (44 de 74)
+asentado: job-20260929T234558_job-044 -> OK (45 de 74)
+asentado: job-20260929T234558_job-045 -> OK (46 de 74)
+asentado: job-20260929T234558_job-046 -> OK (47 de 74)
+asentado: job-20260929T234558_job-047 -> OK (48 de 74)
+asentado: job-20260929T234558_job-048 -> OK (49 de 74)
+asentado: job-20260929T234558_job-049 -> OK (50 de 74)
+asentado: job-20260929T234558_job-050 -> OK (51 de 74)
+asentado: job-20260929T234558_job-051 -> OK (52 de 74)
+asentado: job-20260929T234558_job-052 -> OK (53 de 74)
+asentado: job-20260929T234558_job-053 -> OK (54 de 74)
+asentado: job-20260929T234558_job-054 -> OK (55 de 74)
+asentado: job-20260929T234558_job-055 -> OK (56 de 74)
+asentado: job-20260929T234558_job-056 -> OK (57 de 74)
+asentado: job-20260929T234558_job-057 -> OK (58 de 74)
+asentado: job-20260929T234558_job-058 -> OK (59 de 74)
+asentado: job-20260929T234558_job-059 -> OK (60 de 74)
+asentado: job-20260929T234558_job-060 -> OK (61 de 74)
+asentado: job-20260929T234558_job-061 -> OK (62 de 74)
+asentado: job-20260929T234558_job-062 -> OK (63 de 74)
+asentado: job-20260929T234558_job-063 -> OK (64 de 74)
+asentado: job-20260929T234558_job-064 -> OK (65 de 74)
+asentado: job-20260929T234558_job-065 -> OK (66 de 74)
+asentado: job-20260929T234558_job-066 -> OK (67 de 74)
+asentado: job-20260929T234558_job-067 -> OK (68 de 74)
+asentado: job-20260929T234558_job-068 -> OK (69 de 74)
+asentado: job-20260929T234558_job-069 -> OK (70 de 74)
+asentado: job-20260929T234558_job-070 -> OK (71 de 74)
+asentado: job-20260929T234558_job-071 -> OK (72 de 74)
+asentado: job-20260929T234558_job-072 -> OK (73 de 74)
+asentado: job-20260929T234558_job-073 -> OK (74 de 74)
+== 74 trabajos asentados ==
+OLVIDADO job-20260929T234558
+       | (vacío — no emitió nada)
+OK     job-20260929T234558_job-001 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-138-un-gate-que-exige-node-modules-x-bajo-el-paquete-tiene-premisa-rancia-en-un-workspace-izado-y-su-suite-no-lo-ve-si-clasifica-el-veredicto-en-dos-estados.rst
+       | EXIT=0
+       memoria pico: 55028 KB (54 MB) · pared 0.19s
+OK     job-20260929T234558_job-002 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-139-un-backtick-sin-escapar-en-el-mensaje-de-error-de-un-guard-es-sustitucion-de-comando-latente-la-rama-casi-nunca-se-ejercita.rst
+       | EXIT=0
+       memoria pico: 55016 KB (54 MB) · pared 0.24s
+OK     job-20260929T234558_job-003 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-140-el-tercer-desenlace-de-bg-sh-existia-y-su-default-de-120-s-lo-anulaba-en-la-practica.rst
+       | EXIT=0
+       memoria pico: 56076 KB (55 MB) · pared 0.16s
+OK     job-20260929T234558_job-004 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-141-un-renombrador-por-token-es-ciego-a-los-campos-de-una-f-string-en-python-3-11-y-el-silencio-parece-exito.rst
+       | EXIT=0
+       memoria pico: 55108 KB (54 MB) · pared 0.19s
+OK     job-20260929T234558_job-005 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-142-el-bloqueo-la-direccion-storage-agent-reabriria-el-ciclo-es-falso-en-sus-dos-mitades-la-referencia-hace-ese-mismo-import-y-es-import-type.rst
+       | EXIT=0
+       memoria pico: 56164 KB (55 MB) · pared 0.09s
+OK     job-20260929T234558_job-006 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-143-un-gate-media-la-ruta-del-node-modules-para-concluir-sobre-el-lockfile-el-linker-aislado-las-separa.rst
+       | EXIT=0
+       memoria pico: 56872 KB (56 MB) · pared 0.16s
+OK     job-20260929T234558_job-007 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-147-preservesymlinks-decide-si-el-hermano-es-dependencia-o-archivo-del-proyecto.rst
+       | EXIT=0
+       memoria pico: 56028 KB (55 MB) · pared 0.14s
+OK     job-20260929T234558_job-008 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-148-un-clon-sin-dist-construido-es-peor-que-sin-repuntar-no-igual.rst
+       | EXIT=0
+       memoria pico: 55396 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-009 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-149-check-package-publicaba-el-cierre-entero-bajo-el-rotulo-los-errores-del-paquete.rst
+       | EXIT=0
+       memoria pico: 56336 KB (55 MB) · pared 0.15s
+OK     job-20260929T234558_job-010 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-150-dist-esta-gitignored-el-65-de-caida-del-typecheck-es-una-propiedad-de-este-contenedor-no-del-arbol.rst
+       | EXIT=0
+       memoria pico: 55184 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-011 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-151-el-propio-de-agent-sube-463-1565-porque-el-comodin-de-raiz-arrastra-sus-tests-no-por-una-declaracion-incompleta.rst
+       | EXIT=0
+       memoria pico: 55312 KB (54 MB) · pared 0.10s
+OK     job-20260929T234558_job-012 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-152-tsc-omite-en-silencio-el-d-ts-ante-ts2742-el-veredicto-no-lo-delata.rst
+       | EXIT=0
+       memoria pico: 55312 KB (54 MB) · pared 0.08s
+OK     job-20260929T234558_job-013 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-153-el-gate-contra-el-repunte-inerte-cometio-sub-patron-d-cuatro-veces-derivaba-la-ruta-en-vez-de-comprobarla.rst
+       | EXIT=0
+       memoria pico: 56352 KB (55 MB) · pared 0.13s
+OK     job-20260929T234558_job-014 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-169-la-estimacion-de-tokens-conservaba-un-ajuste-cjk-de-1-5-que-los-estimadores-de-tokens-del-binario-2-1-275-no-tienen.rst
+       | EXIT=0
+       memoria pico: 54776 KB (53 MB) · pared 0.10s
+OK     job-20260929T234558_job-015 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-170-local-observability-descartaba-todo-evento-otel-en-produccion-su-geteventlogger-por-defecto-devolvia-null-y-nadie-lo-cableaba.rst
+       | EXIT=0
+       memoria pico: 54704 KB (53 MB) · pared 0.07s
+OK     job-20260929T234558_job-016 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-171-un-renombrado-global-aplicado-dos-veces-convirtio-claude-code-en-claude-code-how-works-how-works-en-115-archivos-incluida-la-ruta-de-la-politica-administrada.rst
+       | EXIT=0
+       memoria pico: 55264 KB (54 MB) · pared 0.07s
+OK     job-20260929T234558_job-017 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-172-los-nombres-minificados-del-bundle-2-1-275-se-repiten-entre-chunks-extraer-por-subcadena-lee-la-funcion-equivocada.rst
+       | EXIT=0
+       memoria pico: 55440 KB (54 MB) · pared 0.11s
+OK     job-20260929T234558_job-018 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-173-the-plugin-execfilenothrowwithcwd-binding-passed-cwd-positionally-so-marketplace-git-calls-ran-without-cwd-timeout-stdin-or-env.rst
+       | EXIT=0
+       memoria pico: 55548 KB (54 MB) · pared 0.13s
+OK     job-20260929T234558_job-019 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-174-checknetworkpathread-omitia-net-host-y-no-tenia-los-prefijos-de-nucleo-de-2-1-281.rst
+       | EXIT=0
+       memoria pico: 56848 KB (56 MB) · pared 0.10s
+OK     job-20260929T234558_job-020 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/hallazgo-H-THYROX-176-una-copia-local-del-contrato-local-jsx-con-indice-abierto-ocultaba-errores-reales-y-causaba-23-diagnosticos.rst
+       | EXIT=0
+       memoria pico: 56720 KB (55 MB) · pared 0.09s
+OK     job-20260929T234558_job-021 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/hallazgo-H-THYROX-177-los-stubs-locales-de-queryengine-ts-ocultan-30-errores-propios-unificarlos-sube-el-total.rst
+       | EXIT=0
+       memoria pico: 56208 KB (55 MB) · pared 0.08s
+OK     job-20260929T234558_job-022 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/hallazgo-H-THYROX-178-el-agente-de-proxy-ignoraba-mtls-ca-y-opciones-https-proxy-agent-5-con-codigo-escrito-para-la-api-de-la-8.rst
+       | EXIT=0
+       memoria pico: 56848 KB (56 MB) · pared 0.11s
+OK     job-20260929T234558_job-023 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/hallazgo-H-THYROX-179-dentro-de-declare-module-react-un-nombre-importado-queda-sombreado-por-el-homonimo-de-react.rst
+       | EXIT=0
+       memoria pico: 55696 KB (54 MB) · pared 0.08s
+OK     job-20260929T234558_job-024 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/hallazgo-H-THYROX-180-copias-huerfanas-del-sdk-en-src-packages-node-modules-partian-sus-tipos-por-copia.rst
+       | EXIT=0
+       memoria pico: 56208 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-025 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/correr-lazo-tsc-cero/hallazgos/hallazgo-H-THYROX-181-el-gate-de-operaciones-irreversibles-dejo-a-cuatro-subagentes-145-min-esperando-una-confirmacion-que-nadie-podia-dar.rst
+       | EXIT=0
+       memoria pico: 55144 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-026 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-182-normalizemessagesforapi-resuelve-normalizetoolinputforapi-con-un-require-diferido-porque-importarlo-estatico-cierra-un-ciclo-real.rst
+       | EXIT=0
+       memoria pico: 56288 KB (55 MB) · pared 0.08s
+OK     job-20260929T234558_job-027 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-183-se-reportaron-en-uso-tres-worktrees-de-agentes-que-ya-habian-entregado-leyendo-el-candado-de-git-como-senal-de-vida.rst
+       | EXIT=0
+       memoria pico: 55312 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-028 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-190-sin-archivo-un-filtro-lee-el-stdin-de-la-herramienta-que-es-un-socket-abierto-se-cuelga-tambien-en-primer-plano.rst
+       | EXIT=0
+       memoria pico: 56800 KB (55 MB) · pared 0.13s
+OK     job-20260929T234558_job-029 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-191-el-commit-del-lazo-tsc-zero-exit-128-paso-156-lo-causa-commit-gpgsign-global-con-firmante-ausente-no-un-commit-concurrente.rst
+       | EXIT=0
+       memoria pico: 56036 KB (55 MB) · pared 0.11s
+OK     job-20260929T234558_job-030 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-219-de-20-errores-de-bun-build-14-no-eran-exportaciones-ausentes-un-shim-export-de-thyrox-que-ademas-es-entrada-rompe-los-imports-con-nombre-en-bun-1-3-11.rst
+       | EXIT=0
+       memoria pico: 57024 KB (56 MB) · pared 0.11s
+OK     job-20260929T234558_job-031 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-220-run-task-pool-no-es-gnu-parallel-solo-cita-su-regla-de-admision.rst
+       | EXIT=0
+       memoria pico: 56848 KB (56 MB) · pared 0.08s
+OK     job-20260929T234558_job-032 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-221-mover-el-punto-de-entrada-del-hook-pretooluse-bloquea-toda-herramienta.rst
+       | EXIT=0
+       memoria pico: 55692 KB (54 MB) · pared 0.10s
+OK     job-20260929T234558_job-033 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-222-un-error-de-un-sdk-de-nube-escapaba-del-reenvio-porque-su-apierror-es-otra-clase.rst
+       | EXIT=0
+       memoria pico: 56080 KB (55 MB) · pared 0.08s
+OK     job-20260929T234558_job-034 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-223-un-mock-module-de-settings-js-en-ineffectivedisables-test-ts-dejaba-a-las-pruebas-siguientes-sin-updatesettingsforsource.rst
+       | EXIT=0
+       memoria pico: 55012 KB (54 MB) · pared 0.10s
+OK     job-20260929T234558_job-035 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-224-bun-test-desde-el-directorio-de-un-paquete-saltaba-el-grifo-del-store-y-escribia-en-el-store-versionado.rst
+       | EXIT=0
+       memoria pico: 56336 KB (55 MB) · pared 0.06s
+OK     job-20260929T234558_job-036 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-225-bun-lock-no-reescribe-ni-valida-los-especificadores-de-hermanos-del-workspace.rst
+       | EXIT=0
+       memoria pico: 55368 KB (54 MB) · pared 0.08s
+OK     job-20260929T234558_job-037 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-226-el-http-request-de-bun-con-un-path-absoluto-ignora-host-port-y-va-directo-al-upstream.rst
+       | EXIT=0
+       memoria pico: 55696 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-038 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-227-setglobaldispatcher-de-undici-no-cambia-en-quien-confia-el-fetch-de-bun.rst
+       | EXIT=0
+       memoria pico: 55852 KB (55 MB) · pared 0.17s
+OK     job-20260929T234558_job-039 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-228-bun-un-hijo-sin-env-explicito-usa-el-path-de-arranque-no-el-process-env-actual.rst
+       | EXIT=0
+       memoria pico: 56156 KB (55 MB) · pared 0.08s
+OK     job-20260929T234558_job-040 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-229-la-reparacion-de-omniroute-solo-retira-server-crt-con-el-modelo-de-ca-raiz-la-ca-instalada-ca-crt-queda-confiada.rst
+       | EXIT=0
+       memoria pico: 55768 KB (54 MB) · pared 0.11s
+OK     job-20260929T234558_job-041 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-232-bin-binary-no-podia-leer-un-ejecutable-compilado-por-thyrox-bun-1-3-pega-el-payload-tras-el-ejecutable-bun-1-4-lo-pone-en-la-seccion-bun.rst
+       | EXIT=0
+       memoria pico: 56592 KB (55 MB) · pared 0.09s
+OK     job-20260929T234558_job-042 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-233-bun-no-adopta-descriptores-de-socket-ni-server-listen-fd-ni-new-net-socket-fd-asi-que-el-modo-tproxy-de-la-referencia-no-funciona-bajo-bun.rst
+       | EXIT=0
+       memoria pico: 56176 KB (55 MB) · pared 0.12s
+OK     job-20260929T234558_job-043 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-234-bun-ignora-createconnection-en-http-https-request-opcion-y-agent-el-socket-marcado-del-reenvio-tproxy-nunca-se-usa.rst
+       | EXIT=0
+       memoria pico: 55256 KB (54 MB) · pared 0.10s
+OK     job-20260929T234558_job-044 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-235-una-caida-del-clasificador-de-auto-mode-solo-tumba-bash-y-contar-sus-rechazos-por-el-texto-cuenta-tambien-las-salidas-que-lo-imprimen.rst
+       | EXIT=0
+       memoria pico: 56336 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-045 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-236-el-tls-de-bun-elige-al-emisor-por-nombre-y-el-almacen-del-anfitrion-gana-una-ca-mitm-vieja-con-el-mismo-nombre-rompe-las-hojas-de-la-nueva.rst
+       | EXIT=0
+       memoria pico: 55952 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-046 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-237-la-ida-y-vuelta-de-la-base-de-errores-no-veia-un-json-doblemente-codificado-en-jsonb-readjson-lo-deshacia-al-leer.rst
+       | EXIT=0
+       memoria pico: 56132 KB (55 MB) · pared 0.12s
+OK     job-20260929T234558_job-047 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-238-bun-sql-en-sqlite-no-expone-loadextension-sqlite-vec-no-se-puede-cargar-por-el-contrato-comun.rst
+       | EXIT=0
+       memoria pico: 55400 KB (54 MB) · pared 0.10s
+OK     job-20260929T234558_job-048 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-239-bun-1-3-11-escucha-sin-eaddrinuse-sobre-un-socket-unix-vivo-y-se-queda-con-sus-clientes.rst
+       | EXIT=0
+       memoria pico: 55720 KB (54 MB) · pared 0.13s
+OK     job-20260929T234558_job-049 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-240-chmod-de-bun-1-3-11-descarta-el-sticky-bit-0o1000-stat-si-lo-lee.rst
+       | EXIT=0
+       memoria pico: 55820 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-050 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-241-el-buzon-uds-de-2-1-283-lee-el-pid-del-par-con-bun-ant-getpeerpid-una-api-que-solo-trae-el-bun-propio-de-la-referencia.rst
+       | EXIT=0
+       memoria pico: 55776 KB (54 MB) · pared 0.06s
+OK     job-20260929T234558_job-051 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-242-editar-headless-pool-sh-mientras-un-pool-lo-ejecuta-mato-el-pool-en-su-resumen-final-bash-lee-el-guion-por-partes.rst
+       | EXIT=0
+       memoria pico: 55568 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-052 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-243-medir-la-ram-al-lanzar-no-la-reserva-memfree-de-gnu-parallel-deja-la-misma-carrera-de-comprobar-y-usar-que-la-vram-y-el-tipo-de-stdin-no-predice-el-eof.rst
+       | EXIT=0
+       memoria pico: 55440 KB (54 MB) · pared 0.08s
+OK     job-20260929T234558_job-053 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-244-cortar-sessionstores-repl-onchangeappstate-no-quita-ningun-modulo-del-bootstrap-y-dejaba-el-store-de-sesion-sin-su-oyente.rst
+       | EXIT=0
+       memoria pico: 56032 KB (55 MB) · pared 0.11s
+OK     job-20260929T234558_job-054 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-245-git-commit-ruta-tras-git-rm-cached-re-anade-el-archivo-desde-el-disco-un-env-con-secreto-quedo-publicado.rst
+       | EXIT=0
+       memoria pico: 55932 KB (55 MB) · pared 0.12s
+OK     job-20260929T234558_job-055 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-246-clearactiveinbox-se-declara-porte-de-h-y-hace-1-de-sus-11-efectos-closeinbox-b-no-recibe-storage-ni-settleheld.rst
+       | EXIT=0
+       memoria pico: 56264 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-056 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/completar-packages-desde-la-referencia/hallazgos/hallazgo-H-THYROX-249-el-daemon-2-1-283-llama-logerror-en-44-sitios-no-solo-en-el-arranque-thyrox-solo-en-1.rst
+       | EXIT=0
+       memoria pico: 56080 KB (55 MB) · pared 0.11s
+OK     job-20260929T234558_job-057 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-250-the-daemon-s-key-value-spool-storage-implementation-qt-ze-vt-er-is-unreachable-in-2-1-283-the-storage-handle-s-only-factory-uvn-returns-undefined.rst
+       | EXIT=0
+       memoria pico: 55280 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-058 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-251-agent-store-sqlite3-has-two-schema-definers-and-no-version-history-bun-creates-a-13-column-tasks-and-task-highwater-python-an-18-column-tasks-and-evolves-the-schema-by-column-detection-observability-writes-to-the-same-file.rst
+       | EXIT=0
+       memoria pico: 54848 KB (54 MB) · pared 0.15s
+OK     job-20260929T234558_job-059 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-252-ingest-board-deduplicates-board-cards-by-subject-so-a-card-renamed-on-the-board-mints-a-second-durable-citation-for-the-same-task.rst
+       | EXIT=0
+       memoria pico: 55152 KB (54 MB) · pared 0.14s
+OK     job-20260929T234558_job-060 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-253-check-bench-untracked-costaba-bancos-x-bytes-staged-dos-veces-mas-un-proceso-git-por-banco-citado-235-s-por-commit.rst
+       | EXIT=0
+       memoria pico: 56388 KB (55 MB) · pared 0.08s
+OK     job-20260929T234558_job-061 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-254-el-verify-de-un-item-del-pool-mide-una-mezcla-de-worktree-y-arbol-principal.rst
+       | EXIT=0
+       memoria pico: 56360 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-062 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-255-detener-un-pool-deja-vivo-el-runner-de-cada-item-que-sigue-escribiendo.rst
+       | EXIT=0
+       memoria pico: 56056 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-063 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-256-el-pgvector-0-8-6-de-pgdg-exige-el-servidor-postgresql-16-de-pgdg-no-se-puede-tomar-solo-la-extension.rst
+       | EXIT=0
+       memoria pico: 56404 KB (55 MB) · pared 0.12s
+OK     job-20260929T234558_job-064 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-257-un-item-de-headless-pool-puede-dejar-procesos-vivos-que-escriben-sus-outputs-despues-del-veredicto.rst
+       | EXIT=0
+       memoria pico: 56080 KB (55 MB) · pared 0.09s
+OK     job-20260929T234558_job-065 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-258-task-highwater-se-declara-global-citando-la-referencia-pero-la-referencia-la-lleva-por-lista-de-tareas-y-el-store-repite-333-ids-entre-sesiones.rst
+       | EXIT=0
+       memoria pico: 54800 KB (54 MB) · pared 0.11s
+OK     job-20260929T234558_job-066 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-259-test-user-wiring-17-3-asume-que-la-raiz-de-thyrox-tiene-a-kaupamex-docs-como-hermano-en-thyrox-pool-worktrees-falla-con-y-sin-el-parche-de-310.rst
+       | EXIT=0
+       memoria pico: 56464 KB (55 MB) · pared 0.07s
+OK     job-20260929T234558_job-067 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-260-actualizar-postgresql-16-por-apt-sin-systemd-deja-el-cluster-sirviendo-la-version-vieja-hasta-un-pg-ctlcluster-restart-explicito.rst
+       | EXIT=0
+       memoria pico: 55548 KB (54 MB) · pared 0.13s
+OK     job-20260929T234558_job-068 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-261-test-headless-pool-thyrox-p-sh-falla-10-de-12-en-cualquier-worktree-del-pool-el-worktree-no-trae-node-modules-ni-venv-y-el-proxy-de-credencial-no-arranca.rst
+       | EXIT=0
+       memoria pico: 56112 KB (55 MB) · pared 0.10s
+OK     job-20260929T234558_job-069 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-262-el-build-js-de-thyrox-agent-emite-un-chunk-que-no-parsea-export-externo-dentro-de-esm.rst
+       | EXIT=0
+       memoria pico: 55260 KB (54 MB) · pared 0.12s
+OK     job-20260929T234558_job-070 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-263-construido-thyrox-agent-busca-sus-datos-en-dist-models-ts-lee-models-jsonl-relativo-al-modulo.rst
+       | EXIT=0
+       memoria pico: 55696 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-071 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-264-con-splitting-el-codigo-que-lee-un-recurso-relativo-al-modulo-no-queda-en-la-posicion-espejo-de-su-fuente.rst
+       | EXIT=0
+       memoria pico: 56360 KB (55 MB) · pared 0.07s
+OK     job-20260929T234558_job-072 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-265-bun-build-fija-dirname-como-literal-absoluto-del-directorio-fuente-el-js-construido-no-es-portable.rst
+       | EXIT=0
+       memoria pico: 55568 KB (54 MB) · pared 0.09s
+OK     job-20260929T234558_job-073 exit=0
+       | /home/user/kaupamex-docs/source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-266-el-build-js-no-limpia-dist-antes-de-emitir-chunks-de-builds-anteriores-sobreviven-junto-a-los-nuevos.rst
+       | EXIT=0
+       memoria pico: 55292 KB (54 MB) · pared 0.08s
+__BG_EXIT__=0

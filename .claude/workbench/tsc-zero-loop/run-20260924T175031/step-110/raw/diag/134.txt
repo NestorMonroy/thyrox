@@ -1,0 +1,2 @@
+src/packages/mcp-runtime/src/auth.ts(2053,18): error TS2551: Property 'resourceMetadata' does not exist on type '{ authorizationServerUrl?: string | undefined; resourceMetadataUrl?: string | undefined; }'. Did you mean 'resourceMetadataUrl'?
+src/packages/mcp-runtime/src/auth.ts(2055,18): error TS2339: Property 'authorizationServerMetadata' does not exist on type '{ authorizationServerUrl?: string | undefined; resourceMetadataUrl?: string | undefined; }'.

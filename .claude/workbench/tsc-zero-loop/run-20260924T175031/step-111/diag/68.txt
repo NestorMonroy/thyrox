@@ -1,0 +1,52 @@
+src/packages/cli/src/headless/sdk/session/load.ts(169,44): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  --- código src/packages/cli/src/headless/sdk/session/load.ts:159-179 ---
+    159            if (result.sessionId) {
+    160              switchSession(
+    161                asSessionId(result.sessionId),
+    162                result.fullPath ? dirname(result.fullPath) : null,
+    163              )
+    164              if (persistSession) {
+    165                await resetSessionFilePointer()
+    166              }
+    167            }
+    168          }
+    169>         restoreSessionStateFromLog(result, setAppState)
+    170  
+    171          // Restore session metadata so it's re-appended on exit via reAppendSessionMetadata
+    172          restoreSessionMetadata(
+    173            options.forkSession
+    174              ? { ...result, worktreeSession: undefined }
+    175              : result,
+    176          )
+    177  
+    178          // Write mode entry for the resumed session
+    179          if (feature('COORDINATOR_MODE') && coordinatorModeModule) {
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/cli/src/headless/sdk/session/load.ts(369,42): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  --- código src/packages/cli/src/headless/sdk/session/load.ts:359-379 ---
+    359        // Reuse the resumed session's ID
+    360        if (!options.forkSession && result.sessionId) {
+    361          switchSession(
+    362            asSessionId(result.sessionId),
+    363            result.fullPath ? dirname(result.fullPath) : null,
+    364          )
+    365          if (persistSession) {
+    366            await resetSessionFilePointer()
+    367          }
+    368        }
+    369>       restoreSessionStateFromLog(result, setAppState)
+    370  
+    371        // Restore session metadata so it's re-appended on exit via reAppendSessionMetadata
+    372        restoreSessionMetadata(
+    373          options.forkSession
+    374            ? { ...result, worktreeSession: undefined }
+    375            : result,
+    376        )
+    377  
+    378        // Write mode entry for the resumed session
+    379        if (feature('COORDINATOR_MODE') && coordinatorModeModule) {
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.

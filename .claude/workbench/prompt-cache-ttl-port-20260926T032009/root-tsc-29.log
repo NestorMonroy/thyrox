@@ -1,0 +1,4 @@
+src/packages/cli/src/commands/misc-commands.ts(599,46): error TS2345: Argument of type 'ParentCommand' is not assignable to parameter of type 'Command<[], {}, {}>'.
+  Types of property 'processedArgs' are incompatible.
+    Type 'unknown[]' is not assignable to type '[]'.
+      Target allows only 0 element(s) but source may have more.

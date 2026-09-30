@@ -1,0 +1,197 @@
+WARNING: there is a new pyright version available (v1.1.408 -> v1.1.414).
+Please install the new version or set PYRIGHT_PYTHON_FORCE_VERSION to `latest`
+
+/home/user/thyrox/src/agents/agent_store.py
+  /home/user/thyrox/src/agents/agent_store.py:887:17 - warning: Unsupported escape sequence in string literal (reportInvalidStringEscapeSequence)
+  /home/user/thyrox/src/agents/agent_store.py:3229:36 - error: "usage_cost_usd" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/agent_store.py:3230:36 - error: "usage_cost_usd" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/agents/anonymize_transcript.py
+  /home/user/thyrox/src/agents/anonymize_transcript.py:110:46 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/agents/anonymize_transcript.py:111:10 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/anonymize_transcript.py:111:17 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/agents/backfill_agent_sessions.py
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:72:40 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:73:4 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:73:11 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:85:47 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:86:13 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:86:20 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:91:39 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:92:12 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:92:19 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/backfill_agent_sessions.py:208:18 - error: "execute" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/agents/measure_subagent_usage.py
+  /home/user/thyrox/src/agents/measure_subagent_usage.py:127:5 - error: Argument of type "Unknown | Literal['?']" cannot be assigned to parameter "value" of type "int" in function "__setitem__"
+    Type "Unknown | Literal['?']" is not assignable to type "int"
+      "Literal['?']" is not assignable to "int" (reportArgumentType)
+  /home/user/thyrox/src/agents/measure_subagent_usage.py:128:5 - error: Argument of type "Unknown | Literal['?']" cannot be assigned to parameter "value" of type "int" in function "__setitem__"
+    Type "Unknown | Literal['?']" is not assignable to type "int"
+      "Literal['?']" is not assignable to "int" (reportArgumentType)
+/home/user/thyrox/src/agents/merge_stores.py
+  /home/user/thyrox/src/agents/merge_stores.py:251:53 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/agents/model_catalog.py
+  /home/user/thyrox/src/agents/model_catalog.py:233:30 - error: Argument of type "dict[Unknown, Unknown] | None" cannot be assigned to parameter "catalog" of type "dict[Unknown, Unknown]" in function "equivalent_tokens"
+    Type "dict[Unknown, Unknown] | None" is not assignable to type "dict[Unknown, Unknown]"
+      "None" is not assignable to "dict[Unknown, Unknown]" (reportArgumentType)
+  /home/user/thyrox/src/agents/model_catalog.py:233:39 - error: Argument of type "str | None" cannot be assigned to parameter "model_id" of type "str" in function "equivalent_tokens"
+    Type "str | None" is not assignable to type "str"
+      "None" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/src/agents/model_catalog.py:503:58 - error: "split" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/agents/reconcile_store.py
+  /home/user/thyrox/src/agents/reconcile_store.py:185:46 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/src/agents/reconcile_store.py:186:10 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/reconcile_store.py:186:17 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/agents/reconcile_store.py:574:12 - error: Type "None" is not assignable to return type "int"
+    "None" is not assignable to "int" (reportReturnType)
+/home/user/thyrox/src/agents/register_session.py
+  /home/user/thyrox/src/agents/register_session.py:915:13 - error: Argument of type "bool" cannot be assigned to parameter "value" of type "list[Any]" in function "__setitem__"
+    "bool" is not assignable to "list[Any]" (reportArgumentType)
+  /home/user/thyrox/src/agents/register_session.py:926:13 - error: Argument of type "dict[Unknown, Unknown]" cannot be assigned to parameter "value" of type "list[Any]" in function "__setitem__"
+    "dict[Unknown, Unknown]" is not assignable to "list[Any]" (reportArgumentType)
+  /home/user/thyrox/src/agents/register_session.py:927:13 - error: Argument of type "bool" cannot be assigned to parameter "value" of type "list[Any]" in function "__setitem__"
+    "bool" is not assignable to "list[Any]" (reportArgumentType)
+  /home/user/thyrox/src/agents/register_session.py:929:17 - error: Argument of type "dict[Unknown, Unknown]" cannot be assigned to parameter "value" of type "list[Any]" in function "__setitem__"
+    "dict[Unknown, Unknown]" is not assignable to "list[Any]" (reportArgumentType)
+/home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:31:12 - error: Cannot access attribute "reconfigure" for class "TextIO"
+    Attribute "reconfigure" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:32:11 - error: Cannot access attribute "reconfigure" for class "TextIO"
+    Attribute "reconfigure" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:34:17 - error: "windll" is not a known attribute of module "ctypes" (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:35:16 - error: "windll" is not a known attribute of module "ctypes" (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:36:19 - error: "windll" is not a known attribute of module "ctypes" (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:61:22 - error: "WINFUNCTYPE" is not a known attribute of module "ctypes" (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:125:21 - error: "windll" is not a known attribute of module "ctypes" (reportAttributeAccessIssue)
+  /home/user/thyrox/src/packages/@ant/computer-use-mcp/src/legacy/win32/bridge.py:163:44 - error: Argument of type "Array[c_char]" cannot be assigned to parameter "data" of type "bytes | SupportsArrayInterface" in function "frombuffer"
+    Type "Array[c_char]" is not assignable to type "bytes | SupportsArrayInterface"
+      "Array[c_char]" is not assignable to "bytes"
+      "Array[c_char]" is incompatible with protocol "SupportsArrayInterface"
+        "__array_interface__" is not present (reportArgumentType)
+/home/user/thyrox/src/packages/agent/bin/extract_model_registry.py
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:301:5 - error: No overloads for "__setitem__" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:301:5 - error: Argument of type "Literal['models']" cannot be assigned to parameter "key" of type "slice[Any, Any, Any]" in function "__setitem__"
+    "Literal['models']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:330:31 - error: No overloads for "__getitem__" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:330:31 - error: Argument of type "Literal['fuente']" cannot be assigned to parameter "s" of type "slice[Any, Any, Any]" in function "__getitem__"
+    "Literal['fuente']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:333:5 - error: No overloads for "update" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:333:23 - error: Argument of type "dict[str, dict[str, Unknown] | list[dict[str, Unknown] | list[Unknown]] | Unknown]" cannot be assigned to parameter "m" of type "Iterable[tuple[str, str]]" in function "update" (reportArgumentType)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:333:27 - error: No overloads for "__getitem__" match the provided arguments (reportCallIssue)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:333:27 - error: Argument of type "Literal['fuente', 'aliases', 'defaults', 'best', 'latest_per_family', 'alias_migration']" cannot be assigned to parameter "s" of type "slice[Any, Any, Any]" in function "__getitem__"
+    Type "Literal['fuente', 'aliases', 'defaults', 'best', 'latest_per_family', 'alias_migration']" is not assignable to type "slice[Any, Any, Any]"
+      "Literal['alias_migration']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:336:5 - error: Argument of type "Literal[2]" cannot be assigned to parameter "value" of type "str" in function "__setitem__"
+    "Literal[2]" is not assignable to "str" (reportArgumentType)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:338:6 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/src/packages/agent/bin/extract_model_registry.py:341:6 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+/home/user/thyrox/src/roster/delivery.py
+  /home/user/thyrox/src/roster/delivery.py:55:12 - error: Type "set[Unknown | None]" is not assignable to return type "set[str]" (reportReturnType)
+/home/user/thyrox/src/roster/stdin_probe.py
+  /home/user/thyrox/src/roster/stdin_probe.py:121:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/roster/worktree_state.py
+  /home/user/thyrox/src/roster/worktree_state.py:124:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/adopt_background.py
+  /home/user/thyrox/src/session/adopt_background.py:219:27 - error: Cannot access attribute "label" for class "object"
+    Attribute "label" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/session/adopt_background.py:220:29 - error: Cannot access attribute "log" for class "object"
+    Attribute "log" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/src/session/adopt_background.py:221:29 - error: Cannot access attribute "marker" for class "object"
+    Attribute "marker" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/src/session/clone_bootstrap.py
+  /home/user/thyrox/src/session/clone_bootstrap.py:312:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/session/clone_bootstrap.py:364:26 - error: Argument of type "set[Unknown | Any | str | list[Unknown] | dict[Unknown, str | list[Unknown] | dict[Unknown, Unknown] | Any]]" cannot be assigned to parameter "iterable" of type "Iterable[SupportsRichComparisonT@sorted]" in function "sorted"
+    "set[Unknown | Any | str | list[Unknown] | dict[Unknown, str | list[Unknown] | dict[Unknown, Unknown] | Any]]" is not assignable to "Iterable[SupportsRichComparisonT@sorted]"
+      Type parameter "_T_co@Iterable" is covariant, but "Unknown | Any | str | list[Unknown] | dict[Unknown, str | list[Unknown] | dict[Unknown, Unknown] | Any]" is not a subtype of "SupportsRichComparisonT@sorted"
+        Type "Unknown | Any | str | list[Unknown] | dict[Unknown, str | list[Unknown] | dict[Unknown, Unknown] | Any]" is not assignable to type "SupportsRichComparison"
+          Type "Unknown | Any | str | list[Unknown] | dict[Unknown, str | list[Unknown] | dict[Unknown, Unknown] | Any]" is not assignable to type "SupportsRichComparison"
+            Type "dict[Unknown, str | list[Unknown] | dict[Unknown, Unknown] | Any]" is not assignable to type "SupportsRichComparison" (reportArgumentType)
+/home/user/thyrox/src/session/generate_bin.py
+  /home/user/thyrox/src/session/generate_bin.py:882:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/gpu_monitor.py
+  /home/user/thyrox/src/session/gpu_monitor.py:304:78 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/gpu_trace.py
+  /home/user/thyrox/src/session/gpu_trace.py:204:42 - error: Operator "-" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/src/session/gpu_trace.py:243:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/kernel_modules.py
+  /home/user/thyrox/src/session/kernel_modules.py:145:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/measure_hook_firing.py
+  /home/user/thyrox/src/session/measure_hook_firing.py:68:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/pool_history.py
+  /home/user/thyrox/src/session/pool_history.py:103:28 - error: "peak_mib" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/src/session/pool_history.py:200:30 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/pool_history.py:219:77 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/pool_history.py:257:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/probe_model_switch_cache.py
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:176:69 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:176:103 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:177:39 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:177:62 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:177:87 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:180:40 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:180:64 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:180:92 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:186:41 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:186:75 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:186:99 - error: Object of type "None" is not subscriptable (reportOptionalSubscript)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:257:41 - error: Argument of type "_Environ[str]" cannot be assigned to parameter "base" of type "dict[Unknown, Unknown]" in function "child_env"
+    "_Environ[str]" is not assignable to "dict[Unknown, Unknown]" (reportArgumentType)
+  /home/user/thyrox/src/session/probe_model_switch_cache.py:387:53 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/reconcile_user_hooks.py
+  /home/user/thyrox/src/session/reconcile_user_hooks.py:133:12 - error: Object of type "object" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+  /home/user/thyrox/src/session/reconcile_user_hooks.py:135:14 - error: Object of type "object" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+  /home/user/thyrox/src/session/reconcile_user_hooks.py:140:25 - error: Object of type "object" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+  /home/user/thyrox/src/session/reconcile_user_hooks.py:141:24 - error: Object of type "object" is not callable
+    Attribute "__call__" is unknown (reportCallIssue)
+/home/user/thyrox/src/session/session_restart.py
+  /home/user/thyrox/src/session/session_restart.py:189:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/shared_lock.py
+  /home/user/thyrox/src/session/shared_lock.py:302:78 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/sync_local_settings.py
+  /home/user/thyrox/src/session/sync_local_settings.py:320:58 - error: "splitlines" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/src/session/transcripts.py
+  /home/user/thyrox/src/session/transcripts.py:81:47 - error: Argument of type "str | Path | None" cannot be assigned to parameter "start" of type "Path | None" in function "env_value"
+    Type "str | Path | None" is not assignable to type "Path | None"
+      Type "str" is not assignable to type "Path | None"
+        "str" is not assignable to "Path"
+        "str" is not assignable to "None" (reportArgumentType)
+/home/user/thyrox/src/session/user_wiring.py
+  /home/user/thyrox/src/session/user_wiring.py:105:13 - error: Argument of type "int" cannot be assigned to parameter "value" of type "str" in function "__setitem__"
+    "int" is not assignable to "str" (reportArgumentType)
+/home/user/thyrox/src/workbench/manifest.py
+  /home/user/thyrox/src/workbench/manifest.py:134:25 - error: Argument of type "Literal['instrument']" cannot be assigned to parameter "element" of type "Literal['started_at', 'flat_home']" in function "add"
+    Type "Literal['instrument']" is not assignable to type "Literal['started_at', 'flat_home']"
+      "Literal['instrument']" is not assignable to type "Literal['started_at']"
+      "Literal['instrument']" is not assignable to type "Literal['flat_home']" (reportArgumentType)
+/home/user/thyrox/tests/paths/test_declaration_port.py
+  /home/user/thyrox/tests/paths/test_declaration_port.py:210:24 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/tests/paths/test_declaration_port.py:213:40 - error: "parent" is not a known attribute of "None" (reportOptionalMemberAccess)
+/home/user/thyrox/tests/paths/test_reach_roots_shim.py
+  /home/user/thyrox/tests/paths/test_reach_roots_shim.py:59:46 - error: Argument of type "ModuleSpec | None" cannot be assigned to parameter "spec" of type "ModuleSpec" in function "module_from_spec"
+    Type "ModuleSpec | None" is not assignable to type "ModuleSpec"
+      "None" is not assignable to "ModuleSpec" (reportArgumentType)
+  /home/user/thyrox/tests/paths/test_reach_roots_shim.py:60:10 - error: "loader" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/paths/test_reach_roots_shim.py:60:17 - error: "exec_module" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /home/user/thyrox/tests/paths/test_reach_roots_shim.py:83:69 - error: Cannot access attribute "root" for class "object"
+    Attribute "root" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/paths/test_reach_roots_shim.py:84:54 - error: Cannot access attribute "reach" for class "object"
+    Attribute "reach" is unknown (reportAttributeAccessIssue)
+  /home/user/thyrox/tests/paths/test_reach_roots_shim.py:86:19 - error: Cannot access attribute "ReachRootError" for class "object"
+    Attribute "ReachRootError" is unknown (reportAttributeAccessIssue)
+/home/user/thyrox/tests/rules/test_provenance_parity.py
+  /home/user/thyrox/tests/rules/test_provenance_parity.py:67:26 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/tests/rules/test_provenance_parity.py:82:24 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+  /home/user/thyrox/tests/rules/test_provenance_parity.py:111:24 - error: Operator "/" not supported for "None" (reportOptionalOperand)
+100 errors, 1 warning, 0 informations

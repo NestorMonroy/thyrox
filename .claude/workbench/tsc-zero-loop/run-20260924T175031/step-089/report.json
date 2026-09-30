@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1898, "total_final": 1896, "tsc_runs": 1, "accepted": ["agent:agent:swarm-adapter-real-types"], "files_kept": ["src/packages/swarm/src/adapters/appRuntime.ts", "src/packages/swarm/src/tasks/types.ts"], "outcomes": {"agent:agent:swarm-adapter-real-types": "accepted-net"}}

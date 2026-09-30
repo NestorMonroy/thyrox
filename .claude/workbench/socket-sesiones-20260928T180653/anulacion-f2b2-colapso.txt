@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSocketsDir.test.ts:
+120 | 
+121 |   test('los uid colapsados impiden verificar', async () => {
+122 |     const dir = join(tempDir(), 'cc-socks')
+123 |     const collapsed = deps({ probeNamespace: async () => ({ unmappedOwnerUid: undefined, uidCollapses: true, rootUidAmbiguous: false }) })
+124 |     expect(await kindOf(prepareSocketsDirectory(dir, collapsed))).toBe('uid_collapse')
+125 |   })
+                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "uid_collapse"
+Received: "foreign_owner"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSocketsDir.test.ts:125:67)
+(fail) prepareSocketsDirectory (Re) > los uid colapsados impiden verificar [1.81ms]
+
+ 17 pass
+ 1 fail
+ 33 expect() calls
+Ran 18 tests across 1 file. [67.00ms]

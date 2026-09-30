@@ -1,0 +1,36 @@
+#: Los dos bits bajos de ``flags`` en ``fdinfo``: 1 ``O_WRONLY``, 2 ``O_RDWR``.
+_WRITE_ACCESS = {1, 2}
+
+
+def _pipe_writers(pid: int, target: str, proc_root: str) -> int:
+    """Cuántos OTROS procesos tienen abierta ``target`` para escribir. Sin
+    ninguno, leer la tubería da EOF; con uno vivo que no escribe, espera."""
+    writers = 0
+    for other in os.listdir(proc_root):
+        if not other.isdigit() or int(other) == pid:
+            continue
+        fd_dir = f"{proc_root}/{other}/fd"
+        try:
+            fds = os.listdir(fd_dir)
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                if os.readlink(f"{fd_dir}/{fd}") != target:
+                    continue
+                info = open(f"{proc_root}/{other}/fdinfo/{fd}", encoding="utf-8").read()
+            except OSError:
+                continue
+            flags = next((line.split()[1] for line in info.splitlines() if line.startswith("flags:")), "0")
+            if int(flags, 8) & 3 in _WRITE_ACCESS:
+                writers += 1
+                break
+    return writers
+
+
+def probe(pid: int, proc_root: str = "/proc", ticks_per_second: int | None = None) -> StdinProbe:
+    ticks = ticks_per_second or os.sysconf("SC_CLK_TCK")
+    target = read_stdin_target(pid, proc_root)
+    state, cpu = _state_and_cpu(pid, proc_root, ticks)
+    writers = _pipe_writers(pid, target, proc_root) if target and target.startswith("pipe:[") else None
+    return StdinProbe(pid, target, _kind(target), state, cpu, writers)

@@ -1,0 +1,36 @@
+Patrón: length-on-possibly-undefined-getter-stub
+Señal del verificador: TS2532: Object is possibly 'undefined'\.
+Arreglo genérico: Cuando un valor viene de un getter cuyo stub por defecto devuelve `undefined` (p. ej. `_getX: () => T | undefined = () => undefined`, sobreescrito luego por `setGetXFn` desde el host) y el sitio de uso accede a una propiedad como `.length` sin comprobar, se usa encadenamiento opcional con un valor por defecto que reproduce la semántica de 'vacío' que el stub ya representa: `(x()?.length ?? 0)` en vez de `x().length`. No cambia la conducta para el caso real (siempre poblado antes de esta llamada) y evita el crash latente del caso por defecto.
+Ya aplicado en: src/packages/config/plugin/loadPluginCommands.ts
+Archivos donde la señal sigue viva: src/packages/config/settings/inventory.ts
+
+src/packages/config/settings/inventory.ts(171,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }
+src/packages/config/settings/inventory.ts(171,75): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }

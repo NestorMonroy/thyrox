@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsUnicodeSanitize.test.ts:
+66 |   })
+67 | 
+68 |   test('replaceControls (YH) cambia cada tramo de controles; conserva los que unen un emoji dentro de una palabra', () => {
+69 |     expect(replaceControls('a\u0007\u200bb', ' ')).toBe('a b')
+70 |     expect(replaceControls('a\nb', ' ', { keepNewlines: true })).toBe('a\nb')
+71 |     expect(replaceControls('👨\u200d👩 \u200dx', ' ', { keepEmojiJoiners: true })).toBe('👨\u200d👩 x')
+                                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: "👨‍👩 x"
+Received: "👨‍👩 ‍x"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsUnicodeSanitize.test.ts:71:83)
+(fail) el resto de chunk-pbnxt79v.js > replaceControls (YH) cambia cada tramo de controles; conserva los que unen un emoji dentro de una palabra [0.97ms]
+
+ 17 pass
+ 1 fail
+ 34 expect() calls
+Ran 18 tests across 1 file. [38.00ms]

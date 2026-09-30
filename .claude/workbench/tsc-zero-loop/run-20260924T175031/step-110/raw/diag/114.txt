@@ -1,0 +1,2 @@
+src/packages/config/plugin/loadPluginAgents.ts(9,15): error TS2305: Module '"./_deps.js"' has no exported member 'AgentDefinition'.
+src/packages/config/plugin/loadPluginAgents.ts(303,36): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.

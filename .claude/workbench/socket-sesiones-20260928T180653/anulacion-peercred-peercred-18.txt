@@ -1,0 +1,48 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsPeerCredentials.test.ts:
+72 |     })
+73 |     await new Promise(resolve => server!.once('listening', resolve))
+74 |     const child = Bun.spawn(['bun', '-e', `const s=require('node:net').connect(${JSON.stringify(path)});setTimeout(()=>s.destroy(),2000)`], { stdout: 'ignore', stderr: 'ignore' })
+75 |     const socket = await accepted
+76 |     const credentials = readPeerCredentials(socketFd(socket))
+77 |     expect(credentials).toEqual({ pid: child.pid, uid: process.getuid!(), gid: process.getgid!() })
+                             ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "gid": 0,
+-   "pid": 24492,
++   "pid": 1,
+    "uid": 0,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerCredentials.test.ts:77:25)
+(fail) readPeerCredentials contra un socket real > el pid del par es el del proceso hijo que conecta, y el uid el nuestro [32.43ms]
+113 |   })
+114 | })
+115 | 
+116 | describe('peerCredentialQuery: la consulta de getsockopt por plataforma', () => {
+117 |   test('Linux pide SO_PEERCRED en SOL_SOCKET a libc.so.6, un ucred de 12 bytes', () => {
+118 |     expect(peerCredentialQuery('linux')).toEqual({ library: 'libc.so.6', level: 1, option: 17, bytes: 12 })
+                                               ^
+error: expect(received).toEqual(expected)
+
+@@ -4,3 +4,3 @@
+    "library": "libc.so.6",
+-   "option": 17,
++   "option": 18,
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsPeerCredentials.test.ts:118:42)
+(fail) peerCredentialQuery: la consulta de getsockopt por plataforma > Linux pide SO_PEERCRED en SOL_SOCKET a libc.so.6, un ucred de 12 bytes [0.14ms]
+
+ 11 pass
+ 2 fail
+ 29 expect() calls
+Ran 13 tests across 1 file. [163.00ms]

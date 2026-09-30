@@ -1,0 +1,23 @@
+src/packages/repl/src/conversationRecovery.tsx(187,30): error TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Message' is not comparable to type 'NormalizedMessage'.
+    Type 'Message' is not comparable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | un...'.
+      Type 'Message' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/repl/src/conversationRecovery.tsx(188,7): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/agent/loop/types").Message[]'.
+  Type 'import("/home/user/thyrox-medicion/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/agent/loop/types").Message'.
+    Type 'UserMessage' is missing the following properties from type 'Message': role, content
+src/packages/repl/src/conversationRecovery.tsx(223,9): error TS2322: Type 'NormalizedMessage' is not assignable to type 'NormalizedUserMessage'.
+  Type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'NormalizedUserMessage'.
+    Type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type '{ type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+      Types of property 'type' are incompatible.
+        Type '"assistant"' is not assignable to type '"user"'.
+src/packages/repl/src/conversationRecovery.tsx(552,33): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox-medicion/src/packages/storage/src/plans").LogOption'.
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.

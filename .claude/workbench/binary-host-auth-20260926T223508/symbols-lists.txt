@@ -1,0 +1,40 @@
+== Fn
+==== Fn: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js variable Fn [48772,48840)
+Fn=["AWS_ACCESS_KEY_ID","AWS_SECRET_ACCESS_KEY","AWS_SESSION_TOKEN"]
+symbol: 1 de 1 nombre(s) resueltos
+
+== vB
+==== vB: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js variable vB [46738,46921)
+vB=["ANTHROPIC_API_KEY","ANTHROPIC_AUTH_TOKEN","CLAUDE_CODE_OAUTH_TOKEN","AWS_BEARER_TOKEN_BEDROCK","ANTHROPIC_FOUNDRY_API_KEY","ANTHROPIC_FOUNDRY_AUTH_TOKEN","ANTHROPIC_AWS_API_KEY"]
+symbol: 1 de 1 nombre(s) resueltos
+
+== zct
+==== zct: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js variable zct [48841,48970)
+zct=[...Fn,"AWS_PROFILE","AWS_CONFIG_FILE","AWS_SHARED_CREDENTIALS_FILE","GOOGLE_APPLICATION_CREDENTIALS","GOOGLE_CLOUD_PROJECT"]
+symbol: 1 de 1 nombre(s) resueltos
+
+== Kn
+==== Kn: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js variable Kn [41904,41991)
+Kn=["CLAUDE_CODE_USE_BEDROCK","CLAUDE_CODE_USE_ANTHROPIC_AWS","CLAUDE_CODE_USE_MANTLE"]
+symbol: 1 de 1 nombre(s) resueltos
+
+== 
+==== : 0 definicion(es) de nivel superior
+symbol: 0 de 1 nombre(s) resueltos
+
+== D5
+==== D5: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js variable D5 [41487,41903)
+D5=["CLAUDE_CODE_USE_BEDROCK","CLAUDE_CODE_USE_VERTEX","CLAUDE_CODE_USE_FOUNDRY","CLAUDE_CODE_USE_ANTHROPIC_AWS","CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD","CLAUDE_CODE_USE_MANTLE","CLAUDE_CODE_USE_GATEWAY","ANTHROPIC_FOUNDRY_RESOURCE","ANTHROPIC_VERTEX_PROJECT_ID","ANTHROPIC_AWS_WORKSPACE_ID","ANTHROPIC_GOOGLE_CLOUD_PROJECT","ANTHROPIC_GOOGLE_CLOUD_LOCATION","ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID","CLOUD_ML_REGION"]
+symbol: 1 de 1 nombre(s) resueltos
+
+== PLt
+==== PLt: 1 definicion(es) de nivel superior
+---- chunk-t6d3nxvc.js variable PLt [50574,50674)
+PLt=["ANTHROPIC_UNIX_SOCKET","CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST","CLAUDE_CODE_HOST_AUTH_ENV_VAR"]
+symbol: 1 de 1 nombre(s) resueltos
+

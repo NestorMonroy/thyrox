@@ -1,0 +1,401 @@
+-- FAIL src/packages/agent/__tests__/sessionStoresImports.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/sessionStoresImports.test.ts:
+85 | import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
+                                                                     ^
+error: Could not resolve: "../host.ts"
+    at /home/user/thyrox/src/packages/config/settings/settings.ts:85:65
+
+16 | import { PRODUCT_NAME } from './product.ts'
+                                  ^
+error: Could not resolve: "./product.ts"
+    at /home/user/thyrox/src/packages/config/entrypoint.ts:16:30
+
+21 | export { installConfigHostBindings, getConfigHostBindings, tryGetConfigHostBindings } from './host.ts'
+                                                                                                ^
+error: Could not resolve: "./host.ts"
+    at /home/user/thyrox/src/packages/config/index.ts:21:92
+
+63 | import { AccessError, ParseError as ConfigParseError } from '../errors.js'
+                                                                 ^
+error: Could not resolve: "../errors.js"
+    at /home/user/thyrox/src/packages/config/global/config.ts:63:61
+
+64 | import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.js'
+                                                                     ^
+error: Could not resolve: "../host.js"
+    at /home/user/thyrox/src/packages/config/global/config.ts:64:65
+
+66 | import { getOriginalCwd, getProjectDir, getSessionId } from './sessionPaths.js'
+                                                                 ^
+error: Could not resolve: "./sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/toolResultStorage.ts:66:61
+
+62 | import { findGitRoot } from './findGitRoot.js'
+                                 ^
+error: Could not resolve: "./findGitRoot.js"
+    at /home/user/thyrox/src/packages/storage/src/git.ts:62:29
+
+63 | import { getFsImplementation } from './fsOperations.js'
+                                         ^
+error: Could not resolve: "./fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/git.ts:63:37
+
+70 | export { findGitRoot } from './findGitRoot.js'
+                                 ^
+error: Could not resolve: "./findGitRoot.js"
+    at /home/user/thyrox/src/packages/storage/src/git.ts:70:29
+
+450 |   const { parseGitRemote } = await import('./parseGitRemote.js')
+                                                ^
+error: Could not resolve: "./parseGitRemote.js"
+    at /home/user/thyrox/src/packages/storage/src/git.ts:450:43
+
+19 | import { PRODUCT_NAME } from './product.js'
+                                  ^
+error: Could not resolve: "./product.js"
+    at /home/user/thyrox/src/packages/config/outputStyles.ts:19:30
+
+7 | import { stripBOM } from './jsonRead.js'
+                             ^
+error: Could not resolve: "./jsonRead.js"
+    at /home/user/thyrox/src/packages/storage/src/json.ts:7:26
+
+99 | import { getFsImplementation } from './fsOperations.js'
+                                         ^
+error: Could not resolve: "./fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:99:37
+
+100 | import { getWorktreePaths } from './getWorktreePaths.js'
+                                       ^
+error: Could not resolve: "./getWorktreePaths.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:100:34
+
+101 | import { getBranch } from './git.js'
+                                ^
+error: Could not resolve: "./git.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:101:27
+
+103 | import { parseJSONL } from './json.js'
+                                 ^
+error: Could not resolve: "./json.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:103:28
+
+104 | import { SessionWriteQueue } from './sessionWriteQueue.js'
+                                        ^
+error: Could not resolve: "./sessionWriteQueue.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:104:35
+
+107 | import { sanitizePath } from './path.js'
+                                   ^
+error: Could not resolve: "./path.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:107:30
+
+115 | } from './sessionStoragePortable.js'
+             ^
+error: Could not resolve: "./sessionStoragePortable.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:115:8
+
+159 | } from './sessionStoragePredicates.js'
+             ^
+error: Could not resolve: "./sessionStoragePredicates.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:159:8
+
+163 | } from './sessionStoragePredicates.js'
+             ^
+error: Could not resolve: "./sessionStoragePredicates.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:163:8
+
+198 | } from './sessionPaths.js'
+             ^
+error: Could not resolve: "./sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:198:8
+
+205 | } from './sessionPaths.js'
+             ^
+error: Could not resolve: "./sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:205:8
+
+218 | } from './agentMetadata.js'
+             ^
+error: Could not resolve: "./agentMetadata.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:218:8
+
+1751 | } from './conversationChain.js'
+              ^
+error: Could not resolve: "./conversationChain.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:1751:8
+
+1754 | } from './conversationChain.js'
+              ^
+error: Could not resolve: "./conversationChain.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStorage.ts:1754:8
+
+35 | import { getErrnoCode, getFsImplementation } from '../fsOperations.js'
+                                                       ^
+error: Could not resolve: "../fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/secureStorage/plainTextStorage.ts:35:51
+
+67 | import { logError } from './logging.js'
+                              ^
+error: Could not resolve: "./logging.js"
+    at /home/user/thyrox/src/packages/storage/src/plans.ts:67:26
+
+69 | import { getSessionId } from './sessionPaths.js'
+                                  ^
+error: Could not resolve: "./sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/plans.ts:69:30
+
+34 | import { parseArgumentNames, substituteArguments } from '../argumentSubstitution.js'
+                                                             ^
+error: Could not resolve: "../argumentSubstitution.js"
+    at /home/user/thyrox/src/packages/command-runtime/src/skills/loadSkillsDir.ts:34:57
+
+35 | import { executeShellCommandsInPrompt } from '../promptShellExecution.js'
+                                                  ^
+error: Could not resolve: "../promptShellExecution.js"
+    at /home/user/thyrox/src/packages/command-runtime/src/skills/loadSkillsDir.ts:35:46
+
+4 | import { getFsImplementation } from './fsOperations.js'
+                                        ^
+error: Could not resolve: "./fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/path.ts:4:37
+
+6 | import { posixPathToWindowsPath } from './windowsPaths.js'
+                                           ^
+error: Could not resolve: "./windowsPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/path.ts:6:40
+
+138 | export { sanitizePath } from './sessionStoragePortable.js'
+                                   ^
+error: Could not resolve: "./sessionStoragePortable.js"
+    at /home/user/thyrox/src/packages/storage/src/path.ts:138:30
+
+16 | import { getFsImplementation, safeResolvePath } from './fsOperations.js'
+                                                          ^
+error: Could not resolve: "./fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/fileRead.ts:16:54
+
+52 | } from './fileRead.js'
+            ^
+error: Could not resolve: "./fileRead.js"
+    at /home/user/thyrox/src/packages/storage/src/file.ts:52:8
+
+53 | import { fileReadCache } from './fileReadCache.js'
+                                   ^
+error: Could not resolve: "./fileReadCache.js"
+    at /home/user/thyrox/src/packages/storage/src/file.ts:53:31
+
+54 | import { getFsImplementation, safeResolvePath } from './fsOperations.js'
+                                                          ^
+error: Could not resolve: "./fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/file.ts:54:54
+
+55 | import { expandPath } from './path.js'
+                                ^
+error: Could not resolve: "./path.js"
+    at /home/user/thyrox/src/packages/storage/src/file.ts:55:28
+
+129 | export { detectFileEncoding } from './fileEncoding.js'
+                                         ^
+error: Could not resolve: "./fileEncoding.js"
+    at /home/user/thyrox/src/packages/storage/src/file.ts:129:36
+
+13 | import { getWorktreePathsPortable } from './getWorktreePathsPortable.js'
+                                              ^
+error: Could not resolve: "./getWorktreePathsPortable.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStoragePortable.ts:13:42
+
+1 | import { tryGetConfigHostBindings } from '../host.js'
+                                             ^
+error: Could not resolve: "../host.js"
+    at /home/user/thyrox/src/packages/config/settings/validateEditTool.ts:1:42
+
+3 | import { PRODUCT_NAME } from '../product.js'
+                                 ^
+error: Could not resolve: "../product.js"
+    at /home/user/thyrox/src/packages/config/settings/validateEditTool.ts:3:30
+
+42 | import { logError } from './logging.js'
+                              ^
+error: Could not resolve: "./logging.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionStart.ts:42:26
+
+35 |   const version = (require('../package.json') as { version: string }).version
+                                ^
+error: Could not resolve: "../package.json"
+    at /home/user/thyrox/src/packages/provider/src/http.ts:35:28
+
+49 |   const version = (require('../package.json') as { version: string }).version
+                                ^
+error: Could not resolve: "../package.json"
+    at /home/user/thyrox/src/packages/provider/src/http.ts:49:28
+
+3 | import { getRemoteUrl } from './git.js'
+                                 ^
+error: Could not resolve: "./git.js"
+    at /home/user/thyrox/src/packages/storage/src/detectRepository.ts:3:30
+
+4 | import { parseGitRemote, type ParsedRepository } from './parseGitRemote.js'
+                                                          ^
+error: Could not resolve: "./parseGitRemote.js"
+    at /home/user/thyrox/src/packages/storage/src/detectRepository.ts:4:55
+
+33 | import { getSessionId } from './sessionPaths.js'
+                                  ^
+error: Could not resolve: "./sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/sessionEnvironment.ts:33:30
+
+50 | import { getErrnoCode, getFsImplementation, safeResolvePath } from './fsOperations.js'
+                                                                        ^
+error: Could not resolve: "./fsOperations.js"
+    at /home/user/thyrox/src/packages/storage/src/claudemd.ts:50:68
+
+52 | import { safePicomatch, safeIgnoreMatch } from './safePatternMatch.js'
+                                                    ^
+error: Could not resolve: "./safePatternMatch.js"
+    at /home/user/thyrox/src/packages/storage/src/claudemd.ts:52:48
+
+54 | import { normalizePathForComparison } from './file.js'
+                                                ^
+error: Could not resolve: "./file.js"
+    at /home/user/thyrox/src/packages/storage/src/claudemd.ts:54:44
+
+55 | import { getOriginalCwd } from './sessionPaths.js'
+                                    ^
+error: Could not resolve: "./sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/claudemd.ts:55:32
+
+62 | import { expandPath } from './path.js'
+                                ^
+error: Could not resolve: "./path.js"
+    at /home/user/thyrox/src/packages/storage/src/claudemd.ts:62:28
+
+13 | import { getFeatureValue_CACHED_MAY_BE_STALE } from '../feature-flags.js'
+                                                         ^
+error: Could not resolve: "../feature-flags.js"
+    at /home/user/thyrox/src/packages/config/plugin/hintRecommendation.ts:13:53
+
+24 | import { getGlobalConfig, saveGlobalConfig } from '../index.js'
+                                                       ^
+error: Could not resolve: "../index.js"
+    at /home/user/thyrox/src/packages/config/plugin/hintRecommendation.ts:24:51
+
+60 | import { checkWSLDistroMatch, WindowsToWSLConverter } from './idePathConversion.js'
+                                                                ^
+error: Could not resolve: "./idePathConversion.js"
+    at /home/user/thyrox/src/packages/ide/src/ide.ts:60:60
+
+47 | import { logError } from '../logging.js'
+                              ^
+error: Could not resolve: "../logging.js"
+    at /home/user/thyrox/src/packages/storage/src/task/diskOutput.ts:47:26
+
+48 | import { getOriginalCwd, getSessionId } from '../sessionPaths.js'
+                                                  ^
+error: Could not resolve: "../sessionPaths.js"
+    at /home/user/thyrox/src/packages/storage/src/task/diskOutput.ts:48:46
+
+49 | import { sanitizePath } from '../sessionStoragePortable.js'
+                                  ^
+error: Could not resolve: "../sessionStoragePortable.js"
+    at /home/user/thyrox/src/packages/storage/src/task/diskOutput.ts:49:30
+
+13 | import { ensureCommandRuntimeInstalled } from './commandRuntimeInstaller.js'
+                                                   ^
+error: Could not resolve: "./commandRuntimeInstaller.js"
+    at /home/user/thyrox/src/packages/command-runtime/src/runtime.ts:13:47
+
+25 | } from './api.js'
+            ^
+error: Could not resolve: "./api.js"
+    at /home/user/thyrox/src/packages/command-runtime/src/runtime.ts:25:8
+
+27 | import { getCommandRegistryHostBindings } from './host.js'
+                                                    ^
+error: Could not resolve: "./host.js"
+    at /home/user/thyrox/src/packages/command-runtime/src/runtime.ts:27:48
+
+41 | export { getCommandName, isCommandEnabled } from './types.js'
+                                                      ^
+error: Could not resolve: "./types.js"
+    at /home/user/thyrox/src/packages/command-runtime/src/runtime.ts:41:50
+
+4 | import { getConfigHostBindings } from '../host.js'
+                                          ^
+error: Could not resolve: "../host.js"
+    at /home/user/thyrox/src/packages/config/settings/changeDetector.ts:4:39
+
+78 | import { McpServerConfigSchema as _canonicalMcpServerConfigSchema } from '../mcpConfigSchema.js'
+                                                                              ^
+error: Could not resolve: "../mcpConfigSchema.js"
+    at /home/user/thyrox/src/packages/config/plugin/_deps.ts:78:74
+
+781 | export { coerceDescriptionToString } from '../frontmatterParser.js'
+                                                ^
+error: Could not resolve: "../frontmatterParser.js"
+    at /home/user/thyrox/src/packages/config/plugin/_deps.ts:781:43
+
+69 | import { getConfigHostBindings } from '../host.js'
+                                           ^
+error: Could not resolve: "../host.js"
+    at /home/user/thyrox/src/packages/config/remote/index.ts:69:39
+
+25 | import packageJson from '../../package.json'
+                             ^
+error: Could not resolve: "../../package.json"
+    at /home/user/thyrox/src/packages/bridge/src/internal/pendingCrossPackageDeps.ts:25:25
+
+12 | import { tryGetConfigHostBindings } from '../host.js'
+                                              ^
+error: Could not resolve: "../host.js"
+    at /home/user/thyrox/src/packages/config/env/validation.ts:12:42
+
+8 | import { parseYaml } from './yaml.js'
+                              ^
+error: Could not resolve: "./yaml.js"
+    at /home/user/thyrox/src/packages/config/frontmatterParser.ts:8:27
+
+11 | import { tryGetConfigHostBindings } from '../host.ts'
+                                              ^
+error: Could not resolve: "../host.ts"
+    at /home/user/thyrox/src/packages/config/settings/applySettingsChange.ts:11:42
+
+26 | import { getFeatureValue_CACHED_MAY_BE_STALE } from '../feature-flags.js'
+                                                         ^
+error: Could not resolve: "../feature-flags.js"
+    at /home/user/thyrox/src/packages/config/plugin/marketplaceManager.ts:26:53
+
+89 | import { PRODUCT_NAME } from '../product.js'
+                                  ^
+error: Could not resolve: "../product.js"
+    at /home/user/thyrox/src/packages/config/plugin/marketplaceManager.ts:89:30
+
+5 | import { PRODUCT_NAME } from '../product.js'
+                                 ^
+error: Could not resolve: "../product.js"
+    at /home/user/thyrox/src/packages/config/plugin/schemas.ts:5:30
+
+13 | } from '../preconditions.js'
+            ^
+error: Could not resolve: "../preconditions.js"
+    at /home/user/thyrox/src/packages/agent/background/remote/remoteSession.ts:13:8
+
+7 | import { createHyperlink } from './hyperlink.js'
+                                    ^
+error: Could not resolve: "./hyperlink.js"
+    at /home/user/thyrox/src/packages/output/src/markdown.ts:7:33
+
+13 | import { getConfigHostBindings } from '../host.js'
+                                           ^
+error: Could not resolve: "../host.js"
+    at /home/user/thyrox/src/packages/config/settings/allErrors.ts:13:39
+(fail) sessionStores.ts no nombra el paquete repl > ninguna arista DIRECTA del grafo estático apunta a repl [628.16ms]
+
+ 1 pass
+ 1 fail
+ 1 expect() calls
+Ran 2 tests across 1 file. [1136.00ms]
+pass=8612 fail=1 errors=0 crashes=0 files=572 failed=1
+__BG_EXIT__=1

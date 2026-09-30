@@ -1,0 +1,20 @@
+Declare a suite verdict unattributable if the tree moved
+
+A long suite measures a tree that can change while it runs: an edit
+by the orchestrator, another writer's commit, or the mutant another
+suite leaves mid-sweep, as classify_agents.py did during a close on
+2026-09-26. Its verdict then belongs to no state of the tree.
+
+tree_fingerprint.py hashes HEAD, the tracked diff and every new file
+within what the suite measures (src, tests, bin), leaving out what the
+run itself writes (.claude/jobs) and what git ignores. tests/run.sh
+takes it at the start and at the end of the full run and of
+--changed; when they differ it exits 3 and says which verdict it
+would have given, instead of publishing red or green.
+
+Also cites the gawk source behind the -i inplace END trap:
+inplace.awk runs its own END first and restores stdout.
+
+Annulment: without new files the new-file case fails; without the
+scope what the run writes moves the fingerprint; without the
+comparison run.sh publishes the mutated run as green.

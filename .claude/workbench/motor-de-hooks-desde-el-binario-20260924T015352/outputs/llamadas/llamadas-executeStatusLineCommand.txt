@@ -1,0 +1,15 @@
+src/packages/repl/src/components/StatusLine.tsx:273:      const text = await executeStatusLineCommand(
+src/packages/repl/src/components/StatusLine.tsx-274-        statusInput,
+src/packages/repl/src/components/StatusLine.tsx-275-        controller.signal,
+src/packages/repl/src/components/StatusLine.tsx-276-        undefined,
+src/packages/repl/src/components/StatusLine.tsx-277-        logResult,
+src/packages/repl/src/components/StatusLine.tsx-278-      )
+src/packages/repl/src/components/StatusLine.tsx-279-      if (!controller.signal.aborted) {
+src/packages/repl/src/components/StatusLine.tsx-280-        setAppState(prev => {
+src/packages/repl/src/components/StatusLine.tsx-281-          if (prev.statusLineText === text) return prev
+src/packages/repl/src/components/StatusLine.tsx-282-          return { ...prev, statusLineText: text }
+src/packages/repl/src/components/StatusLine.tsx-283-        })
+src/packages/repl/src/components/StatusLine.tsx-284-      }
+src/packages/repl/src/components/StatusLine.tsx-285-    } catch {
+src/packages/repl/src/components/StatusLine.tsx-286-      // Silently ignore errors in status line updates
+src/packages/repl/src/components/StatusLine.tsx-287-    }

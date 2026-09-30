@@ -1,0 +1,14 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/shell/src/__test__/shellQuote.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'hasMalformedTokens' not found in module '/workspace/kaupamex/thyrox/src/packages/shell/src/bash/shellQuote.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [62.00ms]

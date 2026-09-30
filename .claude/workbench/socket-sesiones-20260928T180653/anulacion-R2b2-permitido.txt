@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeAvailability.test.ts:
+57 | 
+58 |   test('modelo no permitido: sólo si el modelo del modo rápido no lo está', () => {
+59 |     const asked: unknown[] = []
+60 |     const denyOpus = context({ isModelAllowed: model => (asked.push(model), model !== 'opus'), supportsFastMode: () => true })
+61 |     expect(fastModeUnavailabilityCause(undefined, {}, denyOpus)).toBeNull()
+62 |     expect(asked).toEqual(['opus', 'main-loop'])
+                       ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "opus",
+-   "main-loop",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeAvailability.test.ts:62:19)
+(fail) fastModeUnavailabilityCause (gL) > modelo no permitido: sólo si el modelo del modo rápido no lo está [0.32ms]
+
+ 13 pass
+ 1 fail
+ 49 expect() calls
+Ran 14 tests across 1 file. [54.00ms]

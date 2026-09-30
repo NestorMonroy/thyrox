@@ -1,0 +1,4 @@
+2026-09-28T06:38:24  (silencio)
+2026-09-28T06:38:54  CLASIFICADOR SIN VEREDICTO — 2 de 10 respuestas seguidas sin veredicto (error); en 10 el cliente corta el turno.
+2026-09-28T06:40:51  CLASIFICADOR SIN VEREDICTO — 5 de 10 respuestas seguidas sin veredicto (error); en 10 el cliente corta el turno.
+2026-09-28T06:42:08  CLASIFICADOR SIN VEREDICTO — 6 de 10 respuestas seguidas sin veredicto (error); en 10 el cliente corta el turno.

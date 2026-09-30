@@ -1,0 +1,1 @@
+    decision = derive(Path(args.history), args.model, catalog, args.margin, args.reserve_kb)

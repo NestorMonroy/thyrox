@@ -1,0 +1,16 @@
+./__tests__/dynamicCert.behavior.test.ts
+./__tests__/system/upstreamTrust.test.ts
+./__tests__/cert/multiHostLeaf.test.ts
+./__tests__/cert/rootCa.test.ts
+./__tests__/cert/activeCert.test.ts
+./__tests__/cert/trustTarget.test.ts
+./__tests__/cert/caNameGeneration.test.ts
+./__tests__/server/main.test.ts
+./__tests__/server/mitmServer.test.ts
+./__tests__/tproxy/tproxyCaptureEndToEnd.test.ts
+./__tests__/tproxy/toolHostLeaves.test.ts
+./__tests__/tproxy/dynamicCert.test.ts
+./__tests__/tproxy/tlsCapture.test.ts
+./__tests__/tproxy/fixtures/captureInNamespace.ts
+./__tests__/api/agentBridgePrivilegedRoutes.test.ts
+./__tests__/inspector/httpProxyServer.test.ts

@@ -1,0 +1,3 @@
+src/packages/tool-registry/src/tools/McpAuthTool/McpAuthTool.ts(174,15): error TS2322: Type '{ name: string; }[]' is not assignable to type 'MCPServerConnection[]'.
+  Type '{ name: string; }' is not assignable to type 'MCPServerConnection'.
+    Type '{ name: string; }' is missing the following properties from type 'DisabledMCPServer': type, config

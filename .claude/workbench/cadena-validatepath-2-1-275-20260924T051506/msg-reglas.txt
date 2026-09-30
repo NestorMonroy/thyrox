@@ -1,0 +1,23 @@
+Port the file-rule compiler from 2.1.275
+
+matchingRuleForInput, getFileReadIgnorePatterns and
+normalizePatternsToPath were declared omitted in filesystem.ts, and
+four suites failed to import normalizePatternsToPath. They sit on one
+foundation, Bn in chunk-9apg35nm.js: the Read and Edit rules of a
+context compiled into gitignore-style matchers grouped by root, one
+matcher per source, with a physical twin for a literal prefix that
+crosses a symlink.
+
+ruleMatching.ts reimplements that contract: rule roots (jYe, E_n),
+pattern sanitizing (to), the compiler and its per-rules cache (Bn),
+the lookup (_a), the all-paths allow check (myt), the read-deny
+patterns (BYe) and their rewrite to a search root (pyt). The auto-mode
+allow-rule stripping is omitted because it never drops a Read or Edit
+rule; CLAUDE_CODE_EVAL_CONFINED, which changes the result, is ported.
+
+Two pins followed the binary instead of the first test: ignore() is
+case-insensitive by default, and the binary calls it without options,
+so case folding only governs how a path is made relative to its root.
+
+Annulment: without the physical twin exactly the twin case fails;
+without the root fold exactly the fold case fails.

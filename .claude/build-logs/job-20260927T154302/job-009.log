@@ -1,0 +1,26 @@
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/instructionFiles.test.ts:39:44)
+(fail) candidatos por ranura > isInstructionsFileName reconoce los cuatro nombres y nada más [0.11ms]
+48 |   test('sin ninguno en disco, el destino es el nombre propio', () => {
+49 |     expect(pickInstructionsFile(c, () => false)).toBe(join('/r', 'THYROX.md'))
+50 |   })
+51 | 
+52 |   test('con sólo el heredado, se usa el heredado', () => {
+53 |     expect(pickInstructionsFile(c, only(join('/r', 'CLAUDE.md')))).toBe(join('/r', 'CLAUDE.md'))
+                                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "/r/CLAUDE.md"
+Received: "/r/THYROX.md"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/instructionFiles.test.ts:53:68)
+(fail) pickInstructionsFile > con sólo el heredado, se usa el heredado [0.11ms]
+
+ 740 pass
+ 5 fail
+ 1430 expect() calls
+Ran 745 tests across 53 files. [10.25s]
+EXIT=1

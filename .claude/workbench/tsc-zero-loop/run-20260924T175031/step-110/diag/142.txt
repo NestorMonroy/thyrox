@@ -1,0 +1,23 @@
+src/packages/permission/src/__tests__/dangerousPatterns.test.ts(54,22): error TS2345: Argument of type 'string' is not assignable to parameter of type '"python3" | "bash" | "deno" | "node" | "ruby" | "python" | "python2" | "tsx" | "perl" | "php" | "lua" | "npx" | "bunx" | "npm run" | "yarn run" | "pnpm run" | "bun run" | "sh" | "ssh"'.
+  --- código src/packages/permission/src/__tests__/dangerousPatterns.test.ts:44-64 ---
+     44        "perl",
+     45        "php",
+     46        "lua",
+     47        "deno",
+     48        "npx",
+     49        "bunx",
+     50        "tsx",
+     51      ];
+     52      const set = new Set(CROSS_PLATFORM_CODE_EXEC);
+     53      for (const entry of expected) {
+     54>       expect(set.has(entry)).toBe(true);
+     55      }
+     56    });
+     57  });
+     58  
+     59  describe("DANGEROUS_BASH_PATTERNS", () => {
+     60    test("includes all cross-platform patterns", () => {
+     61      for (const p of CROSS_PLATFORM_CODE_EXEC) {
+     62        expect(DANGEROUS_BASH_PATTERNS).toContain(p);
+     63      }
+     64    });

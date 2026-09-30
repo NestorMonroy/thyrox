@@ -1,0 +1,18 @@
+corpus   /home/user/thyrox/_references/claude-code-bin
+quedan   3: 2.1.266, 2.1.274, 2.1.275
+archivar 9: 2.1.241, 2.1.246, 2.1.246-nombrado, 2.1.250, 2.1.251, 2.1.258, 2.1.259, 2.1.261, 2.1.263
+crudo a plegar  585.7M
+  ok     2.1.241  38.4M -> 8.3M  (4.64x, git rm)
+  ok     2.1.246  103.3M -> 14.4M  (7.16x, git rm)
+  ok     2.1.246-nombrado  19.5M -> 4.3M  (4.58x, git rm)
+  ok     2.1.250  53.3M -> 10.9M  (4.90x, git rm)
+  ok     2.1.251  45.7M -> 9.5M  (4.83x, git rm)
+  ok     2.1.258  81.0M -> 13.3M  (6.08x, git rm)
+  ok     2.1.259  81.7M -> 13.7M  (5.96x, git rm)
+  ok     2.1.261  81.4M -> 13.9M  (5.86x, git rm)
+  ok     2.1.263  81.4M -> 13.6M  (5.98x, git rm)
+
+indice   /home/user/thyrox/_references/claude-code-bin/_archived/MANIFEST.tsv
+head     62819b871388548c620e44af160b74e7e0bc1389  (donde el crudo existio por ultima vez)
+El `.7z` y el indice quedan en el indice de git SIN commitear: el commit por pathspec lo hace quien invoca.
+__BG_EXIT__=0

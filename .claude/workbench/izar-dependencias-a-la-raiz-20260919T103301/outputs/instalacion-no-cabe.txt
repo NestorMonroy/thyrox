@@ -1,0 +1,22 @@
+# El eje de la INSTALACION, medido — no diferido por comodidad
+# fecha: 2026-09-19T10:44:56
+
+bun install --dry-run resuelve en 4.73 s y publica 1551 paquetes a instalar.
+
+Espacio:
+/dev/vda        252G   37G  1.1G  98% /
+
+  antes del dry-run:  1.7 G libres (96 %)
+  despues:            1.1 G libres (98 %)  <- el propio dry-run poblo la cache
+  cache de bun:       897 M
+
+Lo unico reclamable del arbol son 52 M de logs de job y la cache de bun,
+que es justo lo que la instalacion necesita. odoo-tools (18 G) y
+nestormonroy/ (2.3 G) son referencia de SOLO LECTURA.
+
+1551 paquetes extraidos no caben en 1.1 G, ni en los 2.0 G que quedarian
+al vaciar la cache — porque vaciarla obliga a volver a descargarlos.
+
+VEREDICTO: la instalacion NO cabe en este contenedor. Es un bloqueo
+medido, no una decision de posponer. El manifiesto queda correcto y el
+TS2307 solo caera donde se corra con disco suficiente.

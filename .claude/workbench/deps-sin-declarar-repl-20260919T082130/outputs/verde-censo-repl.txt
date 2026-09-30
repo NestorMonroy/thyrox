@@ -1,0 +1,16 @@
+== los 4 que faltaban, ahora en el lock?
+  fuse.js        7.5.0 
+  marked         17.0.6 
+  asciichart     1.5.25 
+  chokidar       5.0.0 
+
+paquete: @thyrox/repl   declaradas: 45
+SIN DECLARAR con forma de paquete: 1
+      1  downloading                      NO esta en el lock
+
+descartados por forma (texto capturado por el recorrido): 5
+         ' keeps scrollback; '
+         'Jump to bottom'
+         'OC & Bulk Overages copy'
+         'current session'
+         'empty auth'

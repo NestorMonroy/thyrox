@@ -1,0 +1,1 @@
+function RR(t){for(let e=0;e<t.length;e++){let r=t[e];if(r==="*"||r==="?")return e;if(r==="["&&t.indexOf("]",e+1)!==-1)return e}return-1}

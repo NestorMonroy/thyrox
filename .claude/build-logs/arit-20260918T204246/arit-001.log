@@ -1,0 +1,40 @@
+== 1. el motor: cada rama de la cadena de precedencia ==
+  ok    blocked: marcador [en]
+  ok    bloqueado: marcador [es]
+  ok    failed: marcador [en]
+  ok    falló: marcador [es]
+  ok    needs input [en]
+  ok    necesito: [es]
+  ok    result: solo -> done
+  ok    result: + next: -> working
+  ok    esperar a CI -> working
+  ok    esperar a la suite [es] -> working
+  ok    esperar a una persona -> blocked
+  ok    queda a tu criterio [es] -> blocked
+  ok    pregunta final [es]
+  ok    verbo de trabajo [en]
+  ok    verbo de trabajo [es]
+  ok    no puedo seguir [es]
+  ok    me rindo [es]
+  ok    VERDICT: PASS
+  ok    VEREDICTO: CONFIRMADO [es]
+  ok    auth / límite de uso
+  ok    blocked: DENTRO de cerca se ignora
+  ok    blocked: FUERA de cerca sí cuenta
+  ok    descargo 'nothing needed from you' -> no bloquea
+  ok    3 párrafos tras el marcador -> no decide
+
+== 2. el fallback nunca devuelve None ==
+  ok    fallback da working/idle
+  ok    fallback declara su procedencia
+  ok    texto vacío no revienta
+
+== 3. cobertura sobre el corpus REAL (informativo, no falla) ==
+  decididos por patrón: 0 de 21 (0.0%)  [mtime (heurística)]
+  ↳ 0 es el resultado ESPERADO hoy: el banco lee marcadores
+    (result:/blocked:/failed:) que nuestros subagentes no emiten.
+    El clasificador es la mitad LECTORA de un protocolo; falta la
+    escritora. Ver H-DOCS-142 y la tarea #302.
+
+resultado: 27 ok, 0 fallas
+EXIT=0

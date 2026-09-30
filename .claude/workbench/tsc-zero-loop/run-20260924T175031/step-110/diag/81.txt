@@ -1,0 +1,69 @@
+src/packages/command-runtime/src/commands/context/context.tsx(38,16): error TS2339: Property 'mainLoopModel' does not exist on type '{ dynamicMcpConfig?: Record<string, unknown> | undefined; ideInstallationStatus: unknown; theme: unknown; }'.
+  --- código src/packages/command-runtime/src/commands/context/context.tsx:28-48 ---
+     28    return view
+     29  }
+     30  
+     31  export async function call(
+     32    onDone: LocalJSXCommandOnDone,
+     33    context: LocalJSXCommandContext,
+     34  ): Promise<React.ReactNode> {
+     35    const {
+     36      messages,
+     37      getAppState,
+     38>     options: { mainLoopModel, tools },
+     39    } = context
+     40  
+     41    const apiView = toApiView(messages)
+     42  
+     43    // Apply microcompact to get accurate representation of messages sent to API
+     44    const { messages: compactedMessages } = await microcompactMessages(apiView)
+     45  
+     46    // Get terminal width for responsive sizing
+     47    const terminalWidth = process.stdout.columns || 80
+     48  
+src/packages/command-runtime/src/commands/context/context.tsx(38,31): error TS2339: Property 'tools' does not exist on type '{ dynamicMcpConfig?: Record<string, unknown> | undefined; ideInstallationStatus: unknown; theme: unknown; }'.
+  --- código src/packages/command-runtime/src/commands/context/context.tsx:28-48 ---
+     28    return view
+     29  }
+     30  
+     31  export async function call(
+     32    onDone: LocalJSXCommandOnDone,
+     33    context: LocalJSXCommandContext,
+     34  ): Promise<React.ReactNode> {
+     35    const {
+     36      messages,
+     37      getAppState,
+     38>     options: { mainLoopModel, tools },
+     39    } = context
+     40  
+     41    const apiView = toApiView(messages)
+     42  
+     43    // Apply microcompact to get accurate representation of messages sent to API
+     44    const { messages: compactedMessages } = await microcompactMessages(apiView)
+     45  
+     46    // Get terminal width for responsive sizing
+     47    const terminalWidth = process.stdout.columns || 80
+     48  
+src/packages/command-runtime/src/commands/context/context.tsx(41,29): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Message[]'.
+  --- código src/packages/command-runtime/src/commands/context/context.tsx:31-51 ---
+     31  export async function call(
+     32    onDone: LocalJSXCommandOnDone,
+     33    context: LocalJSXCommandContext,
+     34  ): Promise<React.ReactNode> {
+     35    const {
+     36      messages,
+     37      getAppState,
+     38      options: { mainLoopModel, tools },
+     39    } = context
+     40  
+     41>   const apiView = toApiView(messages)
+     42  
+     43    // Apply microcompact to get accurate representation of messages sent to API
+     44    const { messages: compactedMessages } = await microcompactMessages(apiView)
+     45  
+     46    // Get terminal width for responsive sizing
+     47    const terminalWidth = process.stdout.columns || 80
+     48  
+     49    const appState = (getAppState as () => AppState)()
+     50  
+     51    // Analyze context with compacted messages

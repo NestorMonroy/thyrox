@@ -1,0 +1,20 @@
+    13  .claude/skills/dmaic-improve/references/doe-guide.md::corridas
+     8  .claude/skills/dmaic-improve/references/doe-guide.md::corrida
+     7  postcondiciones .claude/skills/ba-requirements-analysis/SKILL.md
+     6  sobreprocesamiento .claude/skills/dmaic-improve/references/lean-tools-guide.md
+     6  alcanzabilidad .claude/skills/pps-target/SKILL.md
+     4  .claude/skills/pdca-check/references/measurement-tools.md::corridas
+     3  autonomación .claude/skills/dmaic-improve/SKILL.md
+     3  observabilidad .claude/skills/thyrox/references/methodology-selection-guide.md
+     2  .claude/skills/cosmic/references/calibration.md::corridas
+     2  .claude/skills/dmaic-control/references/control-chart-guide.md::corrida
+     2  .claude/skills/pdca-check/SKILL.md::corridas
+     2  resolubilidad .claude/skills/pps-clarify/SKILL.md
+     2  elicitaciones .claude/skills/rm-elicitation/SKILL.md
+     1  .claude/skills/dmaic-control/references/control-chart-guide.md::corridas
+     1  .claude/skills/pdca-check/references/measurement-tools.md::corrida
+     1  incrementalidad .claude/skills/pdca-do/SKILL.md
+     1  idempotencia .claude/skills/rup-construction/references/ioc-criteria.md
+     1  testabilidad .claude/skills/rup-elaboration/references/lca-criteria.md
+     1  prioritización .claude/skills/workflow-audit/references/audit-scoring.md
+19 hallazgo(s) nuevo(s): 11 inventado(s) · 8 prohibido(s) (alcance medido: 289 archivo(s); 19 hallazgo(s) en total; 0 en baseline; léxico: 1000000 formas; vetadas: 53)

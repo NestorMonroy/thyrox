@@ -1,0 +1,47 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(992,9): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:982-1002 ---
+    982    }
+    983  
+    984    const resultPromise = shellCommand.result
+    985  
+    986    // Helper to spawn a background task and return its ID
+    987    async function spawnBackgroundTask(): Promise<string> {
+    988      const handle = await spawnShellTask(
+    989        {
+    990          command,
+    991          description: description || command,
+    992>         shellCommand,
+    993          toolUseId,
+    994          agentId,
+    995        },
+    996        {
+    997          abortController,
+    998          getAppState: () => {
+    999            throw new Error(
+   1000              'getAppState not available in runPowerShellCommand context',
+   1001            )
+   1002          },
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1022,11): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1012-1032 ---
+   1012      backgroundFn?: (shellId: string) => void,
+   1013    ): void {
+   1014      // If a foreground task is already registered (via registerForeground in the
+   1015      // progress loop), background it in-place instead of re-spawning. Re-spawning
+   1016      // would overwrite tasks[taskId], emit a duplicate task_started SDK event,
+   1017      // and leak the first cleanup callback.
+   1018      if (foregroundTaskId) {
+   1019        if (
+   1020          !backgroundExistingForegroundTask(
+   1021            foregroundTaskId,
+   1022>           shellCommand,
+   1023            description || command,
+   1024            setAppState,
+   1025            toolUseId,
+   1026          )
+   1027        ) {
+   1028          return
+   1029        }
+   1030        backgroundShellId = foregroundTaskId
+   1031        logEvent(eventName, {
+   1032          command_type: getCommandTypeForLogging(command),
+  Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.

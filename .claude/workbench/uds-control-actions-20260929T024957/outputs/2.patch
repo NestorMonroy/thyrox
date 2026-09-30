@@ -1,0 +1,1163 @@
+diff --git a/src/packages/local-observability/__tests__/udsControlIdleNotification.test.ts b/src/packages/local-observability/__tests__/udsControlIdleNotification.test.ts
+new file mode 100644
+index 00000000..c11dc80a
+--- /dev/null
++++ b/src/packages/local-observability/__tests__/udsControlIdleNotification.test.ts
+@@ -0,0 +1,129 @@
++/**
++ * Los dos ramales de `be` (`chunk-yg53q7yp.js`) que disparan el aviso de
++ * inactividad entre sesiones: `notify_when_idle` y `peer_idle_notice`
++ * (`idleNotificationControlActions`, `../src/uds/idleNotification.ts`).
++ */
++import { describe, expect, test } from 'bun:test'
++
++import type { PeerIdentity } from '../src/uds/inboxConnection.ts'
++import { createInboxState } from '../src/uds/inboxState.ts'
++import {
++  admitPeerIdleNotice,
++  idleNotificationControlActions,
++  registerOutstandingIdleRequest,
++  type SendIdleNotice,
++  setOnSubscribed,
++  setSendNotice,
++  subscribeToIdleNotice,
++} from '../src/uds/idleNotification.ts'
++
++const OWN_SOCKET = '/tmp/thyrox-idle-own.sock'
++const PEER_SOCKET = '/tmp/thyrox-idle-peer.sock'
++
++function peer(overrides: Partial<PeerIdentity> = {}): PeerIdentity {
++  return { pid: undefined, startToken: undefined, ancestry: undefined, origin: undefined, ...overrides }
++}
++
++function harness(overrides: { isSelfSent?: (peer: PeerIdentity) => Promise<boolean> } = {}) {
++  const host = {}
++  const state = createInboxState()
++  state.activeSocketPath = OWN_SOCKET
++  const actions = idleNotificationControlActions({
++    state,
++    isSelfSent: overrides.isSelfSent ?? (async () => false),
++    host,
++  })
++  return { host, state, actions }
++}
++
++describe('notify_when_idle (be, ramal notify_when_idle)', () => {
++  test('marco inválido: ni se suscribe ni se envía nada', async () => {
++    const { actions, host } = harness()
++    const subscribed: unknown[] = []
++    setOnSubscribed(address => void subscribed.push(address), null, host)
++    await actions.notify_when_idle({ type: 'control', action: 'notify_when_idle', from: 'uds:' + PEER_SOCKET }, peer())
++    expect(subscribed).toEqual([])
++  })
++
++  test('buzón propio sin enlazar: no se suscribe', async () => {
++    const { actions, host, state } = harness()
++    state.activeSocketPath = undefined
++    const subscribed: unknown[] = []
++    setOnSubscribed(address => void subscribed.push(address), null, host)
++    await actions.notify_when_idle({ type: 'control', action: 'notify_when_idle', from: 'uds:' + PEER_SOCKET, msg_id: '11111111-1111-1111-1111-111111111111' }, peer())
++    expect(subscribed).toEqual([])
++  })
++
++  test('dirección no respondible: no se suscribe', async () => {
++    const { actions, host } = harness()
++    const subscribed: unknown[] = []
++    setOnSubscribed(address => void subscribed.push(address), null, host)
++    await actions.notify_when_idle({ type: 'control', action: 'notify_when_idle', from: 'not-a-uds-address', msg_id: '11111111-1111-1111-1111-111111111111' }, peer())
++    expect(subscribed).toEqual([])
++  })
++
++  test('auto-envío: el destino de respuesta es esta misma sesión, no se suscribe', async () => {
++    const { actions, host } = harness()
++    const subscribed: unknown[] = []
++    setOnSubscribed(address => void subscribed.push(address), null, host)
++    await actions.notify_when_idle({ type: 'control', action: 'notify_when_idle', from: 'uds:' + OWN_SOCKET, msg_id: '11111111-1111-1111-1111-111111111111' }, peer())
++    expect(subscribed).toEqual([])
++  })
++
++  test('suscripción aceptada: se anuncia con la dirección y si el pid quedó verificado', async () => {
++    const { actions, host } = harness()
++    const subscribed: [string, boolean][] = []
++    setOnSubscribed((address, hasVerifiedPeerPid) => void subscribed.push([address, hasVerifiedPeerPid]), null, host)
++    const outcome = await actions.notify_when_idle(
++      { type: 'control', action: 'notify_when_idle', from: 'uds:' + PEER_SOCKET, msg_id: '11111111-1111-1111-1111-111111111111' },
++      peer({ pid: 4242, origin: 'peer' }),
++    )
++    expect(outcome).toBeUndefined()
++    expect(subscribed).toEqual([['uds:' + PEER_SOCKET, true]])
++  })
++
++  test('suscripción llena: no se anuncia, y se avisa "unavailable" al peticionario', async () => {
++    const { actions, host } = harness()
++    for (let pid = 1; pid <= 32; pid++) {
++      const outcome = subscribeToIdleNotice('uds:' + PEER_SOCKET, 'uds:' + PEER_SOCKET, `11111111-1111-1111-1111-${String(pid).padStart(12, '0')}`, pid, undefined, true, undefined, false, host)
++      expect(outcome).toBe('recorded')
++    }
++    const subscribed: unknown[] = []
++    const sent: Parameters<SendIdleNotice>[] = []
++    setOnSubscribed(address => void subscribed.push(address), null, host)
++    subscribed.length = 0
++    setSendNotice(async (...args) => void sent.push(args), host)
++    await actions.notify_when_idle({ type: 'control', action: 'notify_when_idle', from: 'uds:' + PEER_SOCKET, msg_id: '22222222-2222-2222-2222-222222222222' }, peer({ pid: 999, origin: 'peer' }))
++    expect(subscribed).toEqual([])
++    expect(sent).toHaveLength(1)
++    expect(sent[0]?.[1]).toEqual({ orig_msg_id: '22222222-2222-2222-2222-222222222222', state: 'unavailable' })
++  })
++})
++
++describe('peer_idle_notice (be, ramal peer_idle_notice)', () => {
++  test('marco inválido: no admite nada, y la petición saliente sigue viva', async () => {
++    const { actions, host } = harness()
++    const registered = registerOutstandingIdleRequest('33333333-3333-3333-3333-333333333333', 'peer', 'uds:' + PEER_SOCKET, host)
++    expect(registered.ok).toBe(true)
++    await actions.peer_idle_notice({ type: 'control', action: 'peer_idle_notice', orig_msg_id: '33333333-3333-3333-3333-333333333333' }, peer())
++    expect(admitPeerIdleNotice('33333333-3333-3333-3333-333333333333', 'idle', undefined, undefined, undefined, false, host)).toBe(true)
++  })
++
++  test('no correlacionado: no hay petición saliente con ese id, y no llega a mirar la confianza del par', async () => {
++    let selfSentCalls = 0
++    const { actions, host } = harness({ isSelfSent: async () => (selfSentCalls++, false) })
++    await actions.peer_idle_notice({ type: 'control', action: 'peer_idle_notice', orig_msg_id: 'no-such-id', state: 'idle' }, peer())
++    expect(selfSentCalls).toBe(0)
++    expect(admitPeerIdleNotice('no-such-id', 'idle', undefined, undefined, undefined, false, host)).toBe(false)
++  })
++
++  test('ya consumido: una segunda entrega con el mismo id no vuelve a mirar la confianza del par', async () => {
++    let selfSentCalls = 0
++    const { actions, host } = harness({ isSelfSent: async () => (selfSentCalls++, false) })
++    registerOutstandingIdleRequest('44444444-4444-4444-4444-444444444444', 'peer', 'uds:' + PEER_SOCKET, host)
++    await actions.peer_idle_notice({ type: 'control', action: 'peer_idle_notice', orig_msg_id: '44444444-4444-4444-4444-444444444444', state: 'idle' }, peer())
++    expect(selfSentCalls).toBe(1)
++    await actions.peer_idle_notice({ type: 'control', action: 'peer_idle_notice', orig_msg_id: '44444444-4444-4444-4444-444444444444', state: 'idle' }, peer())
++    expect(selfSentCalls).toBe(1)
++  })
++})
+diff --git a/src/packages/local-observability/src/uds/idleNotification.ts b/src/packages/local-observability/src/uds/idleNotification.ts
+new file mode 100644
+index 00000000..6358061c
+--- /dev/null
++++ b/src/packages/local-observability/src/uds/idleNotification.ts
+@@ -0,0 +1,1022 @@
++/**
++ * El aviso de cruce de sesión "avísame cuando estés libre": una sesión pide
++ * que se le notifique cuando esta quede inactiva (`notify_when_idle`), esta
++ * lleva la lista de quien lo pidió y dispara el aviso con un debounce cuando
++ * de verdad se queda quieta; y del otro lado, la propia sesión que pidió el
++ * aviso lo recibe y lo admite (`peer_idle_notice`), correlacionado con su
++ * petición saliente.
++ *
++ * Porte COMPLETO de `chunk-s0w8kgdv.js` de 2.1.283 —constantes, `qtr`, `Ktr`,
++ * `Ytr`, `qEn`, `KEn`, `dqt`, `Xtr`, `ibt`, `uqt`, `Jtr`, `YEn`, `XEn`, `JEn`,
++ * `QEn`, `ZEn`, `Qtr`, `Ztr`, `enr`, `Uqo`, `pqt`, `tnr` y sus privadas (`F`,
++ * `l`, `P`, `Z`, `J`, `N`, `M`, `O`, `ee`, `E`, `ne`, `ie`, `te`, `C`, `U`,
++ * `A`, `oe`, `L`, `se`, `W`, `q`)— más los dos ramales de `be`
++ * (`chunk-yg53q7yp.js`) que lo disparan: `notify_when_idle` y
++ * `peer_idle_notice`, expuestos como `ControlActionHandler` en
++ * `idleNotificationControlActions(deps)`.
++ *
++ * Divergencias declaradas:
++ * - `qtr`/`Ktr` eran un esquema zod perezoso (`f(()=>u({...}))`); aquí son
++ *   `parseNotifyWhenIdleFrame`/`parsePeerIdleNoticeFrame`, validados a mano
++ *   con las mismas cotas (tipo por campo, opcionales, claves no declaradas
++ *   descartadas) — el paquete no depende de zod.
++ * - `B` (`chunk-153dnzje.js`, contar por predicado) y `mpt`
++ *   (`chunk-j2p7jgmc.js`, un `finished_at` numérico finito y acotado) son
++ *   primitivas puras de un chunk ajeno: se reproducen en línea como
++ *   `countMatching`/`isPlausibleTimestamp` en vez de inyectarse, porque no
++ *   dependen de estado ni de E/S.
++ * - `Ce` (`aLo`, chunk-q8a07cv0.js): ya portada como `isEnvelopeMode`
++ *   (`peerEnvelope.ts`); se reutiliza directamente.
++ * - `ce`: ya portada como `isSelfSent` (`PeerDeliveryDeps`, `inboxDelivery.ts`);
++ *   llega inyectada con el mismo campo y firma.
++ * - `aEn`/`replyableTarget` (`inboxDelivery.ts`) exige un pid de par ya
++ *   verificado (`number`); aquí el par puede no tener uno (`peer.pid`, del
++ *   registro de `InboxConnectionDeps`), así que se reproduce su cuerpo con el
++ *   tipo correcto (`respondableAddress`) en vez de forzar el tipo con una
++ *   aserción insegura.
++ * - `tSe`, `dnr`, `Ws`, `x7e`, `TNn`, `Htn`, `d`, `Mae`, `MV`, `gE`+`qe` y `Y`
++ *   viven en chunks de política de permisos, cola del hilo principal,
++ *   clasificación del texto del último turno y envío, todos fuera de este
++ *   alcance: llegan como `IdleNotificationRuntimeDeps`, con un valor por
++ *   omisión permisivo (acepta, sin retener nada, cola vacía) hasta que quien
++ *   integra los sustituye por los reales.
++ */
++import type { PeerIdentity } from './inboxConnection.ts'
++import { canonicalSocketAddress } from './inboxAuth.ts'
++import { isMessageId } from './inboxDelivery.ts'
++import type { InboxState } from './inboxState.ts'
++import type { ControlActionHandler } from './inboxRouting.ts'
++import { redactLogFragment, withholdTokenText } from './logRedaction.ts'
++import { reportFeatureBad, reportFeatureOk, reportFeatureSad } from './featureTelemetry.ts'
++import { sliceUnits } from './stringUnits.ts'
++import { truncateToWidth } from './cappedText.ts'
++import { PerHost, processHost } from './sessionNameState.ts'
++import { isPeerAddress, isReplyableSocket, parseAddress } from './peerAddress.ts'
++import { isEnvelopeMode, type EnvelopeMode } from './peerEnvelope.ts'
++import { logForDebugging } from '../debug.ts'
++
++type Frame = Record<string, unknown> & { type: string }
++
++/** `w7e`: cuántas suscripciones o peticiones salientes se recuerdan a la vez. */
++export const SUBSCRIPTION_TABLE_LIMIT = 32
++const UNAUTHENTICATED_SUBSCRIBER_LIMIT = 8
++const SAME_PID_SUBSCRIBER_LIMIT = 4
++const SAME_TARGET_AUTHENTICATED_LIMIT = 4
++/** `T`: una suscripción sin disparar caduca a las 12 h. */
++const SUBSCRIPTION_TTL_MS = 43200000
++/** `V`: peticiones salientes vivas por mismo destino. */
++const OUTSTANDING_PER_TARGET_LIMIT = 3
++/** `K`: debounce antes de disparar el aviso. */
++const FLUSH_DEBOUNCE_MS = 750
++/** `z`: reintento cuando hay entrada retenida. */
++const PARKED_RETRY_MS = 30000
++/** `X`: reintento de un aviso "unavailable". */
++const UNAVAILABLE_RETRY_MS = 750
++/** `D`: ancho del detalle de una línea de estado. */
++const DETAIL_MAX_WIDTH = 100
++/** `q`: por qué una suscripción no se sostuvo. */
++const UNAVAILABLE_REASON_TEXT =
++  'it is shutting down, its subscription table is full, a newer subscription displaced this one, or it answered in a form this version does not recognize'
++
++export type IdleSubscriber = {
++  targetKey: string
++  replyTarget: string
++  replyAddress: string
++  verifiedPeerPid: number | undefined
++  verifiedPeerProcStart: string | undefined
++  authenticated: boolean
++  fromMode: EnvelopeMode | undefined
++  selfSent: boolean
++  origMsgId: string
++  requestedAt: number
++  retried?: boolean
++}
++
++export type OutstandingIdleRequest = {
++  msgId: string
++  label: string
++  target: string
++  targetKey: string
++  conversationId: string
++  requestedAt: number
++  expiry: ReturnType<typeof setTimeout>
++}
++
++export type IdleNoticeGate = 'local' | { fromMode: EnvelopeMode | undefined; selfSent: boolean }
++
++export type PendingIdleNotice =
++  | { kind: 'expired'; label: string; gate: 'local' }
++  | { kind: 'idle' | 'exited' | 'unavailable'; label: string; finishedAt?: number; detail?: string; gate: IdleNoticeGate }
++
++export type AdmittedIdleNotice =
++  | { kind: 'expired'; label: string; modelVisible: boolean }
++  | { kind: 'idle' | 'exited' | 'unavailable'; label: string; finishedAt?: number; detail?: string; modelVisible: boolean }
++
++export type SubscribeOutcome = 'invalid' | 'refused' | 'full' | 'recorded' | 'refreshed'
++
++export type SendIdleNotice = (
++  target: string,
++  payload: { orig_msg_id: string; state: string; finished_at?: number; detail?: string },
++  verifiedPeerPid: number | undefined,
++  verifiedRecipient: boolean,
++  verifiedPeerProcStart: string | undefined,
++) => Promise<void>
++
++export type OnSubscribed = (replyAddress: string, hasVerifiedPeerPid: boolean, isReplay: boolean) => void
++
++export interface IdleNotificationRuntimeDeps {
++  /** `Y`. */
++  sessionId: () => string
++  /** `tSe`: la política local para mensajes de entrada de este tipo. */
++  localInboundPolicy: () => 'accept' | 'refuse' | string
++  /** `dnr`: la política para el remitente de este gate. */
++  inboundPolicyFor: (gate: { fromMode: EnvelopeMode | undefined; selfSent: boolean }) => 'accept' | 'refuse' | string
++  /** `x7e`: mensajes de entrada retenidos ahora mismo. */
++  heldInboundCount: () => number
++  /** `Ws`: si el modo de permisos deja llegar el aviso a quien lo pidió. */
++  requesterGateEnabled: () => boolean
++  /** `TNn`: elementos en la cola del hilo principal. */
++  mainThreadQueueLength: () => number
++  /** `Htn`: qué declara el texto del último turno. */
++  classifyTurnStatus: (text: string) => { detail?: string } | null
++  /** `d`: registra un error no capturado en la telemetría. */
++  reportUncaughtError: (error: unknown) => void
++  /** `Mae`: por qué falló un envío. */
++  classifySendFailure: (error: unknown) => 'busy' | 'gone' | 'other'
++  /** `MV`: la razón si el error es un rechazo de envío conocido. */
++  sendRefusalReason: (error: unknown) => 'endpoint-unverifiable' | 'wrong-endpoint' | undefined
++  /** `gE`+`qe`: encola un prompt de sistema con las noticias ya formateadas. */
++  enqueueSystemPrompt: (value: string) => void
++}
++
++const DEFAULT_RUNTIME_DEPS: IdleNotificationRuntimeDeps = {
++  sessionId: () => '',
++  localInboundPolicy: () => 'accept',
++  inboundPolicyFor: () => 'accept',
++  heldInboundCount: () => 0,
++  requesterGateEnabled: () => true,
++  mainThreadQueueLength: () => 0,
++  classifyTurnStatus: () => null,
++  reportUncaughtError: () => {},
++  classifySendFailure: () => 'other',
++  sendRefusalReason: () => undefined,
++  enqueueSystemPrompt: () => {},
++}
++
++/** `F`: el estado de aviso de inactividad de esta sesión. */
++class IdleNotificationState {
++  subscribers: IdleSubscriber[] = []
++  idle = false
++  idleSince = 0
++  busyObserved = false
++  turnEnded = false
++  turnConversationId: string | undefined = undefined
++  parkedHoldBack = false
++  exited = false
++  inflight = new Set<Promise<void>>()
++  inflightBatch: IdleSubscriber[] = []
++  unavailableRetries = new Map<string, ReturnType<typeof setTimeout>>()
++  debounce: ReturnType<typeof setTimeout> | null = null
++  getLastTurnText: (() => string) | null = null
++  sendNotice: SendIdleNotice | null = null
++  onSubscribed: OnSubscribed | null = null
++  pendingAnnounces: [string, boolean][] = []
++  pendingAnnounceOverflow = 0
++  onReplayDone: ((overflow: number) => void) | null = null
++  registeredInboxOfPid: ((pids: number[]) => Promise<Map<number, string>>) | null = null
++  outstanding: OutstandingIdleRequest[] = []
++  onNotice: ((notice: AdmittedIdleNotice) => void) | null = null
++  pendingNotices: { admitted: PendingIdleNotice; conversationId: string }[] = []
++  pendingNoticeOverflow = 0
++  hostStatusUnsubscribe: (() => void) | null = null
++  runtime: IdleNotificationRuntimeDeps = { ...DEFAULT_RUNTIME_DEPS }
++
++  reset(): void {
++    this.hostStatusUnsubscribe?.()
++    this.hostStatusUnsubscribe = null
++    this.subscribers.length = 0
++    this.pendingAnnounces.length = 0
++    this.pendingAnnounceOverflow = 0
++    this.pendingNotices.length = 0
++    this.pendingNoticeOverflow = 0
++    this.onReplayDone = null
++    this.idle = false
++    this.idleSince = 0
++    this.busyObserved = false
++    this.turnEnded = false
++    this.turnConversationId = undefined
++    this.parkedHoldBack = false
++    this.exited = false
++    this.inflight.clear()
++    this.inflightBatch = []
++    for (const timer of this.unavailableRetries.values()) clearTimeout(timer)
++    this.unavailableRetries.clear()
++    if (this.debounce) clearTimeout(this.debounce)
++    this.debounce = null
++    this.getLastTurnText = null
++    this.sendNotice = null
++    this.onSubscribed = null
++    this.registeredInboxOfPid = null
++    for (const entry of this.outstanding) clearTimeout(entry.expiry)
++    this.outstanding.length = 0
++    this.onNotice = null
++    this.runtime = { ...DEFAULT_RUNTIME_DEPS }
++  }
++}
++
++const registry = new PerHost<IdleNotificationState>(() => new IdleNotificationState())
++
++/** `l`: el estado de este anfitrión (por omisión, el de este proceso). */
++function idleState(host: object = processHost): IdleNotificationState {
++  return registry.of(host)
++}
++
++/** Vacía el estado del anfitrión, para aislar pruebas. */
++export function resetIdleNotificationState(host: object = processHost): void {
++  idleState(host).reset()
++}
++
++/** Reemplaza, parcial o totalmente, las dependencias fuera de este alcance (`tSe`, `dnr`, `x7e`, `Ws`, `TNn`, `Htn`, `d`, `Mae`, `MV`, `gE`+`qe`, `Y`). */
++export function setIdleNotificationRuntimeDeps(deps: Partial<IdleNotificationRuntimeDeps>, host: object = processHost): void {
++  const state = idleState(host)
++  state.runtime = { ...state.runtime, ...deps }
++}
++
++/** `B`: cuántos elementos de `items` cumplen `predicate`; primitiva pura, no de este alcance. */
++function countMatching<T>(items: readonly T[], predicate: (item: T) => boolean): number {
++  let count = 0
++  for (const item of items) if (predicate(item)) count++
++  return count
++}
++
++/** `mpt`: un `finished_at` que es un número finito, no negativo y dentro de una cota razonable; primitiva pura, no de este alcance. */
++function isPlausibleTimestamp(value: unknown): value is number {
++  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 4000000000000000
++}
++
++function verifiedRecipient(verifiedPeerPid: number | undefined, authenticated: boolean): boolean {
++  return verifiedPeerPid !== undefined || authenticated
++}
++
++export type NotifyWhenIdleFrame = {
++  action: 'notify_when_idle'
++  from: string
++  msg_id: string
++  from_mode?: unknown
++}
++
++/** `qtr`: valida a mano el marco `notify_when_idle` (era un esquema zod perezoso). */
++export function parseNotifyWhenIdleFrame(value: unknown): NotifyWhenIdleFrame | undefined {
++  if (typeof value !== 'object' || value === null) return undefined
++  const record = value as Record<string, unknown>
++  if (record.action !== 'notify_when_idle') return undefined
++  if (typeof record.from !== 'string') return undefined
++  if (typeof record.msg_id !== 'string') return undefined
++  return { action: 'notify_when_idle', from: record.from, msg_id: record.msg_id, ...(record.from_mode !== undefined && { from_mode: record.from_mode }) }
++}
++
++export type PeerIdleNoticeFrame = {
++  action: 'peer_idle_notice'
++  orig_msg_id: string
++  state: string
++  finished_at?: unknown
++  detail?: unknown
++  from?: unknown
++  from_mode?: unknown
++}
++
++/** `Ktr`: valida a mano el marco `peer_idle_notice` (era un esquema zod perezoso). */
++export function parsePeerIdleNoticeFrame(value: unknown): PeerIdleNoticeFrame | undefined {
++  if (typeof value !== 'object' || value === null) return undefined
++  const record = value as Record<string, unknown>
++  if (record.action !== 'peer_idle_notice') return undefined
++  if (typeof record.orig_msg_id !== 'string') return undefined
++  if (typeof record.state !== 'string') return undefined
++  return {
++    action: 'peer_idle_notice',
++    orig_msg_id: record.orig_msg_id,
++    state: record.state,
++    ...(record.finished_at !== undefined && { finished_at: record.finished_at }),
++    ...(record.detail !== undefined && { detail: record.detail }),
++    ...(record.from !== undefined && { from: record.from }),
++    ...(record.from_mode !== undefined && { from_mode: record.from_mode }),
++  }
++}
++
++/** `O`: descarta las suscripciones que llevan más de `SUBSCRIPTION_TTL_MS` sin disparar. */
++function pruneExpiredSubscriptions(now: number, host: object = processHost): void {
++  const subscribers = idleState(host).subscribers
++  for (let index = subscribers.length - 1; index >= 0; index--) {
++    if (now - subscribers[index]!.requestedAt > SUBSCRIPTION_TTL_MS) {
++      reportFeatureSad('cross_session_notify_idle', 'expired_unfired')
++      subscribers.splice(index, 1)
++    }
++  }
++}
++
++/** `N`: la tabla de suscripciones está llena. */
++function subscriptionTableFull(): 'full' {
++  reportFeatureSad('cross_session_notify_idle', 'table_full')
++  return 'full'
++}
++
++/** `M`: desaloja una suscripción de su misma clase para hacer sitio a la nueva. */
++function evictSameClassSubscriber(subscribers: IdleSubscriber[], index: number): void {
++  const [evicted] = subscribers.splice(index, 1)
++  if (evicted === undefined) return
++  reportFeatureSad('cross_session_notify_idle', 'evicted_same_class')
++  sendUnavailableNotice(evicted.replyTarget, evicted.origMsgId, evicted.verifiedPeerPid, evicted.authenticated, evicted.verifiedPeerProcStart)
++}
++
++/** `U`: anuncia una suscripción nueva al host, o la deja en espera de que monte un manejador. */
++function announceSubscription(replyAddress: string, hasVerifiedPeerPid: boolean, isReplay = false, host: object = processHost): void {
++  const state = idleState(host)
++  if (state.onSubscribed === null) {
++    if (state.pendingAnnounces.length < SUBSCRIPTION_TABLE_LIMIT) state.pendingAnnounces.push([replyAddress, hasVerifiedPeerPid])
++    else state.pendingAnnounceOverflow++
++    return
++  }
++  try {
++    state.onSubscribed(replyAddress, hasVerifiedPeerPid, isReplay)
++  } catch (error) {
++    state.runtime.reportUncaughtError(error)
++  }
++}
++
++/** `Ytr`: registra o refresca una suscripción de aviso de inactividad. */
++export function subscribeToIdleNotice(
++  replyAddress: string,
++  replyTarget: string,
++  origMsgId: string,
++  verifiedPeerPid: number | undefined,
++  verifiedPeerProcStart: string | undefined,
++  authenticated: boolean,
++  fromMode: EnvelopeMode | undefined,
++  selfSent: boolean,
++  host: object = processHost,
++): SubscribeOutcome {
++  if (!isMessageId(origMsgId)) {
++    reportFeatureSad('cross_session_notify_idle', 'invalid_frame')
++    return 'invalid'
++  }
++  const targetKey = canonicalSocketAddress(replyTarget)
++  if (targetKey === undefined) {
++    reportFeatureSad('cross_session_notify_idle', 'invalid_frame')
++    return 'invalid'
++  }
++  const state = idleState(host)
++  if (state.runtime.localInboundPolicy() === 'refuse') {
++    reportFeatureSad('cross_session_notify_idle', 'refused_by_policy')
++    return 'refused'
++  }
++  if (state.exited) {
++    reportFeatureSad('cross_session_notify_idle', 'subscription_after_exit')
++    return 'full'
++  }
++  pruneExpiredSubscriptions(Date.now(), host)
++  const subscribers = state.subscribers
++  const matchesSamePeer = (candidate: IdleSubscriber) => verifiedPeerPid !== undefined && candidate.targetKey === targetKey && candidate.verifiedPeerPid === verifiedPeerPid
++  const existingIndex = subscribers.findIndex(matchesSamePeer)
++  const alreadyInflight = existingIndex !== -1 || state.inflightBatch.some(matchesSamePeer)
++  const atCapacity = () => subscribers.length >= SUBSCRIPTION_TABLE_LIMIT
++  if (existingIndex !== -1) {
++    subscribers.splice(existingIndex, 1)
++  } else if (verifiedPeerPid !== undefined) {
++    if (countMatching(subscribers, candidate => candidate.verifiedPeerPid === verifiedPeerPid) >= SAME_PID_SUBSCRIBER_LIMIT) {
++      const index = subscribers.findIndex(candidate => candidate.verifiedPeerPid === verifiedPeerPid)
++      if (index === -1) return subscriptionTableFull()
++      evictSameClassSubscriber(subscribers, index)
++    } else if (atCapacity()) return subscriptionTableFull()
++  } else if (!authenticated) {
++    const isUnauthenticatedNoPid = (candidate: IdleSubscriber) => candidate.verifiedPeerPid === undefined && !candidate.authenticated
++    if (countMatching(subscribers, isUnauthenticatedNoPid) >= UNAUTHENTICATED_SUBSCRIBER_LIMIT) {
++      const index = subscribers.findIndex(isUnauthenticatedNoPid)
++      if (index === -1) return subscriptionTableFull()
++      evictSameClassSubscriber(subscribers, index)
++    } else if (atCapacity()) return subscriptionTableFull()
++  } else if (
++    countMatching(subscribers, candidate => candidate.verifiedPeerPid === undefined && candidate.authenticated && candidate.targetKey === targetKey) >= SAME_TARGET_AUTHENTICATED_LIMIT ||
++    atCapacity()
++  ) {
++    return subscriptionTableFull()
++  }
++  subscribers.push({ targetKey, replyTarget, replyAddress, verifiedPeerPid, verifiedPeerProcStart, authenticated, fromMode, selfSent, origMsgId, requestedAt: Date.now() })
++  logForDebugging(
++    `[peer-idle] subscription ${existingIndex === -1 ? 'recorded' : 'refreshed'} for ${withholdTokenText(replyAddress)} (${verifiedPeerPid === undefined ? 'no peer pid' : `pid ${verifiedPeerPid}`}${authenticated ? ', authenticated' : ''}; ${subscribers.length} live)`,
++  )
++  if (!alreadyInflight) announceSubscription(replyAddress, verifiedPeerPid !== undefined, false, host)
++  if (state.idle) scheduleFlush(FLUSH_DEBOUNCE_MS, host)
++  return existingIndex === -1 ? 'recorded' : 'refreshed'
++}
++
++/** `qEn`: el host declara si está inactivo; `sawTurnStart` marca que la ocupación vista era un turno nuevo. */
++export function reportIdleTransition(isIdle: boolean, sawTurnStart: boolean, host: object = processHost): void {
++  const state = idleState(host)
++  if (!isIdle && sawTurnStart) {
++    state.busyObserved = true
++    state.parkedHoldBack = false
++  }
++  if (isIdle === state.idle) return
++  state.idle = isIdle
++  if (isIdle) {
++    if (state.busyObserved) {
++      state.turnEnded = true
++      state.idleSince = Date.now()
++      state.turnConversationId = state.runtime.sessionId()
++      state.busyObserved = false
++    } else if (!state.turnEnded) {
++      state.idleSince = Date.now()
++    }
++    state.parkedHoldBack = state.runtime.heldInboundCount() > 0
++    if (state.subscribers.length > 0) scheduleFlush(FLUSH_DEBOUNCE_MS, host)
++    return
++  }
++  if (state.debounce) {
++    clearTimeout(state.debounce)
++    state.debounce = null
++  }
++}
++
++/** `P`: programa un disparo con debounce, si no hay uno ya pendiente. */
++function scheduleFlush(delay: number = FLUSH_DEBOUNCE_MS, host: object = processHost): void {
++  const state = idleState(host)
++  if (state.debounce) return
++  state.debounce = setTimeout(() => runScheduledFlush(host), delay)
++  state.debounce.unref?.()
++}
++
++/** `Z`: el disparo con debounce, que reintenta si el hilo principal o la entrada retenida no lo dejan. */
++function runScheduledFlush(host: object = processHost): void {
++  const state = idleState(host)
++  state.debounce = null
++  if (!state.idle) return
++  pruneExpiredSubscriptions(Date.now(), host)
++  if (state.subscribers.length === 0) return
++  if (state.runtime.mainThreadQueueLength() > 0) {
++    scheduleFlush(FLUSH_DEBOUNCE_MS, host)
++    return
++  }
++  if (state.runtime.heldInboundCount() > 0) {
++    state.parkedHoldBack = true
++    scheduleFlush(PARKED_RETRY_MS, host)
++    return
++  }
++  state.parkedHoldBack = false
++  const flushing = flushIdleNotices('idle', host).finally(() => {
++    state.inflight.delete(flushing)
++  })
++  state.inflight.add(flushing)
++}
++
++/** `ee`: el detalle de una línea del último turno, si el host lo ofrece. */
++function lastTurnDetail(host: object = processHost): string | undefined {
++  const state = idleState(host)
++  let text = ''
++  try {
++    text = state.getLastTurnText?.() ?? ''
++  } catch (error) {
++    logForDebugging(`[peer-idle] last-turn text unavailable: ${redactLogFragment(String(error))}`)
++  }
++  if (text.trim().length === 0) return undefined
++  let line: string | undefined
++  try {
++    line = state.runtime.classifyTurnStatus(text)?.detail
++  } catch {
++    line = undefined
++  }
++  line ??= text.split('\n').find(candidate => candidate.trim().length > 0)
++  return line === undefined ? undefined : sanitizeIdleLabel(line)
++}
++
++/** `E`: un texto ajeno, listo como etiqueta de una línea de estado. */
++function sanitizeIdleLabel(text: string): string | undefined {
++  let flat = sliceUnits(text, DETAIL_MAX_WIDTH * 8)
++    .replace(/[\p{Cc}\p{Cf}<>«»"[\]]/gu, ' ')
++    .replace(/[\s\p{Z}]+/gu, ' ')
++  for (;;) {
++    const next = flat.replace(/cross-session idle notice/giu, ' ').replace(/ {2,}/g, ' ')
++    if (next === flat) break
++    flat = next
++  }
++  flat = flat.trim()
++  if (flat.length === 0) return undefined
++  return truncateToWidth(flat, DETAIL_MAX_WIDTH)
++}
++
++/** `dqt`: la etiqueta de una sesión, o el texto por omisión si no se pudo sanear. */
++export function fallbackSessionLabel(text: string): string {
++  return sanitizeIdleLabel(text) ?? '(unnamed session)'
++}
++
++/** `Xtr`: registra que esta sesión espera un aviso de `target`, correlacionado por `msgId`. */
++export function registerOutstandingIdleRequest(
++  msgId: string,
++  targetLabelSource: string,
++  target: string,
++  host: object = processHost,
++): { ok: true; priors: string[] } | { ok: false; reason: 'invalid-target' | 'cap' } {
++  const state = idleState(host)
++  const outstanding = state.outstanding
++  const targetKey = canonicalSocketAddress(target)
++  if (targetKey === undefined) return { ok: false, reason: 'invalid-target' }
++  const conversationId = state.runtime.sessionId()
++  for (let index = outstanding.length - 1; index >= 0; index--) {
++    const entry = outstanding[index]!
++    if (entry.conversationId !== conversationId) {
++      clearTimeout(entry.expiry)
++      outstanding.splice(index, 1)
++      reportFeatureSad('cross_session_notify_idle', 'purged_cleared_conversation')
++    }
++  }
++  const sameTarget = outstanding.filter(entry => entry.targetKey === targetKey)
++  while (sameTarget.length > OUTSTANDING_PER_TARGET_LIMIT) {
++    const [victim] = sameTarget.splice(1, 1)
++    if (!victim) break
++    clearTimeout(victim.expiry)
++    outstanding.splice(outstanding.indexOf(victim), 1)
++    reportFeatureSad('cross_session_notify_idle', 'prior_trimmed')
++  }
++  const priors = sameTarget.map(entry => entry.msgId)
++  if (outstanding.length - priors.length >= SUBSCRIPTION_TABLE_LIMIT) return { ok: false, reason: 'cap' }
++  const expiry = setTimeout(() => expireOutstandingRequest(msgId, host), SUBSCRIPTION_TTL_MS)
++  expiry.unref?.()
++  outstanding.push({ msgId, label: fallbackSessionLabel(targetLabelSource), target, targetKey, conversationId, requestedAt: Date.now(), expiry })
++  return { ok: true, priors }
++}
++
++/** `ne`: cuando una petición saliente caduca sin respuesta. */
++function expireOutstandingRequest(msgId: string, host: object = processHost): void {
++  const outstanding = idleState(host).outstanding
++  const index = outstanding.findIndex(entry => entry.msgId === msgId)
++  if (index === -1) return
++  const [entry] = outstanding.splice(index, 1)
++  if (!entry) return
++  if (outstanding.some(candidate => candidate.targetKey === entry.targetKey && candidate.requestedAt > entry.requestedAt)) return
++  for (let index2 = outstanding.length - 1; index2 >= 0; index2--) {
++    const candidate = outstanding[index2]!
++    if (candidate.targetKey === entry.targetKey) {
++      clearTimeout(candidate.expiry)
++      outstanding.splice(index2, 1)
++    }
++  }
++  admitOutstandingExpiry(entry, host)
++}
++
++/** `ie`: admite la caducidad de una petición saliente como una noticia local. */
++function admitOutstandingExpiry(entry: OutstandingIdleRequest, host: object = processHost): void {
++  const sameConversation = entry.conversationId === idleState(host).runtime.sessionId()
++  reportFeatureSad('cross_session_notify_idle', sameConversation ? 'expired_unheard' : 'purged_cleared_conversation')
++  if (sameConversation) dispatchAdmittedNotice({ kind: 'expired', label: entry.label, gate: 'local' }, host)
++}
++
++/** `ibt`: si `msgId` corresponde a una petición saliente todavía viva. */
++export function hasOutstandingIdleRequest(msgId: unknown, host: object = processHost): boolean {
++  return typeof msgId === 'string' && idleState(host).outstanding.some(entry => entry.msgId === msgId)
++}
++
++/** `uqt`: olvida una petición saliente sin admitir ninguna noticia. */
++export function forgetOutstandingIdleRequest(msgId: string, host: object = processHost): void {
++  const outstanding = idleState(host).outstanding
++  const index = outstanding.findIndex(entry => entry.msgId === msgId)
++  if (index === -1) return
++  const [entry] = outstanding.splice(index, 1)
++  if (entry) clearTimeout(entry.expiry)
++}
++
++/** `Jtr`: admite un `peer_idle_notice` ya correlacionado con una petición saliente. */
++export function admitPeerIdleNotice(
++  msgId: unknown,
++  state: unknown,
++  finishedAt: unknown,
++  detail: unknown,
++  fromMode: EnvelopeMode | undefined,
++  selfSent: boolean,
++  host: object = processHost,
++): boolean {
++  if (typeof msgId !== 'string') return false
++  const hostState = idleState(host)
++  const outstanding = hostState.outstanding
++  const index = outstanding.findIndex(entry => entry.msgId === msgId)
++  if (index === -1) return false
++  const [entry] = outstanding.splice(index, 1)
++  if (!entry) return false
++  clearTimeout(entry.expiry)
++  if (state === 'idle' || state === 'exited') {
++    for (let index2 = outstanding.length - 1; index2 >= 0; index2--) {
++      const candidate = outstanding[index2]!
++      if (candidate.targetKey === entry.targetKey) {
++        clearTimeout(candidate.expiry)
++        outstanding.splice(index2, 1)
++      }
++    }
++  }
++  const recognized = state === 'idle' || state === 'exited' || state === 'unavailable'
++  if (!recognized) reportFeatureSad('cross_session_notify_idle', 'notice_state_unrecognized')
++  const kind = recognized ? (state as 'idle' | 'exited' | 'unavailable') : 'unavailable'
++  if (!hostState.runtime.requesterGateEnabled()) {
++    reportFeatureSad('cross_session_notify_idle', 'requester_gate_off')
++    return true
++  }
++  if (entry.conversationId !== hostState.runtime.sessionId()) {
++    reportFeatureSad('cross_session_notify_idle', 'conversation_cleared')
++    return true
++  }
++  if (kind === 'unavailable' && recognized) reportFeatureSad('cross_session_notify_idle', 'peer_unavailable')
++  dispatchAdmittedNotice(
++    {
++      kind,
++      label: entry.label,
++      ...(kind !== 'unavailable' && isPlausibleTimestamp(finishedAt) && { finishedAt }),
++      ...(kind === 'idle' && typeof detail === 'string' && { detail: sanitizeIdleLabel(detail) }),
++      gate: { fromMode, selfSent },
++    } as PendingIdleNotice,
++    host,
++  )
++  return true
++}
++
++/** `te`: la política de entrada decide si la noticia se muestra, y si lleva detalle. */
++function applyInboundNoticePolicy(pending: PendingIdleNotice, host: object = processHost): AdmittedIdleNotice | null {
++  const { gate, ...rest } = pending
++  const runtime = idleState(host).runtime
++  const verdict = gate === 'local' ? runtime.localInboundPolicy() : runtime.inboundPolicyFor(gate)
++  if (verdict === 'refuse') return null
++  const modelVisible = gate === 'local' || verdict === 'accept'
++  return { ...rest, modelVisible } as AdmittedIdleNotice
++}
++
++/** `C`: entrega una noticia admitida al manejador montado, o la deja en el buzón de espera. */
++function dispatchAdmittedNotice(notice: PendingIdleNotice, host: object = processHost): void {
++  const state = idleState(host)
++  if (state.onNotice === null) {
++    if (state.pendingNotices.length < SUBSCRIPTION_TABLE_LIMIT) state.pendingNotices.push({ admitted: notice, conversationId: state.runtime.sessionId() })
++    else state.pendingNoticeOverflow++
++    logForDebugging(`[peer-idle] notice for "${withholdTokenText(notice.label)}" (${notice.kind}) buffered until a host handler mounts`)
++    return
++  }
++  const admitted = applyInboundNoticePolicy(notice, host)
++  if (admitted === null) {
++    reportFeatureSad('cross_session_notify_idle', 'requester_refuses_inbound')
++    return
++  }
++  if (admitted.kind === 'idle' || admitted.kind === 'exited') reportFeatureOk('cross_session_notify_idle')
++  try {
++    state.onNotice(admitted)
++  } catch (error) {
++    state.runtime.reportUncaughtError(error)
++  }
++}
++
++/** `YEn`: monta (o desmonta) el manejador de noticias admitidas, drenando lo que quedó en espera. */
++export function setOnNotice(handler: ((notice: AdmittedIdleNotice) => void) | null, host: object = processHost): void {
++  const state = idleState(host)
++  state.onNotice = handler
++  if (handler === null) return
++  const buffered = state.pendingNotices.splice(0)
++  const overflow = state.pendingNoticeOverflow
++  state.pendingNoticeOverflow = 0
++  const conversationId = state.runtime.sessionId()
++  for (const { admitted, conversationId: bufferedConversationId } of buffered) {
++    if (bufferedConversationId !== conversationId) {
++      reportFeatureSad('cross_session_notify_idle', 'purged_cleared_conversation')
++      continue
++    }
++    dispatchAdmittedNotice(admitted, host)
++  }
++  if (overflow > 0) {
++    logForDebugging(`[peer-idle] ${overflow} notice(s) arrived past the pre-mount buffer and were lost`)
++    reportFeatureSad('cross_session_notify_idle', 'notice_premount_overflow')
++  }
++}
++
++/** `XEn`: fija de dónde sale el texto del último turno. */
++export function setGetLastTurnText(getLastTurnText: (() => string) | null, host: object = processHost): void {
++  idleState(host).getLastTurnText = getLastTurnText
++}
++
++/** `JEn`: fija cómo se envía un aviso; montarlo de nuevo limpia el estado de "salió". */
++export function setSendNotice(sendNotice: SendIdleNotice | null, host: object = processHost): void {
++  const state = idleState(host)
++  if (sendNotice !== null) state.exited = false
++  state.sendNotice = sendNotice
++}
++
++/** `QEn`: monta el manejador de suscripciones nuevas y, opcionalmente, el de fin de reproducción. */
++export function setOnSubscribed(onSubscribed: OnSubscribed | null, onReplayDone: ((overflow: number) => void) | null = null, host: object = processHost): void {
++  const state = idleState(host)
++  state.onSubscribed = onSubscribed
++  state.onReplayDone = onReplayDone
++  if (onSubscribed !== null) {
++    const buffered = state.pendingAnnounces.splice(0)
++    for (const [address, hasVerifiedPeerPid] of buffered) announceSubscription(address, hasVerifiedPeerPid, true, host)
++    const overflow = state.pendingAnnounceOverflow
++    state.pendingAnnounceOverflow = 0
++    try {
++      state.onReplayDone?.(overflow)
++    } catch (error) {
++      state.runtime.reportUncaughtError(error)
++    }
++  }
++}
++
++/** `ZEn`: fija cómo se resuelve la dirección registrada de un pid. */
++export function setRegisteredInboxOfPid(registeredInboxOfPid: ((pids: number[]) => Promise<Map<number, string>>) | null, host: object = processHost): void {
++  idleState(host).registeredInboxOfPid = registeredInboxOfPid
++}
++
++/** `Qtr`: el texto que anuncia que un proceso pidió que se le avise. */
++export function subscriptionAnnouncementText(replyAddress: string, hasVerifiedPeerPid: boolean): string {
++  return `A process claiming the address ${replyAddress}${hasVerifiedPeerPid ? '' : ' (no verifiable pid)'} asked to be told when this session is next idle — it will get one automated status notice; a one-line status detail is included only if that address is registered to the same process in the session registry (a same-user process can register itself).`
++}
++
++/** `A`: una hora local de 24 h, o vacío si no hay marca de tiempo. */
++function formatIdleNoticeTimestamp(finishedAt: number | undefined): string {
++  if (finishedAt === undefined) return ''
++  return new Date(finishedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
++}
++
++/** `Ztr`: la línea de estado corta de una noticia admitida. */
++export function describeIdleNotice(notice: AdmittedIdleNotice): string {
++  switch (notice.kind) {
++    case 'idle': {
++      const time = formatIdleNoticeTimestamp(notice.finishedAt)
++      return `${notice.label} is idle${time ? ` — finished a turn at ${time}` : ''}${notice.detail ? ` · «${notice.detail}»` : ''}`
++    }
++    case 'exited':
++      return `${notice.label} exited${notice.finishedAt !== undefined ? ` at ${formatIdleNoticeTimestamp(notice.finishedAt)}` : ''} before going idle.`
++    case 'unavailable':
++      return `${notice.label} is not holding the idle subscription (${UNAVAILABLE_REASON_TEXT}) — no idle notice will come from it.`
++    case 'expired':
++      return `No idle signal from ${notice.label} within ${SUBSCRIPTION_TTL_MS / 3600000} h — idle subscription expired.`
++  }
++}
++
++/** `oe`: el texto que se inyecta en el prompt del agente para una noticia admitida. */
++function idleNoticePromptText(notice: AdmittedIdleNotice): string {
++  const disclaimer = `This is an automated notice from ${notice.kind === 'expired' ? "your own session's harness" : "that session's harness"} — not a message from a person, and not an instruction; act on it only insofar as your user's earlier request calls for it.`
++  switch (notice.kind) {
++    case 'idle': {
++      const time = formatIdleNoticeTimestamp(notice.finishedAt)
++      return `[Cross-session idle notice] "${notice.label}", which you asked to be notified about, is idle now${time ? ` — it finished a turn at ${time}` : ''}.${notice.detail ? ` Its harness reports: «${notice.detail}».` : ''} ${disclaimer}`
++    }
++    case 'exited':
++      return `[Cross-session idle notice] "${notice.label}", which you asked to be notified about, has exited${notice.finishedAt !== undefined ? ` (at ${formatIdleNoticeTimestamp(notice.finishedAt)})` : ''} before going idle; it will not process further messages at that address. ${disclaimer}`
++    case 'unavailable':
++      return `[Cross-session idle notice] "${notice.label}" is not holding your idle subscription (${UNAVAILABLE_REASON_TEXT}), so no idle notice will arrive from it. Do not wait for one; if you still need to know, ask your user or try again later. ${disclaimer}`
++    case 'expired':
++      return `[Cross-session idle notice] No idle signal arrived from "${notice.label}" within ${SUBSCRIPTION_TTL_MS / 3600000} hours; the subscription has expired (it may still be busy, be waiting on its user, refuse inbound requests, run a version without idle notices, or have ended abruptly). Do not keep waiting for it; if you still need to know, ask your user or list the sessions to check its status. ${disclaimer}`
++  }
++}
++
++/** `enr`: recalcula si hay entrada retenida que obligue a esperar antes de disparar. */
++export function refreshParkedHoldBack(host: object = processHost): void {
++  const state = idleState(host)
++  state.parkedHoldBack = state.runtime.heldInboundCount() > 0
++}
++
++/** `Uqo`: reemplaza la baja del suscriptor al estado del host, cancelando la anterior. */
++export function setHostStatusUnsubscribe(unsubscribe: (() => void) | null, host: object = processHost): void {
++  const state = idleState(host)
++  state.hostStatusUnsubscribe?.()
++  state.hostStatusUnsubscribe = unsubscribe
++}
++
++/** `L`: devuelve suscriptores a la lista viva tras un intento de entrega que no cuajó. */
++function mergeSubscribersBack(returned: IdleSubscriber[], host: object = processHost): void {
++  const state = idleState(host)
++  state.inflightBatch = state.inflightBatch.filter(inflight => !returned.some(entry => entry.targetKey === inflight.targetKey && entry.origMsgId === inflight.origMsgId))
++  for (const entry of returned) {
++    const alreadyLive = state.subscribers.some(
++      candidate => candidate.targetKey === entry.targetKey && candidate.verifiedPeerPid === entry.verifiedPeerPid && (entry.verifiedPeerPid !== undefined || candidate.origMsgId === entry.origMsgId),
++    )
++    if (!alreadyLive) state.subscribers.push(entry)
++  }
++}
++
++/** `W`: por qué falló un intento de envío. */
++function classifySendOutcome(error: unknown, host: object = processHost): 'transient' | 'requester-gone' | 'failed' {
++  const runtime = idleState(host).runtime
++  const refusal = runtime.sendRefusalReason(error)
++  if (refusal === 'endpoint-unverifiable') return 'transient'
++  if (refusal === 'wrong-endpoint') return 'requester-gone'
++  switch (runtime.classifySendFailure(error)) {
++    case 'busy':
++      return 'transient'
++    case 'gone':
++      return 'requester-gone'
++    default:
++      return 'failed'
++  }
++}
++
++/** `J`: entrega el lote de suscriptores que el disparo se llevó. */
++async function deliverIdleNotices(hostState: IdleNotificationState, sendNotice: SendIdleNotice, subscribers: IdleSubscriber[], reason: 'idle' | 'exited', effective: string, host: object): Promise<void> {
++  const runtime = hostState.runtime
++  if (runtime.localInboundPolicy() === 'refuse') {
++    reportFeatureSad('cross_session_notify_idle', 'revoked_before_fire')
++    return
++  }
++  const sameTurn = hostState.turnEnded && hostState.turnConversationId === runtime.sessionId()
++  const finishedAt = effective === 'idle' ? (sameTurn ? hostState.idleSince : undefined) : Date.now()
++  const detailEligible = (subscriber: IdleSubscriber) => runtime.inboundPolicyFor({ fromMode: subscriber.fromMode, selfSent: subscriber.selfSent }) === 'accept'
++  const detail = effective === 'idle' && sameTurn && subscribers.some(subscriber => subscriber.verifiedPeerPid !== undefined && detailEligible(subscriber)) ? lastTurnDetail(host) : undefined
++  let registered = new Map<number, string>()
++  if (subscribers.some(subscriber => subscriber.verifiedPeerPid !== undefined)) {
++    try {
++      registered = (await hostState.registeredInboxOfPid?.(subscribers.flatMap(subscriber => (subscriber.verifiedPeerPid === undefined ? [] : [subscriber.verifiedPeerPid])))) ?? new Map()
++    } catch (error) {
++      logForDebugging(`[peer-idle] registry unreadable at fire time; notices carry no detail (${redactLogFragment(String(error))})`)
++    }
++  }
++  if (runtime.localInboundPolicy() === 'refuse') {
++    reportFeatureSad('cross_session_notify_idle', 'revoked_before_fire')
++    return
++  }
++  if (reason === 'idle' && (!hostState.idle || runtime.mainThreadQueueLength() > 0 || runtime.heldInboundCount() > 0)) {
++    mergeSubscribersBack(subscribers, host)
++    if (hostState.idle) {
++      const parked = runtime.heldInboundCount() > 0
++      hostState.parkedHoldBack = parked
++      scheduleFlush(parked ? PARKED_RETRY_MS : FLUSH_DEBOUNCE_MS, host)
++    }
++    return
++  }
++  const isRegisteredMatch = (subscriber: IdleSubscriber) => {
++    if (subscriber.verifiedPeerPid === undefined) return false
++    const address = registered.get(subscriber.verifiedPeerPid)
++    return address !== undefined && canonicalSocketAddress(address) === subscriber.targetKey
++  }
++  await Promise.all(
++    subscribers.map(subscriber => {
++      const matched = isRegisteredMatch(subscriber)
++      return sendNotice(
++        subscriber.replyTarget,
++        {
++          orig_msg_id: subscriber.origMsgId,
++          state: effective,
++          ...(finishedAt !== undefined && { finished_at: finishedAt }),
++          ...(detail !== undefined && matched && detailEligible(subscriber) && { detail }),
++        },
++        subscriber.verifiedPeerPid,
++        verifiedRecipient(subscriber.verifiedPeerPid, subscriber.authenticated),
++        subscriber.verifiedPeerProcStart,
++      ).then(
++        () => reportFeatureOk('cross_session_notify_idle'),
++        (error: unknown) => {
++          const outcome = classifySendOutcome(error, host)
++          if (reason === 'idle' && outcome === 'transient' && !subscriber.retried) {
++            mergeSubscribersBack([{ ...subscriber, retried: true }], host)
++            if (hostState.idle) scheduleFlush(FLUSH_DEBOUNCE_MS, host)
++            reportFeatureSad('cross_session_notify_idle', 'notice_send_retrying')
++            return
++          }
++          if (outcome === 'requester-gone') reportFeatureSad('cross_session_notify_idle', 'requester_gone')
++          else if (outcome === 'transient') reportFeatureSad('cross_session_notify_idle', subscriber.retried ? 'notice_retry_exhausted' : 'notice_transient_at_exit')
++          else reportFeatureBad('cross_session_notify_idle', 'notice_send_failed')
++          logForDebugging(`[peer-idle] notice to ${withholdTokenText(subscriber.replyAddress)} failed: ${redactLogFragment(String(error))}`)
++        },
++      )
++    }),
++  )
++}
++
++/** `KEn`: dispara el aviso a todos los suscriptores vivos, por quedar inactiva o por salir. */
++export async function flushIdleNotices(reason: 'idle' | 'exited', host: object = processHost): Promise<void> {
++  const state = idleState(host)
++  if (reason === 'exited') {
++    state.exited = true
++    if (state.inflight.size > 0) await Promise.all([...state.inflight].map(pending => pending.catch(() => {})))
++  }
++  const effective = reason === 'exited' && state.idle && state.runtime.mainThreadQueueLength() === 0 && !state.parkedHoldBack && state.runtime.heldInboundCount() === 0 ? 'idle' : reason
++  pruneExpiredSubscriptions(Date.now(), host)
++  if (state.subscribers.length === 0 || state.sendNotice === null) return
++  const sendNotice = state.sendNotice
++  const batch = state.subscribers.splice(0, state.subscribers.length)
++  state.inflightBatch = state.inflightBatch.concat(batch)
++  try {
++    await deliverIdleNotices(state, sendNotice, batch, reason, effective, host)
++  } catch (error) {
++    state.runtime.reportUncaughtError(error)
++    reportFeatureBad('cross_session_notify_idle', 'flush_internal_error')
++  } finally {
++    state.inflightBatch = state.inflightBatch.filter(subscriber => !batch.includes(subscriber))
++  }
++}
++
++/** `se`: reintenta un aviso "unavailable" que falló de forma transitoria. */
++function retryUnavailableNotice(target: string, msgId: string, verifiedPeerPid: number | undefined, authenticated: boolean, verifiedPeerProcStart: string | undefined, host: object = processHost): void {
++  idleState(host).unavailableRetries.delete(msgId)
++  sendUnavailableNotice(target, msgId, verifiedPeerPid, authenticated, verifiedPeerProcStart, true, host)
++}
++
++/** `pqt`: avisa a un suscriptor desalojado o rechazado que no va a recibir nada. */
++export function sendUnavailableNotice(
++  target: string,
++  msgId: string,
++  verifiedPeerPid: number | undefined,
++  authenticated: boolean,
++  verifiedPeerProcStart: string | undefined,
++  isRetry = false,
++  host: object = processHost,
++): void {
++  const state = idleState(host)
++  const sendNotice = state.sendNotice
++  if (sendNotice === null || state.runtime.localInboundPolicy() === 'refuse') return
++  sendNotice(target, { orig_msg_id: msgId, state: 'unavailable' }, verifiedPeerPid, verifiedRecipient(verifiedPeerPid, authenticated), verifiedPeerProcStart).then(
++    () => {},
++    (error: unknown) => {
++      const outcome = classifySendOutcome(error, host)
++      if (outcome === 'transient' && !isRetry) {
++        const timer = setTimeout(() => retryUnavailableNotice(target, msgId, verifiedPeerPid, authenticated, verifiedPeerProcStart, host), UNAVAILABLE_RETRY_MS)
++        timer.unref?.()
++        const prior = state.unavailableRetries.get(msgId)
++        if (prior !== undefined) clearTimeout(prior)
++        state.unavailableRetries.set(msgId, timer)
++        reportFeatureSad('cross_session_notify_idle', 'unavailable_send_retrying')
++        return
++      }
++      if (outcome === 'requester-gone') reportFeatureSad('cross_session_notify_idle', 'requester_gone')
++      else if (outcome === 'transient') reportFeatureSad('cross_session_notify_idle', 'unavailable_retry_exhausted')
++      else reportFeatureBad('cross_session_notify_idle', 'unavailable_send_failed')
++      logForDebugging(`[peer-idle] unavailable notice to ${withholdTokenText(target)} failed: ${redactLogFragment(String(error))}`)
++    },
++  )
++}
++
++/** `tnr`: encola en el prompt del agente el texto de cada noticia admitida. */
++export function injectAdmittedNoticesPrompt(notices: readonly AdmittedIdleNotice[], host: object = processHost): void {
++  if (notices.length === 0) return
++  idleState(host).runtime.enqueueSystemPrompt(notices.map(idleNoticePromptText).join('\n'))
++}
++
++/** `aEn`: como `replyableTarget` (`inboxDelivery.ts`), con el pid del par opcional. */
++function respondableAddress(from: string, ownSocket: string, verifiedPeerPid: number | undefined, ownerUids: readonly number[] | undefined): string | undefined {
++  if (!from.startsWith('uds:') || !isPeerAddress(from)) return undefined
++  const { target } = parseAddress(from)
++  return target && isReplyableSocket(target, ownSocket, { verifiedPeerPid, ownerUids }) ? target : undefined
++}
++
++export interface IdleNotificationDeps {
++  /** El estado del buzón: de aquí sale `c().activeSocketPath` y `peerDirOwnerUids`. */
++  state: InboxState
++  /** `ce`: si el mensaje lo envió esta misma sesión (`isSelfSent`, `PeerDeliveryDeps`). */
++  isSelfSent: (peer: PeerIdentity) => Promise<boolean>
++  /** El anfitrión del estado de aviso de inactividad; por omisión, el de este proceso. */
++  host?: object
++}
++
++/** Los dos ramales de `be` que disparan el aviso de inactividad entre sesiones. */
++export function idleNotificationControlActions(deps: IdleNotificationDeps): { notify_when_idle: ControlActionHandler; peer_idle_notice: ControlActionHandler } {
++  const host = deps.host ?? processHost
++
++  const notifyWhenIdle: ControlActionHandler = async (message: Frame, peer: PeerIdentity) => {
++    const frame = parseNotifyWhenIdleFrame(message)
++    if (frame === undefined) {
++      logForDebugging('[uds-messaging] notify_when_idle dropped: malformed frame')
++      reportFeatureSad('cross_session_notify_idle', 'malformed_frame')
++      return
++    }
++    const ownSocket = deps.state.activeSocketPath
++    if (ownSocket === undefined) {
++      logForDebugging('[uds-messaging] notify_when_idle dropped: own inbox not bound (shutting down)')
++      reportFeatureSad('cross_session_notify_idle', 'own_inbox_unbound')
++      return
++    }
++    const replyTarget = respondableAddress(frame.from, ownSocket, peer.pid, deps.state.peerDirOwnerUids)
++    if (replyTarget === undefined) {
++      logForDebugging(`[uds-messaging] notify_when_idle dropped: reply address unshaped or outside our socket namespace (${withholdTokenText(frame.from)})`)
++      reportFeatureSad('cross_session_notify_idle', 'unvettable_reply_target')
++      return
++    }
++    if (canonicalSocketAddress(replyTarget) === canonicalSocketAddress(ownSocket)) {
++      logForDebugging('[uds-messaging] notify_when_idle dropped: reply target is this session (self-target)')
++      reportFeatureSad('cross_session_notify_idle', 'self_target_frame')
++      return
++    }
++    const selfSent = await deps.isSelfSent(peer)
++    const fromMode = isEnvelopeMode(frame.from_mode) ? frame.from_mode : undefined
++    const outcome = subscribeToIdleNotice(frame.from, replyTarget, frame.msg_id, peer.pid, peer.startToken, peer.origin === 'peer', fromMode, selfSent, host)
++    logForDebugging(`[uds-messaging] notify_when_idle from ${withholdTokenText(frame.from)}: ${outcome}`)
++    if (outcome === 'full') sendUnavailableNotice(replyTarget, frame.msg_id, peer.pid, peer.origin === 'peer', peer.startToken, false, host)
++  }
++
++  const peerIdleNotice: ControlActionHandler = async (message: Frame, peer: PeerIdentity) => {
++    const frame = parsePeerIdleNoticeFrame(message)
++    if (frame === undefined) {
++      logForDebugging('[uds-messaging] peer_idle_notice dropped: malformed frame')
++      reportFeatureSad('cross_session_notify_idle', 'malformed_notice')
++      return
++    }
++    if (!hasOutstandingIdleRequest(frame.orig_msg_id, host)) {
++      logForDebugging('[uds-messaging] peer_idle_notice: dropped (uncorrelated / already delivered / expired)')
++      return
++    }
++    const selfSent = await deps.isSelfSent(peer)
++    const fromMode = isEnvelopeMode(frame.from_mode) ? frame.from_mode : undefined
++    if (!admitPeerIdleNotice(frame.orig_msg_id, frame.state, frame.finished_at, frame.detail, fromMode, selfSent, host)) {
++      logForDebugging(`[uds-messaging] peer_idle_notice not admitted: subscription for orig_msg_id=${withholdTokenText(frame.orig_msg_id)} was already consumed`)
++    }
++  }
++
++  return { notify_when_idle: notifyWhenIdle, peer_idle_notice: peerIdleNotice }
++}

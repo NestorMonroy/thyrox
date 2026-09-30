@@ -1,0 +1,14 @@
+== canonicos: los tres tienen que entrar ==
+  pending        ACEPTA
+  in_progress    ACEPTA
+  completed      ACEPTA
+
+== fuera del vocabulario: cada ACEPTA es el defecto ==
+  borrador       ACEPTA
+  DONE           ACEPTA
+  (cadena vacia) ACEPTA
+  in-progress    ACEPTA
+  deleted        ACEPTA
+
+filas que quedaron en la tabla: 8
+estados: ['', 'DONE', 'borrador', 'completed', 'deleted', 'in-progress', 'in_progress', 'pending']

@@ -1,0 +1,245 @@
+diff --git a/src/session/user_wiring.py b/src/session/user_wiring.py
+index 0cf35c98..2091bec6 100644
+--- a/src/session/user_wiring.py
++++ b/src/session/user_wiring.py
+@@ -121,12 +121,22 @@ def declared_wiring(root: Path | None = None,
+     #   register_session  0 — el mecanismo ya lee AGENT_STORE_CLAUDE_DIR (:713)
+     #   measure_delta     --repo <n>=<ruta> (de `reach`) y --results-dir
+     #   save_result       --log-dir
++    #
++    # TODO comando Python va por su envoltorio de `bin/`, nunca por `python3
++    # <ruta>.py` directo. H-THYROX-268: `declared_wiring` invocaba el `.py` sin
++    # `PYTHONPATH`, y bajo el entorno del cliente —que no lo declara— eso
++    # muere con `ModuleNotFoundError` (`agents`/`hooks`) en cuanto el modulo
++    # importa otro paquete del arbol. El envoltorio resuelve `THYROX_ROOT`, el
++    # interprete del proveedor y `PYTHONPATH` por si mismo
++    # (`src/session/generate_bin.py`), asi que invocarlo por su nombre corto
++    # es correcto pase lo que pase con las importaciones internas del modulo.
+     agentes = f"{base}/src/agents"
++    binroot = f"{base}/bin"
+     resultados = f"{consumer}/.claude/agent-results"
+     repos = " ".join(f"--repo {nombre}={ruta}"
+                      for nombre, ruta in sorted(reach().items()))
+-    delta = f"python3 {agentes}/measure_delta.py"
+-    registro = f"python3 {agentes}/register_session.py"
++    delta = f"bash {binroot}/measure_delta"
++    registro = f"bash {binroot}/register_session"
+     return {
+         "hooks": {
+             "SubagentStart": [{"hooks": [
+@@ -141,8 +151,11 @@ def declared_wiring(root: Path | None = None,
+             # aqui seria otra fuente de verdad del hogar.
+             "SessionStart": [{
+                 "matcher": "compact",
+-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+-                              f"{base}/src/hooks/compact_context.py "
++                # Por su envoltorio de `bin/` (H-THYROX-268): sin él, y sin el
++                # `PYTHONPATH` que este comando antes anteponia a mano, el
++                # `.py` muere por `ModuleNotFoundError` bajo el entorno del
++                # cliente, que no lo declara.
++                "hooks": [cmd(f"bash {binroot}/compact_context "
+                               + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
+                               timeout=20)],
+             }, {
+@@ -165,11 +178,14 @@ def declared_wiring(root: Path | None = None,
+             # mide; el preflight descarta en proceso lo que no le toca.
+             "PreToolUse": [{
+                 "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+-                # El PYTHONPATH va en el comando: el hook corre desde el cwd de
+-                # la sesion y sin el entorno del corredor, y sin el cuatro de
+-                # los diecisiete detectores no cargaban (su suite lo mide).
+-                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+-                              f"{base}/src/hooks/tool_use_preflight.py",
++                # El envoltorio de `bin/` resuelve el `PYTHONPATH`: el hook
++                # corre desde el cwd de la sesion y sin el entorno del
++                # corredor, y sin el cuatro de los diecisiete detectores no
++                # cargaban (su suite lo mide). Antes este comando anteponia
++                # `PYTHONPATH={base}/src` a mano; el mismo defecto que dejaba
++                # sin PYTHONPATH a `task_lifecycle`/`register_session` podia
++                # repetirse aqui por el mismo camino (H-THYROX-268).
++                "hooks": [cmd(f"bash {binroot}/tool_use_preflight",
+                               timeout=10)],
+             }],
+             "SubagentStop": [{"hooks": [
+@@ -187,11 +203,18 @@ def declared_wiring(root: Path | None = None,
+             # Sin esto, `mint_created_card` tenia CERO invocadores de
+             # produccion y la cita durable se acuñaba a mano y a posteriori,
+             # que es justo lo que TASK-DOCS-0404 existe para cerrar.
++            #
++            # Por su envoltorio de `bin/`, no por `python3 <ruta>.py`: el
++            # modulo importa `agents.agents_paths` y `task.board_sync`, y
++            # sin `PYTHONPATH` esas importaciones mueren con
++            # `ModuleNotFoundError` en cuanto el cliente lo invoca por ruta
++            # (H-THYROX-268 — 289 tarjetas y 26 subagentes reconciliados a
++            # mano en la sesion que lo destapo).
+             "TaskCreated": [{"hooks": [
+-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
++                cmd(f"bash {binroot}/task_lifecycle"),
+             ]}],
+             "TaskCompleted": [{"hooks": [
+-                cmd(f"python3 {base}/src/hooks/task_lifecycle.py"),
++                cmd(f"bash {binroot}/task_lifecycle"),
+             ]}],
+         },
+         "advisorModel": advisor or DEFAULT_ADVISOR,
+diff --git a/tests/session/test_user_wiring.py b/tests/session/test_user_wiring.py
+index faf6efa6..500f9fd2 100644
+--- a/tests/session/test_user_wiring.py
++++ b/tests/session/test_user_wiring.py
+@@ -85,9 +85,9 @@ check("el matcher cubre Bash y Agent, los dos despachos que se miden",
+       True, {"Bash", "Agent"} <= _matcher)
+ check("el matcher cubre la escritura y la lectura de archivos",
+       True, {"Write", "Edit", "Read"} <= _matcher)
+-check("el comando es el preflight del proveedor", True,
+-      any(h["command"].endswith("src/hooks/tool_use_preflight.py")
+-          for h in _pre.get("hooks", [])))
++check("el comando es el preflight del proveedor, por su envoltorio de bin/",
++      True, any(h["command"].endswith("bin/tool_use_preflight")
++                for h in _pre.get("hooks", [])))
+ 
+ # El comando cableado corre desde el cwd de la sesion y sin el PYTHONPATH del
+ # corredor. Medido 2026-09-24: asi, 4 de 17 detectores no cargaban y el
+@@ -106,8 +106,8 @@ _start = next(iter(w.declared_wiring()["hooks"].get("SessionStart", [])), {})
+ check("SessionStart se declara con el matcher de la compactación", "compact",
+       _start.get("matcher"))
+ _cmd1 = next((h["command"] for h in _start.get("hooks", [])), "true")
+-check("el comando es el hook de restauración del proveedor", True,
+-      "src/hooks/compact_context.py" in _cmd1)
++check("el comando es el hook de restauración del proveedor, por bin/", True,
++      "bin/compact_context" in _cmd1)
+ _r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=True,
+                input='{"hook_event_name":"SessionStart","source":"startup","session_id":"x"}')
+ check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",
+@@ -687,5 +687,132 @@ with _tf9.TemporaryDirectory() as _d9:
+     check("--hooks-only no toca advisorModel", False, "advisorModel" in _after9)
+     check("--hooks-only conserva permissions", {"allow": ["Bash(ls)"]}, _after9.get("permissions"))
+ 
++
++print("\n== 18. TODO comando de declared_wiring corre sin ModuleNotFoundError, "
++      "aislado del disco real (H-THYROX-268) ==")
++# MITAD ROJA medida 2026-09-29 sobre el cableado ANTES de esta correccion:
++# `declared_wiring` cableaba `python3 <base>/src/hooks/task_lifecycle.py`
++# (TaskCreated, TaskCompleted) y `python3 <base>/src/agents/register_session.py`
++# (SubagentStart/SubagentStop) sin `PYTHONPATH`. Invocados por su ruta bajo el
++# entorno del cliente —que no declara `PYTHONPATH`— mueren con
++# `ModuleNotFoundError: No module named 'agents'`/`'hooks'`, exit 1 (289
++# tarjetas y 26 subagentes reconciliados a mano en la sesion que lo destapo).
++#
++# El defecto no era de esos dos comandos en particular: era que CUALQUIER
++# comando de `declared_wiring` que invoque un `.py` sin pasar por su
++# envoltorio de `bin/` puede repetirlo apenas ese modulo importe otro paquete
++# del arbol. Por eso esta seccion mide la PROPIEDAD GENERAL —recorre TODOS
++# los comandos que el cableado declara, por evento, sin lista escrita a mano
++# de nombres de hook— y no sólo los dos que fallaban hoy.
++#
++# AISLAMIENTO OBLIGATORIO: nada de lo que sigue escribe en el store real
++# (`<thyrox>/agent-results/`), en `~/.claude`, ni en un repo real. El sandbox
++# declara su propio HOME y las variables de destino que los mecanismos ya
++# leen (`AGENT_STORE_CLAUDE_DIR`, `THYROX_AGENT_STORE`, `THYROX_JOBS_DIR`,
++# `THYROX_SESSION_LEDGER_DIR`, `THYROX_POOL_WORKTREES_DIR`), y el unico
++# comando que actua sobre un REPO (`item_worktree sweep-orphans <repo>`)
++# recibe un repo git TEMPORAL por sustitucion textual, nunca uno real —
++# ninguno de los comandos medidos queda sin aislar.
++import re as _re18
++import subprocess as _sp18
++import tempfile as _tf18
++
++_sandbox18 = Path(_tf18.mkdtemp())
++_home18 = _sandbox18 / "home"
++_home18.mkdir()
++_consumer18 = _sandbox18 / "consumer"
++_agent_results18 = _sandbox18 / "agent-results"
++_store18 = _sandbox18 / "store" / "agent_store.sqlite3"
++_jobs18 = _sandbox18 / "jobs"
++_ledger18 = _sandbox18 / "ledger"
++_pool_worktrees18 = _sandbox18 / "pool-worktrees"
++_pool_worktrees18.mkdir()
++_sweep_repo18 = _sandbox18 / "sweep-repo"
++_sweep_repo18.mkdir()
++_sp18.run(["git", "init", "-q", str(_sweep_repo18)], check=True)
++
++# El entorno de ejecucion: SOLO `PATH` y un `HOME` temporal, sin `PYTHONPATH`
++# — el `env -i` que reproduce el entorno del cliente, que no declara ninguna
++# de las dos cosas que este arbol da por sentadas cuando corre desde `bin/`.
++_env18 = {
++    "PATH": _os0.environ.get("PATH", ""),
++    "HOME": str(_home18),
++    "AGENT_STORE_CLAUDE_DIR": str(_agent_results18),
++    "THYROX_AGENT_STORE": str(_store18),
++    "THYROX_JOBS_DIR": str(_jobs18),
++    "THYROX_SESSION_LEDGER_DIR": str(_ledger18),
++    "THYROX_POOL_WORKTREES_DIR": str(_pool_worktrees18),
++}
++
++_SWEEP18 = _re18.compile(r"(sweep-orphans )(\S+)")
++
++
++def _probe_wiring_commands18(declared: dict) -> list[dict]:
++    """Corre CADA comando de `declared` en el sandbox y mide su stderr.
++
++    Generico por diseño: recorre `declared["hooks"]` por evento, sin nombrar
++    ningun comando — el control de anulacion de mas abajo es lo que prueba
++    que discrimina el comando roto de los sanos, y no que este bucle este
++    mirando algo en particular.
++    """
++    medidos = []
++    for evento, grupos in declared["hooks"].items():
++        for grupo in grupos:
++            for entrada in grupo.get("hooks", []):
++                comando = entrada["command"]
++                # El unico comando que actua sobre un REPO: se le sustituye
++                # el repo real por uno temporal, nunca al reves.
++                comando_aislado = _SWEEP18.sub(rf"\1{_sweep_repo18}", comando)
++                r = _sp18.run(comando_aislado, shell=True, cwd=str(_sandbox18),
++                             env=_env18, input="{}", capture_output=True,
++                             text=True, timeout=60)
++                medidos.append({"event": evento, "command": comando,
++                                "returncode": r.returncode,
++                                "stdout": r.stdout, "stderr": r.stderr})
++    return medidos
++
++
++_declared18 = w.declared_wiring(root=HERE, consumer=_consumer18)
++_medidos18 = _probe_wiring_commands18(_declared18)
++
++check("18.1 midio los mismos comandos que declara el cableado",
++      sum(len(g["hooks"]) for gs in _declared18["hooks"].values() for g in gs),
++      len(_medidos18))
++
++_con_import_error18 = [
++    f"{m['event']}: {m['command']}" for m in _medidos18
++    if "ModuleNotFoundError" in m["stderr"] or "ImportError" in m["stderr"]]
++check("18.2 ningun comando declarado falla por import sin PYTHONPATH",
++      [], _con_import_error18)
++
++print("   comandos medidos, aislados del disco real (ninguno excluido):")
++for _m18 in _medidos18:
++    print(f"     {_m18['event']:16} rc={_m18['returncode']}  {_m18['command']}")
++
++print("== 18-bis. CONTROL DE ANULACION: task_lifecycle vuelve a su .py sin bin/ ==")
++# Si `declared_wiring` volviera a cablear `task_lifecycle` por su ruta
++# directa —el defecto exacto de H-THYROX-268—, 18.2 tiene que caer, Y SOLO por
++# los DOS comandos que usan ese ejecutable (TaskCreated, TaskCompleted). Un
++# 18.2 que cayera por CUALQUIER razon no discriminaria "vio el comando roto"
++# de "algo mas se rompio".
++_ORIGINAL18 = f"bash {HERE}/bin/task_lifecycle"
++_ROTO18 = f"python3 {HERE}/src/hooks/task_lifecycle.py"
++check("18-bis.0 el comando original esta presente antes de anular",
++      True, _ORIGINAL18 in _json.dumps(_declared18))
++
++_declared18_anulado = _json.loads(
++    _json.dumps(_declared18).replace(_ORIGINAL18, _ROTO18))
++check("18-bis.1 la anulacion tocó exactamente los dos comandos de task_lifecycle",
++      2, _json.dumps(_declared18_anulado).count(_ROTO18))
++
++_medidos18_anulado = _probe_wiring_commands18(_declared18_anulado)
++_con_import_error18_anulado = sorted(
++    m["event"] for m in _medidos18_anulado
++    if "ModuleNotFoundError" in m["stderr"] or "ImportError" in m["stderr"])
++check("18-bis.2 caen exactamente TaskCreated y TaskCompleted, y nada mas",
++      ["TaskCompleted", "TaskCreated"], _con_import_error18_anulado)
++
++import shutil as _sh18  # noqa: E402
++_sh18.rmtree(_sandbox18, ignore_errors=True)
+ print(f"\n{OK} ok, {FALLOS} fallos")
+ raise SystemExit(1 if FALLOS else 0)

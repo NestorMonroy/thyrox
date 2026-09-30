@@ -1,0 +1,3 @@
+(fail) SessionAffinitySelector: LCP > sin caller_scope no hay LCP [1.31ms]
+ 99 pass
+ 1 fail

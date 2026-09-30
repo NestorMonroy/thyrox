@@ -1,0 +1,6 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/sessionTools/transcriptSearch.ts(86,15): error TS18048: 'msg.attachment.memories' is possibly 'undefined'.

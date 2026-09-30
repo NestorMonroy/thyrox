@@ -1,0 +1,157 @@
+=== autoPermissionsNotificationCount ===
+./src/packages/repl/src/screens/REPLView.tsx:1659:      const count = config.autoPermissionsNotificationCount ?? 0;
+./src/packages/repl/src/screens/REPLView.tsx:1665:            const prevCount = prev.autoPermissionsNotificationCount ?? 0;
+./src/packages/repl/src/screens/REPLView.tsx:1669:              autoPermissionsNotificationCount: prevCount + 1,
+=== computerUseApprovedApps ===
+./src/packages/app-host/src/state/AppStateCompat.ts:571:      const persisted = getGlobalConfig().computerUseApprovedApps
+./src/packages/@ant/computer-use-mcp/src/legacy/wrapper.tsx:123:        const persistedApps = getGlobalConfig().computerUseApprovedApps ?? []
+./src/packages/@ant/computer-use-mcp/src/legacy/wrapper.tsx:147:        computerUseApprovedApps: apps.map(a => ({
+=== desktopUpsellDismissed ===
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:39:  if (config.desktopUpsellDismissed) return false
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:74:          if (prev.desktopUpsellDismissed) return prev
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:75:          return { ...prev, desktopUpsellDismissed: true }
+=== desktopUpsellSeenCount ===
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:40:  if ((config.desktopUpsellSeenCount ?? 0) >= 3) return false
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:55:    const newCount = (getGlobalConfig().desktopUpsellSeenCount ?? 0) + 1
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:57:      if ((prev.desktopUpsellSeenCount ?? 0) >= newCount) return prev
+./src/packages/repl/src/components/DesktopUpsell/DesktopUpsellStartup.tsx:58:      return { ...prev, desktopUpsellSeenCount: newCount }
+=== disabledMcpServers ===
+./src/packages/mcp-runtime/src/config.ts:1521: * (opt-out via disabledMcpServers), this requires explicit opt-in via
+./src/packages/mcp-runtime/src/config.ts:1547:  const disabledServers = projectConfig.disabledMcpServers || []
+./src/packages/mcp-runtime/src/config.ts:1578:    const prev = current.disabledMcpServers || []
+./src/packages/mcp-runtime/src/config.ts:1581:    return { ...current, disabledMcpServers: next }
+=== effortCalloutDismissed ===
+./src/packages/repl/src/components/EffortCallout.tsx:129: * - Pro: already had medium default; show unless they saw v1 (effortCalloutDismissed)
+./src/packages/repl/src/components/EffortCallout.tsx:153:    if (config.effortCalloutDismissed) {
+=== effortCalloutV2Dismissed ===
+./src/packages/repl/src/components/EffortCallout.tsx:141:  if (config.effortCalloutV2Dismissed) return false
+./src/packages/repl/src/components/EffortCallout.tsx:174:    if (current.effortCalloutV2Dismissed) return current
+./src/packages/repl/src/components/EffortCallout.tsx:175:    return { ...current, effortCalloutV2Dismissed: true }
+=== enabledMcpServers ===
+./src/packages/mcp-runtime/src/config.ts:1522: * enabledMcpServers. Shows up in /mcp as disabled until the user enables it.
+./src/packages/mcp-runtime/src/config.ts:1544:    const enabledServers = projectConfig.enabledMcpServers || []
+./src/packages/mcp-runtime/src/config.ts:1572:      const prev = current.enabledMcpServers || []
+./src/packages/mcp-runtime/src/config.ts:1575:      return { ...current, enabledMcpServers: next }
+=== groveConfigCache ===
+./src/packages/provider/src/grove.ts:168:  const cachedEntry = globalConfig.groveConfigCache?.[accountId]
+./src/packages/provider/src/grove.ts:205:    const cachedEntry = getGlobalConfig().groveConfigCache?.[accountId]
+./src/packages/provider/src/grove.ts:214:      groveConfigCache: {
+./src/packages/provider/src/grove.ts:215:        ...current.groveConfigCache,
+=== hasSeenUltraplanTerms ===
+./src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:60:  const [showTermsLink] = React.useState(() => !getGlobalConfig().hasSeenUltraplanTerms);
+./src/packages/repl/src/components/ultraplan/UltraplanLaunchDialog.tsx:97:        saveGlobalConfig(prev => (prev.hasSeenUltraplanTerms ? prev : { ...prev, hasSeenUltraplanTerms: true }));
+./src/packages/repl/src/ultraplan.ts:445:  // hasSeenUltraplanTerms before the launch fails.
+=== idleReturnDismissed ===
+./src/packages/repl/src/screens/REPLView.tsx:3545:          !getGlobalConfig().idleReturnDismissed &&
+./src/packages/repl/src/screens/REPLView.tsx:4331:    if (getGlobalConfig().idleReturnDismissed) return;
+./src/packages/repl/src/screens/REPLView.tsx:5323:                          if (current.idleReturnDismissed) return current;
+./src/packages/repl/src/screens/REPLView.tsx:5324:                          return { ...current, idleReturnDismissed: true };
+=== lastFpsAverage ===
+./src/packages/provider/src/costTracker.ts:198:    lastFpsAverage: fpsMetrics?.averageFps,
+./src/packages/cli/src/setup/setup.ts:454:      last_session_fps_average: projectConfig.lastFpsAverage,
+=== lastFpsLow1Pct ===
+./src/packages/provider/src/costTracker.ts:199:    lastFpsLow1Pct: fpsMetrics?.low1PctFps,
+./src/packages/cli/src/setup/setup.ts:455:      last_session_fps_low_1_pct: projectConfig.lastFpsLow1Pct,
+=== lastSessionMetrics ===
+./src/packages/app-host/src/context/stats.tsx:147:          lastSessionMetrics: metrics,
+./src/packages/cli/src/setup/setup.ts:458:      ...projectConfig.lastSessionMetrics,
+=== lastToolDuration ===
+./src/packages/provider/src/costTracker.ts:82:    lastToolDuration?: number
+./src/packages/provider/src/costTracker.ts:165:    totalToolDuration: projectConfig.lastToolDuration ?? 0,
+./src/packages/provider/src/costTracker.ts:189:    lastToolDuration: state.getTotalToolDuration(),
+./src/packages/cli/src/setup/setup.ts:444:      last_session_tool_duration: projectConfig.lastToolDuration,
+=== officialMarketplaceAutoInstallAttempted ===
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:80:  if (!config.officialMarketplaceAutoInstallAttempted) {
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:170:        officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:191:        officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:204:        officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:238:        officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:271:        officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:303:          officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:345:      officialMarketplaceAutoInstallAttempted: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:404:        officialMarketplaceAutoInstallAttempted: true,
+=== officialMarketplaceAutoInstallFailReason ===
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:89:  const failReason = config.officialMarketplaceAutoInstallFailReason
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:153:      config.officialMarketplaceAutoInstallFailReason ?? 'already_attempted'
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:172:        officialMarketplaceAutoInstallFailReason: 'policy_blocked',
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:206:        officialMarketplaceAutoInstallFailReason: 'policy_blocked',
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:240:        officialMarketplaceAutoInstallFailReason: undefined,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:273:        officialMarketplaceAutoInstallFailReason: 'gcs_unavailable',
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:305:          officialMarketplaceAutoInstallFailReason: 'git_unavailable',
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:348:      officialMarketplaceAutoInstallFailReason: undefined,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:406:        officialMarketplaceAutoInstallFailReason: 'unknown',
+=== officialMarketplaceAutoInstallNextRetryTime ===
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:91:  const nextRetryTime = config.officialMarketplaceAutoInstallNextRetryTime
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:243:        officialMarketplaceAutoInstallNextRetryTime: undefined,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:276:        officialMarketplaceAutoInstallNextRetryTime: nextRetryTime,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:308:          officialMarketplaceAutoInstallNextRetryTime: nextRetryTime,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:351:      officialMarketplaceAutoInstallNextRetryTime: undefined,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:409:        officialMarketplaceAutoInstallNextRetryTime: nextRetryTime,
+=== officialMarketplaceAutoInstallRetryCount ===
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:90:  const retryCount = config.officialMarketplaceAutoInstallRetryCount || 0
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:241:        officialMarketplaceAutoInstallRetryCount: undefined,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:266:        (config.officialMarketplaceAutoInstallRetryCount || 0) + 1
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:274:        officialMarketplaceAutoInstallRetryCount: retryCount,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:294:        (config.officialMarketplaceAutoInstallRetryCount || 0) + 1
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:306:          officialMarketplaceAutoInstallRetryCount: retryCount,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:342:      config.officialMarketplaceAutoInstallRetryCount || 0
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:349:      officialMarketplaceAutoInstallRetryCount: undefined,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:395:      (config.officialMarketplaceAutoInstallRetryCount || 0) + 1
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:407:        officialMarketplaceAutoInstallRetryCount: retryCount,
+=== officialMarketplaceAutoInstalled ===
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:85:  if (config.officialMarketplaceAutoInstalled) {
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:171:        officialMarketplaceAutoInstalled: false,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:192:        officialMarketplaceAutoInstalled: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:205:        officialMarketplaceAutoInstalled: false,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:239:        officialMarketplaceAutoInstalled: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:272:        officialMarketplaceAutoInstalled: false,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:304:          officialMarketplaceAutoInstalled: false,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:346:      officialMarketplaceAutoInstalled: true,
+./src/packages/config/plugin/officialMarketplaceStartupCheck.ts:405:        officialMarketplaceAutoInstalled: false,
+=== opus1mMergeNoticeSeenCount ===
+./src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx:20:    const newCount = (getGlobalConfig().opus1mMergeNoticeSeenCount ?? 0) + 1
+./src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx:22:      if ((prev.opus1mMergeNoticeSeenCount ?? 0) >= newCount) return prev
+./src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx:23:      return { ...prev, opus1mMergeNoticeSeenCount: newCount }
+=== overageCreditGrantCache ===
+./src/packages/provider/src/overageCreditGrant.ts:51:  const cached = getGlobalConfig().overageCreditGrantCache?.[orgId]
+./src/packages/provider/src/overageCreditGrant.ts:64:  const cache = getGlobalConfig().overageCreditGrantCache
+./src/packages/provider/src/overageCreditGrant.ts:67:    const next = { ...prev.overageCreditGrantCache }
+./src/packages/provider/src/overageCreditGrant.ts:69:    return { ...prev, overageCreditGrantCache: next }
+./src/packages/provider/src/overageCreditGrant.ts:92:    const prevCached = prev.overageCreditGrantCache?.[orgId]
+./src/packages/provider/src/overageCreditGrant.ts:115:      overageCreditGrantCache: {
+./src/packages/provider/src/overageCreditGrant.ts:116:        ...prev.overageCreditGrantCache,
+=== speculationEnabled ===
+./src/packages/repl/src/promptSuggestionSpeculation.tsx:338:    (getGlobalConfig().speculationEnabled ?? true)
+./src/packages/repl/src/components/Settings/Config.tsx:475:            id: 'speculationEnabled',
+./src/packages/repl/src/components/Settings/Config.tsx:477:            value: globalConfig.speculationEnabled ?? true,
+./src/packages/repl/src/components/Settings/Config.tsx:481:                if (current.speculationEnabled === enabled) return current
+./src/packages/repl/src/components/Settings/Config.tsx:484:                  speculationEnabled: enabled,
+./src/packages/repl/src/components/Settings/Config.tsx:489:                speculationEnabled: enabled,
+=== tungstenPanelVisible ===
+./src/packages/app-host/src/state/AppStateCompat.ts:237:  // Sticky tmux panel visibility — mirrors globalConfig.tungstenPanelVisible for reactivity.
+./src/packages/app-host/src/state/AppStateCompat.ts:238:  tungstenPanelVisible?: boolean
+./src/packages/app-host/src/state/AppStateCompat.ts:239:  // Transient auto-hide at turn end — separate from tungstenPanelVisible so the
+./src/packages/repl/src/components/PromptInput/PromptInput.tsx:2391:                      tungstenPanelVisible: !(
+./src/packages/repl/src/components/PromptInput/PromptInput.tsx:2392:                        prev.tungstenPanelVisible ?? true
+./src/packages/repl/src/onChangeAppState.ts:131:  // tungstenPanelVisible (ant-only tmux panel sticky toggle)
+./src/packages/repl/src/onChangeAppState.ts:134:      newState.tungstenPanelVisible !== oldState.tungstenPanelVisible &&
+./src/packages/repl/src/onChangeAppState.ts:135:      newState.tungstenPanelVisible !== undefined &&
+./src/packages/repl/src/onChangeAppState.ts:136:      getGlobalConfig().tungstenPanelVisible !== newState.tungstenPanelVisible
+./src/packages/repl/src/onChangeAppState.ts:138:      const tungstenPanelVisible = newState.tungstenPanelVisible
+./src/packages/repl/src/onChangeAppState.ts:139:      saveGlobalConfig(current => ({ ...current, tungstenPanelVisible }))
+=== voiceFooterHintSeenCount ===
+./src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx:314:          (getGlobalConfig().voiceFooterHintSeenCount ?? 0) <
+./src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx:324:      const newCount = (getGlobalConfig().voiceFooterHintSeenCount ?? 0) + 1
+./src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx:326:        if ((prev.voiceFooterHintSeenCount ?? 0) >= newCount) return prev
+./src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx:327:        return { ...prev, voiceFooterHintSeenCount: newCount }
+=== voiceLangHintLastLanguage ===
+./src/packages/command-runtime/src/commands/voice/voice.ts:130:  const langChanged = cfg.voiceLangHintLastLanguage !== stt.code
+./src/packages/command-runtime/src/commands/voice/voice.ts:143:      voiceLangHintLastLanguage: stt.code,
+=== voiceLangHintShownCount ===
+./src/packages/command-runtime/src/commands/voice/voice.ts:131:  const priorCount = langChanged ? 0 : (cfg.voiceLangHintShownCount ?? 0)
+./src/packages/command-runtime/src/commands/voice/voice.ts:142:      voiceLangHintShownCount: priorCount + (showHint ? 1 : 0),
+=== voiceNoticeSeenCount ===
+./src/packages/repl/src/components/LogoV2/VoiceModeNotice.tsx:29:      (getGlobalConfig().voiceNoticeSeenCount ?? 0) < MAX_SHOW_COUNT &&
+./src/packages/repl/src/components/LogoV2/VoiceModeNotice.tsx:36:    const newCount = (getGlobalConfig().voiceNoticeSeenCount ?? 0) + 1
+./src/packages/repl/src/components/LogoV2/VoiceModeNotice.tsx:38:      if ((prev.voiceNoticeSeenCount ?? 0) >= newCount) return prev
+./src/packages/repl/src/components/LogoV2/VoiceModeNotice.tsx:39:      return { ...prev, voiceNoticeSeenCount: newCount }

@@ -1,0 +1,19 @@
+ + nvidia-cudnn-cu13==9.24.0.43
+ + nvidia-cufft==12.0.0.61
+ + nvidia-cufile==1.15.1.6
+ + nvidia-curand==10.4.0.35
+ + nvidia-cusolver==12.0.4.66
+ + nvidia-cusparse==12.6.3.3
+ + nvidia-cusparselt-cu13==0.8.1
+ + nvidia-nccl-cu13==2.30.7
+ + nvidia-nvjitlink==13.4.92
+ + nvidia-nvshmem-cu13==3.4.5
+ + nvidia-nvtx==13.0.85
+ + sympy==1.14.0
+ + torch==2.14.0
+ + triton==3.8.0
+ + typing-extensions==4.16.0
+/home/user/thyrox/.venv/lib/python3.11/site-packages/torch/_subclasses/functional_tensor.py:368: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:84.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+torch 2.14.0+cu130 cuda_disponible False
+__BG_EXIT__=0

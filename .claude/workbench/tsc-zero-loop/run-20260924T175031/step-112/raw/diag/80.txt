@@ -1,0 +1,2 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(427,24): error TS2339: Property 'meta' does not exist on type 'unknown'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(503,15): error TS2339: Property 'content' does not exist on type 'unknown'.

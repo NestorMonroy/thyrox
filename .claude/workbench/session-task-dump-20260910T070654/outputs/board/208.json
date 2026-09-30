@@ -1,0 +1,9 @@
+{
+  "id": "208",
+  "subject": "Portar los 29 módulos de storage que la fuente no testea",
+  "description": "Cerrado en thyrox@77306ec5 (14 modulos, ultima tanda) sobre b394d21a (15) y el trabajo previo. Suite del paquete: 1024 pass, 0 fail, medida EN SERIE tras la tanda.\n\nQuinto instrumento (cobertura contra el alcance declarado, el unico que puede fallar por AUSENCIA): 64 modulos en la fuente, 64 presentes en el puerto, **0 ausentes**. El «29» del titulo era el saldo de aquel dia, no el universo.\n\nMetrica: `find . -name '*.ts' -not -path './__tests__/*'` sobre las dos raices, comparado con `comm`.\nCiega a: un modulo presente que no haga lo que su nombre promete — eso lo miden los otros cuatro instrumentos (diff, grep/AST, gates en serie, git log); y a un simbolo ausente DENTRO de un modulo presente, que es el gate de porte completo.\n\nOnce archivos son propios del puerto sin contraparte en la fuente: 6 son suites en `__tests__/` anidados (la fuente los aloja en otro sitio) y 5 son la forma que el porte establecio ante un hermano ausente — `fileUtilities.ts`, `logging.ts`, `secureStorage/execHelpers.ts`, `internal/pendingCrossPackageDeps.ts`. Su veredicto es #209.\n\nPendiente de decision del ejecutor, no bloqueante: `ignore` + `picomatch` para `safePatternMatch.ts` (porte verbatim, ausencia declarada en su docstring, sin test porque nada lo importa aun).",
+  "activeForm": "Portando los módulos sin test de storage",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

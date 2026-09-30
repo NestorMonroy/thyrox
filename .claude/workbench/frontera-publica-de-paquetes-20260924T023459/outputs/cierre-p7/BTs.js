@@ -1,0 +1,1 @@
+function BTs(e){return $Ts.has(e)}

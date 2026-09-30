@@ -1,0 +1,4 @@
+        body: this.cuerpo(request, model),
+        // `ANTHROPIC_UNIX_SOCKET`: Bun acepta `unix` en `fetch`
+        ...(this.credential.unixSocket ? { unix: this.credential.unixSocket } : {}),
+      } as RequestInit)

@@ -1,0 +1,2 @@
+afirmar "el ledger se declara con su propia variable" "$LEDGER_X" \
+    "$(THYROX_JOBS_DIR="$RUNS" THYROX_JOBS_LEDGER_DIR="$LEDGER_X" bash "$GUION" ledger-home 2>/dev/null | tail -1)"

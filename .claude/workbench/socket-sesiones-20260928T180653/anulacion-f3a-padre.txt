@@ -1,0 +1,50 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAuthTokens.test.ts:
+70 | })
+71 | 
+72 | describe('canonicalSocketAddress (Iv) e inboxKeyFileName (J, Q)', () => {
+73 |   test('una ruta se resuelve; un pipe se escribe en minúsculas bajo \\\\.\\pipe\\', () => {
+74 |     expect(canonicalSocketAddress('/run/./b//1.sock')).toBe('/run/b/1.sock')
+75 |     expect(canonicalSocketAddress('/run/a/../b/1.sock')).toBeUndefined()
+                                                              ^
+error: expect(received).toBeUndefined()
+
+Received: "/run/b/1.sock"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAuthTokens.test.ts:75:58)
+(fail) canonicalSocketAddress (Iv) e inboxKeyFileName (J, Q) > una ruta se resuelve; un pipe se escribe en minúsculas bajo \\.\pipe\ [0.32ms]
+75 |     expect(canonicalSocketAddress('/run/a/../b/1.sock')).toBeUndefined()
+76 |     expect(canonicalSocketAddress('\\\\?\\pipe\\LOCAL\\Inbox')).toBe('\\\\.\\pipe\\local\\inbox')
+77 |   })
+78 | 
+79 |   test('una ruta con .. sin resolver en un segmento no tiene forma canónica', () => {
+80 |     expect(canonicalSocketAddress('rel/../x.sock')).toBeUndefined()
+                                                         ^
+error: expect(received).toBeUndefined()
+
+Received: "/home/user/thyrox/src/packages/local-observability/x.sock"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAuthTokens.test.ts:80:53)
+(fail) canonicalSocketAddress (Iv) e inboxKeyFileName (J, Q) > una ruta con .. sin resolver en un segmento no tiene forma canónica [0.05ms]
+81 |   })
+82 | 
+83 |   test('el archivo de clave lleva el pid y el sha256 de la dirección canónica', () => {
+84 |     const digest = createHash('sha256').update('/run/b/1.sock').digest('hex')
+85 |     expect(inboxKeyFileName(42, '/run/b/1.sock')).toBe(`42.${digest}.key`)
+86 |     expect(() => inboxKeyFileName(42, 'rel/../x.sock')).toThrow('non-canonical socket path')
+                                                             ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "non-canonical socket path"
+
+Received function did not throw
+Received value: "42.1a0b840d24e46b79d2ac8608dca28642dc0dc844893495d6a004d694941b2d31.key"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAuthTokens.test.ts:86:57)
+(fail) canonicalSocketAddress (Iv) e inboxKeyFileName (J, Q) > el archivo de clave lleva el pid y el sha256 de la dirección canónica [0.30ms]
+
+ 6 pass
+ 3 fail
+ 27 expect() calls
+Ran 9 tests across 1 file. [35.00ms]

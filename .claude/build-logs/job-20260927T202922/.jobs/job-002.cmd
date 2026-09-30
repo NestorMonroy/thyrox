@@ -1,0 +1,1 @@
+bash bin/annul_parallel src/session/item_worktree.sh tests/session/test-headless-pool-worktree.sh ITEM_WORKTREE_MODULE .claude/workbench/omniroute-resilience-20260927T200233/probes/annul-item-worktree.tsv > .claude/workbench/omniroute-resilience-20260927T200233/outputs/annul-item-worktree.tsv 2>&1

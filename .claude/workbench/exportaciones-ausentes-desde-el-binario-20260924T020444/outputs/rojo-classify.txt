@@ -1,0 +1,18 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/classifyAPIError.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'classifyAPIError' not found in module '/home/user/thyrox/src/packages/provider/src/errors.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [136.00ms]

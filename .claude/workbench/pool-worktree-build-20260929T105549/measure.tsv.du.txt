@@ -1,0 +1,3 @@
+6.6M	src/packages/image-processor-napi/dist
+13M	src/packages/ripgrep-napi/dist
+821M	node_modules

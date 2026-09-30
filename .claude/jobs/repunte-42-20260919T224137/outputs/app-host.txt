@@ -1,0 +1,3 @@
+app-host: emitio pese a 8000 errores (448 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 8000 error(es) que siguen vivos en su propio paquete

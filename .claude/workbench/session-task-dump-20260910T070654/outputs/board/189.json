@@ -1,0 +1,8 @@
+{
+  "id": "189",
+  "subject": "Cubrir la precedencia por bucle con retorno, que es la forma de thyrox_root",
+  "description": "check_config_precedence.py deriva la cadena por orelse y por guardas de retorno temprano. La precedencia de thyrox_root tiene tres pasos y los dos últimos son `for nivel in ...: if marcador: return nivel`, que no es guarda de primer nivel: el auditor ve uno de los tres (['from_process']). Declarado en H-DOCS-1117 y aseverado con la lista exacta, no con un > 0. Extender el recorrido a la forma de bucle.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,12 @@
+# Aísla el ledger de `wait-jobs` en un fixture. El ledger es
+# `<THYROX_JOBS_LEDGER_DIR>/<sesión>`; `THYROX_JOBS_DIR` es el hogar de las
+# CORRIDAS y ya no lo mueve. Deja la ruta resultante en `FIXTURE_LEDGER`.
+# Se llama sin `$(...)`: exporta en el shell de la suite.
+fixture_ledger() {
+    THYROX_JOBS_LEDGER_DIR="$(fixture_dir)" || return 1
+    CLAUDE_CODE_SESSION_ID=fixture
+    FIXTURE_LEDGER="$THYROX_JOBS_LEDGER_DIR/$CLAUDE_CODE_SESSION_ID"
+    export THYROX_JOBS_LEDGER_DIR CLAUDE_CODE_SESSION_ID FIXTURE_LEDGER
+}
+
+# Registra una ruta que la suite creo por otra via. Dos formas reales lo

@@ -1,0 +1,2 @@
+src/packages/agent/query.ts(801,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+src/packages/agent/query.ts(805,21): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.

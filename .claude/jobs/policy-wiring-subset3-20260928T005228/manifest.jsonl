@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages && bun test $(cat /home/user/thyrox/.claude/workbench/policy-settings-port-20260927T083804/probes/wiring-subset.txt | tr '\\n' ' ') && cd config && timeout 400 bunx tsc -p tsconfig.test.json --noEmit", "started_at": "2026-09-28T00:52:28+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-28T00:52:41+00:00", "duration_seconds": 13.753946}

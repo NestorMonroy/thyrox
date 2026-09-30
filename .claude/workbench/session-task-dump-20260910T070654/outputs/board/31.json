@@ -1,0 +1,9 @@
+{
+  "id": "31",
+  "subject": "Unificar los dos portes de `fZe` — `agent/cost/compaction.ts` y `harness/context/contextLevel.ts`",
+  "description": "`fZe` está portado dos veces: `autocompactLevel` en el paquete `agent` (para el modelo de coste) y `contextLevel` en el `harness` (para la decisión). El segundo ya distingue las dos ventanas y conoce `CLAUDE_CODE_BLOCKING_LIMIT_OVERRIDE`; el primero no. Hoy coinciden porque el modelo de coste nunca configura ventana, así que el defecto es latente, no activo. Decidir si `agent` consume el del harness o si el del harness sube a `agent` — dos ports del mismo símbolo divergen sin que ningún gate lo vea.",
+  "activeForm": "Unificando los dos portes de fZe",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

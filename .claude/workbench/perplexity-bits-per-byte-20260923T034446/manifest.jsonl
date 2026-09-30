@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿Reproducen los modulos las cantidades del brief y discriminan sus defectos?","instrument":"suites con los numeros del brief y cuatro anulaciones","metric":"valores redondeados y fracciones empiricas con semilla fija","blind_to":"modelos reales y su calibracion"}

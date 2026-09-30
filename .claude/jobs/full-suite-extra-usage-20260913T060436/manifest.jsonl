@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -lc bun test 2>&1; echo EXIT=$?", "started_at": "2026-09-13T06:04:36+00:00"}

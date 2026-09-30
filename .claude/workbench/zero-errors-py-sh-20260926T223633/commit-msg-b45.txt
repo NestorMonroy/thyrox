@@ -1,0 +1,16 @@
+Bring two Python batches to zero pyright and ruff
+
+The Python half measured 657 pyright errors and 89 ruff defect findings
+over src/ and tests/. These two disjoint batches (75 files) now report
+0 and 0, with the 54 test files among them green.
+
+Fixes narrow Optionals where a test reads a value that may be None,
+annotate heterogeneous kwargs dicts, drop dead imports and variables,
+and translate identifiers the narrowing introduced in Spanish. One real
+defect: src/corpus/ooxml.py stored an XML relationship without an Id
+under the key None instead of skipping it. Two pyright ignores remain
+in test_task_source_citas.py, each for a monkeypatch on a module loaded
+by path, with the reason next to it.
+
+The bench holds the whole zero-errors plan: baselines, the batch
+split, per-batch reports and the annulment outputs.

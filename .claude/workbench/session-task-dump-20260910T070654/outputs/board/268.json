@@ -1,0 +1,8 @@
+{
+  "id": "268",
+  "subject": "Cablear assembleSystemPrompt a la CLI: el filtro existe y el punto de entrada no lo llama",
+  "description": "A.4.2 del apéndice A pide «explicit separation between entrypoint files and body files to prevent index bloat».\n\nCORREGIDA la premisa: la versión anterior de esta tarea decía que el parser de `paths:` existe y «nadie filtra», citando `config/frontmatterParser.ts` — cuyo `splitPathInFrontmatter` en efecto no tiene consumidor vivo. La cita era correcta y la conclusión falsa: hay una SEGUNDA implementación, `agent/loop/context/systemPrompt.ts`, con `parseRule`, `matchesPath` y el filtro por `targetPath` escrito y probado (`systemPrompt.test.ts`). Medir un significante y concluir sobre el mecanismo es el sub-patrón C.\n\nEl hueco real, medido: `assembleSystemPrompt` tiene CERO consumidores fuera de su propia suite, y la CLI arma su prompt en `cli/src/entry/runLoop.ts:145` con `flag(argv,'system') ?? '<frase fija>'`. El mecanismo está construido y el punto de entrada no lo llama, así que ni el `CLAUDE.md` del proyecto ni ninguna regla llegan al modelo. Cierre: la CLI arma su prompt con `assembleSystemPrompt`, acepta `--target-path` para que el filtro condicional discrimine, y el prompt resultante se registra en el transcript (subtipo `system_prompt`) — sin ese registro no hay con qué auditar bajo qué instrucciones trabajó el agente, que es lo que A.7.5 pide del transcript como evidencia de replay.\n\nQueda fuera y sigue abierto: `@include`, declarado NO PORTADO en la cabecera de `storage/src/claudemd.ts`; y la coexistencia de las dos implementaciones del mismo filtro, que es #163.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

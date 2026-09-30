@@ -1,0 +1,92 @@
+src/packages/agent/attachments.ts(1921,9): error TS7006: Parameter 'f' implicitly has an 'any' type.
+  --- código src/packages/agent/attachments.ts:1911-1931 ---
+   1911        'tengu_paper_halyard',
+   1912        false,
+   1913      )
+   1914  
+   1915      // Fase 3: procesar directorios anidados (CWD → destino)
+   1916      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1917      for (const dir of nestedDirs) {
+   1918        const memoryFiles = (
+   1919          await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1920        ).filter(
+   1921>         f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1922        )
+   1923        attachments.push(
+   1924          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1925        )
+   1926      }
+   1927  
+   1928      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1929      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1930      for (const dir of cwdLevelDirs) {
+   1931        const conditionalRules = (
+src/packages/agent/attachments.ts(1924,12): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+  --- código src/packages/agent/attachments.ts:1914-1934 ---
+   1914  
+   1915      // Fase 3: procesar directorios anidados (CWD → destino)
+   1916      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1917      for (const dir of nestedDirs) {
+   1918        const memoryFiles = (
+   1919          await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1920        ).filter(
+   1921          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1922        )
+   1923        attachments.push(
+   1924>         ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1925        )
+   1926      }
+   1927  
+   1928      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1929      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1930      for (const dir of cwdLevelDirs) {
+   1931        const conditionalRules = (
+   1932          await getConditionalRulesForCwdLevelDirectory(
+   1933            dir,
+   1934            filePath,
+src/packages/agent/attachments.ts(1932,15): error TS2304: Cannot find name 'getConditionalRulesForCwdLevelDirectory'.
+  --- código src/packages/agent/attachments.ts:1922-1942 ---
+   1922        )
+   1923        attachments.push(
+   1924          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1925        )
+   1926      }
+   1927  
+   1928      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1929      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1930      for (const dir of cwdLevelDirs) {
+   1931        const conditionalRules = (
+   1932>         await getConditionalRulesForCwdLevelDirectory(
+   1933            dir,
+   1934            filePath,
+   1935            processedPaths,
+   1936          )
+   1937        ).filter(
+   1938          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1939        )
+   1940        attachments.push(
+   1941          ...memoryFilesToAttachments(conditionalRules, toolUseContext, filePath),
+   1942        )
+src/packages/agent/attachments.ts(1938,9): error TS7006: Parameter 'f' implicitly has an 'any' type.
+  --- código src/packages/agent/attachments.ts:1928-1948 ---
+   1928      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1929      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1930      for (const dir of cwdLevelDirs) {
+   1931        const conditionalRules = (
+   1932          await getConditionalRulesForCwdLevelDirectory(
+   1933            dir,
+   1934            filePath,
+   1935            processedPaths,
+   1936          )
+   1937        ).filter(
+   1938>         f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1939        )
+   1940        attachments.push(
+   1941          ...memoryFilesToAttachments(conditionalRules, toolUseContext, filePath),
+   1942        )
+   1943      }
+   1944    } catch (error) {
+   1945      logError(error)
+   1946    }
+   1947  
+   1948    return attachments

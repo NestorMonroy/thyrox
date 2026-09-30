@@ -1,0 +1,13 @@
+Tipo: Message
+Copias:
+  src/packages/agent/loop/types.ts
+  src/packages/context-compression/src/lite.ts
+
+src/packages/agent/query.ts(528): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+src/packages/repl/src/conversationRecovery.tsx(187): error TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/packages/repl/src/conversationRecovery.tsx(188): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(88): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(186): error TS2322: Type 'AnyMessage' is not assignable to type 'Message'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(187): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.

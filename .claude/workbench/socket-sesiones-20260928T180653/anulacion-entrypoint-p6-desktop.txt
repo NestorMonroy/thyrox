@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/entrypoint.test.ts:
+199 |   })
+200 | 
+201 |   test('isUnhostedNonInteractive (P6)', () => {
+202 |     expect(isUnhostedNonInteractive(true, context())).toBe(true)
+203 |     expect(isUnhostedNonInteractive(false, context())).toBe(false)
+204 |     expect(isUnhostedNonInteractive(true, context({}, { state: stateWith('claude-desktop') }))).toBe(false)
+                                                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/entrypoint.test.ts:204:97)
+(fail) sesiones de primer nivel > isUnhostedNonInteractive (P6) [0.36ms]
+
+ 15 pass
+ 1 fail
+ 87 expect() calls
+Ran 16 tests across 1 file. [52.00ms]

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/transferPathSafety.test.ts:
+16 |     expect(isNetworkLikePath('/Network/Servers/h/x')).toBe(true)
+17 |     expect(isNetworkLikePath('\\\\?\\C:\\x')).toBe(true)
+18 |     expect(isNetworkLikePath('/x/../??/c')).toBe(true)
+19 |     expect(isNetworkLikePath('\\GLOBAL??\\C:\\x')).toBe(true)
+20 |     expect(isNetworkLikePath('/Device/HarddiskVolume1')).toBe(true)
+21 |     expect(isNetworkLikePath('/.vol/1/2')).toBe(true)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/transferPathSafety.test.ts:21:44)
+(fail) isNetworkLikePath (Djt) > UNC salvo WSL local, automontaje, /net, prefijos de dispositivo y rutas que resuelve el núcleo [0.60ms]
+
+ 4 pass
+ 1 fail
+ 33 expect() calls
+Ran 5 tests across 1 file. [65.00ms]

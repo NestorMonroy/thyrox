@@ -1,0 +1,15 @@
+    local n="$1" item="$2"
+    # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
+    # GPU (`parallel` 20231122, líneas 4113-4118: no arranca si no hay sitio).
+    # La VRAM libre cambia mientras los items arrancan: se mira por item, justo
+    # antes de lanzar. La otra mitad de Parallel —matar al más joven cuando lo
+    # libre cae a la mitad, 6847 y 6980-7005— NO se porta: matar un `claude -p`
+    # a mitad de su petición tira los tokens ya pagados.
+    if [[ -n "$HP_VRAM_NEED" ]] && ! PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" wait-free "$HP_VRAM_NEED" \
+            --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL"; then
+        echo "admision por VRAM vencida: el item pide $HP_VRAM_NEED MiB y no hubo sitio en ${HP_TIMEOUT}s" \
+            > "$HP_OUT/$n.err"
+        : > "$HP_OUT/$n.json"
+        return 3
+    fi
+    { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \

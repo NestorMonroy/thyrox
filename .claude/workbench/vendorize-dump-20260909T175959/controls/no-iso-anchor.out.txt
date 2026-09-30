@@ -1,0 +1,15 @@
+# Control de ANULACION: se afloja el anclaje del sufijo ISO en runsFor
+# (EXACT_BASIC_ISO -> BASIC_ISO, que solo ancla el final). Debe caer
+# EXACTAMENTE el caso del slug ajeno y NINGUN otro: si cayeran mas, el
+# control no separaria 'el anclaje importa' de 'runsFor esta roto'.
+# Corrido: 2026-09-09T18:07:31
+---
+
+      at <anonymous> (/home/user/thyrox/tests/workbench/manifest.test.ts:313:64)
+(fail) runsFor / latestRun — encontrar un banco, no sólo acuñarlo > un banco de OTRO slug con el mismo prefijo no se cuela [0.32ms]
+
+ 36 pass
+ 1 fail
+ 44 expect() calls
+Ran 37 tests across 1 file. [101.00ms]
+restaurado identico: si

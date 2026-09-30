@@ -1,0 +1,47 @@
+src/packages/agent/query.ts(804,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:794-814 ---
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798              if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804>             if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    809                  (content: { type: string }) => content.type === 'tool_use',
+    810                ) as ToolUseBlock[]
+    811                if (msgToolUseBlocks.length > 0) {
+    812                  toolUseBlocks.push(...msgToolUseBlocks)
+    813                  needsFollowUp = true
+    814                }
+src/packages/agent/query.ts(1122,64): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:1112-1132 ---
+   1112            if (params.taskBudget) {
+   1113              const preCompactContext =
+   1114                finalContextTokensFromLastResponse(messagesForQuery)
+   1115              taskBudgetRemaining = Math.max(
+   1116                0,
+   1117                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1118                  preCompactContext,
+   1119              )
+   1120            }
+   1121  
+   1122>           const postCompactMessages = buildPostCompactMessages(compacted)
+   1123            for (const msg of postCompactMessages) {
+   1124              yield msg
+   1125            }
+   1126            const next: State = {
+   1127              messages: postCompactMessages,
+   1128              toolUseContext,
+   1129              autoCompactTracking: undefined,
+   1130              maxOutputTokensRecoveryCount,
+   1131              hasAttemptedReactiveCompact: true,
+   1132              maxOutputTokensOverride: undefined,
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults

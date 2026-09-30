@@ -1,0 +1,21 @@
+src/packages/repl/src/components/agents/generateAgent.ts(9,3): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?
+  --- código src/packages/repl/src/components/agents/generateAgent.ts:1-19 ---
+      1  import type { ContentBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+      2  import { getUserContext } from '@thyrox/provider/context.js'
+      3  import { queryModelWithoutStreaming } from '@thyrox/provider/claude.js'
+      4  import { getEmptyToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+      5  import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+      6  import { prependUserContext } from '@thyrox/provider/legacy/api.js'
+      7  import {
+      8    createUserMessage,
+      9>   normalizeMessagesForAPI,
+     10  } from '@thyrox/agent/messages.js'
+     11  import type { ModelName } from '@thyrox/provider/model.js'
+     12  import { isAutoMemoryEnabled } from '@thyrox/memory/paths'
+     13  import {
+     14    type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     15    logEvent,
+     16  } from '@thyrox/local-observability'
+     17  import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+     18  import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
+     19  

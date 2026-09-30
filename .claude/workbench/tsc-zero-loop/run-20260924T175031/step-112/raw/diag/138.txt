@@ -1,0 +1,2 @@
+src/packages/repl/src/commands/color/color.ts(11,8): error TS2307: Cannot find module '../../types/command.js' or its corresponding type declarations.
+src/packages/repl/src/commands/color/color.ts(53,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.

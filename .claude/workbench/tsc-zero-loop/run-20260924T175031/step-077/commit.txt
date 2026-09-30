@@ -1,0 +1,10 @@
+Copy the missing exports of sessionRestore.ts
+
+The exports its importers use are copied verbatim from the same file
+in ccnmt, with their helpers and the imports they need. The copy
+removes its TS2305 but brings its own diagnostics, because ccnmt is
+not strict under this tsconfig, so it went under the net policy: kept
+because the total drops. Those diagnostics are the next steps' work.
+The tests that import the module pass.
+
+tsc: 2371 -> 2370.

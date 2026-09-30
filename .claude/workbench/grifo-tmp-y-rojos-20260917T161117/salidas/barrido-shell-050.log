@@ -1,0 +1,2 @@
+VERDE tests/session/test-run-task-pool.sh
+EXIT=0

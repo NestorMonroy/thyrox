@@ -1,0 +1,1 @@
+F7j-4 red (2026-09-28): Cannot find module inspectVerbs.ts; (fail) inspect verbs read the buffer of the running serve, and tail streams its snapshot; (fail) the full program exposes inspect under mitm — 14 pass, 3 fail

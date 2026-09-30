@@ -1,0 +1,7 @@
+# cache_probe — invocado como MODULO, fuera de bin/
+#   .venv/bin/python -m transcript.cache_probe --transcript <jsonl>
+# sujeto: /root/.claude/projects/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/subagents/agent-a44f45584c9bcf191.jsonl (23860135 B)
+# fecha: 2026-09-18T03:36:15
+
+REHÚSA — 0 turno(s) con uso en el tramo: no hay ningún enlace que comprobar, y un «0 incumplimientos» aquí no distinguiría «el prefijo se reconoció» de «no había nada que medir»
+EXIT=2

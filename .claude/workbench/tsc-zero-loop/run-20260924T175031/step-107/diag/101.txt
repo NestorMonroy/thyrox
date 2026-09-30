@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/config/plugin/zipCache.ts(334,18): error TS18046: 'modes' is of type 'unknown'.
+  --- código src/packages/config/plugin/zipCache.ts:324-344 ---
+    324    for (const [relPath, data] of Object.entries(files)) {
+    325      // Skip directory entries (trailing slash)
+    326      if (relPath.endsWith('/')) {
+    327        await getFsImplementation().mkdir(join(targetDir, relPath))
+    328        continue
+    329      }
+    330  
+    331      const fullPath = join(targetDir, relPath)
+    332      await getFsImplementation().mkdir(dirname(fullPath))
+    333      await writeFile(fullPath, data)
+    334>     const mode = modes[relPath]
+    335      if (mode && mode & 0o111) {
+    336        // Swallow EPERM/ENOTSUP (NFS root_squash, some FUSE mounts) — losing +x
+    337        // is the pre-PR behavior and better than aborting mid-extraction.
+    338        await chmod(fullPath, mode & 0o777).catch(() => {})
+    339      }
+    340    }
+    341  
+    342    logForDebugging(
+    343      `Extracted ZIP to ${targetDir}: ${Object.keys(files).length} entries`,
+    344    )

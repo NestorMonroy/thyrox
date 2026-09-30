@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionRegistration.test.ts:
+169 |     env.THYROX_CODE_SESSION_KIND = 'bg'
+170 |     env.THYROX_BG_SOURCE = 'spare'
+171 |     env.THYROX_JOB_DIR = join(dir, 'jobs', 'j1')
+172 |     mkdirSync(env.THYROX_JOB_DIR, { recursive: true })
+173 |     await registerSession(undefined, deps())
+174 |     expect(record().spare).toBe(true)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionRegistration.test.ts:174:28)
+(fail) registerSession (nD) > una reserva sin reclamar se anuncia y empieza a sondear; reclamada no [1.87ms]
+
+ 22 pass
+ 1 fail
+ 80 expect() calls
+Ran 23 tests across 1 file. [197.00ms]

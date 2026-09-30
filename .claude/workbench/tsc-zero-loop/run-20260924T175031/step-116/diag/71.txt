@@ -1,0 +1,26 @@
+src/packages/cli/src/headless/sdk/session/run.ts(180,33): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: SettingsChangeTarget) => SettingsChangeTarget) => void'.
+  --- código src/packages/cli/src/headless/sdk/session/run.ts:170-190 ---
+    170      feature('DOWNLOAD_USER_SETTINGS') &&
+    171      (isEnvTruthy(process.env.CLAUDE_CODE_REMOTE) || getIsRemoteMode())
+    172    ) {
+    173      void downloadUserSettings()
+    174    }
+    175  
+    176    // In headless mode there is no React tree, so the useSettingsChange hook
+    177    // never runs. Subscribe directly so that settings changes (including
+    178    // managed-settings / policy updates) are fully applied.
+    179    settingsChangeDetector.subscribe(source => {
+    180>     applySettingsChange(source, setAppState)
+    181  
+    182      // In headless mode, also sync the denormalized fastMode field from
+    183      // settings. The TUI manages fastMode via the UI so it skips this.
+    184      if (isFastModeEnabled()) {
+    185        setAppState(prev => {
+    186          const s = prev.settings as Record<string, unknown>
+    187          const fastMode = s.fastMode === true && !s.fastModePerSessionOptIn
+    188          return { ...prev, fastMode }
+    189        })
+    190      }
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'SettingsChangeTarget' is not assignable to type 'AppState'.
+      Type 'SettingsChangeTarget' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': verbose, mainLoopModel, mainLoopModelForSession, statusLineText, and 24 more.

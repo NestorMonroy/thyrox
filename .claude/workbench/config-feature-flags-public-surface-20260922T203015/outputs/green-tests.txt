@@ -1,0 +1,16 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/config/__tests__/featureFlags.test.ts:
+(pass) getFeatureValue_CACHED_MAY_BE_STALE > sin override ni default declarado devuelve el fallback del llamador [0.10ms]
+(pass) getFeatureValue_CACHED_MAY_BE_STALE > un override en config gana sobre el fallback [0.03ms]
+(pass) getFeatureValue_CACHED_MAY_BE_STALE > el override de entorno gana sobre el de config [0.09ms]
+(pass) getFeatureValue_CACHED_MAY_BE_STALE > un JSON de entorno ilegible no derriba la lectura: cae al siguiente nivel [0.03ms]
+(pass) getFeatureValue_CACHED_MAY_BE_STALE > hasGrowthBookEnvOverride distingue declarado de ausente [0.04ms]
+(pass) public GrowthBook compatibility surface > dynamic config sync and blocking forms preserve the same local precedence [0.14ms]
+(pass) public GrowthBook compatibility surface > refresh notifies subscribers and unsubscribe stops subsequent notifications [0.14ms]
+(pass) public GrowthBook compatibility surface > reset removes process overrides and notifies subscribers [0.04ms]
+
+ 8 pass
+ 0 fail
+ 13 expect() calls
+Ran 8 tests across 1 file. [21.00ms]

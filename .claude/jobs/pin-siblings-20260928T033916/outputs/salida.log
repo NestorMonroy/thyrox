@@ -1,0 +1,63 @@
+run-task-pool: 8 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260928T033917
+  job-20260928T033917/job-001 bun test ./tests/verify/exactSiblingVersions.test.ts ./tests/verify/canonicalEnvHelpers.test.ts ./tests/package/sibling_exports.test.ts 2>&1 | tail -3
+  job-20260928T033917/job-002 cd src/packages/app-host && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)'
+  job-20260928T033917/job-003 cd src/packages/cli && bun test 2>&1 | grep -E '^ *[0-9]+ (pass|fail)|^\(fail\)'
+  job-20260928T033917/job-004 PYTHONPATH=src python3 tests/verify/test_single_workspace_root.py 2>&1 | tail -2
+  job-20260928T033917/job-005 PYTHONPATH=src python3 tests/typescript/test_build_javascript.py 2>&1 | tail -2
+  job-20260928T033917/job-006 PYTHONPATH=src bash tests/lib/test-node-resolution.sh 2>&1 | tail -2
+  job-20260928T033917/job-007 PYTHONPATH=src python3 tests/verify/test_provider_refresh.py 2>&1 | tail -2
+  job-20260928T033917/job-008 PYTHONPATH=src python3 tests/verify/test_package_typecheck.py 2>&1 | tail -2
+run-task-pool: lanzados 8 de 8; esperando en PRIMER PLANO (timeout 1132s)
+asentado: job-20260928T033917_job-001 -> OK (2 de 9)
+asentado: job-20260928T033917_job-002 -> OK (3 de 9)
+asentado: job-20260928T033917_job-003 -> OK (4 de 9)
+asentado: job-20260928T033917_job-004 -> OK (5 de 9)
+asentado: job-20260928T033917_job-005 -> OK (6 de 9)
+asentado: job-20260928T033917_job-006 -> OK (7 de 9)
+asentado: job-20260928T033917_job-007 -> OK (8 de 9)
+asentado: job-20260928T033917_job-008 -> OK (9 de 9)
+== 9 trabajos asentados ==
+OLVIDADO job-20260928T033917
+       | (vacío — no emitió nada)
+OK     job-20260928T033917_job-001 exit=0
+       |  0 fail
+       |  234 expect() calls
+       | Ran 194 tests across 3 files. [9.25s]
+       | EXIT=0
+       memoria pico: 215536 KB (210 MB) · pared 9.26s
+OK     job-20260928T033917_job-002 exit=0
+       |  245 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 214312 KB (209 MB) · pared 2.33s
+OK     job-20260928T033917_job-003 exit=0
+       |  373 pass
+       |  0 fail
+       | EXIT=0
+       memoria pico: 252072 KB (246 MB) · pared 68.01s
+OK     job-20260928T033917_job-004 exit=0
+       | 
+       | test_single_workspace_root: 8 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 14336 KB (14 MB) · pared 0.34s
+OK     job-20260928T033917_job-005 exit=0
+       | 
+       | 19 ok, 0 fallo(s)
+       | EXIT=0
+       memoria pico: 33588 KB (33 MB) · pared 0.25s
+OK     job-20260928T033917_job-006 exit=0
+       | 
+       | aserciones: 14 de 14 · fallos: 0
+       | EXIT=0
+       memoria pico: 12608 KB (12 MB) · pared 0.41s
+OK     job-20260928T033917_job-007 exit=0
+       | 
+       | test_provider_refresh: 18 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 146200 KB (143 MB) · pared 3.90s
+OK     job-20260928T033917_job-008 exit=0
+       | 
+       | test_package_typecheck: 16 ok, 0 falla
+       | EXIT=0
+       memoria pico: 19576 KB (19 MB) · pared 0.25s
+__BG_EXIT__=0

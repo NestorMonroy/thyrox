@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun typecheck", "started_at": "2026-09-17T08:09:17+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-17T08:10:14+00:00", "duration_seconds": 57.013815}

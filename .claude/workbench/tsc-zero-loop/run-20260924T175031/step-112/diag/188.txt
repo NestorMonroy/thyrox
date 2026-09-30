@@ -1,0 +1,46 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(34,8): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'AgentMentionAttachment'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:24-44 ---
+     24    ProgressMessage,
+     25    SystemMessage,
+     26    UserMessage,
+     27  } from '@thyrox/agent/messageShapes'
+     28  import type { PermissionMode } from '@thyrox/permission/permissionTypes'
+     29  import {
+     30    isValidImagePaste,
+     31    type PromptInputMode,
+     32  } from '../textInputTypes.js'
+     33  import {
+     34>   type AgentMentionAttachment,
+     35    createAttachmentMessage,
+     36    getAttachmentMessages,
+     37  } from '@thyrox/agent/attachments.js'
+     38  import type { PastedContent } from '@thyrox/config'
+     39  import type { EffortValue } from '@thyrox/agent/effort.js'
+     40  import { toArray } from '@thyrox/config/generators'
+     41  import {
+     42    executeUserPromptSubmitHooks,
+     43    getUserPromptSubmitHookBlockingMessage,
+     44  } from '@thyrox/agent/hooks.js'
+src/packages/repl/src/processUserInput/processUserInput.ts(36,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:26-46 ---
+     26    UserMessage,
+     27  } from '@thyrox/agent/messageShapes'
+     28  import type { PermissionMode } from '@thyrox/permission/permissionTypes'
+     29  import {
+     30    isValidImagePaste,
+     31    type PromptInputMode,
+     32  } from '../textInputTypes.js'
+     33  import {
+     34    type AgentMentionAttachment,
+     35    createAttachmentMessage,
+     36>   getAttachmentMessages,
+     37  } from '@thyrox/agent/attachments.js'
+     38  import type { PastedContent } from '@thyrox/config'
+     39  import type { EffortValue } from '@thyrox/agent/effort.js'
+     40  import { toArray } from '@thyrox/config/generators'
+     41  import {
+     42    executeUserPromptSubmitHooks,
+     43    getUserPromptSubmitHookBlockingMessage,
+     44  } from '@thyrox/agent/hooks.js'
+     45  import {
+     46    createImageMetadataText,

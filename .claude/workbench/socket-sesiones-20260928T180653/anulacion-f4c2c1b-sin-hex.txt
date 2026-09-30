@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsConfusableTagPatterns.test.ts:
+84 |     ['this', 'version', 'has', LEAD_SPAN, 'published', 'files'],
+85 |     ['end', 'of', 'live', 'content'],
+86 |   ])
+87 | 
+88 |   test('encuentra los encabezados declarados', () => {
+89 |     expect(matches(pattern, '[artifact 0123abcd-ab12-cd34-')).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsConfusableTagPatterns.test.ts:89:63)
+(fail) bracketedLeadScrubPattern (LLo) > encuentra los encabezados declarados [3.90ms]
+
+ 13 pass
+ 1 fail
+ 35 expect() calls
+Ran 14 tests across 1 file. [61.00ms]

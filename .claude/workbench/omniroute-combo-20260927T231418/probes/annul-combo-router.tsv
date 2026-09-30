@@ -1,0 +1,16 @@
+weighted	s/        return chosen ? orderTargetsForWeightedFallback(list, chosen.executionKey) : list/        return list/
+random	s/        return fisherYatesShuffle(list)$/        return list/
+strict-random	s/        return first ? \[first, ...fisherYatesShuffle(list.filter(t => t !== first))\] : fisherYatesShuffle(list)/        return list/
+p2c	s/        return orderTargetsByPowerOfTwoChoices(list, this.metrics.get(comboName), this.options.breakerStateOf)/        return list/
+least-used	s/        return sortTargetsByUsage(list, this.metrics.get(comboName))/        return list/
+cost	s/        return sortTargetsByCost(list, this.options.inputPriceOf ?? (() => undefined))/        return list/
+context	s/        return this.byContextSize(list)/        return list/
+context-unknown	s/    if (!list.some(t => windowOf(t) != null)) return list/    void 0/
+lkgp	s/        return index > 0 ? \[list\[index\]!, ...list.filter((_, i) => i !== index)\] : list/        return list/
+lkgp-only-success	s/    if (!outcome.success || !served) return$/    if (!served) return/
+rr-advance	s/    if (this.stickyLimit <= 1) this.rrCounters.set(comboName, counter + 1)/    void 0/
+rr-served	s/    const next = servedIndex >= 0 ? servedIndex + 1 : (this.rrCounters.get(comboName) ?? 0) + 1/    const next = (this.rrCounters.get(comboName) ?? 0) + 1/
+rr-sticky	s/    const stickyHolds = this.stickyLimit > 1 \&\& /    const stickyHolds = false \&\& /
+rr-record	s/    if (strategy === 'round-robin') this.recordRoundRobinSuccess(comboName, targets, served)/    void targets/
+metrics-record	s/      strategy,$/      strategy: 'priority',/
+known-strategies	s/  'p2c', 'least-used', 'cost-optimized', 'context-optimized', 'lkgp',/  'p2c', 'least-used', 'cost-optimized', 'context-optimized', 'lkgp', 'auto',/

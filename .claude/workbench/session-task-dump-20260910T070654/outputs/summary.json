@@ -1,0 +1,18 @@
+{
+  "board_dir": "/root/.claude/tasks/168b0fdf-bfe4-590b-b6c0-b6be124c124a",
+  "cards_total": 296,
+  "by_status": {
+    "completed": 200,
+    "in_progress": 8,
+    "pending": 88
+  },
+  "open_total": 96,
+  "open_in_store": 85,
+  "open_absent_from_store": 11,
+  "open_with_durable_citation": 85,
+  "dependency_in_field": 17,
+  "dependency_only_in_prose": 29,
+  "dependency_undeclared": 50,
+  "store": "/home/user/thyrox/agent-results/agent_store.sqlite3",
+  "store_task_rows": 1483
+}

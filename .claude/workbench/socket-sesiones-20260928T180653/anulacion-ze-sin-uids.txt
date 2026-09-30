@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxDelivery.test.ts:
+208 | 
+209 |   test('un directorio por defecto de un uid propio vale con el par verificado', async () => {
+210 |     const { deps, events } = harness()
+211 |     deps.state.peerDirOwnerUids = [7]
+212 |     await deliverPeerUserMessage({ type: 'user', from: 'uds:/tmp/cc-socks-7/9.sock', message: { content: 'hola' } }, peer, deps)
+213 |     expect(events).toContain('correspondent:uds:/tmp/cc-socks-7/9.sock:42:tok')
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "correspondent:uds:/tmp/cc-socks-7/9.sock:42:tok"
+Received: [ "queued", "onEnqueue", "disposed" ]
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxDelivery.test.ts:213:20)
+(fail) registro del correspondiente (Oe/aEn) > un directorio por defecto de un uid propio vale con el par verificado [0.47ms]
+
+ 15 pass
+ 1 fail
+ 38 expect() calls
+Ran 16 tests across 1 file. [70.00ms]

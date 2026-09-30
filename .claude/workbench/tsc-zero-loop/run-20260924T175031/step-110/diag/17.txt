@@ -1,0 +1,148 @@
+src/packages/agent/__tests__/messageQueries.test.ts(49,20): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/messageQueries.test.ts:39-59 ---
+     39    })
+     40  
+     41    test('only-user array → undefined', () => {
+     42      expect(getLastAssistantMessage([user('hi'), user('bye')])).toBeUndefined()
+     43    })
+     44  
+     45    test('returns last assistant when multiple present', () => {
+     46      const a1 = assistant('first')
+     47      const a2 = assistant('second')
+     48      const r = getLastAssistantMessage([a1, user('mid'), a2])
+     49>     expect(r).toBe(a2)
+     50    })
+     51  
+     52    test('returns assistant even when it is not the last message', () => {
+     53      const a = assistant('reply')
+     54      expect(getLastAssistantMessage([a, user('then this')])).toBe(a)
+     55    })
+     56  
+     57    test('skips non-assistant types (system, attachment, progress)', () => {
+     58      const a = assistant('reply')
+     59      const messages = [
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+src/packages/agent/__tests__/messageQueries.test.ts(54,66): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/messageQueries.test.ts:44-64 ---
+     44  
+     45    test('returns last assistant when multiple present', () => {
+     46      const a1 = assistant('first')
+     47      const a2 = assistant('second')
+     48      const r = getLastAssistantMessage([a1, user('mid'), a2])
+     49      expect(r).toBe(a2)
+     50    })
+     51  
+     52    test('returns assistant even when it is not the last message', () => {
+     53      const a = assistant('reply')
+     54>     expect(getLastAssistantMessage([a, user('then this')])).toBe(a)
+     55    })
+     56  
+     57    test('skips non-assistant types (system, attachment, progress)', () => {
+     58      const a = assistant('reply')
+     59      const messages = [
+     60        a,
+     61        { type: 'system', uuid: 's1' as UUID } as Message,
+     62        { type: 'attachment', uuid: 'at1' as UUID } as Message,
+     63      ]
+     64      expect(getLastAssistantMessage(messages)).toBe(a)
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+src/packages/agent/__tests__/messageQueries.test.ts(64,52): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/messageQueries.test.ts:54-74 ---
+     54      expect(getLastAssistantMessage([a, user('then this')])).toBe(a)
+     55    })
+     56  
+     57    test('skips non-assistant types (system, attachment, progress)', () => {
+     58      const a = assistant('reply')
+     59      const messages = [
+     60        a,
+     61        { type: 'system', uuid: 's1' as UUID } as Message,
+     62        { type: 'attachment', uuid: 'at1' as UUID } as Message,
+     63      ]
+     64>     expect(getLastAssistantMessage(messages)).toBe(a)
+     65    })
+     66  
+     67    test('returns latest of consecutive assistants', () => {
+     68      const a1 = assistant('1')
+     69      const a2 = assistant('2')
+     70      const a3 = assistant('3')
+     71      expect(getLastAssistantMessage([a1, a2, a3])).toBe(a3)
+     72    })
+     73  })
+     74  
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+src/packages/agent/__tests__/messageQueries.test.ts(71,56): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/messageQueries.test.ts:61-81 ---
+     61        { type: 'system', uuid: 's1' as UUID } as Message,
+     62        { type: 'attachment', uuid: 'at1' as UUID } as Message,
+     63      ]
+     64      expect(getLastAssistantMessage(messages)).toBe(a)
+     65    })
+     66  
+     67    test('returns latest of consecutive assistants', () => {
+     68      const a1 = assistant('1')
+     69      const a2 = assistant('2')
+     70      const a3 = assistant('3')
+     71>     expect(getLastAssistantMessage([a1, a2, a3])).toBe(a3)
+     72    })
+     73  })
+     74  
+     75  describe('hasToolCallsInLastAssistantTurn', () => {
+     76    test('empty array → false', () => {
+     77      expect(hasToolCallsInLastAssistantTurn([])).toBe(false)
+     78    })
+     79  
+     80    test('no assistants → false', () => {
+     81      expect(
+  Overload 1 of 2, '(expected: AssistantMessage | undefined): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.
+  Overload 2 of 2, '(expected: NoInfer<AssistantMessage | undefined>): void', gave the following error.
+    Argument of type 'Message' is not assignable to parameter of type 'AssistantMessage | undefined'.
+      Type 'UserMessage' is not assignable to type 'AssistantMessage | undefined'.
+        Type 'UserMessage' is not assignable to type 'AssistantMessage'.
+          Type 'UserMessage' is not assignable to type '{ type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+            Types of property 'type' are incompatible.
+              Type '"user"' is not assignable to type '"assistant"'.

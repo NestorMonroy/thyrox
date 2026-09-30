@@ -1,0 +1,6 @@
+src/packages/cli/src/headless/sdk/control/permission-helpers.ts(130,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Type '(f: (prev: AppState) => AppState) => void' is not assignable to type '(updater: (prev: never) => unknown) => void'.
+      Types of parameters 'f' and 'updater' are incompatible.
+        Types of parameters 'prev' and 'prev' are incompatible.
+          Type 'AppState' is not assignable to type 'never'.

@@ -1,0 +1,5 @@
+  FALLA un banco que el commit no toca no se mira — esperado {}, obtenido {'.claude/workbench/bench-b': ['.claude/workbench/bench-b/a-medio.txt']}
+  FALLA un banco que nadie cita sigue sin mirarse — esperado ['.claude/workbench/bench-a'], obtenido ['.claude/workbench/bench-a', '.claude/workbench/bench-b']
+  FALLA citado y con su archivo en el índice, no queda nada fuera — esperado {}, obtenido {'.claude/workbench/bench-b': ['.claude/workbench/bench-b/a-medio.txt']}
+  FALLA cada banco tocado recibe sólo sus archivos, y el no citado queda fuera — esperado {'.claude/workbench/bench-a': ['.claude/workbench/bench-a/nuevo-bench-a.txt'], '.claude/workbench/bench-b': ['.claude/workbench/bench-b/nuevo-bench-b.txt'], '.claude/jobs/job-z': ['.claude/jobs/job-z/salida.log']}, obtenido {'.claude/jobs/job-z': ['.claude/jobs/job-z/salida.log'], '.claude/workbench/bench-a': ['.claude/workbench/bench-a/nuevo-bench-a.txt'], '.claude/workbench/bench-b': ['.claude/workbench/bench-b/nuevo-bench-b.txt'], '.claude/workbench/bench-c': ['.claude/workbench/bench-c/nuevo-bench-c.txt']}
+test_bench_untracked: 18 aserciones — 14 ok, 4 falla(s)

@@ -1,0 +1,1 @@
+export const goTrimSpace = (text: string) => text.trim()

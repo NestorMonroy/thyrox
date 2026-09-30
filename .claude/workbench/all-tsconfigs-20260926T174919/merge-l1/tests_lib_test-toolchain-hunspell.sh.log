@@ -1,0 +1,11 @@
+  ok    el guard y sus sondas existen
+  ok    rehúsa con exit 2 nombrando el binario ausente y el opt-in
+  ok    el rechazo de presencia no emite ningún conteo
+  ok    un instalador que sale 0 sin instalar no cuenta como éxito
+  ok    un diccionario que acepta todo no pasa la sonda
+  ok    un diccionario que rechaza todo no pasa la sonda
+  FALLO hunspell no está instalado; el control positivo no puede correr (THYROX_INSTALL_HUNSPELL=1)
+  ok    sin diccionario declarado la sonda se omite con exit 3 y nombra la llave
+
+8 casos: 7 ok, 1 fallos
+EXIT=1

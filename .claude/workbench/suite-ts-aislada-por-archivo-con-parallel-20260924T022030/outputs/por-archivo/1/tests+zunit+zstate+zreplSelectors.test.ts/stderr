@@ -1,0 +1,13 @@
+
+tests/unit/state/replSelectors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1245.00ms]

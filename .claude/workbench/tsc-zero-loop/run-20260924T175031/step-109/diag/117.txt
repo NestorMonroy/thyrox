@@ -1,0 +1,28 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/tool-registry/src/__tests__/integration.test.ts(26,37): error TS2345: Argument of type '{ discoverBuiltInTools: () => ToolLike[]; getDenyRuleForTool: (ctx: ToolPermissionContextLike, tool: Pick<ToolLike, "name" | "mcpInfo">) => { ...; } | null; getModeAwareTools: ({ baseTools, permissionContext, filterToolsByDenyRules }: { ...; }) => ToolLike[]; }' is not assignable to parameter of type 'ToolRegistryHostBindings'.
+  --- código src/packages/tool-registry/src/__tests__/integration.test.ts:16-36 ---
+     16  function makeTool(name: string, enabled = true): ToolLike {
+     17    return {
+     18      name,
+     19      isEnabled: () => enabled,
+     20    }
+     21  }
+     22  
+     23  describe('@thyrox/tool-registry integration', () => {
+     24    beforeEach(() => {
+     25      __resetToolRegistryForTests()
+     26>     installToolRegistryHostBindings({
+     27        discoverBuiltInTools: () => [
+     28          makeTool('Alpha'),
+     29          makeTool('Bravo'),
+     30          makeTool('Disabled', false),
+     31        ],
+     32        getDenyRuleForTool: (ctx, tool) =>
+     33          (ctx as TestPermissionContext).denied?.has(tool.name)
+     34            ? { type: 'deny' }
+     35            : null,
+     36        getModeAwareTools: ({ baseTools, permissionContext, filterToolsByDenyRules }) => {

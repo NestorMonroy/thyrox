@@ -1,0 +1,23 @@
+src/packages/app-host/src/runtime/runtimeHandles.ts(149,64): error TS2322: Type 'unknown' is not assignable to type 'AgentDefinitionsResult'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:139-159 ---
+    139          mcpStore.getState().resources[serverName] ?? [],
+    140      },
+    141      plugins: {
+    142        getSnapshot: () => pluginStore.getState(),
+    143        setSnapshot: snapshot => pluginStore.setState(() => snapshot),
+    144        subscribe: listener => pluginStore.subscribe(listener),
+    145        refresh: () => {},
+    146      },
+    147      agentCatalog: {
+    148        getDefinitions: () => agentCatalogStore.getState(),
+    149>       setDefinitions: next => agentCatalogStore.setState(() => next),
+    150        refresh: () => {},
+    151      },
+    152      sessionStoreFactory: {
+    153        createHeadlessStore: params =>
+    154          createHeadlessSessionStore(
+    155            (params ?? {
+    156              mcpClients: [],
+    157              mcpCommands: [],
+    158              mcpTools: [],
+    159              toolPermissionContext: permissionStore.getState(),

@@ -1,0 +1,16 @@
+  | bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox-lifecycle" && uv sync
+  | gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+  | bin/pool_history: sin entorno del proveedor; corre con /usr/local/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox-lifecycle" && uv sync
+  | historial: sin ejecución previa de /tmp/tmp.dpPtcr4ODP/runner en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+  | items=1 ok=1 fallidos=0
+  | memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+OK   the live pool keeps the summary of the copy it started with
+OK   the rewritten source does not reach the live pool
+OK   a frozen copy of the launcher exists while the item runs
+OK   the frozen copy is removed when the pool exits
+OK   control: the freeze block was removed from the unfrozen copy
+OK   control: without the freeze, the rewrite reaches the live pool
+result: 6 of 6 assertions green
+__BG_EXIT__=0

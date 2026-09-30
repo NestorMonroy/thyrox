@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+80 |     const out = run(
+81 |       "import { Metadata, unused } from './typeOnly'\nexport const x = 1 as unknown as typeof Metadata\n",
+82 |     )
+83 |     // Se mide sobre la DECLARACIÓN import: el nombre sigue en el cuerpo pase
+84 |     // lo que pase, y una aserción sobre el texto entero no discrimina.
+85 |     expect(out ?? 'import { Metadata }').toMatch(/^import \{[^}]*\bMetadata\b/m)
+                                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /^import \{[^}]*\bMetadata\b/m
+Received: "export const x = 1 as unknown as typeof Metadata\n"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/removeUnusedImports.test.ts:85:42)
+(fail) removeUnusedImports > no retira un binding que el archivo nombra, aunque el checker lo dé por no leído [616.87ms]
+
+ 10 pass
+ 1 fail
+ 14 expect() calls
+Ran 11 tests across 1 file. [7.38s]
+
+[exit=1]

@@ -1,0 +1,47 @@
+src/packages/config/plugin/loadPluginCommands.ts(266,7): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:256-276 ---
+    256                    })
+    257                  : tool,
+    258              )
+    259            : rawAllowedTools
+    260      const allowedTools = parseSlashCommandToolsFromFrontmatter(
+    261        substitutedAllowedTools,
+    262      )
+    263  
+    264      const argumentHint = frontmatter['argument-hint'] as string | undefined
+    265      const argumentNames = parseArgumentNames(
+    266>       frontmatter.arguments as string | string[] | undefined,
+    267      )
+    268      const whenToUse = frontmatter.when_to_use as string | undefined
+    269      const version = frontmatter.version as string | undefined
+    270      const displayName = frontmatter.name as string | undefined
+    271  
+    272      // Handle model configuration, resolving aliases like 'haiku', 'sonnet', 'opus'
+    273      const model =
+    274        frontmatter.model === 'inherit'
+    275          ? undefined
+    276          : frontmatter.model
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/config/plugin/loadPluginCommands.ts(304,7): error TS2322: Type '{}' is not assignable to type 'string'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:294-314 ---
+    294      const userInvocable =
+    295        userInvocableValue === undefined
+    296          ? true
+    297          : parseBooleanFrontmatter(userInvocableValue)
+    298  
+    299      const shell = parseShellFrontmatter(frontmatter.shell, commandName)
+    300  
+    301      return {
+    302        type: 'prompt',
+    303        name: commandName,
+    304>       description,
+    305        hasUserSpecifiedDescription: validatedDescription !== null,
+    306        allowedTools,
+    307        argumentHint,
+    308        argNames: argumentNames.length > 0 ? argumentNames : undefined,
+    309        whenToUse,
+    310        version,
+    311        model,
+    312        effort,
+    313        disableModelInvocation,
+    314        userInvocable,

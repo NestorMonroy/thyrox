@@ -1,0 +1,2 @@
+    this.replaceGroups(entry.authId, now + this.ttlMs, compactAliases(mergeAliases([sessionId], ...entry.aliases)), entry)
+    return entry.authId

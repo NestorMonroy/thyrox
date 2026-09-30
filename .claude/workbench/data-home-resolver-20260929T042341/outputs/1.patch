@@ -1,0 +1,189 @@
+diff --git a/src/packages/config/__tests__/configHome.test.ts b/src/packages/config/__tests__/configHome.test.ts
+index 4340eca1..14651eed 100644
+--- a/src/packages/config/__tests__/configHome.test.ts
++++ b/src/packages/config/__tests__/configHome.test.ts
+@@ -6,7 +6,7 @@
+ import { describe, expect, test } from 'bun:test'
+ import { existsSync } from 'node:fs'
+ import { homedir } from 'node:os'
+-import { join } from 'node:path'
++import { join, resolve } from 'node:path'
+ import {
+   CONFIG_DIR_ENV,
+   CONFIG_DIR_NAME,
+@@ -14,6 +14,7 @@ import {
+   LEGACY_CONFIG_DIR_NAME,
+   getConfigHomeDir,
+   resolveConfigHomeDir,
++  resolveDataDir,
+ } from '../env/configHome.js'
+ 
+ const HOME = '/home/u'
+@@ -93,3 +94,31 @@ describe('getConfigHomeDir', () => {
+     }
+   })
+ })
++
++describe('resolveDataDir', () => {
++  const ENV_VAR = 'THYROX_TEST_DATA_DIR'
++  const SUBDIR = 'test-subdir'
++
++  test('la variable declarada gana, resuelta a ruta absoluta', () => {
++    expect(resolveDataDir(ENV_VAR, SUBDIR, { [ENV_VAR]: 'rel/dir' })).toBe(resolve('rel/dir'))
++  })
++
++  test('una variable en blanco no cuenta como declarada', () => {
++    expect(resolveDataDir(ENV_VAR, SUBDIR, { [ENV_VAR]: '   ', THYROX_CONFIG_DIR: '/cfg' })).toBe(join('/cfg', SUBDIR))
++  })
++
++  test('sin declaración, respalda en el hogar de configuración', () => {
++    expect(resolveDataDir(ENV_VAR, SUBDIR, { THYROX_CONFIG_DIR: '/cfg' })).toBe(join('/cfg', SUBDIR))
++  })
++
++  test('respeta el `env` inyectado, no el global del proceso', () => {
++    const saved = process.env.THYROX_CONFIG_DIR
++    try {
++      process.env.THYROX_CONFIG_DIR = '/global'
++      expect(resolveDataDir(ENV_VAR, SUBDIR, { THYROX_CONFIG_DIR: '/inyectado' })).toBe(join('/inyectado', SUBDIR))
++    } finally {
++      if (saved === undefined) delete process.env.THYROX_CONFIG_DIR
++      else process.env.THYROX_CONFIG_DIR = saved
++    }
++  })
++})
+diff --git a/src/packages/config/env/configHome.ts b/src/packages/config/env/configHome.ts
+index baea84fd..15eb6161 100644
+--- a/src/packages/config/env/configHome.ts
++++ b/src/packages/config/env/configHome.ts
+@@ -16,7 +16,7 @@
+  */
+ import { existsSync } from 'node:fs'
+ import { homedir } from 'node:os'
+-import { join } from 'node:path'
++import { join, resolve } from 'node:path'
+ 
+ export const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
+ export const LEGACY_CONFIG_DIR_ENV = 'CLAUDE_CONFIG_DIR' // thyrox-rename: keep — respaldo heredado de configHome
+@@ -57,3 +57,15 @@ export function getConfigHomeDir(): string {
+   cache = { key, value }
+   return value
+ }
++
++/**
++ * El directorio de datos de un paquete: la variable declarada gana, resuelta
++ * a ruta absoluta; sin ella, `subdir` bajo el hogar de configuración. Único
++ * punto de esta forma — antes cada paquete (observabilidad, MITM,
++ * proveedores) la repetía con su propia variable.
++ */
++export function resolveDataDir(envVar: string, subdir: string, env: Record<string, string | undefined> = process.env): string {
++  const declared = env[envVar]?.trim()
++  if (declared) return resolve(declared)
++  return join(resolveConfigHomeDir({ env, home: homedir(), exists: existsSync }), subdir)
++}
+diff --git a/src/packages/local-observability/src/errorStore/errorStoreHome.ts b/src/packages/local-observability/src/errorStore/errorStoreHome.ts
+index 1a49888c..4b2f9b74 100644
+--- a/src/packages/local-observability/src/errorStore/errorStoreHome.ts
++++ b/src/packages/local-observability/src/errorStore/errorStoreHome.ts
+@@ -10,10 +10,9 @@
+  */
+ import { SQL } from 'bun'
+ import fs from 'node:fs'
+-import { homedir } from 'node:os'
+-import { join, resolve } from 'node:path'
++import { join } from 'node:path'
+ 
+-import { resolveConfigHomeDir } from '@thyrox/config/env/configHome'
++import { resolveDataDir } from '@thyrox/config/env/configHome'
+ 
+ import { type Dialect, dialectOf } from './dialect.ts'
+ import { createErrorStore, type ErrorStore } from './errorStore.ts'
+@@ -25,9 +24,7 @@ const OWNER_ONLY = 0o700
+ type Env = Record<string, string | undefined>
+ 
+ export function resolveObservabilityDataDir(env: Env = process.env): string {
+-  const declared = env.THYROX_OBSERVABILITY_DATA_DIR?.trim()
+-  if (declared) return resolve(declared)
+-  return join(resolveConfigHomeDir({ env, home: homedir(), exists: fs.existsSync }), OBSERVABILITY_DATA_SUBDIR)
++  return resolveDataDir('THYROX_OBSERVABILITY_DATA_DIR', OBSERVABILITY_DATA_SUBDIR, env)
+ }
+ 
+ /** La URL de la base: la declarada, o el SQLite del hogar de datos. */
+diff --git a/src/packages/mitm/__tests__/dataDir.test.ts b/src/packages/mitm/__tests__/dataDir.test.ts
+index 5dbc31fe..db380c04 100644
+--- a/src/packages/mitm/__tests__/dataDir.test.ts
++++ b/src/packages/mitm/__tests__/dataDir.test.ts
+@@ -31,3 +31,9 @@ test('THYROX_MITM_DATA_DIR vacía no cuenta como declarada', () => {
+   process.env.THYROX_CONFIG_DIR = '/srv/otro'
+   expect(resolveMitmDataDir()).toBe(join('/srv/otro', 'mitm'))
+ })
++
++test('acepta un `env` inyectado en vez del global del proceso', () => {
++  delete process.env.THYROX_MITM_DATA_DIR
++  process.env.THYROX_CONFIG_DIR = '/global'
++  expect(resolveMitmDataDir({ THYROX_CONFIG_DIR: '/inyectado' })).toBe(join('/inyectado', 'mitm'))
++})
+diff --git a/src/packages/mitm/src/dataDir.ts b/src/packages/mitm/src/dataDir.ts
+index 801c5e4e..907655d0 100644
+--- a/src/packages/mitm/src/dataDir.ts
++++ b/src/packages/mitm/src/dataDir.ts
+@@ -1,6 +1,6 @@
+ /**
+  * El hogar de datos del MITM: certificados y estado del puente. Cuelga del
+- * hogar de configuración de thyrox (`getConfigHomeDir`, que ya resuelve
++ * hogar de configuración de thyrox (`resolveDataDir`, que ya resuelve
+  * `THYROX_CONFIG_DIR` y su respaldo heredado) en vez de componer uno propio
+  * por plataforma, como hace OmniRoute con `DATA_DIR`/`APPDATA`/`XDG_CONFIG_HOME`.
+  *
+@@ -8,13 +8,10 @@
+  *
+  * Porte de `omniroute: src/mitm/dataDir.ts` (MIT).
+  */
+-import { join, resolve } from 'node:path'
+-import { getConfigHomeDir } from '@thyrox/config/env/utils'
++import { resolveDataDir } from '@thyrox/config/env/configHome'
+ 
+ export const MITM_DATA_SUBDIR = 'mitm'
+ 
+-export function resolveMitmDataDir(): string {
+-  const declared = process.env.THYROX_MITM_DATA_DIR?.trim()
+-  if (declared) return resolve(declared)
+-  return join(getConfigHomeDir(), MITM_DATA_SUBDIR)
++export function resolveMitmDataDir(env: Record<string, string | undefined> = process.env): string {
++  return resolveDataDir('THYROX_MITM_DATA_DIR', MITM_DATA_SUBDIR, env)
+ }
+diff --git a/src/packages/provider/src/accounts/connectionStoreHome.ts b/src/packages/provider/src/accounts/connectionStoreHome.ts
+index 99549c8d..ebf6b87f 100644
+--- a/src/packages/provider/src/accounts/connectionStoreHome.ts
++++ b/src/packages/provider/src/accounts/connectionStoreHome.ts
+@@ -1,6 +1,6 @@
+ /**
+  * El hogar del store de conexiones de proveedor y su apertura. Cuelga del
+- * hogar de configuración de thyrox (`resolveConfigHomeDir`) en vez de componer
++ * hogar de configuración de thyrox (`resolveDataDir`) en vez de componer
+  * uno propio por plataforma, como hace OmniRoute con `DATA_DIR`;
+  * `THYROX_PROVIDERS_DATA_DIR` lo declara aparte y vacía no cuenta.
+  *
+@@ -11,10 +11,9 @@
+  */
+ import { Database } from 'bun:sqlite'
+ import fs from 'node:fs'
+-import { homedir } from 'node:os'
+-import { join, resolve } from 'node:path'
++import { join } from 'node:path'
+ 
+-import { resolveConfigHomeDir } from '@thyrox/config/env/configHome'
++import { resolveDataDir } from '@thyrox/config/env/configHome'
+ 
+ import { createConnectionStore, type ConnectionStore } from './connectionStore.ts'
+ import { fieldCipherFromEnv } from './fieldCipher.ts'
+@@ -24,9 +23,7 @@ export const CONNECTIONS_DB_FILE = 'connections.sqlite3'
+ const OWNER_ONLY = 0o700
+ 
+ export function resolveProvidersDataDir(env: Record<string, string | undefined> = process.env): string {
+-  const declared = env.THYROX_PROVIDERS_DATA_DIR?.trim()
+-  if (declared) return resolve(declared)
+-  return join(resolveConfigHomeDir({ env, home: homedir(), exists: fs.existsSync }), PROVIDERS_DATA_SUBDIR)
++  return resolveDataDir('THYROX_PROVIDERS_DATA_DIR', PROVIDERS_DATA_SUBDIR, env)
+ }
+ 
+ export interface OpenedConnectionStore {

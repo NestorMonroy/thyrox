@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 .claude/workbench/tool-use-preflight-rename-20260927T204422/probes/checks.txt", "started_at": "2026-09-27T20:44:22+00:00"}

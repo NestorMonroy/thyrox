@@ -1,0 +1,8 @@
+{
+  "id": "109",
+  "subject": "Triar los tres guiones de hook homónimos y divergentes entre clones",
+  "description": "ID: TASK-DOCS-0008\n\nTres guiones de hook existen en dos clones con el MISMO nombre y CUERPO distinto — medido por sha256: inject-coherence-audit.sh (api 26 líneas / docs 31), inject-flow-selection.sh (api 10 / docs 73), save-agent-result.mjs (api 71 / docs 134). El puente de hooks los trata como dos cosas distintas, que es correcto y no resuelve la pregunta de fondo: ¿son divergencia deliberada o deriva? Si es deriva, la forma ya está resuelta por consolidar-reglas-fuente-unica (Opción B: copia delgada que apunta al canónico). Medir cada par y decidir por par, no en bloque. Ver h-docs-1055.\n\nURGENTE una vez que bridge_hooks.py --apply aterrice: la semántica del puente es UNIÓN, así que los dos inject-* disparan DOS veces en cada SessionStart (la copia de api y la de docs, que no son el mismo guion) y save-agent-result.mjs apenda a DOS registros distintos — el reporte de un subagente queda partido. El puente multiplica la divergencia en vez de exponerla una vez.\n\nIncluir en el mismo triaje: api/.claude/hooks/inject_drf_skill_gate.py:79-80 decide por prefijo de ruta relativa (\"/src/\" in p or p.startswith(\"src/\"), ídem tests/) SIN comprobar de qué clon viene el archivo. Hoy es inocuo porque el hook está inerte; puenteado dispararía sobre cualquier .py bajo src/ o tests/ de cualquier repo. Misma clase que h-docs-1056, pero el fallo no es ruidoso: inyecta el recordatorio equivocado y nadie lo nota.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

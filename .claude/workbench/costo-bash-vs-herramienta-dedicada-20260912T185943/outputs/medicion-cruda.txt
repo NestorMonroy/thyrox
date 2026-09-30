@@ -1,0 +1,34 @@
+=== 1. Read tool_result REAL vs Bash equivalente, mismo archivo/rango ===
+
+[lectura completa] /home/user/thyrox/tests/session/test_write_env.py
+  lineas                   : 201
+  cat plano (bytes)        : 9251
+  Read tool_result (bytes) : 9951
+  delta (Read - cat)       : +700  (+7.6%)
+  overhead por linea       : 3.48 bytes/linea
+
+[lectura parcial offset=95 limit=45] /home/user/thyrox/src/session/job_runs.py
+  sed -n '95,139p' (bytes) : 2291
+  Read tool_result (bytes)         : 2465
+  delta (Read - sed)               : +174  (+7.6%)
+
+  TOTAL Bash (cat/sed)     : 11542
+  TOTAL Read tool_result   : 12416
+  TOTAL delta              : +874  (+7.6%)
+  ~ tokens (heuristica 4 char/tok, NO medido con tokenizer real): +218
+
+=== 2. Edit — la resolucion REAL del conflicto de merge en generate_bin.py ===
+     (identificada por contenido: la que combina 'bin_name' y 'PYTHONPATH')
+  old_string : 284b
+  new_string : 264b
+  payload Edit (old+new, INPUT tokens del tool_use) : 548b
+  equivalente Bash real (3 lineas de marcador, sin cuerpo) : 121b
+  ~ tokens del payload Edit (4 char/tok, NO medido)        : +137
+  ~ tokens del sed equivalente (4 char/tok, NO medido)     : +30
+
+  Total llamadas Edit sobre generate_bin.py en toda la sesion: 21
+  (la mayoria NO son la resolucion del conflicto: son ediciones normales
+   de las fases anteriores — implementar resolve_bin_name, el fix del
+   separador guion/guion_bajo, etc. No se comparan aqui 1:1 contra Bash
+   porque cada una tiene su propia alternativa y mezclar las 21 en un
+   total unico seria el sub-patron A de metrica-decide-la-conclusion.md.

@@ -1,0 +1,16 @@
+Coordinate refresh, cooldowns and windows via the port
+
+ADR-THYROX-006 phases R3 and R4. The provider takes an optional
+SharedStateStore; without it every consumer behaves as before.
+
+- Token refresh takes a lease per connection: only the owner calls
+  the provider, the others wait for the lease and read the tokens it
+  persisted. If the port throws, nothing is refreshed.
+- A credential cooldown is published with its TTL, so another proxy
+  sees the credential cooled down until it expires.
+- checkGlobalWindow counts a request per credential in a shared
+  window and reports when the limit is passed.
+
+Annulling the lease drops the two cases that depend on it; skipping
+the cooldown publish drops the cross-instance case; counting only
+locally drops the two shared-window cases.

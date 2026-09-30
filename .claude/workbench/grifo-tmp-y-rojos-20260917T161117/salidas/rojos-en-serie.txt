@@ -1,0 +1,14 @@
+ROJO tests/agents/test-agent-store-reassignment-guard.sh
+ROJO tests/agents/test-agent-store-render-tablero.sh
+VERDE tests/agents/test-agent-store-usage-columns.sh
+ROJO tests/agents/test-carrete-store.sh
+ROJO tests/lib/test-script-deprecated.sh
+VERDE tests/repo/test-fixture-leak.sh
+ROJO tests/session/test-instalar-config-usuario.sh
+ROJO tests/verify/test-agent-artifacts.sh
+ROJO tests/verify/test-coordinator-sin-worktree.sh
+ROJO tests/verify/test-destino-del-reporte.sh
+ROJO tests/verify/test-eventos-hook.sh
+ROJO tests/verify/test-generator-determinism.sh
+ROJO tests/verify/test-script-naming.sh
+VERDE tests/verify/test-vocabulario-prosa.sh

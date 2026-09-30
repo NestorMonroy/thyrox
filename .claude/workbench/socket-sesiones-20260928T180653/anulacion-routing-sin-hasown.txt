@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxRouting.test.ts:
+90 |   })
+91 | 
+92 |   test('una acción heredada del prototipo no cuenta como registrada', async () => {
+93 |     const { deps, warnings } = harness()
+94 |     await handleInboxMessage({ type: 'control', action: 'toString' }, PEER, deps)
+95 |     expect(warnings).toEqual(['[uds-messaging] Unhandled control action: toString'])
+                          ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "[uds-messaging] Unhandled control action: toString",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxRouting.test.ts:95:22)
+(fail) handleInboxMessage (be) > una acción heredada del prototipo no cuenta como registrada [0.35ms]
+
+ 11 pass
+ 1 fail
+ 21 expect() calls
+Ran 12 tests across 1 file. [112.00ms]

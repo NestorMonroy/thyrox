@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsLogRedaction.test.ts:
+42 | })
+43 | 
+44 | describe('telemetría de funcionalidad', () => {
+45 |   test('featureErrorCode (qde): un código conforme pasa; otro es nonconforming; un no-texto no hay código', () => {
+46 |     expect(featureErrorCode('unauthed_drop')).toBe('unauthed_drop')
+47 |     expect(featureErrorCode('1bad')).toBe('nonconforming')
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: "nonconforming"
+Received: "1bad"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsLogRedaction.test.ts:47:38)
+(fail) telemetría de funcionalidad > featureErrorCode (qde): un código conforme pasa; otro es nonconforming; un no-texto no hay código [0.34ms]
+53 |     const events: Array<[string, Record<string, unknown>]> = []
+54 |     const sink = (name: string, metadata: Record<string, unknown>) => void events.push([name, metadata])
+55 |     reportFeatureOk('cross_session_inbox_auth', undefined, sink)
+56 |     reportFeatureBad('cross_session_inbox_auth', 'unauthed_drop', undefined, sink)
+57 |     reportFeatureSad('cross_session_inbox_auth', 'silent connection', { extra: 1 }, sink)
+58 |     expect(events).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -17,3 +17,3 @@
+      {
+-       "error_code": "nonconforming",
++       "error_code": "silent connection",
+        "extra": 1,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsLogRedaction.test.ts:58:20)
+(fail) telemetría de funcionalidad > ok, bad y sad emiten su evento con feature_name y error_code [0.33ms]
+
+ 4 pass
+ 2 fail
+ 14 expect() calls
+Ran 6 tests across 1 file. [39.00ms]

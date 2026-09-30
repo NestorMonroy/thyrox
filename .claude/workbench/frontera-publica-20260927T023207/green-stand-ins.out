@@ -1,0 +1,18 @@
+
+1. Nombra lo que un hermano ya exporta, con su especificador
+  ok    la función exportada por ./env/utils
+  ok    la constante también
+  ok    el tipo exportado por la raíz del hermano
+  ok    no lo que sólo existe en un archivo fuera de exports
+  ok    ni lo que exporta el propio paquete
+
+2. El conteo publica su denominador y la CLI discrimina
+  ok    con sustitutos obsoletos sale 1
+  ok    y publica cuántos símbolos midió en cuántos archivos
+  ok    sin obsoletos sale 0
+
+3. Rehúsa sin publicar un cero cuando no hay nada que medir
+  ok    sin sustitutos rehúsa con 2
+  ok    y sin conteo
+
+test_check_stand_ins: 10 ok, 0 falla(s)

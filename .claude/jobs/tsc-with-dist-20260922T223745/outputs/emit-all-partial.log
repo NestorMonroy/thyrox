@@ -1,0 +1,15 @@
+agent: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/docs.ts, ../../paths/reach.ts, ../../store/db.ts
+app-host: emitio pese a 7752 errores (316 propio(s))
+audio-capture-napi: emitio pese a 23 errores (23 propio(s))
+binary: emitio pese a 18 errores (18 propio(s))
+bridge: emitio pese a 6212 errores (122 propio(s))
+cli: NO EMITIO — 7 import(s) salen de su rootDir: ../../coordination/branchIntegration.ts, ../../coordination/claims.ts, ../../coordination/ledger.ts, ../../task/io.ts, ../../task/premises.ts, ../../task/rst.ts, ../../workbench/manifest.ts
+color-diff-napi: emitio pese a 8 errores (8 propio(s))
+command-runtime: emitio pese a 6770 errores (423 propio(s))
+config: emitio pese a 6612 errores (665 propio(s))
+context-compression: OK
+daemon: emitio pese a 252 errores (252 propio(s))
+headless-sdk: emitio pese a 15 errores (15 propio(s))
+ide: emitio pese a 5434 errores (102 propio(s))
+image-processor-napi: emitio pese a 31 errores (31 propio(s))
+local-observability: emitio pese a 106 errores (101 propio(s))

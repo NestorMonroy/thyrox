@@ -1,0 +1,57 @@
+# primera medición
+== 1: código anidado ignorado -> 2
+== 2: código plano ignorado -> 2
+== 3: rotatorio sin códigos muertos -> 2
+== 4: rotatorio 401 pasajero -> 2
+== 5: rotatorio 401 sin código propio -> 1
+== 6: rotatorio sin cliente exigido -> 1
+== 7: rotatorio la red lanza -> 2
+== 8: rotatorio sin refresh rotado -> 2
+== 9: rotatorio pide scope -> 2
+== 10: codex sin reused -> 1
+== 11: codex url fija -> 0
+== 12: openference sin token_expired -> 1
+== 13: cursor sin reintentar 429 -> 2
+== 14: cursor 403 pasajero -> 1
+== 15: cursor sin rechazo -> 1
+== 16: cursor sin jitter -> 1
+== 17: cursor sin exponencial -> 2
+== 18: cursor sin margen -> 1
+== 19: cursor ttl de reserva 0 -> 1
+== 20: cursor acepta sin access token -> 1
+== 21: cursor sin refresh vacío muerto -> 1
+== 22: cursor intentos fijos -> 1
+== 23: cursor la red no reintenta -> 1
+== 24: cursor reintento en el último -> 0
+== 25: cursor sin refresh rotado -> 1
+== 26: kimi id derivado cambia -> 1
+== 27: kimi ignora el id guardado -> 1
+== 28: kimi nombre del host ignorado -> 1
+== 29: kimi sin cabeceras de identidad -> 2
+== 30: kimi versión sin entorno -> 1
+== 31: kimi sin clasificar -> 1
+== 32: kimi sin tokenType -> 1
+== 33: kimi sin scope -> 1
+== 34: muse sin dca guardado -> 1
+== 35: muse acepta cualquier refresh -> 1
+== 36: muse pierde datos previos -> 1
+== 37: muse sin reloj -> 1
+== 38: muse fallo de acuñado lanza -> 1
+== 39: kiro idp config lanza -> 0
+== 40: kiro idp sin invalid_client -> 1
+== 41: kiro idp sin caducidad de reserva -> 1
+== 42: kiro región sin validar -> 1
+== 43: kiro aws sin muertos -> 2
+== 44: kiro sin __type -> 2
+== 45: kiro sin re-registro -> 1
+== 46: kiro sin newClient -> 1
+== 47: kiro importado por aws -> 1
+== 48: kiro social sin muertos -> 1
+== 49: kiro región por defecto -> 1
+== restaurado -> 0
+
+# re-medición tras afinar
+== 11: codex url fija -> 1
+== 24: cursor reintento en el último -> 1
+== 39: kiro idp config lanza -> 1
+== restaurado -> 0

@@ -1,0 +1,34 @@
+def self_paths(package_dir: Path) -> dict:
+    """`paths` que resuelve el NOMBRE propio del paquete a su fuente.
+
+    Un paquete que vuelve a si mismo por su nombre —directo, o a traves de la
+    declaracion de un hermano— pasa por su `exports` repuntado y llega a su
+    `dist/`: la misma clase queda con dos identidades (medido: los 48 errores
+    propios de tool-registry y el ultimo de repl). Los hermanos no se tocan:
+    siguen por `dist`, que es lo que ve un consumidor externo.
+    """
+    manifest = _read_manifest(package_dir)
+    name = manifest.get("name")
+    exports = manifest.get("exports")
+    if not isinstance(name, str):
+        return {}
+    if not isinstance(exports, dict):
+        exports = {".": exports or manifest.get("main")}
+    paths = {}
+    for subpath, entry in exports.items():
+        source = entry.get("default") if isinstance(entry, dict) else entry
+        if not isinstance(subpath, str) or not isinstance(source, str):
+            continue
+        if source.lstrip("./").startswith(f"{OUTPUT_DIR}/"):
+            continue
+        key = name if subpath == "." else f"{name}/{subpath.removeprefix('./')}"
+        paths[key] = [source if source.startswith(".") else f"./{source}"]
+    return paths
+
+
+def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
+    project = package_dir / filename
+    own = self_paths(package_dir)
+    if own and "paths" not in options:
+        options = {**options, "paths": own}
+    body = {"compilerOptions": options, "include": include, "exclude": list(TEST_EXCLUDE)}

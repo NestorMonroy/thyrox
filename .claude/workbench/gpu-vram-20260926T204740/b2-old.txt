@@ -1,0 +1,2 @@
+    local n="$1" item="$2"
+    { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \

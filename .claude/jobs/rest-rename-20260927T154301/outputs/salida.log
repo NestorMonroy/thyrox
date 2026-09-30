@@ -1,0 +1,295 @@
+run-task-pool: 22 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T154302
+  job-20260927T154302/job-001 pid 7627    bash bin/check_package_typecheck --strict --jobs 2 agent app-host bridge claude-for-chrome-mcp cli command-runtime computer-use-mcp config daemon headless-sdk ide mcp-runtime memory permission provider shell storage teleport tool-registry updater voice 
+  job-20260927T154302/job-002 pid 7654    cd src/packages/agent && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-003 pid 7689    cd src/packages/app-host && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-004 pid 7827    cd src/packages/bridge && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-005 pid 8160    cd src/packages/claude-for-chrome-mcp && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-006 pid 8725    cd src/packages/cli && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-007 pid 15008   cd src/packages/command-runtime && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-008 pid 18364   cd src/packages/computer-use-mcp && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-009 pid 18527   cd src/packages/config && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-010 pid 19393   cd src/packages/daemon && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-011 pid 19437   cd src/packages/headless-sdk && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-012 pid 19463   cd src/packages/ide && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-013 pid 19555   cd src/packages/mcp-runtime && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-014 pid 19649   cd src/packages/memory && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-015 pid 19693   cd src/packages/permission && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-016 pid 19987   cd src/packages/provider && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-017 pid 20362   cd src/packages/shell && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-018 pid 20453   cd src/packages/storage && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-019 pid 20496   cd src/packages/teleport && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-020 pid 20518   cd src/packages/tool-registry && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-021 pid 21365   cd src/packages/updater && set -o pipefail && bun test 2>&1 | tail -25
+  job-20260927T154302/job-022 pid 21497   cd src/packages/voice && set -o pipefail && bun test 2>&1 | tail -25
+run-task-pool: lanzados 22 de 22; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T154302_job-002 -> OK (2 de 23)
+asentado: job-20260927T154302_job-003 -> OK (3 de 23)
+asentado: job-20260927T154302_job-004 -> OK (4 de 23)
+asentado: job-20260927T154302_job-005 -> OK (5 de 23)
+asentado: job-20260927T154302_job-006 -> OK (6 de 23)
+asentado: job-20260927T154302_job-007 -> OK (7 de 23)
+asentado: job-20260927T154302_job-008 -> OK (8 de 23)
+asentado: job-20260927T154302_job-009 -> OK (9 de 23)
+asentado: job-20260927T154302_job-010 -> OK (10 de 23)
+asentado: job-20260927T154302_job-011 -> OK (11 de 23)
+asentado: job-20260927T154302_job-012 -> OK (12 de 23)
+asentado: job-20260927T154302_job-013 -> OK (13 de 23)
+asentado: job-20260927T154302_job-014 -> OK (14 de 23)
+asentado: job-20260927T154302_job-015 -> OK (15 de 23)
+asentado: job-20260927T154302_job-016 -> OK (16 de 23)
+asentado: job-20260927T154302_job-017 -> OK (17 de 23)
+asentado: job-20260927T154302_job-018 -> OK (18 de 23)
+asentado: job-20260927T154302_job-019 -> OK (19 de 23)
+asentado: job-20260927T154302_job-020 -> OK (20 de 23)
+asentado: job-20260927T154302_job-021 -> OK (21 de 23)
+asentado: job-20260927T154302_job-022 -> OK (22 de 23)
+esperando: 22 de 23 asentados, 31s; vivos: job-20260927T154302_job-001
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.65s
+sonda job-20260927T154302_job-001: 23087 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 23089 node stdin=devnull(/dev/null) escritores=- estado=R cpu=12.42s
+sonda job-20260927T154302_job-001: 23571 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 23573 node stdin=devnull(/dev/null) escritores=- estado=R cpu=3.28s
+esperando: 22 de 23 asentados, 62s; vivos: job-20260927T154302_job-001
+sonda job-20260927T154302_job-001: 7627 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7631 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 7633 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.67s
+sonda job-20260927T154302_job-001: 25352 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 25353 node stdin=devnull(/dev/null) escritores=- estado=R cpu=5.55s
+sonda job-20260927T154302_job-001: 25360 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T154302_job-001: 25361 node stdin=devnull(/dev/null) escritores=- estado=R cpu=4.92s
+asentado: job-20260927T154302_job-001 -> OK (2 de 23)
+== 23 trabajos asentados ==
+OLVIDADO job-20260927T154302
+       | (vacío — no emitió nada)
+OK     job-20260927T154302_job-001 exit=0
+       |   provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   teleport: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   updater: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       |   voice: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+       | 
+       | check-package-typecheck: 0 error(es) propio(s) (alcance medido: 21 de 21 paquete(s))
+       | EXIT=0
+       memoria pico: 851504 KB (832 MB) · pared 209.85s
+OK     job-20260927T154302_job-002 exit=1
+       | (fail) ensamblado del prompt de sistema (T-022) > el base NUNCA se descarta, aunque el presupuesto sea absurdo [0.30ms]
+       | 
+       | __tests__/portFidelity.test.ts:
+       | [portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+       | 
+       |  2650 pass
+       |  5 fail
+       |  4851 expect() calls
+       | Ran 2655 tests across 196 files. [27.74s]
+       | EXIT=1
+       memoria pico: 261260 KB (255 MB) · pared 27.77s
+OK     job-20260927T154302_job-003 exit=1
+       | + Received  + 1
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts:129:19)
+       | (fail) meterState — counter snapshot (setMeter factory calls) > setMeter invokes createCounter exactly 8 times with locked names + descriptions + units [0.36ms]
+       | 
+       |  249 pass
+       |  2 fail
+       |  421 expect() calls
+       | Ran 251 tests across 28 files. [1.86s]
+       | EXIT=1
+       memoria pico: 215028 KB (210 MB) · pared 1.88s
+OK     job-20260927T154302_job-004 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  146 pass
+       |  0 fail
+       |  200 expect() calls
+       | Ran 146 tests across 9 files. [596.00ms]
+       | EXIT=0
+       memoria pico: 124332 KB (121 MB) · pared 0.60s
+OK     job-20260927T154302_job-005 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  2 pass
+       |  0 fail
+       |  4 expect() calls
+       | Ran 2 tests across 1 file. [62.00ms]
+       | EXIT=0
+       memoria pico: 48216 KB (47 MB) · pared 0.07s
+OK     job-20260927T154302_job-006 exit=1
+       |       at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:99:29)
+       | (fail) A.4.2 — el prompt de la CLI se arma por capas > 1. el CLAUDE.md del proyecto llega al modelo [1906.08ms]
+       | (was r0000001, now newshort)
+       | 
+       |  366 pass
+       |  1 todo
+       |  2 fail
+       |  712 expect() calls
+       | Ran 369 tests across 34 files. [82.35s]
+       | EXIT=1
+       memoria pico: 241928 KB (236 MB) · pared 82.38s
+OK     job-20260927T154302_job-007 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  327 pass
+       |  0 fail
+       |  602 expect() calls
+       | Ran 327 tests across 26 files. [80.78s]
+       | EXIT=0
+       memoria pico: 216048 KB (211 MB) · pared 80.81s
+OK     job-20260927T154302_job-008 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  25 pass
+       |  0 fail
+       |  94 expect() calls
+       | Ran 25 tests across 4 files. [549.00ms]
+       | EXIT=0
+       memoria pico: 57072 KB (56 MB) · pared 0.56s
+OK     job-20260927T154302_job-009 exit=1
+       | Received: "/r/THYROX.md"
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/instructionFiles.test.ts:53:68)
+       | (fail) pickInstructionsFile > con sólo el heredado, se usa el heredado [0.11ms]
+       | 
+       |  740 pass
+       |  5 fail
+       |  1430 expect() calls
+       | Ran 745 tests across 53 files. [10.25s]
+       | EXIT=1
+       memoria pico: 157428 KB (154 MB) · pared 10.26s
+OK     job-20260927T154302_job-010 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  127 pass
+       |  0 fail
+       |  203 expect() calls
+       | Ran 127 tests across 9 files. [808.00ms]
+       | EXIT=0
+       memoria pico: 84448 KB (82 MB) · pared 0.81s
+OK     job-20260927T154302_job-011 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  38 pass
+       |  0 fail
+       |  54 expect() calls
+       | Ran 38 tests across 3 files. [55.00ms]
+       | EXIT=0
+       memoria pico: 54804 KB (54 MB) · pared 0.06s
+OK     job-20260927T154302_job-012 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  23 pass
+       |  0 fail
+       |  42 expect() calls
+       | Ran 23 tests across 3 files. [621.00ms]
+       | EXIT=0
+       memoria pico: 120404 KB (118 MB) · pared 0.64s
+OK     job-20260927T154302_job-013 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  424 pass
+       |  0 fail
+       |  563 expect() calls
+       | Ran 424 tests across 21 files. [1.70s]
+       | EXIT=0
+       memoria pico: 216588 KB (212 MB) · pared 1.72s
+OK     job-20260927T154302_job-014 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  87 pass
+       |  0 fail
+       |  123 expect() calls
+       | Ran 87 tests across 5 files. [278.00ms]
+       | EXIT=0
+       memoria pico: 88496 KB (86 MB) · pared 0.29s
+OK     job-20260927T154302_job-015 exit=1
+       | Received: "thyrox requested permissions to use Bash, but you haven't granted it yet."
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts:11:52)
+       | (fail) createPermissionRequestMessage (su) > sin razón: el aviso genérico [0.18ms]
+       | 
+       |  1071 pass
+       |  4 fail
+       |  1821 expect() calls
+       | Ran 1075 tests across 69 files. [12.01s]
+       | EXIT=1
+       memoria pico: 225132 KB (220 MB) · pared 12.03s
+OK     job-20260927T154302_job-016 exit=1
+       | Received: "export function getSubscriptionName(): string {\n  switch (getSubscriptionType()) {\n    case 'enterprise':\n      return `${PRODUCT_NAME} Enterprise`\n    case 'team':\n      return `${PRODUCT_NAME} Team`\n    case 'max':\n      return `${PRODUCT_NAME} Max`\n    case 'pro':\n      return `${PRODUCT_NAME} Pro`\n    default:\n      return 'Anthropic API'\n  }\n}\n\nexport function isUsing3PServices(): boolean {\n  return !!(\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||\n    isEnvTruthy(readEnv("
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/subscriptionHelpers.behavior.test.ts:31:21)
+       | (fail) subscription helpers (ant No/QQ_/etc parity) > getSubscriptionName: full switch covers enterprise/team/max/pro + Claude API default [0.23ms]
+       | 
+       |  1823 pass
+       |  1 fail
+       |  3183 expect() calls
+       | Ran 1824 tests across 146 files. [5.99s]
+       | EXIT=1
+       memoria pico: 264892 KB (259 MB) · pared 6.04s
+OK     job-20260927T154302_job-017 exit=0
+       |   stdin-peek [--timeout-ms N]
+       |   env [--gha] [--json]
+       | 
+       | Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+       | 
+       |  288 pass
+       |  0 fail
+       |  432 expect() calls
+       | Ran 288 tests across 17 files. [1.62s]
+       | EXIT=0
+       memoria pico: 216132 KB (211 MB) · pared 1.65s
+OK     job-20260927T154302_job-018 exit=1
+       | Plan file missing during resume: /tmp/plans-qYDoIb/plans/slug-recuperado-attachment.md. Attempting recovery.
+       | Plan recovered from message history, 18 chars
+       | Plan file missing during resume: /tmp/plans-8QClKv/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+       | Plan file recovery failed: no file snapshot or plan content found in message history
+       | 
+       |  1178 pass
+       |  14 fail
+       |  2632 expect() calls
+       | Ran 1192 tests across 71 files. [7.38s]
+       | EXIT=1
+       memoria pico: 259508 KB (253 MB) · pared 7.41s
+OK     job-20260927T154302_job-019 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  14 pass
+       |  0 fail
+       |  16 expect() calls
+       | Ran 14 tests across 1 file. [11.00ms]
+       | EXIT=0
+       memoria pico: 39020 KB (38 MB) · pared 0.02s
+OK     job-20260927T154302_job-020 exit=1
+       | Received: "Schedule a prompt to run at a future time within this thyrox session — either recurring on a cron schedule, or once at a specific time."
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/tools/ScheduleCronTool/__tests__/cronPromptBuilders.test.ts:33:15)
+       | (fail) buildCronCreateDescription > durable=false: NO durable mentions, session-only language [0.23ms]
+       | 
+       |  1421 pass
+       |  1 fail
+       |  3251 expect() calls
+       | Ran 1422 tests across 86 files. [8.81s]
+       | EXIT=1
+       memoria pico: 248964 KB (243 MB) · pared 8.84s
+OK     job-20260927T154302_job-021 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  57 pass
+       |  0 fail
+       |  64 expect() calls
+       | Ran 57 tests across 5 files. [903.00ms]
+       | EXIT=0
+       memoria pico: 132712 KB (130 MB) · pared 0.91s
+OK     job-20260927T154302_job-022 exit=0
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  27 pass
+       |  0 fail
+       |  63 expect() calls
+       | Ran 27 tests across 2 files. [997.00ms]
+       | EXIT=0
+       memoria pico: 149344 KB (146 MB) · pared 1.01s
+salida distinta de 0: 8 (job-20260927T154302_job-002 job-20260927T154302_job-003 job-20260927T154302_job-006 job-20260927T154302_job-009 job-20260927T154302_job-015 job-20260927T154302_job-016 job-20260927T154302_job-018 job-20260927T154302_job-020)
+__BG_EXIT__=0

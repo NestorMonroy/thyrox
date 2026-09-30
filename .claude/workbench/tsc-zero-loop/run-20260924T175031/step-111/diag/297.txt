@@ -1,0 +1,72 @@
+src/packages/updater/src/internal/semverCompat.ts(18,31): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  --- código src/packages/updater/src/internal/semverCompat.ts:8-28 ---
+      8   * `@thyrox/config/semver.ts` exista, sustituyendo el import por el
+      9   * real.
+     10   *
+     11   * Utilidades de comparación semver que usan `Bun.semver` cuando está
+     12   * disponible y caen al paquete npm `semver` en entornos Node.js.
+     13   *
+     14   * `Bun.semver.order()` es ~20x más rápido que las comparaciones de
+     15   * semver de npm. El fallback de npm semver siempre usa `{ loose: true }`.
+     16   */
+     17  
+     18> let _npmSemver: typeof import('semver') | undefined
+     19  
+     20  function getNpmSemver(): typeof import('semver') {
+     21    if (!_npmSemver) {
+     22      // eslint-disable-next-line @typescript-eslint/no-require-imports
+     23      _npmSemver = require('semver') as typeof import('semver')
+     24    }
+     25    return _npmSemver
+     26  }
+     27  
+     28  export function gt(a: string, b: string): boolean {
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`
+src/packages/updater/src/internal/semverCompat.ts(20,40): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  --- código src/packages/updater/src/internal/semverCompat.ts:10-30 ---
+     10   *
+     11   * Utilidades de comparación semver que usan `Bun.semver` cuando está
+     12   * disponible y caen al paquete npm `semver` en entornos Node.js.
+     13   *
+     14   * `Bun.semver.order()` es ~20x más rápido que las comparaciones de
+     15   * semver de npm. El fallback de npm semver siempre usa `{ loose: true }`.
+     16   */
+     17  
+     18  let _npmSemver: typeof import('semver') | undefined
+     19  
+     20> function getNpmSemver(): typeof import('semver') {
+     21    if (!_npmSemver) {
+     22      // eslint-disable-next-line @typescript-eslint/no-require-imports
+     23      _npmSemver = require('semver') as typeof import('semver')
+     24    }
+     25    return _npmSemver
+     26  }
+     27  
+     28  export function gt(a: string, b: string): boolean {
+     29    if (typeof Bun !== 'undefined') {
+     30      return Bun.semver.order(a, b) === 1
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`
+src/packages/updater/src/internal/semverCompat.ts(23,53): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  --- código src/packages/updater/src/internal/semverCompat.ts:13-33 ---
+     13   *
+     14   * `Bun.semver.order()` es ~20x más rápido que las comparaciones de
+     15   * semver de npm. El fallback de npm semver siempre usa `{ loose: true }`.
+     16   */
+     17  
+     18  let _npmSemver: typeof import('semver') | undefined
+     19  
+     20  function getNpmSemver(): typeof import('semver') {
+     21    if (!_npmSemver) {
+     22      // eslint-disable-next-line @typescript-eslint/no-require-imports
+     23>     _npmSemver = require('semver') as typeof import('semver')
+     24    }
+     25    return _npmSemver
+     26  }
+     27  
+     28  export function gt(a: string, b: string): boolean {
+     29    if (typeof Bun !== 'undefined') {
+     30      return Bun.semver.order(a, b) === 1
+     31    }
+     32    return getNpmSemver().gt(a, b, { loose: true })
+     33  }
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`

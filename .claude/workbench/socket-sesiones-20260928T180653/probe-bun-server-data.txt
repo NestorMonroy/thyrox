@@ -1,0 +1,1 @@
+["accept","data:\"{\\\"a\\\":1}\\n\"","end","close"]

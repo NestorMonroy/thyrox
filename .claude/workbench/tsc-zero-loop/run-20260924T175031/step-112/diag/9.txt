@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(538,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/QueryEngine.ts:528-548 ---
+    528          (msg.type === 'system' && msg.subtype === 'compact_boundary'), // Always ack compact boundaries
+    529      )
+    530      const messagesToAck = replayUserMessages ? replayableMessages : []
+    531  
+    532      // Update the ToolPermissionContext based on user input processing (as necessary)
+    533      setAppState(prev => ({
+    534        ...prev,
+    535        toolPermissionContext: {
+    536          ...prev.toolPermissionContext,
+    537          alwaysAllowRules: {
+    538>           ...prev.toolPermissionContext.alwaysAllowRules,
+    539            command: allowedTools,
+    540          },
+    541        },
+    542      }))
+    543  
+    544      const mainLoopModel = modelFromUserInput ?? initialMainLoopModel
+    545  
+    546      // Recreate after processing the prompt to pick up updated messages and
+    547      // model (from slash commands).
+    548      processUserInputContext = {
+src/packages/agent/QueryEngine.ts(599,11): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+  --- código src/packages/agent/QueryEngine.ts:589-609 ---
+    589      // Cache-only: headless/SDK/CCR startup must not block on network for
+    590      // ref-tracked plugins. CCR populates the cache via CLAUDE_CODE_SYNC_PLUGIN_INSTALL
+    591      // (headlessPluginInstall) or CLAUDE_CODE_PLUGIN_SEED_DIR before this runs;
+    592      // SDK callers that need fresh source can call /reload-plugins.
+    593      const [skills, { enabled: enabledPlugins }] = await Promise.all([
+    594        getSlashCommandToolSkills(getCwd()),
+    595        loadAllPluginsCacheOnly(),
+    596      ])
+    597      headlessProfilerCheckpoint('after_skills_plugins')
+    598  
+    599>     yield buildSystemInitMessage({
+    600        tools,
+    601        mcpClients,
+    602        model: mainLoopModel,
+    603        permissionMode: initialAppState.toolPermissionContext
+    604          .mode as PermissionMode, // TODO: avoid the cast
+    605        commands,
+    606        agents,
+    607        skills,
+    608        plugins: enabledPlugins,
+    609        fastMode: initialAppState.fastMode,

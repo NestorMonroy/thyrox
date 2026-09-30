@@ -1,0 +1,6 @@
+   * - :ref:`h-thyrox-189`
+     - ALTA
+     - RESUELTO
+   * - :ref:`h-thyrox-192`
+     - MEDIA
+     - RESUELTO

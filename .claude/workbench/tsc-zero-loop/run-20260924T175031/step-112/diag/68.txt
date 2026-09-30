@@ -1,0 +1,49 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(448,25): error TS2345: Argument of type '(code?: number) => Promise<any>' is not assignable to parameter of type '(code: number) => Promise<never>'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:438-458 ---
+    438    setWriteFileSyncFn((path, data, options) => {
+    439      // eslint-disable-next-line @typescript-eslint/no-require-imports
+    440      const { writeFileSync } = require('@thyrox/local-observability/slowOperations.js')
+    441      writeFileSync(path, data, options)
+    442    })
+    443    setWriteToStdoutFn((data: string) => {
+    444      // eslint-disable-next-line @typescript-eslint/no-require-imports
+    445      const { writeToStdout } = require('@thyrox/shell/process.js')
+    446      writeToStdout(data)
+    447    })
+    448>   setGracefulShutdownFn(async (code?: number) => {
+    449      // eslint-disable-next-line @typescript-eslint/no-require-imports
+    450      const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js')
+    451      return gracefulShutdown(code)
+    452    })
+    453  
+    454    // --- sesión / cwd
+    455    setGetSessionIdFn(() => getSessionId())
+    456    setGetOriginalCwdFn(() => getOriginalCwd())
+    457    setGetCwdFn(() => getCwd())
+    458    setGetInlinePluginsFn(() =>
+  Type 'Promise<any>' is not assignable to type 'Promise<never>'.
+    Type 'any' is not assignable to type 'never'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(459,5): error TS2352: Conversion of type 'string[]' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:449-469 ---
+    449      // eslint-disable-next-line @typescript-eslint/no-require-imports
+    450      const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js')
+    451      return gracefulShutdown(code)
+    452    })
+    453  
+    454    // --- sesión / cwd
+    455    setGetSessionIdFn(() => getSessionId())
+    456    setGetOriginalCwdFn(() => getOriginalCwd())
+    457    setGetCwdFn(() => getCwd())
+    458    setGetInlinePluginsFn(() =>
+    459>     getInlinePlugins() as Record<string, unknown> | undefined,
+    460    )
+    461  
+    462    // --- settings
+    463    setGetSettingsFn(() => getSettings() as any)
+    464    setGetSettingsForSourceFn(source => getSettingsForSource(source as any) as any)
+    465    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    466  
+    467    // --- fs / path (métodos sync + async)
+    468    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    469    const nodeFs = require('node:fs') as typeof import('node:fs')
+  Index signature for type 'string' is missing in type 'string[]'.

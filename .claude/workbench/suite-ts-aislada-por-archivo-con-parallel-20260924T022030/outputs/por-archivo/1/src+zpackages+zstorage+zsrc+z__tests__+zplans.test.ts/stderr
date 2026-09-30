@@ -1,0 +1,28 @@
+
+src/packages/storage/src/__tests__/plans.test.ts:
+201 | 
+202 |     // Valida que la ruta se mantenga dentro de la raíz del proyecto,
+203 |     // para prevenir path traversal.
+204 |     if (!resolved.startsWith(cwd + sep) && resolved !== cwd) {
+205 |       logError(
+206 |         new Error(`plansDirectory must be within project root: ${settingsDir}`),
+                  ^
+error: plansDirectory must be within project root: ../fuera-del-proyecto
+      at getPlansDirectory (/home/user/thyrox/src/packages/storage/src/plans.ts:206:13)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/plans.test.ts:69:17)
+
+Plan file missing during resume: /tmp/thyrox-tests-vzG9t5/plans-JbW9ZO/plans/slug-recuperado-snap.md. Attempting recovery.
+Plan recovered from file snapshot, 16 chars
+Plan file missing during resume: /tmp/thyrox-tests-vzG9t5/plans-3dVGGc/plans/slug-recuperado-tooluse.md. Attempting recovery.
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/thyrox-tests-vzG9t5/plans-XVSV2L/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/thyrox-tests-vzG9t5/plans-ZNutYQ/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/thyrox-tests-vzG9t5/plans-rJ6zTV/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+
+ 25 pass
+ 0 fail
+ 33 expect() calls
+Ran 25 tests across 1 file. [815.00ms]

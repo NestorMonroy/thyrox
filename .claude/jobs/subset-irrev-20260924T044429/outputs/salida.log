@@ -1,0 +1,122 @@
+run-task-pool: 9 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260924T044429
+  job-20260924T044429/job-001 pid 31910   PYTHONPATH=src python3 tests/hooks/test_detect_unbounded_traversal.py
+  job-20260924T044429/job-002 pid 31934   PYTHONPATH=src python3 tests/hooks/test_detect_ephemeral_citation.py
+  job-20260924T044429/job-003 pid 31955   PYTHONPATH=src python3 tests/hooks/test_detect_topic_duplication.py
+  job-20260924T044429/job-004 pid 31971   PYTHONPATH=src python3 tests/hooks/test_detect_foreground_long_command.py
+  job-20260924T044429/job-005 pid 31986   PYTHONPATH=src python3 tests/session/test_user_wiring.py
+  job-20260924T044429/job-006 pid 32001   PYTHONPATH=src python3 tests/session/test_generate_bin.py
+  job-20260924T044429/job-007 pid 32018   bash tests/verify/test-assert-no-writes.sh
+  job-20260924T044429/job-008 pid 32036   PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+  job-20260924T044429/job-009 pid 32457   bash tests/session/test-headless-pool.sh
+run-task-pool: lanzados 9 de 9; esperando en PRIMER PLANO (timeout 300s)
+asentado: job-20260924T044429_job-001 -> OK (2 de 10)
+asentado: job-20260924T044429_job-002 -> OK (3 de 10)
+asentado: job-20260924T044429_job-003 -> OK (4 de 10)
+asentado: job-20260924T044429_job-004 -> OK (5 de 10)
+asentado: job-20260924T044429_job-005 -> OK (6 de 10)
+asentado: job-20260924T044429_job-008 -> OK (7 de 10)
+asentado: job-20260924T044429_job-007 -> OK (7 de 10)
+asentado: job-20260924T044429_job-009 -> OK (9 de 10)
+asentado: job-20260924T044429_job-006 -> OK (7 de 10)
+== 10 trabajos asentados ==
+OLVIDADO job-20260924T044429
+       | (vacío — no emitió nada)
+OK     job-20260924T044429_job-001
+       |   ok    test_the_timeout_discount_carries_its_own_weight
+       |   ok    test_warns_on_a_symlink_follower_over_a_LIGHT_root
+       |   ok    test_warns_on_an_unbounded_find_over_a_heavy_root
+       |   ok    test_warns_on_an_unbounded_xargs_fed_by_find
+       |   ok    test_warns_on_the_real_runaway_command
+       |   ok    test_warns_on_the_shell_recursive_expansion_that_feeds_awk
+       |   ok    test_warns_when_the_root_comes_from_the_provider_variable
+       |   ok    test_warns_when_the_same_shape_points_at_a_heavy_root
+       | resumen: 0 fallo(s)
+       | EXIT=0
+OK     job-20260924T044429_job-002
+       |   ok    test_stays_silent_when_the_durable_citation_is_present_too
+       |   ok    test_stays_silent_without_a_task_word_present
+       |   ok    test_stays_silent_without_command_or_content
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_the_evidence_path_anchor_carries_its_own_weight
+       |   ok    test_the_word_anchor_carries_its_own_weight
+       |   ok    test_warns_on_a_bare_board_ordinal_in_a_commit_message
+       |   ok    test_warns_on_board_hash_form
+       | resumen: 0 fallo(s)
+       | EXIT=0
+OK     job-20260924T044429_job-003
+       |   ok    test_detect_stays_silent_without_candidate_tokens
+       |   ok    test_detect_stays_silent_without_content
+       |   ok    test_excludes_the_initiative_being_written_into
+       |   ok    test_finds_a_duplicate_identifier_in_another_initiative
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_the_frequency_cap_carries_its_own_weight
+       |   ok    test_the_path_anchor_reuses_detect_finding_layer_pattern
+       |   ok    test_the_underscore_anchor_carries_its_own_weight
+       | resumen: 0 fallo(s)
+       | EXIT=0
+OK     job-20260924T044429_job-004
+       |   ok    test_names_every_family_the_command_invokes
+       |   ok    test_stays_silent_on_short_commands
+       |   ok    test_stays_silent_when_the_command_already_uses_the_assembler
+       |   ok    test_stays_silent_without_a_command
+       |   ok    test_the_background_discount_carries_its_own_weight
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_warns_on_the_bare_suite
+       | resumen: 0 fallo(s)
+       | EXIT=0
+OK     job-20260924T044429_job-005
+       |   ok    17-bis.1 anulado el sufijo, el relativo SIGUE viendose (lleva `/`)
+       |   ok    17-bis.2 anulados los prefijos, `~/` deja de resolver a la casa
+       |   ok    17-bis.3 y el interprete sano SOBREVIVE en None
+       |   ok    17-bis.4 restaurado, el sufijo vuelve a casar un `.ts`
+       |   ok    17-bis.5 con la version vieja, 17.1 CAE
+       |   ok    17-bis.6 y 17.2 CAE: el comando roto sale del universo
+       |   ok    17-bis.7 restaurada, vuelve a verlo
+       | 
+       | 78 ok, 0 fallos
+       | EXIT=0
+OK     job-20260924T044429_job-006
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |   ok   y el plan medido no esta vacio
+       | 
+       | 118 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=0
+OK     job-20260924T044429_job-007
+       |   ok   payload 2: el despacho salio 0
+       |   ok   payload 3: el despacho de los 11 no escribe
+       |   ok   payload 3: el despacho salio 0
+       |   ok   payload 4: el despacho de los 11 no escribe
+       |   ok   payload 4: el despacho salio 0
+       |   ok   payload 5: el despacho de los 11 no escribe
+       |   ok   payload 5: el despacho salio 0
+       | 
+       | OK: todas las aserciones pasan (alcance medido: 5 payload(s) de despacho, 11 detector(es) por payload)
+       | EXIT=0
+OK     job-20260924T044429_job-008
+       | ok   test_stays_silent_on_a_payload_without_prompt
+       | ok   test_stays_silent_when_the_work_needs_judgment
+       | ok   test_suggests_the_headless_pool_for_judgment_over_many_items
+       | ok   test_the_judgment_half_carries_its_own_weight
+       | ok   test_the_notice_states_the_measured_cost_asymmetry
+       | ok   test_the_real_captured_payload_stays_silent
+       | ok   test_warns_when_the_dispatched_work_is_a_suite
+       | 
+       | 11 caso(s); 0 fallo(s)
+       | EXIT=0
+OK     job-20260924T044429_job-009
+       | OK   alias: exit 2
+       | OK   alias: sin resumen
+       | OK   sin items: exit 2
+       | OK   sin parallel: exit 2
+       | OK   sin parallel: lo nombra
+       | OK   sin claude: exit 2
+       | OK   sin plantilla: exit 2
+       | 
+       | aserciones: 18 de 18 · fallos: 0
+       | EXIT=0
+__BG_EXIT__=0

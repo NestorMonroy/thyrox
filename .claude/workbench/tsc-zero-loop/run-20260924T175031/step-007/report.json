@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3360, "total_final": 3337, "tsc_runs": 1, "accepted": ["agent:repl-appstate-shape"], "files_kept": ["src/packages/repl/src/selectors.ts", "src/packages/repl/src/teammateViewHelpers.ts"], "outcomes": {"agent:repl-appstate-shape": "accepted-net"}}

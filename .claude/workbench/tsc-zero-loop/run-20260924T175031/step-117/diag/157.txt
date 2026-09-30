@@ -1,0 +1,23 @@
+src/packages/swarm/src/install/installSwarmHost.ts(19,3): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'compactConversation'.
+  --- código src/packages/swarm/src/install/installSwarmHost.ts:9-29 ---
+      9  import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
+     10  import { Spinner } from '@thyrox/repl/components/Spinner.js'
+     11  import {
+     12    type OptionWithDescription,
+     13    Select,
+     14  } from '@thyrox/repl/components/CustomSelect/index.js'
+     15  import { logEvent } from '@thyrox/local-observability'
+     16  import { getAutoCompactThreshold } from '@thyrox/agent/compaction/autoCompact.js'
+     17  import {
+     18    buildPostCompactMessages,
+     19>   compactConversation,
+     20    ERROR_MESSAGE_USER_ABORT,
+     21  } from '@thyrox/agent/compaction/compact.js'
+     22  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
+     23  import {
+     24    createTaskStateBase,
+     25    generateTaskId,
+     26    isTerminalTaskStatus,
+     27  } from '@thyrox/tool-registry/Task.js'
+     28  import {
+     29    createActivityDescriptionResolver,

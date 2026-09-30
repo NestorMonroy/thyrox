@@ -1,0 +1,6 @@
+test_store_import_without_roster:
+  FALLA importar el store sin roster no falla — esperado 0, obtenido 1
+  ok    --repo sin roster rehusa
+  ok    y el rechazo nombra THYROX_REACH_ROOTS
+  ok    con el roster declarado, --repo docs se acepta
+test_store_import_without_roster: 4 aserciones — 3 ok, 1 falla(s)

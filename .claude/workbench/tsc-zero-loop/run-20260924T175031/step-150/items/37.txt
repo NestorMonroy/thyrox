@@ -1,0 +1,29 @@
+Patrón: in-operator-no-estrecha-por-indice-signature
+Señal del verificador: TS18048: '.*\.message\.[a-zA-Z]+' is possibly 'undefined'
+Arreglo genérico: Cuando el tipo base lleva una firma de índice ([key: string]: unknown), el operador `in` no descarta las variantes de la unión donde la propiedad es opcional, porque el índice ya la declara presente para todas. Cambiar el guard de `'campo' in obj` a comprobar el valor (`if (!obj.campo) return ...`) sí estrecha por flujo de control, sin cambiar la conducta en runtime cuando el campo, si existe, es siempre un objeto truthy.
+Ya aplicado en: src/packages/output/src/render/exportRenderer.tsx
+Archivos donde la señal sigue viva: src/packages/repl/src/components/Message.tsx
+
+src/packages/repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:106-126 ---
+    106          <AttachmentMessage
+    107            addMargin={addMargin}
+    108            attachment={message.attachment}
+    109            verbose={verbose}
+    110            isTranscriptMode={isTranscriptMode}
+    111          />
+    112        )
+    113      case 'assistant':
+    114        return (
+    115          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    116>           {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+    117              <AssistantMessageBlock
+    118                key={index}
+    119                param={_}
+    120                addMargin={addMargin}
+    121                tools={tools}
+    122                commands={commands}
+    123                verbose={verbose}
+    124                inProgressToolUseIDs={inProgressToolUseIDs}
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}

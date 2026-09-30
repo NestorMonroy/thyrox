@@ -1,0 +1,44 @@
+  ok    el sujeto existe: src/verify/check-toolchain-ready.sh
+  ok    con gawk declarado, la sonda de awk sale ok
+  ok    recoge TODOS los fallos: nombra awk y parallel en la misma salida
+  ok    rehusa con exit 2 cuando no alcanza src/lib/toolchain.sh
+  ok    la negativa NO emite conteo
+  ok    un aviso solo no tumba el veredicto (exit 0)
+  ok    --strict promueve el aviso a fallo (exit 1)
+  ok    publica el denominador junto al conteo
+  ok    mawk presente pero sin intervalos: exit 1 (error, no aviso)
+  ok    releva el remedio de la sonda, no compone uno propio
+  ok    la forma relativa de la clave se resuelve contra la raiz, no contra el cwd
+  FALLO esperaba 'error · githooks' y exit 1 sin hooks (rc=0); salida: ok · manifiestos
+ok · githooks
+ok · awk
+ok · parallel
+ok · python-proveedor
+ok · proxy
+ok · sqlite-reader
+ok · bun
+
+8 ok · 0 error · 0 aviso — alcance medido: 8 de 8 sondas
+  FALLO el rechazo no nombra scripts/install-hooks.sh: ok · manifiestos
+ok · githooks
+ok · awk
+ok · parallel
+ok · python-proveedor
+ok · proxy
+ok · sqlite-reader
+ok · bun
+
+8 ok · 0 error · 0 aviso — alcance medido: 8 de 8 sondas
+  FALLO con core.hooksPath=.husky esperaba 'error · githooks'; salida: ok · manifiestos
+ok · githooks
+ok · awk
+ok · parallel
+ok · python-proveedor
+ok · proxy
+ok · sqlite-reader
+ok · bun
+
+8 ok · 0 error · 0 aviso — alcance medido: 8 de 8 sondas
+  ok    con core.hooksPath=.githooks, la sonda githooks sale ok
+
+15 casos: 12 ok, 3 fallos

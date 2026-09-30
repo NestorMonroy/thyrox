@@ -1,0 +1,1 @@
+bash tests/session/test-headless-pool.sh > .claude/workbench/omniroute-resilience-20260927T200233/outputs/regression-headless-pool.log 2>&1

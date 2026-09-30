@@ -1,0 +1,13 @@
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'createAttachmentMessage' not found in module '/home/user/thyrox/src/packages/agent/attachments.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1182.00ms]

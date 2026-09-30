@@ -1,0 +1,17 @@
+test_measure_worktree:
+  ok    el paquete del workspace resuelve al src/ del worktree
+  ok    el paquete de terceros se enlaza al principal, no se copia
+  ok    el node_modules anidado se enlaza entero
+  ok    el worktree trae los cambios sin commitear del principal
+  ok    y sus archivos nuevos sin seguir
+  ok    export copia lo aceptado al principal
+  ok    sync deja el worktree igual al principal otra vez
+  ok    un paquete nuevo en un alcance ya reflejado también se refleja
+  ok    y el que ya estaba sigue
+  ok    con cambios sin exportar, release los nombra
+  ok    y no retira el worktree
+  ok    exportado todo, release no deja nada pendiente
+  ok    y el worktree ya no existe
+  ok    ni git lo lista
+test_measure_worktree: 14 aserciones — 14 ok, 0 falla(s)
+EXIT=0

@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+ 95 |     expect(calls).toBe(1)
+ 96 |   })
+ 97 | 
+ 98 |   test('un estado explícito pasa tal cual', () => {
+ 99 |     setAmbientMarkerProbe(() => 'unknown')
+100 |     expect(isHeadlessToolCallOfAgentSession(host({ env: { THYROX_CODE_CHILD_SESSION: '1' }, stdinIsTTY: false, stdoutIsTTY: false, spawnedByAttendedSession: true }))).toBe(false)
+                                                                                                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:100:168)
+(fail) setAmbientMarkerProbe (sYo) > un estado explícito pasa tal cual [0.27ms]
+
+ 18 pass
+ 1 fail
+ 40 expect() calls
+Ran 19 tests across 1 file. [139.00ms]

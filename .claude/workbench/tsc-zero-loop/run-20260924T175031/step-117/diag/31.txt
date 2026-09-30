@@ -1,0 +1,23 @@
+src/packages/agent/task/framework.ts(299,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/agent/task/framework.ts:289-309 ---
+    289    enqueuePendingNotification({
+    290      value: message,
+    291      mode: 'task-notification',
+    292      priority: 'next',
+    293    })
+    294  }
+    295  
+    296  /**
+    297   * Get human-readable status text.
+    298   */
+    299> function getStatusText(status: TaskStatus): string {
+    300    switch (status) {
+    301      case 'completed':
+    302        return 'completed successfully'
+    303      case 'failed':
+    304        return 'failed'
+    305      case 'killed':
+    306        return 'was stopped'
+    307      case 'running':
+    308        return 'is running'
+    309      case 'pending':

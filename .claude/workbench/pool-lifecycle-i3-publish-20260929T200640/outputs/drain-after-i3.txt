@@ -1,0 +1,19 @@
+OK   el hijo sigue vivo después de que salió el principal
+OK   el hijo es escritor vivo del stream
+OK   mientras el hijo vive, el ítem no tiene .json
+OK   el pool termina bien
+OK   la línea tardía está en el stream
+OK   el .json es la línea result
+OK   nadie escribe ya en las salidas del ítem
+OK   el hijo ya no vive
+OK   el pool termina aunque el hijo no saliera
+OK   el hijo fue retirado
+OK   el ítem declara que tuvo que terminar procesos
+OK   el resumen cuenta el ítem como fallido
+OK   nadie escribe ya en las salidas del ítem
+OK   control: el bloque de drenaje se retiró
+OK   control: sin drenaje el pool cierra con el hijo vivo
+OK   control: y el hijo sigue escribiendo en el stream del ítem
+OK   control: con el escritor vivo, la publicación rehúsa y el ítem no se cierra
+result: 17 of 17 assertions green
+exit=0

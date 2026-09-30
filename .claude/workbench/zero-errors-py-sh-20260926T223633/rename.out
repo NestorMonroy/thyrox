@@ -1,0 +1,237 @@
+run-task-pool: 15 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260927T003657
+  job-20260927T003657/job-001 pid 7196    cd /home/user/thyrox && python3 tests/session/test_gpu_monitor.py
+  job-20260927T003657/job-002 pid 7226    cd /home/user/thyrox && python3 tests/session/test_gpu_trace.py
+  job-20260927T003657/job-003 pid 7273    cd /home/user/thyrox && python3 tests/verify/test_step_report.py
+  job-20260927T003657/job-004 pid 7301    cd /home/user/thyrox && python3 tests/session/test_adopt_background.py
+  job-20260927T003657/job-005 pid 7331    cd /home/user/thyrox && python3 tests/session/test_background.py
+  job-20260927T003657/job-006 pid 7625    cd /home/user/thyrox && python3 tests/session/test_pool_history.py
+  job-20260927T003657/job-007 pid 7868    cd /home/user/thyrox && python3 tests/workbench/test_manifest.py
+  job-20260927T003657/job-008 pid 7894    cd /home/user/thyrox && python3 tests/verify/test_tsc_cycle.py
+  job-20260927T003657/job-009 pid 7930    cd /home/user/thyrox && python3 tests/verify/test_tsc_routes.py
+  job-20260927T003657/job-010 pid 8237    cd /home/user/thyrox && python3 tests/verify/test_tsc_zero_step.py
+  job-20260927T003657/job-011 pid 8271    cd /home/user/thyrox && bash tests/verify/test-suite-discrimina.sh
+  job-20260927T003657/job-012 pid 8967    cd /home/user/thyrox && bash tests/verify/test-script-naming.sh
+  job-20260927T003657/job-013 pid 9780    cd /home/user/thyrox && PYTHONDONTWRITEBYTECODE=1 python3 tests/typescript/test_emit_declarations.py
+  job-20260927T003657/job-014 pid 9915    cd /home/user/thyrox && bash bin/check_lint_zero
+  job-20260927T003657/job-015 pid 10198   cd /home/user/thyrox && python3 tests/session/test_transcripts_home.py
+run-task-pool: lanzados 15 de 15; esperando en PRIMER PLANO (timeout 600s)
+asentado: job-20260927T003657_job-001 -> OK (2 de 16)
+asentado: job-20260927T003657_job-002 -> OK (3 de 16)
+asentado: job-20260927T003657_job-003 -> OK (4 de 16)
+asentado: job-20260927T003657_job-004 -> OK (5 de 16)
+asentado: job-20260927T003657_job-005 -> OK (6 de 16)
+asentado: job-20260927T003657_job-006 -> OK (7 de 16)
+asentado: job-20260927T003657_job-007 -> OK (8 de 16)
+asentado: job-20260927T003657_job-008 -> OK (9 de 16)
+asentado: job-20260927T003657_job-009 -> OK (10 de 16)
+asentado: job-20260927T003657_job-010 -> OK (11 de 16)
+asentado: job-20260927T003657_job-013 -> OK (12 de 16)
+asentado: job-20260927T003657_job-015 -> OK (13 de 16)
+asentado: job-20260927T003657_job-012 -> OK (12 de 16)
+esperando: 14 de 16 asentados, 30s; vivos: job-20260927T003657_job-011 job-20260927T003657_job-014
+sonda job-20260927T003657_job-011: 8271 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8276 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8279 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8720 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8721 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8722 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.72s
+sonda job-20260927T003657_job-011: 10998 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260927T003657_job-011: 11529 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=1.82s
+asentado: job-20260927T003657_job-014 -> OK (14 de 16)
+esperando: 15 de 16 asentados, 60s; vivos: job-20260927T003657_job-011
+sonda job-20260927T003657_job-011: 8271 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8276 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8279 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8720 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8721 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8722 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.74s
+sonda job-20260927T003657_job-011: 14409 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 14783 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=2.69s
+esperando: 15 de 16 asentados, 90s; vivos: job-20260927T003657_job-011
+sonda job-20260927T003657_job-011: 8271 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8276 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8279 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8720 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8721 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T003657_job-011: 8722 python3 stdin=devnull(/dev/null) escritores=- estado=S cpu=0.75s
+sonda job-20260927T003657_job-011: 15733 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.01s
+sonda job-20260927T003657_job-011: 16202 python3 stdin=devnull(/dev/null) escritores=- estado=R cpu=0.82s
+asentado: job-20260927T003657_job-011 -> OK (12 de 16)
+== 16 trabajos asentados ==
+OLVIDADO job-20260927T003657
+       | (vacío — no emitió nada)
+OK     job-20260927T003657_job-001
+       |   ok    sólo cuentan los dueños vivos
+       |   ok    soltada, no queda nada
+       | == 5b. un proceso que sale a mitad del recorrido no tumba tree() ==
+       |   ok    el hijo que desapareció cuenta y el recorrido sigue
+       | == 6. disponible() distingue las dos situaciones ==
+       |   ok    con el falso: disponible
+       |   ok    sin él: no disponible
+       | 
+       | test_gpu_monitor: 43 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 16648 KB (16 MB) · pared 9.35s
+OK     job-20260927T003657_job-002
+       |   ok    la corrección nombra el parámetro y su valor
+       |   ok    el uso sigue lo asignado con desfase constante
+       |   ok    calibración: 300 MiB
+       | == 4. PIDs invisibles (otro espacio de nombres): pid_visible se viola ==
+       |   ok    pid_visible se viola
+       |   ok    sin uso por PID, lo que depende de él no se mide
+       | == 5. una traza sin filas en marcha no concluye nada: unmeasured, no holds ==
+       |   ok    todo unmeasured
+       | test_gpu_trace: 14 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 15924 KB (16 MB) · pared 8.54s
+OK     job-20260927T003657_job-003
+       |   ok    sin modelUsage la base es la fórmula fija, declarada
+       |   ok    costo con los cocientes del tier del modelo de cada salida
+       |   ok    la base de cada modelo se publica
+       |   ok    sin streams el prefijo se declara no medido, no cero
+       |   ok    un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa)
+       |   ok    el prefijo: primer ítem frío, su tamaño por la lectura de los demás
+       |   ok    el primer ítem es el primero en arrancar, no el de Seq menor
+       |   ok    sin lotes medidos rehúsa en vez de publicar ceros
+       | test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 17624 KB (17 MB) · pared 0.08s
+OK     job-20260927T003657_job-004
+       |   ok    5.1 compone <raiz>/<sesion>/tasks/<id>.output
+       |   ok    5.2 sin raiz declarada, None
+       |   ok    5.3 sin sesion declarada, None
+       |   ok    5.4 con la convencion declarada, el ID SOLO alcanza
+       |   ok    5.5 y la ruta nombrada gana sobre la derivada
+       |   ok    5-bis.1 anulada la convencion, 5.4 cae
+       |   ok    5-bis.2 y 5.5 SOBREVIVE, porque su ruta va nombrada
+       | 
+       | 27 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 14776 KB (14 MB) · pared 0.20s
+OK     job-20260927T003657_job-005
+       | == 8. la anchura cae a la formula del ejecutable, y se publica ==
+       |   ok    width por defecto = width_cap()
+       |   ok    y una anchura declarada la sobreescribe
+       | == 9. CONTROL: el modulo ARRANCA como guion, no solo importado ==
+       |   ok    sale 0 como guion
+       |   ok    y NO muere importando sus hermanos
+       |   ok    y publica su anchura por defecto
+       | 
+       | 21 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 16032 KB (16 MB) · pared 1.56s
+OK     job-20260927T003657_job-006
+       |   ok    ... y la anchura la acota el piso: 12000 / 1500 = 8
+       |   ok    pico 0 calibrado y sin piso: no pide VRAM, y lo dice
+       |   ok    con piso, el piso manda sobre el 0
+       |   ok    calibrado: max(pico x margen, piso)
+       |   ok    sin GPU no cambia nada: ni pedido ni tope
+       | == 22. la CLI recibe el intervalo y el piso ==
+       |   ok    anchura 1 y la GPU entera
+       | 
+       | test_pool_history: 55 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 22076 KB (22 MB) · pared 0.07s
+OK     job-20260927T003657_job-007
+       |   ok    `blind_to` NO se rellena con placeholder
+       |   ok    `destination` NO se rellena con placeholder
+       | == 8. el contrato que el gemelo TypeScript declara ==
+       |   ok    las cinco claves, en el orden del reporte
+       |   ok    las tres formas, en ingles
+       |   ok    el nombre del manifiesto
+       |   ok    y el heredado, que el lector sigue aceptando
+       | 
+       | 27 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 13072 KB (13 MB) · pared 0.04s
+OK     job-20260927T003657_job-008
+       |   ok    la variable del origen gana a activar 1h
+       |   ok    forzar 5m gana a todo
+       |   ok    un valor ilegible rehúsa nombrando la variable
+       |   ok    sin entorno, la cota decide como antes
+       |   ok    sin paso anterior medido no se decide: lo decide el cliente
+       |   ok    el TTL decidido llega al pool
+       |   ok    sin TTL decidido el pool no lo fija
+       |   ok    el TTL es parte de la configuración del paso (setup_id)
+       | test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 25220 KB (25 MB) · pared 0.23s
+OK     job-20260927T003657_job-009
+       |   ok    un alias a import(...) no es una copia
+       |   ok    dos Props de componentes distintos no son el mismo tipo
+       |   ok    un marcador Record<string, unknown> es copia reducida del contrato
+       |   ok    un marcador = unknown es copia reducida, y el = de un genérico no es el de la declaración
+       |   ok    un solo campo común (children) no encadena props distintas
+       |   ok    un nombre con más de 10 formas distintas es convención, no contrato
+       |   ok    el = del valor por defecto de un genérico no hace iguales dos cuerpos distintos
+       |   ok    mismos campos con discriminante distinto no son el mismo tipo
+       | test_tsc_routes: 25 aserciones — 25 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 13520 KB (13 MB) · pared 0.07s
+OK     job-20260927T003657_job-010
+       |   ok    la parcial que rompe su archivo no paga bisección
+       |   ok    el grafo de imports acota la bisección al sospechoso
+       |   ok    una línea base desfasada rehúsa y no culpa a nadie
+       |   ok    una propuesta aceptada crea su archivo nuevo
+       |   ok    y cierra su objetivo
+       |   ok    revertir una creación borra el archivo
+       |   ok    crear sobre un archivo que ya existe no se aplica
+       |   ok    todas las filas del ledger llevan el setup_id del paso, también la de infraestructura
+       | test_tsc_zero_step: 40 aserciones — 40 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 20084 KB (20 MB) · pared 1.39s
+OK     job-20260927T003657_job-011
+       |   ok    el ledger de una tanda existe
+       |   ok    cada linea es un objeto JSON
+       |   ok    con mas de un registro, el archivo ENTERO no es JSON
+       |   ok    un ledger heredado en .json se sigue leyendo
+       | == 21. --solo IGNORA el cursor: es una peticion explicita ==
+       |   ok    la SEGUNDA corrida de --solo vuelve a juzgar
+       |   ok    sin --solo, ese mismo candidato si se salta
+       | 
+       | 43 ok, 0 fallos
+       | EXIT=0
+       memoria pico: 359332 KB (351 MB) · pared 139.00s
+OK     job-20260927T003657_job-012
+       |   ok   y nombra el PARAMETRO: la firma es parte del eje
+       |   ok   y el eje del NOMBRE de ese mismo archivo pasa
+       |   ok   traducido, el eje de identificadores pasa
+       |   ok   sin lexico el eje de identificadores sale con 2
+       |   ok   y nombra el lexico que le falta
+       |   ok   el reporte de identificadores declara el alcance
+       |   ok   el arbol real no tiene identificadores nuevos en espanol
+       | 
+       | 31 ok · 0 falla(s)
+       | EXIT=0
+       memoria pico: 359112 KB (351 MB) · pared 32.39s
+OK     job-20260927T003657_job-013
+       |   ok   retira su proyecto temporal
+       |   ok   [local] el propio cuenta SOLO el error del paquete
+       |   ok   [local] y el hermano se le atribuye a el
+       |   ok   [root] el propio cuenta SOLO el error del paquete
+       |   ok   [root] y el hermano se le atribuye a el
+       |   ok   un paquete que usa MACRO no da error propio
+       |   ok   y el conteo total tampoco lo trae
+       | 
+       | test_emit_declarations: 52 ok, 0 falla
+       | EXIT=0
+       memoria pico: 148408 KB (145 MB) · pared 14.27s
+OK     job-20260927T003657_job-014
+       | shellcheck: 0 hallazgo(s) (alcance medido: 197 archivo(s))
+       | ruff: 0 hallazgo(s) (alcance medido: 562 archivo(s))
+       | pyright: 0 hallazgo(s) (alcance medido: 562 archivo(s))
+       | EXIT=0
+       memoria pico: 905664 KB (884 MB) · pared 44.96s
+OK     job-20260927T003657_job-015
+       |   ok   y el singular es None
+       |   ok   un id vacio tampoco compone nada
+       |   ok   model_catalog elige el mayor
+       |   ok   session_restart elige el mismo
+       |   ok   y los dos coinciden sobre un archivo real
+       |   ok   el censo tiene corpus
+       |   ok   ningun modulo compone el hogar de transcripts por su cuenta
+       | 
+       | 16 aprobada(s) · 0 fallida(s) (alcance medido: session/transcripts.py y sus dos consumidores)
+       | EXIT=0
+       memoria pico: 25280 KB (25 MB) · pared 0.72s
+EXIT=0

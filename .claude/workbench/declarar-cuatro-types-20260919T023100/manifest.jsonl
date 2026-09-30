@@ -1,0 +1,6 @@
+{"ts": "2026-09-19T02:31:00", "tipo": "sujeto", "que": "TASK-THYROX-0202 — declarar @types/{lodash-es,picomatch,proper-lockfile,react-reconciler} en devDependencies de la raiz"}
+{"ts": "2026-09-19T02:31:00", "tipo": "referencia", "que": "ccnmt: package.json declara 3 de los 4; @types/lodash-es AUSENTE ahi, con postura declarada de convivir con ~3300 errores (verify-tsc-errors ratchet)"}
+{"ts": "2026-09-19T02:31:00", "tipo": "control", "que": "TS7016 por modulo raiz: lodash-es 35->0, react-reconciler 10->0, proper-lockfile 2->0, picomatch 1->0; '..' 1->1 y @thyrox 1->1 SOBREVIVEN"}
+{"ts": "2026-09-19T02:31:00", "tipo": "medicion", "que": "tsc total 7018 -> 6872 (-146); TS7006 -60, TS7016 -48, TS2307 -44"}
+{"ts": "2026-09-19T02:31:00", "tipo": "refutacion", "que": "La prediccion acerto el MECANISMO (15 errores suben: TS2339 +7, TS2538 +4, TS2459 +2, TS2769 +1, TS2345 +1) y fallo el SIGNO NETO (el total baja)"}
+{"ts": "2026-09-19T02:31:00", "tipo": "sucesor", "que": "Los 15 que suben no estan triados: defecto real contra firma estrecha de lodash es DESCONOCIDO"}

@@ -1,0 +1,8 @@
+== tests/verify/test-script-naming.sh exit=1 :: 30 ok · 1 falla(s)
+  FALLA el arbol real no tiene nombres nuevos en espanol — esperado [0] obtenido [1]
+== tests/verify/test-suite-discrimina.sh exit=1 :: 41 ok, 2 fallos
+  FALLO classify_agents se reporta SIN COBERTURA (el juez puede fallar)
+  FALLO el titular concuerda con las filas que imprime
+== tests/agents/test_clasificar_agentes.py exit=0 :: resultado: 27 ok, 0 fallas
+EXIT=1
+__BG_EXIT__=0

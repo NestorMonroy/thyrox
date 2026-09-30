@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsBind.test.ts:
+148 |     await new Promise(resolve => setTimeout(resolve, 50))
+149 |     expect(state.connectedClients.size).toBe(1)
+150 |     await closeInbox(state, server, path)
+151 |     expect(state.connectedClients.size).toBe(0)
+152 |     expect(state.activeSocketPath).toBeUndefined()
+153 |     expect(existsSync(path)).toBe(false)
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsBind.test.ts:153:30)
+(fail) closeInbox (B, H) > cierra clientes y servidor, borra el socket y limpia el estado [55.28ms]
+
+ 9 pass
+ 1 fail
+ 20 expect() calls
+Ran 10 tests across 1 file. [163.00ms]

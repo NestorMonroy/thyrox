@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/voice/index.ts(17,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/voice/voice")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/voice/index.ts:7-20 ---
+      7  const voice = {
+      8    type: 'local',
+      9    name: 'voice',
+     10    description: 'Toggle voice mode',
+     11    availability: ['claude-ai'],
+     12    isEnabled: () => isVoiceGrowthBookEnabled(),
+     13    get isHidden() {
+     14      return !isVoiceModeEnabled()
+     15    },
+     16    supportsNonInteractive: false,
+     17>   load: () => import('./voice.js'),
+     18  } satisfies Command
+     19  
+     20  export default voice
+  Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/voice/voice")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

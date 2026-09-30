@@ -1,0 +1,1 @@
+uv run --quiet python tests/agents/test_store_home.py

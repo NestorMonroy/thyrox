@@ -1,0 +1,4 @@
+(fail) createSelector > sin afinidad declarada, la estrategia tal cual [0.18ms]
+(fail) createSelector > con afinidad, la estrategia queda como respaldo del selector de sesión [0.18ms]
+ 19 pass
+ 2 fail

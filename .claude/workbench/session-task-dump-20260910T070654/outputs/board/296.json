@@ -1,0 +1,8 @@
+{
+  "id": "296",
+  "subject": "Contar las impuestas fuera del denominador en check_symbol_home",
+  "description": "H-API-1088: `kaupamex-api: scripts/check_symbol_home.py:236` compone `medidas = len(propias) - sin_contraparte - len(ambiguas)` y NO descuenta los nombres impuestos, que sí se saltan antes de juzgarse (:212-215). Publica «129 de 254» cuando lo realmente juzgado son 122.\n\nCondición de cierre: el gate publica `122 de 254` con su cubo de impuestas nombrado (cuatro salidas visibles: juzgadas · sin contraparte · ambiguas · impuestas), y su suite gana el caso que ejercita el denominador — hoy no tiene ninguno.\n\nReferencia: el puerto `thyrox: src/verify/symbol_home.py` (thyrox@8cb2ea34) ya excluye el impuesto antes de contar; su `HomeReport.total` da 247 y 247+7=254.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

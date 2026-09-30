@@ -1,0 +1,6 @@
+       | FAIL en curso, el ítem ya tiene foto — expected 'yes', got ''
+       | FAIL la foto en curso trae el trabajo a mitad — expected 'trabajo a mitad', got ''
+       | FAIL la foto final quedó registrada — expected '7399c14b54feef32a1706da3f0fff7e40b0880a4', got ''
+       | result: 33 of 36 assertions green
+
+[exited with code 0]

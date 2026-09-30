@@ -1,0 +1,8 @@
+FALLA ruta absoluta del paquete: el gate MIDE — esperado 'medido', obtenido 'eximido'
+FALLA ruta absoluta del .md derivado: el gate MIDE — esperado 'medido', obtenido 'eximido'
+FALLA ruta relativa del paquete: el gate MIDE — esperado 'medido', obtenido 'eximido'
+OK   archivo fuera de la superficie: el gate SE EXIME
+FALLA guard sin node_modules/zod: exit 2 — esperado '2', obtenido '0'
+FALLA guard sin node_modules/zod: nombra la biblioteca y el comando — esperado 'si', obtenido 'no'
+
+aserciones: 1 de 6 · fallos: 5

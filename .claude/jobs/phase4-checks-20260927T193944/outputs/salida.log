@@ -1,0 +1,21 @@
+run-task-pool: 2 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T193944
+  job-20260927T193944/job-001 cd src/packages/provider && bunx tsc --noEmit -p tsconfig.json 2>&1 | grep -E 'proxy/|__tests__/proxy' ; echo tsc-done
+  job-20260927T193944/job-002 cd src/packages/provider && bun test __tests__/ 2>&1 | tail -4
+run-task-pool: lanzados 2 de 2; esperando en PRIMER PLANO (timeout 1794s)
+asentado: job-20260927T193944_job-001 -> OK (2 de 3)
+asentado: job-20260927T193944_job-002 -> OK (3 de 3)
+== 3 trabajos asentados ==
+OLVIDADO job-20260927T193944
+       | (vacío — no emitió nada)
+OK     job-20260927T193944_job-001 exit=0
+       | tsc-done
+       | EXIT=0
+       memoria pico: 592972 KB (579 MB) · pared 4.08s
+OK     job-20260927T193944_job-002 exit=0
+       |  2220 pass
+       |  0 fail
+       |  4181 expect() calls
+       | Ran 2220 tests across 170 files. [5.38s]
+       | EXIT=0
+       memoria pico: 318472 KB (311 MB) · pared 5.40s
+__BG_EXIT__=0

@@ -1,0 +1,30 @@
+
+1. El stub declara a THYROX como dueño canónico
+  ok    nombra el árbol dueño
+  ok    nombra el módulo dueño
+  ok    declara que es un stub de reexportación
+
+2. La superficie que los 12 consumidores usan sigue entera
+  ok    reexporta require_all
+  ok    reexporta reach
+  ok    reexporta root
+  ok    reexporta roots
+  ok    reexporta paths
+  ok    reexporta clone_name
+  ok    reexporta clone_names
+  ok    reexporta extra_roots
+  ok    reexporta ReachRootError
+  ok    reexporta REACH_ROOTS
+
+3. Y resuelve lo mismo que el dueño
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_reach_roots_shim.py", line 80, in <module>
+    check("root('api') coincide", owner.root("api"), reach_roots.root("api"))
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+    raise KeyError(
+KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+EXIT=1

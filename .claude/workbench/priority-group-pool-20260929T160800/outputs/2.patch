@@ -1,0 +1,210 @@
+diff --git a/src/packages/store/__tests__/postgresTestSchema.test.ts b/src/packages/store/__tests__/postgresTestSchema.test.ts
+index fbf02908..4f299a03 100644
+--- a/src/packages/store/__tests__/postgresTestSchema.test.ts
++++ b/src/packages/store/__tests__/postgresTestSchema.test.ts
+@@ -1,19 +1,29 @@
+ /**
+  * El esquema de usar y tirar de las pruebas PostgreSQL de `@thyrox/store`:
+- * de dónde sale la URL de prueba, y las ramas de `withDisposableSchema`
+- * (crear, correr, borrar — también al lanzar), con una conexión inyectada y
+- * sin servidor.
++ * de dónde sale la URL de prueba, la comprobación de alcanzabilidad
++ * (`assertPostgresReachable`) que la memoiza, y las ramas de
++ * `withDisposableSchema` (crear, correr, borrar — también al lanzar), con una
++ * conexión inyectada y sin servidor.
+  */
+ import type { SQL } from 'bun'
+-import { describe, expect, test } from 'bun:test'
++import { beforeEach, describe, expect, test } from 'bun:test'
+ 
+ import {
++  assertPostgresReachable,
+   type DisposableSchemaDeps,
++  resetPostgresReachabilityForTests,
+   resolvePostgresTestUrl,
+   TEST_POSTGRES_URL_VAR,
+   withDisposableSchema,
+ } from '../testing/postgresTestSchema.ts'
+ 
++// Cada test parte de la memoización vacía: `withDisposableSchema` y
++// `assertPostgresReachable` comparten caché por URL, y las suites reutilizan
++// la misma URL de prueba entre casos.
++beforeEach(() => {
++  resetPostgresReachabilityForTests()
++})
++
+ describe('resolvePostgresTestUrl', () => {
+   test('sin la variable, da null', () => {
+     expect(resolvePostgresTestUrl({})).toBeNull()
+@@ -60,6 +70,71 @@ function fakeConnect(calls: string[]): NonNullable<DisposableSchemaDeps['connect
+   }
+ }
+ 
++/** Una conexión falsa que sondea sin lanzar: responde `SELECT 1` y no registra fallo. */
++function fakeReachableConnect(calls: string[]): (url: string) => SQL {
++  return url => {
++    calls.push(`CONNECT ${url}`)
++    return {
++      unsafe: async (query: string) => {
++        calls.push(`QUERY ${query}`)
++        return []
++      },
++      close: async () => {
++        calls.push('CLOSE')
++      },
++    } as unknown as SQL
++  }
++}
++
++/** Una conexión falsa cuyo sondeo (`unsafe`) siempre lanza — simula el servidor caído. */
++function fakeUnreachableConnect(message: string): (url: string) => SQL {
++  return () => {
++    return {
++      unsafe: async () => {
++        throw new Error(message)
++      },
++      close: async () => {},
++    } as unknown as SQL
++  }
++}
++
++describe('assertPostgresReachable', () => {
++  // CONTROL: sin memoización, la segunda llamada volvería a conectar — este
++  // caso caería (dos CONNECT en vez de uno) si se retira la caché.
++  test('servidor alcanzable: no lanza, y una segunda llamada no reconecta', async () => {
++    const calls: string[] = []
++    const connect = fakeReachableConnect(calls)
++    await assertPostgresReachable('postgres://u@h/reachable', { connect })
++    await assertPostgresReachable('postgres://u@h/reachable', { connect })
++    expect(calls).toEqual(['CONNECT postgres://u@h/reachable', 'QUERY SELECT 1', 'CLOSE'])
++  })
++
++  test('servidor inalcanzable: lanza un error con la URL enmascarada, la causa y la orden de arranque, sin la contraseña', async () => {
++    const connect = fakeUnreachableConnect('connect ECONNREFUSED 127.0.0.1:5432')
++    const url = 'postgres://user:secret@h/db'
++    let error: Error | undefined
++    try {
++      await assertPostgresReachable(url, { connect })
++    } catch (e) {
++      error = e as Error
++    }
++    expect(error?.message).toContain('postgres://***@h/db')
++    expect(error?.message).toContain('ECONNREFUSED')
++    expect(error?.message).toContain('pg_ctlcluster 16 main start')
++    expect(error?.message).not.toContain('secret')
++  })
++
++  // Sin servidor: un puerto recién cerrado en 127.0.0.1 no necesita PostgreSQL
++  // instalado y prueba la ruta real de `defaultConnect`/`Bun.SQL`.
++  test('puerto cerrado en 127.0.0.1: lanza sin necesitar un PostgreSQL de verdad', async () => {
++    const probe = Bun.listen({ hostname: '127.0.0.1', port: 0, socket: { data() {} } })
++    const { port } = probe
++    probe.stop(true)
++    const url = `postgres://user:pass@127.0.0.1:${port}/thyrox_test_closed_port`
++    await expect(assertPostgresReachable(url)).rejects.toThrow(/PostgreSQL de pruebas inalcanzable/)
++  })
++})
++
+ describe('withDisposableSchema', () => {
+   // CONTROL: el `search_path` va en el arranque de la conexión de trabajo, no
+   // en un `SET` suelto. `Bun.SQL` es un pool: medido contra PostgreSQL 16, un
+@@ -77,7 +152,12 @@ describe('withDisposableSchema', () => {
+       { connect: fakeConnect(calls), randomSuffix: () => 'abc123' },
+     )
+     expect(result).toBe('ok')
++    // Las tres primeras entradas son la comprobación de alcanzabilidad
++    // (memoizada, así que sólo corre una vez por URL).
+     expect(calls).toEqual([
++      'CONNECT ADMIN postgres://u@h/db',
++      'ADMIN: SELECT 1',
++      'CLOSE ADMIN',
+       'CONNECT ADMIN postgres://u@h/db',
+       'ADMIN: CREATE SCHEMA thyrox_test_abc123',
+       'CONNECT WORK(thyrox_test_abc123) postgres://u@h/db',
+@@ -104,6 +184,9 @@ describe('withDisposableSchema', () => {
+       ),
+     ).rejects.toBe(boom)
+     expect(calls).toEqual([
++      'CONNECT ADMIN postgres://u@h/db',
++      'ADMIN: SELECT 1',
++      'CLOSE ADMIN',
+       'CONNECT ADMIN postgres://u@h/db',
+       'ADMIN: CREATE SCHEMA thyrox_test_xyz',
+       'CONNECT WORK(thyrox_test_xyz) postgres://u@h/db',
+diff --git a/src/packages/store/testing/postgresTestSchema.ts b/src/packages/store/testing/postgresTestSchema.ts
+index 29c1d158..9f4d2841 100644
+--- a/src/packages/store/testing/postgresTestSchema.ts
++++ b/src/packages/store/testing/postgresTestSchema.ts
+@@ -11,6 +11,13 @@
+  * suelto: `Bun.SQL` es un pool, y medido contra PostgreSQL 16 un `SET` llegó a
+  * 1 de 4 conexiones, así que `begin` podía caer en otra y no ver el esquema
+  * (`.claude/workbench/datos-d1-store-20260929T062907/probe-search-path.sh`).
++ *
++ * Con el servidor caído, cada esquema desechable intentaba conectar por su
++ * cuenta y fallaba por separado (medido: 26 + 8 fallos de ~1 ms). Por eso
++ * `withDisposableSchema` comprueba la alcanzabilidad una sola vez por
++ * proceso, memoizada por URL (`assertPostgresReachable`): la primera llamada
++ * conecta de verdad y lanza UN error legible si no responde; las siguientes
++ * reutilizan ese resultado sin volver a conectar.
+  */
+ import { SQL } from 'bun'
+ 
+@@ -66,6 +73,50 @@ function defaultConnect(url: string, options: ConnectOptions = {}): SQL {
+   return new SQL({ url, connection: { search_path: options.searchPath } })
+ }
+ 
++export type ReachabilityDeps = {
++  /** Sustituye la conexión de sondeo — para probar sin un servidor. */
++  connect?: (url: string) => SQL
++}
++
++const reachabilityCache = new Map<string, Promise<void>>()
++
++/** Limpia la memoización de {@link assertPostgresReachable} — sólo para pruebas. */
++export function resetPostgresReachabilityForTests(): void {
++  reachabilityCache.clear()
++}
++
++async function probeReachability(url: string, connect: (url: string) => SQL): Promise<void> {
++  let sql: SQL | undefined
++  try {
++    sql = connect(url)
++    await sql.unsafe('SELECT 1')
++  } catch (error) {
++    const cause = error instanceof Error ? error.message : String(error)
++    throw new Error(
++      `PostgreSQL de pruebas inalcanzable en ${maskCredentials(url)}: ${cause}. ` +
++        'Arráncalo con: pg_ctlcluster 16 main start',
++    )
++  } finally {
++    await sql?.close()
++  }
++}
++
++/**
++ * Comprueba que `url` responde, una sola vez por proceso: la comprobación se
++ * memoiza por URL, así que las llamadas siguientes reutilizan el mismo
++ * resultado sin volver a conectar — también si la primera falló. Sin esto,
++ * cada esquema desechable intentaba conectar por su cuenta y fallaba por
++ * separado (medido: 26 + 8 fallos de ~1 ms, cada uno con su propio error de
++ * bajo nivel del driver).
++ */
++export function assertPostgresReachable(url: string, deps: ReachabilityDeps = {}): Promise<void> {
++  const cached = reachabilityCache.get(url)
++  if (cached) return cached
++  const probe = probeReachability(url, deps.connect ?? defaultConnect)
++  reachabilityCache.set(url, probe)
++  return probe
++}
++
+ /**
+  * Corre `body` contra un esquema de PostgreSQL nuevo, de nombre único. La
+  * conexión que recibe `body` tiene ese esquema como `search_path` en todas las
+@@ -81,6 +132,7 @@ export async function withDisposableSchema<T>(
+     throw new Error(`withDisposableSchema espera una URL postgres://, recibió '${maskCredentials(url)}'`)
+   }
+   const connect = deps.connect ?? defaultConnect
++  await assertPostgresReachable(url, { connect })
+   const schema = `${SCHEMA_PREFIX}${(deps.randomSuffix ?? defaultRandomSuffix)()}`
+   const admin = connect(url)
+   try {

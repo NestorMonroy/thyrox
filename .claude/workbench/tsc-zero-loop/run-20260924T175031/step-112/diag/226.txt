@@ -1,0 +1,47 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1072,65): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1062-1082 ---
+   1062  
+   1063      // Claude Code hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
+   1064      // `<claude-code-hint />` tag to stderr (merged into stdout here). Scan,
+   1065      // record for useClaudeCodeHintRecommendation to surface, then strip
+   1066      // so the model never sees the tag — a zero-token side channel.
+   1067      // Stripping runs unconditionally (subagent output must stay clean too);
+   1068      // only the dialog recording is main-thread-only.
+   1069      const extracted = extractClaudeCodeHints(strippedStdout, input.command)
+   1070      strippedStdout = extracted.stripped
+   1071      if (isMainThread && extracted.hints.length > 0) {
+   1072>       for (const hint of extracted.hints) maybeRecordPluginHint(hint)
+   1073      }
+   1074  
+   1075      let isImage = isImageOutput(strippedStdout)
+   1076  
+   1077      // Cap image dimensions + size if present (CC-304 — see
+   1078      // resizeShellImageOutput). Scope the decoded buffer so it can be reclaimed
+   1079      // before we build the output Out object.
+   1080      let compressedStdout = strippedStdout
+   1081      if (isImage) {
+   1082        const resized = await resizeShellImageOutput(
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1220,9): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1210-1230 ---
+   1210  
+   1211    // Start the command execution
+   1212    const resultPromise = shellCommand.result
+   1213  
+   1214    // Helper to spawn a background task and return its ID
+   1215    async function spawnBackgroundTask(): Promise<string> {
+   1216      const handle = await spawnShellTask(
+   1217        {
+   1218          command,
+   1219          description: description || command,
+   1220>         shellCommand,
+   1221          toolUseId,
+   1222          agentId,
+   1223        },
+   1224        {
+   1225          abortController,
+   1226          getAppState: () => {
+   1227            // We don't have direct access to getAppState here, but spawn doesn't
+   1228            // actually use it during the spawn process
+   1229            throw new Error(
+   1230              'getAppState not available in runShellCommand context',

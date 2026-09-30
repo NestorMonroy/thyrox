@@ -1,0 +1,1 @@
+F7j-3 red (2026-09-28): error: Cannot find module '../src/commands/mitm/stdinSecret.ts' — 0 pass, 1 fail, 1 error

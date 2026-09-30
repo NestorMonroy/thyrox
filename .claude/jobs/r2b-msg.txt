@@ -1,0 +1,16 @@
+Wire remote-session claims and usage credits into fast mode
+
+processFastModeAvailabilityContext left two pending slots:
+
+- remoteManaged now follows rn = uc() && Iz() || eo(): a session
+  token carrying service-agent or BYOC session-worker claims counts
+  as managed, not only a cowork entrypoint.
+- extra_usage_disabled now gets its slash-command link (_6e) and
+  admin instruction (hy() && Ex() ? Run()) computed over Te, yu and
+  Jx from @thyrox/config/entrypoint, which Entrypoint E already
+  ported; the credits module no longer declares them missing.
+
+Red first: 3 cases failed without the wiring (service-agent token,
+link and instruction in the context, the session context they
+receive). Derived suite: 204 of 204 over 14 files; provider
+typecheck 0.

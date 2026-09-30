@@ -1,0 +1,47 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. dos sesiones en el store: la activa y una anterior ==
+  ok    el store tiene las 3 tareas de las dos sesiones
+== 3. el render escribe el archivo y describe AMBAS sesiones ==
+  ok    render-tablero sale 0
+  ok    el archivo existe
+  ok    la tarea de la sesión ACTIVA aparece
+  ok    la tarea de la sesión ANTERIOR aparece (el punto de #435)
+  ok    la etiqueta canónica se conserva
+  ok    declara su generador real
+== 4. la firma de estados coincide con la de bash (si no, drift eterno) ==
+  ok    la firma emitida es la del directorio VIVO, idéntica a la de snapshot-tasks.sh
+== 5. el saneo sobrevive al markup RST: el gate de sintaxis no protesta ==
+  FALLO check_rst_sintaxis.py acepta el tablero generado
+        esperado=[0] obtenido=[1]
+        Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_rst_sintaxis.py", line 88, in <module>
+    RAIZ = reach.root('docs')
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+  FALLO y lo midio de verdad: el denominador declara el archivo
+        esperado=[1] obtenido=[0]
+== 5-bis. CONTROL — el mismo exit 0 con CERO archivos revisados ==
+  FALLO la ruta sin nada que revisar tambien sale 0
+        esperado=[1] obtenido=[0]
+  FALLO pero su denominador declara CERO archivos medidos
+        esperado=[1] obtenido=[0]
+== 6. sin --tasks-dir sigue rindiendo (uso manual, sin sesión activa) ==
+  ok    render sin sesión activa sale 0
+  ok    y sigue describiendo las dos sesiones
+== 7. store vacío: no revienta, deja constancia ==
+  ok    un store sin tareas sale 0
+== 8. RE-DEFINIR una tarea mueve la firma (H-DOCS-183, control del episodio) ==
+  ok    cambiar el subject mueve la firma
+  ok    sin tocar nada la firma es estable
+
+14 ok, 4 fallos
+EXIT=1

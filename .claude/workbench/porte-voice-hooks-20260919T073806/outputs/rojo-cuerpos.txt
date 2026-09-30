@@ -1,0 +1,50 @@
+=== cuerpo de useVoice() en NUESTRO stub
+export function useVoice(_options: UseVoiceOptions): UseVoiceReturn {
+  // `react` no existe como paquete en este árbol (medido con
+  // Bun.resolveSync arriba en el docstring del módulo). Se resuelve con
+  // require() diferido — es la ÚNICA excepción admitida a "sin lazy
+  // imports": el especificador no resuelve hoy, no una preferencia de
+  // estilo.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('react')
+  throw new Error(
+    'useVoice() no está portado: depende de react, de useSetVoiceState ' +
+      '(../voiceContext.js) y de @anthropic/ink#useTerminalFocus, ' +
+      'ninguno de los tres presente en este árbol. Los tres exports ' +
+      'puros del módulo (normalizeLanguageForSTT, computeLevel, ' +
+      'FIRST_PRESS_FALLBACK_MS) sí están portados y son usables.',
+  )
+}
+
+=== cuerpo de useVoiceIntegration() en NUESTRO stub
+export function useVoiceIntegration(
+  _args: UseVoiceIntegrationArgs,
+): UseVoiceIntegrationResult {
+  return requireReactAndInkUnavailable('useVoiceIntegration')
+}
+
+/**
+ * NO PORTADO — ver docstring del módulo.
+ */
+export function useVoiceKeybindingHandler(_args: {
+  voiceHandleKeyEvent: (fallbackMs?: number) => void
+  stripTrailing: (maxStrip: number, opts?: StripOpts) => number
+  resetAnchor: () => void
+  isActive: boolean
+}): { handleKeyDown: (e: InkKeyboardEvent) => void } {
+  return requireReactAndInkUnavailable('useVoiceKeybindingHandler')
+}
+
+/**
+ * NO PORTADO — ver docstring del módulo. En la fuente es un componente
+ * JSX shim; aquí se declara como función que dispara el error de
+ * bloqueo si se invoca.
+ */
+export function VoiceKeybindingHandler(_props: {
+  voiceHandleKeyEvent: (fallbackMs?: number) => void
+  stripTrailing: (maxStrip: number, opts?: StripOpts) => number
+  resetAnchor: () => void
+  isActive: boolean
+}): null {
+  return requireReactAndInkUnavailable('VoiceKeybindingHandler')
+}

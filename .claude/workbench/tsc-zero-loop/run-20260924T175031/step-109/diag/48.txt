@@ -1,0 +1,67 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+patron: regex-capture-group-possibly-undefined
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Con `noUncheckedIndexedAccess`, `match[n]` de un `RegExpMatchArray` se tipa `string | undefined` aunque el grupo de captura sea obligatorio en el patrón. Dentro del `if (m)` que ya confirma el match, usar `(m[n] ?? '<default>').metodo()` en vez de indexar directo — el default nunca se alcanza en la práctica porque el grupo siempre casa junto con `m`, pero satisface el tipo sin `!` ni cambiar la conducta.
+
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: length-on-possibly-undefined-getter-stub
+senal_del_verificador: TS2532: Object is possibly 'undefined'\.
+fix_generico: Cuando un valor viene de un getter cuyo stub por defecto devuelve `undefined` (p. ej. `_getX: () => T | undefined = () => undefined`, sobreescrito luego por `setGetXFn` desde el host) y el sitio de uso accede a una propiedad como `.length` sin comprobar, se usa encadenamiento opcional con un valor por defecto que reproduce la semántica de 'vacío' que el stub ya representa: `(x()?.length ?? 0)` en vez de `x().length`. No cambia la conducta para el caso real (siempre poblado antes de esta llamada) y evita el crash latente del caso por defecto.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/config/plugin/loadPluginCommands.ts(266,7): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:256-276 ---
+    256                    })
+    257                  : tool,
+    258              )
+    259            : rawAllowedTools
+    260      const allowedTools = parseSlashCommandToolsFromFrontmatter(
+    261        substitutedAllowedTools,
+    262      )
+    263  
+    264      const argumentHint = frontmatter['argument-hint'] as string | undefined
+    265      const argumentNames = parseArgumentNames(
+    266>       frontmatter.arguments as string | string[] | undefined,
+    267      )
+    268      const whenToUse = frontmatter.when_to_use as string | undefined
+    269      const version = frontmatter.version as string | undefined
+    270      const displayName = frontmatter.name as string | undefined
+    271  
+    272      // Handle model configuration, resolving aliases like 'haiku', 'sonnet', 'opus'
+    273      const model =
+    274        frontmatter.model === 'inherit'
+    275          ? undefined
+    276          : frontmatter.model
+src/packages/config/plugin/loadPluginCommands.ts(420,23): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:410-430 ---
+    410      )
+    411      return null
+    412    }
+    413  }
+    414  
+    415  export const getPluginCommands = memoize(async (): Promise<Command[]> => {
+    416    // --bare: skip marketplace plugin auto-load. Explicit --plugin-dir still
+    417    // works — getInlinePlugins() is set by main.tsx from --plugin-dir.
+    418    // loadAllPluginsCacheOnly already short-circuits to inline-only when
+    419    // inlinePlugins.length > 0.
+    420>   if (isBareMode() && getInlinePlugins().length === 0) {
+    421      return []
+    422    }
+    423    // Only load commands from enabled plugins
+    424    const { enabled, errors } = await loadAllPluginsCacheOnly()
+    425  
+    426    if (errors.length > 0) {
+    427      logForDebugging(
+    428        `Plugin loading errors: ${errors.map(e => getPluginErrorMessage(e)).join(', ')}`,
+    429      )
+    430    }

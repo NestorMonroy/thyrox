@@ -1,0 +1,13 @@
+== server
+base	7 pass, 0 fail	—
+no-plan	2 pass, 5 fail	round-robin reparte las peticiones entre los upstreams del modelo | lkgp empieza por el último upstream que respondió bien | el desenlace llega a las métricas del combo, con sus conmutaciones | si todos fallan, cuenta como fallo del último probado | weighted usa los pesos declarados por upstream
+declared-order	4 pass, 3 fail	round-robin reparte las peticiones entre los upstreams del modelo | lkgp empieza por el último upstream que respondió bien | weighted usa los pesos declarados por upstream
+no-settle-success	5 pass, 2 fail	lkgp empieza por el último upstream que respondió bien | el desenlace llega a las métricas del combo, con sus conmutaciones
+no-settle-failure	6 pass, 1 fail	si todos fallan, cuenta como fallo del último probado
+no-fallback-count	6 pass, 1 fail	el desenlace llega a las métricas del combo, con sus conmutaciones
+no-weights	6 pass, 1 fail	weighted usa los pesos declarados por upstream
+unknown-strategy	7 pass, 0 fail	—
+== startServer
+base	18 pass, 0 fail	—
+no-router	16 pass, 2 fail	startProxyServer: combos > la estrategia declarada en la entrada del modelo rige el orden de los upstreams | startProxyServer: combos > el lote pegajoso del round-robin se declara en combos
+no-sticky	17 pass, 1 fail	startProxyServer: combos > el lote pegajoso del round-robin se declara en combos

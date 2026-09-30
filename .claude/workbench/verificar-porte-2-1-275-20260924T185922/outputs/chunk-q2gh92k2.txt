@@ -1,0 +1,43 @@
+==== Spt (1045)
+async function Spt(e,n={}){if(zr("skills")||!Tr("projectSettings")||Ic("skills")){t("[skills] Dynamic skill discovery skipped: projectSettings disabled or plugin-only policy");return}if(e.length===0)return;let r=await Promise.all(e.map((y)=>Kz(y,"projectSettings"))),s=new Set(RT().dynamicSkills.keys()),g=RT();if(n.replace){let y=new Set(r.flat().map(({skill:O})=>BFe(O))),w=(O)=>{let L=O.type==="prompt"?O.skillRoot??"":"";return e.some((B)=>{let U=Mjn(B,L);return U===""||!U.startsWith("..")&&!Hft(U)})};for(let[O,L]of g.dynamicSkills)if(w(L)&&!y.has(O))g.dynamicSkills.delete(O)}for(let y of r)for(let{skill:w}of y)if(w.type==="prompt")g.dynamicSkills.set(BFe(w),w);let h=r.flat().length;if(h>0){let y=[...RT().dynamicSkills.keys()].filter((w)=>!s.has(w));if(t(`[skills] Dynamically discovered ${h} skills from ${e.length} directories`),y.length>0)i("tengu_dynamic_skills_changed",{source:b("file_operation"),previousCount:s.size,newCount:RT().dynamicSkills.size,addedCount:y.length,directoryCount:e.length})}io().dynamicSkillsLoaded.emit()}
+
+==== zUt (169)
+function zUt(){return Array.from(iue()?.dynamicSkills.entries()??[]).sort(([e,n],[r,s])=>n.name===s.name?e.localeCompare(r):n.name.localeCompare(s.name)).map(([,e])=>e)}
+
+==== Ajn (764)
+function Ajn(e,n){if((iue()?.conditionalSkills.size??0)===0)return[];let r=[];for(let[s,g]of RT().conditionalSkills){if(g.type!=="prompt"||!g.paths||g.paths.length===0)continue;let h=Ijn.default().add(mee(g.paths,"skill_paths"));for(let y of e){let w=Hft(y)?Mjn(n,y):y;if(!w||w.startsWith("..")||Hft(w))continue;if(h.ignores(w)){RT().dynamicSkills.set(BFe(g),g),RT().conditionalSkills.delete(s),RT().activatedConditionalSkillNames.add(s),r.push(s),t(`[skills] Activated conditional skill '${s}' (matched path: ${w})`);break}}}if(r.length>0)i("tengu_dynamic_skills_changed",{source:b("conditional_paths"),previousCount:RT().dynamicSkills.size-r.length,newCount:RT().dynamicSkills.size,addedCount:r.length,directoryCount:0}),io().dynamicSkillsLoaded.emit();return r}
+
+==== lfs (977)
+async function lfs(e,n,r,s){if(zr("skills"))return[];if(So()!==null)return[];let g=le(),h=r.endsWith(lk)?r.slice(0,-1):r,y=[],{syncOwnedPrefixes:w,skillsBasePrefixesFolded:O}=await $jn.of(e)(ve()),L=M()==="windows"?[...O,Vz(h)+lk]:O;for(let B of n){let U=Yz(B),he=Vz(U)+lk;if(w.some((_e)=>he.startsWith(_e)))continue;if(L.some((_e)=>he.startsWith(_e)&&he.slice(_e.length).split(lk).some((we)=>/~\d/.test(we))))continue;while(U.startsWith(h+lk)){let _e=Bp(U,".claude","skills");if(!RT().dynamicSkillDirs.has(_e)){RT().dynamicSkillDirs.add(_e);try{if(F()&&s!==void 0){let Pe=await s.hostFiles.stat(Xu.workspace(_e));if(!Pe.ok||Pe.value.kind==="absent")continue}else await g.stat(_e);if(await Dkn(U,h)){t(`[skills] Skipped gitignored skills dir: ${_e}`);continue}let Ee=_e;try{Ee=await oue(_e)}catch{}if(w.some((Pe)=>(Vz(Ee)+lk).startsWith(Pe))){t(`[skills] Skipped sync-owned skills dir (resolved): ${_e}`);continue}y.push(_e)}catch{}}let we=Yz(U);if(we===U)break;U=we}}return y}
+
+==== BFe (77)
+function BFe(e){return`${e.type==="prompt"?e.skillRoot??"":""}\x00${e.name}`}
+
+==== RT (97)
+function RT(){let e=io().dynamicSkillStates,n=sue(),r=e.get(n);if(!r)r=T3n(),e.set(n,r);return r}
+
+==== iue (63)
+function iue(){return io().dynamicSkillStates.get(sue())??null}
+
+==== J$r (88)
+function J$r(e){return io().dynamicSkillsLoaded.subscribe(()=>{try{e()}catch(n){d(n)}})}
+
+==== Q$r (160)
+function Q$r(){let e=iue();if(!e)return;e.dynamicSkillDirs.clear(),e.dynamicSkills.clear(),e.conditionalSkills.clear(),e.activatedConditionalSkillNames.clear()}
+
+==== OLs (327)
+function OLs(e,n){if(!e.some((g)=>g.type==="assistant"&&n(g)))return e;let r=!1,s=e.map((g)=>{if(g.type!=="assistant")return g;if(!n(g))return g;let h=g.message.content;if(!Array.isArray(h))return g;let y=h.filter((w)=>!IUt(w));if(y.length===h.length)return g;return r=!0,{...g,message:{...g.message,content:y}}});return r?s:e}
+
+==== IUt (128)
+function IUt(e){if(e.type==="redacted_thinking")return!0;if(e.type==="thinking"&&"signature"in e&&e.signature)return!0;return!1}
+
+==== l3n (146)
+function l3n(e,n){if(e.type!=="user")return!0;if(e.isMeta){if(VO(e.origin))return!0;return!1}if(e.isVisibleInTranscriptOnly&&!n)return!1;return!0}
+
+==== VO (271)
+function VO(e,n){let r=typeof n==="boolean"?n:!0;if(e?.kind==="channel")return!0;if(e?.kind==="observer")return!0;if(e?.kind==="observer-activity")return!0;if(e?.kind==="slack-ping")return!0;if(e?.kind==="peer"){if(e.senderTaskId!==void 0)return!0;if(r)return!0}return!1}
+
+==== Ume AUSENTE
+
+==== T3n (135)
+function T3n(){return{dynamicSkillDirs:new Set,dynamicSkills:new Map,conditionalSkills:new Map,activatedConditionalSkillNames:new Set}}

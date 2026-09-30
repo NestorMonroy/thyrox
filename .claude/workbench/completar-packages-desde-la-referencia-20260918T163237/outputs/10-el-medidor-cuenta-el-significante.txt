@@ -1,0 +1,126 @@
+# 10 — El medidor de carga cuenta el SIGNIFICANTE, no el idioma
+
+Fecha: 2026-09-18T17:15:18
+
+Al ir a traducir los cuatro paquetes mas ligeros —server 3, teleport 7,
+ide 8, voice 12: 30 tramos— se listaron uno a uno con show_english.mjs.
+De los 30, la prosa REALMENTE en ingles son 7, y los 7 estan en un solo
+archivo: voice/src/hooks/__tests__/useVoiceHelpers.behavior.test.ts.
+
+Los otros 23 son comentarios YA EN ESPAÑOL que el lexico marca porque
+citan algo que se escribe en ingles:
+
+| palabra | lo que realmente cita | ejemplo |
+|---|---|---|
+| `all` | una BANDERA de comando | «Bundle --all -> HEAD -> squashed-root» |
+| `and` | un TERMINO TECNICO | «son fire-and-forget» |
+| `which`| un NOMBRE DE PROGRAMA | «cross-spawn/which», «`which cmd`» |
+| `this` | un IDENTIFICADOR | «cerrar y anular this.ws» |
+| `from` | un SIMBOLO DE API | «`Buffer.from()` hace una copia» |
+| `then` | un SIMBOLO DE API | «antes de que el .then() de finalize» |
+| `not`  | un MENSAJE LITERAL citado | «falla con "You do not have the initial commit yet"» |
+| `used` | una URL | «directories-used-by-the-...» |
+
+Es el sub-patron C de `metrica-decide-la-conclusion.md` con el medidor
+como sujeto: cuenta la PALABRA (significante) y la conclusion que se le
+pedia era sobre el IDIOMA DEL COMENTARIO (significado). La regla de
+identificadores manda exactamente lo contrario de lo que el medidor
+penaliza — «los terminos tecnicos en ingles cuando el termino es el
+nombre de la cosa (harness, scaffold, script, commit)».
+
+## Que invalida, y que no
+
+INVALIDA el criterio de cierre «0 tramos en ingles por paquete»: con este
+medidor es inalcanzable por construccion. Un comentario en español
+perfecto que diga «fire-and-forget» cuenta como ingles para siempre.
+
+NO invalida el ORDEN de la tabla 09 como cota superior ni como reparto
+relativo — pero la cifra de cada fila es «tramos que citan una palabra
+inglesa», no «tramos en ingles», y la proporcion entre las dos no es
+constante: depende de cuanto codigo cite el comentario.
+
+*Metrica:* 30 tramos listados uno a uno en 4 paquetes, clasificados a mano.
+*Ciega a:* si la proporcion 7/30 se sostiene en los paquetes grandes — un
+paquete con mas prosa y menos citas de simbolo tendra otra. No se
+extrapola.
+
+================================================================================
+El control de «solo comentarios» cambia de SUJETO tras el renombre
+================================================================================
+
+`only_comments_changed.mjs` compara el cuerpo emitido del puerto contra el de
+`ccnmt`. Eso valia mientras el puerto era copia verbatim. Tras el renombre del
+alcance ya NO vale para los 14 paquetes tocados: un `import` es codigo, no
+comentario, asi que el cuerpo emitido diverge POR CONSTRUCCION en todo archivo
+con import — y el control publicaria DIVERGE en todos, midiendo el renombre en
+vez de la traduccion.
+
+El sujeto correcto pasa a ser el COMMIT DE COPIA, que es el estado verbatim
+congelado en git:
+
+    git show <commit-de-copia>:<ruta> > /tmp/... && comparar
+
+o, para un paquete entero, el commit de renombre de ese paquete: comparar el
+arbol de trabajo contra ese commit mide exactamente «que cambio desde que el
+alcance quedo bien», que es la traduccion y nada mas.
+
+Por eso este commit ademas PARAMETRIZA el guion: nacio con la base de
+`permission` codificada y ahora sirve a los doce paquetes. `PACKAGE=voice`
+fija el paquete; `REF_BASE`/`PORT_BASE` lo sobreescriben entero.
+
+CORREGIDO en el mismo pase. Esta linea decia: «el archivo traducido da
+divergentes=0 y src/voice.ts, que NO se toco, da DIVERGE; ese contraste es el
+control». Es falso, y es el sub-patron D con el propio control como sujeto:
+`voice.ts` diverge porque un porte ANTERIOR (`b91d4903`) ya reescribio sus
+imports a `@thyrox/*` — nada que ver con esta traduccion. El contraste prueba
+que el instrumento ve cambios de codigo, no que vea que MI traduccion no
+toco codigo.
+
+El control que SI discrimina es el mismo archivo antes y despues, y esta
+medido abajo.
+
+================================================================================
+El discriminador nuevo: EN contra ES, y sus DOS controles
+================================================================================
+
+`probes/comment_language.mjs`. Un tramo es ingles cuando su lexico ingles pesa
+MAS que el español (`en > 0 && en > es`). Una cita suelta de simbolo no gana a
+la prosa que la rodea; una frase inglesa entera no tiene lexico español que la
+equilibre. Bandera de anulacion: `--sin-espanol` retira la mitad castellana y
+devuelve el criterio viejo.
+
+CONTROL NEGATIVO — server + teleport + ide, cuyos tramos marcados son, todos,
+comentarios ya en español (clasificados a mano arriba):
+
+    criterio VIEJO   en_ingles=18   sobre 1079 tramos
+    criterio NUEVO   en_ingles=2
+
+De 18 falsos positivos quedan 2, y los dos son los casos limite que la
+clasificacion a mano ya habia anotado:
+
+    teleport/src/gitBundle.ts:214  en=3 es=1  español que CITA un mensaje
+                                              literal de git ("You do not
+                                              have the initial commit yet")
+    ide/src/ide.ts:1115            en=1 es=0  frase corta en español cuyo
+                                              lexico no cubre («fuerza a
+                                              saltarse»), con `which` dentro
+
+CONTROL POSITIVO — el mismo archivo antes y despues de traducirlo
+(`voice/src/hooks/__tests__/useVoiceHelpers.behavior.test.ts`, via `git show`):
+
+    |          | criterio nuevo | criterio viejo |
+    |----------|----------------|----------------|
+    | ANTES    |        8       |       8        |
+    | DESPUES  |        0       |       1        |
+
+El nuevo NO pierde sensibilidad —ve los 8 tramos ingleses reales, igual que el
+viejo— y gana especificidad: da 0 tras traducir, mientras el viejo deja 1
+(`tap-and-release`, termino tecnico que la regla manda conservar). Con el
+criterio viejo el cierre «0 tramos en ingles» era inalcanzable por
+construccion.
+
+DEFECTO ADICIONAL DE LA TABLA 09, medido al montar el control: `ide` figuraba
+con 8 y el criterio viejo bien aplicado da 111. La diferencia es
+`node_modules`: aquella medicion recorrio 23 archivos y el paquete tiene 114
+fuentes propias mas dependencias vendorizadas con `.ts` dentro. Toda medicion
+de carga excluye `node_modules`.

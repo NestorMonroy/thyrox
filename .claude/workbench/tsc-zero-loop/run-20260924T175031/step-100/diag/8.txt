@@ -1,0 +1,13 @@
+src/packages/agent/internal/fileHistoryCore.ts(60,30): error TS2339: Property 'getIsNonInteractiveSession' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(168,35): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(172,15): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/packages/agent/internal/fileHistoryCore.ts(315,35): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(319,15): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/packages/agent/internal/fileHistoryCore.ts(730,44): error TS2339: Property 'getClaudeConfigHomeDir' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(950,30): error TS2339: Property 'getClaudeConfigHomeDir' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(961,45): error TS18046: 'snapshot' is of type 'unknown'.
+src/packages/agent/internal/fileHistoryCore.ts(963,13): error TS18046: 'backup' is of type 'unknown'.
+src/packages/agent/internal/fileHistoryCore.ts(1018,39): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(1019,13): error TS18046: 'snapshot' is of type 'unknown'.
+src/packages/agent/internal/fileHistoryCore.ts(1022,19): error TS7006: Parameter '_' implicitly has an 'any' type.
+src/packages/agent/internal/fileHistoryCore.ts(1091,30): error TS2339: Property 'notifyVscodeFileUpdated' does not exist on type 'AgentHostBindings'.

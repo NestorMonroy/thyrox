@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/mockRateLimits.ts(59,5): error TS2322: Type 'string | undefined' is not assignable to type 'string | null'.
+  --- código src/packages/provider/src/mockRateLimits.ts:49-69 ---
+     49  let mockFastModeRateLimitExpiresAt: number | null = null
+     50  // Default subscription type for mock testing
+     51  const DEFAULT_MOCK_SUBSCRIPTION: SubscriptionType = 'max'
+     52  
+     53  export function getMockHeaderless429Message(): string | null {
+     54    if (process.env.USER_TYPE !== 'ant') {
+     55      return null
+     56    }
+     57    // Env var path for -p / SDK testing where slash commands aren't available
+     58    if (readEnv('CLAUDE_MOCK_HEADERLESS_429')) {
+     59>     return readEnv('CLAUDE_MOCK_HEADERLESS_429')
+     60    }
+     61    if (!mockEnabled) {
+     62      return null
+     63    }
+     64    return mockHeaderless429Message
+     65  }
+     66  
+     67  export function getMockHeaders(): MockHeaders | null {
+     68    if (
+     69      !mockEnabled ||
+  Type 'undefined' is not assignable to type 'string | null'.

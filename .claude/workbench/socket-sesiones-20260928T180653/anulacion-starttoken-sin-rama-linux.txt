@@ -1,0 +1,60 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsProcessIdentity.test.ts:
+127 |   }
+128 | 
+129 |   test('corre ps con el pid, un segundo de plazo, LC_ALL=C y TZ=UTC, y recorta la salida', async () => {
+130 |     const calls: Call[] = []
+131 |     const token = await readProcessStartToken(77, { platform: 'darwin', runCommand: runner({ code: 0, stdout: ' Mon Sep 28 17:00:00 2026\n' }, calls) })
+132 |     expect(token).toBe('Mon Sep 28 17:00:00 2026')
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: "Mon Sep 28 17:00:00 2026"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:132:19)
+(fail) readProcessStartToken (b) fuera de Linux: `ps -o lstart=` > corre ps con el pid, un segundo de plazo, LC_ALL=C y TZ=UTC, y recorta la salida [0.59ms]
+137 |     expect(calls[0]!.options.env.LC_ALL).toBe('C')
+138 |     expect(calls[0]!.options.env.TZ).toBe('UTC')
+139 |   })
+140 | 
+141 |   test.skipIf(Bun.which('ps') === null)('contra el ps real, el inicio del proceso propio es una fecha en inglés y UTC', async () => {
+142 |     expect(await readProcessStartToken(process.pid, { platform: 'darwin' })).toMatch(/^[A-Z][a-z]{2} [A-Z][a-z]{2} +\d+ \d\d:\d\d:\d\d \d{4}$/)
+                                                                                   ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /^[A-Z][a-z]{2} [A-Z][a-z]{2} +\d+ \d\d:\d\d:\d\d \d{4}$/
+Received: "1134315"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:142:78)
+(fail) readProcessStartToken (b) fuera de Linux: `ps -o lstart=` > contra el ps real, el inicio del proceso propio es una fecha en inglés y UTC [0.50ms]
+147 |     await readProcessStartToken(77, {
+148 |       platform: 'darwin',
+149 |       readFile: async () => { read = true; return '' },
+150 |       runCommand: runner({ code: 0, stdout: 'x' }, []),
+151 |     })
+152 |     expect(read).toBe(false)
+                       ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:152:18)
+(fail) readProcessStartToken (b) fuera de Linux: `ps -o lstart=` > fuera de Linux no se lee /proc [0.20ms]
+164 |       platform: 'darwin',
+165 |       env: { PATH: '/opt/bin', HOME: '/h' },
+166 |       which: (command, path) => (path === '/opt/bin' ? `/opt/bin/${command}` : null),
+167 |       runCommand: runner({ code: 0, stdout: 'x' }, calls),
+168 |     })
+169 |     expect(calls[0]!.command).toBe('/opt/bin/ps')
+                       ^
+TypeError: undefined is not an object (evaluating 'calls[0].command')
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsProcessIdentity.test.ts:169:18)
+(fail) readProcessStartToken (b) fuera de Linux: `ps -o lstart=` > con un entorno dado, ps se resuelve en su PATH y el entorno no hereda el del proceso [0.20ms]
+
+ 18 pass
+ 4 fail
+ 47 expect() calls
+Ran 22 tests across 1 file. [102.00ms]

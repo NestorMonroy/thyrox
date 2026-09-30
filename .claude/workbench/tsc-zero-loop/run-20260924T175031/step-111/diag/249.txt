@@ -1,0 +1,249 @@
+src/packages/repl/src/queryHelpers.ts(71,30): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/queryHelpers.ts:61-81 ---
+     61   * - Last message is the user prompt but the API completed with end_turn
+     62   *   (model chose to emit no content blocks)
+     63   */
+     64  export function isResultSuccessful(
+     65    message: Message | undefined,
+     66    stopReason: string | null = null,
+     67  ): message is Message {
+     68    if (!message) return false
+     69  
+     70    if (message.type === 'assistant') {
+     71>     const lastContent = last(message.message.content)
+     72      return (
+     73        lastContent?.type === 'text' ||
+     74        lastContent?.type === 'thinking' ||
+     75        lastContent?.type === 'redacted_thinking'
+     76      )
+     77    }
+     78  
+     79    if (message.type === 'user') {
+     80      // Check if all content blocks are tool_result type
+     81      const content = message.message.content
+  Overload 1 of 2, '(array: readonly [...unknown[], ContentBlockParam]): ContentBlockParam', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'readonly [...unknown[], ContentBlockParam]'.
+      Type 'undefined' is not assignable to type 'readonly [...unknown[], ContentBlockParam]'.
+  Overload 2 of 2, '(array: List<string> | null | undefined): string | undefined', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'List<string> | null | undefined'.
+      Type 'ContentBlockParam[]' is not assignable to type 'ArrayLike<string>'.
+        'number' index signatures are incompatible.
+          Type 'ContentBlockParam' is not assignable to type 'string'.
+            Type 'ToolResultBlockParam' is not assignable to type 'string'.
+src/packages/repl/src/queryHelpers.ts(120,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:110-130 ---
+    110  export function* normalizeMessage(message: Message): Generator<SDKMessage> {
+    111    switch (message.type) {
+    112      case 'assistant':
+    113        for (const _ of normalizeMessages([message])) {
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120>           message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124            error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+  Type 'undefined' is not assignable to type 'BetaMessage'.
+src/packages/repl/src/queryHelpers.ts(124,11): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:114-134 ---
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120            message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124>           error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+    131          progressData.type === 'agent_progress' ||
+    132          progressData.type === 'skill_progress'
+    133        ) {
+    134          for (const _ of normalizeMessages([progressData.message])) {
+src/packages/repl/src/queryHelpers.ts(143,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:133-153 ---
+    133        ) {
+    134          for (const _ of normalizeMessages([progressData.message])) {
+    135            switch (_.type) {
+    136              case 'assistant':
+    137                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    138                if (!isNotEmptyMessage(_)) {
+    139                  break
+    140                }
+    141                yield {
+    142                  type: 'assistant',
+    143>                 message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+src/packages/repl/src/queryHelpers.ts(147,17): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:137-157 ---
+    137                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    138                if (!isNotEmptyMessage(_)) {
+    139                  break
+    140                }
+    141                yield {
+    142                  type: 'assistant',
+    143                  message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147>                 error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157                  timestamp: _.timestamp,
+src/packages/repl/src/queryHelpers.ts(153,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:143-163 ---
+    143                  message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153>                 message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157                  timestamp: _.timestamp,
+    158                  isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    159                  tool_use_result: _.mcpMeta
+    160                    ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    161                    : _.toolUseResult,
+    162                }
+    163                break
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is not assignable to type 'MessageParam'.
+    Types of property 'role' are incompatible.
+      Type 'string | undefined' is not assignable to type '"user" | "assistant" | "system"'.
+        Type 'undefined' is not assignable to type '"user" | "assistant" | "system"'.
+src/packages/repl/src/queryHelpers.ts(157,17): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:147-167 ---
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157>                 timestamp: _.timestamp,
+    158                  isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    159                  tool_use_result: _.mcpMeta
+    160                    ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    161                    : _.toolUseResult,
+    162                }
+    163                break
+    164            }
+    165          }
+    166        } else if (
+    167          progressData.type === 'bash_progress' ||
+src/packages/repl/src/queryHelpers.ts(217,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:207-227 ---
+    207              uuid: message.uuid,
+    208            }
+    209          }
+    210        }
+    211        break
+    212      }
+    213      case 'user':
+    214        for (const _ of normalizeMessages([message])) {
+    215          yield {
+    216            type: 'user',
+    217>           message: _.message,
+    218            parent_tool_use_id: null,
+    219            session_id: getSessionId(),
+    220            uuid: _.uuid,
+    221            timestamp: _.timestamp,
+    222            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    223            tool_use_result: _.mcpMeta
+    224              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    225              : _.toolUseResult,
+    226          }
+    227        }
+  Type 'undefined' is not assignable to type 'MessageParam'.
+src/packages/repl/src/queryHelpers.ts(221,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:211-231 ---
+    211        break
+    212      }
+    213      case 'user':
+    214        for (const _ of normalizeMessages([message])) {
+    215          yield {
+    216            type: 'user',
+    217            message: _.message,
+    218            parent_tool_use_id: null,
+    219            session_id: getSessionId(),
+    220            uuid: _.uuid,
+    221>           timestamp: _.timestamp,
+    222            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    223            tool_use_result: _.mcpMeta
+    224              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    225              : _.toolUseResult,
+    226          }
+    227        }
+    228        return
+    229      default:
+    230      // yield nothing
+    231    }
+src/packages/repl/src/queryHelpers.ts(338,43): error TS2352: Conversion of type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; } | ... 23 more ... | { ...; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/queryHelpers.ts:328-348 ---
+    328          b => b.type === 'tool_use' && 'id' in b && b.id === toolUseID,
+    329        ),
+    330    )
+    331    if (!alreadyPresent) {
+    332      mutableMessages.push(assistantMessage)
+    333      if (persistSession) {
+    334        await recordTranscript(mutableMessages)
+    335      }
+    336    }
+    337  
+    338>   const sdkAssistantMessage: SDKMessage = {
+    339      ...assistantMessage,
+    340      session_id: getSessionId(),
+    341      parent_tool_use_id: null,
+    342    } as SDKMessage
+    343    yield sdkAssistantMessage
+    344  
+    345    // Execute the tool - errors are handled internally by runToolUse
+    346    for await (const update of runTools(
+    347      [finalToolUseBlock],
+    348      [assistantMessage],
+  Type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' is not comparable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.

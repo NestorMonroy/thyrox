@@ -1,0 +1,28 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/cli/src/headless/sdk/control/permission-helpers.ts(130,7): error TS2345: Argument of type 'import("/home/user/thyrox-medicion/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/headless/sdk/control/permission-helpers.ts:120-140 ---
+    120        throw new Error(
+    121          'Permission prompt tool returned an invalid result. Expected a single text block param with type="text" and a string text value.',
+    122        )
+    123      }
+    124      return permissionPromptToolResultToPermissionDecision(
+    125        permissionToolOutputSchema().parse(
+    126          safeParseJSON(permissionToolResultBlockParam.content[0].text),
+    127        ),
+    128        permissionPromptTool,
+    129        input,
+    130>       toolUseContext,
+    131      )
+    132    }
+    133    return canUseTool
+    134  }
+    135  
+    136  // Exported for testing — regression: this used to crash at construction when
+    137  // getMcpTools() was empty (before per-server connects populated appState).
+    138  export function getCanUseToolFn(
+    139    permissionPromptToolName: string | undefined,
+    140    structuredIO: StructuredIO,

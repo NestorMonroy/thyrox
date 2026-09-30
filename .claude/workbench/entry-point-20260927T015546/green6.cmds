@@ -1,0 +1,7 @@
+npx tsc --noEmit -p tsconfig.json > .claude/workbench/entry-point-20260927T015546/green6/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/root-tsc.out
+bash bin/check-cli-typecheck > .claude/workbench/entry-point-20260927T015546/green6/cli-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/cli-typecheck.out
+npx tsc --noEmit -p src/paths/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/paths.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/paths.out
+npx tsc --noEmit -p src/store/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/store.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/store.out
+npx tsc --noEmit -p src/task/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/task.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/task.out
+npx tsc --noEmit -p src/coordination/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/coordination.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/coordination.out
+npx tsc --noEmit -p src/workbench/tsconfig.test.json > .claude/workbench/entry-point-20260927T015546/green6/workbench.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green6/workbench.out

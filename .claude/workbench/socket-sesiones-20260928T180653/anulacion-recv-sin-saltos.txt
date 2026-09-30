@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsSessionReceive.test.ts:
+35 |   }
+36 | }
+37 | 
+38 | describe('receiveText (NXe/R_e)', () => {
+39 |   test('de un par se quita la cadena de saltos; los bloques de texto se unen con salto', () => {
+40 |     expect(receiveText({ kind: 'peer' }, ENVELOPE)).toBe(STRIPPED)
+                                                         ^
+error: expect(received).toBe(expected)
+
+@@ -1,2 +1,2 @@
+- "<cross-session-message from="uds:/a.sock">
++ "<cross-session-message from="uds:/a.sock" hop-chain="aaaaaaaaaaaaaaaaaaaaaaaa">
+  hola
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:40:53)
+(fail) receiveText (NXe/R_e) > de un par se quita la cadena de saltos; los bloques de texto se unen con salto [0.38ms]
+55 | 
+56 |   test('si la entrega llega al fondo sin cambios, el contenido original sigue; queued resuelve la cadena', async () => {
+57 |     let answer: unknown
+58 |     const hooks = site([async (event, next) => (answer = await next(event))])
+59 |     const result = await runSessionReceive({ origin: { kind: 'peer' }, content: ENVELOPE, agentId: 'a1' }, hooks, () => {})
+60 |     expect(hooks.calls[0]).toEqual({ origin: { kind: 'peer' }, text: STRIPPED, agentId: 'a1' })
+                                ^
+error: expect(received).toEqual(expected)
+
+@@ -6,3 +6,3 @@
+    "text": 
+- "<cross-session-message from="uds:/a.sock">
++ "<cross-session-message from="uds:/a.sock" hop-chain="aaaaaaaaaaaaaaaaaaaaaaaa">
+  hola
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsSessionReceive.test.ts:60:28)
+(fail) runSessionReceive (Aot) > si la entrega llega al fondo sin cambios, el contenido original sigue; queued resuelve la cadena [0.54ms]
+
+ 5 pass
+ 2 fail
+ 12 expect() calls
+Ran 7 tests across 1 file. [35.00ms]

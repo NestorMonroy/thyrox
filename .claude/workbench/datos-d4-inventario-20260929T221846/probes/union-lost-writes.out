@@ -1,0 +1,4 @@
+driver exit 0 merge_sqlite_union: 0 fila(s) unidas
+merge_sqlite_union: 11073 fila(s) del otro lado omitidas por clave ya presente — se conservo la nuestra
+a1 status tras merge: ('running',) (el otro lado escribió 'completed')
+hallazgos tras merge: ['H-OURS-1'] (se escribieron H-OURS-1 y H-THEIRS-1)

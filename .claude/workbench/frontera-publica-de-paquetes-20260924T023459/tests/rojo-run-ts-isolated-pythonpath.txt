@@ -1,0 +1,14 @@
+OK   control: en un solo proceso b falla por el mock de a
+OK   aislado: a y b pasan
+OK   aislado: el resumen cuenta 2 pass
+OK   un fallo real: exit 1
+OK   un fallo real: nombra el archivo
+OK   un aborto: exit 1
+OK   un aborto: nombra el archivo
+OK   un aborto: los otros dos siguen contando
+FALLA sin PYTHONPATH en quien llama: el ejecutor lo exporta — esperado '0', obtenido '1'
+OK   sin archivos: rehusa con exit 2
+OK   sin archivos: no publica pass=
+
+aserciones: 10 de 11 · fallos: 1
+EXIT=1

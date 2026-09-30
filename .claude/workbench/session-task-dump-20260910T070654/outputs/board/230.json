@@ -1,0 +1,8 @@
+{
+  "id": "230",
+  "subject": "Portar memory (35 mod) — 3 de 6 deps, y una es app-compat, que no esta en la lista",
+  "description": "Segundo del orden derivado (ver la tabla completa en #229). Depende de `app-compat`, que NO figura entre los paquetes de ccnmt que el ejecutor nombro ni entre los ya portados — hay que medir si existe en la fuente y con que nombre antes de arrancar.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

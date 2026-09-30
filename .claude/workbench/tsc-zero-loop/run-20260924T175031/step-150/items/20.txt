@@ -1,0 +1,23 @@
+Patrón: command-runtime-loose-command-type-vs-agent-strict-call
+Señal del verificador: TS2322: Type 'Promise<typeof import\(.*\)>' is not assignable to type 'Promise<Local(?:JSX)?CommandModule>'
+Arreglo genérico: Cuando el `index.ts` de un comando tipa su objeto `satisfies Command` (o `: Command`) contra `@thyrox/command-runtime/runtime` pero el módulo `*.tsx`/`*.ts` que carga en `load()` ya tipa su `call` contra `LocalCommandCall`/`LocalJSXCommandCall` de `@thyrox/agent/command.js` (el tipo estricto, con `context: ToolUseContext & {...}`), cambiar el import de `Command` en el `index.ts` a `@thyrox/agent/command.js` — es el mismo tipo que consume realmente `commandRegistryRuntime.ts` al armar el arreglo `Command[]` de comandos registrados, así que alinear ahí no cambia semántica, sólo hace explícito el tipo ya exigido río abajo.
+Ya aplicado en: src/packages/repl/src/commands/usage/index.ts
+Archivos donde la señal sigue viva: src/packages/command-runtime/src/commands/fork/index.ts
+
+src/packages/command-runtime/src/commands/fork/index.ts(31,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-control/src/packages/command-runtime/src/commands/fork/fork")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/fork/index.ts:21-34 ---
+     21   *
+     22   * For OS-level background sessions that survive the parent REPL exiting,
+     23   * see `--bg` / `claude ps`/`logs`/`attach` (Phase B, separate path).
+     24   */
+     25  const fork = {
+     26    type: 'local-jsx',
+     27    name: 'fork',
+     28    description: 'Spawn a background agent that inherits the full conversation',
+     29    argumentHint: '<directive>',
+     30    isEnabled: () => isForkSubagentEnabled(),
+     31>   load: () => import('./fork.js'),
+     32  } satisfies Command
+     33  
+     34  export default fork
+  Property 'call' is missing in type 'typeof import("/home/user/thyrox-control/src/packages/command-runtime/src/commands/fork/fork")' but required in type 'LocalJSXCommandModule'.

@@ -1,0 +1,16 @@
+../agent/__tests__/effortDisplay.test.ts
+../agent/__tests__/effortNativeVsProxy.test.ts
+../agent/effort.ts
+../agent/models.ts
+../agent/package.json
+../config/__tests__/config.test.ts
+../config/__tests__/inventory.test.ts
+../config/__tests__/testImpact.test.ts
+../config/settings/constants.ts
+../config/settings/load.ts
+../config/settings/mdm/settings.ts
+../config/settings/schemaOutput.ts
+../config/settings/settings.ts
+../config/settings/types.ts
+../config/settings/validation.ts
+../mcp-runtime/package.json

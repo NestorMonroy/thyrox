@@ -1,0 +1,2 @@
+=== scan DESPUES de ensanchar FUENTES ===
+check-config-precedence: 0 discrepancia(s) (alcance medido: 377 archivo(s) .py)

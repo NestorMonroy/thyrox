@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 2 .claude/workbench/session-affinity-port-20260927T184048/probes/phase4-checks.txt", "started_at": "2026-09-27T19:39:44+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-27T19:40:04+00:00", "duration_seconds": 20.968774}

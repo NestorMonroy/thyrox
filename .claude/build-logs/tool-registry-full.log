@@ -1,0 +1,71 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/hooks/__tests__/appState.test.ts:
+46 | 
+47 |   test('2. useAppStateStore alcanza el hook REAL de app-host', () => {
+48 |     // El error del despachador prueba que se llegó a un hook de React. Un
+49 |     // require que fallara daría un error de resolución; uno que devolviera un
+50 |     // espacio vacío daría «no es una función».
+51 |     expect(() => useAppStateStore()).toThrow(OUTSIDE_RENDER)
+                                          ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "dispatcher"
+Received message: "Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem."
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:51:38)
+(fail) hooks/appState — la indirección hacia el paquete hermano > 2. useAppStateStore alcanza el hook REAL de app-host [0.28ms]
+50 |     // espacio vacío daría «no es una función».
+51 |     expect(() => useAppStateStore()).toThrow(OUTSIDE_RENDER)
+52 |   })
+53 | 
+54 |   test('3. useSetAppState alcanza el hook REAL de app-host', () => {
+55 |     expect(() => useSetAppState()).toThrow(OUTSIDE_RENDER)
+                                        ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "dispatcher"
+Received message: "Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem."
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:55:36)
+(fail) hooks/appState — la indirección hacia el paquete hermano > 3. useSetAppState alcanza el hook REAL de app-host [0.08ms]
+60 |     try {
+61 |       useAppStateStore()
+62 |     } catch (e) {
+63 |       capturado = e
+64 |     }
+65 |     expect(capturado).toBeInstanceOf(TypeError)
+                           ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class TypeError extends Error]
+Received value: 5265 |           "ReactDOM.useFormState has been renamed to React.useActionState. Please update %s to use React.useActionState.",
+5266 |           componentName
+5267 |         ));
+5268 |     }
+5269 |     function throwInvalidHookError() {
+5270 |       throw Error(
+                   ^
+error: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+      at throwInvalidHookError (/home/user/thyrox/node_modules/react-reconciler/cjs/react-reconciler.development.js:5270:13)
+      at useAppStore (/home/user/thyrox/src/packages/app-host/src/state/AppState.tsx:273:17)
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:61:7)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:65:23)
+(fail) hooks/appState — la indirección hacia el paquete hermano > 4. el fallo es un TypeError de React, no uno de resolución [0.71ms]
+
+ 1419 pass
+ 3 fail
+ 3249 expect() calls
+Ran 1422 tests across 86 files. [7.30s]

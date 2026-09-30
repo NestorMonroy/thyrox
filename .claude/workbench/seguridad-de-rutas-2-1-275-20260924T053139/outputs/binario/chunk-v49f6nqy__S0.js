@@ -1,0 +1,1 @@
+function $0(){return ie().wslInherits}

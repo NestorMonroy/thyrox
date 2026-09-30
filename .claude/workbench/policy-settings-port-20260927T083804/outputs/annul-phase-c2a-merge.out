@@ -1,0 +1,2 @@
+base	23 pass, 0 fail	—
+aws-pairs-not-suppressed	22 pass, 1 fail	cómo se funde un valor (S6, Md, xd, ks, Wy) > awsPairs se reemplaza, suprimiendo las variables AWS que sólo nombraba el de abajo

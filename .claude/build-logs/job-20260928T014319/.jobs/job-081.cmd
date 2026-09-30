@@ -1,0 +1,1 @@
+PYTHONPATH=src bash tests/task/test-closure-graph.sh

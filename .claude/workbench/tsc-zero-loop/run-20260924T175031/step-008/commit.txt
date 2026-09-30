@@ -1,0 +1,7 @@
+Return AppState from the compat shim default
+
+Eighth step of the agent-compiler loop, accepted-net 3337 -> 3331.
+getDefaultAppState in the app-host shim returned unknown, so every
+store seeded from it (sessionStores, runtimeHandles) held an unknown
+state. The required module returns the canonical AppState; the shim
+now says so.

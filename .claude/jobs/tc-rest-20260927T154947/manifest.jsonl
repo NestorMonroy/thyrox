@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check_package_typecheck --strict --jobs 2 agent app-host config permission provider tool-registry storage", "started_at": "2026-09-27T15:49:47+00:00"}

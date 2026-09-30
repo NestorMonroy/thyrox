@@ -1,0 +1,6 @@
+vuelta 1: directorios=2 trabajos_en_ledger=2  [cifras-20260917T220040 cifras-20260917T220040-2 ]
+vuelta 2: directorios=2 trabajos_en_ledger=2  [cifras-20260917T220047 cifras-20260917T220047-2 ]
+vuelta 3: directorios=2 trabajos_en_ledger=2  [cifras-20260917T220053 cifras-20260917T220053-2 ]
+vuelta 4: directorios=2 trabajos_en_ledger=2  [cifras-20260917T220057 cifras-20260917T220057-2 ]
+vuelta 5: directorios=2 trabajos_en_ledger=2  [cifras-20260917T220101 cifras-20260917T220101-2 ]
+colisiones de nombre de despacho: 0 de 5

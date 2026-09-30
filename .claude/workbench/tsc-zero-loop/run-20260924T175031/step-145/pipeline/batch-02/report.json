@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 234, "total_final": 226, "tsc_runs": 1, "accepted": ["agent:pool:src/packages/storage/src/claudemd.ts"], "files_kept": ["src/packages/storage/src/claudemd.ts"], "outcomes": {"agent:pool:src/packages/storage/src/claudemd.ts": "accepted-partial"}}

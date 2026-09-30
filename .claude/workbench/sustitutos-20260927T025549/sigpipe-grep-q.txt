@@ -1,0 +1,50 @@
+.claude/skills/thyrox/scripts/run-functional-evals.sh:36:    if echo "$result" | grep -qi "$pattern"; then
+.claude/skills/thyrox/scripts/run-functional-evals.sh:52:    if echo "$result" | grep -qi "$pattern"; then
+.claude/skills/thyrox/scripts/run-multi-evals.sh:36:    if echo "$result" | grep -qi "$pattern"; then
+.claude/skills/thyrox/scripts/run-multi-evals.sh:52:    if echo "$result" | grep -qi "$pattern"; then
+.claude/skills/thyrox/scripts/verify-skill-mapping.sh:55:if head -5 "$SKILL_FILE" | grep -q "^name:"; then
+.claude/skills/thyrox/scripts/verify-skill-mapping.sh:63:if head -5 "$SKILL_FILE" | grep -q "^description:"; then
+.claude/workbench/completar-packages-desde-la-referencia-20260918T163237/probes/commit_copy_per_package.sh:26:    if printf '%s' "$out" | grep -q 'index.lock'; then sleep 1; continue; fi
+.claude/workbench/completar-packages-desde-la-referencia-20260918T163237/probes/commit_rename_per_package.sh:32:    if printf '%s' "$out" | grep -q 'index.lock'; then sleep 1; continue; fi
+.claude/workbench/escaped-modules-20260927T012834/bisect_leak.sh:11:fails() { timeout 900 bun test "$@" "$TARGET" 2>&1 | grep -q "^(fail).*${PATTERN}"; }
+.claude/workbench/gnu-parallel-en-el-gate-20260910T230011/probes/universo_del_gate.sh:193:            }' "$f" | grep -q ABIERTO && echo "$f"
+src/corpus/convert-missing-md-links.sh:98:        if echo "$content" | grep -qoP '`[^`]*\.md`'; then
+src/corpus/convert-missing-md-links.sh:119:                if echo "$new_content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
+src/corpus/convert-missing-md-links.sh:122:                if echo "$new_content" | grep -qP "\[${match//\//\\/}\]\("; then
+src/task/update-state.sh:57:        if echo "$line" | grep -qE "^## FASE [0-9]+:"; then
+src/verify/check-hallazgo-sucesor.sh:200:            }' "$f" | grep -q ABIERTO && echo "$f"
+src/verify/check-i001-prewrite.sh:18:if ! echo "$FILE_PATH" | grep -q "plan-execution/"; then
+src/verify/check-i001-prewrite.sh:27:if [ ! -d "$WP_DIR/discover" ] || ! ls "$WP_DIR/discover/"*-analysis.md 2>/dev/null | head -1 | grep -q "."; then
+src/verify/detect-missing-md-links.sh:69:        if echo "$content" | grep -qoP '`[^`]*\.md`'; then
+src/verify/detect-missing-md-links.sh:93:                if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
+src/verify/detect-missing-md-links.sh:99:                if echo "$content" | grep -qP "\[${match//\//\\/}\]\("; then
+src/verify/validate-missing-md-links.sh:38:        if echo "$content" | grep -qoP '`[^`]*\.md`'; then
+src/verify/validate-missing-md-links.sh:56:                if echo "$content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
+src/verify/validate-missing-md-links.sh:59:                if echo "$content" | grep -qP "\[${match//\//\\/}\]\("; then
+tests/agents/test-agent-store-clasificar-documentos.sh:132:echo "$SALIDA" | grep -q "alcance medido"
+tests/agents/test-agent-store-clasificar-documentos.sh:134:echo "$SALIDA" | grep -qE "[0-9]+ serie"
+tests/agents/test-agent-store-fecha-documento.sh:180:echo "$SALIDA" | grep -q "alcance medido"
+tests/agents/test-agent-store-fecha-documento.sh:182:echo "$SALIDA" | grep -qi "sin ninguna cota"
+tests/agents/test-agent-store-fts-degradation.sh:68:afirmar "buscar-hallazgos encuentra el hallazgo recien indexado" "true" "$(echo "$SALIDA" | grep -q "H-TEST-99" && echo true || echo false)"
+tests/agents/test-costo-agente.sh:81:echo "$salida" | grep -q "No se encontró transcript" \
+tests/agents/test-reconciliar-agentes.sh:221:      "si" "$(printf '%s\n' "$OUT" | grep -q 'sesion declarada' && echo si || echo no)"
+tests/agents/test-reconciliar-agentes.sh:233:      "si" "$(printf '%s\n' "$OUT2" | grep -qF '2 candidato(s)' && echo si || echo no)"
+tests/install/test_install.sh:35:    if printf '%s' "$haystack" | grep -qF -- "$needle"; then
+tests/session/test-arranque-de-clon.sh:176:    "$(printf '%s' "$SALIDA_ANULADA" | grep -q "AVISO" && echo si || echo no)"
+tests/session/test-process-group.sh:276:    "$(printf '%s' "$KILL_SALIDA" | grep -q 'ya no corr' && echo "ya no corria" \
+tests/session/test-run-task-pool-isolation.sh:98:      | grep -qE '^cifras-[0-9]{8}T[0-9]{6}$' && echo si || echo no)"
+tests/session/test-run-task-pool-isolation.sh:132:   "$(find "$T/logs-nom" -name 'prefijos-por-raiz.log' -type f | grep -q . && echo si || echo no)"
+tests/session/test-run-task-pool-isolation.sh:134:   "$(find "$T/logs-nom" -name 'mediana-de-lineas.log' -type f | grep -q . && echo si || echo no)"
+tests/session/test-run-task-pool-memfree.sh:125:    "$(printf '%s' "$OUT" | grep -q 'reencolado' && echo si || echo no)"
+tests/session/test-run-task-pool.sh:49:    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+tests/session/test-wait-jobs-probe.sh:37:contiene_texto() { printf '%s\n' "$1" | grep -Eq -- "$2" && echo si || echo no; }
+tests/session/test-wait-jobs.sh:236:    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+tests/task/test-closure-graph.sh:64:  echo "$SALIDA" | grep -q "\"#$id\"" || fallo "no vio el sucesor #$id"
+tests/task/test-closure-graph.sh:69:echo "$SALIDA" | grep -q '"#999"' && fallo "tomo por sucesor una cita suelta (#999)"
+tests/verify/test-hallazgo-submodulo-baseline.sh:68:if [ "$EXIT" -eq 2 ] && ! printf '%s' "$OUT" | grep -qE '^[0-9]+$'; then
+tests/verify/test-vocabulario-baseline-resolucion.sh:59:if [ "$CODIGO" -eq 2 ] && printf '%s' "$SALIDA" | grep -q "baseline"; then
+tests/verify/test-vocabulario-baseline-resolucion.sh:131:   && printf '%s' "$SALIDA7" | grep -q 'corrida' \
+tests/verify/test-vocabulario-baseline-resolucion.sh:132:   && ! printf '%s' "$SALIDA7" | grep -q 'zzforma-que-solo-el-consumidor-declara'; then
+tests/verify/test-vocabulario-baseline-resolucion.sh:148:if [ "$CODIGO8" -eq 2 ] && printf '%s' "$SALIDA8" | grep -q "vocabulario_prohibido"; then
+tests/verify/test_pre_push.sh:44:    "$(printf '%s' "$salida" | grep -q 'check-ids-duplicados' && echo si || echo no)"
+tests/verify/test_pre_push.sh:46:    "$(printf '%s' "$salida" | grep -qi 'skip' && echo si || echo no)"

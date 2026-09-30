@@ -1,0 +1,7 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 324.04 s, pico 760764 KB × 2 -> 1486M; TTL 1h: un hueco de 5.40067 min caduca la caché de 5 m; una sola caducidad (≥ 0.60) ya paga la prima; RAM: (15461124 − 0) / (760764 × 2) -> 10
+cache-ttl: 1h (history)
+memfree: 1486M (history)
+items=1 ok=1 fallidos=0
+verificados=1 rechazados=0 sin-cambios=0 fallidos=0
+__BG_EXIT__=0

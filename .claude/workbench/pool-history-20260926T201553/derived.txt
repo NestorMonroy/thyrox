@@ -1,0 +1,12 @@
+PYTHONPATH=src python3 tests/session/test_pool_history.py
+bash tests/session/test-headless-pool.sh
+bash tests/session/test-gnu-time-launchers.sh
+PYTHONPATH=src python3 tests/verify/test_tsc_cycle.py
+PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+PYTHONPATH=src python3 tests/verify/test_check_cache_layout.py
+PYTHONPATH=src python3 tests/verify/test_env_contract_keys.py
+bash tests/verify/test-toolchain-ready.sh
+bash tests/session/test-write-env-repairs-moved-clone.sh
+bash tests/install/test_install.sh
+PYTHONPATH=src python3 tests/task/test_layer_signals.py
+PYTHONPATH=src python3 tests/hooks/test_detect_temp_home_write.py

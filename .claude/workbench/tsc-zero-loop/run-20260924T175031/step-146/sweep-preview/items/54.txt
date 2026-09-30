@@ -1,0 +1,955 @@
+Patrón: local-request-shape-missing-discriminant-subtype-250
+Señal del verificador: : TS2345: Argument\ of\ type\ .+?\ is\ not\ assignable\ to\ parameter\ of\ type\ .+?\.$
+Arreglo genérico: Derivado de los objetivos de src/packages/repl/src/hooks/useSSHSession.ts; ver su diff en el paso.
+Ya aplicado en: src/packages/app-host/src/bootstrap/gracefulShutdown.ts, src/packages/cli/src/bg.ts, src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx, src/packages/repl/src/hooks/useSSHSession.ts, src/packages/shell/src/exec.ts, src/packages/shell/src/shellCommand.ts, src/packages/tool-registry/src/__tests__/integration.test.ts, src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts, src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts, src/packages/tool-registry/src/tools/registry/__tests__/ToolRegistry.test.ts, tests/integration/message-pipeline.test.ts, tests/unit/utils/treeify.test.ts
+Archivos donde la señal sigue viva: src/packages/agent/QueryEngine.ts, src/packages/agent/hooks.ts, src/packages/agent/query.ts, src/packages/agent/task/framework.ts, src/packages/app-host/src/runtime/installPluginBindings.ts, src/packages/app-host/src/runtime/runtimeHandles.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/config/plugin/loadPluginHooks.ts, src/packages/mcp-runtime/src/channelNotification.ts, src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx, src/packages/repl/src/components/Message.tsx, src/packages/repl/src/components/messages/AttachmentMessage.tsx, src/packages/repl/src/conversationRecovery.tsx, src/packages/repl/src/hooks/useReplBridge.tsx, src/packages/repl/src/screens/REPLView.tsx, src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts, src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+
+src/packages/agent/QueryEngine.ts(822,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+  --- código src/packages/agent/QueryEngine.ts:812-832 ---
+    812          yield {
+    813            type: 'system',
+    814            subtype: 'compact_boundary' as const,
+    815            session_id: getSessionId(),
+    816            uuid: compactBoundary.uuid,
+    817            compact_metadata: toSDKCompactMetadata(compactBoundary.compactMetadata),
+    818          }
+    819          continue
+    820        }
+    821  
+    822>       const message = fromAgentEvent(event)
+    823        if (!message) {
+    824          continue
+    825        }
+    826  
+    827        // Record assistant, user, and compact boundary messages
+    828        if (
+    829          message.type === 'assistant' ||
+    830          message.type === 'user' ||
+    831          (message.type === 'system' && message.subtype === 'compact_boundary')
+    832        ) {
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.
+
+src/packages/agent/hooks.ts(1192,34): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/hooks.ts:1182-1202 ---
+   1182      }
+   1183    }
+   1184  
+   1185    // CLAUDE_CODE_SHELL_PREFIX envuelve el comando con quoting POSIX
+   1186    // (formatShellPrefixCommand usa shell-quote). Esto no tiene sentido para
+   1187    // PowerShell — ver diseño §8.1. Por ahora los hooks de PS ignoran el
+   1188    // prefijo; un CLAUDE_CODE_PS_SHELL_PREFIX (o un prefijo consciente del
+   1189    // shell) queda como trabajo futuro.
+   1190    const finalCommand =
+   1191      !execArgs && !isPowerShell && readEnv('CLAUDE_CODE_SHELL_PREFIX')
+   1192>       ? formatShellPrefixCommand(readEnv('CLAUDE_CODE_SHELL_PREFIX'), command)
+   1193        : command
+   1194  
+   1195    const hookTimeoutMs = hook.timeout
+   1196      ? hook.timeout * 1000
+   1197      : TOOL_HOOK_EXECUTION_TIMEOUT_MS
+   1198  
+   1199    // Arma las variables de entorno — todas las rutas pasan por toHookPath
+   1200    // para la conversión POSIX de Windows.
+   1201    const envVars: NodeJS.ProcessEnv = {
+   1202      ...subprocessEnv(),
+  Type 'undefined' is not assignable to type 'string'.
+
+src/packages/agent/query.ts(508,60): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:498-518 ---
+    498        // so the breaker fires on the Nth fast refill, not just N within one
+    499        // hop.
+    500        tracking = {
+    501          compacted: true,
+    502          turnId: deps.uuid(),
+    503          turnCounter: 0,
+    504          consecutiveFailures: 0,
+    505          consecutiveRapidRefills,
+    506        }
+    507  
+    508>       const postCompactMessages = buildPostCompactMessages(compactionResult)
+    509  
+    510        for (const message of postCompactMessages) {
+    511          yield message
+    512        }
+    513  
+    514        // Continue on with the current query call using the post compact messages
+    515        messagesForQuery = postCompactMessages
+    516      } else if (consecutiveFailures !== undefined) {
+    517        // Autocompact failed — propagate failure count so the circuit breaker
+    518        // can stop retrying on the next iteration.
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+src/packages/agent/query.ts(798,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+  --- código src/packages/agent/query.ts:788-808 ---
+    788              }
+    789              if (isWithheldReactivePromptTooLong(message as Message)) {
+    790                withheld = true
+    791              }
+    792              if (
+    793                mediaRecoveryEnabled &&
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798>             if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804              if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+src/packages/agent/query.ts(1122,64): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:1112-1132 ---
+   1112            if (params.taskBudget) {
+   1113              const preCompactContext =
+   1114                finalContextTokensFromLastResponse(messagesForQuery)
+   1115              taskBudgetRemaining = Math.max(
+   1116                0,
+   1117                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1118                  preCompactContext,
+   1119              )
+   1120            }
+   1121  
+   1122>           const postCompactMessages = buildPostCompactMessages(compacted)
+   1123            for (const msg of postCompactMessages) {
+   1124              yield msg
+   1125            }
+   1126            const next: State = {
+   1127              messages: postCompactMessages,
+   1128              toolUseContext,
+   1129              autoCompactTracking: undefined,
+   1130              maxOutputTokensRecoveryCount,
+   1131              hasAttemptedReactiveCompact: true,
+   1132              maxOutputTokensOverride: undefined,
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+src/packages/agent/query.ts(1247,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+  --- código src/packages/agent/query.ts:1237-1257 ---
+   1237        // real response — hooks evaluating it create a death spiral:
+   1238        // error → hook blocking → retry → error → …
+   1239        if (lastMessage?.isApiErrorMessage) {
+   1240          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1241          return { reason: 'completed' }
+   1242        }
+   1243  
+   1244        const stopHookResult = yield* handleStopHooks(
+   1245          messagesForQuery,
+   1246          assistantMessages,
+   1247>         systemPrompt,
+   1248          userContext,
+   1249          systemContext,
+   1250          toolUseContext,
+   1251          querySource,
+   1252          stopHookActive,
+   1253        )
+   1254  
+   1255        // ant v2.1.143 3999.js: a run of consecutive blocks just ended (this
+   1256        // turn produced none, but earlier ones in the streak did) — record how
+   1257        // long the streak was so dashboards can see /goal blocking pressure.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.
+
+src/packages/agent/task/framework.ts(53,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/agent/task/framework.ts:43-63 ---
+     43  /**
+     44   * Update a task's state in AppState.
+     45   * Helper function for task implementations.
+     46   * Generic to allow type-safe updates for specific task types.
+     47   */
+     48  export function updateTaskState<T extends TaskState>(
+     49    taskId: string,
+     50    setAppState: SetAppState,
+     51    updater: (task: T) => T,
+     52  ): void {
+     53>   setAppState(prev => {
+     54      const task = prev.tasks?.[taskId] as T | undefined
+     55      if (!task) {
+     56        return prev
+     57      }
+     58      const updated = updater(task)
+     59      if (updated === task) {
+     60        // Updater returned the same reference (early-return no-op). Skip the
+     61        // spread so s.tasks subscribers don't re-render on unchanged state.
+     62        return prev
+     63      }
+  Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: T | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'T | TaskState' is not assignable to type 'TaskState'.
+              Type 'T' is not assignable to type 'TaskState'.
+                Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                  Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                    Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                      Type 'T' is not assignable to type 'DreamTaskState'.
+                        Type 'TaskState' is not assignable to type 'DreamTaskState'.
+                          Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                            Type 'T' is not assignable to type 'TaskStateBase'.
+                              Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/agent/task/framework.ts(79,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/agent/task/framework.ts:69-89 ---
+     69        },
+     70      }
+     71    })
+     72  }
+     73  
+     74  /**
+     75   * Register a new task in AppState.
+     76   */
+     77  export function registerTask(task: TaskState, setAppState: SetAppState): void {
+     78    let isReplacement = false
+     79>   setAppState(prev => {
+     80      const existing = prev.tasks[task.id]
+     81      isReplacement = existing !== undefined
+     82      // Carry forward UI-held state on re-register (resumeAgentBackground
+     83      // replaces the task; user's retain shouldn't reset). startTime keeps
+     84      // the panel sort stable; messages + diskLoaded preserve the viewed
+     85      // transcript across the replace (the user's just-appended prompt lives
+     86      // in messages and isn't on disk yet).
+     87      const merged =
+     88        existing && 'retain' in existing
+     89          ? {
+  Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: TaskState | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'TaskState | TaskState' is not assignable to type 'TaskState'.
+              Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                  Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+
+src/packages/app-host/src/runtime/installPluginBindings.ts(478,61): error TS2345: Argument of type '{ recursive?: boolean | undefined; } | undefined' is not assignable to parameter of type '{ mode?: number | undefined; } | undefined'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:468-488 ---
+    468    setGetSettingsForSourceFn(source => getSettingsForSource(source as any) as any)
+    469    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    470  
+    471    // --- fs / path (métodos sync + async)
+    472    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    473    const nodeFs = require('node:fs') as typeof import('node:fs')
+    474    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    475    const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
+    476    setFsImplementationFn({
+    477      existsSync: p => getFsImplementation().existsSync(p),
+    478>     mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
+    479      writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
+    480      readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
+    481      readdirSync: p =>
+    482        nodeFs.readdirSync(p, { withFileTypes: true }),
+    483      statSync: p => getFsImplementation().statSync(p) as any,
+    484      rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
+    485      rmdirSync: p => nodeFs.rmdirSync(p),
+    486      renameSync: (o, n) => getFsImplementation().renameSync(o, n),
+    487      appendFileSync: (p, d) => getFsImplementation().appendFileSync(p, d),
+    488      cwd: () => getFsImplementation().cwd(),
+  Type '{ recursive?: boolean | undefined; }' has no properties in common with type '{ mode?: number | undefined; }'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(504,55): error TS2345: Argument of type 'string' is not assignable to parameter of type 'FsOperations'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:494-514 ---
+    494      mkdir: async (p, o) => {
+    495        await nodeFsp.mkdir(p, { recursive: true, ...(o ?? {}) })
+    496      },
+    497      readdir: async p =>
+    498        (await nodeFsp.readdir(p, { withFileTypes: true })),
+    499      stat: async p => (await nodeFsp.stat(p)) as any,
+    500      rm: async (p, o) => nodeFsp.rm(p, o),
+    501      rename: async (o, n) => nodeFsp.rename(o, n),
+    502    })
+    503    setPathExistsFn(p => pathExists(p))
+    504>   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+    505    setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
+    506    setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
+    507    setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
+    508  
+    509    // --- git
+    510    setGitExeFn(() => gitExe())
+    511    setGetHeadForDirFn(dir => getHeadForDir(dir))
+    512  
+    513    // --- subproceso
+    514    setExecFileNoThrowFn(execFileNoThrow)
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(125,66): error TS2345: Argument of type 'unknown[] | PermissionUpdate[]' is not assignable to parameter of type 'PermissionUpdate[]'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:115-135 ---
+    115    const agentCatalogStore = createSnapshotStore(initialState.agentDefinitions)
+    116  
+    117    return {
+    118      permission: {
+    119        getContext: () => permissionStore.getState(),
+    120        setContext: next => permissionStore.setState(() => next),
+    121        buildUpdates: (...args: unknown[]) =>
+    122          (Array.isArray(args[0]) ? args[0] : []) as PermissionUpdate[],
+    123        applyUpdates: updates => {
+    124          let nextContext = permissionStore.getState()
+    125>         nextContext = applyPermissionUpdates(nextContext as any, updates)
+    126          permissionStore.setState(() => nextContext)
+    127          return nextContext
+    128        },
+    129        persistUpdates: updates => {
+    130          persistPermissionUpdates(updates as any)
+    131        },
+    132      },
+    133      mcp: {
+    134        getSnapshot: () => mcpStore.getState(),
+    135        setSnapshot: snapshot => mcpStore.setState(() => snapshot),
+  Type 'unknown[]' is not assignable to type 'PermissionUpdate[]'.
+    Type 'unknown' is not assignable to type 'PermissionUpdate'.
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2362,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2352-2372 ---
+   2352            const sdkClient = sdkClients.find(
+   2353              client => client.name === mcpRequest.server_name,
+   2354            )
+   2355            // Check client exists - dynamically added SDK servers may have
+   2356            // placeholder clients with null client until updateSdkMcp() runs
+   2357            if (
+   2358              sdkClient &&
+   2359              sdkClient.type === 'connected' &&
+   2360              sdkClient.client?.transport?.onmessage
+   2361            ) {
+   2362>             sdkClient.client.transport.onmessage(mcpRequest.message)
+   2363            }
+   2364            sendControlResponseSuccess(message)
+   2365          } else if (message.request.subtype === 'rewind_files') {
+   2366            const appState = getAppState()
+   2367            const result = await handleRewindFiles(
+   2368              message.request.user_message_id as UUID,
+   2369              appState,
+   2370              setAppState,
+   2371              message.request.dry_run ?? false,
+   2372            )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3302,56): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: "control_response"; response: { subtype: "success"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: "error"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3292-3312 ---
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+   3300                      // stdin processing loop so they resolve pending
+   3301                      // permission requests from the SDK consumer.
+   3302>                     structuredIO.injectControlResponse(response)
+   3303                    },
+   3304                    onInterrupt() {
+   3305                      abortController?.abort()
+   3306                    },
+   3307                    onSetModel(model) {
+   3308                      const resolved =
+   3309                        model === 'default' ? getDefaultMainLoopModel() : model
+   3310                      activeUserSpecifiedModel = resolved
+   3311                      setMainLoopModelOverride(resolved)
+   3312                    },
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3434,11): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3424-3444 ---
+   3424        }
+   3425  
+   3426        // First prompt message implicitly initializes if not already done.
+   3427        initialized = true
+   3428  
+   3429        // Check for duplicate user message - skip if already processed
+   3430        if (message.uuid) {
+   3431          const sessionId = getSessionId() as UUID
+   3432          const existsInSession = await doesMessageExistInSession(
+   3433            sessionId,
+   3434>           message.uuid,
+   3435          )
+   3436  
+   3437          // Check both historical duplicates (from file) and runtime duplicates (this session)
+   3438          if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+   3439            logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
+   3440            // Send acknowledgment for duplicate message if replay mode is enabled
+   3441            if (options.replayUserMessages) {
+   3442              logForDebugging(
+   3443                `Sending acknowledgment for duplicate user message: ${message.uuid}`,
+   3444              )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3438,57): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3428-3448 ---
+   3428  
+   3429        // Check for duplicate user message - skip if already processed
+   3430        if (message.uuid) {
+   3431          const sessionId = getSessionId() as UUID
+   3432          const existsInSession = await doesMessageExistInSession(
+   3433            sessionId,
+   3434            message.uuid,
+   3435          )
+   3436  
+   3437          // Check both historical duplicates (from file) and runtime duplicates (this session)
+   3438>         if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+   3439            logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
+   3440            // Send acknowledgment for duplicate message if replay mode is enabled
+   3441            if (options.replayUserMessages) {
+   3442              logForDebugging(
+   3443                `Sending acknowledgment for duplicate user message: ${message.uuid}`,
+   3444              )
+   3445              output.enqueue({
+   3446                type: 'user',
+   3447                content: message.message?.content ?? '',
+   3448                message: message.message,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3467,34): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3457-3477 ---
+   3457            // ran but its lifecycle was never closed (interrupted before ack).
+   3458            // Runtime dups don't need this — the original enqueue path closes them.
+   3459            if (existsInSession) {
+   3460              notifyCommandLifecycle(message.uuid, 'completed')
+   3461            }
+   3462            // Don't enqueue duplicate messages for execution
+   3463            continue
+   3464          }
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467>         trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474          value: await resolveAndPrepend(message, message.message.content),
+   3475          uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })
+
+src/packages/config/plugin/loadPluginHooks.ts(118,25): error TS2345: Argument of type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:108-128 ---
+    108    // Clear-then-register as an atomic pair. Previously the clear lived in
+    109    // clearPluginHookCache(), which meant any clearAllCaches() call (from
+    110    // /plugins UI, pluginInstallationHelpers, thinkback, etc.) wiped plugin
+    111    // hooks from STATE.registeredHooks and left them wiped until someone
+    112    // happened to call loadPluginHooks() again. SessionStart explicitly awaits
+    113    // loadPluginHooks() before firing so it always re-registered; Stop has no
+    114    // such guard, so plugin Stop hooks silently never fired after any plugin
+    115    // management operation (gh-29767). Doing the clear here makes the swap
+    116    // atomic — old hooks stay valid until this point, new hooks take over.
+    117    clearRegisteredPluginHooks()
+    118>   registerHookCallbacks(allPluginHooks)
+    119  
+    120    const totalHooks = Object.values(allPluginHooks).reduce(
+    121      (sum, matchers) => sum + matchers.reduce((s, m) => s + m.hooks.length, 0),
+    122      0,
+    123    )
+    124    logForDebugging(
+    125      `Registered ${totalHooks} hooks from ${enabled.length} plugins`,
+    126    )
+    127  })
+    128  
+  Type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.
+src/packages/config/plugin/loadPluginHooks.ts(180,25): error TS2345: Argument of type 'Partial<Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:170-190 ---
+    170      // (un arreglo) antes de filtrarlo, sin asumirlo sin comprobar.
+    171      if (!Array.isArray(matchers)) continue
+    172      const kept = matchers.filter(
+    173        (m: { pluginRoot: string }): m is PluginHookMatcher =>
+    174          'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
+    175      )
+    176      if (kept.length > 0) survivors[event as HookEvent] = kept
+    177    }
+    178  
+    179    clearRegisteredPluginHooks()
+    180>   registerHookCallbacks(survivors)
+    181  }
+    182  
+    183  /**
+    184   * Reset hot reload subscription state. Only for testing.
+    185   */
+    186  export function resetHotReloadState(): void {
+    187    hotReloadSubscribed = false
+    188    lastPluginSettingsSnapshot = undefined
+    189  }
+    190  
+  Type 'Partial<Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.
+
+src/packages/mcp-runtime/src/channelNotification.ts(285,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+  --- código src/packages/mcp-runtime/src/channelNotification.ts:275-295 ---
+    275        }
+    276      }
+    277  
+    278      // Approved-plugin allowlist. Marketplace gate already verified
+    279      // tag == reality, so this is a pure entry check. entry.dev (per-entry,
+    280      // not the session-wide bit) bypasses — so accepting the dev dialog for
+    281      // one entry doesn't leak allowlist-bypass to --channels entries.
+    282      if (!entry.dev) {
+    283        const { entries, source } = getEffectiveChannelAllowlist(
+    284          sub,
+    285>         policy?.allowedChannelPlugins,
+    286        )
+    287        if (
+    288          !entries.some(
+    289            e => e.plugin === entry.name && e.marketplace === entry.marketplace,
+    290          )
+    291        ) {
+    292          return {
+    293            action: 'skip',
+    294            kind: 'allowlist',
+    295            reason:
+
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx(51,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+  --- código src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx:41-61 ---
+     41            policyBlocked: false,
+     42            list: '',
+     43            unmatched: [] as Unmatched[],
+     44          }
+     45        const l = ch.map(formatEntry).join(', ')
+     46        const sub = getSubscriptionType()
+     47        const managed = sub === 'team' || sub === 'enterprise'
+     48        const policy = getSettingsForSource('policySettings')
+     49        const allowlist = getEffectiveChannelAllowlist(
+     50          sub,
+     51>         policy?.allowedChannelPlugins,
+     52        )
+     53        return {
+     54          channels: ch,
+     55          disabled: !isChannelsEnabled(),
+     56          noAuth: !getClaudeAIOAuthTokens()?.accessToken,
+     57          policyBlocked: managed && policy?.channelsEnabled !== true,
+     58          list: l,
+     59          unmatched: findUnmatched(ch, allowlist),
+     60        }
+     61      })
+
+src/packages/repl/src/components/Message.tsx(507,24): error TS2345: Argument of type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+  --- código src/packages/repl/src/components/Message.tsx:497-517 ---
+    497  }
+    498  
+    499  /** Exported for testing */
+    500  export function areMessagePropsEqual(prev: Props, next: Props): boolean {
+    501    if (prev.message.uuid !== next.message.uuid) return false
+    502    // Only re-render on lastThinkingBlockId change if this message actually
+    503    // has thinking content — otherwise every message in scrollback re-renders
+    504    // whenever streaming thinking starts/stops (CC-941).
+    505    if (
+    506      prev.lastThinkingBlockId !== next.lastThinkingBlockId &&
+    507>     hasThinkingContent(next.message)
+    508    ) {
+    509      return false
+    510    }
+    511    // Verbose toggle changes thinking block visibility/expansion
+    512    if (prev.verbose !== next.verbose) return false
+    513    // Only re-render if this message's "is latest bash output" status changed,
+    514    // not when the global latestBashOutputUUID changes to a different message
+    515    const prevIsLatest = prev.latestBashOutputUUID === prev.message.uuid
+    516    const nextIsLatest = next.latestBashOutputUUID === next.message.uuid
+    517    if (prevIsLatest !== nextIsLatest) return false
+  Type 'AssistantMessage' is not assignable to type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; } | undefined'.
+        Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; }'.
+          Types of property 'content' are incompatible.
+            Type 'MessageContent | undefined' is not assignable to type '{ type: string; }[]'.
+              Type 'undefined' is not assignable to type '{ type: string; }[]'.
+
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(85,30): error TS2345: Argument of type '(msg: { text: string; from: string; color: string | undefined; summary: string | undefined; }, idx: number) => React.JSX.Element' is not assignable to parameter of type '(value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => Element'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:75-95 ---
+     75        } catch {
+     76          return true // Non-JSON messages are visible
+     77        }
+     78      })
+     79  
+     80      if (visibleMessages.length === 0) {
+     81        return null
+     82      }
+     83      return (
+     84        <Box flexDirection="column">
+     85>         {visibleMessages.map((msg: { text: string; from: string; color: string|undefined; summary: string|undefined }, idx: number) => {
+     86            // Try to parse as JSON for task_assignment messages
+     87            let parsedMsg: {
+     88              type?: string
+     89              taskId?: string
+     90              subject?: string
+     91              assignedBy?: string
+     92            } | null = null
+     93            try {
+     94              parsedMsg = jsonParse(msg.text)
+     95            } catch {
+  Types of parameters 'msg' and 'value' are incompatible.
+    Type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' is not assignable to type '{ text: string; from: string; color: string | undefined; summary: string | undefined; }'.
+      Property 'color' is optional in type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' but required in type '{ text: string; from: string; color: string | undefined; summary: string | undefined; }'.
+
+src/packages/repl/src/conversationRecovery.tsx(188,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:178-198 ---
+    178          msg.type === 'user' &&
+    179          msg.permissionMode !== undefined &&
+    180          !validModes.has(msg.permissionMode as string)
+    181        ) {
+    182          msg.permissionMode = undefined
+    183        }
+    184      }
+    185  
+    186      // Filter out unresolved tool uses and any synthetic messages that follow them
+    187      const filteredToolUses = filterUnresolvedToolUses(
+    188>       migratedMessages,
+    189      ) as NormalizedMessage[]
+    190  
+    191      // Filter out orphaned thinking-only assistant messages that can cause API errors
+    192      // during resume. These occur when streaming yields separate messages per content
+    193      // block and interleaved user messages prevent proper merging by message.id.
+    194      const filteredThinking = filterOrphanedThinkingOnlyMessages(
+    195        filteredToolUses,
+    196      ) as NormalizedMessage[]
+    197  
+    198      // Filter out assistant messages with only whitespace text content.
+  Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message'.
+    Type 'ProgressMessage<unknown>' is missing the following properties from type 'Message': role, content
+src/packages/repl/src/conversationRecovery.tsx(562,33): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:552-572 ---
+    552          log = await loadFullLog(log)
+    553        }
+    554  
+    555        // Determine sessionId first so we can pass it to copy functions
+    556        if (!sessionId) {
+    557          sessionId = getSessionIdFromLog(log) as UUID
+    558        }
+    559        // Pass the original session ID to ensure the plan slug is associated with
+    560        // the session we're resuming, not the temporary session ID before resume
+    561        if (sessionId) {
+    562>         await copyPlanForResume(log, asSessionId(sessionId))
+    563        }
+    564  
+    565        // Copy file history for resume
+    566        void copyFileHistoryForResume(log)
+    567  
+    568        messages = log.messages
+    569        checkResumeConsistency(messages)
+    570      }
+    571  
+    572      // Restore skill state from invoked_skills attachments before deserialization.
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { cwd: string; userType: string; entrypoint?: string | undefined; sessionId: string; timestamp: string; version: string; gitBranch?: string | undefined; slug?: string | undefined; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+
+src/packages/repl/src/hooks/useReplBridge.tsx(536,27): error TS2345: Argument of type '(prev: AppState) => AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:526-546 ---
+    526                  const reason = getAutoModeUnavailableReason()
+    527                  return {
+    528                    ok: false,
+    529                    error: reason
+    530                      ? `Cannot set permission mode to auto: ${getAutoModeUnavailableNotification(reason)}`
+    531                      : 'Cannot set permission mode to auto',
+    532                  }
+    533                }
+    534                // Guards passed — apply via the centralized transition so
+    535                // prePlanMode stashing and auto-mode state sync all fire.
+    536>               setAppState(prev => {
+    537                  const current = prev.toolPermissionContext.mode
+    538                  if (current === mode) return prev
+    539                  const next = transitionPermissionMode(
+    540                    current,
+    541                    mode,
+    542                    prev.toolPermissionContext,
+    543                  )
+    544                  return {
+    545                    ...prev,
+    546                    toolPermissionContext: { ...next, mode },
+  Type 'AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to type 'AppState'.
+    Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+      Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+        The types of 'toolPermissionContext.mode' are incompatible between these types.
+          Type 'PermissionMode' is not assignable to type 'InternalPermissionMode'.
+            Type '"ask"' is not assignable to type 'InternalPermissionMode'.
+
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1157-1177 ---
+   1157    // 3P default: off — OSC 21337 is ant-only while the spec stabilizes.
+   1158    // Gated so we can roll back if the sidebar indicator conflicts with
+   1159    // the title spinner in terminals that render both. When the flag is
+   1160    // on, the user-facing config setting controls whether it's active.
+   1161    const tabStatusGateEnabled = getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false);
+   1162    const showStatusInTerminalTab = tabStatusGateEnabled && (getGlobalConfig().showStatusInTerminalTab ?? false);
+   1163    useTabStatus(titleDisabled || !showStatusInTerminalTab ? null : sessionStatus);
+   1164  
+   1165    // Register the leader's setToolUseConfirmQueue for in-process teammates
+   1166    useEffect(() => {
+   1167>     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+   1168      return () => unregisterLeaderToolUseConfirmQueue();
+   1169    }, [setToolUseConfirmQueue]);
+   1170  
+   1171    const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
+   1172    const messagesRef = useRef(messages);
+   1173  
+   1174    // Bg-session FleetView sync (see hook JSDoc for ant 3988.js lineage):
+   1175    // state.json disk writes + rv-channel mirror on each turn transition.
+   1176    useBgFleetStateSync(isLoading, messages);
+   1177    useBgRendezvousServer(isLoading); // ant 4291.js rv server: 30s heartbeat + startup-wedge (no-op unless bg+rv-sock)
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<ToolUseConfirm[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: ToolUseConfirm[]) => ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.
+src/packages/repl/src/screens/REPLView.tsx(1800,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1790-1810 ---
+   1790            agentType: mainThreadAgentDefinition?.agentType,
+   1791            model: mainLoopModel,
+   1792          });
+   1793  
+   1794          // Append hook messages to the conversation
+   1795          messages.push(...hookMessages);
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800>           void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802            void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806          restoreSessionStateFromLog(log, setAppState);
+   1807          if (log.fileHistorySnapshots) {
+   1808            void copyFileHistoryForResume(log);
+   1809          }
+   1810  
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { cwd: string; userType: string; entrypoint?: string | undefined; sessionId: string; timestamp: string; version: string; gitBranch?: string | undefined; slug?: string | undefined; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1802,34): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1792-1812 ---
+   1792          });
+   1793  
+   1794          // Append hook messages to the conversation
+   1795          messages.push(...hookMessages);
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800            void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802>           void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806          restoreSessionStateFromLog(log, setAppState);
+   1807          if (log.fileHistorySnapshots) {
+   1808            void copyFileHistoryForResume(log);
+   1809          }
+   1810  
+   1811          // Restore agent setting from the resumed conversation
+   1812          // Always reset to the new session's values (or clear if none),
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { cwd: string; userType: string; entrypoint?: string | undefined; sessionId: string; timestamp: string; version: string; gitBranch?: string | undefined; slug?: string | undefined; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1806,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1796-1816 ---
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800            void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802            void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806>         restoreSessionStateFromLog(log, setAppState);
+   1807          if (log.fileHistorySnapshots) {
+   1808            void copyFileHistoryForResume(log);
+   1809          }
+   1810  
+   1811          // Restore agent setting from the resumed conversation
+   1812          // Always reset to the new session's values (or clear if none),
+   1813          // matching the standaloneAgentContext pattern below
+   1814          const { agentDefinition: restoredAgent } = restoreAgentFromSession(
+   1815            log.agentSetting,
+   1816            initialMainThreadAgentDefinition,
+  Types of parameters 'updater' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/repl/src/screens/REPLView.tsx(2387,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2377-2397 ---
+   2377            });
+   2378            return currentQueue;
+   2379          });
+   2380        }, setToolUseConfirmQueue);
+   2381      },
+   2382      [setAppState, setToolUseConfirmQueue],
+   2383    );
+   2384  
+   2385    // Register the leader's setToolPermissionContext for in-process teammates
+   2386    useEffect(() => {
+   2387>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2388      return () => unregisterLeaderSetToolPermissionContext();
+   2389    }, [setToolPermissionContext]);
+   2390  
+   2391    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2392  
+   2393    const requestPrompt = useCallback(
+   2394      (title: string, toolInputSummary?: string | null) =>
+   2395        (request: PromptRequest): Promise<PromptResponse> =>
+   2396          new Promise<PromptResponse>((resolve, reject) => {
+   2397            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2800,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2790-2810 ---
+   2790  
+   2791        // Extract a session title from the first real user message. One-shot
+   2792        // via ref (was tengu_birch_mist experiment: first-message-only to save
+   2793        // Haiku calls). The ref replaces the old `messages.length <= 1` check,
+   2794        // which was broken by SessionStart hook messages (prepended via
+   2795        // useDeferredHookMessages) and attachment messages (appended by
+   2796        // processTextPrompt) — both pushed length past 1 on turn one, so the
+   2797        // title silently fell through to the "Claude Code" default.
+   2798        if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+   2799          const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+   2800>         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+   2801          // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+   2802          // expansions (/commit → <command-message>), local-command headers
+   2803          // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+   2804          // None of these are the user's topic; wait for real prose.
+   2805          if (
+   2806            text &&
+   2807            !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) &&
+   2808            !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) &&
+   2809            !text.startsWith(`<${COMMAND_NAME_TAG}>`) &&
+   2810            !text.startsWith(`<${BASH_INPUT_TAG}>`)
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(2947,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2937-2957 ---
+   2937  
+   2938        for await (const event of query({
+   2939          messages: messagesIncludingNewMessages,
+   2940          systemPrompt,
+   2941          userContext,
+   2942          systemContext,
+   2943          canUseTool,
+   2944          toolUseContext,
+   2945          querySource: getQuerySourceForREPL(),
+   2946        })) {
+   2947>         onQueryEvent(event);
+   2948        }
+   2949  
+   2950        queryCheckpoint('query_end');
+   2951  
+   2952        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2953        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2954        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2955          const entries = apiMetricsRef.current;
+   2956  
+   2957          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83,7): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:73-93 ---
+     73      // so observability sees WHY the resume failed. ant uH() expands to
+     74      // tengu_feature_bad with feature_name + error_code.
+     75      logEvent('tengu_feature_bad', {
+     76        feature_name: 'subagent_launch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     77        error_code: 'subagent_resume_transcript_missing' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83>       filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88      resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+  Property 'type' is missing in type 'Message' but required in type 'AnyMessage'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:73-93 ---
+     73      // so observability sees WHY the resume failed. ant uH() expands to
+     74      // tengu_feature_bad with feature_name + error_code.
+     75      logEvent('tengu_feature_bad', {
+     76        feature_name: 'subagent_launch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     77        error_code: 'subagent_resume_transcript_missing' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83>       filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88      resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+  Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message'.
+    Type 'ProgressMessage<unknown>' is missing the following properties from type 'Message': role, content
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(88,5): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:78-98 ---
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83        filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88>     resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+     94      ? await fsp.stat(meta.worktreePath).then(
+     95          s => (s.isDirectory() ? meta.worktreePath : undefined),
+     96          () => {
+     97            logForDebugging(
+     98              `Resumed worktree ${meta.worktreePath} no longer exists; falling back to parent cwd`,
+  Type 'AnyMessage' is not assignable to type 'Message'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(124,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:114-134 ---
+    114  
+    115    while ((blockMatch = algoBlockRegex.exec(html)) !== null) {
+    116      const block = blockMatch[1]
+    117      if (block === undefined) continue
+    118  
+    119      // Extract the primary link from <h2><a href="...">...</a></h2>
+    120      const h2LinkRegex = /<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i
+    121      const linkMatch = h2LinkRegex.exec(block)
+    122      if (!linkMatch) continue
+    123  
+    124>     const rawUrl = decodeHtmlEntities(linkMatch[1])
+    125      const titleHtml = linkMatch[2]
+    126      if (titleHtml === undefined) continue
+    127  
+    128      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    129      // or skip Bing-internal / relative links
+    130      const url = resolveBingUrl(rawUrl)
+    131      if (!url) continue
+    132  
+    133      const title = decodeHtmlEntities(
+    134        titleHtml.replace(/<[^>]+>/g, '').trim(),
+  Type 'undefined' is not assignable to type 'string'.

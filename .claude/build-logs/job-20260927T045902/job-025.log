@@ -1,0 +1,11 @@
+  ok    el baseline por variable absorbe el termino congelado
+  ok    encuentra el baseline del consumidor ascendiendo desde el archivo
+  ok    rehusa con exit 2 y nombra el baseline ausente
+  ok    --write-baseline no queda atrapado por el rehuso de lectura
+  ok    no fabrica el baseline en el hogar del proveedor
+  ok    con el archivo fuera del arbol, asciende desde el cwd
+  ok    usa la lista canonica del proveedor e ignora la copia del consumidor
+  ok    rehusa con la lista declarada y ausente, y la nombra
+  ok    la clave es relativa al consumidor y el baseline la absorbe
+9/9 aserciones verdes
+EXIT=0

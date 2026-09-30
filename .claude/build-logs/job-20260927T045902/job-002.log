@@ -1,0 +1,30 @@
+== test-agent-store-fecha-documento ==
+  ok    1 el modulo compila
+  ok    2 la tabla documents existe tras conectar
+  ok    3 seis documentos sembrados
+  ok    4a clave vieja  -> gana el commit
+  ok    4b clave futura -> gana la clave
+  ok    4c el valor de b es el declarado
+  ok    5 mismo dia -> ambas
+  ok    6a sin clave -> git-commit
+  ok    6b sin clave -> declared_at NULO
+  ok    7a sin cota -> updated_at NULO
+  ok    7b sin cota -> source NULO
+  ok    7c la fila EXISTE (no se omite)
+  ok    8a solo clave -> meta-declarada
+  ok    8b solo clave -> commit_at NULO
+  ok    9a a conserva su declarada
+  ok    9b a conserva su commit
+  ok    10a idempotente en la fuente
+  ok    10b sin filas duplicadas
+  ok    11a --dry-run publica denominador
+  ok    11b --dry-run nombra los sin cota
+  ok    12 --dry-run no escribe filas
+  ok    13a un barrido sobre arbol intacto no escribe
+  ok    13b un documento nuevo SI se escribe
+  ok    14 scanned_at ya no es columna de documents
+  ok    15a la migracion retira la columna de un store previo
+  ok    15b la fila previa sobrevive a la migracion
+
+  26 ok · 0 fallas
+EXIT=0

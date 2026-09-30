@@ -1,0 +1,1 @@
+  if (node.kind === 'number') return /^-?\d+$/.test(node.raw) ? node.raw : formatFloat(node.value)

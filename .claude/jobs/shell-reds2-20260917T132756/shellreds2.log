@@ -1,0 +1,750 @@
+== TypeScript (bun) ==
+bun test v1.3.11 (af24e281)
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-RWcPyS/integ-UGAlhv/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+python3: can't open file '/tmp/thyrox-tests-RWcPyS/integ-Y4pcYc/.claude/scripts/gates/check_ids_entre_ramas.py': [Errno 2] No such file or directory
+Automatic merge went well; stopped before committing as requested
+Automatic merge went well; stopped before committing as requested
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+fatal: not a git repository (or any of the parent directories): .git
+
+src/packages/binary/__tests__/bunfs.test.ts:
+134 |     // Una build desconocida FALLA, no se salta. El salto seria un verde que no
+135 |     // discrimina «coincide» de «no lo mire» — y es justo la senal de frescura
+136 |     // que falto tres builds seguidas (2.1.250, 2.1.251, 2.1.258).
+137 |     expect(
+138 |       esperado ?? `build ${version} sin medir — anadir su fila a MEASURED tras extraerla`,
+139 |     ).toBeObject()
+            ^
+error: expect(received).toBeObject()
+
+Expected value to be an object
+
+Received: "build 2.1.274 sin medir — anadir su fila a MEASURED tras extraerla"
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/bunfs.test.ts:139:7)
+(fail) fidelidad contra la build medida > las cifras de la build viva coinciden con las medidas [119.86ms]
+
+src/packages/permission/__tests__/barrelAndTesting.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/packages/permission/__tests__/workspaceAndRename.test.ts:
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Unexpected identifier "lo"
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at generateSessionName (/home/user/thyrox/src/packages/permission/src/commands/rename/generateSessionName.ts:75:22)
+
+listo
+listo
+listo, integré lo del hijo
+listo, integré lo del hijo
+segui el procedimiento del skill
+
+src/packages/shell/bin/__tests__/shell.test.ts:
+shell heredoc: falta el comando a analizar (un posicional, o --stdin). NO se emite veredicto sin entrada — adivinar aquí es exactamente lo que este CLI existe para evitar.
+léxico (containsHeredoc, ciego a comillas): no
+extraídos: 0
+comando procesado (placeholders): "echo hi"
+restauración (string completo, informativa — ver docstring del módulo): coincide con el original
+{
+  "contieneLexico": true,
+  "extraidos": 1,
+  "detalle": [
+    {
+      "delimitador": "EOF",
+      "citado": false,
+      "dash": false,
+      "cuerpo": "\nx\nEOF",
+      "cuerpoBytes": 6
+    }
+  ],
+  "comandoProcesado": "cat __HEREDOC_0_c9382f162ab4e723__",
+  "restauracionIngenua": "cat <<EOF\nx\nEOF",
+  "restauracionCoincide": true
+}
+shell quote: no hay ningún argumento que citar. NO se emite veredicto — una cadena vacía por defecto sería adivinar, no analizar.
+'echo hi'
+{"args":["--json"],"quoted":"--json"}
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 0. NO se emite veredicto.
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 1. NO se emite veredicto.
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 3. NO se emite veredicto.
+bash -c 'echo $HOME'
+shell fig: exige exactamente 1 argumento (el nombre de comando); recibidos 0. NO se emite veredicto.
+git: sin especificación — rechazado por la validación de entrada de loadFigSpec, o el import de @withfig/autocomplete falló (el paquete no está instalado en este árbol; verificado).
+{"command":"git","spec":null}
+shell stdin-peek: --timeout-ms exige un entero positivo; recibido "0". NO se emite veredicto.
+shell stdin-peek: --timeout-ms exige un entero positivo; recibido "ni-un-numero". NO se emite veredicto.
+shell stdin-peek: no reconoce "sobra". NO se emite veredicto.
+{"simulaGha":false,"removidas":[],"agregadas":[]}
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+shell: «no-existe» no es un subcomando. NO se despacha una acción por defecto.
+
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts:
+=== @thyrox/<name> derivados de app-host/src ===
+ - agent
+ - cli
+ - command-runtime
+ - config
+ - local-observability
+ - mcp-runtime
+ - memory
+ - output
+ - permission
+ - provider
+ - repl
+ - shell
+ - storage
+ - swarm
+ - voice
+size: 15
+
+src/packages/storage/src/__tests__/agentMetadata.test.ts:
+listRemoteAgentMetadata: skipping remote-agent-task-corrupto.meta.json: SyntaxError: JSON Parse error: Expected '}'
+
+src/packages/storage/src/__tests__/sessionStart.test.ts:
+Skipping plugin hooks - allowManagedHooksOnly is enabled
+Warning: Failed to load plugin hooks. SessionStart hooks from plugins will not execute. Error: ETIMEDOUT. This appears to be a network issue. Check your internet connection and try again.
+Warning: Failed to load plugin hooks. Setup hooks from plugins will not execute. Error: boom
+
+src/packages/storage/src/__tests__/sessionEnvironment.test.ts:
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment not yet supported on Windows
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from CLAUDE_ENV_FILE: /tmp/thyrox-tests-RWcPyS/session-environment-JT6ArP/env-padre.sh (20 chars)
+Session environment loaded from 3 hook file(s)
+Session environment script ready (63 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+Session environment script ready (14 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 2 hook file(s)
+Session environment script ready (26 chars total)
+Invalidating session environment cache
+
+src/packages/storage/src/__tests__/fileEncoding.test.ts:
+detectFileEncoding failed for expected reason: ENOENT
+49 |     // Fuerza que readSync lance un error sin `code` — no matchea ningun
+50 |     // caso de isFsInaccessible, asi que toma la rama logError().
+51 |     const fake = {
+52 |       ...NodeFsOperations,
+53 |       readSync(): never {
+54 |         throw new Error('boom sin code')
+                       ^
+error: boom sin code
+      at readSync (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:54:19)
+      at detectEncodingForResolvedPath (/home/user/thyrox/src/packages/storage/src/fileRead.ts:31:55)
+      at detectFileEncoding (/home/user/thyrox/src/packages/storage/src/fileEncoding.ts:61:12)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:60:12)
+
+
+src/packages/storage/src/__tests__/imageResizerCompression.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/packages/storage/src/__tests__/plans.test.ts:
+Plan file missing during resume: /tmp/thyrox-tests-RWcPyS/plans-Nm3zMo/plans/slug-recuperado-snap.md. Attempting recovery.
+Plan recovered from file snapshot, 16 chars
+Plan file missing during resume: /tmp/thyrox-tests-RWcPyS/plans-f1nULE/plans/slug-recuperado-tooluse.md. Attempting recovery.
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/thyrox-tests-RWcPyS/plans-NqzQ41/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/thyrox-tests-RWcPyS/plans-VQqH6Q/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/thyrox-tests-RWcPyS/plans-QASOrz/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+Native image processor not available, falling back to sharp
+
+src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts:
+[file-persistence] Persistence aborted before processing
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+[file-persistence] No files found in outputs directory
+[file-persistence] No modified files to persist
+[file-persistence] Found 10001 modified files since turn start (scanned 10001 total)
+[file-persistence] Found 10001 modified files
+[file-persistence] File count limit exceeded: 10001 > 10000
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] File persistence failed: Error: la Files API esta caida
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+
+src/packages/storage/src/filePersistence/__tests__/outputsScanner.test.ts:
+[file-persistence] No files found in outputs directory
+[file-persistence] Found 1 modified files since turn start (scanned 2 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+
+src/packages/tool-registry/src/hooks/__tests__/appState.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+ 8730 pass
+ 4 skip
+ 7 todo
+ 1 fail
+ 18871 expect() calls
+Ran 8742 tests across 552 files. [53.13s]
+
+== Python (stdlib) ==
+-- tests/agents/test_agents_module_paths.py
+test_every_agents_module_resolves_its_paths (__main__.AgentsModulePaths.test_every_agents_module_resolves_its_paths) ... ok
+test_no_module_constant_points_at_nothing (__main__.AgentsModulePaths.test_no_module_constant_points_at_nothing) ... ok
+test_the_census_is_not_empty (__main__.AgentsModulePaths.test_the_census_is_not_empty)
+Sin esto un directorio vacío daría verde: no discriminaría. ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 1.137s
+
+OK
+-- tests/agents/test_clasificar_agentes.py
+== 1. el motor: cada rama de la cadena de precedencia ==
+  ok    blocked: marcador [en]
+  ok    bloqueado: marcador [es]
+  ok    failed: marcador [en]
+  ok    falló: marcador [es]
+  ok    needs input [en]
+  ok    necesito: [es]
+  ok    result: solo -> done
+  ok    result: + next: -> working
+  ok    esperar a CI -> working
+  ok    esperar a la suite [es] -> working
+  ok    esperar a una persona -> blocked
+  ok    queda a tu criterio [es] -> blocked
+  ok    pregunta final [es]
+  ok    verbo de trabajo [en]
+  ok    verbo de trabajo [es]
+  ok    no puedo seguir [es]
+  ok    me rindo [es]
+  ok    VERDICT: PASS
+  ok    VEREDICTO: CONFIRMADO [es]
+  ok    auth / límite de uso
+  ok    blocked: DENTRO de cerca se ignora
+  ok    blocked: FUERA de cerca sí cuenta
+  ok    descargo 'nothing needed from you' -> no bloquea
+  ok    3 párrafos tras el marcador -> no decide
+
+== 2. el fallback nunca devuelve None ==
+  ok    fallback da working/idle
+  ok    fallback declara su procedencia
+  ok    texto vacío no revienta
+
+== 3. cobertura sobre el corpus REAL (informativo, no falla) ==
+  decididos por patrón: 0 de 1 (0.0%)  [mtime (heurística)]
+  ↳ 0 es el resultado ESPERADO hoy: el banco lee marcadores
+    (result:/blocked:/failed:) que nuestros subagentes no emiten.
+    El clasificador es la mitad LECTORA de un protocolo; falta la
+    escritora. Ver H-DOCS-142 y la tarea #302.
+
+resultado: 27 ok, 0 fallas
+-- tests/agents/test_derive_submodule.py
+== 1. precedencia: el registro de hallazgos gana al prefijo ==
+  ok    H-SERVER-16 resuelve a la capa del REGISTRO, no a la del prefijo
+  ok    ...y declara que lo supo del registro
+  ok    H-API-557 resuelve a docs aunque su prefijo diga api
+
+== 2. el control que puede fallar: mismo caso, registro VACIO ==
+  ok    sin registro, H-SERVER-16 CAE al prefijo
+  ok    ...y lo declara: hallazgo_prefijo
+  ok    el veredicto CAMBIA al vaciar el registro (el control discrimina)
+  ok    sin registro, H-API-557 cae a api (su prefijo)
+
+== 3. la description tambien cuenta, no solo el subject ==
+  ok    una marca solo en la description SI se lee
+  ok    ...con la misma procedencia de prefijo
+
+== 4. senal de ruta: solo cuando es inequivoca ==
+  ok    un token de src/addons resuelve a api
+  ok    ...y declara que fue por ruta, no por hallazgo
+  ok    el nombre de un modelo NO basta como senal (cota inferior)
+  ok    dos capas nombradas a la vez NO deciden
+  ok    ...y no fabrican procedencia
+  ok    un texto sin ninguna senal devuelve None
+
+== 5. el valor y su procedencia viajan juntos ==
+  ok    procedencia de «Cerrar H-SERVER-16»
+  ok    procedencia de «Cerrar H-UI-07»
+  ok    procedencia de «Tocar src/addons/sale»
+  ok    procedencia de «Sin senal alguna»
+  ok    sin declaracion devuelve el hueco, no una capa adivinada
+
+resultado: 20 de 20 aserciones en verde
+-- tests/agents/test_document_root_default.py
+== 1. la bandera explicita manda ==
+  ok    con --repo-docs se usa tal cual
+== 2. sin bandera, se DERIVA del consumidor ya nombrado en --repo ==
+  ok    --repo docs resuelve al arbol de docs
+== 3. --claude-dir tambien lo determina ==
+  ok    el padre de .claude es la raiz
+== 4. corrido DESDE el proveedor ya no compone thyrox/source ==
+  ok    no rehusa por ruta inexistente
+  ok    y no nombra el arbol del proveedor
+
+5 ok, 0 fallos
+-- tests/agents/test_measure_delta.py
+== A. Los símbolos de un .py se extraen por AST, no por regex ==
+  ok    ve la función de nivel superior
+  ok    la clase lleva su prefijo
+  ok    y el método va con el nombre pelado
+  ok    un archivo que no parsea NO revienta: devuelve vacío
+== B. El delta discrimina en los dos sentidos ==
+  ok    nombra lo ganado
+  ok    y lo perdido
+  ok    sin cambios, nada ganado ni perdido (control)
+== C. El destino del log es PARÁMETRO, no `docs` ==
+  ok    sin destino declarado, rehúsa en vez de inventarlo
+  ok    con destino, compone la ruta del log
+  ok    y crea el directorio si falta
+
+10 ok, 0 fallos
+-- tests/agents/test_merge_stores.py
+test_1_la_fila_que_solo_esta_en_el_origen_se_inserta (__main__.TestUnion.test_1_la_fila_que_solo_esta_en_el_origen_se_inserta)
+Falla si la union no trae lo ausente — el defecto que motiva el guion. ... ok
+test_2_la_fila_que_solo_esta_en_el_destino_SOBREVIVE (__main__.TestUnion.test_2_la_fila_que_solo_esta_en_el_destino_SOBREVIVE)
+Falla si la fusion se implementa como copia. Es el riesgo real: 3 filas ... ok
+test_3_gana_el_updated_at_mayor (__main__.TestUnion.test_3_gana_el_updated_at_mayor)
+Falla si el defecto no compara fechas. ... ok
+test_4_ante_empate_NO_se_toca_el_destino (__main__.TestUnion.test_4_ante_empate_NO_se_toca_el_destino)
+Falla si el origen gana por defecto. Sin criterio, no cambiar es la ... ok
+test_5_dry_run_no_escribe (__main__.TestUnion.test_5_dry_run_no_escribe)
+Falla si --dry-run escribe. Es lo que permite medir antes de aplicar. ... ok
+test_6_el_registro_devuelve_el_resolvedor_declarado (__main__.TestUnion.test_6_el_registro_devuelve_el_resolvedor_declarado)
+Falla si el motor ignora el registro y usa siempre el defecto. ... ok
+test_7_un_resolvedor_registrado_a_mano_gobierna_su_tabla (__main__.TestUnion.test_7_un_resolvedor_registrado_a_mano_gobierna_su_tabla)
+Falla si registrar no tiene efecto — el punto entero del registro. ... ok
+test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto (__main__.TestUnion.test_8_citation_is_stable_rehusa_si_la_cita_cambia_de_sujeto)
+CONTROL POSITIVO, con la forma del defecto real de H-DOCS-1236: una ... ok
+test_9_citation_is_stable_deja_pasar_lo_que_no_desliza (__main__.TestUnion.test_9_citation_is_stable_deja_pasar_lo_que_no_desliza)
+Falla si el resolvedor rehusa TODO — un guard que siempre rehusa no ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.063s
+
+OK
+-- tests/agents/test_model_catalog_paths.py
+test_the_env_file_declares_the_catalog (__main__.ElAccesorDeConfiguracion.test_the_env_file_declares_the_catalog) ... ok
+test_the_process_wins_over_the_env_file (__main__.ElAccesorDeConfiguracion.test_the_process_wins_over_the_env_file)
+Quien exporta para UNA invocacion esta corrigiendo a proposito. ... ok
+test_no_resolved_path_reaches_outside_thyrox (__main__.ResolucionDeRutas.test_no_resolved_path_reaches_outside_thyrox)
+Control de anulacion: restaurar ``parents[3]`` hace caer este caso. ... ok
+test_the_catalog_resolves_inside_thyrox (__main__.ResolucionDeRutas.test_the_catalog_resolves_inside_thyrox) ... ok
+test_the_previous_variable_keeps_working (__main__.ResolucionDeRutas.test_the_previous_variable_keeps_working)
+El nombre anterior no se rompe: un consumidor puede tenerlo declarado. ... ok
+test_the_resolved_catalog_exists_and_loads (__main__.ResolucionDeRutas.test_the_resolved_catalog_exists_and_loads) ... ok
+test_the_store_has_no_thyrox_default (__main__.ResolucionDeRutas.test_the_store_has_no_thyrox_default)
+Sin declararlo no hay ruta que suponer: es parametro del consumidor. ... ok
+test_the_variable_declares_the_store (__main__.ResolucionDeRutas.test_the_variable_declares_the_store) ... ok
+test_the_variable_overrides_the_resolution (__main__.ResolucionDeRutas.test_the_variable_overrides_the_resolution) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.021s
+
+OK
+-- tests/agents/test_payload_sin_transcript.py
+== 1. con transcript presente NO se anaden hechos de respaldo ==
+  ok    vacio cuando el transcript existe
+== 2. sin transcript, se guardan los hechos de la ejecucion ==
+  ok    effort
+  ok    permission_mode
+== 3. del mensaje final se guarda la LONGITUD, nunca el texto ==
+  ok    longitud
+  ok    el texto NO aparece en ningun valor
+== 4. lo ausente no se inventa ==
+  ok    sin effort no hay clave effort
+  ok    sin mensaje, longitud 0 declarada
+== 5. se guarda hook_event_name: es EL discriminador que faltaba ==
+  ok    hook_event_name
+  ok    tambien con transcript
+  ok    y nada mas con transcript
+
+10 ok, 0 fallos
+-- tests/agents/test_recommend_cli.py
+  ok   «mecanica» sale 0
+  ok   «mecanica» nombra un modelo del catálogo
+  ok   «mecanica» declara su esfuerzo
+  ok   «mecanica» publica su denominador
+  ok   «analisis» sale 0
+  ok   «analisis» nombra un modelo del catálogo
+  ok   «analisis» declara su esfuerzo
+  ok   «analisis» publica su denominador
+  ok   «adversarial» sale 0
+  ok   «adversarial» nombra un modelo del catálogo
+  ok   «adversarial» declara su esfuerzo
+  ok   «adversarial» publica su denominador
+  ok   «frontera» sale 0
+  ok   «frontera» nombra un modelo del catálogo
+  ok   «frontera» declara su esfuerzo
+  ok   «frontera» publica su denominador
+  ok   el contexto entra en la cifra
+  ok   una clase desconocida rehúsa con 2
+  ok   y NO nombra ningún modelo (no hay default)
+  ok   y dice por qué
+  ok   --context 0 rehúsa con 2
+  ok   --context 0 no recomienda nada
+  ok   --context -5 rehúsa con 2
+  ok   --context -5 no recomienda nada
+  ok   --context no-es-un-numero rehúsa con 2
+  ok   --context no-es-un-numero no recomienda nada
+  ok   --json sale 0
+  ok   --json es JSON válido con su modelo y sus excluidos
+
+28 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+-- tests/agents/test_register_session.py
+== A. El destino es PARÁMETRO, no una constante del mecanismo ==
+  ok    un repo nombrado se compone como --repo
+  ok    un directorio explícito gana sobre el repo
+  ok    sin ninguno, rehúsa en vez de inventar un default
+== B. La normalización del modelo viaja intacta ==
+  ok    un identificador completo se conserva
+  ok    un alias NO es un identificador
+  ok    y el alias se normaliza por su propia vía
+== C. La invocación del store se COMPONE, no se ejecuta ==
+  ok    nombra el subcomando del store
+  ok    lleva el destino inyectado
+  ok    y el agent-id del payload
+  ok    sin agent_id NO compone comando
+== D. La procedencia del tipo se distingue de su valor ==
+  ok    con valor, la procedencia es el payload
+  ok    con la clave vacía, el vacío viene del origen
+  ok    sin la clave, está ausente
+
+13 ok, 0 fallos
+-- tests/agents/test_retention_backfill.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_retention_backfill.py", line 94, in <module>
+    store = build(Path(tmp))
+            ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/agents/test_retention_backfill.py", line 80, in build
+    conn = agent_store.connect(store_dir)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/agents/agent_store.py", line 1001, in connect
+    conn.executescript(CORE_SCHEMA)
+sqlite3.OperationalError: database or disk is full
+-- ROJO tests/agents/test_retention_backfill.py
+-- tests/agents/test_retention_level.py
+== A. Un desenlace terminal SÍ tiene nivel ==
+  ok    completed entrega algo recuperable, sin verificar -> 3
+  ok    failed murió sin entregar -> 4
+== B. Un estado NO terminal no tiene nivel que afirmar ==
+  ok    running -> None, no 4: el agente sigue vivo
+  ok    un estado desconocido tampoco se cierra
+== C. La línea que escribe respeta el veredicto ==
+  ok    running no emite --retention-level
+  ok    completed sí lo emite, con su valor
+  ok    el status viaja igual en los dos casos
+
+RESULTADO: 7 ok, 0 fallo(s)
+-- tests/agents/test_store_dir_default.py
+test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor (__main__.TestDestinoPorDefecto.test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor)
+Falla si sigue rehusando. Es el cambio entero: el llamador deja de ... ok
+test_2_no_apunta_al_silo (__main__.TestDestinoPorDefecto.test_2_no_apunta_al_silo)
+Falla si el defecto vuelve por otra via. El nombre del clon esta ... ok
+test_3_claude_dir_sigue_ganando (__main__.TestDestinoPorDefecto.test_3_claude_dir_sigue_ganando)
+Falla si el peldano nuevo pisa al mas especifico. Una ruta explicita ... ok
+test_4_un_repo_declarado_a_proposito_sigue_resolviendo (__main__.TestDestinoPorDefecto.test_4_un_repo_declarado_a_proposito_sigue_resolviendo)
+Falla si el peldano nuevo retira la capacidad de apuntar a un clon. ... ok
+test_5_un_repo_invalido_sigue_rehusando (__main__.TestDestinoPorDefecto.test_5_un_repo_invalido_sigue_rehusando)
+Falla si el peldano nuevo se traga un error del llamador. ... ok
+test_1_el_default_de_repo_no_nombra_un_consumidor (__main__.TestParserDefault.test_1_el_default_de_repo_no_nombra_un_consumidor) ... ok
+test_2_el_destino_sin_banderas_es_el_hogar (__main__.TestParserDefault.test_2_el_destino_sin_banderas_es_el_hogar) ... ok
+test_3_el_destino_sin_banderas_no_cae_en_ningun_clon (__main__.TestParserDefault.test_3_el_destino_sin_banderas_no_cae_en_ningun_clon) ... ok
+test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+El par que impide arreglar un eje rompiendo el otro. ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.014s
+
+OK
+-- tests/agents/test_store_home.py
+test_1_la_mitad_python_resuelve_al_proveedor (__main__.TestHogarUnico.test_1_la_mitad_python_resuelve_al_proveedor)
+Falla si `agent_store_path` vuelve a componer la ruta del consumidor. ... ok
+test_2_la_mitad_TS_resuelve_al_proveedor (__main__.TestHogarUnico.test_2_la_mitad_TS_resuelve_al_proveedor)
+Falla si `storePath()` vuelve a caer en `docsRoot()`. ... ok
+test_3_las_dos_mitades_coinciden (__main__.TestHogarUnico.test_3_las_dos_mitades_coinciden)
+Falla si divergen. Es el defecto de H-DOCS-1237 en su forma pura: ... ok
+test_4_ningun_modulo_de_src_compone_la_ruta_del_STORE_en_el_silo (__main__.TestHogarUnico.test_4_ningun_modulo_de_src_compone_la_ruta_del_STORE_en_el_silo)
+Falla en cuanto alguien vuelva a componer la ruta del store del silo. ... ok
+test_5_las_cinco_tablas_existen_en_el_hogar (__main__.TestHogarUnico.test_5_las_cinco_tablas_existen_en_el_hogar)
+Falla si la fusion dejo el hogar incompleto. No mide CUANTAS filas ... ok
+test_6_las_cinco_tablas_tienen_filas_en_el_hogar (__main__.TestHogarUnico.test_6_las_cinco_tablas_tienen_filas_en_el_hogar)
+Falla si una tabla del hogar quedo VACIA. ... ok
+test_7_toda_tarea_del_hogar_tiene_cita_durable (__main__.TestHogarUnico.test_7_toda_tarea_del_hogar_tiene_cita_durable)
+Falla si una fila de `tasks` nace sin `citation_id`. ... ok
+test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar (__main__.TestHogarUnico.test_8_el_hook_del_consumidor_invocado_DE_VERDAD_escribe_en_el_hogar)
+SONDA DE CONDUCTA: invoca el hook real y mira donde aterriza la fila. ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.267s
+
+OK
+-- tests/agents/test_table_census.py
+== 1. una columna con nombre de la lista vieja ==
+  ok    created_at se detecta
+== 2. el caso que el instrumento viejo NO veia ==
+  ok    cleared_at tambien se detecta
+== 3. varias columnas: se devuelven TODAS, no la primera ==
+  ok    created_at y updated_at
+== 4. una tabla sin fecha lo dice, no falla ==
+  ok    lista vacia
+== 5. la ultima escritura sale del MAXIMO de todas ==
+  ok    gana el mayor entre las dos columnas
+  ok    sin columna de fecha devuelve None
+
+6 ok, 0 fallos
+-- tests/board/test_graph.py
+
+1. El grafo se construye desde aristas, no desde una base de datos
+  ok    conserva los nodos declarados
+  ok    y las aristas
+  ok    un nodo aislado sigue siendo nodo
+
+2. Descendientes — a cuántas desbloquea cerrar una
+  ok    a desbloquea a las tres
+  ok    b sólo a d
+  ok    una hoja a ninguna
+  ok    un aislado a ninguna
+  ok    unblock_count es su tamaño
+  ok    un nodo desconocido se nombra
+
+3. Listas para trabajar — sin bloqueante pendiente
+  ok    sólo las que nadie bloquea
+  ok    cerrar a libera b y c
+  ok    un estado ausente cuenta como pendiente
+
+4. Orden topológico, y el ciclo que lo invalida
+  ok    los cinco aparecen una vez
+  ok    a va antes que b
+  ok    b va antes que d
+  ok    find_cycle NO ve ciclo donde no lo hay
+  ok    y SÍ lo ve donde lo hay
+  ok    el orden REHÚSA sobre un ciclo, no devuelve una lista corta
+
+5. Componentes — los grupos independientes de trabajo
+  ok    dos: {a,b,c,d} y {e}
+  ok    el aislado es su propio componente
+
+resultado: 20 de 20 aserciones en verde
+-- tests/cache/test_home_resolution.py
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.052s
+
+OK
+-- tests/cache/test_work_cache.py
+test_work_cache:
+  ok   las 14 piezas del porte estan presentes
+  ok   primer barrido: dos documentos nuevos
+  ok   primer barrido: el barrido termino
+  ok   al cargar de disco, todo queda marcado sin verificar
+  ok   escalon 1 entre procesos: nada que reindexar
+  ok   escalon 1 entre procesos: los dos cuentan como sin cambio
+  ok   escalon 1 discrimina: entra solo el que cambio de stat
+  ok   escalon 2 tras disco: NO ataja (el doc esta sin verificar)
+  ok   escalon 2 tras disco: re-extrae y cuenta como actualizado
+  ok   escalon 2 tras disco: y ya no queda sin verificar
+  ok   escalon 2 en proceso: ataja la extraccion
+  ok   escalon 2 en proceso: no cuenta como actualizado
+  ok   raiz ausente: el indice conserva sus documentos
+  ok   raiz ausente: el ledger no declara barrido completo
+  ok   barrido incompleto: no persiste
+  ok   barrido incompleto: no dejo archivo
+  ok   barrido completo: si persiste
+  ok   otra huella: el indice entero se rechaza
+  ok   misma huella: el indice se reusa entero
+  ok   el archivo que desaparece sale del indice
+  ok   y el otro sigue dentro
+  ok   has_changes: un salto transitorio no es un cambio
+  ok   has_changes: un alta si lo es
+test_work_cache: 23 aserciones — 23 ok, 0 falla(s)
+-- tests/corpus/test_censar_scripts.py
+== census_scripts.py — descubrimiento sobre el fondo agrupado por clase ==
+error: copy-fd: write returned: No space left on device
+fatal: cannot copy '/usr/share/git-core/templates/hooks/prepare-commit-msg.sample' to '/tmp/thyrox-tests-RWcPyS/censo-pf9rz2sw/.git/hooks/prepare-commit-msg.sample': No space left on device
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_censar_scripts.py", line 99, in <module>
+    repo = synthetic_repo()
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/corpus/test_censar_scripts.py", line 92, in synthetic_repo
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+  File "/usr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'init', '-q']' returned non-zero exit status 128.
+-- ROJO tests/corpus/test_censar_scripts.py
+-- tests/corpus/test_censo_contraparte.py
+== 1. el árbol vivo no deja ningún addon SIN-DECLARAR ==
+  ok    sale 0 con la declaración vigente
+  ok    ninguna línea SIN-DECLARAR
+== 2. CONTROL POSITIVO REAL: la declaración SIN dos filas vivas ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_censo_contraparte.py", line 87, in <module>
+    with tempfile.TemporaryDirectory(dir=str(reach.scratch_root())) as tmp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/tempfile.py", line 1010, in __init__
+    self.name = mkdtemp(suffix, prefix, dir)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/tempfile.py", line 524, in mkdtemp
+    _os.mkdir(file, 0o700)
+OSError: [Errno 28] No space left on device: '/home/user/thyrox/.claude/eventos/tmpev1q_0wo'
+-- ROJO tests/corpus/test_censo_contraparte.py
+-- tests/corpus/test_list_corpus_builds.py
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_list_corpus_builds.py", line 54, in <module>
+    with tempfile.TemporaryDirectory(dir=str(reach.scratch_root())) as tmp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/tempfile.py", line 1010, in __init__
+    self.name = mkdtemp(suffix, prefix, dir)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/tempfile.py", line 524, in mkdtemp
+    _os.mkdir(file, 0o700)
+OSError: [Errno 28] No space left on device: '/home/user/thyrox/.claude/eventos/tmpstsc1ksh'
+-- ROJO tests/corpus/test_list_corpus_builds.py
+-- tests/docs/test_citations.py
+  ok    test_a_citation_inside_a_literal_block_is_not_a_link
+  ok    test_a_citation_inside_an_inline_literal_is_not_a_link
+  ok    test_a_citation_reports_the_line_it_lives_on
+  ok    test_a_doc_inside_a_code_block_is_not_a_link
+  ok    test_a_doc_inside_a_seealso_is_a_live_link
+  ok    test_a_relative_target_normalises_against_the_citing_directory
+  ok    test_a_sibling_target_stays_in_the_citing_directory
+  ok    test_an_absolute_target_hangs_from_the_tree_root
+  ok    test_the_directive_discrimination_carries_its_own_weight
+  ok    test_the_literal_skip_carries_its_own_weight
+  ok    test_the_role_reads_the_bare_target
+  ok    test_the_role_reads_the_titled_target
+resumen: 0 fallo(s)
+-- tests/docs/test_initiative_placement.py
+=== 1. survey_initiative — el árbol no la tiene ===
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/docs/test_initiative_placement.py", line 79, in <module>
+    with tempfile.TemporaryDirectory() as tmp:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/tempfile.py", line 1010, in __init__
+    self.name = mkdtemp(suffix, prefix, dir-- ROJO tests/agents/test-carrete-store.sh
+-- ROJO tests/lib/test-script-deprecated.sh
+-- ROJO tests/session/test-evidencia-varada.sh
+-- ROJO tests/session/test-instalar-config-usuario.sh
+-- ROJO tests/verify/test-agent-artifacts.sh
+-- ROJO tests/verify/test-coordinator-sin-worktree.sh
+-- ROJO tests/verify/test-destino-del-reporte.sh
+-- ROJO tests/verify/test-eventos-hook.sh
+-- ROJO tests/verify/test-generator-determinism.sh
+-- ROJO tests/verify/test-gitattributes.sh
+-- ROJO tests/verify/test-script-naming.sh
+-- ROJO tests/verify/test-verificar-premisa.sh
+-- ROJO tests/verify/test-vocabulario-prosa.sh
+-- ROJO tests/verify/test_audit_delegates.sh
+  (89 suite(s) de shell, 26 en rojo, 0 sin medir)
+
+== alcance ==
+  TypeScript: 552 archivo(s), EN ROJO
+  Python: 158 suite(s), 140 en rojo, 0 sin medir
+  shell: 89 suite(s), 26 en rojo, 0 sin medir
+
+FALLA: 3 lengua(s) en rojo
+__BG_EXIT__=1

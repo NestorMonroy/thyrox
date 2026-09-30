@@ -1,0 +1,94 @@
+bun test v1.3.11 (af24e281)
+
+src/state/__tests__/refusalFallbackRestore.test.ts:
+69 |     const { deps, events } = harness({ hasRemoteControlChannel: () => true })
+70 |     reportFastModeToggle(true, true, deps)
+71 |     reportFastModeToggle(undefined, false, deps)
+72 |     reportFastModeToggle(false, true, deps)
+73 |     reportFastModeToggle(true, false, deps)
+74 |     expect(events).toEqual([
+                        ^
+error: expect(received).toEqual(expected)
+
+@@ -17,3 +17,18 @@
+    ],
++   [
++     "tengu_fast_mode_toggled",
++     {
++       "enabled": true,
++       "remote": true,
++       "source": "model_switch_restore",
++     },
++   ],
++   [
++     "tengu_fast_mode_toggled",
++     {
++       "enabled": false,
++       "remote": true,
++       "source": "model_switch_downgrade",
++     },
++   ],
+  ]
+
+- Expected  - 0
++ Received  + 16
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:74:20)
+(fail) reportFastModeToggle (sA) > avisa sólo si el modo rápido cambió, con su origen [1.37ms]
+82 |   test('lleva el modelo previo al estado, resuelve el modo rápido y fija el override', () => {
+83 |     const { deps, events, overrides } = harness()
+84 |     const app = store({ mainLoopModel: 'claude-sonnet-5', mainLoopModelForSession: 'x', fastMode: true, other: 1 })
+85 |     applyRefusalFallbackRestore(restore(), app.setAppState, deps)
+86 |     expect(app.get()).toEqual({ mainLoopModel: 'claude-opus-5', mainLoopModelForSession: null, fastMode: true, other: 1 })
+87 |     expect(events).toEqual([])
+                        ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   [
++     "tengu_fast_mode_toggled",
++     {
++       "enabled": true,
++       "remote": false,
++       "source": "model_switch_restore",
++     },
++   ],
++ ]
+
+- Expected  - 1
++ Received  + 10
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:87:20)
+(fail) applyRefusalFallbackRestore (wt) > lleva el modelo previo al estado, resuelve el modo rápido y fija el override [0.60ms]
+146 |     unsubscribers.push(subscribeRefusalFallbackReset(app.setAppState, deps))
+147 |     latchAndDiverge()
+148 |     switchSession('otra' as SessionId, 'resume')
+149 |     expect(app.get().mainLoopModel).toBe('claude-opus-5')
+150 |     expect(getMainLoopModelOverride()).toBe('claude-opus-5')
+151 |     expect(events).toEqual([
+                         ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,10 @@
+    [
++     "tengu_fast_mode_toggled",
++     {
++       "enabled": false,
++       "remote": false,
++       "source": "model_switch_downgrade",
++     },
++   ],
++   [
+      "tengu_refusal_fallback_latch_reset",
+
+- Expected  - 0
++ Received  + 8
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts:151:20)
+(fail) subscribeRefusalFallbackReset (Pyt) y onRefusalFallbackRestored (b8r) > al restaurarse aplica al estado y emite el evento de reinicio [0.70ms]
+
+ 8 pass
+ 3 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [63.00ms]

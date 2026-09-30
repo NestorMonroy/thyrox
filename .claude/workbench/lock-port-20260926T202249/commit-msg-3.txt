@@ -1,0 +1,16 @@
+Give the shared lock its TS face
+
+thyrox writes shared state from .py, .sh and .ts, so the lock is a
+protocol on disk that all three must speak. The TS face does not
+reimplement it: it is proper-lockfile, the same algorithm the
+executable packages and the one config/global/config.ts already uses,
+with the values the executable's callers pass (stale 60 s, update
+5 s). It adds the owner beside the lock, with the lock's inode, in the
+same file the Python face writes.
+
+The tests cross languages: a lock taken from Python is ELOCKED from TS
+with Python's owner, and one taken from TS makes bin/shared_lock exit
+3 without running its command.
+
+Annulment: moving the owner inside the lock fails both the empty-lock
+case and the cross-language owner case.

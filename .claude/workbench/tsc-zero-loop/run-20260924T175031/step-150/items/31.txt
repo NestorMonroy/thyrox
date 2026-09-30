@@ -1,0 +1,104 @@
+Patrón: indexed-string-access-possibly-undefined
+Señal del verificador: TS(2345|2322): (Argument of type 'string \| undefined' is not assignable to parameter of type 'string'\.|Type 'string \| undefined' is not assignable to type 'string'\.)
+Arreglo genérico: Con `noUncheckedIndexedAccess`, `str[i]` es `string | undefined`. El acceso indexado no se narrowea aunque el flujo (un `while`/`&&` sobre el índice) garantice que está definido, ni se propaga la comparación de igualdad al mismo acceso indexado repetido. Se arregla capturando el valor en una constante local (para que la comparación narrowee esa variable, no el índice) y/o añadiendo una guarda explícita (`c !== undefined`) o un valor por defecto que nunca dispara (`src[j] ?? ''`) cuando el índice ya está acotado por el propio bucle.
+Ya aplicado en: src/packages/binary/src/reflow.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts, src/packages/permission/src/toolPermission/PermissionContext.ts, src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+
+src/packages/agent/hooks.ts(1188,34): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/hooks.ts:1178-1198 ---
+   1178      }
+   1179    }
+   1180  
+   1181    // CLAUDE_CODE_SHELL_PREFIX envuelve el comando con quoting POSIX
+   1182    // (formatShellPrefixCommand usa shell-quote). Esto no tiene sentido para
+   1183    // PowerShell — ver diseño §8.1. Por ahora los hooks de PS ignoran el
+   1184    // prefijo; un CLAUDE_CODE_PS_SHELL_PREFIX (o un prefijo consciente del
+   1185    // shell) queda como trabajo futuro.
+   1186    const finalCommand =
+   1187      !execArgs && !isPowerShell && readEnv('CLAUDE_CODE_SHELL_PREFIX')
+   1188>       ? formatShellPrefixCommand(readEnv('CLAUDE_CODE_SHELL_PREFIX'), command)
+   1189        : command
+   1190  
+   1191    const hookTimeoutMs = hook.timeout
+   1192      ? hook.timeout * 1000
+   1193      : TOOL_HOOK_EXECUTION_TIMEOUT_MS
+   1194  
+   1195    // Arma las variables de entorno — todas las rutas pasan por toHookPath
+   1196    // para la conversión POSIX de Windows.
+   1197    const envVars: NodeJS.ProcessEnv = {
+   1198      ...subprocessEnv(),
+  Type 'undefined' is not assignable to type 'string'.
+
+src/packages/permission/src/toolPermission/PermissionContext.ts(127,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:117-137 ---
+    117        opts?: {
+    118          input?: Record<string, unknown>
+    119          permissionPromptStartTimeMs?: number
+    120        },
+    121      ) {
+    122        logPermissionDecision(
+    123          {
+    124            tool,
+    125            input: opts?.input ?? input,
+    126            toolUseContext,
+    127>           messageId,
+    128            toolUseID,
+    129          },
+    130          args,
+    131          opts?.permissionPromptStartTimeMs,
+    132        )
+    133      },
+    134      logCancelled() {
+    135        logEvent('tengu_tool_use_cancelled', {
+    136          messageID:
+    137            messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/permission/src/toolPermission/PermissionContext.ts(205,46): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:195-215 ---
+    195                classifierDecision.type === 'classifier'
+    196              ) {
+    197                const matchedRule = classifierDecision.reason.match(
+    198                  /^Allowed by prompt rule: "(.+)"$/,
+    199                )?.[1]
+    200                if (matchedRule) {
+    201                  setClassifierApproval(toolUseID, matchedRule)
+    202                }
+    203              }
+    204              logPermissionDecision(
+    205>               { tool, input, toolUseContext, messageId, toolUseID },
+    206                { decision: 'accept', source: { type: 'classifier' } },
+    207                undefined,
+    208              )
+    209              return {
+    210                behavior: 'allow' as const,
+    211                updatedInput: updatedInput ?? input,
+    212                userModified: false,
+    213                decisionReason: classifierDecision,
+    214              }
+    215            },
+  Type 'undefined' is not assignable to type 'string'.
+
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(124,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:114-134 ---
+    114  
+    115    while ((blockMatch = algoBlockRegex.exec(html)) !== null) {
+    116      const block = blockMatch[1]
+    117      if (block === undefined) continue
+    118  
+    119      // Extract the primary link from <h2><a href="...">...</a></h2>
+    120      const h2LinkRegex = /<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i
+    121      const linkMatch = h2LinkRegex.exec(block)
+    122      if (!linkMatch) continue
+    123  
+    124>     const rawUrl = decodeHtmlEntities(linkMatch[1])
+    125      const titleHtml = linkMatch[2]
+    126      if (titleHtml === undefined) continue
+    127  
+    128      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    129      // or skip Bing-internal / relative links
+    130      const url = resolveBingUrl(rawUrl)
+    131      if (!url) continue
+    132  
+    133      const title = decodeHtmlEntities(
+    134        titleHtml.replace(/<[^>]+>/g, '').trim(),
+  Type 'undefined' is not assignable to type 'string'.

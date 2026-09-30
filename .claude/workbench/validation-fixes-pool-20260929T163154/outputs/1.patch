@@ -1,0 +1,207 @@
+diff --git a/src/hooks/detect_library_path_invocation.py b/src/hooks/detect_library_path_invocation.py
+index c3ef8724..2a34d51f 100644
+--- a/src/hooks/detect_library_path_invocation.py
++++ b/src/hooks/detect_library_path_invocation.py
+@@ -18,6 +18,14 @@ python`` sobre una ruta que contiene un componente ``src/`` y termina en
+ módulo es biblioteca, o no tiene envoltorio generado— calla: no hay forma
+ corta que ofrecer.
+ 
++El texto dentro de comillas que es un DATO —el valor de un ``flag``, el
++cuerpo de un ``printf``, un JSON por tubería— no cuenta: se vacía con
++``mask_data_quotes`` antes de buscar la invocación (medido:
++``printf '%s' 'python3 src/…py'`` avisaba sin razón). La excepción es
++cuando la comilla ES código que una shell va a correr —el argumento de
++``bash -c``/``sh -c``/``zsh -c``/``eval``, o el comando que sigue a
++``timeout N``/``env``/``nohup``/``xargs``—: ahí se conserva.
++
+ Ciega a: el intérprete que llega por variable o alias, y una ruta compuesta
+ en tiempo de ejecución (``$MOD``) que el análisis léxico no puede resolver.
+ 
+@@ -27,7 +35,7 @@ from __future__ import annotations
+ 
+ import re
+ 
+-from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
++from hooks.shell_text import mask_data_quotes, strip_heredoc_bodies  # noqa: E402
+ from paths import reach  # noqa: E402
+ 
+ #: ``python3 <ruta>.py``, ``python <ruta>.py`` o ``uv run python3 <ruta>.py``,
+@@ -59,7 +67,7 @@ def detect(payload: dict) -> str | None:
+     command = (payload.get("tool_input") or {}).get("command")
+     if not isinstance(command, str) or not command.strip():
+         return None
+-    found = _bin_wrapper_paths(strip_heredoc_bodies(command))
++    found = _bin_wrapper_paths(mask_data_quotes(strip_heredoc_bodies(command)))
+     if not found:
+         return None
+     shown = "; ".join(f"`{path}` → `bin/{stem}`" for path, stem in found[:3])
+diff --git a/src/hooks/shell_text.py b/src/hooks/shell_text.py
+index 9e1e3d05..66e53af7 100644
+--- a/src/hooks/shell_text.py
++++ b/src/hooks/shell_text.py
+@@ -60,3 +60,56 @@ def heredoc_writes(command: str) -> list[tuple[str | None, str]]:
+         for index, marker in enumerate(markers):
+             pending.append((marker, target if index == 0 else None, []))
+     return writes
++
++
++_QUOTED_SPAN = re.compile(r"'[^']*'|\"[^\"]*\"")
++
++#: Shells cuyo ``-c`` recibe CÓDIGO, no un dato: el texto entre comillas que
++#: lo sigue lo va a correr esa misma shell.
++_EXECUTABLE_SHELLS = {"bash", "sh", "zsh"}
++
++#: Palabras que tratan lo que sigue como EL COMANDO, aunque venga entre
++#: comillas: ``eval`` lo evalúa, y ``env``/``nohup``/``xargs`` lo ejecutan tal
++#: cual llega.
++_EXECUTABLE_PRECEDING = {"eval", "env", "nohup", "xargs"}
++
++
++def _is_executable_context(prefix: str) -> bool:
++    """Si la comilla que sigue a ``prefix`` es código que una shell corre.
++
++    La comilla por defecto es un dato: el valor de un ``flag``, el cuerpo de
++    un ``printf``, un JSON por tubería. La excepción es angosta y nombrada:
++    el argumento de ``bash -c``/``sh -c``/``zsh -c`` o ``eval``, y el comando
++    que sigue a ``timeout N``, ``env``, ``nohup``, ``xargs``.
++    """
++    tokens = prefix.split()
++    if not tokens:
++        return False
++    last = tokens[-1]
++    if last == "-c":
++        shell = tokens[-2].rsplit("/", 1)[-1] if len(tokens) >= 2 else ""
++        return shell in _EXECUTABLE_SHELLS
++    if last in _EXECUTABLE_PRECEDING:
++        return True
++    return last.isdigit() and len(tokens) >= 2 and tokens[-2] == "timeout"
++
++
++def mask_data_quotes(command: str) -> str:
++    """El comando con el CONTENIDO de sus comillas de DATOS vaciado.
++
++    Un argumento entrecomillado es casi siempre un dato —el valor de un
++    ``flag``, el cuerpo de un ``printf``, un JSON por tubería— y ese texto no
++    lo ejecuta ninguna shell; un análisis léxico que lo trata como comando da
++    falso positivo (medido: ``printf '%s' 'python3 src/…py'`` avisaba de una
++    invocación que nunca corre). La excepción es cuando la comilla ES el
++    código que una shell va a correr —ver ``_is_executable_context``—, y ahí
++    el contenido se conserva intacto para que el resto del análisis lo siga
++    viendo.
++    """
++    def replace(match: re.Match[str]) -> str:
++        span = match.group(0)
++        if _is_executable_context(command[:match.start()]):
++            return span
++        return "#" * len(span)
++
++    return _QUOTED_SPAN.sub(replace, command)
+diff --git a/tests/hooks/test_detect_library_path_invocation.py b/tests/hooks/test_detect_library_path_invocation.py
+index ffdc9e23..e9b6fc18 100644
+--- a/tests/hooks/test_detect_library_path_invocation.py
++++ b/tests/hooks/test_detect_library_path_invocation.py
+@@ -70,6 +70,20 @@ check("una ruta que no lleva src/ calla", False,
+ check("el mismo comando dentro de un heredoc no se ejecuta: calla", False,
+       bool(warns("cat <<'EOF'\npython3 src/verify/check_rst_sintaxis.py\nEOF")))
+ 
++# Mitad 3 — comillas de datos vs. código ejecutable.
++check("el valor de --content es dato: calla", False,
++      bool(warns('bash bin/agent_store agregar-hallazgo --content '
++                 '"... python3 src/verify/check_rst_sintaxis.py ..."')))
++check("el cuerpo de printf es dato: calla", False,
++      bool(warns("printf '%s' 'python3 src/verify/check_rst_sintaxis.py' > nota.txt")))
++check("un JSON por tubería es dato: calla", False,
++      bool(warns('printf \'%s\' \'{"command":"python3 src/verify/check_rst_sintaxis.py"}\' '
++                  '| bash bin/tool_use_preflight')))
++check("bash -c SÍ ejecuta su argumento: avisa", True,
++      bool(warns("bash -c 'python3 src/verify/check_rst_sintaxis.py'")))
++check("eval SÍ ejecuta su argumento: avisa", True,
++      bool(warns("eval 'python3 src/verify/check_rst_sintaxis.py'")))
++
+ # Fuera de familia.
+ check("bin/check_rst_sintaxis por su envoltorio ya no lleva src/…py: calla", False,
+       bool(warns("bash bin/check_rst_sintaxis --archivos x.rst")))
+diff --git a/tests/hooks/test_shell_text.py b/tests/hooks/test_shell_text.py
+new file mode 100644
+index 00000000..390c5358
+--- /dev/null
++++ b/tests/hooks/test_shell_text.py
+@@ -0,0 +1,78 @@
++"""Suite de ``src/hooks/shell_text.py``: lo que un comando de shell escribe
++como texto y no ejecuta.
++
++``mask_data_quotes`` — las dos mitades de juicio, cada una con su anulación
++----------------------------------------------------------------------------
++- **Descarte de comillas de datos**: el texto entre comillas que es el valor
++  de un ``flag``, el cuerpo de un ``printf`` o un JSON por tubería no cuenta
++  como comando — se vacía.
++- **Excepción de código ejecutable**: el argumento de ``bash -c``/``sh
++  -c``/``zsh -c``, ``eval``, o el comando que sigue a ``timeout N``, ``env``,
++  ``nohup``, ``xargs`` SÍ se conserva, porque una shell lo va a correr.
++"""
++from __future__ import annotations
++
++import pathlib
++import sys
++
++sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
++from hooks.shell_text import mask_data_quotes  # noqa: E402
++
++OK = 0
++FAILED = 0
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}")
++        OK += 1
++    else:
++        print(f"  FALLA {label} — esperado {expected!r}, obtenido {obtained!r}")
++        FAILED += 1
++
++
++# Mitad 1 — descarte de comillas de datos: el texto queda vacío.
++check("el valor de --content se vacía", False,
++      "python3 src/verify" in mask_data_quotes(
++          'bash bin/agent_store agregar-hallazgo --content '
++          '"... python3 src/verify/check_rst_sintaxis.py ..."'))
++check("el cuerpo de printf se vacía", False,
++      "python3 src/verify" in mask_data_quotes(
++          "printf '%s' 'python3 src/verify/check_rst_sintaxis.py' > nota.txt"))
++check("un JSON por tubería se vacía", False,
++      "python3 src/verify" in mask_data_quotes(
++          'printf \'%s\' \'{"command":"python3 src/verify/check_rst_sintaxis.py"}\' '
++          '| bash bin/tool_use_preflight'))
++
++# Mitad 2 — excepción de código ejecutable: el texto se conserva.
++check("bash -c conserva su argumento", True,
++      "python3 src/verify" in mask_data_quotes(
++          "bash -c 'python3 src/verify/check_rst_sintaxis.py'"))
++check("sh -c conserva su argumento", True,
++      "python3 src/verify" in mask_data_quotes(
++          'sh -c "python3 src/verify/check_rst_sintaxis.py"'))
++check("zsh -c conserva su argumento", True,
++      "python3 src/verify" in mask_data_quotes(
++          "zsh -c 'python3 src/verify/check_rst_sintaxis.py'"))
++check("eval conserva su argumento", True,
++      "python3 src/verify" in mask_data_quotes(
++          "eval 'python3 src/verify/check_rst_sintaxis.py'"))
++check("timeout N conserva el comando que sigue", True,
++      "python3 src/verify" in mask_data_quotes(
++          "timeout 60 'python3 src/verify/check_rst_sintaxis.py'"))
++check("env conserva el comando que sigue", True,
++      "python3 src/verify" in mask_data_quotes(
++          "env 'python3 src/verify/check_rst_sintaxis.py'"))
++check("nohup conserva el comando que sigue", True,
++      "python3 src/verify" in mask_data_quotes(
++          "nohup 'python3 src/verify/check_rst_sintaxis.py'"))
++check("xargs conserva el comando que sigue", True,
++      "python3 src/verify" in mask_data_quotes(
++          "xargs 'python3 src/verify/check_rst_sintaxis.py'"))
++
++# Fuera de familia — sin comillas, el texto no cambia.
++check("un comando sin comillas queda intacto", "ls -la", mask_data_quotes("ls -la"))
++
++print(f"test_shell_text: {OK + FAILED} aserciones — {OK} ok, {FAILED} falla(s)")
++sys.exit(1 if FAILED else 0)

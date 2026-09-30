@@ -1,0 +1,5 @@
+99
+src/packages/app-host/src/launchRepl.tsx(36,6): error TS2322: Type '{ children: Element; store: HostSessionStore<AppState>; getFpsMetrics: () => TFpsMetrics | undefined; stats?: TStats | undefined; initialState: AppState; }' is not assignable to type 'Props'.
+src/packages/provider/src/claudeLegacyRuntime.ts(573,9): error TS2322: Type '{ type: "assistant"; message: { role: string; content: string; usage: NonNullableUsage; }; }' is not assignable to type 'AssistantMessage'.
+src/packages/provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; container: null; context_management: null; diagnostics: null; stop_details: null; usage: { ...; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+__BG_EXIT__=0

@@ -1,0 +1,16 @@
+== compactRequest
+base	7 pass, 0 fail	—
+tools-reserve	6 pass, 1 fail	lo que ocupan las herramientas se resta de la ventana
+ratio	6 pass, 1 fail	el umbral es la fracción proactiva de la ventana
+ratio-applied	6 pass, 1 fail	el umbral es la fracción proactiva de la ventana
+system-inline	5 pass, 2 fail	al recortar historia, el aviso va al system de texto y messages no lleva mensajes de sistema | un system de bloques recibe el aviso como primer bloque
+system-out	4 pass, 3 fail	al recortar historia, el aviso va al system de texto y messages no lleva mensajes de sistema | un system de bloques recibe el aviso como primer bloque | sin system, el aviso pasa a ser el system
+== server
+base	3 pass, 0 fail	—
+no-compaction	2 pass, 1 fail	cada upstream recibe el cuerpo comprimido para la ventana de su modelo
+count-tokens-too	2 pass, 1 fail	count_tokens mide el cuerpo sin comprimir
+same-window	2 pass, 1 fail	cada upstream recibe el cuerpo comprimido para la ventana de su modelo
+== startServer
+base	16 pass, 0 fail	—
+no-windows	15 pass, 1 fail	startProxyServer: compresión previa del contexto > con la ventana declarada del modelo de upstream, una conversación larga llega recortada
+always-on	16 pass, 0 fail	—

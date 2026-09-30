@@ -1,0 +1,5 @@
+textos=62 bytes=107205755 bancos=1845
+actual: 2.55s para 40 bancos -> estimado 117s por llamada, x2 llamadas
+una pasada: 3.88s, 8 banco(s) citados
+bancos sin sello (la pasada por patrón no los ve): 8 ['frontera-tool-registry-simbolo', 'tsc-zero-loop', 'copia-desde-ccnmt', 'has-permissions-to-use-tool-2-1-281', 'reasignar-src-gates']
+misma respuesta en la muestra: True

@@ -1,0 +1,17 @@
+src/packages/command-runtime/src/commands/fork/index.ts(31,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/fork/fork")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/fork/index.ts:21-34 ---
+     21   *
+     22   * For OS-level background sessions that survive the parent REPL exiting,
+     23   * see `--bg` / `claude ps`/`logs`/`attach` (Phase B, separate path).
+     24   */
+     25  const fork = {
+     26    type: 'local-jsx',
+     27    name: 'fork',
+     28    description: 'Spawn a background agent that inherits the full conversation',
+     29    argumentHint: '<directive>',
+     30    isEnabled: () => isForkSubagentEnabled(),
+     31>   load: () => import('./fork.js'),
+     32  } satisfies Command
+     33  
+     34  export default fork
+  Property 'call' is missing in type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/fork/fork")' but required in type 'LocalJSXCommandModule'.

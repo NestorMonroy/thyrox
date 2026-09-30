@@ -1,0 +1,14 @@
+# paquetes con manifiesto: 42
+# referencia: /home/user/claude-code-nestor-monroy-tools
+
+SIN DECLARAR (excluidas autorreferencia y raiz): 3
+  cubiertas por la RAIZ del workspace: 88 (46 nombre(s) distinto(s))
+  autorreferencias descontadas: 3 -> agent:@thyrox/agent, cli:@thyrox/cli, tool-registry:@thyrox/tool-registry
+
+== NO RESUELVE (causa un rojo): 3
+  config                   github.com                                2 import(s)  ref:ninguno
+  app-host                 src                                       1 import(s)  ref:ninguno
+  computer-use-mcp         list                                      1 import(s)  ref:ninguno
+
+== RESUELVE YA (hueco formal de manifiesto): 0
+__BG_EXIT__=0

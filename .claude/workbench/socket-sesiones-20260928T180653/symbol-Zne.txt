@@ -1,0 +1,4 @@
+==== Zne: 1 definicion(es) de nivel superior
+---- chunk-jv3bb6yp.js function Zne [615,683)
+function Zne(n){return n.slice(n.lastIndexOf(")")+2).split(" ")[19]}
+symbol: 1 de 1 nombre(s) resueltos

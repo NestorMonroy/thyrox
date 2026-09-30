@@ -1,0 +1,14 @@
+== check_identifier_language.py
+base	23 pass, 0 fail	—
+no-ts-collect	12 pass, 1 fail	abortó (exit 1)
+no-ts-scan	14 pass, 1 fail	abortó (exit 1)
+parsed-counted	22 pass, 1 fail	abortó (exit 1)
+no-refuse	21 pass, 1 fail	abortó (exit 1)
+no-homographs	20 pass, 1 fail	abortó (exit 1)
+== ts_declared_identifiers.ts
+base	23 pass, 0 fail	—
+no-import-alias	20 pass, 1 fail	abortó (exit 1)
+no-property-assignment	22 pass, 1 fail	abortó (exit 1)
+no-parse-check	22 pass, 1 fail	abortó (exit 1)
+no-enum-member	22 pass, 1 fail	abortó (exit 1)
+no-parameter	22 pass, 1 fail	abortó (exit 1)

@@ -1,0 +1,3 @@
+node_modules/eventsource/src/EventSource.ts(413,42): error TS2345: Argument of type '{}' is not assignable to parameter of type 'AllowSharedBufferSource | undefined'.
+src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx(61,82): error TS2694: Namespace 'global.JSX' has no exported member 'Element'.
+EXIT=2

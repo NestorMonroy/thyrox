@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsAtomicWrite.test.ts:
+EEXIST: file already exists, open '/tmp/thyrox-tests-Nrj9l1/uds-atomic-rSYUZK/k.json.tmp.00000000'
+    path: "/tmp/thyrox-tests-Nrj9l1/uds-atomic-rSYUZK/k.json.tmp.00000000",
+ syscall: "open",
+   errno: -17,
+    code: "EEXIST"
+
+(fail) writeFileAtomicWithMode (An/Jne) > una colisión del nombre temporal (EEXIST) se reintenta con otro nombre [1.00ms]
+159 |     writeFileSync(taken, 'ajeno')
+160 |     let i = 0
+161 |     await expect(
+162 |       writeFileAtomicWithMode(target, 'x', { mode: 0o600, tempName: () => (i++, taken) }),
+163 |     ).rejects.toMatchObject({ code: 'EEXIST' })
+164 |     expect(i).toBe(3)
+                    ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsAtomicWrite.test.ts:164:15)
+(fail) writeFileAtomicWithMode (An/Jne) > tras tres colisiones propaga EEXIST sin tocar los temporales ajenos [1.21ms]
+
+ 13 pass
+ 2 fail
+ 33 expect() calls
+Ran 15 tests across 1 file. [104.00ms]

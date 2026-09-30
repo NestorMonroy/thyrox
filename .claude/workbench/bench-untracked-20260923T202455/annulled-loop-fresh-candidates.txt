@@ -1,0 +1,13 @@
+test_tsc_zero_loop:
+  FALLA el lazo llega a tsc cero — esperado 'done', obtenido 'stalled'
+  FALLA a.ts necesitó dos vueltas, con bases nuevas en la segunda — esperado 'const a = 1 + 2\n', obtenido 'const a = 1 + BAD2\n'
+  FALLA un commit por paso con progreso — esperado 2, obtenido 1
+  ok    el árbol queda limpio: todo lo conservado se commiteó
+  FALLA el total baja por pasos hasta cero — esperado [3, 1, 0], obtenido [3, 1]
+  ok    sin ninguna aceptada el lazo se detiene en la primera vuelta
+  ok    y no commitea nada
+  ok    ni deja el árbol tocado
+  ok    el tope de iteraciones detiene el lazo
+test_tsc_zero_loop: 9 aserciones — 5 ok, 4 falla(s)
+
+[exit=1]

@@ -1,0 +1,1 @@
+function hrr(e){if(e.type!=="queued_command")return;let n=Vo(e.forwardedIntent);if(n===void 0)return;let r=x0(e.prompt);if(r.trim()==="")return;let s=$E(n.source),{timestamp:g}=e;return typeof g==="string"?{text:r,source:s,timestamp:g}:{text:r,source:s}}

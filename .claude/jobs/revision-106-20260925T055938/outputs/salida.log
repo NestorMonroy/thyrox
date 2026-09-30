@@ -1,0 +1,20 @@
+sin llamadas perdidas src/coordination/claims.ts
+idéntico src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts
+sin llamadas perdidas src/packages/@ant/computer-use-swift/src/backends/darwin.ts
+sin llamadas perdidas src/packages/agent/__tests__/contentTextHelpers.test.ts
+sin llamadas perdidas src/packages/agent/__tests__/directMemberMessage.test.ts
+idéntico src/packages/agent/__tests__/preModelSwitch.test.ts
+sin llamadas perdidas src/packages/agent/messages/mappers.ts
+sin llamadas perdidas src/packages/app-host/src/runtime/installPluginBindings.ts
+sin llamadas perdidas src/packages/config/plugin/installedPluginsManager.ts
+sin llamadas perdidas src/packages/config/plugin/loadPluginCommands.ts
+idéntico src/packages/provider/__tests__/runtimeHelpers.test.ts
+idéntico src/packages/repl/src/screens/REPLView.tsx
+idéntico src/packages/storage/src/__tests__/conversationChain.test.ts
+idéntico src/packages/swarm/__tests__/spawnInProcess.test.ts
+idéntico src/packages/tool-registry/src/tools/BashTool/BashTool.tsx
+idéntico src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts
+sin llamadas perdidas src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+LLAMADAS PERDIDAS src/verify/namedImports.ts: split×1
+1 de 18 archivos pierden llamadas al transpilar
+__BG_EXIT__=0

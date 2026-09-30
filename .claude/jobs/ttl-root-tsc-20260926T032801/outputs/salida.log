@@ -1,0 +1,11 @@
+113
+src/packages/agent/cacheTtl.ts(76,52): error TS2322: Type 'ProcessEnv | PromptCacheTtlEnv' is not assignable to type 'PromptCacheTtlEnv'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2144,9): error TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2145,9): error TS2322: Type '(command: QueuedCommand) => void' is not assignable to type '(entry: { mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }) => void'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2363,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3292,29): error TS2339: Property 'content' does not exist on type '{}'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3292,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3305,56): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: "control_response"; response: { subtype: "success"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: "error"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3477,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3478,9): error TS2322: Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+__BG_EXIT__=0

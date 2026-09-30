@@ -1,0 +1,3 @@
+src/packages/computer-use-mcp/src/legacy/win32/bridgeClient.ts
+src/typescript/buildJavascript.ts
+tests/typescript/buildJavascript.test.ts

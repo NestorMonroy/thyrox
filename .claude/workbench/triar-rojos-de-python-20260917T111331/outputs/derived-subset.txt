@@ -1,0 +1,16 @@
+== subconjunto derivado: 13 suite(s) de 10 archivo(s) tocado(s) ==
+-- tests/hooks/test_detect_agent_dispatch.py
+-- tests/hooks/test_detect_foreground_long_command.py
+-- tests/hooks/test_stop_tests.py
+-- tests/meta/test_runner_exit_two.py
+-- tests/meta/test_runner_reach.py
+-- tests/paths/test_config_home_cli.py
+-- tests/session/test-tmpdir-faucet.sh
+-- tests/session/test_documentation_preflight.py
+-- tests/session/test_job_runs.py
+-- tests/verify/test_error_catalog.py
+-- tests/verify/test_hallazgo_sucesor.py
+-- ROJO tests/verify/test_path_arithmetic.py
+-- tests/workbench/test_manifest_jsonl.py
+== 1 en rojo de 13 derivadas ==
+exit=1

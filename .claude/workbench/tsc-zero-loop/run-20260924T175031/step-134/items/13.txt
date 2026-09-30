@@ -1,0 +1,9 @@
+Tipo: PermissionDecision
+Copias:
+  src/packages/command-runtime/src/promptShellExecution.ts
+  src/packages/permission/src/permissionTypes.ts
+  src/packages/permission/src/ruleBasedPermissions.ts
+  src/packages/permission/src/testing/index.ts
+  src/packages/swarm/src/adapters/appRuntime.ts
+
+src/packages/tool-registry/src/services/toolHooks.ts(390): error TS2322: Type 'import("/home/user/thyrox-medicion/src/packages/permission/src/ruleBasedPermissions").PermissionDecision' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/permission/src/permissionTypes").PermissionDecision'.

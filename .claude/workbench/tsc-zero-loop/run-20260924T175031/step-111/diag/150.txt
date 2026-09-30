@@ -1,0 +1,22 @@
+src/packages/provider/src/commands/advisor.ts(106,15): error TS2322: Type 'Promise<{ call: LocalCommandCall; }>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/provider/src/commands/advisor.ts:96-109 ---
+     96  const advisor = {
+     97    type: 'local',
+     98    name: 'advisor',
+     99    description: 'Configure the advisor model',
+    100    argumentHint: '[<model>|off]',
+    101    isEnabled: () => canUserConfigureAdvisor(),
+    102    get isHidden() {
+    103      return !canUserConfigureAdvisor()
+    104    },
+    105    supportsNonInteractive: true,
+    106>   load: () => Promise.resolve({ call }),
+    107  } satisfies Command
+    108  
+    109  export default advisor
+  Type '{ call: LocalCommandCall; }' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

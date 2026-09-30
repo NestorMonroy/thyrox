@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:
+(fail) bin/cli: /rename en el chat (TASK-THYROX-0505) > /rename foo escribe name/nameSource en sessions/<pid>.json y responde "Session renamed to: foo" [5000.17ms]
+  ^ this test timed out after 5000ms.
+(fail) bin/cli: /rename en el chat (TASK-THYROX-0505) > /rename sin argumento muestra el nombre actual (divergencia declarada: no genera con el modelo) [5000.04ms]
+  ^ this test timed out after 5000ms.
+
+# Unhandled error between tests
+-------------------------------
+25 | const usage = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
+26 | 
+27 | async function waitUntil(predicate: () => boolean, timeoutMs = 10000, stepMs = 20): Promise<void> {
+28 |   const deadline = Date.now() + timeoutMs
+29 |   while (!predicate()) {
+30 |     if (Date.now() > deadline) throw new Error('tiempo agotado esperando la condición')
+                                              ^
+error: tiempo agotado esperando la condición
+      at waitUntil (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:30:42)
+      at async <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:68:13)
+-------------------------------
+
+(fail) bin/cli: /rename en el chat (TASK-THYROX-0505) > /rename con sólo caracteres invisibles: mensaje verbatim de la referencia, sin escribir [5000.10ms]
+  ^ this test timed out after 5000ms.
+
+# Unhandled error between tests
+-------------------------------
+25 | const usage = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
+26 | 
+27 | async function waitUntil(predicate: () => boolean, timeoutMs = 10000, stepMs = 20): Promise<void> {
+28 |   const deadline = Date.now() + timeoutMs
+29 |   while (!predicate()) {
+30 |     if (Date.now() > deadline) throw new Error('tiempo agotado esperando la condición')
+                                              ^
+error: tiempo agotado esperando la condición
+      at waitUntil (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:30:42)
+      at async <anonymous> (/home/user/thyrox/.thyrox/pool-worktrees/86cc5d4d2d5f/1/src/packages/cli/__tests__/sessionRenameCommand.e2e.test.ts:97:13)
+-------------------------------
+
+(fail) bin/cli: /rename en el chat (TASK-THYROX-0505) > /rename al nombre de una sesión viva cede a "<nombre>-adjetivo-sustantivo" con nameSource collision (uniqueness on) [5000.12ms]
+  ^ this test timed out after 5000ms.
+
+ 0 pass
+ 4 fail
+ 2 errors
+Ran 4 tests across 1 file. [20.24s]
+__BG_EXIT__=1

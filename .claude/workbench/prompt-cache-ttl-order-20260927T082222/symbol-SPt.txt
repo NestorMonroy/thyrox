@@ -1,0 +1,4 @@
+==== SPt: 1 definicion(es) de nivel superior
+---- chunk-csayct82.js function SPt [1919087,1919611)
+function SPt(e,n,r=!1){if(a.FORCE_PROMPT_CACHING_5M)return{ttl:"5m",reason:"force_5m_env"};let s=ywo(e),g=s?a.CLAUDE_CODE_PROMPT_CACHE_TTL:a.CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL;if(g!==void 0)return{ttl:g,reason:"env"};let h=Je(),S=s?h.promptCacheTtl:h.subagentPromptCacheTtl;if(S!==void 0)return{ttl:S,reason:"setting"};if(n!==void 0&&!(n==="1h"&&r))return{ttl:n,reason:"agent_frontmatter"};if(a.ENABLE_PROMPT_CACHING_1H||Pe()==="bedrock"&&a.ENABLE_PROMPT_CACHING_1H_BEDROCK)return{ttl:"1h",reason:"enable_1h_env"};return}
+symbol: 1 de 1 nombre(s) resueltos

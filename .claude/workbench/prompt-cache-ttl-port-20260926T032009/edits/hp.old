@@ -1,0 +1,4 @@
+case "$CACHE_TTL" in
+    ""|5m|1h) ;;
+    *) rehusa "--cache-ttl va \"5m\" o \"1h\", no: $CACHE_TTL" ;;
+esac

@@ -1,0 +1,50 @@
+src/packages/shell/src/Shell.ts(47,7): error TS2345: Argument of type '((lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void) | null | undefined' is not assignable to parameter of type 'ProgressCallback | null'.
+  --- código src/packages/shell/src/Shell.ts:37-57 ---
+     37  import { which } from './which.js'
+     38  
+     39  setCreateTaskOutputFn(
+     40    (
+     41      taskId: string,
+     42      onProgress: ((...args: unknown[]) => void) | null,
+     43      stdoutToFile: boolean,
+     44    ): TaskOutputPort =>
+     45      new TaskOutput(
+     46        taskId,
+     47>       onProgress as ExecOptions['onProgress'] | null,
+     48        stdoutToFile,
+     49      ),
+     50  )
+     51  setGetSandboxTmpDirNameFn(getClaudeTempDirName)
+     52  
+     53  function createShellExecContext(): ShellExecContext {
+     54    return {
+     55      getCwd: pwd,
+     56      setCwd: setCwdState,
+     57      getOriginalCwd,
+  Type 'undefined' is not assignable to type 'ProgressCallback | null'.
+src/packages/shell/src/Shell.ts(62,5): error TS2322: Type '() => Promise<string | null>' is not assignable to type '() => Promise<string>'.
+  --- código src/packages/shell/src/Shell.ts:52-72 ---
+     52  
+     53  function createShellExecContext(): ShellExecContext {
+     54    return {
+     55      getCwd: pwd,
+     56      setCwd: setCwdState,
+     57      getOriginalCwd,
+     58      getSessionId,
+     59      logEvent,
+     60      logForDebugging,
+     61      getSessionEnvVars,
+     62>     getSessionEnvironmentScript,
+     63      wrapWithSandbox: (cmd, shell, tmpDir, signal) =>
+     64        SandboxManager.wrapWithSandbox(cmd, shell, tmpDir, signal),
+     65      cleanupAfterSandbox: () => SandboxManager.cleanupAfterCommand(),
+     66      onCwdChanged: onCwdChangedForHooks,
+     67      getTmuxEnv: async () => getClaudeTmuxEnv(),
+     68      ensureTmuxSocket: ensureSocketInitialized,
+     69      hasTmuxToolBeenUsed,
+     70      getPlatform,
+     71      which,
+     72      invalidateSessionEnvCache,
+  Type 'Promise<string | null>' is not assignable to type 'Promise<string>'.
+    Type 'string | null' is not assignable to type 'string'.
+      Type 'null' is not assignable to type 'string'.

@@ -1,0 +1,40 @@
+
+== classify ==
+  ok    la forma dominante es simple
+  ok    y devuelve el script como detalle
+  ok    sin ningún token de ruta: sin_ruta
+  ok    dos segmentos con ruta: varios_scripts
+  ok    una tubería también parte segmentos
+  ok    con -c la ruta viaja en una cadena: ruta_en_cadena
+  ok    la ruta tras una bandera es su valor, no el script
+  ok    un comando que shlex no separa: no_parseable
+
+== controles de anulación ==
+  ok    añadir un segundo script cambia la forma
+  ok    envolver en -c cambia la forma
+  ok    quitarle la ruta cambia la forma
+  ok    anteponerle una bandera cambia la forma
+
+== declared_commands ==
+  FALLA lee los dos nombres de settings, en los dos clones
+          esperado: 4
+          real:     2
+  ok    y trae el evento con cada comando
+  FALLA un settings ilegible se REPORTA, con evento None
+          esperado: 1
+          real:     0
+
+== main ==
+  ok    un solo comando sano sale 0
+  FALLA y publica su DENOMINADOR
+          esperado: True
+          real:     False
+  ok    --strict con una forma opaca sale 1
+  FALLA y nombra la forma
+          esperado: True
+          real:     False
+  ok    cero comandos NO se publica como aprobado en silencio
+  ok    y con --strict el cero sin medir sale 1
+
+resultado: 17 de 21 aserciones en verde
+EXIT=1

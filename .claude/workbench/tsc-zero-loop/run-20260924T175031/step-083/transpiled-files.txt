@@ -1,0 +1,12 @@
+src/packages/agent/__tests__/contextGovernance.test.ts
+src/packages/agent/__tests__/taskReminder.test.ts
+src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts
+src/packages/binary/__tests__/corpus.test.ts
+src/packages/binary/__tests__/reflow.test.ts
+src/packages/cli/__tests__/systemPromptLayering.test.ts
+src/packages/context-compression/__tests__/lite.test.ts
+src/packages/provider/src/__tests__/withRetryClassification.behavior.test.ts
+src/packages/tools/__tests__/subagent.test.ts
+src/packages/tools/__tests__/tools.test.ts
+tests/package/package_identity.test.ts
+tests/rules/markdown.test.ts

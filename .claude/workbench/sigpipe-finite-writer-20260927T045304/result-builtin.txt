@@ -1,0 +1,10 @@
+printf     1000 líneas (  10 KB)   0/20
+echo       1000 líneas (  10 KB)   0/20
+printf    10000 líneas ( 107 KB)  20/20
+echo      10000 líneas ( 107 KB)  20/20
+printf    20000 líneas ( 214 KB)  20/20
+echo      20000 líneas ( 214 KB)  20/20
+printf    40000 líneas ( 429 KB)  20/20
+echo      40000 líneas ( 429 KB)  20/20
+printf   100000 líneas (1074 KB)  20/20
+echo     100000 líneas (1074 KB)  20/20

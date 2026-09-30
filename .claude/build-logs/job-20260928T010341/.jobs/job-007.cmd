@@ -1,0 +1,1 @@
+tests/agents/test-agent-store-fts-degradation.sh

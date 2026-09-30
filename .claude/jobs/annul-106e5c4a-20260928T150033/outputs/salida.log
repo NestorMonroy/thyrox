@@ -1,0 +1,213 @@
+== 1: sin cola
+   (src/concurrency/keyedMutex.ts)
+(fail) a keyed mutex > runs calls of one key one at a time, each with its own result [7.73ms]
+ 32 pass
+ 1 fail
+== 2: fallo corta la cola
+   (src/concurrency/keyedMutex.ts)
+ 33 pass
+ 0 fail
+== 3: cola sin olvidar
+   (src/concurrency/keyedMutex.ts)
+(fail) a keyed mutex > the queue of a key is forgotten once it drains [5.84ms]
+ 32 pass
+ 1 fail
+== 4: stdin en tubería
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) running cursor-agent > collects its output and exit code, with stdin closed [5001.55ms]
+ 32 pass
+ 1 fail
+== 5: sin plazo
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) running cursor-agent > a process past its deadline is terminated [5000.50ms]
+ 32 pass
+ 1 fail
+== 6: sin SIGKILL
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) running cursor-agent > one that ignores SIGTERM is killed when a follow-up is declared [4001.17ms]
+ 32 pass
+ 1 fail
+== 7: stderr perdido
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) running cursor-agent > collects its output and exit code, with stdin closed [7.84ms]
+ 32 pass
+ 1 fail
+== 8: error no rechaza
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) running cursor-agent > a binary that cannot be spawned rejects [1.98ms]
+(fail) the cursor-agent model catalog > a binary that is not executable is named [1.85ms]
+ 31 pass
+ 2 fail
+== 9: sin ubicaciones fijas
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) finding the cursor-agent binary > the fixed locations come first, then PATH unless disallowed [0.41ms]
+ 32 pass
+ 1 fail
+== 10: PATH siempre
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) finding the cursor-agent binary > the fixed locations come first, then PATH unless disallowed [0.61ms]
+ 32 pass
+ 1 fail
+== 11: sin PATH
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) finding the cursor-agent binary > the fixed locations come first, then PATH unless disallowed [0.47ms]
+ 32 pass
+ 1 fail
+== 12: sin GPT
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > ids read as names [0.43ms]
+(fail) the cursor-agent model catalog > is fetched from --list-models [2.72ms]
+ 31 pass
+ 2 fail
+== 13: sin versión con punto
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > ids read as names [0.31ms]
+ 32 pass
+ 1 fail
+== 14: auto sin nombre
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > ids read as names [0.34ms]
+(fail) the cursor-agent model catalog > is fetched from --list-models [3.43ms]
+ 31 pass
+ 2 fail
+== 15: duplicados
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > is parsed from the current and the legacy formats, without duplicates [0.68ms]
+ 32 pass
+ 1 fail
+== 16: sin formato antiguo
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > is parsed from the current and the legacy formats, without duplicates [0.95ms]
+(fail) the cursor-agent model catalog > an old release is asked with --model --help [4.29ms]
+ 31 pass
+ 2 fail
+== 17: Tip no corta
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > is parsed from the current and the legacy formats, without duplicates [0.70ms]
+ 32 pass
+ 1 fail
+== 18: sin reintento antiguo
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > an old release is asked with --model --help [2.67ms]
+ 32 pass
+ 1 fail
+== 19: no autenticado sin nombre
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > an unauthenticated agent and an empty catalog are errors [2.80ms]
+ 32 pass
+ 1 fail
+== 20: ENOENT sin nombre
+   (src/accounts/cursor/cursorAgent.ts)
+(fail) the cursor-agent model catalog > a binary that is not executable is named [1.83ms]
+ 32 pass
+ 1 fail
+== 21: sin buscar binario
+   (src/accounts/cursor/cursorAgent.ts)
+ 33 pass
+ 0 fail
+== 22: which ignorado
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) whether Cursor is installed on Linux > which cursor is enough; otherwise a readable desktop entry [0.47ms]
+ 32 pass
+ 1 fail
+== 23: sin .desktop
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) whether Cursor is installed on Linux > which cursor is enough; otherwise a readable desktop entry [0.47ms]
+ 32 pass
+ 1 fail
+== 24: sin desenvolver JSON
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) reading a value of state.vscdb > unwraps one level of a JSON-encoded string and leaves the rest [0.31ms]
+(fail) the IDE credential > is read from state.vscdb on Linux when Cursor is installed [10.77ms]
+ 31 pass
+ 2 fail
+== 25: el último gana
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) reading a value of state.vscdb > the first exact key of each kind wins [0.36ms]
+ 32 pass
+ 1 fail
+== 26: machineId pisa
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) reading a value of state.vscdb > the first exact key of each kind wins [0.35ms]
+ 32 pass
+ 1 fail
+== 27: refresh como access
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+ 33 pass
+ 0 fail
+== 28: difuso pisa
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) reading a value of state.vscdb > the fuzzy lookup fills only what is missing, and a refresh key is never an access key [0.33ms]
+ 32 pass
+ 1 fail
+== 29: sin Insiders
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) where the IDE database lives > per platform, with the Insiders channel on macOS [0.24ms]
+(fail) the IDE credential > on macOS the Insiders database is probed and renamed keys are found fuzzily [5.70ms]
+ 31 pass
+ 2 fail
+== 30: token no textual
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the cursor-agent credential > falls through a file without a string token, or unreadable, to the CLI state [0.72ms]
+ 32 pass
+ 1 fail
+== 31: sólo auth.json
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the cursor-agent credential > falls through a file without a string token, or unreadable, to the CLI state [0.73ms]
+ 32 pass
+ 1 fail
+== 32: archivo roto corta
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the cursor-agent credential > falls through a file without a string token, or unreadable, to the CLI state [1.18ms]
+ 32 pass
+ 1 fail
+== 33: sin cabecera al abrir
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > a database that cannot be opened is named on macOS [0.84ms]
+ 32 pass
+ 1 fail
+== 34: plataforma sin base
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > an unsupported platform has no database [0.49ms]
+ 32 pass
+ 1 fail
+== 35: instalación no mirada
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > leftover files of an uninstalled Cursor are not trusted [3.67ms]
+ 32 pass
+ 1 fail
+== 36: mac sin probar canales
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > on macOS without any database the known locations are named [0.87ms]
+ 32 pass
+ 1 fail
+== 37: mac sin nombrar la base
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > a database that cannot be opened is named on macOS [0.99ms]
+ 32 pass
+ 1 fail
+== 38: difuso en Linux
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > on Linux renamed keys are not guessed [3.75ms]
+ 32 pass
+ 1 fail
+== 39: sin difuso
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > on macOS the Insiders database is probed and renamed keys are found fuzzily [5.85ms]
+ 32 pass
+ 1 fail
+== 40: sin token vale
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > a missing database or one without a token is reported [3.94ms]
+(fail) the IDE credential > on Linux renamed keys are not guessed [3.56ms]
+ 31 pass
+ 2 fail
+== 41: lectura lanza
+   (src/accounts/cursor/cursorTokenExtractor.ts)
+(fail) the IDE credential > a table that is not there is a read failure [0.83ms]
+ 32 pass
+ 1 fail
+== restaurado
+ 33 pass
+ 0 fail
+__BG_EXIT__=0

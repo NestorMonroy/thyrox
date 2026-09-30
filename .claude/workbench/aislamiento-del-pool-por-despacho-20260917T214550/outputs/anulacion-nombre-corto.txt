@@ -1,0 +1,4 @@
+  FALLO nombre corto sin ambiguedad: suelta el ledger
+  FALLO ambiguo: nombra el primer candidato
+  FALLO ambiguo: nombra el segundo candidato
+36 ok, 3 fallos

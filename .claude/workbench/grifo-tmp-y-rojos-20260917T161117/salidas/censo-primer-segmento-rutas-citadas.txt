@@ -1,0 +1,46 @@
+sesion: /root/.claude/tasks/168b0fdf-bfe4-590b-b6c0-b6be124c124a
+rutas citadas (cualquier forma): 582
+  vistas por la lista cerrada:   283 (48.6 %)
+  CIEGAS:                        299 (51.4 %)
+
+primer segmento  n   ¿en la lista cerrada?
+  src                            176   SI
+  tests                           58   SI
+  claude                          54   no
+  thyrox                          28   no
+  odoo                            20   no
+  scripts                         17   SI
+  packages                        12   no
+  bin                             11   SI
+  source                           9   SI
+  agent                            9   no
+  hooks                            9   no
+  home                             8   no
+  context                          7   no
+  docs                             6   no
+  tools                            5   no
+  agent-results                    5   no
+  harness                          5   no
+  backends                         5   no
+  addons                           4   SI
+  progreso                         4   no
+  __tests__                        4   SI
+  models                           4   no
+  internal                         4   no
+  gates                            4   no
+  runtime                          4   no
+  commands                         3   no
+  swarm                            3   no
+  storage                          3   no
+  reference                        3   no
+  notifications                    3   no
+  loop                             3   no
+  config                           3   SI
+  PACKAGE                          2   no
+  orm                              2   no
+  tool-registry                    2   no
+  apps                             2   no
+  kaupamex-docs                    2   no
+  cost                             2   no
+  agents                           2   no
+  pm                               2   no

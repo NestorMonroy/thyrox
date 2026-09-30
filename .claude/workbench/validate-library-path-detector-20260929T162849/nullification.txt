@@ -1,0 +1,11 @@
+== base
+test_detect_library_path_invocation: 9 aserciones — 9 ok, 0 falla(s)
+== anulación A: sin comprobar que exista bin/<stem>
+  FALLA un módulo de biblioteca sin bin/ correspondiente calla — esperado False, obtenido True
+test_detect_library_path_invocation: 9 aserciones — 8 ok, 1 falla(s)
+== anulación B: sin descartar el cuerpo del heredoc
+  FALLA el mismo comando dentro de un heredoc no se ejecuta: calla — esperado False, obtenido True
+test_detect_library_path_invocation: 9 aserciones — 8 ok, 1 falla(s)
+== restaurado
+0
+test_detect_library_path_invocation: 9 aserciones — 9 ok, 0 falla(s)

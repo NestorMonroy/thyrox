@@ -1,0 +1,19 @@
+Fix two tests that measured the environment
+
+imageProcessor.test assumed neither sharp nor the native processor was
+installed, and asserted rejections. sharp arrived with the
+dependencies, so the promises resolved. mock.module cannot simulate
+the absence steadily in Bun: a throwing factory fails only the first
+import and later ones get the real module. The two loaders are now
+replaceable through _setImageImportersForTesting, and the suite makes
+both reject. Production behaviour is unchanged. Dropping the fallback
+warning fails exactly the two cases that depend on it.
+
+subagent.test compared the harness-created board with the real
+store's SQL, which already carries the columns the store adds by
+ALTER. src/task/schema.ts declares that floor-not-contract split on
+purpose, and tests/task/schema.test.ts pins it. The comparison now
+leaves out alterColumns(). Adding the layer columns to the floor
+instead was tried and broke those pins, so it was reverted.
+
+The typecheck baseline drops to 2408, as the last commit measured.

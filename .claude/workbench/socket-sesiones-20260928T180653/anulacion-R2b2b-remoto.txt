@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/fastModeProcessContext.test.ts:
+64 |     expect(processFastModeAvailabilityContext().remoteManaged).toBe(false)
+65 |     process.env.THYROX_CODE_REMOTE = 'true'
+66 |     process.env.THYROX_CODE_ENTRYPOINT = 'remote_cowork'
+67 |     expect(processFastModeAvailabilityContext().remoteManaged).toBe(true)
+68 |     process.env.THYROX_CODE_ENVIRONMENT_KIND = 'bridge'
+69 |     expect(processFastModeAvailabilityContext().remoteManaged).toBe(false)
+                                                                    ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/fastModeProcessContext.test.ts:69:64)
+(fail) processFastModeAvailabilityContext > una sesión remota de cowork la gestiona un entorno remoto [1.13ms]
+
+ 5 pass
+ 1 fail
+ 13 expect() calls
+Ran 6 tests across 1 file. [292.00ms]

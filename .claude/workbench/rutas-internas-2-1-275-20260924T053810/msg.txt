@@ -1,0 +1,26 @@
+Port the internal-path checks from 2.1.275
+
+isPathAllowed asks two questions before the rules: is this a path of
+the session itself that is writable or readable without asking, and
+is it a store that is never written directly. internalPaths.ts
+reimplements both from chunk-9apg35nm.js: checkEditableInternalPath
+(yyt), checkReadableInternalPath (hee), their multi-path form (Hs),
+the profile-store deny paths (p3t, Qe in chunk-8syy9k0k.js) and the
+bundled-skills root (w_n).
+
+The allow side reuses what thyrox already has: plans, scratchpad,
+project storage, tool results, project temp and the auto-memory
+directory. The deny side is ported whole, because a missing deny
+predicate fails open: host credentials, seed-admin, the Anthropic
+profile store, the settings review store and adopt.json.
+
+The plan file is allowed only when the session already has a slug;
+the tree's getPlanSlug creates one, so the check reads the cache.
+Declared: memory pause and the workshop document do not exist here,
+and the auto-memory source is taken as declared, the strict branch.
+
+Two tests followed the binary: a broad profile-store root is measured
+against the process cwd, not the session cwd.
+
+Annulment: without the early multi-path deny, without the broad-root
+detection and without the read fence, exactly one case fails each.

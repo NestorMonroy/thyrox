@@ -1,0 +1,8 @@
+{
+  "id": "74",
+  "subject": "Harness: docsLabelCollisionGate/docsLabelRenumber miden por comparación de refs",
+  "description": "ID: TASK-GEN-0033\n\nHarness: docsLabelCollisionGate/docsLabelRenumber miden por comparación de refs (--entre / declaraciones), lo que da FALSO POSITIVO en un re-merge donde el destino ya renumeró (l2 tiene el archivo como 1030, l3 aún como 1025). integrate() abortaría (label-unresolved) un merge limpio, porque el resolutor busca un archivo H-DOCS-1025 que en el árbol fusionado ya no existe. Fix: el gate/resolutor de etiqueta deben medir el ÁRBOL FUSIONADO (check-ids-duplicados sobre working tree post-merge), no la coincidencia cross-ref. Detectado en la re-integración l3→l2 del 2026-09-03 (el proceso manual verificó el árbol y lo sorteó; el harness no).\n\nSEGUNDA EVIDENCIA, medida 2026-09-04: `bun test` da `682 pass, 0 fail, 1 error`, y el error es de `branchIntegration.test.ts:40` — `git rev-parse --verify origin/feature/kaupamex-l2` falla desde que se podaron las refs locales colgadas de ramas ya borradas en el remoto. Es el mismo defecto un nivel más arriba: **el test mide el entorno, no el código**. Su verde dependía de que existiera una ref concreta en el clon, así que podar basura obsoleta —una operación correcta— rompe la suite sin que nada del harness haya cambiado. El caso debería construir sus propias refs en un repo sintético (como hacen los controles positivos de git-real) o declararse `skip` cuando la ref no está, nunca `error`.",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

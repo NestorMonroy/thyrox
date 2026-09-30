@@ -1,0 +1,1 @@
+function Zt(e,n="linux"){let r=e.replace(n==="win32"?/[\\/]\.(?=[\\/]|$)/g:/\/\.(?=\/|$)/g,"");if(r==="")return e[0];if(n==="win32"&&/^[A-Za-z]:$/.test(r))return r+e[2];return r}

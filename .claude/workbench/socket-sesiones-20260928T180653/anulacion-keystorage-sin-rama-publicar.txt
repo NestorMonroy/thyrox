@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxKeys.test.ts:
+275 |   test('publica por el storage: asegura el ámbito, borra la anterior y escribe atómica con modo exacto 0600', async () => {
+276 |     const { storage, files, calls } = memoryStorage()
+277 |     const path = await publishInboxKey(ADDRESS, TOKEN, { sweepPermitted: true, storage }, active())
+278 |     const name = inboxKeyFileName(4242, ADDRESS)
+279 |     expect(path).toBe(join(sessionsDir, name))
+280 |     expect(existsSync(sessionsDir)).toBe(false)
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:280:37)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > publica por el storage: asegura el ámbito, borra la anterior y escribe atómica con modo exacto 0600 [1.36ms]
+292 |     expect(existsSync(path)).toBe(true)
+293 |   })
+294 | 
+295 |   test('sin ámbito o sin escritura, la publicación falla con el mensaje de la referencia; un delete que falla no', async () => {
+296 |     const noScope = memoryStorage({ ensureScope: async () => ({ ok: false, error: { code: 'EUNAVAIL', cause: new Error('down') } }) })
+297 |     await expect(publishInboxKey(ADDRESS, TOKEN, { sweepPermitted: false, storage: noScope.storage }, active())).rejects.toThrow(
+                                                                                                                               ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxKeys.test.ts:297:122)
+(fail) rama de storage: ye, JDo con N(), J4n y Ee > sin ámbito o sin escritura, la publicación falla con el mensaje de la referencia; un delete que falla no [0.83ms]
+
+ 32 pass
+ 2 fail
+ 52 expect() calls
+Ran 34 tests across 1 file. [146.00ms]

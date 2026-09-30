@@ -1,0 +1,5 @@
+check-hallazgo-submodulo: 1 hallazgo(s) fuera de su submódulo, sin baseline
+  source/gestion/pm/api/iniciativas/empaquetar-kaupamex-bin-como-ejecutable/hallazgos/hallazgo-H-SERVER-19-el-instalador-de-unidades-y-el-deb-son-dos-modelos-de-despliegue.rst
+      ID=server  ·  :submodulo:=server  ·  carpeta=pm/api
+      → debe vivir en una iniciativa de pm/server/iniciativas/
+  (alcance medido: 1357 hallazgo(s); 62 en baseline heredado)

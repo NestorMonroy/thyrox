@@ -1,0 +1,2 @@
+VERDE tests/verify/test-hallazgo-submodulo-baseline.sh
+EXIT=0

@@ -1,0 +1,4 @@
+storage: emitio pese a 1060 errores (385 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1060 error(es) que siguen vivos en su propio paquete
+EXIT=0

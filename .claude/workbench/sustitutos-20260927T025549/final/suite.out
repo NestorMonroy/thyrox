@@ -1,0 +1,64 @@
+== TypeScript (bun) ==
+-- FAIL src/packages/swarm/__tests__/teammateInit.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/swarm/__tests__/teammateInit.test.ts:
+ENOENT: no such file or directory, rename '/dev/shm/tminit-Df88eT/teams/eq/config.json.tmp.24899.1790482067524.0f777842-c596-46ec-9957-9037120a94a4' -> '/dev/shm/tminit-Df88eT/teams/eq/config.json'
+    path: "/dev/shm/tminit-Df88eT/teams/eq/config.json.tmp.24899.1790482067524.0f777842-c596-46ec-9957-9037120a94a4",
+    dest: "/dev/shm/tminit-Df88eT/teams/eq/config.json",
+ syscall: "rename",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) el manejador de parada > 10. marca al compañero como ocioso en el archivo del equipo [1.28ms]
+ENOENT: no such file or directory, open '/dev/shm/tminit-KxMU5N/teams/eq/config.json.tmp.24899.1790482067525.46e7507e-d75b-4dd7-bae7-95d873bad959'
+    path: "/dev/shm/tminit-KxMU5N/teams/eq/config.json.tmp.24899.1790482067525.46e7507e-d75b-4dd7-bae7-95d873bad959",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) el manejador de parada > 11. el manejador NO bloquea la parada [3.94ms]
+
+# Unhandled error between tests
+-------------------------------
+196 |  */
+197 | type HostBinding = (...args: any[]) => any
+198 | 
+199 | function missingBinding(name: string): HostBinding {
+200 |   return () => {
+201 |     throw new Error(
+                    ^
+error: Swarm runtime binding "getErrnoCode" is unavailable. installSwarmAppRuntime() must run before using @thyrox/swarm runtime helpers.
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/adapters/appRuntime.ts:201:15)
+      at readTeamFileAsync (/home/user/thyrox/src/packages/swarm/src/core/teamHelpers.ts:219:9)
+      at async updateTeamFileAsync (/home/user/thyrox/src/packages/swarm/src/core/teamHelpers.ts:273:27)
+      at async setMemberActive (/home/user/thyrox/src/packages/swarm/src/core/teamHelpers.ts:576:9)
+-------------------------------
+
+
+ 9 pass
+ 2 fail
+ 1 error
+ 21 expect() calls
+Ran 11 tests across 1 file. [563.00ms]
+pass=15658 fail=2 errors=1 crashes=0 files=1057 failed=1
+
+== Python (stdlib) ==
+-- UNMEASURED (exit 2) tests/session/hardware/test_gpu_admission_real.py
+  (268 suite(s) de Python, 0 en rojo, 1 sin medir)
+
+== shell (bash) ==
+-- UNMEASURED (exit 2) tests/session/hardware/test-gpu-pools-real.sh
+  (130 suite(s) de shell, 0 en rojo, 1 sin medir)
+
+== alcance ==
+  TypeScript: 1057 archivo(s), EN ROJO
+  Python: 268 suite(s), 0 en rojo, 1 sin medir
+  shell: 130 suite(s), 0 en rojo, 1 sin medir
+
+FALLA: 1 lengua(s) en rojo
+
+ÁRBOL MUTADO durante la medición: el veredicto no es atribuible a ningún estado.
+  habría sido: rojo
+  (huella al empezar 062348eb76a0, al terminar ff6bbf1ccc2f)
+EXIT=3

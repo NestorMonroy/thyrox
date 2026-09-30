@@ -1,0 +1,17 @@
+
+tests/unit/utils/glob.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'normalizePatternsToPath' not found in module '/home/user/thyrox/src/packages/permission/src/filesystem.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [378.00ms]

@@ -1,0 +1,71 @@
+src/packages/config/sync/index.ts(84,59): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | null'.
+  --- código src/packages/config/sync/index.ts:74-94 ---
+     74  
+     75      tryGetConfigHostBindings().logDiagnostics?.('info', 'settings_sync_upload_starting')
+     76      const result = await fetchUserSettings()
+     77      if (!result.success) {
+     78        tryGetConfigHostBindings().logDiagnostics?.('warn', 'settings_sync_upload_fetch_failed')
+     79        tryGetConfigHostBindings().logEvent?.('tengu_settings_sync_upload_fetch_failed', {})
+     80        return
+     81      }
+     82  
+     83      const projectId = await getConfigHostBindings().getRepoRemoteHash?.()
+     84>     const localEntries = await buildEntriesFromLocalFiles(projectId)
+     85      const remoteEntries = result.isEmpty ? {} : result.data!.content.entries
+     86      const changedEntries = pickBy(
+     87        localEntries,
+     88        (value, key) => remoteEntries[key] !== value,
+     89      )
+     90  
+     91      const entryCount = Object.keys(changedEntries).length
+     92      if (entryCount === 0) {
+     93        tryGetConfigHostBindings().logDiagnostics?.('info', 'settings_sync_upload_no_changes')
+     94        tryGetConfigHostBindings().logEvent?.('tengu_settings_sync_upload_skipped', {})
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/config/sync/index.ts(190,48): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | null'.
+  --- código src/packages/config/sync/index.ts:180-200 ---
+    180          tryGetConfigHostBindings().logEvent?.('tengu_settings_sync_download_empty', {})
+    181          return false
+    182        }
+    183  
+    184        const entries = result.data!.content.entries
+    185        const projectId = await getConfigHostBindings().getRepoRemoteHash?.()
+    186        const entryCount = Object.keys(entries).length
+    187        tryGetConfigHostBindings().logDiagnostics?.('info', 'settings_sync_download_applying', {
+    188          entryCount,
+    189        })
+    190>       await applyRemoteEntriesToLocal(entries, projectId)
+    191        tryGetConfigHostBindings().logEvent?.('tengu_settings_sync_download_success', { entryCount })
+    192        return true
+    193      } catch {
+    194        // Fail-open: log error but don't block CCR startup
+    195        tryGetConfigHostBindings().logDiagnostics?.('error', 'settings_sync_download_error')
+    196        tryGetConfigHostBindings().logEvent?.('tengu_settings_sync_download_error', {})
+    197        return false
+    198      }
+    199    }
+    200    return false
+  Type 'undefined' is not assignable to type 'string | null'.
+src/packages/config/sync/index.ts(287,12): error TS2678: Type '"auth"' is not comparable to type 'AxiosErrorKind'.
+  --- código src/packages/config/sync/index.ts:277-297 ---
+    277  
+    278      tryGetConfigHostBindings().logDiagnostics?.('info', 'settings_sync_fetch_success')
+    279      return {
+    280        success: true,
+    281        data: parsed.data,
+    282        isEmpty: false,
+    283      }
+    284    } catch (error) {
+    285      const { kind, message } = classifyAxiosError(error)
+    286      switch (kind) {
+    287>       case 'auth':
+    288          return {
+    289            success: false,
+    290            error: 'Not authorized for settings sync',
+    291            skipRetry: true,
+    292          }
+    293        case 'timeout':
+    294          return { success: false, error: 'Settings sync request timeout' }
+    295        case 'network':
+    296          return { success: false, error: 'Cannot connect to server' }
+    297        default:

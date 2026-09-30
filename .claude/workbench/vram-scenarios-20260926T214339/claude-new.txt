@@ -1,0 +1,8 @@
+case "$entrada" in *LENTO*) sleep 5 ;; esac
+# RAMPA: como CUDA, asigna TARDE —3 s después de arrancar— y sostiene 1 s. Es
+# la ventana en que otro ítem, que sólo mirara lo libre, lo vería entero.
+case "$entrada" in *RAMPA*)
+  echo "start $(date +%s.%N)" >> "$RAMPA_LOG"; sleep 3
+  echo 400 > "$GPU_STATE/used/$$"; sleep 1
+  echo "end $(date +%s.%N)" >> "$RAMPA_LOG" ;;
+esac

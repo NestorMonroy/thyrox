@@ -1,0 +1,2 @@
+src/packages/repl/src/notifier.ts(144,32): error TS7016: Could not find a declaration file for module 'plist'. '/home/user/thyrox/node_modules/plist/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/plist` if it exists or add a new declaration (.d.ts) file containing `declare module 'plist';`

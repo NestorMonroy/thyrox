@@ -1,0 +1,1 @@
+src/packages/command-runtime/src/commands/remoteControlServer/remoteControlServer.tsx(151,22): error TS2322: Type '"green"' is not assignable to type 'Color | keyof Theme | undefined'.

@@ -1,0 +1,22 @@
+=== ROJO ANTES (premisa rancia: ConfigChange clavado) ===
+  FALLA ConfigChange NO se reporta como sin consumir — esperado [0] obtenido [1]
+  8 ok · 1 falla(s)
+
+=== CAUSA MEDIDA: el archivo externo cambio de contenido ===
+   /home/user/.claude/settings.local.json -> ['PreModelSwitch', 'SubagentStart', 'SubagentStop']
+   kaupamex-api: ['PreToolUse', 'SessionStart', 'SubagentStop']
+   kaupamex-docs: ['PostToolUse', 'PreModelSwitch', 'PreToolUse', 'SessionStart', 'Stop', 'SubagentStart', 'SubagentStop', 'UserPromptSubmit']
+   kaupamex-ui: ['PreToolUse']
+   exclusivos del externo: (ninguno)
+   -> los tres del externo los declara tambien kaupamex-docs: ninguno discrimina hoy
+
+=== VERDE DESPUES (sujeto derivado, leyendo el archivo QUE EL GATE LEE) ===
+  ok   SIN MEDIR — ningun evento es exclusivo del archivo externo
+
+9 ok · 0 falla(s)
+
+=== ANULACION: con sujeto exclusivo presente, la asercion SI cae ===
+  FALLA lo que SOLO declara el archivo externo no sale sin consumir — esperado [0] obtenido [1]
+
+8 ok · 1 falla(s)
+EXIT=0

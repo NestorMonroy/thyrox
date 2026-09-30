@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx(13,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx:3-23 ---
+      3  import { useKeybinding } from '@anthropic/ink/keybindings'
+      4  import { editPromptInEditor } from '../../../../promptEditor.js'
+      5  import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
+      6  import TextInput from '../../../TextInput.js'
+      7  import { useWizard } from '../../../wizard/index.js'
+      8  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+      9  import type { AgentWizardData } from '../types.js'
+     10  
+     11  export function DescriptionStep(): ReactNode {
+     12    const { goNext, goBack, updateWizardData, wizardData } =
+     13>     useWizard<AgentWizardData>()
+     14    const [whenToUse, setWhenToUse] = useState(wizardData.whenToUse || '')
+     15    const [cursorOffset, setCursorOffset] = useState(whenToUse.length)
+     16    const [error, setError] = useState<string | null>(null)
+     17  
+     18    // Handle escape key - use Settings context so 'n' key doesn't cancel (allows typing 'n' in input)
+     19    useKeybinding('confirm:no', goBack, { context: 'Settings' })
+     20  
+     21    const handleExternalEditor = useCallback(async () => {
+     22      const result = await editPromptInEditor(whenToUse)
+     23      if (result.content !== null) {

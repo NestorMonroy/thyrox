@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(801,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+  --- código src/packages/agent/query.ts:791-811 ---
+    791              }
+    792              if (isWithheldReactivePromptTooLong(message as Message)) {
+    793                withheld = true
+    794              }
+    795              if (
+    796                mediaRecoveryEnabled &&
+    797                isWithheldReactiveMediaSizeError(message as Message)
+    798              ) {
+    799                withheld = true
+    800              }
+    801>             if (isWithheldMaxOutputTokens(message)) {
+    802                withheld = true
+    803              }
+    804              if (!withheld) {
+    805                yield yieldMessage
+    806              }
+    807              if (message.type === 'assistant') {
+    808                const assistantMessage = message as AssistantMessage
+    809                assistantMessages.push(assistantMessage)
+    810  
+    811                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+src/packages/agent/query.ts(805,21): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  --- código src/packages/agent/query.ts:795-815 ---
+    795              if (
+    796                mediaRecoveryEnabled &&
+    797                isWithheldReactiveMediaSizeError(message as Message)
+    798              ) {
+    799                withheld = true
+    800              }
+    801              if (isWithheldMaxOutputTokens(message)) {
+    802                withheld = true
+    803              }
+    804              if (!withheld) {
+    805>               yield yieldMessage
+    806              }
+    807              if (message.type === 'assistant') {
+    808                const assistantMessage = message as AssistantMessage
+    809                assistantMessages.push(assistantMessage)
+    810  
+    811                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    812                  (content: { type: string }) => content.type === 'tool_use',
+    813                ) as ToolUseBlock[]
+    814                if (msgToolUseBlocks.length > 0) {
+    815                  toolUseBlocks.push(...msgToolUseBlocks)

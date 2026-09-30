@@ -1,0 +1,11 @@
+  ok   el pool sale 0
+  ok   resumen del pool
+  ok   un .json por ítem
+  ok   el .json es la línea result, de éxito
+  ok   con el texto del modelo
+  ok   el stream abre con system/init
+  ok   las herramientas del pool llegan acotadas
+  ok   una línea assistant por petición, con su uso
+
+8 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+EXIT=0

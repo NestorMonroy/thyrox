@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/printDelegation.test.ts:
+26 |   test('sin claude en el PATH, no delega y lo dice', () => {
+27 |     const decision = decidePrintDelegation(['-p', 'hola'], {}, absent, noFd)
+28 |     expect(decision).toEqual({ delegate: false, reason: expect.stringContaining('claude') })
+29 |   })
+30 |   test('un proveedor que no es http es de thyrox: no delega', () => {
+31 |     expect(decidePrintDelegation(['-p', 'hola', '--provider', 'recorded'], {}, found, noFd).delegate).toBe(false)
+                                                                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/printDelegation.test.ts:31:103)
+(fail) decidePrintDelegation — cuándo thyrox -p delega en claude -p > un proveedor que no es http es de thyrox: no delega [0.26ms]
+thyrox -p: la bandera --bogus no se admite. Se admiten: -p, --print, --no-session-persistence, --verbose, --model, --max-turns, --setting-sources, --tools, --allowedTools, --allowed-tools, --output-format, --provider, --grabacion, --system, --connection, --store
+
+ 8 pass
+ 1 fail
+ 16 expect() calls
+Ran 9 tests across 1 file. [1467.00ms]

@@ -1,0 +1,71 @@
+== 1: cualquier valor de la variable llega a la cabecera
+   (src/accounts/oauth/flows/copilotIdentity.ts)
+(fail) copilot identity > the chat user agent carries the pinned version, or a safe override [0.36ms]
+ 13 pass
+ 1 fail
+== 2: la petición del código sin client id
+   (src/accounts/oauth/flows/githubDeviceFlow.ts)
+(fail) github > without the client id the device request refuses by naming it [314.22ms]
+ 13 pass
+ 1 fail
+== 3: una página de error rompe el sondeo
+   (src/accounts/oauth/flows/githubDeviceFlow.ts)
+(fail) github > an HTML answer to the poll is an error, not a crash [0.66ms]
+ 13 pass
+ 1 fail
+== 4: sin host de enterprise se sigue
+   (src/accounts/oauth/flows/gheCopilotFlow.ts)
+(fail) github enterprise copilot > every endpoint is derived from the enterprise host, which is required [0.51ms]
+ 13 pass
+ 1 fail
+== 5: el host del login no gana a la configuración
+   (src/accounts/oauth/flows/gheCopilotFlow.ts)
+(fail) github enterprise copilot > every endpoint is derived from the enterprise host, which is required [0.47ms]
+ 13 pass
+ 1 fail
+== 6: sin las URLs de Copilot del token
+   (src/accounts/oauth/flows/gheCopilotFlow.ts)
+(fail) github enterprise copilot > every endpoint is derived from the enterprise host, which is required [0.91ms]
+ 13 pass
+ 1 fail
+== 7: el client id de GitHub gana al propio de enterprise
+   (src/accounts/oauth/flows/gheCopilotFlow.ts)
+(fail) github enterprise copilot > the client id prefers its own variable over the github one [0.40ms]
+ 13 pass
+ 1 fail
+== 8: el secreto de GitLab siempre
+   (src/accounts/oauth/flows/gitlabDuoFlow.ts)
+(fail) gitlab duo > the exchange sends the secret only when declared; the user and the direct access name the account [1.62ms]
+ 13 pass
+ 1 fail
+== 9: un acceso directo que falla tumba el login
+   (src/accounts/oauth/flows/gitlabDuoFlow.ts)
+(fail) gitlab duo > a failing direct access does not fail the login [0.48ms]
+ 13 pass
+ 1 fail
+== 10: las cabeceras que no son texto pasan
+   (src/accounts/oauth/flows/gitlabDuoFlow.ts)
+(fail) gitlab duo > the exchange sends the secret only when declared; the user and the direct access name the account [1.41ms]
+ 13 pass
+ 1 fail
+== 11: el email público no cuenta
+   (src/accounts/oauth/flows/gitlabDuoFlow.ts)
+(fail) gitlab duo > the exchange sends the secret only when declared; the user and the direct access name the account [1.98ms]
+ 13 pass
+ 1 fail
+== 12: sin gitlab.com por defecto
+   (src/accounts/oauth/flows/gitlabDuoFlow.ts)
+(fail) gitlab duo > client id, secret and base URL come from their variables; the base URL defaults to gitlab.com [0.46ms]
+(fail) gitlab duo > the authorize URL is PKCE with the AI scope; without a client id it refuses by naming it [0.96ms]
+(fail) gitlab duo > the exchange sends the secret only when declared; the user and the direct access name the account [1.15ms]
+ 11 pass
+ 3 fail
+== restaurado
+?? src/packages/provider/src/accounts/oauth/flows/copilotIdentity.ts
+?? src/packages/provider/src/accounts/oauth/flows/gheCopilotFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/githubDeviceFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/githubFlow.ts
+?? src/packages/provider/src/accounts/oauth/flows/gitlabDuoFlow.ts
+ 14 pass
+ 0 fail
+__BG_EXIT__=0

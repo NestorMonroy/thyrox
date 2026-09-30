@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/verify/test_script_naming_scope.py

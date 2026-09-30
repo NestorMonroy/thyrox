@@ -1,0 +1,6 @@
+src/packages/repl/src/queryHelpers.ts(147,17): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+src/packages/repl/src/queryHelpers.ts(153,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is not assignable to type 'MessageParam'.
+    Types of property 'role' are incompatible.
+      Type 'string | undefined' is not assignable to type '"user" | "assistant" | "system"'.
+        Type 'undefined' is not assignable to type '"user" | "assistant" | "system"'.

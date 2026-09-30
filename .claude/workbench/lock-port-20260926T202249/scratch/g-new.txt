@@ -1,0 +1,7 @@
+4. **`-i inplace` en otro awk** — `mawk -i inplace` sale 2 («not an option:
+   -i»), y `awk` a secas resuelve a mawk en Debian (`detect_bare_awk`).
+
+**Y una trampa de `-i inplace`, medida el 2026-09-26:** lo que imprime el
+bloque `END` NO va al archivo sino a la salida estándar. Un `END { print "}" }`
+para cerrar un archivo lo deja sin cerrar, sin error. Lo que va al final se
+añade aparte (`printf … >> archivo`).

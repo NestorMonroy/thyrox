@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c git -c commit.gpgsign=false commit -q -F .claude/workbench/prompt-cache-ttl-port-20260926T032009/commit-msg-zero.txt -- src/packages && git push -q origin HEAD; echo EXIT=$?", "started_at": "2026-09-26T05:24:53+00:00"}

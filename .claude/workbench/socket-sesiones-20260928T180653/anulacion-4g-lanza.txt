@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+73 |     expect(
+74 |       probeTmuxChildSessionMarker({
+75 |         env: { TMUX: 'x' },
+76 |         which: () => '/usr/bin/tmux',
+77 |         run: () => {
+78 |           throw new Error('timeout')
+                                        ^
+error: timeout
+      at run (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:78:36)
+      at probeTmuxChildSessionMarker (/home/user/thyrox/src/packages/swarm/src/childSession.ts:93:19)
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:74:7)
+(fail) probeTmuxChildSessionMarker (C) > sin tmux, con salida no cero o si lanza, no se sabe [0.33ms]
+
+ 17 pass
+ 1 fail
+ 38 expect() calls
+Ran 18 tests across 1 file. [142.00ms]

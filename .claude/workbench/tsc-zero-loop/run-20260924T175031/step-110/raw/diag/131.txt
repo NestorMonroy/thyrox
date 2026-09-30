@@ -1,0 +1,5 @@
+src/packages/mcp-runtime/src/__tests__/sanitization.test.ts(107,30): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { 'key\u200Bone': string; }): void', gave the following error.
+    Object literal may only specify known properties, but 'keyone' does not exist in type '{ 'key\u200Bone': string; }'. Did you mean to write 'key​one'?
+  Overload 2 of 2, '(expected: NoInfer<{ 'key\u200Bone': string; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'keyone' does not exist in type '{ 'key\u200Bone': string; }'. Did you mean to write 'key​one'?

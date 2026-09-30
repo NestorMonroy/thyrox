@@ -1,0 +1,2 @@
+src/packages/provider/src/__tests__/fastModeSelection.test.ts
+src/packages/provider/src/fastModeSelection.ts

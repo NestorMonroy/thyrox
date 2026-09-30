@@ -1,0 +1,25 @@
+src/packages/agent/hooks/execAgentHook.ts(178,11): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:168-188 ---
+    168          messages: agentMessages,
+    169          systemPrompt,
+    170          userContext: {},
+    171          systemContext: {},
+    172          canUseTool: hasPermissionsToUseTool,
+    173          toolUseContext: agentToolUseContext,
+    174          querySource: 'hook_agent',
+    175        })) {
+    176          // Process stream events to update response length in the spinner
+    177          handleMessageFromStream(
+    178>           message,
+    179            () => {}, // onMessage - we handle messages below
+    180            newContent =>
+    181              toolUseContext.setResponseLength(
+    182                length => length + newContent.length,
+    183              ),
+    184            toolUseContext.setStreamMode ?? (() => {}),
+    185            () => {}, // onStreamingToolUses - not needed for hooks
+    186          )
+    187  
+    188          // Skip streaming events for further processing
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp

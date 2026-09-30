@@ -1,0 +1,24 @@
+src/packages/repl/src/components/Settings/Config.tsx(580,28): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type '"never" | "5m" | "60s" | "10m" | undefined'.
+  --- código src/packages/repl/src/components/Settings/Config.tsx:570-590 ---
+    570        value: globalConfig.showTurnDuration,
+    571        type: 'boolean' as const,
+    572        onChange(showTurnDuration: boolean) {
+    573          saveGlobalConfig(current => ({ ...current, showTurnDuration }))
+    574          setGlobalConfig({ ...getGlobalConfig(), showTurnDuration })
+    575          logEvent('tengu_show_turn_duration_setting_changed', {
+    576            enabled: showTurnDuration,
+    577          })
+    578        },
+    579      },
+    580>     questionTimeoutSetting(settingsData?.askUserQuestionTimeout, timeout =>
+    581        setSettingsData(prev => ({ ...prev, askUserQuestionTimeout: timeout })),
+    582      ),
+    583      {
+    584        id: 'defaultPermissionMode',
+    585        label: 'Default permission mode',
+    586        value: settingsData?.permissions?.defaultMode || 'default',
+    587        options: (() => {
+    588          const priorityOrder: PermissionMode[] = ['default', 'plan']
+    589          const allModes: readonly PermissionMode[] = feature(
+    590            'TRANSCRIPT_CLASSIFIER',
+  Type 'number' is not assignable to type '"never" | "5m" | "60s" | "10m" | undefined'.

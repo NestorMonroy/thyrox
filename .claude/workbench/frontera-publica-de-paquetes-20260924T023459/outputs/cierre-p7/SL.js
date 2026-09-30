@@ -1,0 +1,1 @@
+function SL(){if(Il()||mpr())return!0;let e=hXe();if(e===void 0||UTs(e)||BTs(e))return!0;return a.CLAUDE_CODE_ENABLE_TODO_TOOLS===!0}

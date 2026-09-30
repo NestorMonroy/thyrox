@@ -1,0 +1,23 @@
+src/packages/repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:125-145 ---
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+    127                shouldShowDot={shouldShowDot}
+    128                width={width}
+    129                inProgressToolCallCount={inProgressToolUseIDs.size}
+    130                isTranscriptMode={isTranscriptMode}
+    131                lookups={lookups}
+    132                onOpenRateLimitOptions={onOpenRateLimitOptions}
+    133                thinkingBlockId={`${message.uuid}:${index}`}
+    134                lastThinkingBlockId={lastThinkingBlockId}
+    135>               advisorModel={message.advisorModel}
+    136              />
+    137            ))}
+    138          </Box>
+    139        )
+    140      case 'user': {
+    141        if (message.isCompactSummary) {
+    142          return (
+    143            <CompactSummary
+    144              message={message}
+    145              screen={isTranscriptMode ? 'transcript' : 'prompt'}

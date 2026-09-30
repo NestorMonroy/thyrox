@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/wordSlug.test.ts:
+110 |   })
+111 | 
+112 |   test('respeta el desplazamiento de la vista y exige ocho bytes', () => {
+113 |     const backing = new Uint8Array([9, 9, 0, 0, 0, 4, 0, 0, 0, 5])
+114 |     expect(shortWordSlugFromSeed(backing.subarray(2))).toBe(`${ADJECTIVES[4]}-${NOUNS[5]}`)
+115 |     expect(() => shortWordSlugFromSeed(new Uint8Array(7))).toThrow('shortWordSlugFromSeed needs at least 8 seed bytes')
+                                                                 ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "shortWordSlugFromSeed needs at least 8 seed bytes"
+Received message: "Out of bounds access"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/wordSlug.test.ts:115:60)
+(fail) shortWordSlugFromSeed (TDo) — el slug corto que una semilla fija > respeta el desplazamiento de la vista y exige ocho bytes [0.35ms]
+
+ 15 pass
+ 1 fail
+ 193 expect() calls
+Ran 16 tests across 1 file. [75.00ms]

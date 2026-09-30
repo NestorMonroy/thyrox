@@ -1,0 +1,22 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+  ok    reconcile_store.py parsea
+== 2. el MISMO pase no mueve updated_at, y lo declara ==
+  ok    updated_at intacto tras un pase idéntico
+  ok    stdout declara el desenlace
+== 3. un cambio REAL sí escribe, y lo declara ==
+  ok    status cambió
+  ok    updated_at avanzó
+  ok    stdout declara el desenlace
+== 4. la fila AUSENTE sigue siendo error, no 'sin cambios' ==
+  ok    agent_id inexistente sale 1
+== 5. CONTROL ANULADO — sin el guard cae el caso 2, y SÓLO él ==
+  ok    la copia anulada se pudo construir
+  ok    SIN guard, el pase idéntico SÍ mueve updated_at (el defecto)
+  ok    SIN guard, la fila ausente sigue saliendo 1 (no depende del guard)
+== 6. el resumen del reconciliador separa completar de retocar ==
+  ok    el primer pase sí completa
+  ok    el segundo pase reporta sin cambios, no completados
+
+13 ok, 0 fallos
+EXIT=0

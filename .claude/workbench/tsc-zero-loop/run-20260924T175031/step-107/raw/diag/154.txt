@@ -1,0 +1,7 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/openai/indexImpl.ts(106,11): error TS2322: Type 'readonly ProviderAgentDefinition[] | undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.
+  Type 'undefined' is not assignable to type 'readonly ProviderAgentDefinition[]'.

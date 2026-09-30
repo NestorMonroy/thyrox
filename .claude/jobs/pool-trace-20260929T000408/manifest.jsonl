@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash -x tests/session/test-headless-pool.sh > .claude/workbench/unbounded-turns-20260929T000035/pool-trace.txt 2>&1; echo EXIT=$? >> .claude/workbench/unbounded-turns-20260929T000035/pool-trace.txt", "started_at": "2026-09-29T00:04:08+00:00"}

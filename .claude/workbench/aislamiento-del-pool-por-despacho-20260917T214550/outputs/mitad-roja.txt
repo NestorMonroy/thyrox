@@ -1,0 +1,14 @@
+test-run-task-pool-aislamiento:
+  FALLA la evidencia del PRIMER despacho sobrevive — esperado «1», obtenido «0»
+  ok   la del SEGUNDO tambien esta
+  FALLA y son dos archivos distintos — esperado «2», obtenido «1»
+  FALLA cada despacho abrio su directorio — esperado «2», obtenido «0»
+  FALLA el directorio lleva prefijo e ISO — esperado «si», obtenido «no»
+  FALLA dos despachos dejan DOS trabajos en el ledger — esperado «2», obtenido «1»
+  FALLA el log lleva el nombre declarado, no el ordinal — esperado «si», obtenido «no»
+  FALLA y el segundo tambien — esperado «si», obtenido «no»
+  FALLA ninguno quedo con nombre de ordinal — esperado «0», obtenido «2»
+  ok   una linea sin tabulador sigue corriendo
+  ok   un comando con tabulador no se parte
+
+resultado: 3 de 11 aserciones en verde

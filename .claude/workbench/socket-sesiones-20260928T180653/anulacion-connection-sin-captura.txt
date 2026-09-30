@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/udsInboxConnection.test.ts:
+126 |     overrides.route = message => {
+127 |       if ((message as { text?: string }).text === 'boom') throw new Error('route failed')
+128 |       routed.push({ message, peer: {} as PeerIdentity })
+129 |     }
+130 |     await exchange([line({ type: 'user', text: 'boom' }), line({ type: 'user', text: 'ok' })])
+131 |     expect(warnings).toContain('[uds-messaging] Failed to handle line: Error: route failed')
+                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "[uds-messaging] Failed to handle line: Error: route failed"
+Received: []
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-observability/__tests__/udsInboxConnection.test.ts:131:22)
+(fail) sin autenticación exigida > un fallo al enrutar se avisa y la conexión sigue [2.69ms]
+
+ 16 pass
+ 1 fail
+ 28 expect() calls
+Ran 17 tests across 1 file. [568.00ms]

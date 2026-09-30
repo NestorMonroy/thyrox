@@ -1,0 +1,9 @@
+{
+  "id": "184",
+  "subject": "Propagar al store el renombre y el cierre que TaskUpdate hace en el board",
+  "description": "Medido 2026-09-05: TaskUpdate cambió el subject y el status de la tarjeta #183 en el board, y la fila 1028 del store —la que lleva la cita durable TASK-DOCS-0417, citada en docs@f2ea577 y docs@a4bd6be5d— siguió diciendo el término descartado y `pending`. Hubo que sincronizarla con un UPDATE a mano.\n\n`ingerir-board` NO sirve: es aditivo por construcción y su ceguera declarada es exactamente ésta — «un reencuadre del título se acuña como sujeto nuevo», así que mintería una segunda fila para el mismo sujeto, el duplicado que `duplicados` existe para atrapar.\n\nEl hueco es que no hay subcomando para actualizar una fila existente. Conducta esperada: un `sincronizar-board` que, dada una tarjeta, reconcilie subject/status de SU fila (por citation_id, no por texto) y publique el diff. Sin él, el registro durable que las citas nombran deriva en silencio de lo que el board dice.\n\nCiega a: cuántas filas más ya derivaron por esta vía en sesiones anteriores — el conteo exige comparar cada tarjeta del board con su fila, y hoy no hay instrumento.",
+  "activeForm": "Propagando al store el renombre del board",
+  "status": "pending",
+  "blocks": [],
+  "blockedBy": []
+}

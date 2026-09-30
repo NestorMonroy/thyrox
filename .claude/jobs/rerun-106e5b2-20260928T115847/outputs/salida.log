@@ -1,0 +1,16 @@
+== 18: subtoken para todos
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > only GitHub renews a Copilot sub-token [0.79ms]
+ 27 pass
+ 1 fail
+== 22: sin id se lee
+   (src/accounts/refresh/health/connectionHealthCheck.ts)
+(fail) checking one connection > a connection without an id never reaches the store [0.75ms]
+ 27 pass
+ 1 fail
+== 24: tamaño cero vale
+   (src/accounts/refresh/health/healthCheckScheduler.ts)
+== restaurado
+ 28 pass
+ 0 fail
+__BG_EXIT__=0

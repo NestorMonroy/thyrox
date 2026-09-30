@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the

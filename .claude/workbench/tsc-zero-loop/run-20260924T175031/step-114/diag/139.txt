@@ -1,0 +1,24 @@
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(124,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:114-134 ---
+    114  
+    115    while ((blockMatch = algoBlockRegex.exec(html)) !== null) {
+    116      const block = blockMatch[1]
+    117      if (block === undefined) continue
+    118  
+    119      // Extract the primary link from <h2><a href="...">...</a></h2>
+    120      const h2LinkRegex = /<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i
+    121      const linkMatch = h2LinkRegex.exec(block)
+    122      if (!linkMatch) continue
+    123  
+    124>     const rawUrl = decodeHtmlEntities(linkMatch[1])
+    125      const titleHtml = linkMatch[2]
+    126      if (titleHtml === undefined) continue
+    127  
+    128      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    129      // or skip Bing-internal / relative links
+    130      const url = resolveBingUrl(rawUrl)
+    131      if (!url) continue
+    132  
+    133      const title = decodeHtmlEntities(
+    134        titleHtml.replace(/<[^>]+>/g, '').trim(),
+  Type 'undefined' is not assignable to type 'string'.

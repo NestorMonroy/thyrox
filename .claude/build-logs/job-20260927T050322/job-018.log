@@ -1,0 +1,17 @@
+== 1. el .env del consumer declara THYROX_JOBS_LEDGER_DIR ==
+  ok    ledger-home es la raiz declarada
+  ok    register escribe el .job bajo <raiz>/<sesion>/
+== 2. dos sesiones, dos ledgers ==
+  ok    la segunda sesion no pisa el .job de la primera
+== 3. la clave nueva exportada en el proceso, sin .env ==
+  ok    ledger-home sale del proceso
+== 4. THYROX_SESSION_LEDGER_DIR exportada fija el ledger tal cual ==
+  ok    el ledger de sesión gana
+  ok    y THYROX_JOBS_DIR exportada ya no es el ledger
+== 5. CONTROL — THYROX_JOBS_DIR en el .env NO es el ledger ==
+  ok    sin la clave nueva, el ledger queda en su default
+  ok    y el hogar de runs no recibe un ledger
+== 6. un valor relativo se resuelve contra la raíz, como todo hogar ==
+  ok    cuelga de la raíz de thyrox
+resultado: 9 ok · 0 falla(s)
+EXIT=0

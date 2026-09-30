@@ -1,0 +1,9 @@
+  ok    el selector existe
+  ok    el proveedor usa su propio entorno
+  ok    sin entorno rehusa y nombra uv sync
+  ok    el consumidor se invoca por su propio proyecto
+  ok    proveedor y consumidor son entornos distintos
+  ok    un consumidor desconocido se rehusa
+
+6 casos: 6 ok, 0 fallos
+EXIT=0

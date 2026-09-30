@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c node_modules/.bin/tsc -p tsconfig.json --noEmit --pretty false > .claude/workbench/prompt-cache-ttl-port-20260926T032009/root-tsc-19.log 2>&1; rg -c 'error TS' .claude/workbench/prompt-cache-ttl-port-20260926T032009/root-tsc-19.log", "started_at": "2026-09-26T04:56:08+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-26T04:57:01+00:00", "duration_seconds": 53.000211}

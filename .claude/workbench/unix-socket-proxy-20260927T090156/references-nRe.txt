@@ -1,0 +1,7 @@
+chunk-7y2gzc5g.js FunctionDeclaration i1 - @25351
+chunk-7y2gzc5g.js FunctionDeclaration i1 - @25364
+chunk-bv3ay8p2.js FunctionDeclaration up - @193102
+chunk-bv3ay8p2.js FunctionDeclaration up - @193111
+chunk-vmq4raye.js FunctionDeclaration f3n - @21290
+chunk-vmq4raye.js FunctionDeclaration hs - @24466
+references: 6 uso(s) de nRe en 3 chunk(s), exportado como nRe (alcance medido: 2138 chunk(s))

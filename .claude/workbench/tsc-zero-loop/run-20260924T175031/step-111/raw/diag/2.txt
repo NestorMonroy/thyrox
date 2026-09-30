@@ -1,0 +1,1 @@
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/darwin.ts(74,50): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'number'.

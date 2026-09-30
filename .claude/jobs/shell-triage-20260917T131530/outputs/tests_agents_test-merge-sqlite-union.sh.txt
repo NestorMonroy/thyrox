@@ -1,0 +1,1 @@
+test-merge-sqlite-union: 14 de 14 aserciones en verde

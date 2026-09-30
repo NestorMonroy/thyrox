@@ -1,0 +1,2 @@
+VERDE tests/corpus/test-find-reference-home.sh
+EXIT=0

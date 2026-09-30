@@ -1,0 +1,1 @@
+PYTHONPATH=src python3 tests/session/hardware/cuda_pool_item.py

@@ -1,0 +1,19 @@
+test_4_a_stream_through_the_FAT_comes_out_whole (__main__.TestBigStream.test_4_a_stream_through_the_FAT_comes_out_whole) ... ok
+test_5_the_stream_is_TRIMMED_to_its_declared_size (__main__.TestBigStream.test_5_the_stream_is_TRIMMED_to_its_declared_size)
+Un flujo ocupa sectores enteros; su ultimo sector viene relleno de ... ok
+test_10_the_sector_size_comes_from_the_HEADER (__main__.TestDirectory.test_10_the_sector_size_comes_from_the_HEADER)
+Un CFB v4 usa sectores de 4096. Asumir 512 lee el archivo ... ok
+test_9_the_names_are_read_in_UTF_16 (__main__.TestDirectory.test_9_the_names_are_read_in_UTF_16) ... ok
+test_6_a_SMALL_stream_comes_through_the_mini_FAT (__main__.TestMiniFat.test_6_a_SMALL_stream_comes_through_the_mini_FAT) ... ok
+test_7_NULLIFICATION_reading_a_small_stream_through_the_FAT_yields_GARBAGE (__main__.TestMiniFat.test_7_NULLIFICATION_reading_a_small_stream_through_the_FAT_yields_GARBAGE)
+Control de anulacion, y el defecto es SILENCIOSO: el numero de ... ok
+test_8_the_two_coexist_in_the_SAME_file (__main__.TestMiniFat.test_8_the_two_coexist_in_the_SAME_file)
+Es el caso que discrimina: un lector que solo implemente una de ... ok
+test_1_what_lacks_the_signature_REFUSES (__main__.TestVerdict.test_1_what_lacks_the_signature_REFUSES) ... ok
+test_2_a_file_SHORTER_than_its_header_REFUSES (__main__.TestVerdict.test_2_a_file_SHORTER_than_its_header_REFUSES) ... ok
+test_3_a_stream_that_does_not_exist_is_NAMED (__main__.TestVerdict.test_3_a_stream_that_does_not_exist_is_NAMED) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.004s
+
+OK

@@ -1,0 +1,8 @@
+check-package-typecheck: 2 provider(s) reconstruido(s) por viejos: app-host, provider
+  app-host: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+pass=142 fail=0 errors=0 crashes=0 files=11 failed=0
+typecheck=0 suite=0
+__BG_EXIT__=0

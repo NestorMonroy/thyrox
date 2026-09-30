@@ -1,0 +1,43 @@
+# Anulaciones 106e-5d-1 — primera pasada
+== 1: vida de una hora -> 1
+== 2: catálogo de 50 min -> 1
+== 3: sin 401 -> 2
+== 4: sin cabecera caducada -> 1
+== 5: sin cabecera obsoleta -> 1
+== 6: id en arreglo -> 0
+== 7: id en objeto -> 1
+== 8: sin nombre camel -> 1
+== 9: esfuerzo sin vacío -> 1
+== 10: sin razón nula -> 1
+== 11: sin preguntar la organización -> 1
+== 12: organización explícita ignorada -> 1
+== 13: clave sin token -> 1
+== 14: forzar no fuerza -> 2
+== 15: sin system id -> 1
+== 16: base fija -> 1
+== 17: token en arreglo -> 1
+== 18: sin token no falla -> 1
+== 19: error sin estado -> 1
+== 20: error anidado -> 1
+== 21: sin reintento -> 1
+== 22: reintento sin forzar -> 1
+== 23: cabeceras perdidas -> 2
+== 24: base LLM fija -> 1
+== 25: sin xAI -> 1
+== 26: fallo sin error -> 1
+== 27: desactivados dentro -> 1
+== 28: rawById con vacíos -> 1
+== 29: recomendados con vacíos -> 1
+== 30: rápido camel -> 1
+== 31: sin token de usuario -> 1
+== 32: caché de catálogo ignorada -> 1
+== 33: sin compartir en vuelo -> 1
+== 34: forzado comparte -> 0
+== 35: limpiar deja tokens -> 1
+== 36: limpiar deja modelos -> 1
+== restaurado -> 0
+
+# 6 y 34 afiladas
+== 6: id en arreglo -> 2
+== 34: forzado comparte -> 1
+== restaurado -> 0

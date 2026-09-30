@@ -1,0 +1,14 @@
+== 26: OIDC sin secreto
+   (src/accounts/kiro/kiroService.ts)
+(fail) refresh > a social refresh keeps the old token, defaults the lifetime and names a refusal [0.65ms]
+ 28 pass
+ 1 fail
+== 58: clave — sin validar la región
+   (src/accounts/kiro/kiroService.ts)
+(fail) profiles and API keys > an API key is trimmed and its profile looked up [1.09ms]
+ 28 pass
+ 1 fail
+== restaurado
+ 29 pass
+ 0 fail
+__BG_EXIT__=0

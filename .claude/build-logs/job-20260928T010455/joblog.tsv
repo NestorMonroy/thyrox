@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790557495.678	     2.950	0	0	0	0	/home/user/thyrox/src/session/run-task-pool-job.sh /home/user/thyrox/.claude/build-logs/job-20260928T010455 job-20260928T010455 job-001

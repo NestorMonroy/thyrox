@@ -1,0 +1,5 @@
+488130 source/gestion/pm/api/audits/hallazgos-adaptar-familias-odoo-monolito-modular.rst
+302103 source/gestion/pm/api/audits/hallazgos-implementar-o2c-catalogo-a-venta.rst
+158269 source/gestion/pm/api/iniciativas/corregir-hallazgos-buyer-compra-end-to-end/hallazgos-enumerados-buyer-compra-end-to-end.rst
+38406 source/gestion/pm/docs/audits/hallazgos-integrar-ramas-a-develop.rst
+34876 source/gestion/pm/docs/audits/hallazgos-saneo-planes-objetivo-addons.rst

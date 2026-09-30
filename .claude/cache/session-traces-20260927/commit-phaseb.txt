@@ -1,0 +1,20 @@
+Rename thyrox's own env vars to THYROX_* and test each
+
+Thyrox's own configuration now reads THYROX_* throughout, as OmniRoute
+does with its own prefix; provider SDK names (ANTHROPIC_*) stay, and
+the few host-boundary reads of the client's CLAUDE_* names are marked
+thyrox-rename: keep with their reason. The prefix baseline is empty:
+the 65 frozen reads were paid, not refrozen.
+
+The rename exposed two hidden dependencies on the host environment:
+a test only passed because the host set CLAUDE_CODE_REMOTE, and
+--version reported the host's version. The test now declares its
+environment and the version comes from the package manifest.
+
+Every THYROX_* variable the rename left untested now has a behavioural
+test that contrasts it set against absent. Where the read lived inside
+a large function it was extracted to a named function and tested
+there, which also removed the duplicated bridge override logic.
+
+Suites of the touched packages: 0 failures. Details in the phase B
+bench README.

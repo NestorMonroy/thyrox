@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/childSession.test.ts:
+47 | 
+48 | describe('probeTmuxChildSessionMarker (C)', () => {
+49 |   const found = (stdout: string, status = 0) => ({ which: () => '/usr/bin/tmux', run: () => ({ status, stdout }) })
+50 | 
+51 |   test('sin TMUX no hay marcador ambiente', () => {
+52 |     expect(probeTmuxChildSessionMarker({ env: {}, ...found('THYROX_CODE_CHILD_SESSION=1') })).toBe('absent')
+                                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "absent"
+Received: "ambient"
+
+      at <anonymous> (/home/user/thyrox/src/packages/swarm/src/__tests__/childSession.test.ts:52:95)
+(fail) probeTmuxChildSessionMarker (C) > sin TMUX no hay marcador ambiente [0.44ms]
+
+ 17 pass
+ 1 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [135.00ms]

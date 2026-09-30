@@ -1,0 +1,15 @@
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/agents/test_model_catalog_tokens.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/hooks/test_stop_payload.py
+cd /home/user/thyrox && bash tests/lib/test-toolchain-gnu-time.sh
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/roster/test_stdin_probe.py
+cd /home/user/thyrox && bash tests/session/test-headless-pool.sh
+cd /home/user/thyrox && bash tests/session/test-wait-jobs-probe.sh
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_gpu_monitor.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_pool_history.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/session/test_probe_model_switch_cache.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_check_cache_layout.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_member_port.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_step_report.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_tsc_cycle.py
+cd /home/user/thyrox && PYTHONPATH=src python3 tests/verify/test_tsc_reflect.py

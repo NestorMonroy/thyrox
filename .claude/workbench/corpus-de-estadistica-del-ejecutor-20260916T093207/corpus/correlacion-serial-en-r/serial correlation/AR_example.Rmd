@@ -1,0 +1,142 @@
+---
+title: "Autocorrelated Series -- Application"
+author: "Menghan Yuan"
+date: "May 10, 2025"
+output: 
+    bookdown::html_document2:
+        toc: true
+        toc_float: true
+        toc_depth: 4
+        number_sections: false
+        css: "style.css"
+bibliography: bibli.bib
+link-citations: yes
+biblio-style: apalike
+knit: rmarkdown::render
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r load-packages, include=F}
+library(knitr) # load packages
+library(broom)
+library(kableExtra)
+library(tidyverse)
+library(latex2exp)
+library(stargazer)
+library(xts)
+```
+
+```{r, child="_chunk-opt.Rmd", include=FALSE}
+```
+
+This script provides an example of autocorrelated residuals.
+
+**Dataset description**
+
+US Macroeconomics Data Set, Quarterly, 1950I to 2000IV, 204 Quarterly Observations \
+Source: Department of Commerce, BEA website and [www.economagic.com](www.economagic.com)
+
+
+| Feild Name | Definition                                                   |
+| :--------- | :----------------------------------------------------------- |
+| year       | Year                                                         |
+| qtr        | Quarter                                                      |
+| realgdp    | Real GDP (\$bil)                                             |
+| realcons   | Real consumption expenditures                                |
+| realinvs   | Real investment by private sector                            |
+| realgovt   | Real government expenditures                                 |
+| realdpi    | Real disposable personal income                              |
+| cpi_u      | Consumer price index                                         |
+| M1         | Nominal money stock                                          |
+| tbilrate   | Quarterly average of month end 90 day t bill rate            |
+| unemp      | Unemployment rate                                            |
+| pop        | Population, mil. interpolate of year end figures using constant growth rate per quarter |
+| infl       | Rate of inflation (First observation is missing)             |
+| realint    | Ex post real interest rate = Tbilrate - Infl. (First observation is missing) |
+
+```{r}
+# data preview
+data <- read.table("https://raw.githubusercontent.com/my1396/course_dataset/refs/heads/main/TableF5-2.txt", header = TRUE)
+data <- data %>% 
+    mutate(delta_infl = infl-lag(infl))
+data %>% 
+    head() %>% 
+    knitr::kable(digits = 5) %>%
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE, latex_options="scale_down") %>% 
+    scroll_box(width = "100%")
+```
+
+
+**Empirical model**
+
+$$
+\Delta I_t =  \beta_1 + \beta_2 u_t + \varepsilon_t
+$$
+where 
+
+- $I_t$ is the inflation rate; $\Delta I_t = I_t - I_{t-1}$ is the first difference of the inflation rate;
+- $u_t$ is the unemployment rate;
+- $\varepsilon_t$ is the error term.
+
+We remove the first two quarters due to missing value in the first observation and the change in the rate of inflation.
+
+
+Regression result for OLS.
+
+```{r results="asis"}
+lm_phillips <- lm(delta_infl ~ unemp, data = data %>% tail(-2))
+stargazer(lm_phillips, 
+          type = "html", 
+          title = "Phillips Curve Regression",
+          notes = "<span>&#42;</span>: p<0.1; <span>&#42;&#42;</span>: <strong>p<0.05</strong>; <span>&#42;&#42;&#42;</span>: p<0.01 <br> Standard errors in parentheses.",
+          notes.append = F)
+```
+
+```{r}
+# variance-covariance matrix
+vcov(lm_phillips)
+```
+
+**Autocorrelated residuals**
+
+Plot the residuals.
+```{r ar-res, fig.cap="Phillips Curve Deviations from Expected Inflation"}
+plot(lm_phillips$residuals, type="l")
+```
+
+Fig. \@ref(fig:ar-res) shows striking negative autocorrelation.
+
+Now we test the serial correlation of the residuals.
+$$
+\varepsilon_t = \phi\varepsilon_{t-1} + e_t
+$$
+
+```{r}
+res <- tibble(
+            res_t = lm_phillips$residuals,
+            res_t1 = lag(lm_phillips$residuals))
+lm_res <- lm(res_t ~ res_t1, data = res)
+summary(lm_res)
+```
+
+The regression of the least squares residuals on their past values gives a slope of `r sprintf("%.4f", lm_res$coefficients[2])` with a highly significant $t$ ratio of `r sprintf("%.4f", summary(lm_res)$coef[2,3])`.
+We thus conclude that the residuals in this models are highly negatively autocorrelated. 
+
+
+
+--------------------------------------------------------------------------------
+
+References:
+
+- Ex. 12.3, Chap 12 Serial Correlation, *Econometric Analysis*, Greene 5th Edition, pp 251.
+
+
+
+
+
+
+
+
+
+

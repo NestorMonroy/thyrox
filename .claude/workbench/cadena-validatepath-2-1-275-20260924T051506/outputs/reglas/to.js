@@ -1,0 +1,1 @@
+function to(e,n){let r=on(e,n),s=!n&&/^!\s*$/.test(r)?"a negation of every path":kr(r);if(s===null)return e;let g=e.startsWith("!")?"!":"",h=g?!n:n;if(Mr("permission_rules",e,s,h?"dropping it":"matching the literal path it spells"),h)return null;let y=e.endsWith("/**")?"/**":"",w=e.slice(g.length,e.length-y.length);return g+Kle(oEt(w))+y}

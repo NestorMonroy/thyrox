@@ -1,0 +1,23 @@
+src/packages/repl/src/commands/color/color.ts(82,23): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/repl/src/commands/color/color.ts:72-92 ---
+     72      return null
+     73    }
+     74  
+     75    const sessionId = getSessionId() as UUID
+     76    const fullPath = getTranscriptPath()
+     77  
+     78    // Save to transcript for persistence across sessions
+     79    await saveAgentColor(sessionId, colorArg, fullPath)
+     80  
+     81    // Update AppState for immediate effect
+     82>   context.setAppState(prev => ({
+     83      ...prev,
+     84      standaloneAgentContext: {
+     85        ...prev.standaloneAgentContext,
+     86        name: prev.standaloneAgentContext?.name ?? '',
+     87        color: colorArg as AgentColorName,
+     88      },
+     89    }))
+     90  
+     91    onDone(`Session color set to: ${colorArg}`, { display: 'system' })
+     92    return null

@@ -1,0 +1,4 @@
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts(90,35): error TS7016: Could not find a declaration file for module 'turndown'. '/home/user/thyrox/node_modules/turndown/lib/turndown.cjs.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/turndown` if it exists or add a new declaration (.d.ts) file containing `declare module 'turndown';`
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts(93,45): error TS7016: Could not find a declaration file for module 'turndown'. '/home/user/thyrox/node_modules/turndown/lib/turndown.cjs.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/turndown` if it exists or add a new declaration (.d.ts) file containing `declare module 'turndown';`

@@ -1,0 +1,4 @@
+universo: 407 archivo(s), 85401 linea(s)
+  sys.path.insert : 231
+  ascenso canonico: 26
+  parents[N]      : 181

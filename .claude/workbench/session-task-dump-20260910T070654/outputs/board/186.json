@@ -1,0 +1,9 @@
+{
+  "id": "186",
+  "subject": "Emparejar el roster del harness con el proceso vivo, por cadena de padres",
+  "description": "Sucesor de H-DOCS-1111. Un `cat` sin argumento sobrevivio al turno 3h22 manteniendo viva la tarjeta del harness, y los dos modulos de thyrox/src/roster/ pasan sin verlo: job_liveness mide la forma del .output (0 bytes = indistinguible de recien arrancado) y process_liveness necesita un pid= que el roster del harness no anota. El script va a thyrox/src/roster/, mecaniza los seis pasos que el hallazgo cita verbatim (roster por fecha, ps sin hilos de kernel, /proc/<pid>/fd, cadena de padres hasta el PID del cliente, comando del padre, verificar el trabajo antes de matar) y anade un veredicto propio: «vivo y bloqueado en una espera sin escritor», que no esta en los cinco de process_liveness.VERDICTS ni en los cuatro de job_liveness.VERDICTS. Control que debe poder fallar: un proceso legitimamente largo que espera algo que SI va a llegar no se marca.",
+  "activeForm": "Emparejando roster y proceso por cadena de padres",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

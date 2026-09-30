@@ -1,0 +1,36 @@
+== 1. reentrada: stop_hook_active corta antes de medir nada ==
+  ok    sale 0
+  ok    y NO corrió el runner (su salida no aparece)
+== 2. el turno NO tocó el directorio vigilado: no se corre nada ==
+  ok    sale 0
+  ok    no corrió el runner
+  ok    y no imprime nada
+== 3. CONTROL que discrimina: con trabajo SUCIO sí corre ==
+  ok    sale 0
+  ok    corrió el runner y publica su última línea
+== 4. el trabajo recién COMMITEADO también cuenta ==
+  ok    el árbol está limpio
+  ok    y aun así corrió, por el último commit
+== 5. runner EN ROJO: informa y NO bloquea ==
+  ok    SALE 0 pese al rojo — informa, no bloquea
+  ok    nombra el código de salida real del runner
+  ok    y trae la salida del runner
+== 6. runner ausente: no se inventa un verde ==
+  ok    sale 0
+  ok    y no afirma que las pruebas pasaron
+  ok    declara que NO se corrieron
+  ok    y NOMBRA el corredor ausente
+== 7. CONTROL: sin parámetro de directorio, rehúsa — no mide otra cosa ==
+  ok    rehúsa sin directorio vigilado
+  ok    y el mensaje nombra la variable ausente
+== N. CONTROL: el módulo ARRANCA como guion, que es como lo invoca el stub ==
+  ok    sale 0
+  ok    y NO muere importando su propio paquete
+== O. El hook NO se invoca a sí mismo: guard de recursión POR PROCESO ==
+  ok    con el marcador puesto rehúsa: sale 0
+  ok    y NO corre el corredor (salida vacía)
+  ok    sin el marcador SÍ corre (control de anulación)
+  ok    y el marcador viaja al corredor hijo
+
+24 ok, 0 fallos
+EXIT=0

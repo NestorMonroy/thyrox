@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/hooks/useCanUseTool.tsx(155,21): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/repl/src/hooks/useCanUseTool.tsx:145-165 ---
+    145              if (ctx.resolveIfAborted(resolve)) return
+    146  
+    147              // Does not have permissions to use tool, check the behavior
+    148              switch (result.behavior) {
+    149                case 'deny': {
+    150                  logPermissionDecision(
+    151                    {
+    152                      tool,
+    153                      input,
+    154                      toolUseContext,
+    155>                     messageId: ctx.messageId,
+    156                      toolUseID,
+    157                    },
+    158                    { decision: 'reject', source: 'config' },
+    159                  )
+    160                  if (
+    161                    feature('TRANSCRIPT_CLASSIFIER') &&
+    162                    result.decisionReason?.type === 'classifier' &&
+    163                    result.decisionReason.classifier === 'auto-mode'
+    164                  ) {
+    165                    recordAutoModeDenial({
+  Type 'undefined' is not assignable to type 'string'.

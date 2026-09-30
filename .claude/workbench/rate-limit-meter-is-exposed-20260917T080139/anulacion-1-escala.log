@@ -1,0 +1,5 @@
+(fail) composeRateLimitsPayload — la escala y la puerta de gateway > la fracción 0-1 se publica como porcentaje 0-100 [0.29ms]
+(fail) composeRateLimitsPayload — la escala y la puerta de gateway > `overage` se publica como `spend_limit`, y SOLO bajo gateway [0.09ms]
+(fail) FIDELIDAD — el recipe del propio cliente lee nuestro payload > el recipe resuelve la CIFRA DE CUOTA de nuestro payload [72.24ms]
+ 20 pass
+ 3 fail

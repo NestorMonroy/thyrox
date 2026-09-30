@@ -1,0 +1,33 @@
+run-task-pool: 4 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T025028
+  job-20260927T025028/job-001 pid 23350   npx tsc --noEmit -p tsconfig.json > .claude/workbench/frontera-publica-20260927T023207/move/verify2/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/verify2/root-tsc.out
+  job-20260927T025028/job-002 pid 23375   bun test tests/paths tests/workbench tests/coordination tests/store tests/task tests/rules tests/reference tests/conformance > .claude/workbench/frontera-publica-20260927T023207/move/verify2/bun-tests.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/verify2/bun-tests.out
+  job-20260927T025028/job-003 pid 24240   cd src/packages/cli && bun test __tests__/startupFailure.test.ts __tests__/productName.test.ts > ../../../.claude/workbench/frontera-publica-20260927T023207/move/verify2/bun-cli.out 2>&1; echo EXIT=$? >> ../../../.claude/workbench/frontera-publica-20260927T023207/move/verify2/bun-cli.out
+  job-20260927T025028/job-004 pid 24271   python3 tests/package/test_packages_home.py > .claude/workbench/frontera-publica-20260927T023207/move/verify2/home.out 2>&1; echo EXIT=$? >> .claude/workbench/frontera-publica-20260927T023207/move/verify2/home.out
+run-task-pool: lanzados 4 de 4; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T025028_job-002 -> OK (2 de 5)
+asentado: job-20260927T025028_job-003 -> OK (3 de 5)
+asentado: job-20260927T025028_job-004 -> OK (4 de 5)
+esperando: 4 de 5 asentados, 30s; vivos: job-20260927T025028_job-001
+sonda job-20260927T025028_job-001: 23350 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T025028_job-001: 23355 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T025028_job-001: 23357 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T025028_job-001: 23358 npm exec tsc -- stdin=devnull(/dev/null) escritores=- estado=S cpu=0.40s
+sonda job-20260927T025028_job-001: 23409 sh stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T025028_job-001: 23411 node stdin=devnull(/dev/null) escritores=- estado=R cpu=56.81s
+asentado: job-20260927T025028_job-001 -> OK (2 de 5)
+== 5 trabajos asentados ==
+OLVIDADO job-20260927T025028
+       | (vacío — no emitió nada)
+OK     job-20260927T025028_job-001
+       | EXIT=0
+       memoria pico: 2345420 KB (2290 MB) · pared 43.26s
+OK     job-20260927T025028_job-002
+       | EXIT=0
+       memoria pico: 231240 KB (226 MB) · pared 5.58s
+OK     job-20260927T025028_job-003
+       | EXIT=0
+       memoria pico: 64728 KB (63 MB) · pared 0.07s
+OK     job-20260927T025028_job-004
+       | EXIT=0
+       memoria pico: 13996 KB (14 MB) · pared 0.05s
+__BG_EXIT__=0

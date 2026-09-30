@@ -1,0 +1,2 @@
+src/packages/cli/src/setup/setup.ts(107,13): error TS2339: Property 'captureTeammateModeSnapshot' does not exist on type 'typeof import("/home/user/thyrox/src/packages/swarm/src/index")'.
+src/packages/cli/src/setup/setup.ts(416,9): error TS18046: 'envDynamic.getIsDocker' is of type 'unknown'.

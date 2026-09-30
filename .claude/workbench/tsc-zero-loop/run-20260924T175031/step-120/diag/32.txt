@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(1553,27): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1543-1563 ---
+   1543          }
+   1544        }
+   1545  
+   1546        // Collect tool info for summary generation
+   1547        const toolUseIds = toolUseBlocks.map(block => block.id)
+   1548        const toolInfoForSummary = toolUseBlocks.map(block => {
+   1549          // Find the corresponding tool result
+   1550          const toolResult = toolResults.find(
+   1551            result =>
+   1552              result.type === 'user' &&
+   1553>             Array.isArray(result.message.content) &&
+   1554              result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562            Array.isArray(toolResult.message.content)
+   1563              ? toolResult.message.content.find(
