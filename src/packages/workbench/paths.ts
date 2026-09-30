@@ -50,7 +50,9 @@
  */
 import { join } from 'node:path'
 
-import { ConsumerUnknownError, consumerRoot, envValue, resolveHome } from '@thyrox/paths/reach.ts'
+import {
+  ConsumerUnknownError, cloneShortName, consumerRoot, envValue, perCloneBase, resolveHome,
+} from '@thyrox/paths/reach.ts'
 
 /**
  * Los dos segmentos del par, declarables por separado. La mitad Python los
@@ -79,6 +81,21 @@ export function evidenceDir(start?: string): string {
 
 /** Entrada 1 — el valor: el hogar declarado directamente. */
 export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'
+
+/**
+ * El prefijo de la familia POR CLON: `api` -> `THYROX_WORKBENCH_API`.
+ *
+ * Gemela de `workbench_home_name` de la mitad Python: **un solo proceso
+ * resuelve varios árboles**, y `WORKBENCH_DIR_VAR` no puede decir dos verdades
+ * a la vez. Sin la familia, la variable exportada para UN consumidor mezcla su
+ * segmento con el árbol de otro que corra en el mismo proceso.
+ */
+export const WORKBENCH_CLONE_PREFIX = 'THYROX_WORKBENCH_'
+
+/** La constante por raíz: `api` -> `THYROX_WORKBENCH_API`. */
+export function workbenchHomeName(repo: string): string {
+  return `${WORKBENCH_CLONE_PREFIX}${repo.toUpperCase().replace(/-/g, '_')}`
+}
 
 /**
  * Entrada 2 — la ruta del archivo que puede declararlo.
@@ -112,6 +129,16 @@ export class WorkbenchHomeError extends Error {}
  * @param start punto de partida para localizar el `.env`; por defecto el cwd.
  */
 export function workbenchDir(start?: string): string {
+  // La familia POR CLON gana sobre la global: la declaración más específica
+  // manda, y es lo único que impide que una variable exportada para un árbol
+  // se aplique a otro. Ver `workbenchHomeName`. Gemela de la rama que
+  // `workbench_dir` resuelve primero en la mitad Python.
+  const repo = cloneShortName(start ?? process.cwd())
+  if (repo) {
+    const perClone = envValue(workbenchHomeName(repo), start)
+    if (perClone) return resolveHome(perClone, perCloneBase(start))
+  }
+
   // El valor declarado pasa por `resolveHome`, igual que en la familia
   // `rules`: como segmento relativo tiene que decir «en cada clon, este
   // subdirectorio», y devuelto crudo resolveria contra el CWD — el defecto
