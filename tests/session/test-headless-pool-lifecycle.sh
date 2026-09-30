@@ -18,6 +18,9 @@
 #      conserva la anterior y su publicación se rehúsa.
 #   5. (I4) con aislamiento por worktree, el pool desplazado no toma la foto de
 #      su generación: ni ref, ni reemplazo del registro de foto del nuevo dueño.
+#   6. (TASK-THYROX-0622) con THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS, el ítem en
+#      curso tiene foto antes de terminar, con el trabajo que lleva hecho; la
+#      foto final la avanza y conserva lo último.
 #   Controles de anulación:
 #   1c. con el runtime dentro del banco, el mismo pool ensucia `git status`.
 #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
@@ -31,6 +34,7 @@ cat > "$F/runner" <<'SH'
 #!/usr/bin/env bash
 cat > /dev/null
 jq -cn '{type:"system",subtype:"init"}'
+[[ -z "${LIFECYCLE_TEST_WRITE:-}" ]] || echo "trabajo a mitad" > "$LIFECYCLE_TEST_WRITE"
 echo started > "$LIFECYCLE_TEST_STARTED"
 read -r _ < "$LIFECYCLE_TEST_RELEASE"
 jq -cn '{type:"result",subtype:"success",result:"done"}'
@@ -192,6 +196,29 @@ check "el pool desplazado no creó la ref de su generación" \
   "$(git -C "$REPO" for-each-ref --format='%(refname)' "refs/thyrox/snapshots/${live5##*/}/1/1")" ""
 check "el pool declara que no toma la foto" \
   "$(grep -c 'no se toma su foto' "$live5/1.err")" 1
+
+# --- caso 6: fotos periódicas mientras el ítem corre --------------------------
+# El ítem deja trabajo en su worktree y se detiene en la FIFO. Con el intervalo
+# declarado, la ref de su generación aparece antes de liberarlo.
+LIFECYCLE_TEST_WRITE=mid-run.txt THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS=1 \
+  start_pool run6 "$F/runtime6" --isolation worktree --cwd "$REPO"
+live6="$(dirname "$(compgen -G "$F/runtime6/pool/*/1.stream.jsonl")")"
+ref6="refs/thyrox/snapshots/${live6##*/}/1/1"
+mid6=""
+for _ in $(seq 1 40); do
+  mid6="$(git -C "$REPO" rev-parse --verify --quiet "$ref6")" && break
+  sleep 0.25
+done
+check "en curso, el ítem ya tiene foto" "$([[ -n "$mid6" ]] && echo yes)" yes
+check "la foto en curso trae el trabajo a mitad" \
+  "$(git -C "$REPO" show "$mid6:mid-run.txt" 2>/dev/null)" "trabajo a mitad"
+release run6
+wait "$POOL_PID"
+final6="$(git -C "$REPO" rev-parse --verify --quiet "$ref6")"
+check "la foto final existe" "$([[ -n "$final6" ]] && echo yes)" yes
+check "la foto final conserva el trabajo" "$(git -C "$REPO" show "$final6:mid-run.txt" 2>/dev/null)" "trabajo a mitad"
+check "el manifiesto de la foto describe la final" \
+  "$(THYROX_RUNTIME_DIR="$F/runtime6" bash "$ROOT/bin/snapshot_store" show "${live6##*/}" 1 1 | jq -r .snapshot_commit)" "$final6"
 
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]

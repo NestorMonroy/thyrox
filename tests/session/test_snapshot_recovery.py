@@ -321,5 +321,31 @@ with tempfile.TemporaryDirectory() as scratch:
     check("control: sin claim, tampoco se rechaza al publicar con la generación abandonada", True,
           lc.is_closed(out15c, "1"))
 
+    print("caso 16 (TASK-THYROX-0622): una foto periódica avanza la ref de su generación")
+    repo16 = make_repo(base / "repo16")
+    dirty(repo16)
+    first16 = ss.take_snapshot(repo16, "r16", "1", 1)
+    (repo16 / "unstaged.txt").write_text("trabajo posterior a la primera foto\n")
+    second16 = ss.take_snapshot(repo16, "r16", "1", 1, advance_from=first16.snapshot_commit)
+    check("la ref avanza a la foto nueva", second16.snapshot_commit,
+          git(repo16, "rev-parse", ss.snapshot_ref("r16", "1", 1)))
+    check("la foto nueva trae el trabajo posterior", b"trabajo posterior a la primera foto\n",
+          show(repo16, f"{second16.snapshot_commit}:unstaged.txt"))
+    check("el manifiesto describe la foto nueva, íntegro", second16, ss.read_manifest("r16", "1", 1))
+    try:
+        ss.take_snapshot(repo16, "r16", "1", 1, advance_from=first16.snapshot_commit)
+        check("avanzar desde una foto que ya no es la vigente se rehúsa", "SnapshotRefExistsError", "no rehusó")
+    except ss.SnapshotRefExistsError:
+        check("avanzar desde una foto que ya no es la vigente se rehúsa", True, True)
+    check("... y la ref sigue en la foto vigente", second16.snapshot_commit,
+          git(repo16, "rev-parse", ss.snapshot_ref("r16", "1", 1)))
+    try:
+        ss.take_snapshot(repo16, "r16", "2", 1, advance_from=first16.snapshot_commit)
+        check("avanzar una ref que no existe se rehúsa", "SnapshotError", "no rehusó")
+    except ss.SnapshotError:
+        check("avanzar una ref que no existe se rehúsa", True, True)
+    check("... y no deja ref", "",
+          git(repo16, "for-each-ref", "--format=%(refname)", ss.snapshot_ref("r16", "2", 1)))
+
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)

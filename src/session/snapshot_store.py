@@ -129,7 +129,7 @@ def manifest_path(run: str, item: str, generation: int) -> Path:
 
 def take_snapshot(repo: Path, run: str, item: str, generation: int, *,
                   capture_worktree: bool = True, create_only: bool = True,
-                  refuse_superseded: bool = True) -> SnapshotManifest:
+                  refuse_superseded: bool = True, advance_from: str | None = None) -> SnapshotManifest:
     """Guarda el árbol de trabajo y el índice de ``repo`` bajo su ref, sin tocarlos.
 
     Si el ítem ya tiene la foto de una generación posterior, su dueño anterior
@@ -139,6 +139,12 @@ def take_snapshot(repo: Path, run: str, item: str, generation: int, *,
     como controles de anulación: sin el primero la foto se queda en lo
     preparado; sin el segundo una ref existente se reemplaza; sin el tercero
     la generación desplazada escribe su foto.
+
+    ``advance_from`` es la foto periódica de un ítem que sigue corriendo: la
+    ref de su generación avanza sólo si todavía apunta a ese commit, con el
+    valor viejo de ``update-ref`` como comparación atómica. Una ref ausente o
+    movida por otro actor se rehúsa, así que ninguna foto reemplaza a otra que
+    no conocía.
 
     *Ciega a:* una foto de la generación posterior creada entre la consulta y
     ``update-ref``. La frontera que cierra esa ventana es la generación del
@@ -172,7 +178,9 @@ def take_snapshot(repo: Path, run: str, item: str, generation: int, *,
     snapshot_commit = _git(repo, "commit-tree", worktree_tree, *parents, "-p", index_commit,
                            "-m", message, env=SNAPSHOT_IDENTITY)
     update = ["update-ref", "-m", message, ref, snapshot_commit]
-    if create_only:
+    if advance_from is not None:
+        update.append(advance_from)
+    elif create_only:
         update.append("")
     result = subprocess.run(["git", "-C", str(repo), *update], capture_output=True, text=True)
     if result.returncode != 0:
@@ -206,6 +214,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("run")
     p.add_argument("item")
     p.add_argument("generation", type=int)
+    p.add_argument("--advance-from", metavar="COMMIT",
+                   help="avanza la ref de la generación sólo si todavía apunta a COMMIT")
     p = sub.add_parser("show", help="imprime el manifiesto de una foto")
     p.add_argument("run")
     p.add_argument("item")
@@ -213,7 +223,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "take":
-            manifest = take_snapshot(args.repo, args.run, args.item, args.generation)
+            manifest = take_snapshot(args.repo, args.run, args.item, args.generation,
+                                     advance_from=args.advance_from)
             print(json.dumps(asdict(manifest), sort_keys=True))
         else:
             manifest = read_manifest(args.run, args.item, args.generation)

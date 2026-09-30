@@ -509,8 +509,16 @@ _headless_item_run() {
             --nvidia-smi "$HP_NVIDIA_SMI" --interval "$HP_GPU_INTERVAL" &
         monitor=$!
     fi
+    local snapshot_loop=""
+    if [[ "$HP_ISOLATION" == worktree && "$HP_SNAPSHOT_INTERVAL" -gt 0 ]]; then
+        _headless_item_periodic_snapshots "$n" "$workdir" "$pid" "$HP_SNAPSHOT_INTERVAL" &
+        snapshot_loop=$!
+    fi
     wait "$pid"
     local rc=$?
+    # El bucle sale solo en cuanto el ítem terminó; se espera antes de la foto
+    # final para que ninguna foto periódica la adelante ni la reemplace.
+    [[ -z "$snapshot_loop" ]] || wait "$snapshot_loop"
     # >>> item-drain
     # El ítem no termina porque salió su proceso principal: termina cuando su
     # sesión quedó vacía y nadie escribe ya en sus salidas. Un hijo que siga
@@ -543,16 +551,8 @@ _headless_item_run() {
         # que no se pudo tomar se declara en el `.err`; no cambia el veredicto.
         # Si la transición a SNAPSHOTTING se rehúsa, otra generación ya es dueña
         # del ítem: su registro de foto no se reemplaza (I4).
-        if bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"; then
-            bash "$HP_SNAPSHOT" take "$workdir" "${HP_LIVE##*/}" "$n" "$HP_ITEM_GENERATION" \
-                > "$HP_LIVE/$n.snapshot.json.tmp" 2>> "$HP_LIVE/$n.err" \
-                && mv "$HP_LIVE/$n.snapshot.json.tmp" "$HP_LIVE/$n.snapshot.json" \
-                || echo "no se pudo guardar la foto del worktree del ítem" >> "$HP_LIVE/$n.err"
-            rm -f "$HP_LIVE/$n.snapshot.json.tmp"
-            bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
-        else
-            echo "la generación $HP_ITEM_GENERATION ya no es dueña del ítem; no se toma su foto" >> "$HP_LIVE/$n.err"
-        fi
+        _headless_item_snapshot "$n" "$workdir" \
+            || echo "la generación $HP_ITEM_GENERATION ya no es dueña del ítem; no se toma su foto" >> "$HP_LIVE/$n.err"
         bash "$HP_ITEM_WORKTREE" finalize "$HP_WORKDIR" "$workdir" "$HP_LIVE" "$n" "$rc" "$HP_VERIFY"
     fi
     # El .json de siempre es la linea `result` del stream: sus consumidores
@@ -565,6 +565,45 @@ _headless_item_run() {
     return "$rc"
 }
 export -f _headless_item_run
+
+# La foto del worktree del ítem bajo su generación, en objetos de git bajo
+# refs/thyrox/snapshots/<run>/<n>/<gen>. Si la ref ya existe, la foto la
+# avanza sólo si nadie la movió desde que se leyó; si no, la crea. Sale 1 si la
+# transición a SNAPSHOTTING se rehúsa: otra generación ya es dueña del ítem y
+# su registro de foto no se toca (I4). Una foto que no se pudo tomar se
+# declara en el `.err` y no cambia el veredicto.
+_headless_item_snapshot() {
+    local n="$1" workdir="$2" ref previous
+    bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" SNAPSHOTTING --generation "$HP_ITEM_GENERATION" \
+        2>> "$HP_LIVE/$n.err" || return 1
+    ref="refs/thyrox/snapshots/${HP_LIVE##*/}/$n/$HP_ITEM_GENERATION"
+    previous="$(git -C "$workdir" rev-parse --verify --quiet "$ref")"
+    bash "$HP_SNAPSHOT" take "$workdir" "${HP_LIVE##*/}" "$n" "$HP_ITEM_GENERATION" \
+        ${previous:+--advance-from "$previous"} \
+        > "$HP_LIVE/$n.snapshot.json.tmp" 2>> "$HP_LIVE/$n.err" \
+        && mv "$HP_LIVE/$n.snapshot.json.tmp" "$HP_LIVE/$n.snapshot.json" \
+        || echo "no se pudo guardar la foto del worktree del ítem" >> "$HP_LIVE/$n.err"
+    rm -f "$HP_LIVE/$n.snapshot.json.tmp"
+    bash "$HP_LIFECYCLE" transition "$HP_LIVE" "$n" RUNNING --generation "$HP_ITEM_GENERATION" 2>> "$HP_LIVE/$n.err"
+    return 0
+}
+export -f _headless_item_snapshot
+
+# Mientras `pid` vive, una foto cada `interval` segundos. Comprueba el proceso
+# cada segundo para salir en cuanto el ítem termina, sin esperar el intervalo
+# entero. Si la generación ya no es dueña del ítem, deja de fotografiar.
+_headless_item_periodic_snapshots() {
+    local n="$1" workdir="$2" pid="$3" interval="$4" elapsed=0
+    while kill -0 "$pid" 2>/dev/null; do
+        sleep 1
+        elapsed=$((elapsed + 1))
+        (( elapsed < interval )) && continue
+        kill -0 "$pid" 2>/dev/null || break
+        _headless_item_snapshot "$n" "$workdir" || return 0
+        elapsed=0
+    done
+}
+export -f _headless_item_periodic_snapshots
 HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 HP_OUT="$(cd "$OUT" && pwd)"
 HP_RUNNER="$(command -v "$RUNNER_BIN")"
@@ -576,6 +615,12 @@ export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.s
 # Cuánto se espera a que un hijo del ítem salga solo después de que salió el
 # principal, antes de terminarlo (`process_ownership drain`).
 HP_DRAIN_SECONDS="${HEADLESS_POOL_ITEM_DRAIN_SECONDS:-30}"
+# Cada cuántos segundos se fotografía el worktree de un ítem que sigue
+# corriendo; 0 deja sólo la foto final.
+HP_SNAPSHOT_INTERVAL="${THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS:-0}"
+[[ "$HP_SNAPSHOT_INTERVAL" =~ ^[0-9]+$ ]] \
+    || rehusa "THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS va en segundos enteros, no: $HP_SNAPSHOT_INTERVAL"
+export HP_SNAPSHOT_INTERVAL
 [[ "$HP_DRAIN_SECONDS" =~ ^[0-9]+([.][0-9]+)?$ ]] \
     || rehusa "HEADLESS_POOL_ITEM_DRAIN_SECONDS va en segundos, no: $HP_DRAIN_SECONDS"
 export HP_DRAIN_SECONDS
