@@ -72,3 +72,16 @@ autor tiene de un anfitrión con GPU, igual que el `nvidia-smi` falso. Que ese
 modelo corresponda a una GPU real sólo lo prueban los niveles 2 y 3 sobre
 hardware real, y aquí rehúsan por diseño. Y nada de esto mide una GPU en otra
 máquina: TASK-THYROX-0666.
+
+## Directiva del ejecutor sobre la GPU
+
+«solo vendors Intel (0x8086) y virtio (0x1af4), está bien, no necesitamos
+NVIDIA»; «NVIDIA puede utilizarse si se tiene, si no se usa lo que se tiene».
+
+Consecuencias:
+- TASK-THYROX-0666 (sondear una GPU en otra máquina) queda descartada.
+- TASK-THYROX-0662 se acota: aquí Ollama corre en CPU. Siguen abiertos qué
+  modelo abierto usar y si Ollama va en el anfitrión o como worker de Podman.
+- El `PodmanWorkerManager` ya sigue ese criterio: la ruta de CPU está
+  permitida siempre y la de CUDA sólo rehúsa, con exit 2, cuando se exige sin
+  GPU.
