@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790803211.384	  1155.462	0	0	0	0	_headless_item 1 'corpus — TASK-THYROX-0682: corpus semántico durable (documentos, chunks, espacios de embeddings). Fuente de verdad: /home/user/thyrox/.claude/workbench/durable-semantic-corpus-20260930T211821/source.md. Te pertenecen todo src/packages/semantic-search/ (código, pruebas, package.json) y .env.example sólo si declaras una clave nueva. No toques ningún otro paquete.'

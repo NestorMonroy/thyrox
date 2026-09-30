@@ -11,6 +11,7 @@ import {
   SEMANTIC_SEARCH_DATABASE_URL_VAR,
   SemanticSearchConfigError,
   validateEmbedding,
+  validateEmbeddingShape,
   validateSchemaConfig,
   validateStoreUrl,
 } from '../config.ts'
@@ -45,23 +46,29 @@ describe('validateStoreUrl', () => {
 })
 
 describe('validateSchemaConfig', () => {
-  test('acepta un esquema con dimensión y representación', () => {
-    const config = { name: 'semantic', dimensions: 1536, representation: 'halfvec' as const }
-    expect(validateSchemaConfig(config)).toEqual(config)
+  test('acepta un esquema con nombre de identificador simple', () => {
+    expect(validateSchemaConfig({ name: 'semantic' })).toEqual({ name: 'semantic' })
   })
 
   test('rechaza un nombre que no es un identificador simple', () => {
-    expect(() => validateSchemaConfig({ name: 'a; DROP', dimensions: 3, representation: 'vector' })).toThrow(SemanticSearchConfigError)
+    expect(() => validateSchemaConfig({ name: 'a; DROP' })).toThrow(SemanticSearchConfigError)
+  })
+})
+
+describe('validateEmbeddingShape', () => {
+  test('acepta una dimensión positiva con representación conocida', () => {
+    const shape = { dimensions: 1536, representation: 'halfvec' as const }
+    expect(validateEmbeddingShape(shape)).toEqual(shape)
   })
 
   test('rechaza una dimensión no entera o no positiva', () => {
-    expect(() => validateSchemaConfig({ name: 's', dimensions: 0, representation: 'vector' })).toThrow(/dimensions/)
-    expect(() => validateSchemaConfig({ name: 's', dimensions: 2.5, representation: 'vector' })).toThrow(/dimensions/)
+    expect(() => validateEmbeddingShape({ dimensions: 0, representation: 'vector' })).toThrow(/dimensions/)
+    expect(() => validateEmbeddingShape({ dimensions: 2.5, representation: 'vector' })).toThrow(/dimensions/)
   })
 
   test('rechaza una representación desconocida', () => {
-    const config = { name: 's', dimensions: 3, representation: 'sparsevec' } as unknown as Parameters<typeof validateSchemaConfig>[0]
-    expect(() => validateSchemaConfig(config)).toThrow(/sparsevec/)
+    const shape = { dimensions: 3, representation: 'sparsevec' } as unknown as Parameters<typeof validateEmbeddingShape>[0]
+    expect(() => validateEmbeddingShape(shape)).toThrow(/sparsevec/)
   })
 })
 

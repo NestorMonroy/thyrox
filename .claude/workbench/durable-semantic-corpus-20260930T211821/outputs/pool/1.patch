@@ -1,0 +1,1873 @@
+diff --git a/src/packages/semantic-search/__tests__/config.test.ts b/src/packages/semantic-search/__tests__/config.test.ts
+index 543b69c0c..030fe301f 100644
+--- a/src/packages/semantic-search/__tests__/config.test.ts
++++ b/src/packages/semantic-search/__tests__/config.test.ts
+@@ -11,6 +11,7 @@ import {
+   SEMANTIC_SEARCH_DATABASE_URL_VAR,
+   SemanticSearchConfigError,
+   validateEmbedding,
++  validateEmbeddingShape,
+   validateSchemaConfig,
+   validateStoreUrl,
+ } from '../config.ts'
+@@ -45,23 +46,29 @@ describe('validateStoreUrl', () => {
+ })
+ 
+ describe('validateSchemaConfig', () => {
+-  test('acepta un esquema con dimensión y representación', () => {
+-    const config = { name: 'semantic', dimensions: 1536, representation: 'halfvec' as const }
+-    expect(validateSchemaConfig(config)).toEqual(config)
++  test('acepta un esquema con nombre de identificador simple', () => {
++    expect(validateSchemaConfig({ name: 'semantic' })).toEqual({ name: 'semantic' })
+   })
+ 
+   test('rechaza un nombre que no es un identificador simple', () => {
+-    expect(() => validateSchemaConfig({ name: 'a; DROP', dimensions: 3, representation: 'vector' })).toThrow(SemanticSearchConfigError)
++    expect(() => validateSchemaConfig({ name: 'a; DROP' })).toThrow(SemanticSearchConfigError)
++  })
++})
++
++describe('validateEmbeddingShape', () => {
++  test('acepta una dimensión positiva con representación conocida', () => {
++    const shape = { dimensions: 1536, representation: 'halfvec' as const }
++    expect(validateEmbeddingShape(shape)).toEqual(shape)
+   })
+ 
+   test('rechaza una dimensión no entera o no positiva', () => {
+-    expect(() => validateSchemaConfig({ name: 's', dimensions: 0, representation: 'vector' })).toThrow(/dimensions/)
+-    expect(() => validateSchemaConfig({ name: 's', dimensions: 2.5, representation: 'vector' })).toThrow(/dimensions/)
++    expect(() => validateEmbeddingShape({ dimensions: 0, representation: 'vector' })).toThrow(/dimensions/)
++    expect(() => validateEmbeddingShape({ dimensions: 2.5, representation: 'vector' })).toThrow(/dimensions/)
+   })
+ 
+   test('rechaza una representación desconocida', () => {
+-    const config = { name: 's', dimensions: 3, representation: 'sparsevec' } as unknown as Parameters<typeof validateSchemaConfig>[0]
+-    expect(() => validateSchemaConfig(config)).toThrow(/sparsevec/)
++    const shape = { dimensions: 3, representation: 'sparsevec' } as unknown as Parameters<typeof validateEmbeddingShape>[0]
++    expect(() => validateEmbeddingShape(shape)).toThrow(/sparsevec/)
+   })
+ })
+ 
+diff --git a/src/packages/semantic-search/__tests__/contentHash.test.ts b/src/packages/semantic-search/__tests__/contentHash.test.ts
+new file mode 100644
+index 000000000..5d71acfd4
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/contentHash.test.ts
+@@ -0,0 +1,27 @@
++/**
++ * El hash del contenido canónico: decide si una reingesta es la misma versión,
++ * así que distingue cualquier cambio de texto y también de corte entre chunks.
++ */
++import { describe, expect, test } from 'bun:test'
++
++import { chunkHash, documentHash } from '../contentHash.ts'
++
++const SHA256_HEX = /^[0-9a-f]{64}$/
++
++describe('documentHash', () => {
++  test('es sha256 en hexadecimal y estable para el mismo contenido', () => {
++    expect(documentHash(['a', 'b'])).toMatch(SHA256_HEX)
++    expect(documentHash(['a', 'b'])).toBe(documentHash(['a', 'b']))
++  })
++
++  test('distingue el mismo texto cortado en otros chunks', () => {
++    expect(documentHash(['ab'])).not.toBe(documentHash(['a', 'b']))
++    expect(documentHash(['a', 'b'])).not.toBe(documentHash(['b', 'a']))
++  })
++})
++
++describe('chunkHash', () => {
++  test('es el sha256 del texto del chunk', () => {
++    expect(chunkHash('')).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
++  })
++})
+diff --git a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+new file mode 100644
+index 000000000..7963aca16
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+@@ -0,0 +1,274 @@
++/**
++ * Las invariantes del corpus durable (ADR-THYROX-008 1.2.0) contra un
++ * PostgreSQL real: el índice no depende de la fuente, la reingesta es
++ * idempotente por hash, una versión nueva oculta la anterior, el cambio de
++ * modelo re-embebe desde los chunks persistidos y un análisis guardado
++ * sobrevive a la reingesta y al retiro de su espacio.
++ *
++ * Sin `THYROX_TEST_POSTGRES_URL` la suite se declara NO MEDIDA en vez de pasar.
++ */
++import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { describe, expect, test } from 'bun:test'
++
++import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
++
++import { EmbeddingSpaceStateError, NoActiveEmbeddingSpaceError } from '../errors.ts'
++import type { SemanticSearchStore } from '../store.ts'
++import { countRows, currentSchema, embedPending, embedText, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
++
++const url = resolvePostgresTestUrl()
++
++const MODEL_A = { model: 'model-a', dimensions: 4, representation: 'vector' as const }
++const MODEL_B = { model: 'model-b', dimensions: 6, representation: 'halfvec' as const }
++const SCOPE = 'adr'
++const NOTES = {
++  'alpha.md': ['PostgreSQL guarda el texto de cada chunk.', 'El embedding se regenera desde los chunks.'],
++  'beta.md': ['Un worker que muere no se lleva el corpus.'],
++}
++const CANDIDATES = { candidates: 10 }
++const STALE_VERSIONS = 45
++const NEAR_QUERY = [1, 1, 1, 1]
++const FAR_FROM_QUERY = [-1, -1, -1, -1]
++
++/**
++ * La misma base con el recorrido secuencial desactivado en cada conexión: con
++ * pocas filas el planificador prefiere recorrer la tabla y ordenar, y el
++ * filtro de versión vigente no se ejercitaría sobre el plan del HNSW.
++ */
++function indexOnlyUrl(original: string): string {
++  const parsed = new URL(original)
++  parsed.searchParams.set('options', '-c enable_seqscan=off')
++  return parsed.toString()
++}
++
++/** Escribe las notas en un directorio temporal y lo devuelve; quien llama lo borra. */
++function writeSourceDirectory(): string {
++  const directory = mkdtempSync(join(tmpdir(), 'semantic-corpus-source-'))
++  for (const [name, chunks] of Object.entries(NOTES)) writeFileSync(join(directory, name), chunks.join('\n'))
++  return directory
++}
++
++/** Ingiere cada archivo del directorio como un documento: un chunk por línea. */
++async function ingestDirectory(store: SemanticSearchStore, directory: string): Promise<void> {
++  for (const name of readdirSync(directory).sort()) {
++    const chunks = readFileSync(join(directory, name), 'utf8').split('\n')
++    await store.ingestDocument({ scope: SCOPE, sourceIdentity: `tmp:${name}`, metadata: { name }, chunks })
++  }
++}
++
++/** Crea un espacio, embebe lo pendiente y lo activa. */
++async function activateNewSpace(store: SemanticSearchStore, shape: typeof MODEL_A | typeof MODEL_B): Promise<number> {
++  const space = await store.createEmbeddingSpace(shape)
++  await embedPending(store, space.spaceId, shape.dimensions)
++  await store.activateSpace(space.spaceId)
++  return space.spaceId
++}
++
++async function topText(store: SemanticSearchStore, text: string, dimensions: number): Promise<string | undefined> {
++  const [first] = await store.searchNearest(embedText(text, dimensions), 1, CANDIDATES)
++  return first?.text
++}
++
++if (!url) {
++  describe('corpus durable — postgres', () => {
++    test.skip('NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo', () => {})
++  })
++} else {
++  const testUrl = url
++  const target = NOTES['beta.md'][0] ?? ''
++
++  describe('corpus durable — la fuente puede desaparecer', () => {
++    test('ingerir → borrar la fuente → la búsqueda devuelve el texto con su identidad', async () => {
++      await withCorpusStore(testUrl, async store => {
++        const directory = writeSourceDirectory()
++        await ingestDirectory(store, directory)
++        rmSync(directory, { recursive: true, force: true })
++        await activateNewSpace(store, MODEL_A)
++        const [first] = await store.searchNearest(embedText(target, MODEL_A.dimensions), 1, CANDIDATES)
++        expect(first?.text).toBe(target)
++        expect(first?.sourceIdentity).toBe('tmp:beta.md')
++        expect(first?.version).toBe(1)
++        expect(first?.similarity).toBeCloseTo(1, 5)
++        expect(typeof first?.documentId).toBe('string')
++        expect(typeof first?.chunkId).toBe('string')
++      })
++    })
++  })
++
++  describe('corpus durable — ingesta idempotente por hash', () => {
++    test('el mismo contenido otra vez: unchanged y 0 filas nuevas en documentos, chunks y embeddings', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const document = { scope: SCOPE, sourceIdentity: 'git:repo@abc:a.md', metadata: {}, chunks: ['uno', 'dos'] }
++        const first = await store.ingestDocument(document)
++        expect(first.status).toBe('created')
++        const spaceId = await activateNewSpace(store, MODEL_A)
++        const before = [await countRows(sql, 'documents'), await countRows(sql, 'document_chunks'), await countRows(sql, `space_embeddings_${spaceId}`)]
++        const again = await store.ingestDocument(document)
++        expect(again).toEqual({ status: 'unchanged', documentId: first.documentId, version: 1 })
++        const after = [await countRows(sql, 'documents'), await countRows(sql, 'document_chunks'), await countRows(sql, `space_embeddings_${spaceId}`)]
++        expect(after).toEqual(before)
++        expect(await store.chunksWithoutEmbedding(spaceId, 10)).toEqual([])
++      })
++    })
++  })
++
++  describe('corpus durable — cambio de contenido', () => {
++    test('otro contenido crea la versión 2 y la versión 1 deja de aparecer en la búsqueda', async () => {
++      await withCorpusStore(testUrl, async store => {
++        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:c.md', metadata: {} }
++        const first = await store.ingestDocument({ ...identity, chunks: ['texto viejo del documento'] })
++        const spaceId = await activateNewSpace(store, MODEL_A)
++        const second = await store.ingestDocument({ ...identity, chunks: ['texto nuevo del documento'] })
++        expect(second).toEqual({ status: 'new-version', documentId: first.documentId, version: 2 })
++        await embedPending(store, spaceId, MODEL_A.dimensions)
++        const results = await store.searchNearest(embedText('texto viejo del documento', MODEL_A.dimensions), 10, CANDIDATES)
++        expect(results.map(result => result.text)).toEqual(['texto nuevo del documento'])
++        expect(results[0]?.version).toBe(2)
++      })
++    })
++  })
++
++  describe('corpus durable — versiones viejas más cercanas que la vigente', () => {
++    // Versiones reemplazadas a distancia 0 de la consulta y la vigente a la
++    // máxima, recorridas por el HNSW: el filtro descarta las viejas y deja la vigente.
++    test('la versión vigente aparece aunque haya muchas versiones viejas más cercanas', async () => {
++      await withCorpusStore(indexOnlyUrl(testUrl), async store => {
++        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:e.md', metadata: {} }
++        const space = await store.createEmbeddingSpace(MODEL_A)
++        await store.activateSpace(space.spaceId)
++        for (let version = 1; version <= STALE_VERSIONS; version++) {
++          await store.ingestDocument({ ...identity, chunks: [`redacción ${version}`] })
++          const pending = await store.chunksWithoutEmbedding(space.spaceId, 1)
++          await store.putEmbeddings(space.spaceId, pending.map(chunk => ({ chunkId: chunk.chunkId, embedding: NEAR_QUERY })))
++        }
++        await store.ingestDocument({ ...identity, chunks: ['redacción vigente'] })
++        await store.putEmbeddings(space.spaceId, (await store.chunksWithoutEmbedding(space.spaceId, 1)).map(chunk => ({ chunkId: chunk.chunkId, embedding: FAR_FROM_QUERY })))
++        const results = await store.searchNearest(NEAR_QUERY, 1, CANDIDATES)
++        expect(results.map(result => [result.text, result.version])).toEqual([['redacción vigente', STALE_VERSIONS + 1]])
++      })
++    })
++  })
++
++  describe('corpus durable — espacios de embeddings', () => {
++    test('re-embedding A (dim 4) → B (dim 6) desde los chunks persistidos, sin la fuente; A queda retired', async () => {
++      await withCorpusStore(testUrl, async store => {
++        const directory = writeSourceDirectory()
++        await ingestDirectory(store, directory)
++        const spaceA = await activateNewSpace(store, MODEL_A)
++        rmSync(directory, { recursive: true, force: true })
++        const spaceB = await store.createEmbeddingSpace(MODEL_B)
++        expect(spaceB.state).toBe('building')
++        expect(await embedPending(store, spaceB.spaceId, MODEL_B.dimensions)).toBe(3)
++        expect(await topText(store, target, MODEL_A.dimensions)).toBe(target)
++        expect(await store.activateSpace(spaceB.spaceId)).toEqual({ activated: spaceB.spaceId, retired: spaceA })
++        expect(await topText(store, target, MODEL_B.dimensions)).toBe(target)
++        expect((await store.getEmbeddingSpace(spaceA))?.state).toBe('retired')
++        expect((await store.activeEmbeddingSpace())?.spaceId).toBe(spaceB.spaceId)
++      })
++    })
++
++    test('putEmbeddings con otra dimensión que la del espacio rehúsa nombrando las dos', async () => {
++      await withCorpusStore(testUrl, async store => {
++        await store.ingestDocument({ scope: SCOPE, sourceIdentity: 's', metadata: {}, chunks: ['x'] })
++        const space = await store.createEmbeddingSpace(MODEL_A)
++        const [chunk] = await store.chunksWithoutEmbedding(space.spaceId, 1)
++        await expect(store.putEmbeddings(space.spaceId, [{ chunkId: chunk?.chunkId ?? '', embedding: [1, 2] }])).rejects.toThrow(/2 dimensions.*4/)
++      })
++    })
++
++    test('sin espacio activo la búsqueda rehúsa nombrándolo, no devuelve vacío', async () => {
++      await withCorpusStore(testUrl, async store => {
++        await store.ingestDocument({ scope: SCOPE, sourceIdentity: 's', metadata: {}, chunks: ['x'] })
++        await store.createEmbeddingSpace(MODEL_A)
++        await expect(store.searchNearest([1, 1, 1, 1], 1, CANDIDATES)).rejects.toBeInstanceOf(NoActiveEmbeddingSpaceError)
++        await expect(store.searchNearest([1, 1, 1, 1], 1, CANDIDATES)).rejects.toThrow(/active embedding space/)
++      })
++    })
++
++    test('dropSpace sólo sobre un espacio retired; conserva documentos, chunks y analysis_runs', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const directory = writeSourceDirectory()
++        await ingestDirectory(store, directory)
++        rmSync(directory, { recursive: true, force: true })
++        const spaceA = await activateNewSpace(store, MODEL_A)
++        await expect(store.dropSpace(spaceA)).rejects.toBeInstanceOf(EmbeddingSpaceStateError)
++        const results = await store.searchNearest(embedText(target, MODEL_A.dimensions), 2, CANDIDATES)
++        const run = await store.recordAnalysisRun({
++          input: target,
++          spaceId: spaceA,
++          candidates: results.map(result => ({ chunkId: result.chunkId, score: result.similarity })),
++          output: { verdict: 'ok' },
++        })
++        await activateNewSpace(store, MODEL_B)
++        const counts = [await countRows(sql, 'documents'), await countRows(sql, 'document_chunks'), await countRows(sql, 'analysis_runs')]
++        await store.dropSpace(spaceA)
++        expect([await countRows(sql, 'documents'), await countRows(sql, 'document_chunks'), await countRows(sql, 'analysis_runs')]).toEqual(counts)
++        const [table] = (await sql.unsafe('SELECT to_regclass($1) IS NOT NULL AS found', [`space_embeddings_${spaceA}`])) as { found: boolean }[]
++        expect(table?.found).toBe(false)
++        expect((await store.getAnalysisRun(run))?.candidates[0]?.text).toBe(target)
++        await expect(store.dropSpace(spaceA)).rejects.toBeInstanceOf(EmbeddingSpaceStateError)
++      })
++    })
++  })
++
++  describe('corpus durable — análisis persistido', () => {
++    test('un analysis_run sobrevive a la reingesta y al retiro de su espacio con el mismo texto', async () => {
++      await withCorpusStore(testUrl, async store => {
++        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:d.md', metadata: {} }
++        await store.ingestDocument({ ...identity, chunks: ['primera redacción', 'otro párrafo'] })
++        const spaceA = await activateNewSpace(store, MODEL_A)
++        const results = await store.searchNearest(embedText('primera redacción', MODEL_A.dimensions), 2, CANDIDATES)
++        const analysisId = await store.recordAnalysisRun({
++          input: 'primera redacción',
++          spaceId: spaceA,
++          candidates: results.map(result => ({ chunkId: result.chunkId, score: result.similarity })),
++          reranker: 'cross-encoder-x',
++          output: { summary: 'dos candidatos' },
++        })
++        const before = await store.getAnalysisRun(analysisId)
++        await store.ingestDocument({ ...identity, chunks: ['segunda redacción'] })
++        await activateNewSpace(store, MODEL_B)
++        await store.dropSpace(spaceA)
++        const after = await store.getAnalysisRun(analysisId)
++        expect(after).toEqual(before)
++        expect(after?.candidates.map(candidate => candidate.text)).toEqual(results.map(result => result.text))
++        expect(after?.candidates.every(candidate => candidate.version === 1)).toBe(true)
++        expect(after?.corpusVersions).toEqual([{ documentId: results[0]?.documentId ?? '', version: 1 }])
++        expect(after?.space).toEqual({ spaceId: spaceA, model: MODEL_A.model, dimensions: MODEL_A.dimensions, representation: MODEL_A.representation })
++        expect(after?.reranker).toBe('cross-encoder-x')
++        expect(after?.output).toEqual({ summary: 'dos candidatos' })
++        expect(await store.getAnalysisRun(crypto.randomUUID())).toBeNull()
++      })
++    })
++  })
++
++  describe('corpus durable — worker recreado', () => {
++    test('cerrar el store y abrir otro sobre la misma URL conserva corpus, espacio activo y análisis', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        const first = openStoreFor(testUrl, schema)
++        await first.migrate()
++        const directory = writeSourceDirectory()
++        await ingestDirectory(first, directory)
++        rmSync(directory, { recursive: true, force: true })
++        const spaceId = await activateNewSpace(first, MODEL_A)
++        const results = await first.searchNearest(embedText(target, MODEL_A.dimensions), 1, CANDIDATES)
++        const analysisId = await first.recordAnalysisRun({ input: target, spaceId, candidates: [{ chunkId: results[0]?.chunkId ?? '', score: 1 }], output: {} })
++        const recorded = await first.getAnalysisRun(analysisId)
++        await first.close()
++        const recreated = openStoreFor(testUrl, schema)
++        try {
++          expect(await recreated.migrate()).toEqual([])
++          expect(await topText(recreated, target, MODEL_A.dimensions)).toBe(target)
++          expect(await recreated.getAnalysisRun(analysisId)).toEqual(recorded)
++          expect((await recreated.ingestDocument({ scope: SCOPE, sourceIdentity: 'tmp:beta.md', metadata: {}, chunks: NOTES['beta.md'] })).status).toBe('unchanged')
++        } finally {
++          await recreated.close()
++        }
++      })
++    })
++  })
++}
+diff --git a/src/packages/semantic-search/__tests__/store.postgres.test.ts b/src/packages/semantic-search/__tests__/store.postgres.test.ts
+index 7f9501f0b..134e73541 100644
+--- a/src/packages/semantic-search/__tests__/store.postgres.test.ts
++++ b/src/packages/semantic-search/__tests__/store.postgres.test.ts
+@@ -1,24 +1,26 @@
+ /**
+- * El store contra un PostgreSQL real con pgvector: migraciones, idempotencia,
+- * otra URL hacia la misma base, reapertura tras cerrar, y las dos búsquedas.
++ * El store contra un PostgreSQL real con pgvector: la migración del corpus en
++ * el ledger de `@thyrox/store`, el rechazo de un ledger de la superficie
++ * anterior, otra URL hacia la misma base, la forma de la tabla de un espacio y
++ * las dos búsquedas sobre el espacio activo.
+  *
+  * Corre contra `THYROX_TEST_POSTGRES_URL`, cada caso en un esquema de usar y
+- * tirar (`withDisposableSchema`) cuyo nombre se lee de la conexión y se pasa
+- * al store como su esquema: el store abre su propia conexión por URL, como en
+- * uso real. Sin la variable, la suite se declara NO MEDIDA en vez de pasar.
++ * tirar cuyo nombre se pasa al store, que abre su propia conexión por URL como
++ * en uso real. Sin la variable, la suite se declara NO MEDIDA en vez de pasar.
+  */
+-import type { SQL } from 'bun'
+ import { describe, expect, test } from 'bun:test'
+ 
+ import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
+ 
+-import type { SchemaConfig } from '../config.ts'
+ import { MINIMUM_PGVECTOR_VERSION, VectorExtensionVersionError } from '../extension.ts'
+ import { openSemanticSearchStore, type SemanticSearchStore } from '../store.ts'
+-import { binaryCandidatesQuery, BINARY_INDEX_NAME, EMBEDDINGS_TABLE, MIGRATIONS_TABLE } from '../vectorSql.ts'
++import { CORPUS_MIGRATION_VERSION, MIGRATIONS_TABLE } from '../corpusSql.ts'
++import { binaryCandidatesQuery, spaceIndexName, spaceTableName } from '../vectorSql.ts'
++import { currentSchema, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
+ 
+ const url = resolvePostgresTestUrl()
+ const DIMENSIONS = 4
++const CORPUS_TABLES = ['analysis_candidates', 'analysis_runs', 'document_chunks', 'documents', 'embedding_spaces']
+ 
+ /**
+  * El conjunto conocido: con la consulta [1,1,1,1], el orden por distancia de
+@@ -54,30 +56,14 @@ function alternateUrl(original: string): string {
+   return parsed.toString()
+ }
+ 
+-async function currentSchema(sql: SQL): Promise<string> {
+-  const [row] = (await sql.unsafe('SELECT current_schema() AS name')) as { name: string }[]
+-  if (!row) throw new Error('current_schema() returned no row')
+-  return row.name
+-}
+-
+-function schemaConfig(name: string, representation: SchemaConfig['representation'] = 'vector'): SchemaConfig {
+-  return { name, dimensions: DIMENSIONS, representation }
+-}
+-
+-async function withStore(storeUrl: string, body: (store: SemanticSearchStore, sql: SQL, schema: string) => Promise<void>): Promise<void> {
+-  await withDisposableSchema(storeUrl, async sql => {
+-    const schema = await currentSchema(sql)
+-    const store = openSemanticSearchStore({ url: storeUrl, schema: schemaConfig(schema) })
+-    try {
+-      await body(store, sql, schema)
+-    } finally {
+-      await store.close()
+-    }
+-  })
+-}
+-
+-async function seedKnownSet(store: SemanticSearchStore): Promise<void> {
+-  for (const [id, embedding] of Object.entries(KNOWN_SET)) await store.upsertEmbedding(id, embedding, { label: id })
++/** Ingiere el conjunto conocido como un documento de un chunk por etiqueta y lo embebe con sus vectores fijos. */
++async function seedKnownSet(store: SemanticSearchStore): Promise<{ spaceId: number; labelOf: Map<string, string> }> {
++  await store.ingestDocument({ scope: 'known', sourceIdentity: 'known-set', metadata: {}, chunks: Object.keys(KNOWN_SET) })
++  const space = await store.createEmbeddingSpace({ model: 'fixed', dimensions: DIMENSIONS, representation: 'vector' })
++  const pending = await store.chunksWithoutEmbedding(space.spaceId, 10)
++  await store.putEmbeddings(space.spaceId, pending.map(chunk => ({ chunkId: chunk.chunkId, embedding: KNOWN_SET[chunk.text] ?? [] })))
++  await store.activateSpace(space.spaceId)
++  return { spaceId: space.spaceId, labelOf: new Map(pending.map(chunk => [chunk.chunkId, chunk.text])) }
+ }
+ 
+ if (!url) {
+@@ -87,71 +73,34 @@ if (!url) {
+ } else {
+   const testUrl = url
+ 
+-  describe('SemanticSearchStore — migraciones', () => {
+-    test('con pgvector compatible crea la tabla, la columna vectorial, el índice binario y el ledger', async () => {
+-      await withStore(testUrl, async (store, sql, schema) => {
+-        expect(await store.migrateVectorSchema()).toEqual([1])
+-        const [column] = (await sql.unsafe(
+-          `SELECT format_type(a.atttypid, a.atttypmod) AS type FROM pg_attribute a
+-             JOIN pg_class c ON c.oid = a.attrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+-            WHERE n.nspname = $1 AND c.relname = $2 AND a.attname = 'embedding'`,
+-          [schema, EMBEDDINGS_TABLE],
+-        )) as { type: string }[]
+-        const extension = await store.vectorExtension()
+-        expect(column?.type).toBe(`${extension.schema}.vector(${DIMENSIONS})`)
+-        const indexes = (await sql.unsafe('SELECT indexname, indexdef FROM pg_indexes WHERE schemaname = $1 AND tablename = $2', [
+-          schema,
+-          EMBEDDINGS_TABLE,
+-        ])) as { indexname: string; indexdef: string }[]
+-        const binaryIndex = indexes.find(index => index.indexname === BINARY_INDEX_NAME)
+-        expect(binaryIndex?.indexdef).toContain('USING hnsw')
+-        expect(binaryIndex?.indexdef).toContain('bit_hamming_ops')
+-        expect(binaryIndex?.indexdef).toContain(`binary_quantize(embedding))::bit(${DIMENSIONS})`)
+-        const ledger = (await sql.unsafe(`SELECT version FROM ${MIGRATIONS_TABLE}`)) as { version: number }[]
+-        expect(ledger.map(row => row.version)).toEqual([1])
+-      })
+-    })
+-
+-    test('la segunda ejecución es idempotente: no aplica nada ni duplica índices', async () => {
+-      await withStore(testUrl, async (store, sql, schema) => {
+-        await store.migrateVectorSchema()
+-        expect(await store.migrateVectorSchema()).toEqual([])
+-        const [count] = (await sql.unsafe('SELECT count(*)::int AS n FROM pg_indexes WHERE schemaname = $1 AND tablename = $2', [
+-          schema,
+-          EMBEDDINGS_TABLE,
+-        ])) as { n: number }[]
+-        expect(count?.n).toBe(2)
+-      })
+-    })
+-
+-    test('con halfvec la columna es halfvec(N) y el embedding vuelve igual', async () => {
++  describe('SemanticSearchStore — migración', () => {
++    test('crea las tablas del corpus y registra su versión en el ledger', async () => {
+       await withDisposableSchema(testUrl, async sql => {
+         const schema = await currentSchema(sql)
+-        const store = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema, 'halfvec') })
++        const store = openStoreFor(testUrl, schema)
+         try {
+-          await store.migrateVectorSchema()
+-          await store.upsertEmbedding('h', [0.5, -1, 2, 0.25], {})
+-          expect((await store.getEmbedding('h'))?.embedding).toEqual([0.5, -1, 2, 0.25])
+-          const [column] = (await sql.unsafe(
+-            `SELECT format_type(atttypid, atttypmod) AS type FROM pg_attribute WHERE attrelid = to_regclass($1) AND attname = 'embedding'`,
+-            [EMBEDDINGS_TABLE],
+-          )) as { type: string }[]
+-          const extension = await store.vectorExtension()
+-          expect(column?.type).toBe(`${extension.schema}.halfvec(${DIMENSIONS})`)
++          expect(await store.migrate()).toEqual([CORPUS_MIGRATION_VERSION])
++          const tables = (await sql.unsafe('SELECT tablename FROM pg_tables WHERE schemaname = $1 ORDER BY tablename', [schema])) as { tablename: string }[]
++          expect(tables.map(row => row.tablename).filter(name => name !== MIGRATIONS_TABLE)).toEqual(CORPUS_TABLES)
++          const ledger = (await sql.unsafe(`SELECT version FROM ${MIGRATIONS_TABLE}`)) as { version: number }[]
++          expect(ledger.map(row => row.version)).toEqual([CORPUS_MIGRATION_VERSION])
++          expect(await store.migrate()).toEqual([])
+         } finally {
+           await store.close()
+         }
+       })
+     })
+ 
+-    test('otra dimensión sobre un esquema ya migrado rehúsa por procedencia, no altera la tabla', async () => {
+-      await withStore(testUrl, async (store, _sql, schema) => {
+-        await store.migrateVectorSchema()
+-        const wider = openSemanticSearchStore({ url: testUrl, schema: { name: schema, dimensions: DIMENSIONS + 1, representation: 'vector' } })
++    test('un ledger de la superficie anterior (versión 1) rehúsa en vez de convivir con ella', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        await sql.unsafe(`CREATE TABLE ${MIGRATIONS_TABLE} (version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL)`)
++        await sql.unsafe(`INSERT INTO ${MIGRATIONS_TABLE} VALUES (1, 'create_embeddings_vector(4)', '2026-09-29')`)
++        const store = openStoreFor(testUrl, schema)
+         try {
+-          await expect(wider.migrateVectorSchema()).rejects.toThrow(/vector\(4\)|vector\(5\)/)
++          await expect(store.migrate()).rejects.toThrow(/version 1 applied/)
+         } finally {
+-          await wider.close()
++          await store.close()
+         }
+       })
+     })
+@@ -163,9 +112,9 @@ if (!url) {
+           availableVersion: '0.6.2',
+           installed: { version: '0.6.2', schema: 'public' },
+         })
+-        const store = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema) }, { probeExtension })
++        const store = openSemanticSearchStore({ url: testUrl, schema: { name: schema } }, { probeExtension })
+         try {
+-          const rejection = store.migrateVectorSchema()
++          const rejection = store.migrate()
+           await expect(rejection).rejects.toBeInstanceOf(VectorExtensionVersionError)
+           await expect(rejection).rejects.toThrow(new RegExp(`0\\.6\\.2.*${MINIMUM_PGVECTOR_VERSION.replaceAll('.', '\\.')}`))
+           const [found] = (await sql.unsafe('SELECT to_regclass($1) IS NOT NULL AS found', [MIGRATIONS_TABLE])) as { found: boolean }[]
+@@ -177,97 +126,104 @@ if (!url) {
+     })
+   })
+ 
+-  describe('SemanticSearchStore — conexión y persistencia', () => {
+-    test('otra URL hacia la misma base abre el mismo store sin cambiar código', async () => {
+-      const otherUrl = alternateUrl(testUrl)
+-      expect(otherUrl).not.toBe(testUrl)
+-      await withStore(testUrl, async (store, _sql, schema) => {
+-        await store.migrateVectorSchema()
+-        await store.upsertEmbedding('a', [1, 2, 3, 4], { origin: 'first-url' })
+-        const other = openSemanticSearchStore({ url: otherUrl, schema: schemaConfig(schema) })
+-        try {
+-          expect(await other.migrateVectorSchema()).toEqual([])
+-          expect(await other.getEmbedding('a')).toEqual({ id: 'a', embedding: [1, 2, 3, 4], metadata: { origin: 'first-url' } })
+-        } finally {
+-          await other.close()
++  describe('SemanticSearchStore — espacios', () => {
++    test('cada espacio tiene su tabla con la columna de su forma y su índice HNSW binario', async () => {
++      await withCorpusStore(testUrl, async (store, sql, schema) => {
++        const extension = await store.vectorExtension()
++        for (const representation of ['vector', 'halfvec'] as const) {
++          const space = await store.createEmbeddingSpace({ model: `m-${representation}`, dimensions: DIMENSIONS, representation })
++          const [column] = (await sql.unsafe(
++            `SELECT format_type(atttypid, atttypmod) AS type FROM pg_attribute WHERE attrelid = to_regclass($1) AND attname = 'embedding'`,
++            [spaceTableName(space.spaceId)],
++          )) as { type: string }[]
++          expect(column?.type).toBe(`${extension.schema}.${representation}(${DIMENSIONS})`)
++          const indexes = (await sql.unsafe('SELECT indexname, indexdef FROM pg_indexes WHERE schemaname = $1 AND tablename = $2', [
++            schema,
++            spaceTableName(space.spaceId),
++          ])) as { indexname: string; indexdef: string }[]
++          const binaryIndex = indexes.find(index => index.indexname === spaceIndexName(space.spaceId))
++          expect(binaryIndex?.indexdef).toContain('USING hnsw')
++          expect(binaryIndex?.indexdef).toContain('bit_hamming_ops')
++          expect(binaryIndex?.indexdef).toContain(`binary_quantize(embedding))::bit(${DIMENSIONS})`)
+         }
+       })
+     })
+ 
+-    test('cerrar el store y abrir uno nuevo con la misma URL conserva lo escrito', async () => {
+-      await withDisposableSchema(testUrl, async sql => {
+-        const schema = await currentSchema(sql)
+-        const first = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema) })
+-        await first.migrateVectorSchema()
+-        await first.upsertEmbedding('kept', [0, 1, 0, 1], { note: 'survives' })
+-        await first.close()
+-        const recreated = openSemanticSearchStore({ url: testUrl, schema: schemaConfig(schema) })
+-        try {
+-          expect(await recreated.getEmbedding('kept')).toEqual({ id: 'kept', embedding: [0, 1, 0, 1], metadata: { note: 'survives' } })
+-          expect(await recreated.getEmbedding('missing')).toBeNull()
+-        } finally {
+-          await recreated.close()
+-        }
++    test('a lo sumo un espacio activo: activar uno retira el anterior en la misma transacción', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const first = await store.createEmbeddingSpace({ model: 'a', dimensions: DIMENSIONS, representation: 'vector' })
++        const second = await store.createEmbeddingSpace({ model: 'b', dimensions: DIMENSIONS, representation: 'vector' })
++        expect(await store.activateSpace(first.spaceId)).toEqual({ activated: first.spaceId, retired: null })
++        expect(await store.activateSpace(second.spaceId)).toEqual({ activated: second.spaceId, retired: first.spaceId })
++        const states = (await sql.unsafe('SELECT state FROM embedding_spaces ORDER BY space_id')) as { state: string }[]
++        expect(states.map(row => row.state)).toEqual(['retired', 'active'])
++        const reactivateRetired = async (): Promise<unknown> => sql.unsafe(`UPDATE embedding_spaces SET state = 'active' WHERE space_id = $1`, [first.spaceId])
++        await expect(reactivateRetired()).rejects.toThrow(/embedding_spaces_single_active/)
+       })
+     })
++  })
+ 
+-    test('upsert sobre el mismo id reemplaza embedding y metadata', async () => {
+-      await withStore(testUrl, async store => {
+-        await store.migrateVectorSchema()
+-        await store.upsertEmbedding('u', [1, 0, 0, 0], { v: 1 })
+-        await store.upsertEmbedding('u', [0, 0, 0, 1], { v: 2 })
+-        expect(await store.getEmbedding('u')).toEqual({ id: 'u', embedding: [0, 0, 0, 1], metadata: { v: 2 } })
++  describe('SemanticSearchStore — conexión', () => {
++    test('otra URL hacia la misma base abre el mismo store sin cambiar código', async () => {
++      const otherUrl = alternateUrl(testUrl)
++      expect(otherUrl).not.toBe(testUrl)
++      await withCorpusStore(testUrl, async (store, _sql, schema) => {
++        const ingested = await store.ingestDocument({ scope: 's', sourceIdentity: 'a', metadata: { origin: 'first-url' }, chunks: ['a'] })
++        const other = openStoreFor(otherUrl, schema)
++        try {
++          expect(await other.migrate()).toEqual([])
++          expect(await other.ingestDocument({ scope: 's', sourceIdentity: 'a', metadata: {}, chunks: ['a'] })).toEqual({ ...ingested, status: 'unchanged' })
++        } finally {
++          await other.close()
++        }
+       })
+     })
+   })
+ 
+   describe('SemanticSearchStore — búsqueda', () => {
+     test('searchBinaryCandidates ordena por distancia de Hamming de la cuantización binaria', async () => {
+-      await withStore(testUrl, async store => {
+-        await store.migrateVectorSchema()
+-        await seedKnownSet(store)
+-        expect(await store.searchBinaryCandidates(QUERY, 4)).toEqual([
+-          { id: 'y', hammingDistance: 0 },
+-          { id: 'x', hammingDistance: 1 },
+-          { id: 'w', hammingDistance: 2 },
+-          { id: 'z', hammingDistance: 4 },
++      await withCorpusStore(testUrl, async store => {
++        const { labelOf } = await seedKnownSet(store)
++        const candidates = await store.searchBinaryCandidates(QUERY, 4)
++        expect(candidates.map(candidate => [labelOf.get(candidate.chunkId), candidate.hammingDistance])).toEqual([
++          ['y', 0],
++          ['x', 1],
++          ['w', 2],
++          ['z', 4],
+         ])
+       })
+     })
+ 
+     // CONTROL: sin el reranking exacto, el orden sería el de Hamming: [y, x].
+     test('searchNearest reordena los candidatos por coseno exacto', async () => {
+-      await withStore(testUrl, async store => {
+-        await store.migrateVectorSchema()
++      await withCorpusStore(testUrl, async store => {
+         await seedKnownSet(store)
+         const nearest = await store.searchNearest(QUERY, 2, { candidates: 4 })
+-        expect(nearest.map(result => result.id)).toEqual(['x', 'y'])
++        expect(nearest.map(result => result.text)).toEqual(['x', 'y'])
+         expect(nearest[0]?.similarity).toBeCloseTo(cosine(QUERY, KNOWN_SET.x ?? []), 5)
+-        expect(nearest[0]?.metadata).toEqual({ label: 'x' })
++        expect(nearest[0]?.sourceIdentity).toBe('known-set')
+       })
+     })
+ 
+-    test('searchBinaryCandidates usa el índice HNSW binario (EXPLAIN)', async () => {
+-      await withStore(testUrl, async (store, sql) => {
+-        await store.migrateVectorSchema()
+-        await seedKnownSet(store)
++    test('searchBinaryCandidates usa el índice HNSW binario del espacio (EXPLAIN)', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const { spaceId } = await seedKnownSet(store)
+         const extension = await store.vectorExtension()
++        const shape = { dimensions: DIMENSIONS, representation: 'vector' as const }
+         const plan = await sql.begin(async tx => {
+           await tx.unsafe('SET LOCAL enable_seqscan = off')
+-          return (await tx.unsafe(`EXPLAIN ${binaryCandidatesQuery(extension.schema, schemaConfig('unused'))}`, [
+-            JSON.stringify(QUERY),
+-            4,
+-          ])) as { 'QUERY PLAN': string }[]
++          return (await tx.unsafe(`EXPLAIN ${binaryCandidatesQuery(extension.schema, spaceId, shape)}`, [JSON.stringify(QUERY), 4])) as {
++            'QUERY PLAN': string
++          }[]
+         })
+-        expect(plan.map(row => row['QUERY PLAN']).join('\n')).toContain(BINARY_INDEX_NAME)
++        expect(plan.map(row => row['QUERY PLAN']).join('\n')).toContain(spaceIndexName(spaceId))
+       })
+     })
+ 
+-    test('una consulta de otra dimensión se rechaza nombrando las dos', async () => {
+-      await withStore(testUrl, async store => {
+-        await store.migrateVectorSchema()
++    test('una consulta de otra dimensión que el espacio activo se rechaza nombrando las dos', async () => {
++      await withCorpusStore(testUrl, async store => {
++        await seedKnownSet(store)
+         await expect(store.searchNearest([1, 2], 1, { candidates: 2 })).rejects.toThrow(/2 dimensions.*4/)
+-        await expect(store.upsertEmbedding('bad', [1, 2, 3], {})).rejects.toThrow(/3 dimensions.*4/)
+       })
+     })
+   })
+diff --git a/src/packages/semantic-search/__tests__/support/corpusFixtures.ts b/src/packages/semantic-search/__tests__/support/corpusFixtures.ts
+new file mode 100644
+index 000000000..627931309
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/support/corpusFixtures.ts
+@@ -0,0 +1,71 @@
++/**
++ * Fixtures compartidas por las suites de PostgreSQL del corpus: el esquema de
++ * usar y tirar con su store abierto por URL, un embedder determinista que
++ * deriva el vector del texto (sin modelo) y el ciclo de embeber lo que falta
++ * en un espacio leyendo sólo los chunks persistidos.
++ */
++import type { SQL } from 'bun'
++
++import { withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
++
++import { openSemanticSearchStore, type SemanticSearchStore } from '../../store.ts'
++
++/** Suficiente para vaciar los chunks pendientes de los corpus de prueba en una sola llamada. */
++const PENDING_BATCH = 1000
++/** Primo con que se reparte cada carácter entre componentes y signos. */
++const SPREAD_PRIME = 31
++/** Módulo que centra cada componente alrededor de cero, para que la cuantización binaria no sea constante. */
++const COMPONENT_MODULUS = 17
++const COMPONENT_CENTER = 8
++
++export async function currentSchema(sql: SQL): Promise<string> {
++  const [row] = (await sql.unsafe('SELECT current_schema() AS name')) as { name: string }[]
++  if (!row) throw new Error('current_schema() returned no row')
++  return row.name
++}
++
++export function openStoreFor(url: string, schema: string): SemanticSearchStore {
++  return openSemanticSearchStore({ url, schema: { name: schema } })
++}
++
++/** Corre `body` con un store migrado sobre un esquema desechable; lo cierra al salir. */
++export async function withCorpusStore(
++  url: string,
++  body: (store: SemanticSearchStore, sql: SQL, schema: string) => Promise<void>,
++): Promise<void> {
++  await withDisposableSchema(url, async sql => {
++    const schema = await currentSchema(sql)
++    const store = openStoreFor(url, schema)
++    try {
++      await store.migrate()
++      await body(store, sql, schema)
++    } finally {
++      await store.close()
++    }
++  })
++}
++
++/** Vector determinista de `dimensions` componentes derivado sólo del texto. */
++export function embedText(text: string, dimensions: number): number[] {
++  const vector = Array.from({ length: dimensions }, () => 0)
++  for (let index = 0; index < text.length; index++) {
++    const slot = index % dimensions
++    vector[slot] = ((vector[slot] ?? 0) + text.charCodeAt(index) * (index + SPREAD_PRIME)) % COMPONENT_MODULUS
++  }
++  return vector.map(value => value - COMPONENT_CENTER + 0.5)
++}
++
++/** Embebe en el espacio todo chunk vigente que aún no tiene vector; devuelve cuántos embebió. */
++export async function embedPending(store: SemanticSearchStore, spaceId: string, dimensions: number): Promise<number> {
++  const pending = await store.chunksWithoutEmbedding(spaceId, PENDING_BATCH)
++  await store.putEmbeddings(
++    spaceId,
++    pending.map(chunk => ({ chunkId: chunk.chunkId, embedding: embedText(chunk.text, dimensions) })),
++  )
++  return pending.length
++}
++
++export async function countRows(sql: SQL, table: string): Promise<number> {
++  const [row] = (await sql.unsafe(`SELECT count(*)::int AS n FROM ${table}`)) as { n: number }[]
++  return row?.n ?? 0
++}
+diff --git a/src/packages/semantic-search/analysisRuns.ts b/src/packages/semantic-search/analysisRuns.ts
+new file mode 100644
+index 000000000..8bb4591c6
+--- /dev/null
++++ b/src/packages/semantic-search/analysisRuns.ts
+@@ -0,0 +1,132 @@
++/**
++ * Los análisis persistidos: el resultado de una ejecución concreta queda
++ * guardado, no sólo reproducible. Un análisis cita chunks con su versión, y
++ * esos chunks no se borran (la clave foránea lo impone), así que leerlo
++ * después de reingerir o de retirar su espacio devuelve el mismo texto.
++ *
++ * El store no reordena por modelo: `reranker` y `output` los aporta quien
++ * llama y se guardan tal cual.
++ */
++import type { SQL } from 'bun'
++
++import { readJson } from '@thyrox/store/sql.ts'
++
++import type { EmbeddingShape, Representation } from './config.ts'
++import type { Metadata } from './corpus.ts'
++import {
++  FIX_CORPUS_VERSIONS_QUERY,
++  INSERT_ANALYSIS_CANDIDATE_QUERY,
++  INSERT_ANALYSIS_RUN_QUERY,
++  SELECT_ANALYSIS_CANDIDATES_QUERY,
++  SELECT_ANALYSIS_RUN_QUERY,
++} from './corpusSql.ts'
++import { InvalidCorpusInputError } from './errors.ts'
++
++export type AnalysisCandidateInput = { chunkId: string; score: number }
++
++export type AnalysisRunInput = {
++  input: string
++  spaceId: number
++  candidates: readonly AnalysisCandidateInput[]
++  reranker?: string
++  output: Metadata
++}
++
++export type AnalysisCandidate = {
++  rank: number
++  chunkId: string
++  score: number
++  documentId: string
++  sourceIdentity: string
++  version: number
++  position: number
++  text: string
++}
++
++export type CorpusVersion = { documentId: string; version: number }
++
++export type AnalysisRun = {
++  analysisId: string
++  input: string
++  space: EmbeddingShape & { spaceId: number; model: string }
++  corpusVersions: CorpusVersion[]
++  candidates: AnalysisCandidate[]
++  reranker: string | null
++  output: Metadata
++  createdAt: string
++}
++
++type RunRow = {
++  analysis_id: string
++  input: string
++  corpus_versions: unknown
++  reranker: string | null
++  output: unknown
++  created_at: Date
++  space_id: number
++  model: string
++  dimensions: number
++  representation: Representation
++}
++
++type CandidateRow = {
++  rank: number
++  chunk_id: string
++  score: number
++  document_id: string
++  version: number
++  position: number
++  text: string
++  source_identity: string
++}
++
++function assertFiniteScores(candidates: readonly AnalysisCandidateInput[]): void {
++  const invalid = candidates.find(candidate => !Number.isFinite(candidate.score))
++  if (invalid) throw new InvalidCorpusInputError(`analysis candidate ${invalid.chunkId} has a non-finite score`)
++}
++
++function toCandidate(row: CandidateRow): AnalysisCandidate {
++  return {
++    rank: row.rank,
++    chunkId: row.chunk_id,
++    score: row.score,
++    documentId: row.document_id,
++    sourceIdentity: row.source_identity,
++    version: row.version,
++    position: row.position,
++    text: row.text,
++  }
++}
++
++/** Guarda el análisis con sus candidatos en orden y las versiones del corpus que usaron; devuelve su id. */
++export async function recordAnalysisRun(sql: SQL, run: AnalysisRunInput): Promise<string> {
++  assertFiniteScores(run.candidates)
++  return sql.begin(async tx => {
++    const [row] = (await tx.unsafe(INSERT_ANALYSIS_RUN_QUERY, [run.input, run.spaceId, run.reranker ?? null, JSON.stringify(run.output)])) as {
++      analysis_id: string
++    }[]
++    if (!row) throw new Error('inserting analysis run returned no row')
++    for (const [rank, candidate] of run.candidates.entries()) {
++      await tx.unsafe(INSERT_ANALYSIS_CANDIDATE_QUERY, [row.analysis_id, rank, candidate.chunkId, candidate.score])
++    }
++    await tx.unsafe(FIX_CORPUS_VERSIONS_QUERY, [row.analysis_id])
++    return row.analysis_id
++  })
++}
++
++/** El análisis guardado con el texto de sus candidatos, o `null` si el id no existe. */
++export async function getAnalysisRun(sql: SQL, analysisId: string): Promise<AnalysisRun | null> {
++  const [run] = (await sql.unsafe(SELECT_ANALYSIS_RUN_QUERY, [analysisId])) as RunRow[]
++  if (!run) return null
++  const candidates = (await sql.unsafe(SELECT_ANALYSIS_CANDIDATES_QUERY, [analysisId])) as CandidateRow[]
++  return {
++    analysisId: run.analysis_id,
++    input: run.input,
++    space: { spaceId: run.space_id, model: run.model, dimensions: run.dimensions, representation: run.representation },
++    corpusVersions: readJson(run.corpus_versions) as unknown as CorpusVersion[],
++    candidates: candidates.map(toCandidate),
++    reranker: run.reranker,
++    output: readJson(run.output),
++    createdAt: run.created_at.toISOString(),
++  }
++}
+diff --git a/src/packages/semantic-search/config.ts b/src/packages/semantic-search/config.ts
+index 8e7cf9cdd..7cc8faac8 100644
+--- a/src/packages/semantic-search/config.ts
++++ b/src/packages/semantic-search/config.ts
+@@ -1,8 +1,9 @@
+ /**
+  * La configuración del store de búsqueda semántica: la URL como único
+- * contrato de conexión y el esquema vectorial (nombre, dimensión y
+- * representación). Ni la dimensión ni la representación tienen valor por
+- * defecto: dependen del modelo de embeddings, que el store no decide.
++ * contrato de conexión, el esquema de PostgreSQL que aloja el corpus y la
++ * forma de cada espacio de embeddings (dimensión y representación). La forma
++ * no tiene valor por defecto: depende del modelo, que el store no decide, y
++ * se declara al crear cada espacio.
+  */
+ import { dialectOf } from '@thyrox/store/sql.ts'
+ 
+@@ -13,14 +14,22 @@ export const SEMANTIC_SEARCH_DATABASE_URL_VAR = 'THYROX_SEMANTIC_SEARCH_DATABASE
+ export const REPRESENTATIONS = ['vector', 'halfvec'] as const
+ export type Representation = (typeof REPRESENTATIONS)[number]
+ 
+-/** El esquema vectorial: dónde viven las tablas y qué forma tiene cada embedding. */
++/** Dónde viven las tablas del corpus y su ledger de migraciones. */
+ export type SchemaConfig = {
+   /** El esquema de PostgreSQL que aloja las tablas del store y su ledger. */
+   name: string
++}
++
++/** La forma de los vectores de un espacio: la fija el modelo que los produce. */
++export type EmbeddingShape = {
+   dimensions: number
+   representation: Representation
+ }
+ 
++/** Estados de un espacio de embeddings: a lo sumo uno `active`. */
++export const SPACE_STATES = ['building', 'active', 'retired'] as const
++export type SpaceState = (typeof SPACE_STATES)[number]
++
+ /**
+  * Identificador simple de PostgreSQL, sin comillas: el nombre del esquema se
+  * interpola en el DDL, así que sólo se acepta esta forma.
+@@ -76,18 +85,23 @@ function isPositiveInteger(value: number): boolean {
+   return Number.isInteger(value) && value > 0
+ }
+ 
+-/** Valida el esquema vectorial antes de interpolarlo en ningún DDL. */
++/** Valida el nombre del esquema antes de interpolarlo en ningún DDL. */
+ export function validateSchemaConfig(config: SchemaConfig): SchemaConfig {
+   if (!IDENTIFIER_PATTERN.test(config.name)) {
+     throw new SemanticSearchConfigError(`invalid schema name '${config.name}': expected a simple identifier matching ${IDENTIFIER_PATTERN}`)
+   }
+-  if (!isPositiveInteger(config.dimensions)) {
+-    throw new SemanticSearchConfigError(`invalid dimensions ${config.dimensions}: expected a positive integer`)
++  return config
++}
++
++/** Valida la forma de un espacio antes de interpolarla en su DDL. */
++export function validateEmbeddingShape(shape: EmbeddingShape): EmbeddingShape {
++  if (!isPositiveInteger(shape.dimensions)) {
++    throw new SemanticSearchConfigError(`invalid dimensions ${shape.dimensions}: expected a positive integer`)
+   }
+-  if (!(REPRESENTATIONS as readonly string[]).includes(config.representation)) {
+-    throw new SemanticSearchConfigError(`invalid representation '${config.representation}': expected one of ${REPRESENTATIONS.join(', ')}`)
++  if (!(REPRESENTATIONS as readonly string[]).includes(shape.representation)) {
++    throw new SemanticSearchConfigError(`invalid representation '${shape.representation}': expected one of ${REPRESENTATIONS.join(', ')}`)
+   }
+-  return config
++  return shape
+ }
+ 
+ /** Rechaza un embedding de otra dimensión, o con un componente no finito. */
+diff --git a/src/packages/semantic-search/contentHash.ts b/src/packages/semantic-search/contentHash.ts
+new file mode 100644
+index 000000000..eb8f6eaeb
+--- /dev/null
++++ b/src/packages/semantic-search/contentHash.ts
+@@ -0,0 +1,20 @@
++/**
++ * El hash del contenido canónico de un documento y de cada chunk. El del
++ * documento decide si una reingesta es la misma versión: se calcula sobre la
++ * lista de chunks serializada, así que un cambio de texto y un cambio de corte
++ * entre chunks son contenido distinto. La metadata no entra: describe el
++ * documento, no es su contenido.
++ */
++import { createHash } from 'node:crypto'
++
++function sha256Hex(text: string): string {
++  return createHash('sha256').update(text, 'utf8').digest('hex')
++}
++
++export function documentHash(chunks: readonly string[]): string {
++  return sha256Hex(JSON.stringify(chunks))
++}
++
++export function chunkHash(text: string): string {
++  return sha256Hex(text)
++}
+diff --git a/src/packages/semantic-search/corpus.ts b/src/packages/semantic-search/corpus.ts
+new file mode 100644
+index 000000000..60ecd301b
+--- /dev/null
++++ b/src/packages/semantic-search/corpus.ts
+@@ -0,0 +1,76 @@
++/**
++ * La ingesta del corpus durable: un documento es su identidad de origen
++ * (`scope` · `sourceIdentity`) y una secuencia de versiones de chunks. El
++ * hash del contenido decide si una reingesta es la misma versión; todo
++ * ocurre en una transacción con el documento bloqueado.
++ *
++ * `sourceIdentity` es texto para trazar (repo@commit:ruta, URL, …) y nunca se
++ * abre: el contenido llega entero en `chunks`. No hay edición de chunks: una
++ * corrección llega por reingesta, como versión nueva.
++ */
++import type { SQL } from 'bun'
++
++import { chunkHash, documentHash } from './contentHash.ts'
++import { INSERT_CHUNK_QUERY, INSERT_DOCUMENT_QUERY, LOCK_DOCUMENT_QUERY, UPDATE_DOCUMENT_QUERY } from './corpusSql.ts'
++import { InvalidCorpusInputError } from './errors.ts'
++
++export type Metadata = Record<string, unknown>
++
++export type DocumentInput = { scope: string; sourceIdentity: string; metadata: Metadata; chunks: readonly string[] }
++
++/** `created`: primera versión · `new-version`: el hash cambió · `unchanged`: no se escribió nada. */
++export type IngestStatus = 'created' | 'new-version' | 'unchanged'
++
++export type IngestResult = { status: IngestStatus; documentId: string; version: number }
++
++type LockedDocument = { document_id: string; version: number; content_hash: string }
++
++type Transaction = Pick<SQL, 'unsafe'>
++
++function assertValidDocument(input: DocumentInput): void {
++  if (!input.scope.trim()) throw new InvalidCorpusInputError('document scope must be a non-empty string')
++  if (!input.sourceIdentity.trim()) throw new InvalidCorpusInputError('document sourceIdentity must be a non-empty string')
++  if (input.chunks.length === 0) throw new InvalidCorpusInputError(`document '${input.sourceIdentity}' has no chunks`)
++}
++
++function isSameContent(existing: LockedDocument, contentHash: string): boolean {
++  return existing.content_hash === contentHash
++}
++
++async function insertChunks(tx: Transaction, documentId: string, version: number, chunks: readonly string[]): Promise<void> {
++  for (const [position, text] of chunks.entries()) {
++    await tx.unsafe(INSERT_CHUNK_QUERY, [documentId, version, position, text, chunkHash(text)])
++  }
++}
++
++async function createDocument(tx: Transaction, input: DocumentInput, contentHash: string): Promise<IngestResult> {
++  const [row] = (await tx.unsafe(INSERT_DOCUMENT_QUERY, [input.scope, input.sourceIdentity, contentHash, JSON.stringify(input.metadata)])) as {
++    document_id: string
++  }[]
++  if (!row) throw new Error(`inserting document '${input.sourceIdentity}' returned no row`)
++  await insertChunks(tx, row.document_id, 1, input.chunks)
++  return { status: 'created', documentId: row.document_id, version: 1 }
++}
++
++async function addVersion(tx: Transaction, existing: LockedDocument, input: DocumentInput, contentHash: string): Promise<IngestResult> {
++  const version = existing.version + 1
++  await tx.unsafe(UPDATE_DOCUMENT_QUERY, [existing.document_id, version, contentHash, JSON.stringify(input.metadata)])
++  await insertChunks(tx, existing.document_id, version, input.chunks)
++  return { status: 'new-version', documentId: existing.document_id, version }
++}
++
++/**
++ * Ingiere un documento. Mismo origen y mismo hash: `unchanged`, sin escribir
++ * nada —tampoco la metadata—. Hash distinto: versión nueva con sus chunks, y
++ * la anterior deja de ser buscable (su texto se conserva para los análisis).
++ */
++export async function ingestDocument(sql: SQL, input: DocumentInput): Promise<IngestResult> {
++  assertValidDocument(input)
++  const contentHash = documentHash(input.chunks)
++  return sql.begin(async tx => {
++    const [existing] = (await tx.unsafe(LOCK_DOCUMENT_QUERY, [input.scope, input.sourceIdentity])) as LockedDocument[]
++    if (!existing) return createDocument(tx, input, contentHash)
++    if (isSameContent(existing, contentHash)) return { status: 'unchanged', documentId: existing.document_id, version: existing.version }
++    return addVersion(tx, existing, input, contentHash)
++  })
++}
+diff --git a/src/packages/semantic-search/corpusSql.ts b/src/packages/semantic-search/corpusSql.ts
+new file mode 100644
+index 000000000..87ef2308e
+--- /dev/null
++++ b/src/packages/semantic-search/corpusSql.ts
+@@ -0,0 +1,130 @@
++/**
++ * El SQL del corpus durable (ADR-THYROX-008 1.2.0): el DDL de su migración y
++ * las consultas que no dependen de ningún espacio de embeddings. El texto
++ * vive en `document_chunks`; nada aquí lee `source_identity` como ruta.
++ *
++ * La migración es la versión 2 del ledger del store. La versión 1 era la
++ * tabla única `semantic_embeddings` de la superficie anterior, sin texto ni
++ * modelo: ya no se declara, así que un ledger que la tenga rehúsa por
++ * `assertNoNewerDatabase` en vez de convivir con un esquema que no cumple el
++ * requisito de durabilidad.
++ */
++export const MIGRATIONS_TABLE = 'semantic_search_migrations'
++export const CORPUS_MIGRATION_VERSION = 2
++export const CORPUS_MIGRATION_NAME = 'create_durable_corpus'
++
++/**
++ * La condición que deja sólo la versión vigente de cada documento, sobre los
++ * alias `c` (chunk) y `d` (documento). La comparten la búsqueda y el censo de
++ * chunks por embeber: una versión reemplazada ni se busca ni se re-embebe.
++ */
++export const CURRENT_VERSION_CONDITION = 'c.version = d.version'
++
++export const CORPUS_STATEMENTS: readonly string[] = [
++  `CREATE TABLE documents (
++     document_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
++     scope TEXT NOT NULL,
++     source_identity TEXT NOT NULL,
++     version INTEGER NOT NULL CHECK (version > 0),
++     content_hash TEXT NOT NULL,
++     metadata JSONB NOT NULL,
++     ingested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
++     UNIQUE (scope, source_identity)
++   )`,
++  `CREATE TABLE document_chunks (
++     chunk_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
++     document_id UUID NOT NULL REFERENCES documents (document_id),
++     version INTEGER NOT NULL CHECK (version > 0),
++     position INTEGER NOT NULL CHECK (position >= 0),
++     text TEXT NOT NULL,
++     content_hash TEXT NOT NULL,
++     UNIQUE (document_id, version, position)
++   )`,
++  `CREATE TABLE embedding_spaces (
++     space_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
++     model TEXT NOT NULL,
++     dimensions INTEGER NOT NULL CHECK (dimensions > 0),
++     representation TEXT NOT NULL CHECK (representation IN ('vector', 'halfvec')),
++     state TEXT NOT NULL CHECK (state IN ('building', 'active', 'retired')),
++     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
++     dropped_at TIMESTAMPTZ
++   )`,
++  `CREATE UNIQUE INDEX embedding_spaces_single_active ON embedding_spaces (state) WHERE state = 'active'`,
++  `CREATE TABLE analysis_runs (
++     analysis_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
++     input TEXT NOT NULL,
++     space_id INTEGER NOT NULL REFERENCES embedding_spaces (space_id),
++     corpus_versions JSONB NOT NULL,
++     reranker TEXT,
++     output JSONB NOT NULL,
++     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
++   )`,
++  `CREATE TABLE analysis_candidates (
++     analysis_id UUID NOT NULL REFERENCES analysis_runs (analysis_id),
++     rank INTEGER NOT NULL CHECK (rank >= 0),
++     chunk_id UUID NOT NULL REFERENCES document_chunks (chunk_id) ON DELETE RESTRICT,
++     score DOUBLE PRECISION NOT NULL,
++     PRIMARY KEY (analysis_id, rank)
++   )`,
++]
++
++/** El documento de una identidad de origen, bloqueado hasta el fin de la transacción: `$1` scope, `$2` identidad. */
++export const LOCK_DOCUMENT_QUERY = `SELECT document_id, version, content_hash FROM documents
++   WHERE scope = $1 AND source_identity = $2 FOR UPDATE`
++
++/** `$1` scope, `$2` identidad, `$3` hash, `$4` metadata JSON. */
++export const INSERT_DOCUMENT_QUERY = `INSERT INTO documents (scope, source_identity, version, content_hash, metadata)
++   VALUES ($1, $2, 1, $3, $4::jsonb) RETURNING document_id`
++
++/** `$1` documento, `$2` versión nueva, `$3` hash, `$4` metadata JSON. */
++export const UPDATE_DOCUMENT_QUERY = `UPDATE documents SET version = $2, content_hash = $3, metadata = $4::jsonb, ingested_at = now()
++   WHERE document_id = $1`
++
++/** `$1` documento, `$2` versión, `$3` posición, `$4` texto, `$5` hash. */
++export const INSERT_CHUNK_QUERY = `INSERT INTO document_chunks (document_id, version, position, text, content_hash)
++   VALUES ($1, $2, $3, $4, $5)`
++
++const SPACE_COLUMNS = 'space_id, model, dimensions, representation, state, created_at, dropped_at'
++
++export const SELECT_SPACE_QUERY = `SELECT ${SPACE_COLUMNS} FROM embedding_spaces WHERE space_id = $1`
++export const LOCK_SPACE_QUERY = `${SELECT_SPACE_QUERY} FOR UPDATE`
++export const SELECT_ACTIVE_SPACE_QUERY = `SELECT ${SPACE_COLUMNS} FROM embedding_spaces WHERE state = 'active'`
++
++/** `$1` modelo, `$2` dimensión, `$3` representación. */
++export const INSERT_SPACE_QUERY = `INSERT INTO embedding_spaces (model, dimensions, representation, state)
++   VALUES ($1, $2, $3, 'building') RETURNING ${SPACE_COLUMNS}`
++
++export const RETIRE_ACTIVE_SPACE_QUERY = `UPDATE embedding_spaces SET state = 'retired' WHERE state = 'active' RETURNING space_id`
++export const ACTIVATE_SPACE_QUERY = `UPDATE embedding_spaces SET state = 'active' WHERE space_id = $1`
++export const MARK_SPACE_DROPPED_QUERY = `UPDATE embedding_spaces SET dropped_at = now() WHERE space_id = $1`
++
++/** `$1` consulta, `$2` espacio, `$3` reranker o NULL, `$4` output JSON. */
++export const INSERT_ANALYSIS_RUN_QUERY = `INSERT INTO analysis_runs (input, space_id, corpus_versions, reranker, output)
++   VALUES ($1, $2, '[]'::jsonb, $3, $4::jsonb) RETURNING analysis_id`
++
++/** `$1` análisis, `$2` rango, `$3` chunk, `$4` score. */
++export const INSERT_ANALYSIS_CANDIDATE_QUERY = `INSERT INTO analysis_candidates (analysis_id, rank, chunk_id, score) VALUES ($1, $2, $3, $4)`
++
++/**
++ * Fija las versiones del corpus que usó el análisis a partir de sus
++ * candidatos ya insertados: `$1` análisis. Los chunks no cambian después de
++ * escribirse, así que el par documento · versión es el de ese momento.
++ */
++export const FIX_CORPUS_VERSIONS_QUERY = `UPDATE analysis_runs SET corpus_versions = COALESCE((
++     SELECT jsonb_agg(jsonb_build_object('documentId', used.document_id, 'version', used.version) ORDER BY used.document_id, used.version)
++       FROM (SELECT DISTINCT c.document_id, c.version FROM analysis_candidates a
++               JOIN document_chunks c ON c.chunk_id = a.chunk_id WHERE a.analysis_id = $1) AS used
++   ), '[]'::jsonb)
++   WHERE analysis_id = $1`
++
++export const SELECT_ANALYSIS_RUN_QUERY = `SELECT r.analysis_id, r.input, r.corpus_versions, r.reranker, r.output, r.created_at,
++          s.space_id, s.model, s.dimensions, s.representation
++     FROM analysis_runs r JOIN embedding_spaces s ON s.space_id = r.space_id
++    WHERE r.analysis_id = $1`
++
++export const SELECT_ANALYSIS_CANDIDATES_QUERY = `SELECT a.rank, a.chunk_id, a.score, c.document_id, c.version, c.position, c.text, d.source_identity
++     FROM analysis_candidates a
++     JOIN document_chunks c ON c.chunk_id = a.chunk_id
++     JOIN documents d ON d.document_id = c.document_id
++    WHERE a.analysis_id = $1
++    ORDER BY a.rank`
+diff --git a/src/packages/semantic-search/errors.ts b/src/packages/semantic-search/errors.ts
+new file mode 100644
+index 000000000..12232c7b6
+--- /dev/null
++++ b/src/packages/semantic-search/errors.ts
+@@ -0,0 +1,42 @@
++/**
++ * Los rechazos del corpus y de sus espacios de embeddings. Cada uno nombra lo
++ * que falta o el estado que lo impide: el store nunca responde con un vacío
++ * que se confunda con «no hay resultados».
++ */
++import type { SpaceState } from './config.ts'
++
++/** No hay espacio `active`: buscar sin él devolvería vacío sin serlo. */
++export class NoActiveEmbeddingSpaceError extends Error {
++  constructor() {
++    super('there is no active embedding space: create one, embed the persisted chunks and activate it before searching')
++    this.name = 'NoActiveEmbeddingSpaceError'
++  }
++}
++
++/** El espacio pedido no existe. */
++export class UnknownEmbeddingSpaceError extends Error {
++  constructor(readonly spaceId: number) {
++    super(`embedding space ${spaceId} does not exist`)
++    this.name = 'UnknownEmbeddingSpaceError'
++  }
++}
++
++/** El estado del espacio no admite la operación pedida. */
++export class EmbeddingSpaceStateError extends Error {
++  constructor(
++    readonly spaceId: number,
++    readonly state: SpaceState | 'dropped',
++    operation: string,
++  ) {
++    super(`embedding space ${spaceId} is ${state}: cannot ${operation}`)
++    this.name = 'EmbeddingSpaceStateError'
++  }
++}
++
++/** Un documento o un análisis mal formado, rechazado antes de abrir la transacción. */
++export class InvalidCorpusInputError extends Error {
++  constructor(message: string) {
++    super(message)
++    this.name = 'InvalidCorpusInputError'
++  }
++}
+diff --git a/src/packages/semantic-search/spaces.ts b/src/packages/semantic-search/spaces.ts
+new file mode 100644
+index 000000000..317d52e92
+--- /dev/null
++++ b/src/packages/semantic-search/spaces.ts
+@@ -0,0 +1,151 @@
++/**
++ * Los espacios de embeddings: cada par modelo · forma es un espacio con su
++ * tabla e índice. Se crea en `building`, se embebe desde los chunks
++ * persistidos, se activa (el activo anterior pasa a `retired` en la misma
++ * transacción) y sólo retirado puede borrarse su tabla. Borrar un espacio no
++ * toca documentos, chunks ni análisis: su fila se conserva, marcada con
++ * `dropped_at`, porque los análisis la citan.
++ */
++import type { SQL } from 'bun'
++
++import { type EmbeddingShape, type Representation, type SpaceState, validateEmbedding, validateEmbeddingShape } from './config.ts'
++import {
++  ACTIVATE_SPACE_QUERY,
++  INSERT_SPACE_QUERY,
++  LOCK_SPACE_QUERY,
++  MARK_SPACE_DROPPED_QUERY,
++  RETIRE_ACTIVE_SPACE_QUERY,
++  SELECT_ACTIVE_SPACE_QUERY,
++  SELECT_SPACE_QUERY,
++} from './corpusSql.ts'
++import { EmbeddingSpaceStateError, InvalidCorpusInputError, UnknownEmbeddingSpaceError } from './errors.ts'
++import { chunksWithoutEmbeddingQuery, createSpaceTableStatements, dropSpaceTableStatement, putEmbeddingQuery } from './vectorSql.ts'
++
++export type EmbeddingSpace = EmbeddingShape & {
++  spaceId: number
++  model: string
++  state: SpaceState
++  createdAt: string
++  droppedAt: string | null
++}
++
++export type SpaceDeclaration = EmbeddingShape & { model: string }
++
++/** Un chunk vigente sin vector en un espacio, con el texto persistido que hay que embeber. */
++export type PendingChunk = { chunkId: string; documentId: string; version: number; position: number; text: string }
++
++export type ChunkEmbedding = { chunkId: string; embedding: readonly number[] }
++
++/** El espacio activado y el que retiró, si había uno. */
++export type Activation = { activated: number; retired: number | null }
++
++type Transaction = Pick<SQL, 'unsafe'>
++
++type SpaceRow = {
++  space_id: number
++  model: string
++  dimensions: number
++  representation: Representation
++  state: SpaceState
++  created_at: Date
++  dropped_at: Date | null
++}
++
++type PendingRow = { chunk_id: string; document_id: string; version: number; position: number; text: string }
++
++function toSpace(row: SpaceRow): EmbeddingSpace {
++  return {
++    spaceId: row.space_id,
++    model: row.model,
++    dimensions: row.dimensions,
++    representation: row.representation,
++    state: row.state,
++    createdAt: row.created_at.toISOString(),
++    droppedAt: row.dropped_at?.toISOString() ?? null,
++  }
++}
++
++function isDropped(space: EmbeddingSpace): boolean {
++  return space.droppedAt !== null
++}
++
++function isWritable(space: EmbeddingSpace): boolean {
++  return space.state !== 'retired'
++}
++
++function isDroppable(space: EmbeddingSpace): boolean {
++  return space.state === 'retired' && !isDropped(space)
++}
++
++function vectorLiteral(embedding: readonly number[]): string {
++  return JSON.stringify(embedding)
++}
++
++async function readSpace(tx: Transaction, query: string, spaceId: number): Promise<EmbeddingSpace> {
++  const [row] = (await tx.unsafe(query, [spaceId])) as SpaceRow[]
++  if (!row) throw new UnknownEmbeddingSpaceError(spaceId)
++  return toSpace(row)
++}
++
++export async function getEmbeddingSpace(sql: SQL, spaceId: number): Promise<EmbeddingSpace | null> {
++  const [row] = (await sql.unsafe(SELECT_SPACE_QUERY, [spaceId])) as SpaceRow[]
++  return row ? toSpace(row) : null
++}
++
++export async function activeEmbeddingSpace(sql: SQL): Promise<EmbeddingSpace | null> {
++  const [row] = (await sql.unsafe(SELECT_ACTIVE_SPACE_QUERY)) as SpaceRow[]
++  return row ? toSpace(row) : null
++}
++
++/** Crea el espacio en `building` con su tabla e índice, en una transacción. */
++export async function createEmbeddingSpace(sql: SQL, extensionSchema: string, declaration: SpaceDeclaration): Promise<EmbeddingSpace> {
++  if (!declaration.model.trim()) throw new InvalidCorpusInputError('embedding space model must be a non-empty string')
++  const shape = validateEmbeddingShape({ dimensions: declaration.dimensions, representation: declaration.representation })
++  return sql.begin(async tx => {
++    const [row] = (await tx.unsafe(INSERT_SPACE_QUERY, [declaration.model, shape.dimensions, shape.representation])) as SpaceRow[]
++    if (!row) throw new Error(`creating embedding space for model '${declaration.model}' returned no row`)
++    for (const statement of createSpaceTableStatements(extensionSchema, row.space_id, shape)) await tx.unsafe(statement)
++    return toSpace(row)
++  })
++}
++
++/** Los chunks vigentes que aún no tienen vector en el espacio. */
++export async function chunksWithoutEmbedding(sql: SQL, spaceId: number, limit: number): Promise<PendingChunk[]> {
++  const space = await readSpace(sql, SELECT_SPACE_QUERY, spaceId)
++  if (isDropped(space)) throw new EmbeddingSpaceStateError(spaceId, 'dropped', 'list chunks without embedding')
++  const rows = (await sql.unsafe(chunksWithoutEmbeddingQuery(spaceId), [limit])) as PendingRow[]
++  return rows.map(row => ({ chunkId: row.chunk_id, documentId: row.document_id, version: row.version, position: row.position, text: row.text }))
++}
++
++/** Escribe vectores en un espacio no retirado, validando cada uno contra su dimensión, en una transacción. */
++export async function putEmbeddings(sql: SQL, extensionSchema: string, spaceId: number, embeddings: readonly ChunkEmbedding[]): Promise<void> {
++  await sql.begin(async tx => {
++    const space = await readSpace(tx, `${SELECT_SPACE_QUERY} FOR SHARE`, spaceId)
++    if (!isWritable(space)) throw new EmbeddingSpaceStateError(spaceId, space.state, 'write embeddings')
++    for (const { embedding } of embeddings) validateEmbedding(embedding, space.dimensions)
++    const query = putEmbeddingQuery(extensionSchema, spaceId, space)
++    for (const { chunkId, embedding } of embeddings) await tx.unsafe(query, [chunkId, vectorLiteral(embedding)])
++  })
++}
++
++/** Activa el espacio; el activo anterior pasa a `retired` en la misma transacción. */
++export async function activateSpace(sql: SQL, spaceId: number): Promise<Activation> {
++  return sql.begin(async tx => {
++    const space = await readSpace(tx, LOCK_SPACE_QUERY, spaceId)
++    if (space.state === 'active') return { activated: spaceId, retired: null }
++    if (!isWritable(space)) throw new EmbeddingSpaceStateError(spaceId, space.state, 'activate')
++    const [retired] = (await tx.unsafe(RETIRE_ACTIVE_SPACE_QUERY)) as { space_id: number }[]
++    await tx.unsafe(ACTIVATE_SPACE_QUERY, [spaceId])
++    return { activated: spaceId, retired: retired?.space_id ?? null }
++  })
++}
++
++/** Borra la tabla de un espacio retirado; conserva su fila y todo el corpus. */
++export async function dropSpace(sql: SQL, spaceId: number): Promise<void> {
++  await sql.begin(async tx => {
++    const space = await readSpace(tx, LOCK_SPACE_QUERY, spaceId)
++    if (!isDroppable(space)) throw new EmbeddingSpaceStateError(spaceId, isDropped(space) ? 'dropped' : space.state, 'drop')
++    await tx.unsafe(dropSpaceTableStatement(spaceId))
++    await tx.unsafe(MARK_SPACE_DROPPED_QUERY, [spaceId])
++  })
++}
+diff --git a/src/packages/semantic-search/store.ts b/src/packages/semantic-search/store.ts
+index 95b41ebcf..a89e51f3a 100644
+--- a/src/packages/semantic-search/store.ts
++++ b/src/packages/semantic-search/store.ts
+@@ -1,7 +1,13 @@
+ /**
+- * `SemanticSearchStore` (ADR-THYROX-008): el store de dominio vectorial sobre
+- * PostgreSQL + pgvector. Abre, migra, lee y escribe; no tiene ciclo de vida
+- * de servidor ni de worker, y su único contrato de conexión es una URL.
++ * `SemanticSearchStore` (ADR-THYROX-008 1.2.0): el corpus durable y su
++ * búsqueda semántica sobre PostgreSQL + pgvector. Guarda el contenido
++ * ingerido (documentos y chunks versionados por hash), sus representaciones
++ * derivadas (un espacio de embeddings por modelo · forma) y los análisis
++ * hechos sobre él. Buscar y recuperar texto no vuelven a ninguna fuente.
++ *
++ * Abre, migra, lee y escribe; no tiene ciclo de vida de servidor ni de worker,
++ * su único contrato de conexión es una URL, y no borra nada por caducidad:
++ * qué se ingiere y qué retención aplica no lo decide el store.
+  *
+  * Nunca degrada: una URL que no es de PostgreSQL rehúsa al abrir, y sin
+  * pgvector utilizable rehúsa cada operación con el error de su estado —no
+@@ -10,16 +16,17 @@
+  * La conexión fija el esquema del store como `search_path` en el arranque de
+  * cada conexión del pool, no con un `SET` suelto: `Bun.SQL` es un pool y un
+  * `SET` llega a una sola conexión (medido en `@thyrox/store`,
+- * `testing/postgresTestSchema.ts`). `openByUrl` de `@thyrox/store` no acepta
+- * opciones de conexión, por eso la URL se valida con su `dialectOf` y la
+- * conexión se construye aquí.
++ * `testing/postgresTestSchema.ts`).
+  */
+ import { SQL } from 'bun'
+ 
+ import { runMigrations, type Migration } from '@thyrox/store/migrations.ts'
+-import { readJson } from '@thyrox/store/sql.ts'
+ 
+ import { type SchemaConfig, validateEmbedding, validateSchemaConfig, validateStoreUrl } from './config.ts'
++import { type DocumentInput, type IngestResult, ingestDocument } from './corpus.ts'
++import { CORPUS_MIGRATION_NAME, CORPUS_MIGRATION_VERSION, CORPUS_STATEMENTS, MIGRATIONS_TABLE } from './corpusSql.ts'
++import { type AnalysisRun, type AnalysisRunInput, getAnalysisRun, recordAnalysisRun } from './analysisRuns.ts'
++import { NoActiveEmbeddingSpaceError } from './errors.ts'
+ import {
+   assertVectorExtensionUsable,
+   readVectorExtensionState,
+@@ -28,24 +35,33 @@ import {
+ } from './extension.ts'
+ import { rerankByCosine } from './rerank.ts'
+ import {
+-  binaryCandidatesQuery,
+-  createEmbeddingsStatements,
+-  getEmbeddingQuery,
+-  migrationName,
+-  MIGRATIONS_TABLE,
+-  upsertQuery,
+-} from './vectorSql.ts'
+-
+-export type Metadata = Record<string, unknown>
+-
+-/** Un embedding guardado. */
+-export type StoredEmbedding = { id: string; embedding: number[]; metadata: Metadata }
++  type Activation,
++  activateSpace,
++  activeEmbeddingSpace,
++  type ChunkEmbedding,
++  chunksWithoutEmbedding,
++  createEmbeddingSpace,
++  dropSpace,
++  type EmbeddingSpace,
++  getEmbeddingSpace,
++  type PendingChunk,
++  putEmbeddings,
++  type SpaceDeclaration,
++} from './spaces.ts'
++import { binaryCandidatesQuery } from './vectorSql.ts'
+ 
+ /** Un candidato de la búsqueda binaria, con su distancia de Hamming. */
+-export type BinaryCandidate = { id: string; hammingDistance: number }
+-
+-/** Un resultado de `searchNearest`, reordenado por coseno exacto. */
+-export type NearestResult = { id: string; similarity: number; metadata: Metadata }
++export type BinaryCandidate = { chunkId: string; hammingDistance: number }
++
++/** Un resultado de `searchNearest`, reordenado por coseno exacto, con el texto persistido. */
++export type NearestResult = {
++  chunkId: string
++  text: string
++  documentId: string
++  sourceIdentity: string
++  version: number
++  similarity: number
++}
+ 
+ export type SemanticSearchStoreOptions = { url: string; schema: SchemaConfig }
+ 
+@@ -55,37 +71,60 @@ export type SemanticSearchStoreDeps = {
+ }
+ 
+ export type SemanticSearchStore = {
+-  /** Comprueba pgvector y aplica la migración del esquema si falta; devuelve las versiones aplicadas ahora. */
+-  migrateVectorSchema(): Promise<number[]>
+-  upsertEmbedding(id: string, embedding: readonly number[], metadata: Metadata): Promise<void>
+-  getEmbedding(id: string): Promise<StoredEmbedding | null>
++  /** Comprueba pgvector y aplica la migración del corpus si falta; devuelve las versiones aplicadas ahora. */
++  migrate(): Promise<number[]>
++  ingestDocument(input: DocumentInput): Promise<IngestResult>
++  createEmbeddingSpace(declaration: SpaceDeclaration): Promise<EmbeddingSpace>
++  getEmbeddingSpace(spaceId: number): Promise<EmbeddingSpace | null>
++  activeEmbeddingSpace(): Promise<EmbeddingSpace | null>
++  chunksWithoutEmbedding(spaceId: number, limit: number): Promise<PendingChunk[]>
++  putEmbeddings(spaceId: number, embeddings: readonly ChunkEmbedding[]): Promise<void>
++  activateSpace(spaceId: number): Promise<Activation>
++  dropSpace(spaceId: number): Promise<void>
++  /** Candidatos vigentes del espacio activo por distancia de Hamming de la cuantización binaria. */
+   searchBinaryCandidates(query: readonly number[], limit: number): Promise<BinaryCandidate[]>
++  /** Los `k` chunks vigentes más cercanos en el espacio activo; sin espacio activo rehúsa. */
+   searchNearest(query: readonly number[], k: number, options: { candidates: number }): Promise<NearestResult[]>
++  recordAnalysisRun(run: AnalysisRunInput): Promise<string>
++  getAnalysisRun(analysisId: string): Promise<AnalysisRun | null>
+   /** La extensión utilizable (versión y esquema), comprobada una vez por store. */
+   vectorExtension(): Promise<UsableVectorExtension>
+   close(): Promise<void>
+ }
+ 
+-type CandidateRow = { id: string; embedding: string; metadata: unknown; hamming_distance: number }
+-type EmbeddingRow = { id: string; embedding: string; metadata: unknown }
++type CandidateRow = {
++  chunk_id: string
++  embedding: string
++  text: string
++  document_id: string
++  version: number
++  source_identity: string
++  hamming_distance: number
++}
+ 
+-const SCHEMA_VERSION = 1
++const CORPUS_MIGRATION: Migration = {
++  version: CORPUS_MIGRATION_VERSION,
++  name: CORPUS_MIGRATION_NAME,
++  statements: { postgres: [...CORPUS_STATEMENTS], sqlite: [] },
++}
+ 
+ function parseVectorText(text: string): number[] {
+   return JSON.parse(text) as number[]
+ }
+ 
+-function vectorLiteral(embedding: readonly number[]): string {
+-  return JSON.stringify(embedding)
+-}
+-
+ function assertPositiveCount(name: string, value: number): void {
+   if (!Number.isInteger(value) || value <= 0) throw new RangeError(`${name} must be a positive integer, got ${value}`)
+ }
+ 
+-function vectorMigration(extension: UsableVectorExtension, config: SchemaConfig): Migration {
+-  const statements = createEmbeddingsStatements(extension.schema, config)
+-  return { version: SCHEMA_VERSION, name: migrationName(config), statements: { postgres: statements, sqlite: [] } }
++function toNearest(row: CandidateRow, similarity: number): NearestResult {
++  return {
++    chunkId: row.chunk_id,
++    text: row.text,
++    documentId: row.document_id,
++    sourceIdentity: row.source_identity,
++    version: row.version,
++    similarity,
++  }
+ }
+ 
+ /**
+@@ -104,38 +143,73 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
+     return extensionCheck
+   }
+ 
++  async function requireActiveSpace(): Promise<EmbeddingSpace> {
++    const space = await activeEmbeddingSpace(sql)
++    if (!space) throw new NoActiveEmbeddingSpaceError()
++    return space
++  }
++
+   async function fetchCandidates(query: readonly number[], limit: number): Promise<CandidateRow[]> {
+-    validateEmbedding(query, config.dimensions)
+     assertPositiveCount('limit', limit)
+     const extension = await vectorExtension()
+-    return (await sql.unsafe(binaryCandidatesQuery(extension.schema, config), [vectorLiteral(query), limit])) as CandidateRow[]
++    const space = await requireActiveSpace()
++    validateEmbedding(query, space.dimensions)
++    return (await sql.unsafe(binaryCandidatesQuery(extension.schema, space.spaceId, space), [JSON.stringify(query), limit])) as CandidateRow[]
+   }
+ 
+   return {
+     vectorExtension,
+ 
+-    async migrateVectorSchema() {
+-      const extension = await vectorExtension()
++    async migrate() {
++      await vectorExtension()
+       await sql.unsafe(`CREATE SCHEMA IF NOT EXISTS ${config.name}`)
+-      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: [vectorMigration(extension, config)] })
++      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: [CORPUS_MIGRATION] })
+     },
+ 
+-    async upsertEmbedding(id, embedding, metadata) {
+-      validateEmbedding(embedding, config.dimensions)
++    async ingestDocument(input) {
++      await vectorExtension()
++      return ingestDocument(sql, input)
++    },
++
++    async createEmbeddingSpace(declaration) {
+       const extension = await vectorExtension()
+-      await sql.unsafe(upsertQuery(extension.schema, config), [id, vectorLiteral(embedding), JSON.stringify(metadata)])
++      return createEmbeddingSpace(sql, extension.schema, declaration)
+     },
+ 
+-    async getEmbedding(id) {
++    async getEmbeddingSpace(spaceId) {
+       await vectorExtension()
+-      const [row] = (await sql.unsafe(getEmbeddingQuery(), [id])) as EmbeddingRow[]
+-      if (!row) return null
+-      return { id: row.id, embedding: parseVectorText(row.embedding), metadata: readJson(row.metadata) }
++      return getEmbeddingSpace(sql, spaceId)
++    },
++
++    async activeEmbeddingSpace() {
++      await vectorExtension()
++      return activeEmbeddingSpace(sql)
++    },
++
++    async chunksWithoutEmbedding(spaceId, limit) {
++      assertPositiveCount('limit', limit)
++      await vectorExtension()
++      return chunksWithoutEmbedding(sql, spaceId, limit)
++    },
++
++    async putEmbeddings(spaceId, embeddings) {
++      const extension = await vectorExtension()
++      await putEmbeddings(sql, extension.schema, spaceId, embeddings)
++    },
++
++    async activateSpace(spaceId) {
++      await vectorExtension()
++      return activateSpace(sql, spaceId)
++    },
++
++    async dropSpace(spaceId) {
++      await vectorExtension()
++      await dropSpace(sql, spaceId)
+     },
+ 
+     async searchBinaryCandidates(query, limit) {
+       const rows = await fetchCandidates(query, limit)
+-      return rows.map(row => ({ id: row.id, hammingDistance: Number(row.hamming_distance) }))
++      return rows.map(row => ({ chunkId: row.chunk_id, hammingDistance: Number(row.hamming_distance) }))
+     },
+ 
+     async searchNearest(query, k, { candidates }) {
+@@ -146,7 +220,17 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
+         rows.map(row => ({ embedding: parseVectorText(row.embedding), item: row })),
+         k,
+       )
+-      return ranked.map(({ item, similarity }) => ({ id: item.id, similarity, metadata: readJson(item.metadata) }))
++      return ranked.map(({ item, similarity }) => toNearest(item, similarity))
++    },
++
++    async recordAnalysisRun(run) {
++      await vectorExtension()
++      return recordAnalysisRun(sql, run)
++    },
++
++    async getAnalysisRun(analysisId) {
++      await vectorExtension()
++      return getAnalysisRun(sql, analysisId)
+     },
+ 
+     async close() {
+diff --git a/src/packages/semantic-search/vectorSql.ts b/src/packages/semantic-search/vectorSql.ts
+index 7f6790383..9f1499afd 100644
+--- a/src/packages/semantic-search/vectorSql.ts
++++ b/src/packages/semantic-search/vectorSql.ts
+@@ -1,78 +1,105 @@
+ /**
+- * El SQL vectorial del store: el DDL de su única migración y las consultas.
+- * Es el único sitio del árbol que escribe SQL de pgvector.
++ * El SQL vectorial del store: la tabla de cada espacio de embeddings con su
++ * índice HNSW sobre la cuantización binaria, y las consultas que la cruzan con
++ * el corpus. Es el único sitio del árbol que escribe SQL de pgvector.
+  *
+  * Todo objeto de la extensión se califica con el esquema donde vive
+  * (`<ext>.vector`, `OPERATOR(<ext>.<~>)`, `<ext>.bit_hamming_ops`): la
+  * conexión sólo lleva el esquema del store en su `search_path`, y la
+  * extensión puede estar habilitada en cualquier otro —en un servicio
+  * gestionado no tiene por qué ser `public`—.
++ *
++ * El nombre de la tabla se deriva del `space_id`, un entero de identidad: la
++ * única parte interpolada que no es texto fijo ni una forma ya validada.
+  */
+-import type { SchemaConfig } from './config.ts'
+-
+-export const EMBEDDINGS_TABLE = 'semantic_embeddings'
+-export const MIGRATIONS_TABLE = 'semantic_search_migrations'
+-export const BINARY_INDEX_NAME = 'semantic_embeddings_binary_hnsw'
++import type { EmbeddingShape } from './config.ts'
++import { CURRENT_VERSION_CONDITION } from './corpusSql.ts'
+ 
+-/** El tipo de la columna vectorial, calificado con el esquema de la extensión. */
+-export function vectorType(extensionSchema: string, config: SchemaConfig): string {
+-  return `${extensionSchema}.${config.representation}(${config.dimensions})`
++export function spaceTableName(spaceId: number): string {
++  if (!Number.isInteger(spaceId) || spaceId <= 0) throw new RangeError(`invalid space id ${spaceId}: expected a positive integer`)
++  return `space_embeddings_${spaceId}`
+ }
+ 
+-/** La cuantización binaria de una expresión vectorial, idéntica en el índice y en la consulta. */
+-function binaryQuantized(extensionSchema: string, expression: string, config: SchemaConfig): string {
+-  return `(${extensionSchema}.binary_quantize(${expression})::bit(${config.dimensions}))`
++export function spaceIndexName(spaceId: number): string {
++  return `${spaceTableName(spaceId)}_binary_hnsw`
+ }
+ 
+-/** La expresión de la consulta, recibida como literal de texto en `$1`. */
+-function queryVector(extensionSchema: string, config: SchemaConfig): string {
+-  return `$1::${vectorType(extensionSchema, config)}`
++/** El tipo de la columna vectorial, calificado con el esquema de la extensión. */
++export function vectorType(extensionSchema: string, shape: EmbeddingShape): string {
++  return `${extensionSchema}.${shape.representation}(${shape.dimensions})`
+ }
+ 
+-/**
+- * El nombre de la migración lleva la forma del embedding: abrir un esquema ya
+- * migrado con otra dimensión o representación choca con la procedencia del
+- * ledger en vez de alterar la tabla en silencio.
+- */
+-export function migrationName(config: SchemaConfig): string {
+-  return `create_embeddings_${config.representation}(${config.dimensions})`
++/** La cuantización binaria de una expresión vectorial, idéntica en el índice y en la consulta. */
++function binaryQuantized(extensionSchema: string, expression: string, shape: EmbeddingShape): string {
++  return `(${extensionSchema}.binary_quantize(${expression})::bit(${shape.dimensions}))`
+ }
+ 
+-/** El DDL de la tabla de embeddings y de su índice HNSW sobre la cuantización binaria. */
+-export function createEmbeddingsStatements(extensionSchema: string, config: SchemaConfig): string[] {
++/** El DDL de la tabla del espacio y de su índice HNSW sobre la cuantización binaria. */
++export function createSpaceTableStatements(extensionSchema: string, spaceId: number, shape: EmbeddingShape): string[] {
++  const table = spaceTableName(spaceId)
+   return [
+-    `CREATE TABLE ${EMBEDDINGS_TABLE} (
+-       id TEXT PRIMARY KEY,
+-       embedding ${vectorType(extensionSchema, config)} NOT NULL,
+-       metadata JSONB NOT NULL,
+-       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
++    `CREATE TABLE ${table} (
++       chunk_id UUID PRIMARY KEY REFERENCES document_chunks (chunk_id),
++       embedding ${vectorType(extensionSchema, shape)} NOT NULL
+      )`,
+-    `CREATE INDEX ${BINARY_INDEX_NAME} ON ${EMBEDDINGS_TABLE}
+-       USING hnsw (${binaryQuantized(extensionSchema, 'embedding', config)} ${extensionSchema}.bit_hamming_ops)`,
++    `CREATE INDEX ${spaceIndexName(spaceId)} ON ${table}
++       USING hnsw (${binaryQuantized(extensionSchema, 'embedding', shape)} ${extensionSchema}.bit_hamming_ops)`,
+   ]
+ }
+ 
+-/** Inserta o reemplaza un embedding: `$1` id, `$2` vector como texto, `$3` metadata como JSON. */
+-export function upsertQuery(extensionSchema: string, config: SchemaConfig): string {
+-  return `INSERT INTO ${EMBEDDINGS_TABLE} (id, embedding, metadata, updated_at)
+-          VALUES ($1, $2::${vectorType(extensionSchema, config)}, $3::jsonb, now())
+-          ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding, metadata = EXCLUDED.metadata, updated_at = now()`
++export function dropSpaceTableStatement(spaceId: number): string {
++  return `DROP TABLE ${spaceTableName(spaceId)}`
++}
++
++/** Inserta o reemplaza el vector de un chunk: `$1` chunk, `$2` vector como texto. */
++export function putEmbeddingQuery(extensionSchema: string, spaceId: number, shape: EmbeddingShape): string {
++  return `INSERT INTO ${spaceTableName(spaceId)} (chunk_id, embedding) VALUES ($1, $2::${vectorType(extensionSchema, shape)})
++          ON CONFLICT (chunk_id) DO UPDATE SET embedding = EXCLUDED.embedding`
+ }
+ 
+-/** Lee un embedding por id: `$1` id. El vector vuelve como texto `[a,b,…]`. */
+-export function getEmbeddingQuery(): string {
+-  return `SELECT id, embedding::text AS embedding, metadata FROM ${EMBEDDINGS_TABLE} WHERE id = $1`
++/** Los chunks vigentes sin vector en el espacio, en orden estable: `$1` límite. */
++export function chunksWithoutEmbeddingQuery(spaceId: number): string {
++  return `SELECT c.chunk_id, c.document_id, c.version, c.position, c.text
++            FROM document_chunks c
++            JOIN documents d ON d.document_id = c.document_id AND ${CURRENT_VERSION_CONDITION}
++            LEFT JOIN ${spaceTableName(spaceId)} e ON e.chunk_id = c.chunk_id
++           WHERE e.chunk_id IS NULL
++           ORDER BY c.document_id, c.version, c.position
++           LIMIT $1`
+ }
+ 
+ /**
+- * Los candidatos más cercanos por distancia de Hamming entre cuantizaciones
+- * binarias, ordenados por la misma expresión que indexa el HNSW para que el
+- * planificador pueda usarlo: `$1` consulta como texto, `$2` límite.
++ * El filtro de versión vigente como subconsulta escalar correlacionada sobre
++ * el alias `e`. Un `EXISTS` o un `JOIN` los aplana el planificador en un join
++ * y ordena después (medido con `EXPLAIN`: sin rastro del HNSW); la subconsulta
++ * escalar queda como `Filter: SubPlan` del recorrido por el índice.
++ *
++ * pendiente: el HNSW filtrado puede cortar en `ef_search` candidatos antes de
++ * filtrar y dejar fuera versiones vigentes; con pgvector 0.8.6, 46 filas y
++ * `ef_search` 5 o 40 no se reprodujo (el grafo se recorrió entero), así que
++ * `hnsw.iterative_scan` no se activa sin un caso que lo exija.
++ */
++const CURRENT_CHUNK_FILTER = `(SELECT ${CURRENT_VERSION_CONDITION} FROM document_chunks c
++                                JOIN documents d ON d.document_id = c.document_id
++                               WHERE c.chunk_id = e.chunk_id)`
++
++/**
++ * Los candidatos vigentes más cercanos por distancia de Hamming entre
++ * cuantizaciones binarias, ordenados por la misma expresión que indexa el
++ * HNSW para que el planificador pueda usarlo: `$1` consulta como texto, `$2`
++ * límite. Devuelven el texto del chunk y su identidad de origen: la búsqueda
++ * no vuelve a ninguna fuente.
+  */
+-export function binaryCandidatesQuery(extensionSchema: string, config: SchemaConfig): string {
+-  const distance = `${binaryQuantized(extensionSchema, 'embedding', config)} OPERATOR(${extensionSchema}.<~>) ${binaryQuantized(extensionSchema, queryVector(extensionSchema, config), config)}`
+-  return `SELECT id, embedding::text AS embedding, metadata, ${distance} AS hamming_distance
+-            FROM ${EMBEDDINGS_TABLE}
+-           ORDER BY ${distance}
+-           LIMIT $2`
++export function binaryCandidatesQuery(extensionSchema: string, spaceId: number, shape: EmbeddingShape): string {
++  const query = binaryQuantized(extensionSchema, `$1::${vectorType(extensionSchema, shape)}`, shape)
++  const distance = `${binaryQuantized(extensionSchema, 'e.embedding', shape)} OPERATOR(${extensionSchema}.<~>) ${query}`
++  return `SELECT n.chunk_id, n.embedding, c.text, c.document_id, c.version, d.source_identity, n.hamming_distance
++            FROM (SELECT e.chunk_id, e.embedding::text AS embedding, ${distance} AS hamming_distance
++                    FROM ${spaceTableName(spaceId)} e
++                   WHERE ${CURRENT_CHUNK_FILTER}
++                   ORDER BY ${distance}
++                   LIMIT $2) AS n
++            JOIN document_chunks c ON c.chunk_id = n.chunk_id
++            JOIN documents d ON d.document_id = c.document_id
++           ORDER BY n.hamming_distance`
+ }
