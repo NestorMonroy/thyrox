@@ -19,22 +19,22 @@
  * pisen.
  *
  * Puerto fiel de `ccnmt: packages/bridge/src/bridgePointer.ts`.
- * `logForDebugging`/`isENOENT`/`getWorktreePathsPortable`/`lazySchema`/
- * `getProjectsDir`/`sanitizePath`/`jsonParse`/`jsonStringify` son
- * sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
+ * `isENOENT` viene de `@thyrox/local-observability`, `lazySchema` de
+ * `@thyrox/config` y `getProjectsDir`/`sanitizePath` de `@thyrox/storage`;
+ * `logForDebugging`/`getWorktreePathsPortable`/`jsonParse`/`jsonStringify`
+ * son sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
  */
 import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { z } from 'zod/v4'
+import { lazySchema } from '@thyrox/config/lazySchema'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
+import { getProjectsDir, sanitizePath } from '@thyrox/storage/sessionStoragePortable.js'
 import {
-  getProjectsDir,
   getWorktreePathsPortable,
-  isENOENT,
   jsonParse,
   jsonStringify,
-  lazySchema,
   logForDebugging,
-  sanitizePath,
 } from './internal/pendingCrossPackageDeps.js'
 
 /**

@@ -42,10 +42,10 @@
  * exporta `./cache-paths`.
  *
  * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`):
- * `getFsImplementation`, `getConfigHomeDir`, `getProjectsDir`,
  * `TOOL_RESULTS_SUBDIR`, `getSettings`/`rawSettingsContainsKey`/
- * `getSettingsWithAllErrors`, `lock`/`unlock` (proper-lockfile),
- * los 4 puntos de inyección de arriba.
+ * `getSettingsWithAllErrors` y los 4 puntos de inyección de arriba.
+ * `getFsImplementation`, `getProjectsDir`, `lock`/`unlock` vienen de
+ * `@thyrox/storage`; `getConfigHomeDir`, de `@thyrox/config`.
  */
 
 import * as fs from 'fs/promises'
@@ -55,21 +55,19 @@ import { logEvent } from '../index.js'
 import { CACHE_PATHS } from '@thyrox/storage/cache-paths'
 import { logForDebugging } from '../debug.js'
 import { logError } from '../log.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+import { type FsOperations, getFsImplementation } from '@thyrox/storage/fsOperations'
+import { getProjectsDir } from '@thyrox/storage/sessionStoragePortable.js'
+import { lock, unlock } from '@thyrox/storage/lockfile.js'
 import {
   cleanupOldImageCaches,
   cleanupOldPastes,
   cleanupOldVersions,
   cleanupStaleAgentWorktrees,
-  getConfigHomeDir,
-  getFsImplementation,
-  getProjectsDir,
   getSettings,
   getSettingsWithAllErrors,
-  lock,
   rawSettingsContainsKey,
   TOOL_RESULTS_SUBDIR,
-  unlock,
-  type FsOperations,
 } from '../internal/pendingCrossPackageDeps.js'
 
 const DEFAULT_CLEANUP_PERIOD_DAYS = 30

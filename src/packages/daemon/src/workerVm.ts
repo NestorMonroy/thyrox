@@ -16,11 +16,8 @@
 import { spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { existsSync } from 'node:fs'
-
-import {
-  createPtyAdopter,
-  logEvent,
-} from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
+import { createPtyAdopter } from './internal/pendingCrossPackageDeps.js'
 import {
   type WorkerPhase,
   type WorkerRecord,

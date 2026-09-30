@@ -27,10 +27,11 @@
  * `logForDebugging`, `stripDisplayTagsAllowEmpty`, `errorMessage`,
  * `getBranch`/`getRemoteUrl`, `toSDKMessages`, `getContentText`,
  * `getMessagesAfterCompactBoundary`, `isSyntheticMessage`,
- * `PermissionMode`, `getCurrentSessionTitle`, `extractConversationText`,
+ * `getCurrentSessionTitle`, `extractConversationText`,
  * `generateSessionTitle`, `generateShortWordSlug` son PUNTOS DE
  * INYECCIÓN / REIMPLEMENTACIÓN FIEL ya existentes en
- * `./internal/pendingCrossPackageDeps.ts`.
+ * `./internal/pendingCrossPackageDeps.ts`; `PermissionMode` viene de
+ * `@thyrox/permission`.
  *
  * El `require('@claude-code-how-works/agent/assistant/index.js')` de la
  * fuente (bajo `feature('KAIROS')`) se preserva como `require()` diferido
@@ -49,9 +50,14 @@ import { hostname } from 'node:os'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { SDKControlResponse } from '@thyrox/headless-sdk/controlTypes.js'
 import type { Message } from '@thyrox/agent/messageShapes.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getFeatureValue_CACHED_WITH_REFRESH } from '@thyrox/config/feature-flags'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { stripDisplayTagsAllowEmpty } from '@thyrox/output/utils/displayTags.js'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes'
 import {
   checkAndRefreshOAuthTokenIfNeeded,
-  errorMessage,
   extractConversationText,
   generateSessionTitle,
   generateShortWordSlug,
@@ -59,8 +65,6 @@ import {
   getClaudeAIOAuthTokens,
   getContentText,
   getCurrentSessionTitle,
-  getFeatureValue_CACHED_WITH_REFRESH,
-  getGlobalConfig,
   getMessagesAfterCompactBoundary,
   getOrganizationUUID,
   getOriginalCwd,
@@ -70,13 +74,9 @@ import {
   isPolicyAllowed,
   isSyntheticMessage,
   logForDebugging,
-  readEnv,
-  saveGlobalConfig,
-  stripDisplayTagsAllowEmpty,
   toSDKMessages,
   waitForPolicyLimitsToLoad,
   feature,
-  type PermissionMode,
 } from './internal/pendingCrossPackageDeps.js'
 import {
   getBridgeAccessToken,

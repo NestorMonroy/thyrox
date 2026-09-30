@@ -5,9 +5,7 @@
  * 1. El `require()` perezoso de `teamMemPaths.js` (guardado por
  *    `feature('TEAMMEM')`) se porta como import estático — sin ciclo en
  *    este grafo.
- * 2. `getConfigHomeDir` viene del sustituto local
- *    `./internal/pendingCrossPackageDeps.js` (`config/env/utils`'s versión
- *    no está portada en `@thyrox/config`).
+ * 2. `getConfigHomeDir` viene de `@thyrox/config/env/configHome`.
  * 3. **Hallazgo corregido** — la fuente llama tres veces
  *    `teamMemPaths!.isTeamMemFile(filePath)`, pero `teamMemPaths.ts` NUNCA
  *    exporta `isTeamMemFile` — solo `isTeamMemPath`. Bajo
@@ -29,7 +27,7 @@ import {
   isAutoMemPath,
 } from './paths.js'
 import { isAgentMemoryPath } from './agentMemory.js'
-import { getConfigHomeDir } from './internal/pendingCrossPackageDeps.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
 import * as teamMemPathsModule from './teamMemPaths.js'
 
 const teamMemPaths = feature('TEAMMEM') ? teamMemPathsModule : null

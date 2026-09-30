@@ -10,7 +10,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { classifyExitOutcome, WorkerVm } from '../workerVm.js'
-import { setLogEventFn } from '../internal/pendingCrossPackageDeps.js'
+import { getLocalObservability, installLocalObservability } from '@thyrox/local-observability'
 
 describe('classifyExitOutcome', () => {
   test('fase upgrading -> sin desenlace (incluso con exitCode 0, que de otro modo sería "done")', () => {
@@ -110,8 +110,14 @@ describe('classifyExitOutcome', () => {
 describe('WorkerVm#onChildExit payload de tengu_bg_worker_exit', () => {
   test('emite el payload portado con outcome ya clasificado', () => {
     const events: Array<{ name: string; metadata?: Record<string, unknown> }> = []
-    setLogEventFn((name, metadata) => {
-      events.push({ name, metadata })
+    const originalObservability = getLocalObservability()
+    installLocalObservability({
+      logger: {
+        ...originalObservability.logger,
+        event: (name, metadata) => {
+          events.push({ name, metadata })
+        },
+      },
     })
     try {
       const vm = new WorkerVm({
@@ -137,7 +143,7 @@ describe('WorkerVm#onChildExit payload de tengu_bg_worker_exit', () => {
       expect(payload.exitCause).toBeUndefined()
       expect(payload.worker_cli_version).toBeUndefined()
     } finally {
-      setLogEventFn(() => {})
+      installLocalObservability(originalObservability)
     }
   })
 })

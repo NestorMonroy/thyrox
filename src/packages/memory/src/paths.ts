@@ -2,11 +2,11 @@
  * Puerto de `ccnmt: packages/memory/src/paths.ts`, con dos ajustes
  * declarados:
  *
- * 1. `getFeatureValue_CACHED_MAY_BE_STALE` / `getInitialSettings` /
- *    `getSettingsForSource` vienen del sustituto local
+ * 1. `getInitialSettings` / `getSettingsForSource` vienen del sustituto local
  *    `./internal/pendingCrossPackageDeps.js` (ver su docstring de
- *    procedencia) — el paquete `config` de origen no existe todavía en
- *    `@thyrox`.
+ *    procedencia): sus originales cerrarían un ciclo de módulos.
+ *    `getFeatureValue_CACHED_MAY_BE_STALE` y `getConfigHomeDir` se importan
+ *    de `@thyrox/config`.
  * 2. `readEnv` se guarda en una constante local antes de usarse dos veces
  *    en `getMemoryBaseDir` y en `getLocalAgentMemoryDir` (ver
  *    `agentMemory.ts`) — la fuente llama `readEnv(...)` dos veces con el
@@ -18,12 +18,9 @@ import { homedir } from 'node:os'
 import { isAbsolute, join, normalize, sep } from 'node:path'
 import { readEnv } from '@thyrox/config/env/utils'
 import { isMemoryPaused } from './memoryPause.js'
-import {
-  getConfigHomeDir,
-  getFeatureValue_CACHED_MAY_BE_STALE,
-  getInitialSettings,
-  getSettingsForSource,
-} from './internal/pendingCrossPackageDeps.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getInitialSettings, getSettingsForSource } from './internal/pendingCrossPackageDeps.js'
 import { isEnvDefinedFalsy, isEnvTruthy, sanitizePath } from './internalUtils.js'
 import { getMemoryHostBindings } from './host.js'
 

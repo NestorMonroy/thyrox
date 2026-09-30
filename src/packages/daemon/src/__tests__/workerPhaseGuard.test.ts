@@ -11,17 +11,24 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import { WorkerVm } from '../workerVm.js'
-import { setLogEventFn } from '../internal/pendingCrossPackageDeps.js'
+import { getLocalObservability, installLocalObservability } from '@thyrox/local-observability'
+
+const originalObservability = getLocalObservability()
 
 function captureEvents(): {
   events: Array<{ name: string; metadata?: Record<string, unknown> }>
   restore: () => void
 } {
   const events: Array<{ name: string; metadata?: Record<string, unknown> }> = []
-  setLogEventFn((name, metadata) => {
-    events.push({ name, metadata })
+  installLocalObservability({
+    logger: {
+      ...originalObservability.logger,
+      event: (name, metadata) => {
+        events.push({ name, metadata })
+      },
+    },
   })
-  return { events, restore: () => setLogEventFn(() => {}) }
+  return { events, restore: () => installLocalObservability(originalObservability) }
 }
 
 // `spawn()` persiste meta.json bajo `<configHome>/jobs/<short>/` (ant

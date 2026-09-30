@@ -30,9 +30,9 @@ import {
   parseLlmJson,
   preClassify,
 } from './heuristic.js'
+import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import { CLASSIFIER_SYSTEM_PROMPT } from './systemPrompt.js'
 import {
-  asSystemPrompt,
   createUserMessage,
   getAssistantMessageText,
   getEmptyToolPermissionContext,

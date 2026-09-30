@@ -30,7 +30,8 @@ import { dirname, join } from 'node:path'
 import { platform as osPlatform, freemem } from 'node:os'
 
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
-import { logEvent as logEventFn, spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
+import { logEvent as logEventFn } from '@thyrox/local-observability'
+import { spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
 import { encodeCtrlFrame } from './internal/ptyFrame.js'
 import { adoptFromRoster, adoptRunningPtyRecords } from './bgAdopt.js'
 import {

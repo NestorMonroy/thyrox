@@ -5,17 +5,12 @@
  * (erasado). `ConnectedMCPServer`/`MCPServerConnection` de
  * `@thyrox/mcp-runtime/types.js` también son TIPOS.
  *
- * `callIdeRpc` (de `@thyrox/mcp-runtime/clientRuntime.js`) es un punto de
- * inyección: ese archivo está BLOQUEADO dentro del propio
- * `@thyrox/mcp-runtime` (13/48 símbolos, por ausencia de `tool-registry`).
- * Ver el bloque 3 de `internal/pendingCrossPackageDeps.ts`.
- *
- * El resto de dependencias cruzadas (`@thyrox/{agent,app-host,config,
- * local-observability,shell,storage}`) SÍ existen en este árbol, pero
- * resuelven vía `require()` diferido porque `@thyrox/ide` no era miembro del agregador anidado
- * `src/packages/package.json` (retirado en la tarea #62; hoy resuelven por
- * nombre y el reemplazo es la tarea #53) — ver la cabecera de
- * `internal/pendingCrossPackageDeps.ts` para la verificación en vivo.
+ * `callIdeRpc` se importa de `@thyrox/mcp-runtime/client`, que lo resuelve
+ * por los host bindings del runtime MCP; `getConfigHomeDir`, `envDynamic`,
+ * `getGlobalConfig`/`saveGlobalConfig` y `lt`, de `@thyrox/config`. Lo que
+ * sigue en `internal/pendingCrossPackageDeps.ts` es lo que cerraría un
+ * ciclo de módulos con este paquete o no tiene original exportado — ver su
+ * cabecera.
  *
  * `memoize`/`capitalize` de `lodash-es` — sustituto local (mismo criterio
  * que `@thyrox/storage`: no se instala `lodash-es` como dependencia npm nueva).
@@ -31,17 +26,17 @@ import type {
   ConnectedMCPServer,
   MCPServerConnection,
 } from '@thyrox/mcp-runtime/types.js'
+import { callIdeRpc } from '@thyrox/mcp-runtime/client'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
+import { envDynamic } from '@thyrox/config/env/dynamic'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config/global/config.js'
+import { lt } from '@thyrox/config/semver'
 import {
-  callIdeRpc,
   capitalize,
   env,
-  envDynamic,
   getAncestorPidsAsync,
-  getConfigHomeDir,
-  getGlobalConfig,
   getIsScrollDraining,
   isJetBrainsPluginInstalledCached,
-  lt,
   memoize,
   requireAgentAbortController,
   requireAppHostBootstrapState,
@@ -55,7 +50,6 @@ import {
   requireLocalObservabilitySlowOperations,
   requireShellExecFileNoThrow,
   requireStorageFsOperations,
-  saveGlobalConfig,
 } from './internal/pendingCrossPackageDeps.js'
 import { checkWSLDistroMatch, WindowsToWSLConverter } from './idePathConversion.js'
 
@@ -864,7 +858,7 @@ export async function detectIDEs(
 
       const ideName =
         lockfileInfo.ideName ??
-        (isSupportedTerminal() ? toIDEDisplayName(envDynamic.terminal) : 'IDE')
+        (isSupportedTerminal() ? toIDEDisplayName(envDynamic.terminal as string | null) : 'IDE')
 
       const host = await detectHostIP(
         lockfileInfo.runningInWindows,
@@ -1287,7 +1281,7 @@ export function getIdeClientName(
   return config?.type === 'sse-ide' || config?.type === 'ws-ide'
     ? config.ideName
     : isSupportedTerminal()
-      ? toIDEDisplayName(envDynamic.terminal)
+      ? toIDEDisplayName(envDynamic.terminal as string | null)
       : null
 }
 

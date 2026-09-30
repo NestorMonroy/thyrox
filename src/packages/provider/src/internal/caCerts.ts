@@ -10,7 +10,7 @@ import memoize from 'lodash-es/memoize.js'
 import { readEnv } from '@thyrox/config/env/utils'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
-import { hasNodeOption } from './pendingCrossPackageDeps.ts'
+import { hasNodeOption } from '@thyrox/config/env/utils'
 
 /**
  * Carga certificados CA para conexiones TLS.

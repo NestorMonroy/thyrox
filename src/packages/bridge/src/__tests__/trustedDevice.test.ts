@@ -5,27 +5,27 @@
  *
  * ADAPTACIÓN de mocks: la fuente usa `mock.module()` sobre tres módulos
  * reales de ccnmt (`config/feature-flags`, `provider/policyLimits`,
- * `storage/secureStorage.js`). Aquí esos tres símbolos son puntos de
- * inyección de `../internal/pendingCrossPackageDeps.js`
- * (`setGetFeatureValueCachedMayBeStaleFn`, `setIsPolicyAllowedFn`,
- * `setWaitForPolicyLimitsToLoadFn`, `setGetSecureStorageFn`), así que el
- * test los reemplaza llamando esos setters en vez de `mock.module()`.
- * `checkGate_CACHED_OR_BLOCKING` delega en
- * `getFeatureValue_CACHED_MAY_BE_STALE` en el propio sustituto
- * (`pendingCrossPackageDeps.ts` — verbatim de la misma relación en
- * `@thyrox/config: feature-flags.ts:183`), así que un solo setter de
- * banderas cubre ambas funciones — no hace falta el truco de
+ * `storage/secureStorage.js`). Aquí las banderas se fijan con los
+ * overrides de `@thyrox/config/feature-flags`
+ * (`setGrowthBookConfigOverride`/`clearGrowthBookConfigOverrides`), y
+ * `isPolicyAllowed`, `waitForPolicyLimitsToLoad` y `getSecureStorage` son
+ * puntos de inyección de `../internal/pendingCrossPackageDeps.js`
+ * (`setIsPolicyAllowedFn`, `setWaitForPolicyLimitsToLoadFn`,
+ * `setGetSecureStorageFn`), así que el test los reemplaza llamando esos
+ * setters en vez de `mock.module()`. `checkGate_CACHED_OR_BLOCKING` delega
+ * en `getFeatureValue_CACHED_MAY_BE_STALE` dentro de `@thyrox/config`, así
+ * que un solo override cubre ambas funciones — no hace falta el truco de
  * `await import()` diferido que la fuente usa para esperar a que
  * `mock.module()` surta efecto antes de importar `trustedDevice.js`.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { clearGrowthBookConfigOverrides, setGrowthBookConfigOverride } from '@thyrox/config/feature-flags'
+import type { SecureStorageData } from '@thyrox/mcp-runtime/secureStorageTypes'
 import {
-  setGetFeatureValueCachedMayBeStaleFn,
   setGetSecureStorageFn,
   setIsPolicyAllowedFn,
   setWaitForPolicyLimitsToLoadFn,
   type SecureStorage,
-  type SecureStorageData,
 } from '../internal/pendingCrossPackageDeps.js'
 import {
   clearTrustedDeviceToken,
@@ -37,16 +37,10 @@ import {
   TRUSTED_DEVICE_UNENROLLED_MESSAGE,
 } from '../trustedDevice.js'
 
-type GateMap = Record<string, boolean>
-const flagState: { gates: GateMap; policy: Record<string, boolean> } = {
-  gates: {},
+const flagState: { policy: Record<string, boolean> } = {
   policy: {},
 }
 
-setGetFeatureValueCachedMayBeStaleFn(
-  <T>(name: string, fallback: T): T =>
-    (flagState.gates[name] as unknown as T) ?? fallback,
-)
 setIsPolicyAllowedFn((name: string): boolean => flagState.policy[name] ?? true) // fail-open, igual que ant
 setWaitForPolicyLimitsToLoadFn(async () => {})
 
@@ -69,7 +63,7 @@ const PROACTIVE_DISABLE_GATE =
 const POLICY = 'require_trusted_devices'
 
 beforeEach(() => {
-  flagState.gates = {}
+  clearGrowthBookConfigOverrides()
   flagState.policy = {}
   storageState.data = {}
   delete process.env.THYROX_TRUSTED_DEVICE_TOKEN
@@ -82,28 +76,28 @@ afterEach(() => {
 
 describe('isTrustedDeviceGateEnabled (ant wgH)', () => {
   test('returns false when GrowthBook gate is off, regardless of policy', () => {
-    flagState.gates[GATE] = false
+    setGrowthBookConfigOverride(GATE, false)
     flagState.policy[POLICY] = true
     storageState.data = { trustedDeviceToken: 'x' }
     expect(getTrustedDeviceToken()).toBeUndefined()
   })
 
   test('returns false when gate is on but org policy denies', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     flagState.policy[POLICY] = false
     storageState.data = { trustedDeviceToken: 'x' }
     expect(getTrustedDeviceToken()).toBeUndefined()
   })
 
   test('returns token when both gate AND policy are on', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     flagState.policy[POLICY] = true
     storageState.data = { trustedDeviceToken: 'x' }
     expect(getTrustedDeviceToken()).toBe('x')
   })
 
   test('policy absent (undefined) defaults to allow (fail-open)', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     // política NO fijada → isPolicyAllowed devuelve true por convención ant
     storageState.data = { trustedDeviceToken: 'x' }
     expect(getTrustedDeviceToken()).toBe('x')
@@ -112,7 +106,7 @@ describe('isTrustedDeviceGateEnabled (ant wgH)', () => {
 
 describe('readStoredTrustedDeviceToken — env-var precedence', () => {
   test('THYROX_TRUSTED_DEVICE_TOKEN env var shadows keychain', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     storageState.data = { trustedDeviceToken: 'from-keychain' }
     process.env.THYROX_TRUSTED_DEVICE_TOKEN = 'from-env'
     clearTrustedDeviceTokenCache()
@@ -122,18 +116,18 @@ describe('readStoredTrustedDeviceToken — env-var precedence', () => {
 
 describe('isTrustedDeviceUnenrolled (ant t66)', () => {
   test('returns false when gate is off (no enforcement applies)', () => {
-    flagState.gates[GATE] = false
+    setGrowthBookConfigOverride(GATE, false)
     expect(isTrustedDeviceUnenrolled()).toBe(false)
   })
 
   test('returns false when gate is on AND token present', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     storageState.data = { trustedDeviceToken: 'x' }
     expect(isTrustedDeviceUnenrolled()).toBe(false)
   })
 
   test('returns true when gate is on AND token absent', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     storageState.data = {}
     expect(isTrustedDeviceUnenrolled()).toBe(true)
   })
@@ -141,19 +135,19 @@ describe('isTrustedDeviceUnenrolled (ant t66)', () => {
 
 describe('getTrustedDeviceUnenrolledReason (ant U$5)', () => {
   test('returns null when gate is off', () => {
-    flagState.gates[GATE] = false
+    setGrowthBookConfigOverride(GATE, false)
     expect(getTrustedDeviceUnenrolledReason()).toBeNull()
   })
 
   test('returns null when device is enrolled', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     storageState.data = { trustedDeviceToken: 'x' }
     expect(getTrustedDeviceUnenrolledReason()).toBeNull()
   })
 
   test('returns proactive-disabled message when kill-switch is on', () => {
-    flagState.gates[GATE] = true
-    flagState.gates[PROACTIVE_DISABLE_GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
+    setGrowthBookConfigOverride(PROACTIVE_DISABLE_GATE, true)
     storageState.data = {}
     expect(getTrustedDeviceUnenrolledReason()).toBe(
       PROACTIVE_ENROLLMENT_DISABLED_MESSAGE,
@@ -161,7 +155,7 @@ describe('getTrustedDeviceUnenrolledReason (ant U$5)', () => {
   })
 
   test('returns standard message when no kill-switch', () => {
-    flagState.gates[GATE] = true
+    setGrowthBookConfigOverride(GATE, true)
     storageState.data = {}
     expect(getTrustedDeviceUnenrolledReason()).toBe(
       TRUSTED_DEVICE_UNENROLLED_MESSAGE,
@@ -176,14 +170,14 @@ describe('clearTrustedDeviceToken (ant kJ8) — kill-switch override', () => {
     // usuario no tiene forma de re-enrolar hasta que la caída termine.
     // La implementación vieja de ccb chequeaba la condición equivocada
     // y podía destruir tokens en este escenario.
-    flagState.gates[PROACTIVE_DISABLE_GATE] = true
+    setGrowthBookConfigOverride(PROACTIVE_DISABLE_GATE, true)
     storageState.data = { trustedDeviceToken: 'preserve-me' }
     clearTrustedDeviceToken()
     expect(storageState.data?.trustedDeviceToken).toBe('preserve-me')
   })
 
   test('clears token when kill-switch is off', () => {
-    flagState.gates[PROACTIVE_DISABLE_GATE] = false
+    setGrowthBookConfigOverride(PROACTIVE_DISABLE_GATE, false)
     storageState.data = {
       trustedDeviceToken: 'remove-me',
       other: 'preserve',
@@ -202,7 +196,7 @@ describe('clearTrustedDeviceToken (ant kJ8) — kill-switch override', () => {
     // ant kJ8 evita explícitamente gatear la limpieza por `wgH` — si el
     // gate pasó de on→off entre sesiones, igual hace falta limpiar el
     // token obsoleto del keychain.
-    flagState.gates[GATE] = false
+    setGrowthBookConfigOverride(GATE, false)
     storageState.data = { trustedDeviceToken: 'stale' }
     clearTrustedDeviceToken()
     expect(storageState.data?.trustedDeviceToken).toBeUndefined()

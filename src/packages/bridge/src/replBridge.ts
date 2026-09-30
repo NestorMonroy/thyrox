@@ -45,18 +45,18 @@ import {
   validateBridgeId,
 } from './bridgeApi.js'
 import type { BridgeConfig, BridgeApiClient } from './types.js'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { isInProtectedNamespace } from '@thyrox/config/env/utils'
+import { sleep } from '@thyrox/config/sleep'
+import { logEvent } from '@thyrox/local-observability'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes'
 import {
   logForDebugging,
   logForDiagnosticsNoPII,
-  logEvent,
-  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-  registerCleanup,
   updateSessionIngressAuthToken,
-  isInProtectedNamespace,
-  errorMessage,
-  sleep,
   getMacroVersion,
-  type PermissionMode,
 } from './internal/pendingCrossPackageDeps.js'
 import {
   handleIngressMessage,

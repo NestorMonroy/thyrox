@@ -2,22 +2,24 @@
  * Puerto fiel de `ccnmt: packages/bridge/src/bridgeEnabled.ts`.
  * `feature`/`checkGate_CACHED_OR_BLOCKING`/
  * `getDynamicConfig_CACHED_MAY_BE_STALE`/
- * `getFeatureValue_CACHED_MAY_BE_STALE`/`isEnvTruthy`/`lt`/
- * `isClaudeAISubscriber`/`hasProfileScope`/`getOauthAccountInfo`/
- * `getMacroVersion` son sustitutos — ver
+ * `getFeatureValue_CACHED_MAY_BE_STALE`/`isEnvTruthy`/`lt` vienen de
+ * `@thyrox/config`; `isClaudeAISubscriber`/`hasProfileScope`/
+ * `getOauthAccountInfo`/`getMacroVersion` son sustitutos — ver
  * `internal/pendingCrossPackageDeps.ts`.
  */
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import {
   checkGate_CACHED_OR_BLOCKING,
-  feature,
   getDynamicConfig_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
+} from '@thyrox/config/feature-flags'
+import { lt } from '@thyrox/config/semver'
+import {
+  feature,
   getMacroVersion,
   getOauthAccountInfo,
   hasProfileScope,
   isClaudeAISubscriber as authIsClaudeAISubscriber,
-  isEnvTruthy,
-  lt,
 } from './internal/pendingCrossPackageDeps.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 

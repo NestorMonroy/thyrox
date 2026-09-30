@@ -2,8 +2,8 @@
  * Puerto de `ccnmt: packages/memory/src/extractMemories.ts`, con dos
  * ajustes declarados:
  *
- * 1. `getFeatureValue_CACHED_MAY_BE_STALE` viene del sustituto local
- *    `./internal/pendingCrossPackageDeps.js`; `readEnv` viene de
+ * 1. `getFeatureValue_CACHED_MAY_BE_STALE` viene de
+ *    `@thyrox/config/feature-flags`; `readEnv` viene de
  *    `@thyrox/config/env/utils` (mismo símbolo, subpath distinto).
  * 2. El `require()` perezoso de `teamMemPaths.js` (guardado por
  *    `feature('TEAMMEM')`) se porta como import estático — sin ciclo en
@@ -36,7 +36,7 @@ import {
 } from './paths.js'
 import { getMemoryHostBindings } from './host.js'
 import { count, uniq } from './internalUtils.js'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from './internal/pendingCrossPackageDeps.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import type {
   MemREPLContext,
   MemMessage,
