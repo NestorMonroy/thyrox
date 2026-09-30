@@ -33,6 +33,8 @@ import {
 } from '../udsClient.ts'
 import { messagingState } from '../messagingState.ts'
 import { NoLiveInboxError } from '../udsClient.ts'
+import { authFrameLine, createInboxTokens } from '../inboxAuth.ts'
+import { publishInboxKey, removeInboxKey } from '../inboxKeys.ts'
 
 describe('MAX_UDS_MESSAGE_CHARS (WOt) y el tope de tamaño del envío', () => {
   test('un mensaje que supera el tope se rehúsa como demasiado grande', async () => {
@@ -259,5 +261,59 @@ describe('envío real sobre un socket de escucha (mkdtemp)', () => {
     expect(caught).toBeUndefined()
     if (previousFlags === undefined) delete process.env.THYROX_FEATURE_FLAGS
     else process.env.THYROX_FEATURE_FLAGS = previousFlags
+  })
+})
+
+describe('envío con clave publicada: readPeerToken → authFrameLine (Pe, chunk-qcy58j4w.js)', () => {
+  const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
+  let previousConfigDir: string | undefined
+  let dir: string | undefined
+  let server: Server | undefined
+  let socketPath: string | undefined
+  let receivedLines: string[] = []
+
+  beforeEach(async () => {
+    previousConfigDir = process.env[CONFIG_DIR_ENV]
+    dir = mkdtempSync(join(tmpdir(), 'uds-client-key-'))
+    // La clave se lee del directorio de sesiones bajo el hogar de configuración;
+    // apuntarlo al temporal aísla la prueba del hogar real.
+    process.env[CONFIG_DIR_ENV] = join(dir, 'config')
+    socketPath = join(dir, 'peer.sock')
+    receivedLines = []
+    server = createServer(socket => {
+      socket.on('data', chunk => receivedLines.push(...chunk.toString('utf8').split('\n').filter(line => line.length > 0)))
+      socket.on('error', () => {})
+    })
+    await new Promise<void>(resolve => server!.listen(socketPath, () => resolve()))
+  })
+
+  afterEach(async () => {
+    if (server) await new Promise<void>(resolve => server!.close(() => resolve()))
+    if (dir) rmSync(dir, { recursive: true, force: true })
+    if (previousConfigDir === undefined) delete process.env[CONFIG_DIR_ENV]
+    else process.env[CONFIG_DIR_ENV] = previousConfigDir
+  })
+
+  test('con la clave del par publicada, la primera línea que recibe el servidor es el marco de auth con ese token', async () => {
+    const { peerToken } = createInboxTokens()
+    const keyPath = await publishInboxKey(socketPath!, peerToken, { sweepPermitted: false })
+    expect(keyPath).toStartWith(join(dir!, 'config', 'sessions'))
+    await sendToUdsSocket(socketPath!, 'hola con clave')
+    await new Promise(resolve => setTimeout(resolve, 20))
+    expect(receivedLines.length).toBe(2)
+    expect(`${receivedLines[0]}\n`).toBe(authFrameLine(peerToken))
+    const frame = JSON.parse(receivedLines[1]!)
+    expect(frame.type).toBe('user')
+    expect(frame.message.content).toContain('hola con clave')
+  })
+
+  test('retirada la clave, el mismo envío no lleva marco de auth (control de anulación)', async () => {
+    const { peerToken } = createInboxTokens()
+    const keyPath = await publishInboxKey(socketPath!, peerToken, { sweepPermitted: false })
+    await removeInboxKey(keyPath)
+    await sendToUdsSocket(socketPath!, 'hola sin clave')
+    await new Promise(resolve => setTimeout(resolve, 20))
+    expect(receivedLines.length).toBe(1)
+    expect(JSON.parse(receivedLines[0]!).type).toBe('user')
   })
 })
