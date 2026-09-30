@@ -13,7 +13,7 @@ readonly JOBS=(impl-pool-a2 impl-pool-b)
 closed_count() { bash bin/pool_lifecycle closed-items "$1" | wc -l; }
 
 declare -A baseline
-previous_warnings=""
+declare -A first_seen
 for out in "${OUTPUTS[@]}"; do baseline[$out]="$(closed_count "$out")"; done
 
 stalled_items() {
@@ -45,14 +45,16 @@ while true; do
     done
     stalled="$(stalled_items)"
     [[ -z "$stalled" ]] || { echo "$stalled"; exit 0; }
-    # Un AVISO sólo cuenta si el mismo pid lo repite en dos vueltas: el shell
-    # de un ítem lo emite un instante al arrancar y desaparece (medido: los
-    # pids 16999 y 17029 ya no existían al consultarlos).
-    # Un pipe con escritor vivo es el final de un pipeline del ítem (`cmd | tail`)
-    # y se cierra solo; el caso que no termina es un socket.
-    warnings="$(bash bin/wait-jobs probe 2>&1 | gawk '/AVISO.*socket/')"
-    persistent="$(comm -12 <(printf '%s\n' "$previous_warnings" | sort) <(printf '%s\n' "$warnings" | sort) | gawk 'NF')"
-    [[ -z "$persistent" ]] || { echo "$persistent"; exit 0; }
-    previous_warnings="$warnings"
+    # Un AVISO de socket cuenta sólo si el mismo pid lo sostiene más de
+    # STALL_SECONDS. La herramienta Bash de la delegación entrega a cada hijo un
+    # socket como stdin (medido: fd 0 de un `timeout 590 bash tests/…` de un
+    # ítem), así que todo comando largo de un ítem lo emite y no está colgado;
+    # un pipe con escritor vivo es el final de un pipeline y se cierra solo.
+    now="$(date +%s)"
+    while read -r pid; do
+        [[ -n "$pid" ]] || continue
+        [[ -n "${first_seen[$pid]:-}" ]] || first_seen[$pid]="$now"
+        (( now - first_seen[$pid] > STALL_SECONDS )) && { echo "stdin de socket ${STALL_SECONDS}s+: pid $pid"; exit 0; }
+    done < <(bash bin/wait-jobs probe 2>&1 | gawk '/AVISO.*socket/ { for (i = 1; i <= NF; i++) if ($i == "pid") print $(i + 1) }')
     sleep "$POLL_SECONDS"
 done
