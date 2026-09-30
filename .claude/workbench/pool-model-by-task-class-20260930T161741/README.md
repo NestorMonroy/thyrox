@@ -89,3 +89,34 @@ Todo medido el 2026-09-30 contra el árbol, no contra lo que la sesión narró.
    Sucesores: TASK-THYROX-0648 (este punto) y TASK-THYROX-0649 (el punto 2).
 5. **Modelo escrito a mano otra vez:** los `launch.sh` de `podman-first-pool`,
    `podman-datos-pool` y `build-shims-pool` llevan `--model claude-sonnet-5`.
+
+## Tercer flujo analizado: los pools A4 (TASK-THYROX-0534) y repository/job (TASK-THYROX-0613)
+
+Medido contra el árbol el 2026-09-30. Los dos terminaron `verificado`, así que
+lo que sigue no es «salió mal»: es lo que el texto afirmó sin haberlo medido.
+
+1. **«Comprobé que todo eso está en verde ahora mismo» era falso.** El verify
+   de A4 corre siete suites (`test_agent_store_migrations.py`, `usage-columns`,
+   `usage-source` y `bun test` de observability, tools, task y agent); la
+   línea base que se ejecutó antes de lanzar fue **dos**: observability (38) y
+   task (44). Con cinco suites sin línea base, un rechazo no se habría podido
+   atribuir al ítem, que es justo lo que la frase decía garantizar.
+2. **El verify del pool 0613 no tuvo línea base.** Su prueba
+   (`tests/lib/test-podman-capabilities.sh`, Podman real) se corrió con
+   `timeout 20`, murió con 143, y se concluyó «tarda más» sin medir cuánto ni
+   si pasaba en HEAD. Pasó en el ítem (44/44) y en el árbol (44/44), así que
+   el defecto no se materializó; la afirmación implícita de que un rechazo
+   habría sido del ítem no estaba respaldada.
+3. **Una medida sensible a la carga, corrida en paralelo con carga.** La
+   cabecera de `podman_capabilities.sh` avisa que `cpu_limit` sube si otras
+   sondas usan CPU, y la prueba exige `cpu_limit efectivo`. El verify de 0613
+   corrió al mismo tiempo que el de A4 (`bun test agent`, 2712 casos). Hoy, en
+   reposo, da 0.51 núcleos con `--cpus 0.5`; bajo esa carga no está medido.
+   Un rojo ahí habría sido del anfitrión, no del ítem.
+4. **La premisa de A4 se cambió sin registrarla como decisión.** La tarea
+   pedía `runMigrationsSync` en observability; el orquestador la reemplazó por
+   migraciones de Python (13 y 14). La razón es buena —un segundo ledger en el
+   mismo archivo son dos dueños del schema— y está en el mensaje del banco,
+   pero no en un registro de decisión ni en un hallazgo buscable.
+5. **Modelo escrito a mano, dos veces más** (`--model claude-sonnet-5`). Queda
+   cerrado por el cambio de este banco: hoy esa línea rehúsa con exit 2.
