@@ -42,6 +42,7 @@ import { openExistingConnectionStore } from '@thyrox/provider/accounts/connectio
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
 import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+import { peerMessagingTools } from './peerMessagingTools.ts'
 
 type Env = Record<string, string | undefined>
 
@@ -196,6 +197,9 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string, op
       storePath,
     }),
     skillTool(buildSkillRegistry()),
+    // `SendMessage` y `ListAgents` sólo si el buzón de esta sesión ya arrancó
+    // (`print.ts` lo arranca antes de llamar aquí); si no, la lista no cambia.
+    ...peerMessagingTools(),
   ]
   const toolAllow = options.toolAllow
   const tools = toolAllow ? allTools.filter((t) => toolAllow.includes(t.name)) : allTools

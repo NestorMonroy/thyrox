@@ -597,6 +597,25 @@ def install_user_bin(plan: dict[str, str],
 TS_ENTRYPOINT_DIRS: frozenset[str] = frozenset({"bin", "entry"})
 
 
+#: Las banderas de ``bun:bundle`` de la compilación de entrega. Un macro
+#: ``feature(...)`` es falso si ``bun`` no recibe su ``--feature=``: sin
+#: ``UDS_INBOX`` el buzón entre sesiones no existe en ``bin/cli`` aunque la
+#: compuerta de tiempo de ejecución (``THYROX_CODE_HARBOR_KITE``, ``--bare``)
+#: esté abierta. La referencia lo compila: 2.1.285 anuncia en ``SendMessage``
+#: «an explicit uds:<socket> / bridge:<session id> address»
+#: (``_references/claude-code-bin/2.1.285/bunfs-root/chunk-jfg2jdw4.js``).
+DELIVERY_BUILD_FEATURES: tuple[str, ...] = ("UDS_INBOX",)
+
+#: Qué lanzadores ``.ts`` corren la compilación de entrega. Sólo ``cli``: es el
+#: único que la referencia entrega como producto; el resto son herramientas.
+LAUNCHER_BUILD_FEATURES: dict[str, tuple[str, ...]] = {"cli": DELIVERY_BUILD_FEATURES}
+
+
+def bun_feature_arguments(bin_name: str) -> str:
+    """Los ``--feature=`` que ``bun`` recibe para ``bin_name``, con espacio final, o vacío."""
+    return "".join(f"--feature={name} " for name in LAUNCHER_BUILD_FEATURES.get(bin_name, ()))
+
+
 def is_typescript_entrypoint(path: pathlib.Path) -> bool:
     """Shebang **y** directorio padre de entrypoint. NO ``import.meta.main``.
 
@@ -751,7 +770,8 @@ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
         'source "$LIB"\n'
         'THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \\\n'
         '  thyrox_toolchain_require_bun || exit 1\n'
-        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" "$WRAPPER_ROOT/{relative_target}" "$@"\n'
+        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" {bun_feature_arguments(bin_name)}'
+        f'"$WRAPPER_ROOT/{relative_target}" "$@"\n'
     )
 
 

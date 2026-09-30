@@ -12,4 +12,4 @@ fi
 source "$LIB"
 THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
   thyrox_toolchain_require_bun || exit 1
-exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/cli/src/entry/cli.tsx" "$@"
+exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" --feature=UDS_INBOX "$WRAPPER_ROOT/src/packages/cli/src/entry/cli.tsx" "$@"

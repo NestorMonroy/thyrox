@@ -1,0 +1,583 @@
+diff --git a/bin/cli b/bin/cli
+index f5a32cbc2..f84ab01f2 100755
+--- a/bin/cli
++++ b/bin/cli
+@@ -12,4 +12,4 @@ fi
+ source "$LIB"
+ THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
+   thyrox_toolchain_require_bun || exit 1
+-exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/cli/src/entry/cli.tsx" "$@"
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" --feature=UDS_INBOX "$WRAPPER_ROOT/src/packages/cli/src/entry/cli.tsx" "$@"
+diff --git a/src/packages/cli/__tests__/peerMessagingTools.test.ts b/src/packages/cli/__tests__/peerMessagingTools.test.ts
+new file mode 100644
+index 000000000..b526b3d40
+--- /dev/null
++++ b/src/packages/cli/__tests__/peerMessagingTools.test.ts
+@@ -0,0 +1,144 @@
++/**
++ * TASK-THYROX-0673 — `SendMessage` y `ListAgents` en el bucle de `thyrox -p`.
++ *
++ * Los adaptadores traducen las herramientas de `@thyrox/tool-registry` al
++ * contrato `Tool` del bucle (`@thyrox/agent/loop/types`). Sólo se ofrecen
++ * cuando el buzón de esta sesión arrancó: la señal es
++ * `THYROX_CODE_MESSAGING_SOCKET`, que el buzón exporta al enlazar su socket.
++ *
++ * Se corre con `bun test --feature=UDS_INBOX`: sin la bandera el ramal
++ * `uds:` de `SendMessageTool` no existe y el buzón no arranca nunca, así que
++ * la mitad de envío sólo se mide con ella; sin ella se miden la compuerta y
++ * la forma de las herramientas.
++ *
++ * Métrica: la lista de herramientas por entorno, los marcos que un socket de
++ * escucha real recibe y el `ToolResult` de cada llamada.
++ * Ciega a: la recepción en otro proceso (la mide
++ * `tests/session/test-send-message-two-cli.sh`).
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { feature } from 'bun:bundle'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { createServer, type Server } from 'node:net'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import type { Tool, ToolContext } from '@thyrox/agent/loop/types'
++import { LIST_AGENTS_TOOL_NAME, SEND_MESSAGE_TOOL_NAME, peerMessagingTools } from '../src/entry/peerMessagingTools.ts'
++
++const LIVE_INBOX_ENV = { THYROX_CODE_MESSAGING_SOCKET: '/nonexistent/own.sock' }
++const context: ToolContext = { cwd: '/', sessionId: 'test', abort: new AbortController().signal, messages: [] }
++
++function toolNamed(tools: Tool[], name: string): Tool {
++  const found = tools.find(tool => tool.name === name)
++  if (found === undefined) throw new Error(`falta la herramienta ${name}`)
++  return found
++}
++
++let dir = ''
++let server: Server | undefined
++let socketPath = ''
++let receivedLines: string[] = []
++
++beforeEach(async () => {
++  dir = mkdtempSync(join(tmpdir(), 'peer-messaging-tools-'))
++  socketPath = join(dir, 'peer.sock')
++  receivedLines = []
++  server = createServer(socket => {
++    socket.on('data', chunk => receivedLines.push(...chunk.toString('utf8').split('\n').filter(line => line.length > 0)))
++    socket.on('error', () => {})
++  })
++  await new Promise<void>(resolve => server!.listen(socketPath, () => resolve()))
++})
++
++afterEach(async () => {
++  if (server) await new Promise<void>(resolve => server!.close(() => resolve()))
++  server = undefined
++  rmSync(dir, { recursive: true, force: true })
++})
++
++describe('peerMessagingTools — la compuerta del buzón', () => {
++  test('sin THYROX_CODE_MESSAGING_SOCKET no se ofrece ninguna herramienta', () => {
++    expect(peerMessagingTools({})).toEqual([])
++  })
++
++  test('con el buzón activo se ofrecen SendMessage y ListAgents', () => {
++    expect(peerMessagingTools(LIVE_INBOX_ENV).map(tool => tool.name)).toEqual([SEND_MESSAGE_TOOL_NAME, LIST_AGENTS_TOOL_NAME])
++  })
++
++  test('SendMessage declara to y message obligatorios, texto plano', () => {
++    const schema = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), SEND_MESSAGE_TOOL_NAME).input_schema
++    expect(schema.required).toEqual(['to', 'message'])
++    expect((schema.properties.message as { type: string }).type).toBe('string')
++  })
++
++  test('ListAgents es de lectura y SendMessage de ejecución', () => {
++    const tools = peerMessagingTools(LIVE_INBOX_ENV)
++    expect(toolNamed(tools, LIST_AGENTS_TOOL_NAME).permission).toBe('read')
++    expect(toolNamed(tools, SEND_MESSAGE_TOOL_NAME).permission).toBe('execute')
++  })
++})
++
++describe('SendMessage — direcciones que no son de otra sesión', () => {
++  test('un nombre de compañero se rechaza sin enviar nada', async () => {
++    const send = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), SEND_MESSAGE_TOOL_NAME)
++    const result = await send.run({ to: 'researcher', message: 'hola' }, context)
++    expect(result.isError).toBe(true)
++    expect(result.content).toContain('uds:<socket>')
++    expect(receivedLines).toEqual([])
++  })
++
++  test('un mensaje que no es texto se rechaza sin enviar nada', async () => {
++    const send = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), SEND_MESSAGE_TOOL_NAME)
++    const result = await send.run({ to: `uds:${socketPath}`, message: { type: 'shutdown_request' } }, context)
++    expect(result.isError).toBe(true)
++    expect(result.content).toContain('plain text')
++    expect(receivedLines).toEqual([])
++  })
++})
++
++if (feature('UDS_INBOX')) {
++  describe('SendMessage a uds:<socket> — con feature(UDS_INBOX)', () => {
++    test('el par recibe un marco user con el texto, y el resultado lo confirma', async () => {
++      const send = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), SEND_MESSAGE_TOOL_NAME)
++      const result = await send.run({ to: `uds:${socketPath}`, message: 'hola par' }, context)
++      await new Promise(resolve => setTimeout(resolve, 20))
++      expect(result.isError).toBe(false)
++      expect(result.content).toBe(`“hola par” → uds:${socketPath}`)
++      expect(receivedLines.length).toBe(1)
++      const frame = JSON.parse(receivedLines[0]!) as { type: string; message: { content: string } }
++      expect(frame.type).toBe('user')
++      expect(frame.message.content).toContain('hola par')
++    })
++
++    test('un socket sin oyente es un error con la causa, sin lanzar', async () => {
++      const send = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), SEND_MESSAGE_TOOL_NAME)
++      const dead = join(dir, 'nobody.sock')
++      const result = await send.run({ to: `uds:${dead}`, message: 'hola' }, context)
++      expect(result.isError).toBe(true)
++      expect(result.content).toStartWith(`Failed to send to uds:${dead}:`)
++    })
++
++    test('bridge: sin Remote Control conectado se rechaza con el motivo de la referencia', async () => {
++      const send = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), SEND_MESSAGE_TOOL_NAME)
++      const result = await send.run({ to: 'bridge:session_x', message: 'hola' }, context)
++      expect(result.isError).toBe(true)
++      expect(result.content).toContain('Remote Control is not connected')
++    })
++  })
++}
++
++describe('ListAgents', () => {
++  test('con la mensajería apagada devuelve el aviso de la referencia', async () => {
++    const previous = process.env.THYROX_CODE_HARBOR_KITE
++    process.env.THYROX_CODE_HARBOR_KITE = '0'
++    try {
++      const list = toolNamed(peerMessagingTools(LIVE_INBOX_ENV), LIST_AGENTS_TOOL_NAME)
++      const result = await list.run({}, context)
++      expect(result.isError).toBe(false)
++      expect(result.content).toStartWith('Cross-session messaging is switched off in this session right now')
++    } finally {
++      if (previous === undefined) delete process.env.THYROX_CODE_HARBOR_KITE
++      else process.env.THYROX_CODE_HARBOR_KITE = previous
++    }
++  })
++})
+diff --git a/src/packages/cli/src/entry/peerMessagingTools.ts b/src/packages/cli/src/entry/peerMessagingTools.ts
+new file mode 100644
+index 000000000..36f346df9
+--- /dev/null
++++ b/src/packages/cli/src/entry/peerMessagingTools.ts
+@@ -0,0 +1,153 @@
++/**
++ * `SendMessage` y `ListAgents` para el bucle de `thyrox -p`.
++ *
++ * El bucle de `-p` arma sus herramientas con el contrato `Tool` de
++ * `@thyrox/agent/loop/types`, no con el `BuiltInToolsProvider` de
++ * `@thyrox/tool-registry` donde viven las dos herramientas de mensajería. En
++ * la referencia 2.1.285 la sesión `-p` ve la misma colección que la
++ * interactiva; aquí estos adaptadores son el puente, y no reimplementan
++ * nada: el envío es `SendMessageTool.validateInput`/`call` (que llega a
++ * `sendToUdsSocket` o a `postInterClaudeMessage`), la clasificación de la
++ * dirección es `parseAddress`, y el listado es `listAgentsForModel`, el mismo
++ * núcleo que `ListAgentsTool.call`.
++ *
++ * Sólo texto plano entre sesiones, como la referencia: una dirección de
++ * compañero de equipo o un mensaje estructurado se rechazan antes de enviar,
++ * porque en `-p` no hay equipo ni estado de aplicación que los resuelva.
++ *
++ * Se ofrecen sólo si el buzón de esta sesión arrancó, y la señal es la que el
++ * propio buzón exporta al enlazar su socket (`THYROX_CODE_MESSAGING_SOCKET`):
++ * la compilación (`feature('UDS_INBOX')`), `--bare` y
++ * `THYROX_CODE_HARBOR_KITE` ya decidieron antes si arrancaba.
++ */
++import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
++import { parseAddress } from '@thyrox/local-observability/uds/peerAddress.js'
++import { listAgentsForModel, processListAgentsDeps, type ListAgentsAppState, type TeamDeps } from '@thyrox/local-observability/uds/peerFiles.js'
++import { readTeamFileAsync } from '@thyrox/swarm'
++import { getAgentId, getTeamName } from '@thyrox/swarm/teammateState.js'
++import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
++import { SendMessageTool } from '@thyrox/tool-registry/tools/SendMessageTool/SendMessageTool.js'
++
++export { SEND_MESSAGE_TOOL_NAME }
++
++/** El nombre de `ListAgents` en la referencia (`Dl`, `chunk-g3tnnx4p.js`). */
++export const LIST_AGENTS_TOOL_NAME = 'ListAgents'
++
++type Env = Record<string, string | undefined>
++
++/**
++ * La variable que el buzón exporta al enlazar su socket (`MESSAGING_SOCKET_ENV`
++ * de `@thyrox/local-observability: uds/bind.ts`, subpath que el paquete no
++ * exporta).
++ */
++const MESSAGING_SOCKET_ENV = 'THYROX_CODE_MESSAGING_SOCKET'
++
++/** La entrada de `SendMessage` que `-p` admite: una dirección de otra sesión y texto. */
++type PlainTextSend = { to: string; message: string; summary?: string }
++
++type SendVerdict = { result: boolean; message?: string }
++type SendOutcome = { data: { success: boolean; message: string } }
++type ValidateSend = (input: PlainTextSend, context: object) => Promise<SendVerdict>
++type CallSend = (input: PlainTextSend, context: object, canUseTool: unknown, assistantMessage: unknown) => Promise<SendOutcome>
++
++const validateSend = SendMessageTool.validateInput as unknown as ValidateSend
++const callSend = SendMessageTool.call as unknown as CallSend
++
++/**
++ * El contexto que el ramal entre sesiones de `SendMessageTool` recibe. Ese
++ * ramal no lo lee; el resto de ramas (equipo, subagentes) sí, y por eso la
++ * dirección se clasifica antes de llegar aquí.
++ */
++const CROSS_SESSION_CONTEXT = {}
++
++/** El permiso ya lo decidió la puerta del bucle antes de `run`. */
++const ALREADY_PERMITTED = () => Promise.resolve({ behavior: 'allow' as const })
++
++/** El estado de aplicación de `-p`: sin subagentes en proceso ni equipo. */
++const HEADLESS_APP_STATE: ListAgentsAppState = { tasks: {}, agentNameRegistry: new Map() }
++
++const NOT_CROSS_SESSION_ADDRESS =
++  'In this session SendMessage only reaches other sessions: use an explicit uds:<socket> or bridge:<session id> address (ListAgents shows the reachable ones).'
++const NOT_PLAIN_TEXT = 'Cross-session messages must be plain text.'
++
++const SEND_MESSAGE_DESCRIPTION =
++  'Send a plain-text message to another session on this machine (uds:<socket>) or a Remote Control ' +
++  'session (bridge:<session id>). The message arrives as a new user turn in that session. Use ' +
++  `${LIST_AGENTS_TOOL_NAME} to discover the reachable sessions and their addresses.`
++
++const LIST_AGENTS_DESCRIPTION =
++  `List the sessions you can ${SEND_MESSAGE_TOOL_NAME} to: other local sessions on this machine and, ` +
++  'when Remote Control is connected, your remote sessions. Names are the address.'
++
++/** `eC` de la referencia: el bucle principal de `-p` no es un subagente. */
++const MAIN_LOOP_CALLER_IS_SUBAGENT = false
++
++/** `da`, `iy` y el id propio, desde `@thyrox/swarm`, como en `ListAgentsTool`. */
++const swarmTeamDeps: TeamDeps = {
++  teamName: teamContext => getTeamName(teamContext?.teamName === undefined ? undefined : { teamName: teamContext.teamName }),
++  readTeamFile: readTeamFileAsync,
++  ownAgentId: getAgentId,
++}
++
++/** Las herramientas de mensajería si el buzón de esta sesión arrancó; si no, ninguna. */
++export function peerMessagingTools(env: Env = process.env): Tool[] {
++  if (!hasLiveInbox(env)) return []
++  return [sendMessageTool(), listAgentsTool()]
++}
++
++function hasLiveInbox(env: Env): boolean {
++  return (env[MESSAGING_SOCKET_ENV] ?? '') !== ''
++}
++
++function isCrossSessionAddress(to: string): boolean {
++  const { scheme } = parseAddress(to)
++  return scheme === 'uds' || scheme === 'bridge'
++}
++
++function failure(content: string): ToolResult {
++  return { content, isError: true }
++}
++
++function sendMessageTool(): Tool {
++  return {
++    name: SEND_MESSAGE_TOOL_NAME,
++    description: SEND_MESSAGE_DESCRIPTION,
++    permission: 'execute',
++    input_schema: {
++      type: 'object',
++      properties: {
++        to: { type: 'string', description: 'Recipient: an explicit uds:<socket> or bridge:<session id> address' },
++        message: { type: 'string', description: 'Plain-text message content' },
++        summary: { type: 'string', description: 'Optional 5-10 word preview of the message' },
++      },
++      required: ['to', 'message'],
++    },
++    run: sendPlainText,
++  }
++}
++
++async function sendPlainText(input: Record<string, unknown>, _context: ToolContext): Promise<ToolResult> {
++  const { to, message, summary } = input
++  if (typeof to !== 'string' || !isCrossSessionAddress(to)) return failure(NOT_CROSS_SESSION_ADDRESS)
++  if (typeof message !== 'string') return failure(NOT_PLAIN_TEXT)
++  const send: PlainTextSend = { to, message, ...(typeof summary === 'string' && { summary }) }
++  const verdict = await validateSend(send, CROSS_SESSION_CONTEXT)
++  if (!verdict.result) return failure(verdict.message ?? `cannot send to ${to}`)
++  const outcome = await callSend(send, CROSS_SESSION_CONTEXT, ALREADY_PERMITTED, undefined)
++  return { content: outcome.data.message, isError: !outcome.data.success }
++}
++
++function listAgentsTool(): Tool {
++  return {
++    name: LIST_AGENTS_TOOL_NAME,
++    description: LIST_AGENTS_DESCRIPTION,
++    permission: 'read',
++    input_schema: { type: 'object', properties: {} },
++    run: listReachableAgents,
++  }
++}
++
++async function listReachableAgents(): Promise<ToolResult> {
++  const listing = await listAgentsForModel(HEADLESS_APP_STATE, MAIN_LOOP_CALLER_IS_SUBAGENT, processListAgentsDeps(swarmTeamDeps))
++  return { content: listing, isError: false }
++}
+diff --git a/src/packages/cli/src/entry/runLoop.ts b/src/packages/cli/src/entry/runLoop.ts
+index 4afa33951..8a937cedf 100644
+--- a/src/packages/cli/src/entry/runLoop.ts
++++ b/src/packages/cli/src/entry/runLoop.ts
+@@ -42,6 +42,7 @@ import { openExistingConnectionStore } from '@thyrox/provider/accounts/connectio
+ import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
+ import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+ import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
++import { peerMessagingTools } from './peerMessagingTools.ts'
+ 
+ type Env = Record<string, string | undefined>
+ 
+@@ -196,6 +197,9 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string, op
+       storePath,
+     }),
+     skillTool(buildSkillRegistry()),
++    // `SendMessage` y `ListAgents` sólo si el buzón de esta sesión ya arrancó
++    // (`print.ts` lo arranca antes de llamar aquí); si no, la lista no cambia.
++    ...peerMessagingTools(),
+   ]
+   const toolAllow = options.toolAllow
+   const tools = toolAllow ? allTools.filter((t) => toolAllow.includes(t.name)) : allTools
+diff --git a/src/session/generate_bin.py b/src/session/generate_bin.py
+index 9254be02c..bcf770553 100644
+--- a/src/session/generate_bin.py
++++ b/src/session/generate_bin.py
+@@ -597,6 +597,25 @@ def install_user_bin(plan: dict[str, str],
+ TS_ENTRYPOINT_DIRS: frozenset[str] = frozenset({"bin", "entry"})
+ 
+ 
++#: Las banderas de ``bun:bundle`` de la compilación de entrega. Un macro
++#: ``feature(...)`` es falso si ``bun`` no recibe su ``--feature=``: sin
++#: ``UDS_INBOX`` el buzón entre sesiones no existe en ``bin/cli`` aunque la
++#: compuerta de tiempo de ejecución (``THYROX_CODE_HARBOR_KITE``, ``--bare``)
++#: esté abierta. La referencia lo compila: 2.1.285 anuncia en ``SendMessage``
++#: «an explicit uds:<socket> / bridge:<session id> address»
++#: (``_references/claude-code-bin/2.1.285/bunfs-root/chunk-jfg2jdw4.js``).
++DELIVERY_BUILD_FEATURES: tuple[str, ...] = ("UDS_INBOX",)
++
++#: Qué lanzadores ``.ts`` corren la compilación de entrega. Sólo ``cli``: es el
++#: único que la referencia entrega como producto; el resto son herramientas.
++LAUNCHER_BUILD_FEATURES: dict[str, tuple[str, ...]] = {"cli": DELIVERY_BUILD_FEATURES}
++
++
++def bun_feature_arguments(bin_name: str) -> str:
++    """Los ``--feature=`` que ``bun`` recibe para ``bin_name``, con espacio final, o vacío."""
++    return "".join(f"--feature={name} " for name in LAUNCHER_BUILD_FEATURES.get(bin_name, ()))
++
++
+ def is_typescript_entrypoint(path: pathlib.Path) -> bool:
+     """Shebang **y** directorio padre de entrypoint. NO ``import.meta.main``.
+ 
+@@ -751,7 +770,8 @@ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
+         'source "$LIB"\n'
+         'THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \\\n'
+         '  thyrox_toolchain_require_bun || exit 1\n'
+-        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" "$WRAPPER_ROOT/{relative_target}" "$@"\n'
++        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" {bun_feature_arguments(bin_name)}'
++        f'"$WRAPPER_ROOT/{relative_target}" "$@"\n'
+     )
+ 
+ 
+diff --git a/tests/session/test-send-message-two-cli.sh b/tests/session/test-send-message-two-cli.sh
+new file mode 100755
+index 000000000..e182424d9
+--- /dev/null
++++ b/tests/session/test-send-message-two-cli.sh
+@@ -0,0 +1,109 @@
++#!/usr/bin/env bash
++# TASK-THYROX-0673 — SendMessage entre dos procesos reales de bin/cli.
++#
++# B es un `thyrox -p` que se queda vivo dentro de una herramienta Bash real
++# (`sleep`), con su buzón UDS levantado y su sesión publicada en el registro.
++# A es otro `thyrox -p` cuyo modelo grabado llama a la herramienta
++# `SendMessage` con `uds:<socket de B>`: la llamada llega al bucle de A como
++# `tool_use`, así que mide el adaptador de `runLoop.ts`, no un hijo de A.
++#
++# La recepción se mide en dos puntos de B, que no son el mismo:
++#   - la cola: el buzón de B escribe «Routed user message to queue» en su
++#     registro de depuración (`DEBUG=1`, `THYROX_CODE_DEBUG_LOGS_DIR`) tras
++#     `enqueue` (`inboxDelivery.ts`);
++#   - el turno: el texto aparece en la conversación de B (`stream-json`).
++#
++# Frontera medida (2026-09-30): el mensaje llega al buzón de B, pero la
++# compuerta de entrada lo retiene con `cause=mode-unknown` porque
++# `wireCurrentModeGetter` (`inboundGate.ts`) no tiene llamador de producción,
++# y `print.ts` no drena la cola hacia el turno. Mientras la retención siga,
++# las dos aserciones de recepción se publican como BLOQUEADA con su causa;
++# cualquier otro desenlace es FALLA, y si el mensaje se encola, pasan a OK.
++#
++# `bin/cli` compila `--feature=UDS_INBOX` (generate_bin.py); la compuerta de
++# tiempo de ejecución es `THYROX_CODE_HARBOR_KITE`.
++set -uo pipefail
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
++T="$(mktemp -d)"
++A_PID=""; B_PID=""
++cleanup() {
++  for pid in "$A_PID" "$B_PID"; do [[ -n "$pid" ]] && kill "$pid" 2>/dev/null; done
++  for pid in "$A_PID" "$B_PID"; do [[ -n "$pid" ]] && wait "$pid" 2>/dev/null; done
++  rm -rf "$T"
++}
++trap cleanup EXIT
++total=0; fallos=0
++bloqueadas=0
++HOLD_LINE="held inbound peer message"
++ROUTED_LINE="Routed user message to queue"
++# $1 = etiqueta, $2 = si|no medido, $3 = si el mensaje sigue retenido por mode-unknown (si|no)
++check_received() {
++  if [[ "$2" == si ]]; then check "$1" si si
++  elif [[ "$3" == si ]]; then echo "BLOQUEADA $1 — retenido por la compuerta de entrada (cause=mode-unknown)"; bloqueadas=$((bloqueadas+1))
++  else check "$1" "$2" si; fi
++}
++check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FALLA $1 — esperado '$3', obtenido '$2'"; fallos=$((fallos+1)); fi; }
++
++USAGE='{"input_tokens":1,"output_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}'
++turnos() { # $1 = nombre de la herramienta del primer turno, $2 = su entrada en JSON
++  printf '[{"id":"m1","model":"claude-opus-5","stop_reason":"tool_use","usage":%s,"content":[{"type":"tool_use","id":"tu1","name":"%s","input":%s}]},{"id":"m2","model":"claude-opus-5","stop_reason":"end_turn","usage":%s,"content":[{"type":"text","text":"listo"}]}]' \
++    "$USAGE" "$1" "$2" "$USAGE"
++}
++cli() { # $1 = grabación, $2 = registro de depuración. Se invoca con `&`: el exec conserva el pid hasta bun.
++  exec env -u THYROX_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_SOCKET -u BUN_OPTIONS \
++    DEBUG=1 THYROX_CODE_DEBUG_LOGS_DIR="$2" THYROX_CONFIG_DIR="$T/cfg" THYROX_CODE_HARBOR_KITE=1 \
++    bash "$ROOT/bin/cli" -p hola --provider recorded --grabacion "$1" --no-session-persistence --output-format stream-json
++}
++espera_registro() { # $1 = pid; imprime la ruta del socket cuando el registro la publica
++  local sock
++  for _ in $(seq 1 150); do
++    sock="$(jq -r '.messagingSocketPath // empty' "$T/cfg/sessions/$1.json" 2>/dev/null)"
++    [[ -n "$sock" && -S "$sock" ]] && { printf '%s' "$sock"; return 0; }
++    kill -0 "$1" 2>/dev/null || return 1
++    sleep 0.2
++  done
++  return 1
++}
++espera_texto() { # $1 = archivo, $2 = texto fijo; hasta 10 s
++  for _ in $(seq 1 50); do grep -qF -- "$2" "$1" 2>/dev/null && return 0; sleep 0.2; done
++  return 1
++}
++
++mkdir -p "$T/cfg"
++NONCE="saludo-de-A-$RANDOM$RANDOM"
++
++echo "== 1. B vive con su buzón publicado en el registro =="
++turnos Bash '{"command":"sleep 20"}' > "$T/turnos-b.json"
++cli "$T/turnos-b.json" "$T/b-debug.txt" > "$T/b.out" 2> "$T/b.err" &
++B_PID=$!
++B_SOCK="$(espera_registro "$B_PID")"
++check "B publica messagingSocketPath y el socket existe" "$([[ -n "$B_SOCK" && -S "$B_SOCK" ]] && echo si || echo no)" "si"
++
++echo "== 2. A envía texto a uds:<socket de B> por la herramienta SendMessage =="
++turnos SendMessage "$(jq -cn --arg to "uds:$B_SOCK" --arg m "$NONCE" '{to: $to, message: $m}')" > "$T/turnos-a.json"
++cli "$T/turnos-a.json" "$T/a-debug.txt" > "$T/a.out" 2> "$T/a.err" &
++A_PID=$!
++wait "$A_PID"; A_CODE=$?; A_PID=""
++check "A termina su turno con éxito" "$A_CODE/$(jq -r 'select(.type=="result") | .subtype' "$T/a.out" 2>/dev/null)" "0/success"
++check "A ofrece SendMessage y ListAgents a su modelo" \
++  "$(jq -r 'select(.type=="system" and .subtype=="init") | [.tools[] | select(.=="SendMessage" or .=="ListAgents")] | length' "$T/a.out" 2>/dev/null)" "2"
++# La vista previa del registro de B trunca el cuerpo: el mensaje se identifica
++# por su remitente, el socket que el buzón de A anunció al arrancar.
++A_FROM="uds:$(sed -n 's/.*\[uds-messaging\] Listening: //p' "$T/a-debug.txt" | head -1)"
++espera_texto "$T/b-debug.txt" "$A_FROM"
++check "el envío de A llega al buzón de B" \
++  "$(grep -E "$HOLD_LINE|$ROUTED_LINE" "$T/b-debug.txt" 2>/dev/null | grep -qF "$A_FROM" && echo si || echo no)" "si"
++HELD="$(grep -F "$HOLD_LINE" "$T/b-debug.txt" 2>/dev/null | grep -F "cause=mode-unknown" | grep -qF "$A_FROM" && echo si || echo no)"
++check_received "el mensaje entra a la cola de B" \
++  "$(grep -F "$ROUTED_LINE" "$T/b-debug.txt" 2>/dev/null | grep -qF "$A_FROM" && echo si || echo no)" "$HELD"
++[[ -s "$T/b-debug.txt" ]] || { echo "--- a.out"; tail -5 "$T/a.out"; echo "--- b.err"; tail -5 "$T/b.err"; }
++
++echo "== 3. el mensaje aparece en el turno de B =="
++wait "$B_PID"; B_CODE=$?; B_PID=""
++check "B termina su turno con éxito" "$B_CODE/$(jq -r 'select(.type=="result") | .subtype' "$T/b.out" 2>/dev/null)" "0/success"
++check_received "el texto de A aparece en la conversación de B" \
++  "$(grep -qF "$NONCE" "$T/b.out" && echo si || echo no)" "$HELD"
++
++echo
++echo "$total aserciones, $fallos fallo(s), $bloqueadas bloqueada(s) (alcance medido: dos bin/cli reales, A envía a B)"
++[[ $fallos -eq 0 ]]
+diff --git a/tests/session/test_generate_bin.py b/tests/session/test_generate_bin.py
+index 538ab6c5d..09dc57f4e 100644
+--- a/tests/session/test_generate_bin.py
++++ b/tests/session/test_generate_bin.py
+@@ -1250,6 +1250,66 @@ def test_wrapper_exports_root_across_exec(base: pathlib.Path) -> None:
+           f"dio {r2.stdout!r} (esperaba {alias_root})")
+ 
+ 
++def _make_launcher_tree(base: pathlib.Path) -> pathlib.Path:
++    """Un árbol con su biblioteca de toolchain y ``node_modules``, para correr un envoltorio .ts."""
++    tree = _make_tree(base)
++    (tree / "src/lib").mkdir(parents=True, exist_ok=True)
++    for dependency in ("toolchain.sh", "reach.sh", "assert.sh"):
++        source = ROOT / "src/lib" / dependency
++        if source.is_file():
++            shutil.copy2(source, tree / "src/lib" / dependency)
++    (tree / "node_modules").mkdir(exist_ok=True)
++    (tree / "node_modules/.keep").write_text("")
++    return tree
++
++
++def _run_feature_probe(tree: pathlib.Path, relative: str, bin_name: str) -> str:
++    """Escribe una sonda de ``feature('UDS_INBOX')`` en ``relative``, la envuelve y devuelve su stdout."""
++    target = tree / relative
++    target.parent.mkdir(parents=True, exist_ok=True)
++    target.write_text(
++        "#!/usr/bin/env bun\n"
++        "import { feature } from 'bun:bundle'\n"
++        "console.log('UDS_INBOX=' + (feature('UDS_INBOX') ? 'on' : 'off'))\n")
++    wrapper = tree / "bin" / bin_name
++    wrapper.parent.mkdir(exist_ok=True)
++    wrapper.write_text(gb.typescript_wrapper_body(target, tree, bin_name))
++    wrapper.chmod(0o755)
++    entorno = {k: v for k, v in os.environ.items()
++               if k not in ("THYROX_ROOT", "THYROX_TOOLCHAIN_NODE_MODULES_HOME", "BUN_OPTIONS")}
++    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
++                       cwd="/", env=entorno)
++    return r.stdout + r.stderr
++
++
++def test_cli_launcher_compiles_the_delivery_features(base: pathlib.Path) -> None:
++    """El lanzador de ``cli`` compila las banderas de entrega; los demás, ninguna.
++
++    ``feature('UDS_INBOX')`` es un macro de compilación de ``bun:bundle``: sin
++    ``--feature=UDS_INBOX`` en la línea de ``bun`` el buzón entre sesiones no
++    existe en ``bin/cli``, aunque la compuerta de tiempo de ejecución esté
++    abierta. La sonda mide el macro dentro del proceso que el envoltorio lanza,
++    no el texto del envoltorio.
++    """
++    tree = _make_launcher_tree(base / "delivery-features")
++    cli_output = _run_feature_probe(tree, "src/packages/cli/src/entry/cli.tsx", "cli")
++    check("bin/cli enciende feature('UDS_INBOX')",
++          "UDS_INBOX=on" in cli_output, cli_output)
++    other_output = _run_feature_probe(tree, "src/packages/demo/bin/tool.ts", "demo-tool")
++    check("otro lanzador .ts no recibe las banderas de entrega",
++          "UDS_INBOX=off" in other_output, other_output)
++
++
++def test_real_cli_plan_carries_the_delivery_features() -> None:
++    """El ``bin/cli`` del plan real lleva cada bandera de ``DELIVERY_BUILD_FEATURES``."""
++    body = gb.planned_files(ROOT).get("cli", "")
++    missing = [name for name in gb.DELIVERY_BUILD_FEATURES
++               if f"--feature={name}" not in body]
++    check("el plan real de bin/cli declara UDS_INBOX",
++          "UDS_INBOX" in gb.DELIVERY_BUILD_FEATURES and not missing,
++          f"faltan: {missing}")
++
++
+ def main() -> int:
+     with tempfile.TemporaryDirectory() as tmp:
+         base = pathlib.Path(tmp)
+@@ -1275,6 +1335,7 @@ def main() -> int:
+         test_typescript_names_resolve_stem_collisions(base)
+         test_typescript_wrapper_degrades_without_bun(base)
+         test_typescript_wrapper_runs_its_own_tree(base)
++        test_cli_launcher_compiles_the_delivery_features(base)
+         test_wrapper_exports_root_across_exec(base)
+         test_inherited_root_does_not_redirect_the_generator(base)
+     test_builtin_collision_on_real_tree()
+@@ -1287,6 +1348,7 @@ def main() -> int:
+     test_relative_import_entrypoints_reach_bin_on_real_tree()
+     test_exercise_on_real_tree_is_green()
+     test_typescript_entrypoints_reach_bin_on_real_tree()
++    test_real_cli_plan_carries_the_delivery_features()
+     test_no_wrapper_asks_to_block_on_the_real_tree()
+ 
+     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "

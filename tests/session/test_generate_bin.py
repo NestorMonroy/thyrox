@@ -1250,6 +1250,66 @@ def test_wrapper_exports_root_across_exec(base: pathlib.Path) -> None:
           f"dio {r2.stdout!r} (esperaba {alias_root})")
 
 
+def _make_launcher_tree(base: pathlib.Path) -> pathlib.Path:
+    """Un árbol con su biblioteca de toolchain y ``node_modules``, para correr un envoltorio .ts."""
+    tree = _make_tree(base)
+    (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+    for dependency in ("toolchain.sh", "reach.sh", "assert.sh"):
+        source = ROOT / "src/lib" / dependency
+        if source.is_file():
+            shutil.copy2(source, tree / "src/lib" / dependency)
+    (tree / "node_modules").mkdir(exist_ok=True)
+    (tree / "node_modules/.keep").write_text("")
+    return tree
+
+
+def _run_feature_probe(tree: pathlib.Path, relative: str, bin_name: str) -> str:
+    """Escribe una sonda de ``feature('UDS_INBOX')`` en ``relative``, la envuelve y devuelve su stdout."""
+    target = tree / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        "#!/usr/bin/env bun\n"
+        "import { feature } from 'bun:bundle'\n"
+        "console.log('UDS_INBOX=' + (feature('UDS_INBOX') ? 'on' : 'off'))\n")
+    wrapper = tree / "bin" / bin_name
+    wrapper.parent.mkdir(exist_ok=True)
+    wrapper.write_text(gb.typescript_wrapper_body(target, tree, bin_name))
+    wrapper.chmod(0o755)
+    entorno = {k: v for k, v in os.environ.items()
+               if k not in ("THYROX_ROOT", "THYROX_TOOLCHAIN_NODE_MODULES_HOME", "BUN_OPTIONS")}
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       cwd="/", env=entorno)
+    return r.stdout + r.stderr
+
+
+def test_cli_launcher_compiles_the_delivery_features(base: pathlib.Path) -> None:
+    """El lanzador de ``cli`` compila las banderas de entrega; los demás, ninguna.
+
+    ``feature('UDS_INBOX')`` es un macro de compilación de ``bun:bundle``: sin
+    ``--feature=UDS_INBOX`` en la línea de ``bun`` el buzón entre sesiones no
+    existe en ``bin/cli``, aunque la compuerta de tiempo de ejecución esté
+    abierta. La sonda mide el macro dentro del proceso que el envoltorio lanza,
+    no el texto del envoltorio.
+    """
+    tree = _make_launcher_tree(base / "delivery-features")
+    cli_output = _run_feature_probe(tree, "src/packages/cli/src/entry/cli.tsx", "cli")
+    check("bin/cli enciende feature('UDS_INBOX')",
+          "UDS_INBOX=on" in cli_output, cli_output)
+    other_output = _run_feature_probe(tree, "src/packages/demo/bin/tool.ts", "demo-tool")
+    check("otro lanzador .ts no recibe las banderas de entrega",
+          "UDS_INBOX=off" in other_output, other_output)
+
+
+def test_real_cli_plan_carries_the_delivery_features() -> None:
+    """El ``bin/cli`` del plan real lleva cada bandera de ``DELIVERY_BUILD_FEATURES``."""
+    body = gb.planned_files(ROOT).get("cli", "")
+    missing = [name for name in gb.DELIVERY_BUILD_FEATURES
+               if f"--feature={name}" not in body]
+    check("el plan real de bin/cli declara UDS_INBOX",
+          "UDS_INBOX" in gb.DELIVERY_BUILD_FEATURES and not missing,
+          f"faltan: {missing}")
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -1275,6 +1335,7 @@ def main() -> int:
         test_typescript_names_resolve_stem_collisions(base)
         test_typescript_wrapper_degrades_without_bun(base)
         test_typescript_wrapper_runs_its_own_tree(base)
+        test_cli_launcher_compiles_the_delivery_features(base)
         test_wrapper_exports_root_across_exec(base)
         test_inherited_root_does_not_redirect_the_generator(base)
     test_builtin_collision_on_real_tree()
@@ -1287,6 +1348,7 @@ def main() -> int:
     test_relative_import_entrypoints_reach_bin_on_real_tree()
     test_exercise_on_real_tree_is_green()
     test_typescript_entrypoints_reach_bin_on_real_tree()
+    test_real_cli_plan_carries_the_delivery_features()
     test_no_wrapper_asks_to_block_on_the_real_tree()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
