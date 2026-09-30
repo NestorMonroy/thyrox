@@ -1,0 +1,2 @@
+src/hooks/detect_foreground_long_command.py
+tests/hooks/test_detect_foreground_long_command.py

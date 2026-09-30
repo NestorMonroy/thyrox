@@ -1,0 +1,1 @@
+1	item1 — TASK-THYROX-0668, una espera desprendida con & o disown se señala. Fuente de verdad: /home/user/thyrox/.claude/workbench/detached-wait-gate-20260930T185256/source.md. Te pertenecen src/hooks/detect_foreground_long_command.py y tests/hooks/test_detect_foreground_long_command.py.
