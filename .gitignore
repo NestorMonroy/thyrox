@@ -188,3 +188,9 @@ agent-results/mutantes-en-vuelo.jsonl
 # directorio no se vuelva un cajón invisible para Git.
 /.thyrox/runtime/
 /.thyrox/pool-worktrees/
+
+# El proyecto sintetico de `check_package` (src/typescript/emit_declarations.py,
+# CHECK_FILE). Se retira en `finally`, pero un gate terminado con SIGKILL lo
+# deja en el paquete, y un item del pool lo arrastraba a su parche como si
+# fuera trabajo propio (daemon-parity-closure, items 1 y 3).
+tsconfig.check.json
