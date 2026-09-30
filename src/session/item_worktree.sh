@@ -114,13 +114,21 @@ for prefix in $SPARSE_EXCLUDE; do
 done
 
 # Patrones de sparse-checkout (modo no-cone): todo, menos cada hijo que los
-# prefijos excluidos tienen en HEAD.
+# prefijos excluidos tienen en HEAD. El hijo que contiene OUT —el banco del
+# propio pool— nunca se excluye: el verify del ítem llama a sus sondas por
+# ruta relativa dentro del worktree.
 sparse_patterns() {
-    local repo="$1" prefix
+    local repo="$1" out="$2" top pool_bench prefix
+    top="$(git -C "$repo" rev-parse --show-toplevel)" || return 2
+    pool_bench="$(realpath -m "$out")/"
+    pool_bench="${pool_bench#"$top"/}"
     printf '/*\n'
     for prefix in $SPARSE_EXCLUDE; do
         git -C "$repo" ls-tree HEAD -- "${prefix%/}/" \
-            | gawk -F'\t' '{split($1, meta, " "); print "!/" $2 (meta[2] == "tree" ? "/" : "")}'
+            | gawk -F'\t' -v keep="$pool_bench" '
+                { split($1, meta, " "); child = $2 "/" }
+                index(keep, child) == 1 { next }
+                { print "!/" $2 (meta[2] == "tree" ? "/" : "") }'
     done
 }
 
@@ -136,13 +144,13 @@ checkout_bytes() {
 
 # El alta del worktree: completo, o sin checkout y luego disperso.
 add_worktree() {
-    local repo="$1" dir="$2"
+    local repo="$1" dir="$2" out="$3"
     if [[ -z "$SPARSE_EXCLUDE" ]]; then
         with_retries git -C "$repo" worktree add -q --detach "$dir" HEAD
         return
     fi
     with_retries git -C "$repo" worktree add -q --no-checkout --detach "$dir" HEAD || return 1
-    sparse_patterns "$repo" | git -C "$dir" sparse-checkout set --no-cone --stdin || return 1
+    sparse_patterns "$repo" "$out" | git -C "$dir" sparse-checkout set --no-cone --stdin || return 1
     git -C "$dir" checkout -q
 }
 
@@ -205,7 +213,7 @@ prepare() {
     (
         flock 9 || exit 2
         admit_disk "$repo" "$root" || exit $?
-        add_worktree "$repo" "$dir" || exit 2
+        add_worktree "$repo" "$dir" "$out" || exit 2
     ) 9> "$root/.admission.lock" || return $?
     printf '%s\n' "$dir"
 }

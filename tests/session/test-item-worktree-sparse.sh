@@ -65,5 +65,17 @@ check "prefijo con ..: exit 2" "$rc" "2"
 THYROX_ITEM_WORKTREE_SPARSE_EXCLUDE=/abs bash "$MODULE" prepare "$REPO" "$W/out7" 1 >/dev/null 2>&1; rc=$?
 check "prefijo absoluto: exit 2" "$rc" "2"
 
+echo "caso 7 — el banco del propio pool nunca se excluye"
+# OUT vive dentro de un banco versionado bajo un prefijo excluido; el verify
+# del ítem llama a un script de ese banco por ruta relativa, así que el banco
+# tiene que estar en el worktree aunque su prefijo se excluya.
+mkdir -p "$REPO/bench/run1/probes"
+printf 'exit 0\n' > "$REPO/bench/run1/probes/verify.sh"
+git -C "$REPO" add bench/run1 && git -C "$REPO" -c user.email=t@t -c user.name=t commit -q -m run1
+dir7="$(THYROX_ITEM_WORKTREE_SPARSE_EXCLUDE=bench bash "$MODULE" prepare "$REPO" "$REPO/bench/run1/outputs" 1)"
+check "el banco del pool está" "$([[ -e "$dir7/bench/run1/probes/verify.sh" ]] && echo si || echo no)" "si"
+check "los demás hijos del prefijo siguen fuera" "$([[ -e "$dir7/bench/old/blob" ]] && echo si || echo no)" "no"
+bash "$MODULE" sweep "$REPO" "$REPO/bench/run1/outputs"
+
 echo "item_worktree sparse: $((total - failures))/$total"
 [[ $failures -eq 0 ]]
