@@ -156,7 +156,9 @@ def test_gate_on_real_cases():
         check('con baseline vacío sale 1', 1, code)
         check('reporta SALIDA de test-headless-pool.sh', True, '  SALIDA   →' in out)
         check('reporta rehusa de headless-pool.sh', True, '  rehusa   →' in out)
-        check('en la línea de su declaración', True, f'{HEADLESS_POOL}:197  rehusa' in out)
+        declaration_line = next(number for number, line in enumerate((ROOT / HEADLESS_POOL).read_text().splitlines(), 1)
+                                if line.startswith('rehusa()'))
+        check('en la línea de su declaración', True, f'{HEADLESS_POOL}:{declaration_line}  rehusa' in out)
         check('mide los dos .sh', True, 'Medido: 2 archivos' in out)
 
 

@@ -1,0 +1,6 @@
+tests/verify/test_identifier_language.py 25 ok, 0 fallos (alcance medido: 25 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/verify/test_identifier_language_baseline.py 16 ok, 0 fallos (alcance medido: 16 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/verify/test_identifier_language_corpus.py 23 ok, 0 fallos (alcance medido: 23 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/verify/test_identifier_language_shell.py test_identifier_language_shell: 59 aserciones — 58 ok, 1 falla(s)
+tests/verify/test_identifier_language_typescript.py test_identifier_language_typescript: 23 aserciones — 23 ok, 0 falla(s)
+__BG_EXIT__=0
