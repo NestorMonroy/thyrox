@@ -24,10 +24,14 @@
 # el PID vive, la accion tomada y el resultado de salud); el diagnostico de
 # lo que no llego a sano va a stderr.
 #
-# Exit 0  todos los contenedores quedaron sanos.
+# Uso: infrastructure_ensure [contenedor...] — sin argumentos, todos los que
+#       declara `infrastructure.sh`; con nombres, sólo esos.
+#
+# Exit 0  todos los contenedores seleccionados quedaron sanos.
 # Exit 1  alguno no llego a sano dentro del plazo (nombrado en stderr).
-# Exit 2  falta podman o la credencial de PostgreSQL — no se toca nada —, o la
-#         imagen de un contenedor falta y su pull no cabe en disco (se rehusa
+# Exit 2  un contenedor que la declaracion no conoce, falta podman, o falta la
+#         credencial de PostgreSQL con PostgreSQL seleccionado — no se toca
+#         nada —, o la imagen de un contenedor falta y su pull no cabe en disco (se rehusa
 #         antes de `podman create`, TASK-THYROX-0671).
 # =============================================================================
 set -uo pipefail
@@ -53,8 +57,39 @@ DISK_ADMISSION_BIN="${THYROX_INFRA_DISK_ADMISSION_BIN:-$_INFRA_ENSURE_HERE/../..
 readonly DISK_ADMISSION_BENCH="disk-reserve-reach-20260930T191002"
 readonly EXIT_REFUSED=2
 
-# --- precondiciones: NADA se toca hasta que las dos esten satisfechas ---
-if [[ -z "${THYROX_INFRA_POSTGRES_PASSWORD:-}" ]]; then
+# --- la seleccion: los nombres pedidos, o todos los declarados sin argumentos.
+# Un nombre que la declaracion no conoce se rehusa antes de tocar nada.
+mapfile -t DECLARED_CONTAINERS < <(thyrox_infrastructure_container_names)
+if [[ "$#" -gt 0 ]]; then
+  SELECTED_CONTAINERS=("$@")
+else
+  SELECTED_CONTAINERS=("${DECLARED_CONTAINERS[@]}")
+fi
+
+# @description Exit 0 si el nombre esta en la lista que siguen los argumentos.
+# @arg $1 string nombre buscado.
+# @arg $@ string la lista, desde el segundo argumento.
+_infra_list_contains() {
+  local wanted="$1" candidate
+  shift
+  for candidate in "$@"; do
+    [[ "$candidate" == "$wanted" ]] && return 0
+  done
+  return 1
+}
+
+for _infra_selected in "${SELECTED_CONTAINERS[@]}"; do
+  if ! _infra_list_contains "$_infra_selected" "${DECLARED_CONTAINERS[@]}"; then
+    echo "infrastructure_ensure: contenedor desconocido: $_infra_selected" >&2
+    echo "                       declarados: ${DECLARED_CONTAINERS[*]}. No se toca nada." >&2
+    exit "$EXIT_REFUSED"
+  fi
+done
+
+# --- precondiciones: NADA se toca hasta que las dos esten satisfechas. La
+# credencial de PostgreSQL se exige sólo si PostgreSQL esta seleccionado.
+if _infra_list_contains thyrox-postgres "${SELECTED_CONTAINERS[@]}" \
+   && [[ -z "${THYROX_INFRA_POSTGRES_PASSWORD:-}" ]]; then
   echo "infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL)." >&2
   echo "                       No se invoca podman ni se toca nada." >&2
   exit 2
@@ -224,7 +259,7 @@ _infra_ensure_container() {
 FAILED_CONTAINERS=()
 while IFS= read -r _infra_container_name; do
   _infra_ensure_container "$_infra_container_name"
-done < <(thyrox_infrastructure_container_names)
+done < <(printf '%s\n' "${SELECTED_CONTAINERS[@]}")
 
 if [[ "${#FAILED_CONTAINERS[@]}" -gt 0 ]]; then
   for _infra_failure in "${FAILED_CONTAINERS[@]}"; do

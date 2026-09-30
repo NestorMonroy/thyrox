@@ -141,7 +141,7 @@ run_ensure() {
   THYROX_INFRA_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-6}" \
   THYROX_INFRA_HEALTH_INTERVAL="${TEST_HEALTH_INTERVAL:-2}" \
   THYROX_INFRA_POSTGRES_PASSWORD="${TEST_PASSWORD-secret123}" \
-    bash "$SUBJECT"
+    bash "$SUBJECT" "$@"
 }
 
 # =====================================================================
@@ -427,5 +427,38 @@ if grep -q '^THYROX_INFRA_DISK_ADMISSION_BIN=$' "$ROOT/.env.example"; then
 else
   bad "caso 12: .env.example no declara THYROX_INFRA_DISK_ADMISSION_BIN"
 fi
+
+# =====================================================================
+# Caso 13 — TASK-THYROX-0693: una seleccion sin postgres no exige su
+# credencial y asegura sólo lo nombrado.
+# =====================================================================
+reset_state
+echo ok > "$STATE/thyrox-ollama.health"
+out="$(TEST_PASSWORD='' run_ensure thyrox-ollama 2>&1)"; rc=$?
+thyrox_check "caso 13: sólo ollama, sin contraseña -> exit 0" "0" "$rc"
+thyrox_check "caso 13: publica una sola linea, la de ollama" "thyrox-ollama " \
+  "$(awk '{printf "%s ", $1}' <<<"$out")"
+if ! grep -q -- '--name thyrox-postgres\|--name thyrox-redis' "$STATE/calls.log"; then
+  ok "caso 13: no crea postgres ni redis"
+else
+  bad "caso 13: creo un contenedor no seleccionado: [$(cat "$STATE/calls.log")]"
+fi
+
+# =====================================================================
+# Caso 14 — una seleccion que incluye postgres sigue exigiendo su credencial.
+# =====================================================================
+reset_state
+out="$(TEST_PASSWORD='' run_ensure thyrox-ollama thyrox-postgres 2>&1)"; rc=$?
+thyrox_check "caso 14: con postgres seleccionado y sin contraseña -> exit 2" "2" "$rc"
+thyrox_check "caso 14: no invoca podman" "0" "$(wc -l < "$STATE/calls.log" 2>/dev/null || echo 0)"
+
+# =====================================================================
+# Caso 15 — un nombre que la declaracion no conoce se rehusa sin tocar nada.
+# =====================================================================
+reset_state
+out="$(run_ensure thyrox-mongo 2>&1)"; rc=$?
+thyrox_check "caso 15: nombre desconocido -> exit 2" "2" "$rc"
+if [[ "$out" == *thyrox-mongo* ]]; then ok "caso 15: el rehuso nombra el contenedor"; else bad "caso 15: no lo nombro: [$out]"; fi
+thyrox_check "caso 15: no invoca podman" "0" "$(wc -l < "$STATE/calls.log" 2>/dev/null || echo 0)"
 
 thyrox_summary
