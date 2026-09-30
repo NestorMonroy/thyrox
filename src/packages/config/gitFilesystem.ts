@@ -328,7 +328,19 @@ type CacheEntry<T> = {
   compute: () => Promise<T>
 }
 
-const WATCH_INTERVAL_MS = process.env.NODE_ENV === 'test' ? 10 : 1000
+// Equivale a `cn` del ejecutable 2.1.283: constante, sin variante por
+// `NODE_ENV`. Una prueba que necesite sondeo rápido lo inyecta.
+const WATCH_INTERVAL_MS = 1000
+let watchIntervalOverrideMs: number | undefined
+
+export function getWatchIntervalMs(): number {
+  return watchIntervalOverrideMs ?? WATCH_INTERVAL_MS
+}
+
+/** Sólo para pruebas: `undefined` restaura el intervalo del ejecutable. */
+export function setWatchIntervalMsForTesting(ms: number | undefined): void {
+  watchIntervalOverrideMs = ms
+}
 
 class GitFileWatcher {
   private gitDir: string | null = null
@@ -381,7 +393,7 @@ class GitFileWatcher {
 
   private watchPath(path: string, callback: () => void): void {
     this.watchedPaths.push(path)
-    watchFile(path, { interval: WATCH_INTERVAL_MS }, callback)
+    watchFile(path, { interval: getWatchIntervalMs() }, callback)
   }
 
   /**

@@ -25,7 +25,7 @@ import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import { checkAndRestoreTerminalBackup } from '@thyrox/shell/terminal/appleTerminalBackup.js'
 import { prefetchApiKeyFromApiKeyHelperIfSafe } from '@thyrox/provider/authAlias.js'
 import { clearMemoryFileCaches } from '@thyrox/storage/claudemd.js'
-import { getCurrentProjectConfig } from '@thyrox/config'
+import { getCurrentProjectConfig, type ProjectConfig } from '@thyrox/config'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { env } from '@thyrox/config/env/paths'
 import { envDynamic } from '@thyrox/config/env/dynamic'
@@ -429,17 +429,24 @@ export async function setup(
     }
   }
 
-  if (process.env.NODE_ENV === 'test') {
-    return
-  }
-
   // Log tengu_exit event from the last session?
-  const projectConfig = getCurrentProjectConfig()
+  logPreviousSessionExit(getCurrentProjectConfig())
+}
+
+/**
+ * Registra el evento `tengu_exit` de la sesión anterior. Equivale al tramo
+ * final de `Ho` en el ejecutable 2.1.283: no depende de `NODE_ENV`; quien
+ * necesite otro sumidero lo inyecta con `log`.
+ */
+export function logPreviousSessionExit(
+  projectConfig: ProjectConfig,
+  log: typeof logEvent = logEvent,
+): void {
   if (
     projectConfig.lastCost !== undefined &&
     projectConfig.lastDuration !== undefined
   ) {
-    logEvent('tengu_exit', {
+    log('tengu_exit', {
       last_session_cost: projectConfig.lastCost,
       last_session_api_duration: projectConfig.lastAPIDuration,
       last_session_tool_duration: projectConfig.lastToolDuration,

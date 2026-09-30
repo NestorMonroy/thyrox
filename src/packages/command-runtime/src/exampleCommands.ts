@@ -110,8 +110,7 @@ export function pickDiverseCoreFiles(
   return picked.length >= want ? picked : []
 }
 
-async function getFrequentlyModifiedFiles(): Promise<string[]> {
-  if (process.env.NODE_ENV === 'test') return []
+export async function getFrequentlyModifiedFiles(): Promise<string[]> {
   const { env } = requireConfigEnv()
   if (env.platform === 'win32') return []
   const { getIsGit, gitExe } = requireStorageGit()

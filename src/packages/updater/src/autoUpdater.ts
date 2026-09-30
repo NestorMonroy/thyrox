@@ -218,10 +218,6 @@ export function shouldForceDowngradeNow(
  * mientras mantiene trazabilidad via el SHA.
  */
 export async function assertMinVersion(): Promise<void> {
-  if (process.env.NODE_ENV === 'test') {
-    return
-  }
-
   try {
     const versionConfig = await getDynamicConfig_BLOCKS_ON_INIT<{
       minVersion: string

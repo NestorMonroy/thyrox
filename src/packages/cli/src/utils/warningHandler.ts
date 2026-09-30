@@ -64,9 +64,8 @@ export function initializeWarningHandler(): void {
   // For internal users, only keep default warnings for development builds
   // Check development mode directly to avoid async call in init
   // This preserves the same logic as getCurrentInstallationType() without async
-  const isDevelopment =
-    process.env.NODE_ENV === 'development' || isRunningFromBuildDirectory()
-  if (!isDevelopment) {
+  // El ejecutable 2.1.283 (`vr`) decide sólo por el directorio de build.
+  if (!isRunningFromBuildDirectory()) {
     process.removeAllListeners('warning')
   }
 
