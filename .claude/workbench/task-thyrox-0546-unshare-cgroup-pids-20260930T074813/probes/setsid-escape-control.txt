@@ -1,0 +1,9 @@
+# Control: el mecanismo vigente del pool (setsid + drenaje por sesion) frente a un hijo que llama a setsid().
+# El principal se inscribe ademas en un cgroup pids para mostrar que el cgroup si lo lista.
+principal-sale
+principal_pid_y_sid=15923
+escapado_pid=15925
+escapado_pgrp=15925 escapado_sid=15925
+process_ownership members 15923 -> 0 miembros (el drenaje por sesion NO lo ve)
+cgroup.procs -> 15925 (el cgroup SI lo lista)
+rmdir cgroup ok
