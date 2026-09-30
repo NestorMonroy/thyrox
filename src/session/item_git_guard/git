@@ -50,7 +50,17 @@ while [[ $i -lt ${#args[@]} ]]; do
     esac
 done
 
-if [[ "$subcommand" == stash ]]; then
+# `list` y `show` sólo leen la pila: no la mutan y no sacan nada del working
+# tree. `item_worktree.sh` usa `git stash list` para su línea base, así que
+# rehusarlos marcaba con-stash a todo ítem que ejecutara las pruebas del pool.
+# Cualquier otra forma —incluido `git stash` a secas, que es `push`— escribe
+# refs/stash o el working tree desde ella, y se rehúsa.
+stash_action="${args[$((i + 1))]:-}"
+is_read_only_stash() {
+    [[ "$stash_action" == list || "$stash_action" == show ]]
+}
+
+if [[ "$subcommand" == stash ]] && ! is_read_only_stash; then
     printf 'item_git_guard: REHÚSA — el pool exige dejar los cambios en el working tree, no en refs/stash: git %s\n' \
         "${args[*]}" >&2
     if [[ -n "${THYROX_POOL_STASH_ATTEMPTS_FILE:-}" ]]; then

@@ -34,13 +34,24 @@ check "sale 2" "$rc_a" "2"
 check "no imprime salida" "$(wc -c < "$F/out-a")" "0"
 check "una línea en el archivo de intentos" "$(wc -l < "$ATTEMPTS_A")" "1"
 
-echo "caso b — otras formas de stash, tras opciones globales, también rehúsan"
-THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b1" "$GIT_GUARD" -C "$REPO" --no-pager stash list > /dev/null 2> "$F/err-b1"; rc_b1=$?
-check "-C --no-pager stash list rehúsa" "$rc_b1" "2"
+echo "caso b — las formas que escriben refs/stash rehúsan tras opciones globales"
 THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b2" "$GIT_GUARD" -C "$REPO" stash create > /dev/null 2> "$F/err-b2"; rc_b2=$?
 check "stash create rehúsa" "$rc_b2" "2"
-THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b3" "$GIT_GUARD" --git-dir "$REPO/.git" --work-tree "$REPO" stash list > /dev/null 2> "$F/err-b3"; rc_b3=$?
-check "--git-dir y --work-tree con valor separado: stash list rehúsa" "$rc_b3" "2"
+THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b3" "$GIT_GUARD" --git-dir "$REPO/.git" --work-tree "$REPO" stash push > /dev/null 2> "$F/err-b3"; rc_b3=$?
+check "--git-dir y --work-tree con valor separado: stash push rehúsa" "$rc_b3" "2"
+for form in pop apply drop clear store branch save; do
+    THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b-$form" "$GIT_GUARD" -C "$REPO" stash "$form" > /dev/null 2>&1; rc=$?
+    check "stash $form rehúsa" "$rc" "2"
+done
+
+echo "caso b2 — las formas de sólo lectura pasan al git real y no cuentan como intento"
+# `item_worktree.sh` lee la pila con `git stash list` para su línea base: un
+# ítem que ejecuta las pruebas del pool no debe salir con-stash por leerla.
+THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b1" "$GIT_GUARD" -C "$REPO" --no-pager stash list > /dev/null 2> "$F/err-b1"; rc_b1=$?
+check "-C --no-pager stash list pasa" "$rc_b1" "0"
+check "stash list no registra intento" "$([[ -e "$F/attempts-b1" ]] && echo registrado || echo limpio)" "limpio"
+THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b4" "$GIT_GUARD" -C "$REPO" stash show > /dev/null 2>&1
+check "stash show no registra intento" "$([[ -e "$F/attempts-b4" ]] && echo registrado || echo limpio)" "limpio"
 
 echo "caso c — cualquier otro subcomando pasa al git real"
 "$GIT_GUARD" -C "$REPO" status > "$F/out-c" 2> "$F/err-c"; rc_c=$?
