@@ -726,14 +726,22 @@ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
     Si la biblioteca misma no esta alcanzable, el envoltorio lo dice con OTRO
     mensaje y no reescribe el aviso: dos copias del mismo texto divergen, y un
     arbol sin ``src/lib/`` tiene un problema distinto del de un bun ausente.
+
+    El codigo que se ejecuta —el ``.ts``, su biblioteca y su ``node_modules``—
+    sale de la raiz del propio envoltorio (``WRAPPER_ROOT``); ``THYROX_ROOT``
+    es el arbol sobre el que actua y lo heredan sus hijos. Un item del pool
+    corre el ``bin/cli`` del arbol principal declarando su worktree: el runner
+    arranca con el ``node_modules`` principal y sus herramientas escriben en el
+    worktree.
     """
     relative_target = target.relative_to(root)
     return (
         "#!/usr/bin/env bash\n"
         f"{GENERATED_MARKER}\n"
-        'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+        'WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+        'THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"\n'
         'export THYROX_ROOT\n'
-        'LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
+        'LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"\n'
         'if [ ! -r "$LIB" ]; then\n'
         '  echo "bin/'
         f'{bin_name}: no alcanza $LIB — el arbol esta incompleto." >&2\n'
@@ -741,8 +749,9 @@ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
         'fi\n'
         '# shellcheck source=/dev/null\n'
         'source "$LIB"\n'
-        'thyrox_toolchain_require_bun || exit 1\n'
-        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" "$THYROX_ROOT/{relative_target}" "$@"\n'
+        'THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \\\n'
+        '  thyrox_toolchain_require_bun || exit 1\n'
+        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" "$WRAPPER_ROOT/{relative_target}" "$@"\n'
     )
 
 

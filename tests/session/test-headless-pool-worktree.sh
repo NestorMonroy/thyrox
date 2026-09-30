@@ -43,6 +43,8 @@ case "$verb" in
   launch) THYROX_ROOT="$MAIN_ROOT" bash "$MAIN_ROOT/bin/thyrox-bg" start "$path" --grace 0 -- true >/dev/null ;;
   # Sale 1 si el candado de la ejecución está tomado, que es lo que protege
   # los worktrees del pool de un barrido de huérfanos.
+  # Registra la raíz y el node_modules que el ítem entrega a sus herramientas.
+  root) printf '%s\t%s\n' "$THYROX_ROOT" "${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-}" > "$PROBE_LOG" ;;
   probe-lock) lock="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" lock-path "$HP_WORKDIR" "$HP_OUT")"
               flock -n "$lock" true; printf '%s\n' "$?" > "$PROBE_LOG" ;;
 esac
@@ -211,5 +213,22 @@ check "no escribe en la cache del árbol principal" "$(test -e "$main_cache/marc
 check "no escribe en jobs del árbol principal" "$(test -e "$main_jobs2/marca" && echo si || echo no)" "no"
 check "no escribe en workbench del árbol principal" "$(test -e "$main_workbench/marca" && echo si || echo no)" "no"
 check "no escribe en logs del árbol principal" "$(test -e "$main_logs/marca" && echo si || echo no)" "no"
+echo "caso 13 — las herramientas del ítem actúan sobre su worktree, no sobre el árbol principal"
+printf '%s\n' 'root x' | PROBE_LOG="$F/root.log" pool --out "$F/out14" --verify true >/dev/null
+check "THYROX_ROOT del ítem es su worktree" \
+  "$(gawk -F'\t' -v r="$THYROX_POOL_WORKTREES_DIR/" 'index($1, r) == 1 {print "worktree"}' "$F/root.log")" "worktree"
+check "su node_modules sigue siendo el del runner" "$(cut -f2 "$F/root.log")" "$RAIZ/node_modules"
+
+echo "caso 13c — control: sin el bloque, el ítem hereda la raíz del árbol principal"
+mkdir -p "$F/pool-copy/src"
+ln -s "$RAIZ/src/lib" "$F/pool-copy/src/lib"
+cp -r "$RAIZ/src/session" "$F/pool-copy/src/session"
+gawk -i inplace '/# >>> item-root/{skip=1} !skip{print} /# <<< item-root/{skip=0}' "$F/pool-copy/src/session/headless-pool.sh"
+check "control: el bloque se retiró" "$(grep -c 'item-root' "$F/pool-copy/src/session/headless-pool.sh")" "0"
+(cd "$F/repo" && printf '%s\n' 'root x' | PROBE_LOG="$F/root-c.log" THYROX_ROOT="$RAIZ" \
+    bash "$F/pool-copy/src/session/headless-pool.sh" --prompt "$F/prompt.md" --model claude-sonnet-5 \
+    --isolation worktree --out "$F/out15" --verify true >/dev/null 2>&1)
+check "control: sin el bloque, THYROX_ROOT es el árbol principal" "$(cut -f1 "$F/root-c.log")" "$RAIZ"
+
 echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
 [[ $failures -eq 0 ]]

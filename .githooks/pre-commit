@@ -177,7 +177,10 @@ for f in "${STAGED[@]}"; do
     esac
 done
 if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
-    (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
+    # El léxico abierto (`spacy-lookups-data`) vive en el entorno del
+    # proveedor: el envoltorio de `bin/` lo resuelve; un `python3` a secas
+    # depende del PATH de quien commitea y rehúsa sin él.
+    (cd "$ROOT" && bash "$ROOT/bin/check_identifier_language" "${IDENTIFIERS[@]}") || CODE=1
 fi
 
 # El vocabulario de la prosa del propio proveedor: reglas, skills, README y
@@ -192,7 +195,7 @@ for f in "${STAGED[@]}"; do
     esac
 done
 if [[ ${#PROSE[@]} -gt 0 ]]; then
-    (cd "$ROOT" && python3 "$GATES/check_vocabulario_prosa.py" --strict --quiet "${PROSE[@]}") || CODE=1
+    (cd "$ROOT" && bash "$ROOT/bin/check_vocabulario_prosa" --strict --quiet "${PROSE[@]}") || CODE=1
 fi
 
 # Un paquete se entra por su `exports`, nunca por el `src/` del vecino. El gate

@@ -458,11 +458,21 @@ _headless_item_run() {
     fi
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$workdir" || exit 1
-         # Un item aislado hereda THYROX_ROOT del arbol principal (lo exporta
-         # bin/cli y el runner lo necesita para su node_modules), y con el
-         # los trabajos que lance, su ledger y su archivo caerian en el arbol
-         # principal. Van a la salida del item: ni al arbol ni al parche.
+         # Los trabajos que lance un item aislado, su ledger y su archivo van a
+         # la salida del item: ni al arbol ni al parche.
          if [[ "$HP_ISOLATION" == worktree ]]; then
+             # >>> item-root
+             # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
+             # herramientas, y con la raiz principal un `bin/*` lanzado desde
+             # el worktree escribiria en el arbol principal. El runner no la
+             # necesita —`bin/cli` ejecuta el codigo que tiene al lado—, pero
+             # si su `node_modules`, que el worktree no tiene. Los hogares
+             # globales heredados apuntarian al arbol principal: se retiran y
+             # cada herramienta los resuelve contra el worktree.
+             export THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$THYROX_ROOT/node_modules}"
+             export THYROX_ROOT="$workdir"
+             unset THYROX_CACHE_DIR THYROX_WORKBENCH_DIR THYROX_BACKGROUND_LOG_DIR
+             # <<< item-root
              export THYROX_JOBS_DIR="$HP_LIVE/$n.jobs" \
                     THYROX_SESSION_LEDGER_DIR="$HP_LIVE/$n.ledger" \
                     THYROX_JOBS_ARCHIVE_DIR="$HP_LIVE/$n.jobs"

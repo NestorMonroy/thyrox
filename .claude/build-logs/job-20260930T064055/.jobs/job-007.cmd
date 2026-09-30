@@ -1,0 +1,1 @@
+PYTHONPATH=src uv run python tests/session/test_generate_bin.py

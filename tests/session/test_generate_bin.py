@@ -1105,6 +1105,61 @@ def test_typescript_wrapper_degrades_without_bun(base: pathlib.Path) -> None:
           "NO deberia correr" not in r.stdout, r.stdout)
 
 
+def test_typescript_wrapper_runs_its_own_tree(base: pathlib.Path) -> None:
+    """El envoltorio .ts ejecuta el codigo que tiene al lado, no el de THYROX_ROOT.
+
+    Son dos raices distintas y el envoltorio las confundia: la de su CODIGO
+    —de donde salen el ``.ts`` y su ``node_modules``— y la del ARBOL sobre el
+    que actua, que es la que hereda cada hijo. Un item del pool corre el
+    ``bin/cli`` del arbol principal con ``THYROX_ROOT`` apuntando a su
+    worktree: el runner necesita el ``node_modules`` principal, y las
+    herramientas que lanza tienen que escribir en el worktree. Con una sola
+    raiz, o el runner no arranca o sus hijos escriben en el arbol principal.
+    """
+    trees = {}
+    for label in ("own", "declared"):
+        tree = _make_tree(base / f"ts-raiz-{label}")
+        (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+        for dependency in ("toolchain.sh", "reach.sh", "assert.sh"):
+            source = ROOT / "src/lib" / dependency
+            if source.is_file():
+                shutil.copy2(source, tree / "src/lib" / dependency)
+        (tree / "node_modules").mkdir(exist_ok=True)
+        (tree / "node_modules/.keep").write_text("")
+        d = tree / "src/packages/demo/bin"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "tool.ts").write_text(
+            "#!/usr/bin/env bun\n"
+            f"console.log('CODE={label} ROOT=' + process.env.THYROX_ROOT)\n")
+        trees[label] = tree
+    own = trees["own"]
+    wrapper_dir = own / "bin"
+    wrapper_dir.mkdir(exist_ok=True)
+    wrapper = wrapper_dir / "demo-tool"
+    wrapper.write_text(gb.typescript_wrapper_body(
+        own / "src/packages/demo/bin/tool.ts", own, "demo-tool"))
+    wrapper.chmod(0o755)
+
+    entorno = {k: v for k, v in os.environ.items()
+               if k not in ("THYROX_ROOT", "THYROX_TOOLCHAIN_NODE_MODULES_HOME")}
+    entorno["THYROX_ROOT"] = str(trees["declared"])
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       cwd="/", env=entorno)
+    check("el envoltorio .ts ejecuta su propio codigo",
+          "CODE=own" in r.stdout, f"dio {r.stdout!r} {r.stderr!r}")
+    check("y deja a sus hijos la raiz declarada",
+          f"ROOT={trees['declared']}" in r.stdout, f"dio {r.stdout!r}")
+
+    # Sin node_modules junto al codigo, rehusa aunque la raiz declarada lo
+    # tenga: el node_modules que cuenta es el del codigo que se ejecuta.
+    shutil.rmtree(own / "node_modules")
+    r2 = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                        cwd="/", env=entorno)
+    check("sin node_modules junto al codigo, rehusa",
+          r2.returncode == 1 and "CODE=" not in r2.stdout,
+          f"dio {r2.returncode}: {r2.stdout!r}")
+
+
 def test_typescript_entrypoints_reach_bin_on_real_tree() -> None:
     """Los 14 del arbol real tienen envoltorio, y ninguno choca con los 184.
 
@@ -1219,6 +1274,7 @@ def main() -> int:
         test_typescript_discriminator_is_shebang_and_parent(base)
         test_typescript_names_resolve_stem_collisions(base)
         test_typescript_wrapper_degrades_without_bun(base)
+        test_typescript_wrapper_runs_its_own_tree(base)
         test_wrapper_exports_root_across_exec(base)
         test_inherited_root_does_not_redirect_the_generator(base)
     test_builtin_collision_on_real_tree()
