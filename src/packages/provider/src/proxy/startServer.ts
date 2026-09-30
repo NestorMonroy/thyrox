@@ -4,7 +4,9 @@
  * credenciales (`./credentialSelectors.ts`) y el reenvío propio —HTTP
  * (`./upstreamForwarder.ts`) o por SDK para los upstreams de nube
  * (`./sdk/cloudForwarder.ts`) o por `claude -p` para los upstreams
- * `claude-cli` (`./claudeCli/forwarder.ts`)— en un `Bun.serve`.
+ * `claude-cli` (`./claudeCli/forwarder.ts`) o por Chat Completions para los
+ * upstreams compatibles con OpenAI (`./openaiCompat/forwarder.ts`)— en un
+ * `Bun.serve`.
  *
  * Sólo escucha en loopback, y la razón es de thyrox: el proxy lleva las
  * credenciales de sus upstreams, y escuchar fuera de la máquina las
@@ -47,6 +49,7 @@ import { BRIDGE_PATH_PREFIX } from './claudeCli/bridge.ts'
 import type { SpawnCli } from './claudeCli/claudeProcess.ts'
 import { type CliUpstreamConfig, createCliUpstreamForwarder } from './claudeCli/forwarder.ts'
 import type { GatewayRoutingConfig } from './upstreamRouting.ts'
+import { createOpenAICompatForwarder, type OpenAICompatUpstreamConfig } from './openaiCompat/forwarder.ts'
 
 export type SelectorName = 'fill-first' | 'round-robin' | 'weighted-round-robin'
 
@@ -102,6 +105,13 @@ export type ProxyStartConfig = {
    * sólo lo sustituyen las pruebas.
    */
   claudeCli?: { upstreams: readonly CliUpstreamConfig[]; spawn?: SpawnCli }
+  /**
+   * Los upstreams compatibles con OpenAI (`./openaiCompat/forwarder.ts`):
+   * atienden `/v1/messages` traduciendo a `/chat/completions` de su
+   * `baseUrl`. Como los de nube, no declaran endpoint y reciben una
+   * credencial sintética; su clave, si la tienen, va en su configuración.
+   */
+  openaiCompat?: { upstreams: readonly OpenAICompatUpstreamConfig[] }
   /**
    * El store de conexiones de proveedor. Un upstream sin credenciales
    * declaradas toma las conexiones de su proveedor, releídas en cada petición:
@@ -227,8 +237,12 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   if (keyProvider === null) throw new Error('el proxy local exige al menos una clave de acceso')
   const cloud = Object.fromEntries((config.cloud?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
   const claudeCliUpstreams = Object.fromEntries((config.claudeCli?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
+  const openaiCompatUpstreams = Object.fromEntries((config.openaiCompat?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
+  for (const upstream of config.openaiCompat?.upstreams ?? []) {
+    if (!isSafeUpstreamUrl(upstream.baseUrl, config.env)) throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
+  }
   for (const upstream of config.routing.upstreams) {
-    if (cloud[upstream.name] || claudeCliUpstreams[upstream.name]) continue
+    if (cloud[upstream.name] || claudeCliUpstreams[upstream.name] || openaiCompatUpstreams[upstream.name]) continue
     const endpoint = config.endpoints[upstream.name]
     if (!endpoint) throw new Error(`el upstream "${upstream.name}" no declara endpoint`)
     if (!isSafeUpstreamUrl(endpoint.baseUrl, config.env)) {
@@ -238,6 +252,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   const credentials = withSyntheticCredentials(config.credentials, [
     ...Object.keys(cloud).map(name => ({ name, id: `cloud:${name}` })),
     ...Object.keys(claudeCliUpstreams).map(name => ({ name, id: `claude-cli:${name}` })),
+    ...Object.keys(openaiCompatUpstreams).map(name => ({ name, id: `openai-compat:${name}` })),
   ])
   // Antes de `Bun.serve`: un THYROX_PROXY_MODE=multi sin THYROX_REDIS_URL
   // rehúsa aquí, sin dejar ningún puerto abierto.
@@ -258,15 +273,19 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
   // La URL del puente sale del servidor ya escuchando: se rellena tras `Bun.serve`.
   const listening = { url: '' }
   const claudeCli = createCliUpstreamForwarder({
-    next: createCloudAwareForwarder({
-      http: createHttpForwarder({
-        upstreams: config.endpoints,
-        version: config.version,
-        firstByteTimeoutMs: config.firstByteTimeoutMs,
-        env: config.env,
+    next: createOpenAICompatForwarder({
+      next: createCloudAwareForwarder({
+        http: createHttpForwarder({
+          upstreams: config.endpoints,
+          version: config.version,
+          firstByteTimeoutMs: config.firstByteTimeoutMs,
+          env: config.env,
+        }),
+        cloud,
+        options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },
       }),
-      cloud,
-      options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },
+      upstreams: openaiCompatUpstreams,
+      env: config.env,
     }),
     upstreams: claudeCliUpstreams,
     bridgeUrlOf: token => `${listening.url}${BRIDGE_PATH_PREFIX}${token}`,

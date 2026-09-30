@@ -1,0 +1,12 @@
+.env.example
+src/packages/provider/bin/localProxy.ts
+src/packages/provider/src/proxy/__tests__/fakeOpenAIUpstream.ts
+src/packages/provider/src/proxy/__tests__/openaiCompatDeclaration.test.ts
+src/packages/provider/src/proxy/__tests__/openaiCompatForwarder.test.ts
+src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+src/packages/provider/src/proxy/__tests__/openaiCompatUpstream.test.ts
+src/packages/provider/src/proxy/openaiCompat/declaration.ts
+src/packages/provider/src/proxy/openaiCompat/forwarder.ts
+src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts
+src/packages/provider/src/proxy/startServer.ts
+src/packages/shell/tsconfig.check.json
